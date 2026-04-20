@@ -1,0 +1,34 @@
+<?php
+namespace App\Enums;
+
+enum TaxSubmit: string
+{
+    const INVOICE_TEXT = 'INVOICE';
+    const CREDIT_NOTE_TEXT = 'CREDIT_NOTE';
+
+    const INVOICE_TYPE_INVOICE = 388;
+    const INVOICE_TYPE_DEBIT_NOTE = 383;
+    const INVOICE_TYPE_CREDIT_NOTE = 381;
+
+    const TAX_SUBMITTED_STATUS = 1;
+    const TAX_INITIATED_STATUS = 2;
+    const TAX_NOT_SUBMITTED_STATUS = 3;
+    const B2B_SUBMITTED_STATUS = 4;
+    const B2C_SUBMITTED_STATUS = 5;
+
+    const INITIATED_STATUS = 'INITIATED';
+    const SUBMITTED_STATUS = 'SUBMITTED';
+    const ALREADY_SUBMITTED_STATUS = 'ALREADY_SUBMITTED';
+    const REPORTED_STATUS = 'REPORTED';
+    const CLEARED_STATUS = 'CLEARED';
+
+    const NOT_SUBMITTED_STATUS = [
+        'NOT_REPORTED' => "NOT REPORTED",
+        'NOT_CLEARED' => "NOT CLEARED",
+        'NOT_SUBMITTED' => "NOT SUBMITTED"
+    ];
+
+    const SIMPLIFIED_TAX_INVOICE_TEXT = 'SIMPLIFIED';
+    const TAX_INVOICE_TEXT = 'TAX';
+
+}
