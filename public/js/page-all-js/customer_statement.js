@@ -3,7 +3,7 @@ CUSTOMER_STATEMENT = {
     baseUrl: 'reports/customer-statement',
     actionUrl: 'reports/customer-statement',
     load() {
-        datepicker();
+        // datepicker();
         CURRENCY.currencyRate();
     },
 }

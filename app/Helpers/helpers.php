@@ -17,12 +17,19 @@ function cacheName()
 
 function authUserCompany()
 {
-    if (session('company_id')) {
-        return \App\Models\Master\Company::companies();
-        //return \App\Models\Master\Company::findOrFail(session('company_id'));
-        //return session('company_id');
+    $companyId = session('company_id');
+    
+    if (!$companyId && auth()->check()) {
+        $companyId = auth()->user()->company_id ?? null;
+        if ($companyId) {
+            session(['company_id' => $companyId]);
+        }
     }
-    Auth::logout();
+    
+    if ($companyId) {
+        return \App\Models\Master\Company::companies();
+    }
+    
     return false;
 }
 

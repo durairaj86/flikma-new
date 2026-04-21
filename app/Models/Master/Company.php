@@ -15,11 +15,24 @@ class Company extends Model
     ];
     protected static string $cache = 'company:';
 
-    public static function companies()
+    public static function companies($companyId = null)
     {
+        $companyId = $companyId ?? session('company_id');
+        
+        if (!$companyId && auth()->check()) {
+            $companyId = auth()->user()->company_id ?? null;
+            if ($companyId) {
+                session(['company_id' => $companyId]);
+            }
+        }
+        
+        if (!$companyId) {
+            return null;
+        }
+        
         Cache::forget(self::$cache . cacheName());
-        return Cache::rememberForever(static::$cache . cacheName(), function () {
-            return DB::table('companies')->where('id', session('company_id'))->first();
+        return Cache::rememberForever(static::$cache . $companyId, function () use ($companyId) {
+            return static::find($companyId);
         });
     }
 }

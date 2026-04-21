@@ -205,8 +205,8 @@ class JobController extends Controller
         $job->incoterm = $validated['incoterm'] ?? null;
         $job->carrier = $validated['carrier'] ?? null;
         $job->voyage_flight_no = $request['voyage_flight_no'] ?? null;
-        $job->awb_no = $validated['awb_number'] ?? null;
-        $job->hbl_no = $validated['hbl_number'] ?? null;
+        $job->awb_number = $validated['awb_number'] ?? null;
+        $job->hbl_number = $validated['hbl_number'] ?? null;
         $job->client_ref = $validated['client_ref'] ?? null;
         $job->volume = $validated['volume'] ?? null;
         $job->weight = $validated['weight'] ?? null;
@@ -425,7 +425,7 @@ class JobController extends Controller
             'eta',
             'etd',
             'commodity',
-            'awb_no',
+            'awb_number',
             'carrier',
             'shipper',
             'consignee',

@@ -32,7 +32,7 @@ class DropdownListSearchController extends Controller
             $q->where('code', 'LIKE', "%{$search}%")->orWhere('name', 'LIKE', "%{$search}%");
         })->select('id', 'name', 'code')->orderBy('code')->limit(100)->get();
         if ($port->count() == 0) {
-            return ['No Data Found'];
+            return collect(['No Data Found']);
         }
         return $port;
     }
@@ -43,7 +43,7 @@ class DropdownListSearchController extends Controller
             $q->where('code', 'LIKE', "%{$search}%")->orWhere('name', 'LIKE', "%{$search}%");
         })->select('id', 'name', 'code')->orderBy('code')->limit(100)->get();
         if ($port->count() == 0) {
-            return ['No Data Found'];
+            return collect(['No Data Found']);
         }
         return $port;
     }
@@ -52,7 +52,7 @@ class DropdownListSearchController extends Controller
     {
         $carrier = CarrierLines::where('name', 'LIKE', "%{$search}%")->select('id', 'name', 'mode')->where('mode', 'Sea')->orderBy('name')->limit(50)->get();
         if ($carrier->count() == 0) {
-            return ['No Data Found'];
+            return collect(['No Data Found']);
         }
         return $carrier;
     }
@@ -61,7 +61,7 @@ class DropdownListSearchController extends Controller
     {
         $carrier = CarrierLines::where('name', 'LIKE', "%{$search}%")->select('id', 'name', 'mode')->where('mode', 'Air')->orderBy('name')->limit(50)->get();
         if ($carrier->count() == 0) {
-            return ['No Data Found'];
+            return collect(['No Data Found']);
         }
         return $carrier;
     }
@@ -70,14 +70,14 @@ class DropdownListSearchController extends Controller
     {
         $customers = Customer::confirmedCustomers();
         if ($customers->count() == 0) {
-            return ['No Data Found'];
+            return collect(['No Data Found']);
         }
         return $customers;
     }
 
-    public function defaultSearch(): array
+    public function defaultSearch(): \Illuminate\Support\Collection
     {
-        return ['No Data Found'];
+        return collect(['No Data Found']);
     }
 
 }

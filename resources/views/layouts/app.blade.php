@@ -74,6 +74,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    @livewireStyles
     <style>
         body {
             font-family: 'Figtree', sans-serif;
@@ -176,7 +177,8 @@
 <div id="dynamic-scripts"></div>
 <ul id="dropdown-suggestions"></ul>
 <iframe id="print-frame" style="display:none;"></iframe>
-@include('activity.feed-view')
+    @include('activity.feed-view')
 
+    @livewireScripts
 </body>
 </html>

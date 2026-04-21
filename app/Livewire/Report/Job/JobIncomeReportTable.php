@@ -53,8 +53,8 @@ class JobIncomeReportTable extends Component
         if (!empty($this->search)) {
             $jobs = $jobs->where(function ($query) {
                 $query->where('row_no', 'like', '%' . $this->search . '%')
-                    ->orWhere('awb_no', 'like', '%' . $this->search . '%')
-                    ->orWhere('hbl_no', 'like', '%' . $this->search . '%')
+                    ->orWhere('awb_number', 'like', '%' . $this->search . '%')
+                    ->orWhere('hbl_number', 'like', '%' . $this->search . '%')
                     ->orWhere('shipper', 'like', '%' . $this->search . '%')
                     ->orWhere('consignee', 'like', '%' . $this->search . '%')
                     ->orWhereHas('customer', function ($q) {

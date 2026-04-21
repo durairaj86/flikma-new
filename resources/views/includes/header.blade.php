@@ -62,22 +62,23 @@
 
             <div class="dropdown ms-2">
                 <button class="btn btn-white border-0 d-flex align-items-center p-1 rounded-pill hover-shadow" type="button" data-bs-toggle="dropdown">
-                    @if($user->profile_photo_path)
+                    @php $userName = $user->name ?? 'Guest'; @endphp
+                    @if($user->profile_photo_path ?? null)
                         <img src="{{ asset($user->profile_photo_path) }}" class="rounded-circle" width="32" height="32" alt="User" style="object-fit: cover;">
                     @else
                         <div class="rounded-circle bg-primary text-white d-flex justify-content-center align-items-center fw-bold shadow-sm" style="width: 32px; height: 32px; font-size: 12px;">
-                            {{ getInitials($user->name) }}
+                            {{ getInitials($userName) }}
                         </div>
                     @endif
                     <span class="ms-2 d-none d-md-inline fw-semibold text-dark small me-1">
-                        {{ $user->name }}
+                        {{ $userName }}
                     </span>
                     <i class="bi bi-chevron-down small text-muted"></i>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
                     <li class="px-3 py-2 border-bottom">
                         <div class="small text-muted">Signed in as:</div>
-                        <div class="fw-bold text-dark truncate-email">{{ $user->email }}</div>
+                        <div class="fw-bold text-dark truncate-email">{{ $user->email ?? 'Guest' }}</div>
                     </li>
                     <li><a class="dropdown-item py-2" href="{{ url('settings/account') }}"><i class="bi bi-person me-2"></i> My Profile</a></li>
                     <li><hr class="dropdown-divider"></li>
