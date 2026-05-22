@@ -638,6 +638,13 @@ class CollectionController extends Controller
     /**
      * Create finance entries for a collection.
      *
+     * Correct accounting for collection:
+     *   DR  Bank/Cash account         (amount received net of charges)
+     *   DR  Bank Charges Expense      (if any)
+     *   DR  Miscellaneous Expenses    (other charges, if any)
+     *   CR  Accounts Receivable (AR)  (invoice sub-total collected)
+     *   CR  Output VAT Payable        (VAT portion collected)
+     *
      * @param Collection $collection
      * @return void
      */
@@ -645,6 +652,19 @@ class CollectionController extends Controller
     {
         // Delete any existing finance entries for this collection
         $this->deleteFinanceEntries($collection->id);
+
+        // The amount credited to AR = sub_total + tax_total (full invoice amount)
+        // The amount debited to Bank = grand_total - bank_charges - other_charges
+        // Bank charges and other charges are DEBITED to expense accounts
+        $invoiceTotal = $collection->sub_total + $collection->tax_total;
+        $bankCharges  = $collection->bank_charges ?? 0;
+        $otherCharges = $collection->other_charges ?? 0;
+        $bankReceived = $invoiceTotal - $bankCharges - $otherCharges;
+
+        $baseInvoiceTotal = $collection->base_sub_total + $collection->base_tax_total;
+        $baseBankCharges  = $collection->base_bank_charges ?? 0;
+        $baseOtherCharges = $collection->base_other_charges ?? 0;
+        $baseBankReceived = $baseInvoiceTotal - $baseBankCharges - $baseOtherCharges;
 
         // Create a new finance entry
         $finance = new Finance();
@@ -656,14 +676,14 @@ class CollectionController extends Controller
         $finance->narration = $collection->notes ?? 'Collection from customer';
         $finance->currency = $collection->currency;
         $finance->exchange_rate = $collection->currency_rate;
-        $finance->total_debit = $collection->grand_total;
-        $finance->total_credit = $collection->grand_total;
-        $finance->base_currency = 'SAR'; // Assuming SAR is the base currency
-        $finance->base_total_debit = $collection->base_grand_total;
-        $finance->base_total_credit = $collection->base_grand_total;
+        $finance->total_debit = $invoiceTotal;
+        $finance->total_credit = $invoiceTotal;
+        $finance->base_currency = 'SAR';
+        $finance->base_total_debit = $baseInvoiceTotal;
+        $finance->base_total_credit = $baseInvoiceTotal;
         $finance->job_id = $collection->job_id ?? 0;
         $finance->job_no = $collection->job_no ?? '';
-        $finance->is_approved = 1; // Approved
+        $finance->is_approved = 1;
         $finance->posted_at = now();
         $finance->linked_id = $collection->id;
         $finance->linked_type = Collection::class;
@@ -679,237 +699,113 @@ class CollectionController extends Controller
         // Create finance sub entries
         $financeSubs = [];
 
-        // Debit entry for the bank/cash account
-        $financeSubs[] = [
-            'finance_id' => $finance->id,
-            'voucher_no' => $finance->voucher_no,
-            'voucher_type' => $finance->voucher_type,
-            'reference_no' => $finance->reference_no,
-            'customer_id' => $collection->customer_id,
-            'account_id' => $collection->account, // Bank/Cash account
-            'reference_date' => formDate($collection->collection_date),
-            'description' => 'Collection from customer',
-            'debit' => $collection->grand_total,
-            'credit' => 0,
-            'currency' => $collection->currency,
-            'base_debit' => $collection->base_grand_total,
-            'base_credit' => 0,
-            'base_currency' => 'SAR',
-            'exchange_rate' => $collection->currency_rate,
-            'job_id' => $collection->job_id ?? null,
-            'job_no' => $collection->job_no ?? '',
-            'cost_center_id' => null,
-            'is_tax_line' => 0,
-            'is_auto_generated' => 1,
-            'linked_id' => $collection->id,
-            'linked_type' => Collection::class,
-            'user_id' => Auth::id(),
-            'company_id' => $collection->company_id,
-            'created_at' => now(),
-            'updated_at' => now(),
+        $commonData = [
+            'finance_id'       => $finance->id,
+            'voucher_no'       => $finance->voucher_no,
+            'voucher_type'     => $finance->voucher_type,
+            'reference_no'     => $finance->reference_no,
+            'customer_id'      => $collection->customer_id,
+            'base_currency'    => 'SAR',
+            'exchange_rate'    => $collection->currency_rate,
+            'currency'         => $collection->currency,
+            'job_id'           => $collection->job_id ?? null,
+            'job_no'           => $collection->job_no ?? '',
+            'cost_center_id'   => null,
+            'is_tax_line'      => 0,
+            'is_auto_generated'=> 1,
+            'linked_id'        => $collection->id,
+            'linked_type'      => Collection::class,
+            'user_id'          => Auth::id(),
+            'company_id'       => $collection->company_id,
+            'created_at'       => now(),
+            'updated_at'       => now(),
         ];
 
-        // Credit entries for each invoice
+        // DR Bank/Cash account (amount actually received = invoice total minus charges)
+        $financeSubs[] = array_merge($commonData, [
+            'account_id'       => $collection->account,
+            'reference_date'   => formDate($collection->collection_date),
+            'description'      => 'Collection received from customer',
+            'debit'            => $bankReceived,
+            'credit'           => 0,
+            'base_debit'       => $baseBankReceived,
+            'base_credit'      => 0,
+        ]);
+
+        // DR Bank Charges Expense (if any)
+        if ($bankCharges > 0) {
+            $financeSubs[] = array_merge($commonData, [
+                'account_id'     => 54, // 5260 Bank Charges expense account
+                'reference_date' => formDate($collection->collection_date),
+                'description'    => 'Bank charges on collection',
+                'debit'          => $bankCharges,
+                'credit'         => 0,
+                'base_debit'     => $baseBankCharges,
+                'base_credit'    => 0,
+            ]);
+        }
+
+        // DR Miscellaneous Expenses (other charges, if any)
+        if ($otherCharges > 0) {
+            $financeSubs[] = array_merge($commonData, [
+                'account_id'     => 56, // 5280 Miscellaneous Expenses account
+                'reference_date' => formDate($collection->collection_date),
+                'description'    => 'Other charges on collection',
+                'debit'          => $otherCharges,
+                'credit'         => 0,
+                'base_debit'     => $baseOtherCharges,
+                'base_credit'    => 0,
+            ]);
+        }
+
+        // CR Accounts Receivable per invoice (split by invoice amount)
         foreach ($collectionInvoices as $collectionInvoice) {
             $invoice = $collectionInvoice->customerInvoice;
 
-            // Calculate tax proportion
-            $invoiceTotal = $invoice->grand_total;
+            // Calculate tax proportion for this invoice payment
+            $invoiceGrandTotal = $invoice->grand_total;
             $taxProportion = 0;
 
-            if ($invoiceTotal > 0) {
-                $taxProportion = ($invoice->tax_total / $invoiceTotal) * $collectionInvoice->amount;
+            if ($invoiceGrandTotal > 0) {
+                $taxProportion = ($invoice->tax_total / $invoiceGrandTotal) * $collectionInvoice->amount;
             }
 
-            $subTotal = $collectionInvoice->amount - $taxProportion;
+            $subAmount = $collectionInvoice->amount - $taxProportion;
 
-            // Credit entry for the customer account (AR account)
-            $financeSubs[] = [
-                'finance_id' => $finance->id,
-                'voucher_no' => $finance->voucher_no,
-                'voucher_type' => $finance->voucher_type,
-                'reference_no' => $invoice->row_no,
-                'customer_id' => $collection->customer_id,
-                'account_id' => 5, // Using 1130 as the Accounts Receivable account
+            // CR Accounts Receivable (net of VAT)
+            $financeSubs[] = array_merge($commonData, [
+                'account_id'     => 5, // 1130 Accounts Receivable
                 'reference_date' => formDate($collection->collection_date),
-                'description' => 'Collection for invoice ' . $invoice->row_no,
-                'debit' => 0,
-                'credit' => $subTotal,
-                'currency' => $collection->currency,
-                'base_debit' => 0,
-                'base_credit' => $subTotal * $collection->currency_rate,
-                'base_currency' => 'SAR',
-                'exchange_rate' => $collection->currency_rate,
-                'job_id' => $invoice->job_id ?? null,
-                'job_no' => $invoice->job_no ?? '',
-                'cost_center_id' => null,
-                'is_tax_line' => 0,
-                'is_auto_generated' => 1,
-                'linked_id' => $collectionInvoice->id,
-                'linked_type' => CollectionInvoice::class,
-                'user_id' => Auth::id(),
-                'company_id' => $collection->company_id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
+                'reference_no'   => $invoice->row_no,
+                'description'    => 'Collection for invoice ' . $invoice->row_no,
+                'debit'          => 0,
+                'credit'         => $subAmount,
+                'base_debit'     => 0,
+                'base_credit'    => $subAmount * $collection->currency_rate,
+                'job_id'         => $invoice->job_id ?? null,
+                'job_no'         => $invoice->job_no ?? '',
+                'linked_id'      => $collectionInvoice->id,
+                'linked_type'    => CollectionInvoice::class,
+            ]);
 
-            // If there's tax, add a tax entry
+            // CR Output VAT Payable (VAT portion collected)
             if ($taxProportion > 0) {
-                $financeSubs[] = [
-                    'finance_id' => $finance->id,
-                    'voucher_no' => $finance->voucher_no,
-                    'voucher_type' => $finance->voucher_type,
-                    'reference_no' => $invoice->row_no,
-                    'customer_id' => $collection->customer_id,
-                    'account_id' => 20, // Assuming 2130 is the VAT account
+                $financeSubs[] = array_merge($commonData, [
+                    'account_id'     => 20, // 2130 Output VAT Payable
                     'reference_date' => formDate($collection->collection_date),
-                    'description' => 'VAT for invoice ' . $invoice->row_no,
-                    'debit' => 0,
-                    'credit' => $taxProportion,
-                    'currency' => $collection->currency,
-                    'base_debit' => 0,
-                    'base_credit' => $taxProportion * $collection->currency_rate,
-                    'base_currency' => 'SAR',
-                    'exchange_rate' => $collection->currency_rate,
-                    'job_id' => $invoice->job_id ?? null,
-                    'job_no' => $invoice->job_no ?? '',
-                    'cost_center_id' => null,
-                    'is_tax_line' => 1,
-                    'is_auto_generated' => 1,
-                    'linked_id' => $collectionInvoice->id,
-                    'linked_type' => CollectionInvoice::class,
-                    'user_id' => Auth::id(),
-                    'company_id' => $collection->company_id,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
+                    'reference_no'   => $invoice->row_no,
+                    'description'    => 'Output VAT collected for invoice ' . $invoice->row_no,
+                    'debit'          => 0,
+                    'credit'         => $taxProportion,
+                    'base_debit'     => 0,
+                    'base_credit'    => $taxProportion * $collection->currency_rate,
+                    'is_tax_line'    => 1,
+                    'job_id'         => $invoice->job_id ?? null,
+                    'job_no'         => $invoice->job_no ?? '',
+                    'linked_id'      => $collectionInvoice->id,
+                    'linked_type'    => CollectionInvoice::class,
+                ]);
             }
-        }
-
-        // Add bank charges if any
-        if ($collection->bank_charges > 0) {
-            $financeSubs[] = [
-                'finance_id' => $finance->id,
-                'voucher_no' => $finance->voucher_no,
-                'voucher_type' => $finance->voucher_type,
-                'reference_no' => $finance->reference_no,
-                'customer_id' => $collection->customer_id,
-                'account_id' => 54, // Assuming 5260 is the Bank Charges account
-                'reference_date' => formDate($collection->collection_date),
-                'description' => 'Bank charges',
-                'debit' => 0,
-                'credit' => $collection->bank_charges,
-                'currency' => $collection->currency,
-                'base_debit' => 0,
-                'base_credit' => $collection->base_bank_charges,
-                'base_currency' => 'SAR',
-                'exchange_rate' => $collection->currency_rate,
-                'job_id' => $collection->job_id ?? null,
-                'job_no' => $collection->job_no ?? '',
-                'cost_center_id' => null,
-                'is_tax_line' => 0,
-                'is_auto_generated' => 1,
-                'linked_id' => $collection->id,
-                'linked_type' => Collection::class,
-                'user_id' => Auth::id(),
-                'company_id' => $collection->company_id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-        }
-
-        // Add other charges if any
-        if ($collection->other_charges > 0) {
-            $financeSubs[] = [
-                'finance_id' => $finance->id,
-                'voucher_no' => $finance->voucher_no,
-                'voucher_type' => $finance->voucher_type,
-                'reference_no' => $finance->reference_no,
-                'customer_id' => $collection->customer_id,
-                'account_id' => 56, // Assuming 5280 is the Other Charges account
-                'reference_date' => formDate($collection->collection_date),
-                'description' => 'Other charges',
-                'debit' => 0,
-                'credit' => $collection->other_charges,
-                'currency' => $collection->currency,
-                'base_debit' => 0,
-                'base_credit' => $collection->base_other_charges,
-                'base_currency' => 'SAR',
-                'exchange_rate' => $collection->currency_rate,
-                'job_id' => $collection->job_id ?? null,
-                'job_no' => $collection->job_no ?? '',
-                'cost_center_id' => null,
-                'is_tax_line' => 0,
-                'is_auto_generated' => 1,
-                'linked_id' => $collection->id,
-                'linked_type' => Collection::class,
-                'user_id' => Auth::id(),
-                'company_id' => $collection->company_id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-        }
-
-        // Calculate and add currency exchange difference if any
-        foreach ($collectionInvoices as $collectionInvoice) {
-            $invoice = $collectionInvoice->customerInvoice;
-
-            // Skip if invoice currency is the same as base currency
-            if ($invoice->currency === 'SAR') {
-                continue;
-            }
-
-            // Get the original exchange rate from the invoice
-            $originalRate = $invoice->currency_rate ?? 1;
-            $currentRate = $collection->currency_rate ?? 1;
-
-            // Skip if rates are the same
-            if (abs($originalRate - $currentRate) < 0.0001) {
-                continue;
-            }
-
-            // Calculate the exchange difference
-            $amountInForeignCurrency = $collectionInvoice->amount;
-            $originalAmountInBase = $amountInForeignCurrency * $originalRate;
-            $currentAmountInBase = $amountInForeignCurrency * $currentRate;
-            $exchangeDifference = $currentAmountInBase - $originalAmountInBase;
-
-            // Skip if difference is negligible
-            if (abs($exchangeDifference) < 0.01) {
-                continue;
-            }
-
-            // Add entry for currency exchange difference
-            // Account ID 60 is assumed to be the Currency Exchange Difference account
-            // If it doesn't exist, you'll need to create it
-            $financeSubs[] = [
-                'finance_id' => $finance->id,
-                'voucher_no' => $finance->voucher_no,
-                'voucher_type' => $finance->voucher_type,
-                'reference_no' => $invoice->row_no,
-                'customer_id' => $collection->customer_id,
-                'account_id' => 60, // Currency Exchange Difference account
-                'reference_date' => formDate($collection->collection_date),
-                'description' => 'Currency exchange difference for invoice ' . $invoice->row_no,
-                'debit' => $exchangeDifference < 0 ? abs($exchangeDifference) : 0,
-                'credit' => $exchangeDifference > 0 ? $exchangeDifference : 0,
-                'currency' => 'SAR', // Always in base currency
-                'base_debit' => $exchangeDifference < 0 ? abs($exchangeDifference) : 0,
-                'base_credit' => $exchangeDifference > 0 ? $exchangeDifference : 0,
-                'base_currency' => 'SAR',
-                'exchange_rate' => 1, // Base currency to base currency
-                'job_id' => $invoice->job_id ?? null,
-                'job_no' => $invoice->job_no ?? '',
-                'cost_center_id' => null,
-                'is_tax_line' => 0,
-                'is_auto_generated' => 1,
-                'linked_id' => $collectionInvoice->id,
-                'linked_type' => CollectionInvoice::class,
-                'user_id' => Auth::id(),
-                'company_id' => $collection->company_id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
         }
 
         // Insert all finance sub entries

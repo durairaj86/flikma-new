@@ -154,7 +154,7 @@
 
 
 <div class="modal fade" id="globalModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
-    <div class="modal-dialog modal-xl">
+    <div class="modal-dialog modal-xl" id="globalModalDialog">
         <div class="modal-content border-0 shadow-lg">
             <div id="globalModalBody"></div>
             <div class="modal-footer" id="globalModalFooter"></div>

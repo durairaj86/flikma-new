@@ -2,9 +2,7 @@
 
 namespace App\Livewire\Report\Finance;
 
-use App\Models\Finance\Account\Account;
 use App\Models\Finance\FinanceSub;
-use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class OutputTaxTable extends Component
@@ -39,70 +37,61 @@ class OutputTaxTable extends Component
 
     public function getOutputTaxData()
     {
-        // Get all finance sub entries that are tax lines
-        $transactions = FinanceSub::where('is_tax_line', 1)
-            ->whereHas('finance', function ($query) {
-                $query->where('is_approved', 1)
-                    ->whereBetween('reference_date', [$this->startDate, $this->endDate]);
-            })
-            ->with(['finance' => function ($query) {
-                $query->select('id', 'reference_no', 'reference_date', 'narration');
-            }]);
+        // Output VAT account ID = 20 (code 2130 — "Output VAT Payable", type Liability)
+        // Output tax lines are CREDITS on the customer invoice (DR AR / CR Sales / CR Output VAT)
+        // We filter directly on finance_sub.reference_date (the actual transaction date)
 
-        // Apply search filter if provided
+        $outputVatAccountId = 20; // 2130 Output VAT Payable
+
+        $query = FinanceSub::where('is_tax_line', 1)
+            ->where('account_id', $outputVatAccountId)
+            ->whereBetween('reference_date', [$this->startDate, $this->endDate])
+            ->whereHas('finance', function ($q) {
+                $q->where('is_approved', 1);
+            })
+            ->with(['finance:id,voucher_no,voucher_type,narration,customer_id']);
+
+        // Apply search filter
         if (!empty($this->search)) {
-            $transactions = $transactions->where(function ($query) {
-                $query->whereHas('finance', function ($subQuery) {
-                    $subQuery->where('reference_no', 'like', '%' . $this->search . '%')
-                        ->orWhere('narration', 'like', '%' . $this->search . '%');
-                });
+            $query->where(function ($q) {
+                $q->where('reference_no', 'like', '%' . $this->search . '%')
+                  ->orWhere('description', 'like', '%' . $this->search . '%')
+                  ->orWhereHas('finance', function ($sq) {
+                      $sq->where('narration', 'like', '%' . $this->search . '%');
+                  });
             });
         }
 
-        // Get the transactions
-        $transactions = $transactions->get();
-
-        // Get account details for the accounts with tax entries
-        $accountIds = $transactions->pluck('account_id')->unique()->toArray();
-        $accounts = Account::whereIn('id', $accountIds)->get()->keyBy('id');
+        $transactions = $query->orderBy('reference_date')->get();
 
         $outputTaxData = [];
         $totalOutputTax = 0;
 
         foreach ($transactions as $transaction) {
-            if (!isset($accounts[$transaction->account_id])) {
-                continue;
-            }
-
-            $account = $accounts[$transaction->account_id];
-
-            // Check if this is an output tax account
-            $isOutputTax = stripos($account->name, 'output') !== false || stripos($account->code, 'output') !== false;
-
-            if (!$isOutputTax) {
-                continue;
-            }
-
-            // For output tax, typically credit - debit (opposite of input tax)
+            // Output VAT = credit amount (CR Output VAT Payable on customer invoice)
             $amount = $transaction->credit - $transaction->debit;
 
-            if ($amount != 0) {
-                $outputTaxData[] = [
-                    'account_code' => $account->code,
-                    'account_name' => $account->name,
-                    'reference_no' => $transaction->finance->reference_no,
-                    'reference_date' => $transaction->finance->reference_date,
-                    'description' => $transaction->finance->narration,
-                    'amount' => $amount
-                ];
-
-                $totalOutputTax += $amount;
+            if ($amount == 0) {
+                continue;
             }
+
+            $outputTaxData[] = [
+                'account_code'   => '2130',
+                'account_name'   => 'Output VAT Payable',
+                'voucher_no'     => $transaction->voucher_no,
+                'voucher_type'   => $transaction->voucher_type,
+                'reference_no'   => $transaction->reference_no,
+                'reference_date' => $transaction->reference_date, // from finance_sub
+                'description'    => $transaction->description,    // from finance_sub
+                'amount'         => $amount,
+            ];
+
+            $totalOutputTax += $amount;
         }
 
         return [
             'output_tax_transactions' => $outputTaxData,
-            'total_output_tax' => $totalOutputTax
+            'total_output_tax'        => $totalOutputTax,
         ];
     }
 

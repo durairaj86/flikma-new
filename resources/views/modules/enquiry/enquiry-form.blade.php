@@ -111,7 +111,7 @@
                                             <option value="{{ encodeId($prospect->id) }}"
                                                     data-subtext="{{ $prospect->row_no }}"
                                                 @selected($prospect->id==$enquiry->prospect_id)>
-                                                {{ $prospect->name_en }}
+                                                {{ $prospect->name }}
                                             </option>
                                         @endforeach
                                         <option data-divider="true"></option>

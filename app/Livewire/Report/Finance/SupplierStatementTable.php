@@ -102,31 +102,29 @@ class SupplierStatementTable extends Component
             ];
         }
 
-        // Supplier Account IDs (Accounts Payable)
-        $supplierAccountIds = [2110]; // Using 2110 as the Accounts Payable account
+        // Supplier Account IDs (Accounts Payable — account ID 18)
+        $supplierAccountIds = [18];
 
-        // Opening Balance before from_date
-        $openingDebit = DB::table('finance_sub')
-            ->where('supplier_id', $this->supplierId)
-            ->where('company_id', $companyId)
-            ->whereIn('account_id', $supplierAccountIds)
-            ->where('reference_date', '<', $this->startDate)
-            ->sum('base_debit');
+        // Opening Balance before from_date (AP sub-ledger entries before period)
+        $openingQuery = DB::table('finance_sub as fs')
+            ->join('finance as f', 'fs.finance_id', '=', 'f.id')
+            ->where('fs.supplier_id', $this->supplierId)
+            ->where('fs.company_id', $companyId)
+            ->whereIn('fs.account_id', $supplierAccountIds)
+            ->where('fs.reference_date', '<', $this->startDate)
+            ->where('f.is_approved', 1);
 
-        $openingCredit = DB::table('finance_sub')
-            ->where('supplier_id', $this->supplierId)
-            ->where('company_id', $companyId)
-            ->whereIn('account_id', $supplierAccountIds)
-            ->where('reference_date', '<', $this->startDate)
-            ->sum('base_credit');
+        $openingDebit  = (clone $openingQuery)->sum('fs.base_debit');
+        $openingCredit = (clone $openingQuery)->sum('fs.base_credit');
 
-        $openingBalance = $openingCredit - $openingDebit; // Credit = liability
+        $openingBalance = $openingCredit - $openingDebit; // Credit balance = amount owed to supplier
 
         // Transactions in date range
         $transactions = DB::table('finance as f')
             ->leftJoin('jobs as j', 'f.job_id', '=', 'j.id')
             ->where('f.company_id', $companyId)
             ->where('f.supplier_id', $this->supplierId)
+            ->where('f.is_approved', 1)
             ->whereBetween('f.reference_date', [$this->startDate, $this->endDate])
             ->select(
                 'f.id',

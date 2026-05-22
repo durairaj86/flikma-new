@@ -181,7 +181,7 @@
                             <th></th>
                         </tr>
                         </thead>
-                        <tbody id="SUPPLIER_INVOICE-tbody" class="error-tooltip-off">
+                        <tbody id="SUPPLIER_INVOICE-tbody">
                         @foreach($supplier->supplierInvoiceSubs as $subItem)
                             <tr>
                                 <!-- Description -->

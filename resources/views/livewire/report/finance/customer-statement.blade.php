@@ -1,7 +1,7 @@
 @section('js', 'customer_statement')
 @section('page-title', 'Customer Statement')
 
-<div class="statement-wrapper min-vh-100 bg-light py-4" wire:key="customer-statement-{{ $customerId }}">
+<div class="statement-wrapper min-vh-100 bg-light py-4">
     <div class="container-fluid px-lg-5">
         {{-- Debug info --}}
         @if(isset($debug) && $debug)
@@ -35,23 +35,29 @@
 
         <div class="card border-0 shadow-sm mb-4 d-print-none">
             <div class="card-body p-4">
-                <form class="row g-3 align-items-end" wire:submit.prevent="applyFilter" data-turbo="false">
+                <div class="row g-3 align-items-end">
                     <div class="col-lg-4">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">Customer</label>
-                        <select class="form-select bg-light border-0 py-2 no-ts" wire:model.live="customerId">
+                        <select class="form-select bg-light border-0 py-2 no-ts" wire:model="customerId">
                             <option value="">Select a customer...</option>
                             @foreach($customers as $customer)
-                                <option value="{{ $customer['id'] }}" wire:key="cust-opt-{{ $customer['id'] }}">{{ $customer['name_en'] }}</option>
+                                <option value="{{ $customer['id'] }}">{{ $customer['name_en'] }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="col-lg-2 col-md-4">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">From Date</label>
-                        <input type="date" class="form-control bg-light border-0 py-2" wire:model.live="startDate" />
+                        <input type="text" id="cs-start-date"
+                               class="form-control bg-light border-0 py-2"
+                               placeholder="dd-mm-yyyy"
+                               value="{{ $startDate }}" />
                     </div>
                     <div class="col-lg-2 col-md-4">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">To Date</label>
-                        <input type="date" class="form-control bg-light border-0 py-2" wire:model.live="endDate" />
+                        <input type="text" id="cs-end-date"
+                               class="form-control bg-light border-0 py-2"
+                               placeholder="dd-mm-yyyy"
+                               value="{{ $endDate }}" />
                     </div>
                     <div class="col-lg-4 col-md-4">
                         <div class="d-flex gap-2">
@@ -63,7 +69,7 @@
                             </button>
                         </div>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
 
@@ -182,6 +188,55 @@
             </div>
         @endif
     </div>
+
+    @script
+    <script>
+        (function () {
+            function initFlatpickr() {
+                const startEl = document.getElementById('cs-start-date');
+                const endEl   = document.getElementById('cs-end-date');
+
+                if (startEl && !startEl._flatpickr) {
+                    flatpickr(startEl, {
+                        dateFormat:    'Y-m-d',
+                        altInput:      true,
+                        altFormat:     'd-m-Y',
+                        allowInput:    true,
+                        disableMobile: true,
+                        defaultDate:   startEl.value || null,
+                        onChange(selectedDates, dateStr) {
+                            $wire.set('startDate', dateStr, false);
+                        },
+                    });
+                }
+
+                if (endEl && !endEl._flatpickr) {
+                    flatpickr(endEl, {
+                        dateFormat:    'Y-m-d',
+                        altInput:      true,
+                        altFormat:     'd-m-Y',
+                        allowInput:    true,
+                        disableMobile: true,
+                        defaultDate:   endEl.value || null,
+                        onChange(selectedDates, dateStr) {
+                            $wire.set('endDate', dateStr, false);
+                        },
+                    });
+                }
+            }
+
+            initFlatpickr();
+
+            // After each Livewire network round-trip, re-init if elements lost their flatpickr
+            Livewire.hook('commit', ({ component, commit, respond, succeed, fail }) => {
+                succeed(({ snapshot, effect }) => {
+                    // Run after DOM has been updated
+                    queueMicrotask(() => initFlatpickr());
+                });
+            });
+        })();
+    </script>
+    @endscript
 
     <style>
         :root {

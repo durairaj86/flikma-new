@@ -269,8 +269,8 @@ class SupplierInvoiceController extends Controller
         $supplier->base_grand_total = $supplier->currency_rate * $grandTotal;
         $supplier->status = 1;
 
-        /*DB::beginTransaction();
-        try {*/
+        DB::beginTransaction();
+        try {
 
         $supplier->save();
         if ($request->hasFile('attachments') && count($request->file('attachments'))) {
@@ -343,26 +343,23 @@ class SupplierInvoiceController extends Controller
             DB::table('supplier_invoice_subs')->insert($supplierSub);
         }
 
-        DB::commit();
+            DB::commit();
 
-        // Finance entry
-        $this->storeSupplierInvoiceFinance($supplier, $supplierSub);  // For invoice
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error saving Supplier Invoice: ' . $e->getMessage(),
+            ], 500);
+        }
 
-        //$this->storeSupplierAdvanceFinance($advance);                 // For advance
-
-        //$this->storeSupplierAdvanceAdjustmentFinance($adjustment);    // For adjustment
-
+        // Finance entries are created only on APPROVAL (in updateStatus), not on draft save
 
         return response()->json([
             'status' => 'success',
             'message' => 'Supplier invoice created successfully',
             'customer_id' => $supplier->id,
         ]);
-
-        /*} catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Error saving Supplier Invoice: ' . $e->getMessage());
-        }*/
     }
 
     public function destroy($id)

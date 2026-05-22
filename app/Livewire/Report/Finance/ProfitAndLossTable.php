@@ -63,12 +63,12 @@ class ProfitAndLossTable extends Component
         $totalExpenses = 0;
 
         foreach ($accounts as $account) {
-            // Get sum of debits and credits for this account within date range
-            // Using account id as the account_id in finance_sub table
+            // Get sum of debits and credits for this account within the selected date range.
+            // reference_date is on finance_sub (the transaction date), not on finance.
             $financeSub = FinanceSub::where('account_id', $account->id)
+                ->whereBetween('reference_date', [$this->startDate, $this->endDate])
                 ->whereHas('finance', function ($query) {
-                    $query->where('is_approved', 1)
-                        ->whereBetween('reference_date', [$this->startDate, $this->endDate]);
+                    $query->where('is_approved', 1);
                 })
                 ->select(
                     DB::raw('SUM(debit) as total_debit'),

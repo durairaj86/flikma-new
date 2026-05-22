@@ -2,9 +2,7 @@
 
 namespace App\Livewire\Report\Finance;
 
-use App\Models\Finance\Account\Account;
 use App\Models\Finance\FinanceSub;
-use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class TaxSummaryTable extends Component
@@ -39,112 +37,80 @@ class TaxSummaryTable extends Component
 
     public function getTaxSummaryData()
     {
-        // Get all finance sub entries that are tax lines
-        $financeSubs = FinanceSub::where('is_tax_line', 1)
-            ->whereHas('finance', function ($query) {
-                $query->where('is_approved', 1)
-                    ->whereBetween('reference_date', [$this->startDate, $this->endDate]);
-            })
-            ->with(['finance' => function ($query) {
-                $query->select('id', 'reference_no', 'reference_date', 'narration');
-            }]);
+        // Fixed account IDs (from chart of accounts):
+        //   Input VAT  = account 7  (code 1150, type Asset  — DR balance)
+        //   Output VAT = account 20 (code 2130, type Liability — CR balance)
+        //
+        // VAT payable to authority = Output VAT collected − Input VAT reclaimable
+        //
+        // Date filter is on finance_sub.reference_date (actual transaction date)
 
-        // Apply search filter if provided
+        $inputVatAccountId  = 7;
+        $outputVatAccountId = 20;
+
+        $baseQuery = FinanceSub::where('is_tax_line', 1)
+            ->whereBetween('reference_date', [$this->startDate, $this->endDate])
+            ->whereHas('finance', function ($q) {
+                $q->where('is_approved', 1);
+            });
+
+        // Apply search
         if (!empty($this->search)) {
-            $financeSubs = $financeSubs->where(function ($query) {
-                $query->whereHas('finance', function ($subQuery) {
-                    $subQuery->where('reference_no', 'like', '%' . $this->search . '%')
-                        ->orWhere('narration', 'like', '%' . $this->search . '%');
-                });
+            $baseQuery->where(function ($q) {
+                $q->where('reference_no', 'like', '%' . $this->search . '%')
+                  ->orWhere('description', 'like', '%' . $this->search . '%')
+                  ->orWhereHas('finance', function ($sq) {
+                      $sq->where('narration', 'like', '%' . $this->search . '%');
+                  });
             });
         }
 
-        // Get the finance sub entries
-        $financeSubs = $financeSubs->get();
+        // --- Input VAT ---
+        $inputData = (clone $baseQuery)
+            ->where('account_id', $inputVatAccountId)
+            ->selectRaw('SUM(debit) as total_debit, SUM(credit) as total_credit')
+            ->first();
 
-        // Group by account_id and calculate totals
-        $accountTotals = [];
-        $accountIds = [];
+        $totalInputTax = ($inputData->total_debit ?? 0) - ($inputData->total_credit ?? 0);
 
-        foreach ($financeSubs as $financeSub) {
-            $accountId = $financeSub->account_id;
-            $accountIds[] = $accountId;
+        // --- Output VAT ---
+        $outputData = (clone $baseQuery)
+            ->where('account_id', $outputVatAccountId)
+            ->selectRaw('SUM(credit) as total_credit, SUM(debit) as total_debit')
+            ->first();
 
-            if (!isset($accountTotals[$accountId])) {
-                $accountTotals[$accountId] = [
-                    'debit' => 0,
-                    'credit' => 0
-                ];
-            }
+        $totalOutputTax = ($outputData->total_credit ?? 0) - ($outputData->total_debit ?? 0);
 
-            $accountTotals[$accountId]['debit'] += $financeSub->debit;
-            $accountTotals[$accountId]['credit'] += $financeSub->credit;
-        }
-
-        // Get account details for the accounts with tax entries
-        $accounts = Account::whereIn('id', array_unique($accountIds))->get()->keyBy('id');
-
+        // Build summary rows
         $taxData = [];
-        $totalInputTax = 0;
-        $totalOutputTax = 0;
 
-        foreach ($accountTotals as $accountId => $totals) {
-            if (!isset($accounts[$accountId])) {
-                continue;
-            }
-
-            $account = $accounts[$accountId];
-            $debit = $totals['debit'];
-            $credit = $totals['credit'];
-
-            // Determine if this is input or output tax based on account name/code
-            $isInputTax = stripos($account->name, 'input') !== false || stripos($account->code, 'input') !== false;
-            $isOutputTax = stripos($account->name, 'output') !== false || stripos($account->code, 'output') !== false;
-
-            // Determine balance based on account type
-            // For input tax (asset/debit account), balance = debit - credit
-            // For output tax (liability/credit account), balance = credit - debit
-            $balance = 0;
-            $type = 'Other';
-
-            if ($isInputTax) {
-                $type = 'Input Tax';
-                $balance = $debit - $credit; // Input tax is typically a debit balance
-                $totalInputTax += $balance;
-            } elseif ($isOutputTax) {
-                $type = 'Output Tax';
-                $balance = $credit - $debit; // Output tax is typically a credit balance
-                $totalOutputTax += $balance;
-            } else {
-                // For other tax accounts, determine based on account type
-                $accountType = $account->type ?? '';
-                if (in_array($accountType, ['Asset', 'Expense'])) {
-                    $balance = $debit - $credit;
-                } else {
-                    $balance = $credit - $debit;
-                }
-            }
-
-            if ($balance != 0) {
-                $taxData[] = [
-                    'account_code' => $account->code,
-                    'account_name' => $account->name,
-                    'type' => $type,
-                    'balance' => $balance
-                ];
-            }
+        if ($totalInputTax != 0) {
+            $taxData[] = [
+                'account_code' => '1150',
+                'account_name' => 'Input VAT',
+                'type'         => 'Input Tax',
+                'balance'      => $totalInputTax,
+            ];
         }
 
-        // Calculate net tax (output + input)
-        // Since we've already calculated the balances with the correct sign,
-        // we can simply add them together to get the net tax
-        $netTax = $totalOutputTax + $totalInputTax;
+        if ($totalOutputTax != 0) {
+            $taxData[] = [
+                'account_code' => '2130',
+                'account_name' => 'Output VAT Payable',
+                'type'         => 'Output Tax',
+                'balance'      => $totalOutputTax,
+            ];
+        }
+
+        // Net VAT payable = Output VAT collected − Input VAT reclaimable
+        // Positive = payable to tax authority; Negative = refundable
+        $netTax = $totalOutputTax - $totalInputTax;
 
         return [
-            'tax_accounts' => $taxData,
-            'total_input_tax' => $totalInputTax,
+            'tax_accounts'     => $taxData,
+            'total_input_tax'  => $totalInputTax,
             'total_output_tax' => $totalOutputTax,
-            'net_tax' => $netTax
+            'net_tax'          => $netTax,
         ];
     }
 

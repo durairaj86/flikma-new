@@ -4,8 +4,8 @@ namespace App\Enums;
 
 enum SupplierStatusEnum: int
 {
-    case CONFIRMED = 3;
-    case BLOCKED = 4;
+    case CONFIRMED = 1;
+    case BLOCKED = 2;
 
     public function label(): string
     {

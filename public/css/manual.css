@@ -1,3 +1,50 @@
+/* ─── Quotation New – Wizard Steps ────────────────────────────────────── */
+.wizard-dot {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    border: 2px solid #dee2e6;
+    background: #fff;
+    color: #6c757d;
+}
+.wizard-dot-done {
+    background: #198754;
+    border-color: #198754;
+    color: #fff;
+}
+.wizard-dot-active {
+    background: #0d6efd;
+    border-color: #0d6efd;
+    color: #fff;
+}
+.wizard-dot-pending {
+    background: #f8f9fa;
+    border-color: #dee2e6;
+    color: #adb5bd;
+}
+.wizard-line {
+    width: 60px;
+    height: 2px;
+    background: #dee2e6;
+    margin: 0 4px;
+    margin-bottom: 20px;
+}
+.wizard-line-done {
+    background: #198754;
+}
+.wizard-label {
+    font-size: 12px;
+}
+.card-section .section-header {
+    font-size: 14px;
+    letter-spacing: 0.3px;
+}
+
 /*table.dataTable th {
     background-color: #f3f4f6;
     color: #4e4d4d;
@@ -1372,8 +1419,29 @@ div.dataTables_filter {
     cursor: pointer;
 }
 
+/* label.required: normal color by default; only turns red when field is invalid */
 label.required {
+    color: inherit;
+}
+
+label.required.label-error {
     color: darkred;
+}
+
+/* Tab error state: turns red when its tab-pane has invalid fields */
+.status-tabs .status-btn.tab-has-error {
+    color: #dc3545 !important;
+}
+
+.status-tabs .status-btn.tab-has-error::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    width: 100%;
+    background-color: #dc3545;
+    border-radius: 2px;
 }
 
 /* Filter panel styles */

@@ -704,6 +704,21 @@ class PaymentController extends Controller
      * @param Payment $payment
      * @return void
      */
+    /**
+     * Create finance entries for a payment.
+     *
+     * Correct accounting for supplier payment:
+     *   DR  Accounts Payable (AP)   (full invoice amount settled, incl. VAT — AP was credited in full on invoice)
+     *   DR  Bank Charges Expense    (if any)
+     *   DR  Miscellaneous Expenses  (other charges, if any)
+     *   CR  Bank/Cash account       (grand_total = invoices paid + bank_charges + other_charges)
+     *
+     * NOTE: Input VAT is NOT touched here — it was already claimed as a Debit on the supplier invoice.
+     *       The AP balance already includes VAT, so we simply DR AP for the full amount paid.
+     *
+     * @param Payment $payment
+     * @return void
+     */
     private function createFinanceEntries(Payment $payment)
     {
         // Delete any existing finance entries for this payment
@@ -721,12 +736,12 @@ class PaymentController extends Controller
         $finance->exchange_rate = $payment->currency_rate;
         $finance->total_debit = $payment->grand_total;
         $finance->total_credit = $payment->grand_total;
-        $finance->base_currency = 'SAR'; // Assuming SAR is the base currency
+        $finance->base_currency = 'SAR';
         $finance->base_total_debit = $payment->base_grand_total;
         $finance->base_total_credit = $payment->base_grand_total;
         $finance->job_id = $payment->job_id ?? 0;
         $finance->job_no = $payment->job_no ?? '';
-        $finance->is_approved = 1; // Approved
+        $finance->is_approved = 1;
         $finance->posted_at = now();
         $finance->linked_id = $payment->id;
         $finance->linked_type = Payment::class;
@@ -734,281 +749,106 @@ class PaymentController extends Controller
         $finance->user_id = Auth::id();
         $finance->save();
 
-        // Track currency exchange difference
-        $exchangeDifference = 0;
-
         // Get payment invoices
         $paymentInvoices = PaymentInvoice::with('supplierInvoice')
             ->where('payment_id', $payment->id)
             ->get();
 
-        // Create finance sub entries
         $financeSubs = [];
 
-        // Credit entry for the bank/cash account
-        $financeSubs[] = [
-            'finance_id' => $finance->id,
-            'voucher_no' => $finance->voucher_no,
-            'voucher_type' => $finance->voucher_type,
-            'reference_no' => $finance->reference_no,
-            'supplier_id' => $payment->supplier_id,
-            'account_id' => $payment->account, // Bank/Cash account
-            'reference_date' => formDate($payment->payment_date),
-            'description' => 'Payment to supplier',
-            'debit' => 0,
-            'credit' => $payment->grand_total,
-            'currency' => $payment->currency,
-            'base_debit' => 0,
-            'base_credit' => $payment->base_grand_total,
-            'base_currency' => 'SAR',
-            'exchange_rate' => $payment->currency_rate,
-            'job_id' => $payment->job_id ?? null,
-            'job_no' => $payment->job_no ?? '',
-            'cost_center_id' => null,
-            'is_tax_line' => 0,
+        $commonData = [
+            'finance_id'        => $finance->id,
+            'voucher_no'        => $finance->voucher_no,
+            'voucher_type'      => $finance->voucher_type,
+            'reference_no'      => $finance->reference_no,
+            'supplier_id'       => $payment->supplier_id,
+            'base_currency'     => 'SAR',
+            'exchange_rate'     => $payment->currency_rate,
+            'currency'          => $payment->currency,
+            'job_id'            => $payment->job_id ?? null,
+            'job_no'            => $payment->job_no ?? '',
+            'cost_center_id'    => null,
+            'is_tax_line'       => 0,
             'is_auto_generated' => 1,
-            'linked_id' => $payment->id,
-            'linked_type' => Payment::class,
-            'user_id' => Auth::id(),
-            'company_id' => $payment->company_id,
-            'created_at' => now(),
-            'updated_at' => now(),
+            'linked_id'         => $payment->id,
+            'linked_type'       => Payment::class,
+            'user_id'           => Auth::id(),
+            'company_id'        => $payment->company_id,
+            'created_at'        => now(),
+            'updated_at'        => now(),
         ];
 
-        // Debit entries for each invoice
+        // CR Bank/Cash account (full grand_total goes out — invoices + charges)
+        $financeSubs[] = array_merge($commonData, [
+            'account_id'     => $payment->account,
+            'reference_date' => formDate($payment->payment_date),
+            'description'    => 'Payment to supplier',
+            'debit'          => 0,
+            'credit'         => $payment->grand_total,
+            'base_debit'     => 0,
+            'base_credit'    => $payment->base_grand_total,
+        ]);
+
+        // DR Accounts Payable (full invoice amounts being settled, including VAT)
         foreach ($paymentInvoices as $paymentInvoice) {
             $invoice = $paymentInvoice->supplierInvoice;
 
-            // Calculate tax proportion
-            $invoiceTotal = $invoice->grand_total;
-            $taxProportion = 0;
-
-            if ($invoiceTotal > 0) {
-                $taxProportion = ($invoice->tax_total / $invoiceTotal) * $paymentInvoice->amount;
-            }
-
-            $subTotal = $paymentInvoice->amount - $taxProportion;
-
-            // Debit entry for the supplier account (AP account)
-            $financeSubs[] = [
-                'finance_id' => $finance->id,
-                'voucher_no' => $finance->voucher_no,
-                'voucher_type' => $finance->voucher_type,
-                'reference_no' => $invoice->row_no,
-                'supplier_id' => $payment->supplier_id,
-                'account_id' => 18, // Using 2110 as the Accounts Payable account
+            $financeSubs[] = array_merge($commonData, [
+                'account_id'     => 18, // 2110 Accounts Payable
                 'reference_date' => formDate($payment->payment_date),
-                'description' => 'Payment for invoice ' . $invoice->row_no,
-                'debit' => $subTotal,
-                'credit' => 0,
-                'currency' => $payment->currency,
-                'base_debit' => $subTotal * $payment->currency_rate,
-                'base_credit' => 0,
-                'base_currency' => 'SAR',
-                'exchange_rate' => $payment->currency_rate,
-                'job_id' => $invoice->job_id ?? null,
-                'job_no' => $invoice->job_no ?? '',
-                'cost_center_id' => null,
-                'is_tax_line' => 0,
-                'is_auto_generated' => 1,
-                'linked_id' => $paymentInvoice->id,
-                'linked_type' => PaymentInvoice::class,
-                'user_id' => Auth::id(),
-                'company_id' => $payment->company_id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-
-            // If there's tax, add a tax entry
-            if ($taxProportion > 0) {
-                $financeSubs[] = [
-                    'finance_id' => $finance->id,
-                    'voucher_no' => $finance->voucher_no,
-                    'voucher_type' => $finance->voucher_type,
-                    'reference_no' => $invoice->row_no,
-                    'supplier_id' => $payment->supplier_id,
-                    'account_id' => 7, // Assuming 1150 is the VAT account
-                    'reference_date' => formDate($payment->payment_date),
-                    'description' => 'VAT for invoice ' . $invoice->row_no,
-                    'debit' => $taxProportion,
-                    'credit' => 0,
-                    'currency' => $payment->currency,
-                    'base_debit' => $taxProportion * $payment->currency_rate,
-                    'base_credit' => 0,
-                    'base_currency' => 'SAR',
-                    'exchange_rate' => $payment->currency_rate,
-                    'job_id' => $invoice->job_id ?? null,
-                    'job_no' => $invoice->job_no ?? '',
-                    'cost_center_id' => null,
-                    'is_tax_line' => 1,
-                    'is_auto_generated' => 1,
-                    'linked_id' => $paymentInvoice->id,
-                    'linked_type' => PaymentInvoice::class,
-                    'user_id' => Auth::id(),
-                    'company_id' => $payment->company_id,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
-            }
+                'reference_no'   => $invoice->row_no,
+                'description'    => 'Payment for invoice ' . $invoice->row_no,
+                'debit'          => $paymentInvoice->amount,
+                'credit'         => 0,
+                'base_debit'     => $paymentInvoice->amount * $payment->currency_rate,
+                'base_credit'    => 0,
+                'job_id'         => $invoice->job_id ?? null,
+                'job_no'         => $invoice->job_no ?? '',
+                'linked_id'      => $paymentInvoice->id,
+                'linked_type'    => PaymentInvoice::class,
+            ]);
         }
 
-        // Add bank charges if any
-        if ($payment->bank_charges > 0) {
-            $financeSubs[] = [
-                'finance_id' => $finance->id,
-                'voucher_no' => $finance->voucher_no,
-                'voucher_type' => $finance->voucher_type,
-                'reference_no' => $finance->reference_no,
-                'supplier_id' => $payment->supplier_id,
-                'account_id' => 54, // Assuming 5260 is the Bank Charges account
+        // DR Bank Charges Expense (if any)
+        if (($payment->bank_charges ?? 0) > 0) {
+            $financeSubs[] = array_merge($commonData, [
+                'account_id'     => 54, // 5260 Bank Charges expense account
                 'reference_date' => formDate($payment->payment_date),
-                'description' => 'Bank charges',
-                'debit' => $payment->bank_charges,
-                'credit' => 0,
-                'currency' => $payment->currency,
-                'base_debit' => $payment->base_bank_charges,
-                'base_credit' => 0,
-                'base_currency' => 'SAR',
-                'exchange_rate' => $payment->currency_rate,
-                'job_id' => $payment->job_id ?? null,
-                'job_no' => $payment->job_no ?? '',
-                'cost_center_id' => null,
-                'is_tax_line' => 0,
-                'is_auto_generated' => 1,
-                'linked_id' => $payment->id,
-                'linked_type' => Payment::class,
-                'user_id' => Auth::id(),
-                'company_id' => $payment->company_id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
+                'description'    => 'Bank charges on payment',
+                'debit'          => $payment->bank_charges,
+                'credit'         => 0,
+                'base_debit'     => $payment->base_bank_charges,
+                'base_credit'    => 0,
+            ]);
         }
 
-        // Add other charges if any
-        if ($payment->other_charges > 0) {
-            $financeSubs[] = [
-                'finance_id' => $finance->id,
-                'voucher_no' => $finance->voucher_no,
-                'voucher_type' => $finance->voucher_type,
-                'reference_no' => $finance->reference_no,
-                'supplier_id' => $payment->supplier_id,
-                'account_id' => 56, // Assuming 5280 is the Other Charges account
+        // DR Miscellaneous Expenses (other charges, if any)
+        if (($payment->other_charges ?? 0) > 0) {
+            $financeSubs[] = array_merge($commonData, [
+                'account_id'     => 56, // 5280 Miscellaneous Expenses account
                 'reference_date' => formDate($payment->payment_date),
-                'description' => 'Other charges',
-                'debit' => $payment->other_charges,
-                'credit' => 0,
-                'currency' => $payment->currency,
-                'base_debit' => $payment->base_other_charges,
-                'base_credit' => 0,
-                'base_currency' => 'SAR',
-                'exchange_rate' => $payment->currency_rate,
-                'job_id' => $payment->job_id ?? null,
-                'job_no' => $payment->job_no ?? '',
-                'cost_center_id' => null,
-                'is_tax_line' => 0,
-                'is_auto_generated' => 1,
-                'linked_id' => $payment->id,
-                'linked_type' => Payment::class,
-                'user_id' => Auth::id(),
-                'company_id' => $payment->company_id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-        }
-
-        // Calculate and add currency exchange difference if any
-        foreach ($paymentInvoices as $paymentInvoice) {
-            $invoice = $paymentInvoice->supplierInvoice;
-
-            // Skip if invoice currency is the same as base currency
-            if ($invoice->currency === 'SAR') {
-                continue;
-            }
-
-            // Get the original exchange rate from the invoice
-            $originalRate = $invoice->currency_rate ?? 1;
-            $currentRate = $payment->currency_rate ?? 1;
-
-            // Skip if rates are the same
-            if (abs($originalRate - $currentRate) < 0.0001) {
-                continue;
-            }
-
-            // Calculate the exchange difference
-            $amountInForeignCurrency = $paymentInvoice->amount;
-            $originalAmountInBase = $amountInForeignCurrency * $originalRate;
-            $currentAmountInBase = $amountInForeignCurrency * $currentRate;
-            $exchangeDifference = $currentAmountInBase - $originalAmountInBase;
-
-            // Skip if difference is negligible
-            if (abs($exchangeDifference) < 0.01) {
-                continue;
-            }
-
-            // Add entry for currency exchange difference
-            // Account ID 60 is assumed to be the Currency Exchange Difference account
-            // If it doesn't exist, you'll need to create it
-            $financeSubs[] = [
-                'finance_id' => $finance->id,
-                'voucher_no' => $finance->voucher_no,
-                'voucher_type' => $finance->voucher_type,
-                'reference_no' => $invoice->row_no,
-                'supplier_id' => $payment->supplier_id,
-                'account_id' => 60, // Currency Exchange Difference account
-                'reference_date' => formDate($payment->payment_date),
-                'description' => 'Currency exchange difference for invoice ' . $invoice->row_no,
-                'debit' => $exchangeDifference > 0 ? $exchangeDifference : 0,
-                'credit' => $exchangeDifference < 0 ? abs($exchangeDifference) : 0,
-                'currency' => 'SAR', // Always in base currency
-                'base_debit' => $exchangeDifference > 0 ? $exchangeDifference : 0,
-                'base_credit' => $exchangeDifference < 0 ? abs($exchangeDifference) : 0,
-                'base_currency' => 'SAR',
-                'exchange_rate' => 1, // Base currency to base currency
-                'job_id' => $invoice->job_id ?? null,
-                'job_no' => $invoice->job_no ?? '',
-                'cost_center_id' => null,
-                'is_tax_line' => 0,
-                'is_auto_generated' => 1,
-                'linked_id' => $paymentInvoice->id,
-                'linked_type' => PaymentInvoice::class,
-                'user_id' => Auth::id(),
-                'company_id' => $payment->company_id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
+                'description'    => 'Other charges on payment',
+                'debit'          => $payment->other_charges,
+                'credit'         => 0,
+                'base_debit'     => $payment->base_other_charges,
+                'base_credit'    => 0,
+            ]);
         }
 
         // Add entries for additional transactions if any
         $additionalTransactions = PaymentAdditionalTransaction::where('payment_id', $payment->id)->get();
         foreach ($additionalTransactions as $transaction) {
-            $financeSubs[] = [
-                'finance_id' => $finance->id,
-                'voucher_no' => $finance->voucher_no,
-                'voucher_type' => $finance->voucher_type,
-                'reference_no' => $finance->reference_no,
-                'supplier_id' => $payment->supplier_id,
-                'account_id' => $transaction->account_id,
+            $financeSubs[] = array_merge($commonData, [
+                'account_id'     => $transaction->account_id,
                 'reference_date' => formDate($payment->payment_date),
-                'description' => $transaction->description ?: 'Additional transaction',
-                'debit' => $transaction->is_debit ? $transaction->amount : 0,
-                'credit' => !$transaction->is_debit ? $transaction->amount : 0,
-                'currency' => $payment->currency,
-                'base_debit' => $transaction->is_debit ? $transaction->amount * $payment->currency_rate : 0,
-                'base_credit' => !$transaction->is_debit ? $transaction->amount * $payment->currency_rate : 0,
-                'base_currency' => 'SAR',
-                'exchange_rate' => $payment->currency_rate,
-                'job_id' => $payment->job_id ?? null,
-                'job_no' => $payment->job_no ?? '',
-                'cost_center_id' => null,
-                'is_tax_line' => 0,
-                'is_auto_generated' => 1,
-                'linked_id' => $transaction->id,
-                'linked_type' => PaymentAdditionalTransaction::class,
-                'user_id' => Auth::id(),
-                'company_id' => $payment->company_id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
+                'description'    => $transaction->description ?: 'Additional transaction',
+                'debit'          => $transaction->is_debit ? $transaction->amount : 0,
+                'credit'         => !$transaction->is_debit ? $transaction->amount : 0,
+                'base_debit'     => $transaction->is_debit ? $transaction->amount * $payment->currency_rate : 0,
+                'base_credit'    => !$transaction->is_debit ? $transaction->amount * $payment->currency_rate : 0,
+                'linked_id'      => $transaction->id,
+                'linked_type'    => PaymentAdditionalTransaction::class,
+            ]);
         }
 
         // Insert all finance sub entries

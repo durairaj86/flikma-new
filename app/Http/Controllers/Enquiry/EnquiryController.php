@@ -192,7 +192,7 @@ class EnquiryController extends Controller
             'expiry_date',
             'created_at',
             'company_id',
-        )->with(['customer:id,name_en,name_ar,email,phone,row_no', 'prospect:id,name_en,email,phone,row_no', 'activity:id,name'])
+        )->with(['customer:id,name_en,name_ar,email,phone,row_no', 'prospect:id,name,email,phone,row_no', 'activity:id,name'])
             ->where('status', EnquiryEnum::fromName($request->tab))
             ->when(isset($filter['filter-from-date'], $filter['filter-to-date']),
                 function ($query) use ($filter) {
@@ -246,7 +246,7 @@ class EnquiryController extends Controller
                     ];
                 } else {
                     return [
-                        'name' => $model->prospect->name_en,
+                        'name' => $model->prospect->name,
                         'row_no' => $model->prospect->row_no,
                     ];
                 }
@@ -460,7 +460,7 @@ class EnquiryController extends Controller
             'prospect_id' => $enquiry->prospect_id,
             'prospect' => $enquiry->prospect ? [
                 'id' => $enquiry->prospect->id,
-                'name' => $enquiry->prospect->name_en,
+                'name' => $enquiry->prospect->name,
                 'row_no' => $enquiry->prospect->row_no,
             ] : null,
             'activity_id' => $enquiry->activity_id,

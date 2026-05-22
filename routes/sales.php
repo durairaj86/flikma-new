@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Enquiry\EnquiryController;
 use App\Http\Controllers\Quotation\QuotationController;
+use App\Http\Controllers\QuotationNew\QuotationNewController;
 use Illuminate\Support\Facades\Route;
 
 Route::namespace('sales')->prefix('sales')->group(function () {
@@ -32,4 +33,45 @@ Route::namespace('sales')->prefix('sales')->group(function () {
     Route::post('/quotation/send-email', [QuotationController::class, 'sendEmail']);
 
     Route::get('/overview', [\App\Http\Controllers\Sales\SalesOverviewController::class, 'index'])->name('sales.overview');
+
+    // ─── Quotation New ────────────────────────────────────────────────────
+    Route::get('/quotations-new',                         [QuotationNewController::class, 'index'])->name('quotations-new');
+    Route::post('/quotations-new/data',                   [QuotationNewController::class, 'fetchAllRows'])->name('quotations-new.data');
+
+    // Wizard – step 1 (create)
+    Route::get('/quotations-new/create',                  [QuotationNewController::class, 'create']);
+    Route::post('/quotations-new/step1/store',            [QuotationNewController::class, 'storeStep1']);
+
+    // Wizard – steps 2-5
+    Route::get('/quotations-new/{id}/step2',              [QuotationNewController::class, 'step2']);
+    Route::post('/quotations-new/{id}/step2/store',       [QuotationNewController::class, 'storeStep2']);
+
+    Route::get('/quotations-new/{id}/step3',              [QuotationNewController::class, 'step3']);
+    Route::post('/quotations-new/{id}/step3/store',       [QuotationNewController::class, 'storeStep3']);
+
+    Route::get('/quotations-new/{id}/step4',              [QuotationNewController::class, 'step4']);
+    Route::post('/quotations-new/{id}/step4/store',       [QuotationNewController::class, 'storeStep4']);
+
+    Route::get('/quotations-new/{id}/step5',              [QuotationNewController::class, 'step5']);
+    Route::post('/quotations-new/{id}/finalise',          [QuotationNewController::class, 'finalise']);
+
+    // Edit modal
+    Route::get('/quotations-new/{id}/edit',               [QuotationNewController::class, 'editModal']);
+    Route::put('/quotations-new/{id}/update',             [QuotationNewController::class, 'update']);
+    Route::post('/quotations-new/{id}/update',            [QuotationNewController::class, 'update']); // fallback for modal POST
+
+    // Context menu / status
+    Route::get('/quotations-new/{id}/actions',            [QuotationNewController::class, 'actions']);
+    Route::post('/quotations-new/{id}/status/{status}',   [QuotationNewController::class, 'updateStatus']);
+
+    // Costing modal
+    Route::get('/quotations-new/{quotationId}/costing',           [QuotationNewController::class, 'costingModal']);
+    Route::get('/quotations-new/{quotationId}/costing/{chargeId}',[QuotationNewController::class, 'costingModal']);
+    Route::post('/quotations-new/{quotationId}/costing/store',    [QuotationNewController::class, 'storeCosting']);
+    Route::delete('/quotations-new/charge/{chargeId}/delete',     [QuotationNewController::class, 'deleteCharge']);
+
+    // Inline charge row template (for AJAX add row)
+    Route::get('/quotations-new/charge-row-template',     function () {
+        return view('modules.quotation-new._charge-row', ['charge' => null]);
+    });
 });

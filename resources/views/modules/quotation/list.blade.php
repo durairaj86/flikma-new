@@ -192,7 +192,7 @@
 
             <!-- Table with scroll -->
             <div class="flex-grow-1 overflow-auto">
-                <table class="table align-middle dataTable" id="dataTable">
+                <table class="table align-middle dataTable" id="dataTable" data-modal-size="lg">
                     <thead class="table-light sticky-top bg-white">
                     <tr>
                         <th>#</th>

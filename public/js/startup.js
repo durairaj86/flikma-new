@@ -694,7 +694,9 @@ let webModal = {
                     CURRENCY.currencyRate();
                     INPUT.load();
 
-                    $('#moduleForm').attr('style', settings.minHeight + settings.maxHeight + 'overflow-y: auto; overflow-x: hidden');
+                    let minH = (settings.minHeight && typeof settings.minHeight === 'string') ? settings.minHeight : '';
+                    let maxH = (settings.maxHeight && typeof settings.maxHeight === 'string') ? settings.maxHeight : '';
+                    $('#moduleForm').attr('style', minH + maxH + 'overflow-y: auto; overflow-x: hidden');
 
                     // Run callback if provided
                     if (typeof settings.callBack === 'function') {
@@ -1701,10 +1703,10 @@ webDataTable = {
                         title: 'Edit ' + title,
                         url: GLOBAL_FN.buildUrl(window[MODULE].baseUrl + '/' + id + '/create'),
                         content: null,
-                        size: modalSize ?? 'xl',
+                        size: modalSize || 'xl',
                         scroll: true,
                         callBack: null,
-                        minHeight: minHeight ?? false
+                        minHeight: minHeight || null
                     });
 
 

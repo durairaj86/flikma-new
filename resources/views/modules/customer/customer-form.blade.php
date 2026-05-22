@@ -1,4 +1,5 @@
-<div class="modal-header justify-content-between border-bottom py-3" data-close-title="customer">
+<div class="modal-header justify-content-between border-bottom py-3" data-close-title="customer"
+     data-modal-title="Customer">
     <div class="row align-items-center bg-white  small">
         <div class="d-flex justify-content-between align-items-center flex-wrap">
             <div class="module-info">

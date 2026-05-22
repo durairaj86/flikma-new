@@ -549,10 +549,7 @@ function preloadPOLAndPOD($port = null): \Illuminate\Support\Collection
     } elseif ($port == 'carrier-air') {
         $result = CarrierLines::select('id', 'name', 'mode')->where('mode', 'Air')->orderBy('name')->limit(50)->get();
     }*/
-    if ($result->count() == 0) {
-        return collect(['No Data Found']);
-    }
-    return $result;
+    return $result ?? collect();
 
 }
 
@@ -564,10 +561,7 @@ function defaultCarriers($carrier = null): \Illuminate\Support\Collection
     } elseif ($carrier == 'air') {
         $result = CarrierLines::select('id', 'name', 'mode')->where('mode', 'Air')->orderBy('name')->limit(50)->get();
     }
-    if ($result->count() == 0) {
-        return collect(['No Data Found']);
-    }
-    return $result;
+    return $result ?? collect();
 
 }
 

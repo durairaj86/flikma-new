@@ -359,8 +359,8 @@ class CustomerInvoiceController extends Controller
         $customer->grand_total = $grandTotal;
         $customer->status = 1;
 
-        /*DB::beginTransaction();
-        try {*/
+        DB::beginTransaction();
+        try {
 
         $customer->save();
         if ($request->hasFile('attachments') && count($request->file('attachments'))) {
@@ -433,26 +433,23 @@ class CustomerInvoiceController extends Controller
             DB::table('customer_invoice_subs')->insert($customerSub);
         }
 
-        DB::commit();
+            DB::commit();
 
-        // Finance entry
-        //$this->storeCustomerInvoiceFinance($customer, $customerSub);  // For invoice
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error saving customer Invoice: ' . $e->getMessage(),
+            ], 500);
+        }
 
-        //$this->storecustomerAdvanceFinance($advance);                 // For advance
-
-        //$this->storecustomerAdvanceAdjustmentFinance($adjustment);    // For adjustment
-
+        // Finance entries are created only on APPROVAL (in updateStatus), not on draft save
 
         return response()->json([
             'status' => 'success',
             'message' => 'customer invoice created successfully',
             'customer_id' => $customer->id,
         ]);
-
-        /*} catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Error saving customer Invoice: ' . $e->getMessage());
-        }*/
     }
 
     public function destroy($id)

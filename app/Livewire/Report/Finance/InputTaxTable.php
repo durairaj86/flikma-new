@@ -2,9 +2,7 @@
 
 namespace App\Livewire\Report\Finance;
 
-use App\Models\Finance\Account\Account;
 use App\Models\Finance\FinanceSub;
-use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class InputTaxTable extends Component
@@ -39,69 +37,61 @@ class InputTaxTable extends Component
 
     public function getInputTaxData()
     {
-        // Get all finance sub entries that are tax lines
-        $transactions = FinanceSub::where('is_tax_line', 1)
-            ->whereHas('finance', function ($query) {
-                $query->where('is_approved', 1)
-                    ->whereBetween('reference_date', [$this->startDate, $this->endDate]);
-            })
-            ->with(['finance' => function ($query) {
-                $query->select('id', 'reference_no', 'reference_date', 'narration');
-            }]);
+        // Input VAT account ID = 7 (code 1150 — "Input VAT", type Asset)
+        // Input tax lines are DEBITS on the supplier invoice (DR Input VAT / CR AP)
+        // We filter directly on finance_sub.reference_date (the actual transaction date)
 
-        // Apply search filter if provided
+        $inputVatAccountId = 7; // 1150 Input VAT
+
+        $query = FinanceSub::where('is_tax_line', 1)
+            ->where('account_id', $inputVatAccountId)
+            ->whereBetween('reference_date', [$this->startDate, $this->endDate])
+            ->whereHas('finance', function ($q) {
+                $q->where('is_approved', 1);
+            })
+            ->with(['finance:id,voucher_no,voucher_type,narration,supplier_id']);
+
+        // Apply search filter
         if (!empty($this->search)) {
-            $transactions = $transactions->where(function ($query) {
-                $query->whereHas('finance', function ($subQuery) {
-                    $subQuery->where('reference_no', 'like', '%' . $this->search . '%')
-                        ->orWhere('narration', 'like', '%' . $this->search . '%');
-                });
+            $query->where(function ($q) {
+                $q->where('reference_no', 'like', '%' . $this->search . '%')
+                  ->orWhere('description', 'like', '%' . $this->search . '%')
+                  ->orWhereHas('finance', function ($sq) {
+                      $sq->where('narration', 'like', '%' . $this->search . '%');
+                  });
             });
         }
 
-        // Get the transactions
-        $transactions = $transactions->get();
-
-        // Get account details for the accounts with tax entries
-        $accountIds = $transactions->pluck('account_id')->unique()->toArray();
-        $accounts = Account::whereIn('id', $accountIds)->get()->keyBy('id');
+        $transactions = $query->orderBy('reference_date')->get();
 
         $inputTaxData = [];
         $totalInputTax = 0;
 
         foreach ($transactions as $transaction) {
-            if (!isset($accounts[$transaction->account_id])) {
-                continue;
-            }
-
-            $account = $accounts[$transaction->account_id];
-
-            // Check if this is an input tax account
-            $isInputTax = stripos($account->name, 'input') !== false || stripos($account->code, 'input') !== false;
-
-            if (!$isInputTax) {
-                continue;
-            }
-
+            // Input VAT = debit amount (DR Input VAT on purchase invoice)
             $amount = $transaction->debit - $transaction->credit;
 
-            if ($amount != 0) {
-                $inputTaxData[] = [
-                    'account_code' => $account->code,
-                    'account_name' => $account->name,
-                    'reference_no' => $transaction->finance->reference_no,
-                    'reference_date' => $transaction->finance->reference_date,
-                    'description' => $transaction->finance->narration,
-                    'amount' => $amount
-                ];
-
-                $totalInputTax += $amount;
+            if ($amount == 0) {
+                continue;
             }
+
+            $inputTaxData[] = [
+                'account_code'   => '1150',
+                'account_name'   => 'Input VAT',
+                'voucher_no'     => $transaction->voucher_no,
+                'voucher_type'   => $transaction->voucher_type,
+                'reference_no'   => $transaction->reference_no,
+                'reference_date' => $transaction->reference_date, // from finance_sub
+                'description'    => $transaction->description,    // from finance_sub
+                'amount'         => $amount,
+            ];
+
+            $totalInputTax += $amount;
         }
 
         return [
             'input_tax_transactions' => $inputTaxData,
-            'total_input_tax' => $totalInputTax
+            'total_input_tax'        => $totalInputTax,
         ];
     }
 

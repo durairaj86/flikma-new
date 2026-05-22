@@ -16,6 +16,7 @@ class FinanceSub extends Model
         'voucher_type',
         'reference_no',
         'supplier_id',
+        'customer_id',
         'account_id',
         'reference_date',
         'description',

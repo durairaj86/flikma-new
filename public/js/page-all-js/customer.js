@@ -340,10 +340,10 @@ CUSTOMER = {
                     title: 'Add Customer',
                     url: GLOBAL_FN.buildUrl('customer/create'),
                     content: null,
-                    size: modelSize,
+                    size: modelSize || 'xl',
                     scroll: false,
                     //callBack: CUSTOMER.form.openCallback,
-                    minHeight: minHeight,
+                    minHeight: minHeight || null,
                 });
             })
         },

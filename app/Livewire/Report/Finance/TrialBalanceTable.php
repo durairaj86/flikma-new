@@ -58,11 +58,12 @@ class TrialBalanceTable extends Component
         $totalCredit = 0;
 
         foreach ($accounts as $account) {
-            // Get opening balance (transactions before start date)
+            // Get opening balance (all approved transactions before the start date)
+            // reference_date on finance_sub holds the actual transaction date
             $openingBalanceData = FinanceSub::where('account_id', $account->id)
+                ->where('reference_date', '<', $this->startDate)
                 ->whereHas('finance', function ($query) {
-                    $query->where('is_approved', 1)
-                        ->where('posted_at', '<', $this->startDate);
+                    $query->where('is_approved', 1);
                 })
                 ->select(
                     DB::raw('SUM(debit) as total_debit'),
@@ -73,11 +74,11 @@ class TrialBalanceTable extends Component
             $openingDebit = $openingBalanceData->total_debit ?? 0;
             $openingCredit = $openingBalanceData->total_credit ?? 0;
 
-            // Get sum of debits and credits for this account within date range
+            // Get period activity (transactions within the selected date range)
             $periodData = FinanceSub::where('account_id', $account->id)
+                ->whereBetween('reference_date', [$this->startDate, $this->endDate])
                 ->whereHas('finance', function ($query) {
-                    $query->where('is_approved', 1)
-                        ->whereBetween('posted_at', [$this->startDate, $this->endDate]);
+                    $query->where('is_approved', 1);
                 })
                 ->select(
                     DB::raw('SUM(debit) as total_debit'),

@@ -15,7 +15,7 @@ class Prospect extends Model
     use LogHistoryTrait;
     protected static string $cache = 'prospectCustomers:';
     protected static array $cacheColumns = [
-        'id', 'name_en', 'email', 'phone', 'row_no'
+        'id', 'name', 'email', 'phone', 'row_no'
     ];
 
     public static function prospectCustomers($id = null)
@@ -35,12 +35,12 @@ class Prospect extends Model
         return $this->hasOne(Salesperson::class, 'id', 'salesperson_id');
     }
 
-    protected function name(): Attribute
+    /*protected function name(): Attribute
     {
         return Attribute::make(
             get: fn() => app()->getLocale() === 'ar'
                 ? $this->name_ar
                 : $this->name_en
         );
-    }
+    }*/
 }

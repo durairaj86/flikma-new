@@ -105,14 +105,14 @@ class GeneralLedgerTable extends Component
                 }
 
                 $formattedTransactions[] = [
-                    'date' => $transaction->reference_date,
-                    'voucher_no' => $transaction->voucher_no,
+                    'date'         => $transaction->reference_date,
+                    'voucher_no'   => $transaction->voucher_no,
                     'voucher_type' => $transaction->voucher_type,
                     'reference_no' => $transaction->reference_no,
-                    'description' => $transaction->narration,
-                    'debit' => $debit,
-                    'credit' => $credit,
-                    'balance' => $runningBalance
+                    'description'  => $transaction->description, // field on finance_sub
+                    'debit'        => $debit,
+                    'credit'       => $credit,
+                    'balance'      => $runningBalance,
                 ];
 
                 $totalDebit += $debit;
@@ -172,9 +172,12 @@ class GeneralLedgerTable extends Component
         $accountType = $account->type;
         $accountId = $account->id;
 
-        // Get sum of debits and credits before start date
+        // Get sum of debits and credits before start date (approved entries only)
         $financeSub = FinanceSub::where('account_id', $accountId)
             ->where('reference_date', '<', $startDate)
+            ->whereHas('finance', function ($query) {
+                $query->where('is_approved', 1);
+            })
             ->select(
                 DB::raw('SUM(debit) as total_debit'),
                 DB::raw('SUM(credit) as total_credit')
@@ -205,6 +208,9 @@ class GeneralLedgerTable extends Component
 
         return FinanceSub::where('account_id', $accountId)
             ->whereBetween('reference_date', [$startDate, $endDate])
+            ->whereHas('finance', function ($query) {
+                $query->where('is_approved', 1);
+            })
             ->orderBy('reference_date')
             ->orderBy('id')
             ->get();

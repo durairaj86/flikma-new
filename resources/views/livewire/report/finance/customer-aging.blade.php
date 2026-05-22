@@ -1,149 +1,320 @@
 @section('js', 'customer_aging')
 @section('page-title', 'Customer Aging Report')
 
-<div class="bg-white min-vh-100">
-    <div class="container-fluid py-3 px-3">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div class="d-flex align-items-center gap-3">
-                <a href="#" class="btn btn-light btn-sm rounded-circle border">
-                    <i class="bi bi-arrow-left"></i>
-                </a>
-                <div>
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb mb-0" style="font-size: 0.75rem;">
-                            <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-muted">Reports</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Customer Aging</li>
-                        </ol>
-                    </nav>
-                    <h4 class="fw-bold text-dark mb-0">Customer Aging Report</h4>
-                </div>
-            </div>
+<div class="aging-wrapper min-vh-100 bg-light py-4" wire:key="customer-aging-{{ $customerId }}">
+    <div class="container-fluid px-lg-5">
 
-            <div class="d-flex gap-2">
-                <button class="btn btn-outline-secondary btn-sm px-3 fw-medium">
-                    <i class="bi bi-gear me-1"></i> Customize Report
-                </button>
-                <div class="vr mx-1"></div>
-                <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">
-                    <i class="bi bi-printer"></i>
-                </button>
-                <div class="dropdown">
-                    <button class="btn btn-primary btn-sm px-3 dropdown-toggle fw-medium" type="button" data-bs-toggle="dropdown">
-                        Export As
+        {{-- Header --}}
+        <div class="row align-items-center mb-4 d-print-none">
+            <div class="col-md-6">
+                <h1 class="h3 fw-bold text-slate-900 mb-1">Customer Aging Report</h1>
+                <p class="text-muted small mb-0">Track outstanding receivables by aging period</p>
+            </div>
+            <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                <div class="btn-group shadow-sm">
+                    <button class="btn btn-white border border-end-0" onclick="window.print()">
+                        <i class="bi bi-printer me-2"></i>Print
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow border-0">
-                        <li><a class="dropdown-item py-2 small" href="#"><i class="bi bi-file-pdf text-danger me-2"></i> PDF</a></li>
-                        <li><a class="dropdown-item py-2 small" href="#"><i class="bi bi-file-earmark-excel text-success me-2"></i> Excel (XLSX)</a></li>
-                    </ul>
+                    <div class="btn-group">
+                        <button class="btn btn-white border dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="bi bi-download me-2"></i>Export
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
+                            <li><a class="dropdown-item py-2" href="#"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
+                            <li><a class="dropdown-item py-2" href="#"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="border rounded-2 mb-4 bg-light-subtle p-3">
-            <div class="row g-3 align-items-center">
-                <div class="col-auto">
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="small text-muted fw-medium">As of Date:</span>
-                        <input type="date" class="form-control form-control-sm border-light-subtle shadow-sm"
-                               wire:model.live="asOfDate" style="width: 150px;">
-                    </div>
-                </div>
-
-                <div class="col-auto">
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="small text-muted fw-medium">Customer:</span>
-                        <select class="form-select form-select-sm border-light-subtle shadow-sm"
-                                wire:model.live="customerId" style="width: 250px;">
-                            <option value="">All Customers</option>
-                            @foreach($customers as $customer)
-                                <option value="{{ $customer['id'] }}">{{ $customer['name_en'] }}</option>
+        {{-- Filter Bar --}}
+        <div class="card border-0 shadow-sm mb-4 d-print-none">
+            <div class="card-body p-4">
+                <div class="row g-3 align-items-end">
+                    <div class="col-lg-4">
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Customer</label>
+                        <select class="form-select bg-light border-0 py-2 no-ts" wire:model.live="customerId">
+                            <option value="">Select a customer...</option>
+                            @foreach($customers as $cust)
+                                <option value="{{ $cust['id'] }}" wire:key="cust-opt-{{ $cust['id'] }}">{{ $cust['name_en'] }}</option>
                             @endforeach
                         </select>
                     </div>
-                </div>
-
-                <div class="col-auto ms-auto" style="width: 300px;">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text bg-white border-end-0 text-muted">
-                            <i class="bi bi-search"></i>
-                        </span>
-                        <input type="text" class="form-control border-start-0 ps-0"
-                               placeholder="Search..." wire:model.live.debounce.300ms="search">
+                    <div class="col-lg-3">
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">As of Date</label>
+                        <input type="text" id="ca-as-of-date"
+                               class="form-control bg-light border-0 py-2 datepicker"
+                               wire:model="asOfDate" placeholder="dd-mm-yyyy" />
+                    </div>
+                    <div class="col-lg-5">
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Search Invoice</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0 text-muted"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control bg-light border-0 ps-0 py-2"
+                                   placeholder="Invoice no..." wire:model.live.debounce.300ms="search" />
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="report-table-wrapper">
-            <livewire:report.finance.customer-aging-table/>
-        </div>
+        @if($customer)
+            {{-- Summary Cards --}}
+            <div class="row g-3 mb-4">
+                <div class="col-md-2 col-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center py-3">
+                            <div class="small text-muted fw-bold text-uppercase mb-1">Current</div>
+                            <div class="fw-bold tabular-nums text-success">{{ number_format($summary['current'], 2) }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center py-3">
+                            <div class="small text-muted fw-bold text-uppercase mb-1">1–30 Days</div>
+                            <div class="fw-bold tabular-nums text-warning-emphasis">{{ number_format($summary['days_1_30'], 2) }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center py-3">
+                            <div class="small text-muted fw-bold text-uppercase mb-1">31–60 Days</div>
+                            <div class="fw-bold tabular-nums text-orange">{{ number_format($summary['days_31_60'], 2) }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center py-3">
+                            <div class="small text-muted fw-bold text-uppercase mb-1">61–90 Days</div>
+                            <div class="fw-bold tabular-nums text-danger">{{ number_format($summary['days_61_90'], 2) }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center py-3">
+                            <div class="small text-muted fw-bold text-uppercase mb-1">91–120 Days</div>
+                            <div class="fw-bold tabular-nums text-danger">{{ number_format($summary['days_91_120'], 2) }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-6">
+                    <div class="card border-0 shadow-sm h-100 border-start border-3 border-customer">
+                        <div class="card-body text-center py-3">
+                            <div class="small text-muted fw-bold text-uppercase mb-1">Total Due</div>
+                            <div class="fw-bold tabular-nums text-customer fs-5">{{ number_format($summary['grand_total'], 2) }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <div class="mt-5 pt-4 border-top text-center text-muted">
-            <p class="small">** This is a computer-generated report and does not require a physical signature. **</p>
-        </div>
+            <div class="row g-4">
+                {{-- Customer Info Panel --}}
+                <div class="col-xl-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <div class="text-center mb-4">
+                                <div class="avatar-ui mx-auto mb-3">{{ substr($customer->name_en, 0, 1) }}</div>
+                                <h5 class="fw-bold mb-0">{{ $customer->name_en }}</h5>
+                                <code class="text-customer small fw-bold">{{ $customer->row_no }}</code>
+                            </div>
+
+                            @if($customer->email || $customer->phone)
+                                <div class="mb-3 pb-3 border-bottom border-light">
+                                    @if($customer->email)
+                                        <div class="d-flex align-items-center gap-2 small text-muted mb-1">
+                                            <i class="bi bi-envelope text-customer"></i>
+                                            <span>{{ $customer->email }}</span>
+                                        </div>
+                                    @endif
+                                    @if($customer->phone)
+                                        <div class="d-flex align-items-center gap-2 small text-muted">
+                                            <i class="bi bi-telephone text-customer"></i>
+                                            <span>{{ $customer->phone }}</span>
+                                        </div>
+                                    @endif
+                                </div>
+                            @endif
+
+                            <div class="mt-3 text-center">
+                                <label class="small text-uppercase text-muted d-block mb-1 fw-bold">As of {{ \Carbon\Carbon::parse($asOfDate)->format('d M Y') }}</label>
+                                <h3 class="fw-bold text-customer mb-0 tabular-nums">
+                                    <small class="h6">SAR</small> {{ number_format($summary['grand_total'], 2) }}
+                                </h3>
+                                <span class="small text-muted">Total Outstanding</span>
+                            </div>
+
+                            {{-- Aging Bar --}}
+                            @if($summary['grand_total'] > 0)
+                                <div class="mt-4">
+                                    <div class="progress" style="height: 8px; border-radius: 4px;">
+                                        @php
+                                            $gt = $summary['grand_total'];
+                                            $pct = fn($v) => $gt > 0 ? round(($v / $gt) * 100, 1) : 0;
+                                        @endphp
+                                        @if($summary['current'] > 0)
+                                            <div class="progress-bar bg-success" style="width: {{ $pct($summary['current']) }}%"></div>
+                                        @endif
+                                        @if($summary['days_1_30'] > 0)
+                                            <div class="progress-bar bg-warning" style="width: {{ $pct($summary['days_1_30']) }}%"></div>
+                                        @endif
+                                        @if($summary['days_31_60'] > 0)
+                                            <div class="progress-bar" style="width: {{ $pct($summary['days_31_60']) }}%; background:#f97316;"></div>
+                                        @endif
+                                        @if($summary['days_61_90'] > 0)
+                                            <div class="progress-bar bg-danger" style="width: {{ $pct($summary['days_61_90']) }}%"></div>
+                                        @endif
+                                        @if($summary['days_91_120'] > 0)
+                                            <div class="progress-bar bg-danger" style="width: {{ $pct($summary['days_91_120']) }}%; opacity:0.7;"></div>
+                                        @endif
+                                        @if($summary['days_over_120'] > 0)
+                                            <div class="progress-bar" style="width: {{ $pct($summary['days_over_120']) }}%; background:#7f1d1d;"></div>
+                                        @endif
+                                    </div>
+                                    <div class="d-flex justify-content-between mt-2 x-small text-muted">
+                                        <span>Current</span><span>Over 120d</span>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Aging Table --}}
+                <div class="col-xl-9">
+                    <div class="card border-0 shadow-sm overflow-hidden">
+                        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0 fw-bold"><i class="bi bi-table me-2 text-customer"></i>Aging Detail</h6>
+                            <span class="badge bg-customer-subtle text-customer border border-customer-subtle px-3 py-2">
+                                {{ count($invoices) }} invoice(s) outstanding
+                            </span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                <tr class="bg-light text-muted small text-uppercase fw-bold ls-1">
+                                    <th class="ps-4 border-0">Invoice #</th>
+                                    <th class="border-0">Date</th>
+                                    <th class="border-0">Due Date</th>
+                                    <th class="text-end border-0">Current</th>
+                                    <th class="text-end border-0">1–30</th>
+                                    <th class="text-end border-0">31–60</th>
+                                    <th class="text-end border-0">61–90</th>
+                                    <th class="text-end border-0">91–120</th>
+                                    <th class="text-end border-0">>120</th>
+                                    <th class="text-end pe-4 border-0">Total</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                @forelse($invoices as $inv)
+                                    <tr wire:key="inv-{{ $loop->index }}">
+                                        <td class="ps-4">
+                                            <span class="fw-medium">{{ $inv['invoice_no'] }}</span>
+                                        </td>
+                                        <td class="small text-muted">{{ $inv['invoice_date'] }}</td>
+                                        <td>
+                                            <span class="small {{ $inv['days_overdue'] > 0 ? 'text-danger fw-medium' : 'text-muted' }}">
+                                                {{ $inv['due_date'] }}
+                                            </span>
+                                            @if($inv['days_overdue'] > 0)
+                                                <br><span class="x-small text-danger">{{ $inv['days_overdue'] }}d overdue</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-end tabular-nums text-success">
+                                            {{ $inv['current'] > 0 ? number_format($inv['current'], 2) : '—' }}
+                                        </td>
+                                        <td class="text-end tabular-nums text-warning-emphasis">
+                                            {{ $inv['days_1_30'] > 0 ? number_format($inv['days_1_30'], 2) : '—' }}
+                                        </td>
+                                        <td class="text-end tabular-nums text-orange">
+                                            {{ $inv['days_31_60'] > 0 ? number_format($inv['days_31_60'], 2) : '—' }}
+                                        </td>
+                                        <td class="text-end tabular-nums text-danger">
+                                            {{ $inv['days_61_90'] > 0 ? number_format($inv['days_61_90'], 2) : '—' }}
+                                        </td>
+                                        <td class="text-end tabular-nums text-danger">
+                                            {{ $inv['days_91_120'] > 0 ? number_format($inv['days_91_120'], 2) : '—' }}
+                                        </td>
+                                        <td class="text-end tabular-nums" style="color:#7f1d1d;">
+                                            {{ $inv['days_over_120'] > 0 ? number_format($inv['days_over_120'], 2) : '—' }}
+                                        </td>
+                                        <td class="text-end pe-4 fw-bold tabular-nums text-customer">
+                                            {{ number_format($inv['total'], 2) }}
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="10" class="text-center py-5 text-muted small">
+                                            <i class="bi bi-inbox h3 d-block mb-2"></i>
+                                            No outstanding invoices found.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                                </tbody>
+                                <tfoot class="bg-light border-top">
+                                <tr class="fw-bold">
+                                    <td colspan="3" class="ps-4 py-3">Total</td>
+                                    <td class="text-end tabular-nums text-success">{{ number_format($summary['current'], 2) }}</td>
+                                    <td class="text-end tabular-nums text-warning-emphasis">{{ number_format($summary['days_1_30'], 2) }}</td>
+                                    <td class="text-end tabular-nums text-orange">{{ number_format($summary['days_31_60'], 2) }}</td>
+                                    <td class="text-end tabular-nums text-danger">{{ number_format($summary['days_61_90'], 2) }}</td>
+                                    <td class="text-end tabular-nums text-danger">{{ number_format($summary['days_91_120'], 2) }}</td>
+                                    <td class="text-end tabular-nums" style="color:#7f1d1d;">{{ number_format($summary['days_over_120'], 2) }}</td>
+                                    <td class="text-end pe-4 text-customer fs-6 tabular-nums">{{ number_format($summary['grand_total'], 2) }}</td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        @else
+            <div class="card border-0 shadow-sm text-center py-5">
+                <div class="card-body">
+                    <div class="bg-light rounded-circle p-4 d-inline-block mb-3">
+                        <i class="bi bi-people h1 text-muted"></i>
+                    </div>
+                    <h5 class="fw-bold">No Customer Selected</h5>
+                    <p class="text-muted mx-auto" style="max-width: 300px;">Select a customer and date above to view their outstanding aging report.</p>
+                </div>
+            </div>
+        @endif
+
     </div>
 
     <style>
-        /* Zoho Aesthetic: Clean, Soft, and Modern */
-        body {
-            background-color: #ffffff;
-            color: #444;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        :root {
+            --customer-primary: #4f46e5;
+            --customer-dark: #3730a3;
+            --customer-light: #eef2ff;
         }
-
-        .breadcrumb-item + .breadcrumb-item::before {
-            content: ">";
-            font-size: 0.65rem;
-            color: #999;
+        .text-customer { color: var(--customer-primary) !important; }
+        .border-customer { border-color: var(--customer-primary) !important; }
+        .bg-customer-subtle { background-color: #eef2ff !important; }
+        .border-customer-subtle { border-color: #c7d2fe !important; }
+        .text-orange { color: #f97316 !important; }
+        .avatar-ui {
+            width: 56px; height: 56px; background: #eef2ff; color: var(--customer-primary);
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 12px; font-weight: 800; font-size: 1.5rem;
         }
-
-        /* Input Styling */
-        .form-control-sm, .form-select-sm {
-            border-radius: 4px;
-            border: 1px solid #d1d5db;
-        }
-
+        .ls-1 { letter-spacing: 0.05em; }
+        .x-small { font-size: 0.7rem; text-transform: uppercase; }
+        .tabular-nums { font-variant-numeric: tabular-nums; }
+        .card { border-radius: 1rem; }
         .form-control:focus, .form-select:focus {
-            border-color: #008cd1;
-            box-shadow: 0 0 0 2px rgba(0, 140, 209, 0.1);
+            box-shadow: 0 0 0 0.25rem rgba(79, 70, 229, 0.1);
+            border-color: var(--customer-primary);
         }
-
-        /* Buttons */
-        .btn-primary {
-            background-color: #008cd1;
-            border-color: #008cd1;
-        }
-
-        .btn-primary:hover {
-            background-color: #007bb8;
-        }
-
-        .btn-outline-secondary {
-            border-color: #d1d5db;
-            color: #444;
-        }
-
-        .btn-outline-secondary:hover {
-            background-color: #f9fafb;
-            border-color: #c1c5cb;
-            color: #222;
-        }
-
-        .bg-light-subtle {
-            background-color: #f8fafc !important;
-        }
-
-        /* Table custom behavior for Zoho feel */
-        .report-table-wrapper table {
-            border-collapse: collapse;
-        }
-
         @media print {
-            .btn, .breadcrumb, .border, .bg-light-subtle {
-                display: none !important;
-            }
-            body { background: white; }
-            .container-fluid { padding: 0 !important; }
+            body { background: white !important; }
+            .d-print-none { display: none !important; }
+            .card { box-shadow: none !important; border: 1px solid #eee !important; }
         }
     </style>
 </div>

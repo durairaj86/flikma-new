@@ -39,14 +39,17 @@ class BalanceSheetTable extends Component
 
     public function getBalanceSheetData()
     {
-        // Get all active accounts, filtered by search if provided
+        // Balance Sheet is CUMULATIVE — it shows balances as of the end date,
+        // including ALL transactions from the beginning up to endDate.
+        // It does NOT filter by a date range like P&L does.
+
         $accounts = Account::where('is_active', 1);
 
         if (!empty($this->search)) {
-            $accounts = $accounts->where(function($query) {
+            $accounts = $accounts->where(function ($query) {
                 $query->where('name', 'like', '%' . $this->search . '%')
-                      ->orWhere('code', 'like', '%' . $this->search . '%')
-                      ->orWhere('type', 'like', '%' . $this->search . '%');
+                    ->orWhere('code', 'like', '%' . $this->search . '%')
+                    ->orWhere('type', 'like', '%' . $this->search . '%');
             });
         }
 
@@ -65,12 +68,11 @@ class BalanceSheetTable extends Component
         $totalEquity = 0;
 
         foreach ($accounts as $account) {
-            // Get sum of debits and credits for this account within date range
-            // Using account id as the account_id in finance_sub table
+            // Cumulative balance up to endDate using reference_date on finance_sub
             $financeSub = FinanceSub::where('account_id', $account->id)
+                ->where('reference_date', '<=', $this->endDate)
                 ->whereHas('finance', function ($query) {
-                    $query->where('is_approved', 1)
-                        ->whereBetween('reference_date', [$this->startDate, $this->endDate]);
+                    $query->where('is_approved', 1);
                 })
                 ->select(
                     DB::raw('SUM(debit) as total_debit'),
@@ -81,101 +83,98 @@ class BalanceSheetTable extends Component
             $debit = $financeSub->total_debit ?? 0;
             $credit = $financeSub->total_credit ?? 0;
 
-            // Calculate balance based on account type
             if ($account->type === 'Asset') {
-                // For assets: balance = debit - credit
+                // Assets have normal DEBIT balance
                 $balance = $debit - $credit;
                 if ($balance != 0) {
                     $assetAccounts[] = [
                         'account_code' => $account->code,
                         'account_name' => $account->name,
-                        'balance' => $balance
+                        'balance'      => $balance,
                     ];
                     $totalAssets += $balance;
                 }
             } elseif ($account->type === 'Liability') {
-                // For liabilities: balance = credit - debit
+                // Liabilities have normal CREDIT balance
                 $balance = $credit - $debit;
                 if ($balance != 0) {
                     $liabilityAccounts[] = [
                         'account_code' => $account->code,
                         'account_name' => $account->name,
-                        'balance' => $balance
+                        'balance'      => $balance,
                     ];
                     $totalLiabilities += $balance;
                 }
             } elseif ($account->type === 'Equity') {
-                // For equity: balance = credit - debit
+                // Equity has normal CREDIT balance
                 $balance = $credit - $debit;
                 if ($balance != 0) {
                     $equityAccounts[] = [
                         'account_code' => $account->code,
                         'account_name' => $account->name,
-                        'balance' => $balance
+                        'balance'      => $balance,
                     ];
                     $totalEquity += $balance;
                 }
             }
         }
 
-        // Calculate retained earnings (net income/loss)
-        $revenueAccounts = Account::where('is_active', 1)
-            ->where('type', 'Revenue')
+        // Net Income/Loss from P&L (Income - Expense) up to endDate
+        // Account type is 'Income' (not 'Revenue') — matches chart of accounts
+        $incomeAccountIds = Account::where('is_active', 1)
+            ->where('type', 'Income')
             ->pluck('id')
             ->toArray();
 
-        $expenseAccounts = Account::where('is_active', 1)
+        $expenseAccountIds = Account::where('is_active', 1)
             ->where('type', 'Expense')
             ->pluck('id')
             ->toArray();
 
-        // Get total revenue
-        $totalRevenue = FinanceSub::whereIn('account_id', $revenueAccounts)
-            ->whereHas('finance', function ($query) {
-                $query->where('is_approved', 1)
-                    ->whereBetween('reference_date', [$this->startDate, $this->endDate]);
-            })
-            ->sum('credit') - FinanceSub::whereIn('account_id', $revenueAccounts)
-            ->whereHas('finance', function ($query) {
-                $query->where('is_approved', 1)
-                    ->whereBetween('reference_date', [$this->startDate, $this->endDate]);
-            })
-            ->sum('debit');
+        $totalIncome = 0;
+        if (!empty($incomeAccountIds)) {
+            $incomeData = FinanceSub::whereIn('account_id', $incomeAccountIds)
+                ->where('reference_date', '<=', $this->endDate)
+                ->whereHas('finance', function ($query) {
+                    $query->where('is_approved', 1);
+                })
+                ->selectRaw('SUM(credit) as total_credit, SUM(debit) as total_debit')
+                ->first();
+            $totalIncome = ($incomeData->total_credit ?? 0) - ($incomeData->total_debit ?? 0);
+        }
 
-        // Get total expenses
-        $totalExpenses = FinanceSub::whereIn('account_id', $expenseAccounts)
-            ->whereHas('finance', function ($query) {
-                $query->where('is_approved', 1)
-                    ->whereBetween('reference_date', [$this->startDate, $this->endDate]);
-            })
-            ->sum('debit') - FinanceSub::whereIn('account_id', $expenseAccounts)
-            ->whereHas('finance', function ($query) {
-                $query->where('is_approved', 1)
-                    ->whereBetween('reference_date', [$this->startDate, $this->endDate]);
-            })
-            ->sum('credit');
+        $totalExpenses = 0;
+        if (!empty($expenseAccountIds)) {
+            $expenseData = FinanceSub::whereIn('account_id', $expenseAccountIds)
+                ->where('reference_date', '<=', $this->endDate)
+                ->whereHas('finance', function ($query) {
+                    $query->where('is_approved', 1);
+                })
+                ->selectRaw('SUM(debit) as total_debit, SUM(credit) as total_credit')
+                ->first();
+            $totalExpenses = ($expenseData->total_debit ?? 0) - ($expenseData->total_credit ?? 0);
+        }
 
-        // Calculate net income/loss
-        $netIncome = $totalRevenue - $totalExpenses;
+        $netIncome = $totalIncome - $totalExpenses;
 
-        // Add net income to equity
+        // Add current-year net income as a component of equity
         if ($netIncome != 0) {
             $equityAccounts[] = [
                 'account_code' => '',
-                'account_name' => 'Retained Earnings (Net Income/Loss)',
-                'balance' => $netIncome
+                'account_name' => 'Current Year Net Income / (Loss)',
+                'balance'      => $netIncome,
             ];
             $totalEquity += $netIncome;
         }
 
         return [
-            'assets' => $assetAccounts,
-            'liabilities' => $liabilityAccounts,
-            'equity' => $equityAccounts,
-            'total_assets' => $totalAssets,
-            'total_liabilities' => $totalLiabilities,
-            'total_equity' => $totalEquity,
-            'total_liabilities_equity' => $totalLiabilities + $totalEquity
+            'assets'                   => $assetAccounts,
+            'liabilities'              => $liabilityAccounts,
+            'equity'                   => $equityAccounts,
+            'total_assets'             => $totalAssets,
+            'total_liabilities'        => $totalLiabilities,
+            'total_equity'             => $totalEquity,
+            'total_liabilities_equity' => $totalLiabilities + $totalEquity,
         ];
     }
 

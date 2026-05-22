@@ -3,6 +3,8 @@
 namespace App\Livewire\Report\Finance;
 
 use App\Models\Supplier\Supplier;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class SupplierStatement extends Component
@@ -11,24 +13,20 @@ class SupplierStatement extends Component
     public $endDate;
     public $search = '';
     public $supplierId;
-    public $currency;
-    public $currency_rate;
     public $suppliers = [];
+
+    // AP account ID in chart of accounts
+    const AP_ACCOUNT_ID = 18;
 
     public function mount()
     {
-        // Default to current month
-        $this->startDate = now()->startOfMonth()->format('Y-m-d');
-        $this->endDate = now()->endOfMonth()->format('Y-m-d');
-        $this->currency = authUserCompany()->currency;
-        $this->currency_rate = 1;//default
+        $this->startDate = now()->subMonth(3)->startOfMonth()->format('Y-m-d');
+        $this->endDate   = now()->format('Y-m-d');
 
-        // Load suppliers for dropdown
         $this->loadSuppliers();
 
-        // Set default supplier if available
-        if (count($this->suppliers) > 0) {
-            $this->supplierId = $this->suppliers[0]['id'];
+        if (count($this->suppliers) > 0 && !$this->supplierId) {
+            $this->supplierId = (string) $this->suppliers[0]['id'];
         }
     }
 
@@ -37,11 +35,10 @@ class SupplierStatement extends Component
         $companyId = auth()->user()->company_id ?? 1;
 
         $this->suppliers = Supplier::where('company_id', $companyId)
-            ->when(!empty($this->search), function($query) {
-                $query->where(function($q) {
-                    $q->where('name_en', 'like', '%' . $this->search . '%')
-                      ->orWhere('name_ar', 'like', '%' . $this->search . '%')
-                      ->orWhere('code', 'like', '%' . $this->search . '%');
+            ->when(!empty($this->search), function ($q) {
+                $q->where(function ($inner) {
+                    $inner->where('name_en', 'like', '%' . $this->search . '%')
+                          ->orWhere('name_ar', 'like', '%' . $this->search . '%');
                 });
             })
             ->select('id', 'row_no', 'name_en', 'company_id', 'email', 'phone', 'currency')
@@ -49,47 +46,132 @@ class SupplierStatement extends Component
             ->toArray();
     }
 
-    public function updatedStartDate($value)
-    {
-        $this->dispatch('dateRangeChanged', [
-            'startDate' => $this->startDate,
-            'endDate' => $this->endDate
-        ]);
-    }
-
-    public function updatedEndDate($value)
-    {
-        $this->dispatch('dateRangeChanged', [
-            'startDate' => $this->startDate,
-            'endDate' => $this->endDate
-        ]);
-    }
-
-    public function updatedSearch($value)
+    public function updatedSearch()
     {
         $this->loadSuppliers();
     }
 
-    public function updatedSupplierId($value)
+    public function applyFilter()
     {
-        $this->dispatch('supplierChanged', $this->supplierId);
+        // date fields are wire:model.live — triggers re-render automatically
     }
 
-    public function updatedCurrency($value)
+    public function resetFilter()
     {
-        $this->dispatch('currencyChanged', [
-            'currency' => $this->currency,
-            'currency_rate' => $this->currency_rate
-        ]);
+        $this->startDate  = now()->subMonth(3)->startOfMonth()->format('Y-m-d');
+        $this->endDate    = now()->format('Y-m-d');
+        $this->search     = '';
+        $this->supplierId = null;
+        $this->loadSuppliers();
+        if (count($this->suppliers) > 0) {
+            $this->supplierId = (string)$this->suppliers[0]['id'];
+        }
     }
 
     public function exportExcel()
     {
-        $this->dispatch('exportAsExcel');
+        // placeholder – wire up when needed
+    }
+
+    /* ─────────────────────────────── data ─────────────────────────────── */
+
+    private function getStatementData(): array
+    {
+        $empty = [
+            'supplier'       => null,
+            'openingBalance' => 0,
+            'invoicedAmount' => 0,
+            'paidAmount'     => 0,
+            'closingBalance' => 0,
+            'transactions'   => collect(),
+        ];
+
+        if (empty($this->supplierId)) {
+            return $empty;
+        }
+
+        $companyId = auth()->user()->company_id ?? 1;
+
+        $supplier = Supplier::where('id', $this->supplierId)
+            ->select('id', 'row_no', 'name_en', 'company_id', 'email', 'phone', 'currency')
+            ->first();
+
+        if (!$supplier) {
+            return $empty;
+        }
+
+        // ── Opening balance: AP entries before the start date ──
+        $openingQuery = DB::table('finance_sub as fs')
+            ->join('finance as f', 'fs.finance_id', '=', 'f.id')
+            ->where('fs.supplier_id', $this->supplierId)
+            ->where('fs.company_id', $companyId)
+            ->where('fs.account_id', self::AP_ACCOUNT_ID)
+            ->where('fs.reference_date', '<', $this->startDate)
+            ->where('f.is_approved', 1);
+
+        $openingDebit  = (clone $openingQuery)->sum('fs.base_debit');
+        $openingCredit = (clone $openingQuery)->sum('fs.base_credit');
+        // AP is a liability → CR = invoice posted, DR = payment made
+        $openingBalance = (float) $openingCredit - (float) $openingDebit;
+
+        // ── Period transactions ──
+        $transactions = DB::table('finance as f')
+            ->leftJoin('jobs as j', 'f.job_id', '=', 'j.id')
+            ->where('f.company_id', $companyId)
+            ->where('f.supplier_id', $this->supplierId)
+            ->where('f.is_approved', 1)
+            ->whereBetween('f.reference_date', [$this->startDate, $this->endDate])
+            ->select(
+                'f.id',
+                'f.reference_date',
+                'f.voucher_no',
+                'f.voucher_type',
+                'f.reference_no',
+                'j.row_no as job_number',
+                'f.narration as description',
+                'f.currency',
+                'f.exchange_rate',
+                'f.base_total_credit as base_credit',  // SI: AP credited (invoice)
+                'f.base_total_debit  as base_debit'    // PV: AP debited  (payment)
+            )
+            ->orderBy('f.reference_date')
+            ->orderBy('f.id')
+            ->get();
+
+        // Running balance (supplier AP perspective: credit increases, debit decreases)
+        $runningBalance = $openingBalance;
+        $transactions = $transactions->map(function ($txn) use (&$runningBalance) {
+            if ($txn->voucher_type === 'SI') {
+                // Invoice: we owe more to supplier → balance goes up
+                $runningBalance += (float) $txn->base_credit;
+            } elseif ($txn->voucher_type === 'PV') {
+                // Payment: we pay supplier → balance goes down
+                $runningBalance -= (float) $txn->base_debit;
+            } else {
+                $runningBalance += (float) $txn->base_credit - (float) $txn->base_debit;
+            }
+            $txn->balance = $runningBalance;
+            return $txn;
+        });
+
+        $invoicedAmount = $transactions->where('voucher_type', 'SI')->sum('base_credit');
+        $paidAmount     = $transactions->where('voucher_type', 'PV')->sum('base_debit');
+        $closingBalance = $openingBalance + $invoicedAmount - $paidAmount;
+
+        return [
+            'supplier'       => $supplier,
+            'openingBalance' => $openingBalance,
+            'invoicedAmount' => $invoicedAmount,
+            'paidAmount'     => $paidAmount,
+            'closingBalance' => $closingBalance,
+            'transactions'   => $transactions,
+        ];
     }
 
     public function render()
     {
-        return view('livewire.report.finance.supplier-statement');
+        $data = $this->getStatementData();
+
+        return view('livewire.report.finance.supplier-statement', $data);
     }
 }
