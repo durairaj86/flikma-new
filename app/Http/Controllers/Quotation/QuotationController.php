@@ -231,7 +231,7 @@ class QuotationController extends Controller
         ->leftJoin('logistic_activities', 'logistic_activities.id', '=', 'quotations.activity_id')
         ->leftJoin('sales_persons', 'sales_persons.id', '=', 'quotations.salesperson_id')
         ->where('quotations.status', QuotationEnum::fromName($request->tab))
-        ->when(isset($filter['filter-from-date'], $filter['filter-to-date']),
+        ->when(!empty($filter['filter-from-date']) && !empty($filter['filter-to-date']),
             function ($query) use ($filter) {
                 $from = Carbon::parse($filter['filter-from-date'])->startOfDay();
                 $to   = Carbon::parse($filter['filter-to-date'])->addDay()->startOfDay();

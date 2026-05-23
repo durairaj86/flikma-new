@@ -37,6 +37,7 @@ Route::middleware('auth')->group(function () {
     Route::view('/customer/statement', 'modules.customer.statement')->name('customers.statement');
 
     Route::get('customer/{id}/overview', [\App\Http\Controllers\Customer\CustomerController::class, 'overview']);
+    Route::get('customer/{id}/address', [\App\Http\Controllers\Customer\CustomerController::class, 'getAddress']);
     /*Route::get('customer/{id}/invoices', [\App\Http\Controllers\Customer\CustomerController::class, 'invoices']);
     Route::get('customer/{id}/transactions', [\App\Http\Controllers\Customer\CustomerController::class, 'transactions']);*/
 

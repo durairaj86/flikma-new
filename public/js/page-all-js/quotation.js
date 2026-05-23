@@ -424,6 +424,7 @@ QUOTATION = {
             QUOTATION.form.shipmentMode();
             setTimeout(function () {
                 QUOTATION.form.customerProspectToggle();
+                QUOTATION.form.customerAddressFetch();
             })
             GLOBAL_FN.activity.activityChange();
             QUOTATION.form.polPodLoad();
@@ -486,6 +487,28 @@ QUOTATION = {
                     customerSelect.tomselect.disable();
                 }
             }
+        },
+        customerAddressFetch() {
+            function loadAddress(encodedId) {
+                if (!encodedId || encodedId === '__new__') {
+                    $('#customerAddressWrapper').hide();
+                    $('#customerAddress').val('');
+                    return;
+                }
+                $.get('/customer/' + encodedId + '/address', function (res) {
+                    $('#customerAddress').val(res.address || '');
+                    $('#customerAddressWrapper').toggle(!!res.address);
+                });
+            }
+
+            // Load address for pre-selected customer (edit mode)
+            const initial = $('#customer').val();
+            if (initial) loadAddress(initial);
+
+            // Reload on change
+            $('#customer').on('change', function () {
+                loadAddress($(this).val());
+            });
         },
         shipmentMode(destroy = null) {
             if (destroy) {

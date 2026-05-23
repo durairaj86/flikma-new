@@ -563,6 +563,25 @@ class CustomerController extends Controller
         return view('modules.customer.view-overview', compact('customer'));
     }
 
+    public function getAddress($id)
+    {
+        $customer = Customer::select('address1_en', 'address2_en', 'city_en', 'country_en')
+            ->find(decodeId($id));
+
+        if (!$customer) {
+            return response()->json(['address' => '']);
+        }
+
+        $address = implode(', ', array_filter([
+            $customer->address1_en,
+            $customer->address2_en,
+            $customer->city_en,
+            $customer->country_en,
+        ]));
+
+        return response()->json(['address' => $address]);
+    }
+
     /*public function invoices($id) {
         $invoices = Invoice::where('customer_id', $id)->paginate(5);
         return view('customers.ajax.invoices', compact('invoices'));

@@ -92,7 +92,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label d-flex justify-content-between align-items-center">
-                                    Select Prospect Customer
+                                    Prospect Customer
                                 </label>
                                 <select name="prospect" id="prospect" class="tom-select"
                                         data-live-search="true" {{ $quotation->prospect_id ? 'data-has-prospect=true' : '' }}>

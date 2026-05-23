@@ -95,9 +95,9 @@
                                 <label class="form-label fw-medium">Quotation Date</label>
                                 <div class="d-flex input-group-filter gap-2">
                                     <input type="date" class="form-control datepicker from-date default-filter" id="filter-from-date" name="filter-from-date"
-                                           value="{{ \Carbon\Carbon::today()->subMonth(6)->startOfMonth()->format('d-m-Y') }}">
+                                           value="{{ \Carbon\Carbon::today()->subMonth(6)->startOfMonth()->format('Y-m-d') }}">
                                     <input type="date" class="form-control datepicker to-date default-filter" id="filter-to-date" name="filter-to-date"
-                                           value="{{ \Carbon\Carbon::today()->format('d-m-Y') }}">
+                                           value="{{ \Carbon\Carbon::today()->format('Y-m-d') }}">
                                 </div>
                             </div>
 
