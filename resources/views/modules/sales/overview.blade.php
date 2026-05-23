@@ -1,487 +1,513 @@
 @section('page-title','Sales Overview')
 @section('page-sub-title','Sales performance dashboard with real-time data')
-@section('js','enquiry')
+@section('print-footer')
+<script>
+    window.printFooter = {
+        show: true,
+        custom: 'Sales Overview - Generated on {{ date('d-m-Y H:i') }}'
+    };
+</script>
+@endsection
 <x-app-layout>
-    <main class="gmail-content bg-white px-3">
+    <div class="bg-light py-4">
+        <style>
+            :root{
+                --sales_primary: #0b6aa0;
+                --sales_secondary: #5b57ae;
+                --sales_accent: #16a34a;
+                --sales_bg: #f8fafc;
+                --sales_card_bg: #ffffff;
+                --sales_radius: 12px;
+                --sales_shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            }
+            body { background: var(--sales_bg); }
+            .sales-kpi-card {
+                background: var(--sales_card_bg);
+                border-radius: var(--sales_radius);
+                box-shadow: var(--sales_shadow);
+                padding: 1.25rem;
+                transition: box-shadow .2s;
+                border: 1px solid rgba(0,0,0,0.04);
+            }
+            .sales-kpi-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+            .sales-kpi-card .kpi-label { font-size: .8rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: #64748b; }
+            .sales-kpi-card .kpi-value { font-size: 1.65rem; font-weight: 700; color: #0f172a; line-height: 1.2; margin-top: .25rem; }
+            .sales-kpi-card .kpi-sub { font-size: .78rem; color: #94a3b8; margin-top: .2rem; }
+            .sales-icon-circle { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+            .sales-card {
+                background: var(--sales_card_bg);
+                border-radius: var(--sales_radius);
+                box-shadow: var(--sales_shadow);
+                border: 1px solid rgba(0,0,0,0.04);
+            }
+            .sales-card-header {
+                display: flex; align-items: center; justify-content: space-between;
+                padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9;
+            }
+            .sales-card-header h6 { margin: 0; font-weight: 700; font-size: .9rem; color: #0f172a; }
+            .sales-card-body { padding: 1.25rem; }
+            .sales-table th { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: #64748b; background: #f8fafc; border-bottom-width: 1px; }
+            .sales-table td { font-size: .82rem; vertical-align: middle; color: #1e293b; }
+            .badge-sales { background: rgba(11,106,160,0.1); color: #0b6aa0; font-weight: 600; font-size: .7rem; padding: .25em .7em; border-radius: 20px; }
+            .trend-up { color: #16a34a; }
+            .trend-down { color: #dc2626; }
+            .sales-filter-card {
+                background: var(--sales_card_bg);
+                border-radius: var(--sales_radius);
+                box-shadow: var(--sales_shadow);
+                border: 1px solid rgba(0,0,0,0.04);
+                padding: .75rem 1.25rem;
+            }
+        </style>
 
-            <style>
-                :root{
-                    --primary:#0b6aa0; /* hybrid primary */
-                    --accent:#5b57ae;
-                    --card-bg:#fff;
-                    --page-bg:#f5f7fb;
-                }
+        <div class="container-fluid px-lg-5">
 
-                .card-soft{ background:var(--card-bg); border-radius:12px; box-shadow:0 10px 30px rgba(25,40,60,0.06); padding:18px; }
-                .kpi { border-radius:10px; padding:14px; }
-                .kpi .label{ color:#6b7280; font-size:13px; }
-                .kpi .value{ font-size:22px; font-weight:700; margin-top:6px; }
-                .icon-circle{ width:46px; height:46px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; }
-                .muted { color:#6b7280; font-size:13px; }
-                .table-fixed thead th { position: sticky; top:0; background:var(--card-bg); z-index:2; }
-                .mini { font-size:12px; color:#475569; }
-                .badge-metric { font-weight:700; padding:6px 10px; border-radius:999px; }
-                .hybrid-plate { display:flex; gap:12px; align-items:center; }
-                .small-muted { color:#94a3b8; font-size:13px; }
-
-                /* responsive minor */
-                @media (max-width:900px){
-                    .kpi .value { font-size:18px; }
-                    .icon-circle { width:40px; height:40px; font-size:18px; }
-                }
-
-                /* hybrid color accents */
-                .bg-primary-soft { background: rgba(11,106,160,0.08); color:var(--primary); }
-                .bg-accent-soft { background: rgba(91,87,174,0.08); color:var(--accent); }
-                .text-card-title { font-size:15px; font-weight:700; color:#0f1724; }
-            </style>
-        <div>
-        <div class="page">
-
-            <!-- Header -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            {{-- Header --}}
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
                 <div>
-                    {{--<h3 class="mb-0">Sales Overview</h3>
-                    <div class="small-muted">Hybrid dashboard — Zoho + MyBillBook styling (dummy data)</div>--}}
+                    <h4 class="fw-bold mb-0" style="color:#0f172a;">Sales Overview</h4>
+                    <p class="text-muted mb-0 small">Real-time sales performance dashboard</p>
                 </div>
-
-                <div class="d-flex align-items-center gap-2">
-                    <select id="dateRange" class="form-select form-select-sm">
-                        <option value="this_month">This Month</option>
-                        <option value="last_month">Last Month</option>
-                        <option value="this_year">This Year</option>
+                <div class="d-flex align-items-center gap-2 mt-2 mt-sm-0">
+                    <select id="dateRange" class="form-select form-select-sm" style="width:auto;min-width:140px;">
+                        <option value="this_month" {{ $range==='this_month' ? 'selected' : '' }}>This Month</option>
+                        <option value="last_month" {{ $range==='last_month' ? 'selected' : '' }}>Last Month</option>
+                        <option value="this_year" {{ $range==='this_year' ? 'selected' : '' }}>This Year</option>
                     </select>
-
-                    <div class="btn-group">
-                        <button class="btn btn-outline-secondary btn-sm" id="btn-apply">Apply</button>
-                    </div>
+                    <button class="btn btn-primary btn-sm px-3" id="btn-apply">
+                        <i class="bi bi-arrow-repeat me-1"></i> Apply
+                    </button>
                 </div>
             </div>
 
-            <!-- Top KPIs -->
-            <div class="row g-3 mb-3">
-                <div class="col-md-3">
-                    <div class="card-soft kpi">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <div class="label">Sales (Invoiced)</div>
-                                <div class="value" id="kpiSales">SAR 0</div>
-                                <div class="mini small-muted">Period total invoiced</div>
-                            </div>
-                            <div class="hybrid-plate">
-                                <div class="icon-circle bg-primary-soft"><i class="bi bi-currency-dollar"></i></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-3">
-                    <div class="card-soft kpi">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <div class="label">Payments Collected</div>
-                                <div class="value" id="kpiCollected">SAR 0</div>
-                                <div class="mini small-muted">Total receipts</div>
-                            </div>
-                            <div class="hybrid-plate">
-                                <div class="icon-circle bg-accent-soft"><i class="bi bi-wallet2"></i></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-2">
-                    <div class="card-soft kpi">
+            {{-- KPI Cards --}}
+            <div class="row g-3 mb-4">
+                <div class="col-lg-3 col-md-6">
+                    <div class="sales-kpi-card d-flex align-items-center justify-content-between">
                         <div>
-                            <div class="label">Outstanding</div>
-                            <div class="value text-danger" id="kpiOutstanding">SAR 0</div>
-                            <div class="mini small-muted">Unpaid invoices</div>
+                            <div class="kpi-label">Total Sales</div>
+                            <div class="kpi-value" id="kpiSales">SAR 0</div>
+                            <div class="kpi-sub">Invoiced this period</div>
+                        </div>
+                        <div class="sales-icon-circle" style="background:rgba(11,106,160,0.1);color:#0b6aa0;">
+                            <i class="bi bi-cart-check"></i>
                         </div>
                     </div>
                 </div>
-
-                <div class="col-md-2">
-                    <div class="card-soft kpi">
+                <div class="col-lg-3 col-md-6">
+                    <div class="sales-kpi-card d-flex align-items-center justify-content-between">
                         <div>
-                            <div class="label">Avg Invoice Value</div>
-                            <div class="value" id="kpiAvgInvoice">SAR 0</div>
-                            <div class="mini small-muted">Average invoice</div>
+                            <div class="kpi-label">Collected</div>
+                            <div class="kpi-value" id="kpiCollected">SAR 0</div>
+                            <div class="kpi-sub">Payments received</div>
+                        </div>
+                        <div class="sales-icon-circle" style="background:rgba(22,163,74,0.1);color:#16a34a;">
+                            <i class="bi bi-wallet2"></i>
                         </div>
                     </div>
                 </div>
-
-                <div class="col-md-2">
-                    <div class="card-soft kpi">
+                <div class="col-lg-3 col-md-6">
+                    <div class="sales-kpi-card d-flex align-items-center justify-content-between">
                         <div>
-                            <div class="label">Recurring Ratio</div>
-                            <div class="value" id="kpiRecurring">0%</div>
-                            <div class="mini small-muted">Returning customers</div>
+                            <div class="kpi-label">Outstanding</div>
+                            <div class="kpi-value" id="kpiOutstanding" style="color:#dc2626;">SAR 0</div>
+                            <div class="kpi-sub">Balance due</div>
+                        </div>
+                        <div class="sales-icon-circle" style="background:rgba(220,38,38,0.1);color:#dc2626;">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="sales-kpi-card d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="kpi-label">Avg Invoice</div>
+                            <div class="kpi-value" id="kpiAvgInvoice">SAR 0</div>
+                            <div class="kpi-sub">Avg value per invoice</div>
+                        </div>
+                        <div class="sales-icon-circle" style="background:rgba(91,87,174,0.1);color:#5b57ae;">
+                            <i class="bi bi-bar-chart-line"></i>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Charts area -->
-            <div class="row g-3">
-                <div class="col-xl-8">
-                    <div class="card-soft mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <div class="text-card-title">Sales Trend</div>
-                            <div class="small-muted">Monthly / Weekly trend</div>
-                        </div>
-                        <canvas id="chartSalesTrend" height="140"></canvas>
-                    </div>
-
-                    <div class="card-soft">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <div class="text-card-title mb-2">Sales vs Payments (Period)</div>
-                                <canvas id="chartSalesVsPayments" height="140"></canvas>
-                            </div>
-
-                            <div class="col-md-6">
-                                <div class="text-card-title mb-2">Profit Analysis</div>
-                                <canvas id="chartProfit" height="140"></canvas>
-                            </div>
-                        </div>
+            {{-- Secondary KPIs --}}
+            <div class="row g-3 mb-4">
+                <div class="col-lg-2 col-md-4 col-6">
+                    <div class="sales-kpi-card text-center py-2">
+                        <div class="kpi-label">Invoices</div>
+                        <div class="kpi-value" id="kpiInvoiceCount" style="font-size:1.3rem;">0</div>
                     </div>
                 </div>
-
-                <!-- Right column: pie, region, salesperson, top lists -->
-                <div class="col-xl-4">
-                    <div class="card-soft mb-3">
-                        <div class="text-card-title mb-2">Sales by Category</div>
-                        <canvas id="chartCategory" height="160"></canvas>
+                <div class="col-lg-2 col-md-4 col-6">
+                    <div class="sales-kpi-card text-center py-2">
+                        <div class="kpi-label">Customers</div>
+                        <div class="kpi-value" id="kpiCustomerCount" style="font-size:1.3rem;">0</div>
                     </div>
-
-                    <div class="card-soft mb-3">
-                        <div class="text-card-title mb-2">Sales by Region</div>
-                        <canvas id="chartRegion" height="140"></canvas>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6">
+                    <div class="sales-kpi-card text-center py-2">
+                        <div class="kpi-label">Recurring</div>
+                        <div class="kpi-value" id="kpiRecurring" style="font-size:1.3rem;">0%</div>
                     </div>
-
-                    <div class="card-soft">
-                        <div class="text-card-title mb-2">Salesperson Performance</div>
-                        <canvas id="chartSalesperson" height="120"></canvas>
+                </div>
+                <div class="col-lg-3 col-md-6 col-6">
+                    <div class="sales-kpi-card text-center py-2">
+                        <div class="kpi-label">vs Last Month (Sales)</div>
+                        <div class="kpi-value" id="kpiSalesChange" style="font-size:1.1rem;">0%</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 col-6">
+                    <div class="sales-kpi-card text-center py-2">
+                        <div class="kpi-label">Collection Rate</div>
+                        <div class="kpi-value" id="kpiCollectionRate" style="font-size:1.1rem;">0%</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Tables: Top customers/items -->
-            <div class="row g-3 mt-3">
+            {{-- Charts Row --}}
+            <div class="row g-3 mb-4">
+                <div class="col-xl-7">
+                    <div class="sales-card h-100">
+                        <div class="sales-card-header">
+                            <h6><i class="bi bi-graph-up me-2" style="color:#0b6aa0;"></i>Sales Trend</h6>
+                            <span class="badge-sales">{{ $range === 'this_year' ? 'Monthly' : 'Weekly' }}</span>
+                        </div>
+                        <div class="sales-card-body">
+                            <canvas id="chartSalesTrend" height="180"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-5">
+                    <div class="sales-card h-100">
+                        <div class="sales-card-header">
+                            <h6><i class="bi bi-pie-chart me-2" style="color:#5b57ae;"></i>Sales by Service Type</h6>
+                            <span class="badge-sales">Top 6</span>
+                        </div>
+                        <div class="sales-card-body">
+                            <canvas id="chartCategory" height="180"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Second Charts Row --}}
+            <div class="row g-3 mb-4">
+                <div class="col-lg-4">
+                    <div class="sales-card h-100">
+                        <div class="sales-card-header">
+                            <h6><i class="bi bi-geo-alt me-2" style="color:#16a34a;"></i>Sales by Region</h6>
+                        </div>
+                        <div class="sales-card-body">
+                            <canvas id="chartRegion" height="170"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="sales-card h-100">
+                        <div class="sales-card-header">
+                            <h6><i class="bi bi-people me-2" style="color:#0b6aa0;"></i>Salesperson Performance</h6>
+                        </div>
+                        <div class="sales-card-body">
+                            <canvas id="chartSalesperson" height="170"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="sales-card h-100">
+                        <div class="sales-card-header">
+                            <h6><i class="bi bi-check-circle me-2" style="color:#5b57ae;"></i>Invoice Status</h6>
+                        </div>
+                        <div class="sales-card-body">
+                            <canvas id="chartStatus" height="170"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Tables Row --}}
+            <div class="row g-3 mb-4">
                 <div class="col-lg-7">
-                    <div class="card-soft">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <div class="text-card-title">Top 10 Customers (by revenue)</div>
-                            <div class="small-muted">With % contribution</div>
+                    <div class="sales-card">
+                        <div class="sales-card-header">
+                            <h6><i class="bi bi-trophy me-2" style="color:#f59e0b;"></i>Top 10 Customers by Revenue</h6>
+                            <span class="badge-sales">Revenue / Invoices / Outstanding</span>
                         </div>
-                        <div style="max-height:360px; overflow:auto;">
-                            <table class="table table-sm table-hover mb-0 table-fixed">
-                                <thead class="table-light">
-                                <tr>
-                                    <th scope="col">Customer</th>
-                                    <th scope="col">Invoices</th>
-                                    <th class="text-end">Revenue (SAR)</th>
-                                    <th class="text-end">%</th>
-                                </tr>
-                                </thead>
-                                <tbody id="tableCustomers"></tbody>
-                            </table>
+                        <div class="sales-card-body p-0">
+                            <div style="max-height:380px;overflow:auto;">
+                                <table class="table sales-table mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Customer</th>
+                                            <th class="text-end">Invoices</th>
+                                            <th class="text-end">Revenue (SAR)</th>
+                                            <th class="text-end">Outstanding</th>
+                                            <th class="text-end">%</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tableCustomers"></tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
-
                 <div class="col-lg-5">
-                    <div class="card-soft">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <div class="text-card-title">Top 10 Items (by revenue)</div>
-                            <div class="small-muted">Qty & Revenue</div>
+                    <div class="sales-card">
+                        <div class="sales-card-header">
+                            <h6><i class="bi bi-box me-2" style="color:#0b6aa0;"></i>Top 10 Items by Revenue</h6>
+                            <span class="badge-sales">Qty & Revenue</span>
                         </div>
-                        <div style="max-height:360px; overflow:auto;">
-                            <table class="table table-sm table-hover mb-0">
+                        <div class="sales-card-body p-0">
+                            <div style="max-height:380px;overflow:auto;">
+                                <table class="table sales-table mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Item / Service</th>
+                                            <th class="text-end">Qty</th>
+                                            <th class="text-end">Revenue (SAR)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tableItems"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Invoice Status Summary --}}
+            <div class="row g-3 mb-4">
+                <div class="col-12">
+                    <div class="sales-card">
+                        <div class="sales-card-header">
+                            <h6><i class="bi bi-list-check me-2" style="color:#0b6aa0;"></i>Invoice Status Breakdown</h6>
+                        </div>
+                        <div class="sales-card-body p-0">
+                            <table class="table sales-table mb-0">
                                 <thead class="table-light">
-                                <tr>
-                                    <th>Item</th>
-                                    <th class="text-end">Qty</th>
-                                    <th class="text-end">Revenue (SAR)</th>
-                                </tr>
+                                    <tr>
+                                        <th>Status</th>
+                                        <th class="text-end">Count</th>
+                                        <th class="text-end">Total (SAR)</th>
+                                    </tr>
                                 </thead>
-                                <tbody id="tableItems"></tbody>
+                                <tbody id="tableInvoiceStatuses"></tbody>
                             </table>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Footer KPIs (Summary small) -->
-            <div class="row g-3 mt-3">
-                <div class="col-md-3">
-                    <div class="card-soft small p-3 text-center">
-                        <div class="label">Top Customer</div>
-                        <div id="footerTopCustomer" class="value">-</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card-soft small p-3 text-center">
-                        <div class="label">Top Item (Revenue)</div>
-                        <div id="footerTopItem" class="value">-</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card-soft small p-3 text-center">
-                        <div class="label">Total Customers</div>
-                        <div id="footerTotalCustomers" class="value">0</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card-soft small p-3 text-center">
-                        <div class="label">Total Invoices</div>
-                        <div id="footerTotalInvoices" class="value">0</div>
-                    </div>
-                </div>
-            </div>
-
         </div>
+    </div>
 
-        <!-- Scripts -->
-            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script>
-            /* ======= REAL DATA: from controller ======= */
-            const REAL_DATA = @json($data ?? []);
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+    const DATA = @json($data);
 
-            // Create a structure similar to the original DUMMY object for compatibility
-            const DUMMY = {
-                this_month: REAL_DATA,
-                last_month: REAL_DATA,
-                this_year: REAL_DATA
-            };
+    function fmt(n) { return new Intl.NumberFormat('en-IN').format(Math.round(n)); }
+    function fmtCurrency(n) { return 'SAR ' + fmt(n); }
+    function pct(n) { return (n * 100).toFixed(1) + '%'; }
 
-            /* ======= helper: format ======= */
-            function fmt(n){ return new Intl.NumberFormat('en-IN').format(Math.round(n)); }
-            function fmtCurrency(n){ return 'SAR ' + fmt(n); }
-            function percent(n){ return (n*100).toFixed(1) + '%'; }
+    function render() {
+        const d = DATA;
 
-            /* ======= Chart references ======= */
-            let charts = {};
+        // Primary KPIs
+        document.getElementById('kpiSales').innerText = fmtCurrency(d.sales);
+        document.getElementById('kpiCollected').innerText = fmtCurrency(d.collected);
+        document.getElementById('kpiOutstanding').innerText = fmtCurrency(d.outstanding);
+        document.getElementById('kpiAvgInvoice').innerText = fmtCurrency(d.invoices_avg);
 
-            /* ======= Main update function ======= */
-            function renderRange(rangeKey){
-                const d = DUMMY[rangeKey] || {};
+        // Secondary KPIs
+        document.getElementById('kpiInvoiceCount').innerText = fmt(d.invoices_count);
+        document.getElementById('kpiCustomerCount').innerText = fmt(d.customers_count);
+        document.getElementById('kpiRecurring').innerText = pct(d.recurring_ratio);
 
-                // Ensure all required properties exist with defaults
-                d.sales = d.sales || 0;
-                d.collected = d.collected || 0;
-                d.outstanding = d.outstanding || 0;
-                d.invoices_avg = d.invoices_avg || 0;
-                d.recurring_ratio = d.recurring_ratio || 0;
-                d.invoices_count = d.invoices_count || 0;
-                d.customers_count = d.customers_count || 0;
-                d.salesTrend = d.salesTrend || [];
-                d.categories = d.categories || [];
-                d.regions = d.regions || [];
-                d.salespeople = d.salespeople || [];
-                d.customers = d.customers || [];
-                d.items = d.items || [];
-                d.cogs = d.cogs || 0;
+        // Monthly comparison
+        const mc = d.monthlyComparison || {};
+        const prevSales = mc.previous?.sales || 0;
+        const salesChange = prevSales > 0 ? ((d.sales - prevSales) / prevSales) * 100 : 0;
+        const chgEl = document.getElementById('kpiSalesChange');
+        chgEl.innerText = (salesChange >= 0 ? '+' : '') + salesChange.toFixed(1) + '%';
+        chgEl.className = 'kpi-value' + (salesChange >= 0 ? ' trend-up' : ' trend-down');
 
-                // KPIs
-                document.getElementById('kpiSales').innerText = fmtCurrency(d.sales);
-                document.getElementById('kpiCollected').innerText = fmtCurrency(d.collected);
-                document.getElementById('kpiOutstanding').innerText = fmtCurrency(d.outstanding);
-                document.getElementById('kpiAvgInvoice').innerText = fmtCurrency(d.invoices_avg);
-                document.getElementById('kpiRecurring').innerText = percent(d.recurring_ratio);
+        // Collection rate
+        const collRate = d.sales > 0 ? (d.collected / d.sales) * 100 : 0;
+        document.getElementById('kpiCollectionRate').innerText = collRate.toFixed(1) + '%';
 
-                // footer small KPIs
-                document.getElementById('footerTotalCustomers').innerText = d.customers.length > 0 ? d.customers.length : d.customers_count || 0;
-                document.getElementById('footerTotalInvoices').innerText = d.invoices_count;
+        // Top customers table
+        const totalRev = d.sales;
+        const custHtml = (d.customers || []).map((c, i) => {
+            const pc = totalRev ? ((c.revenue / totalRev) * 100).toFixed(1) : 0;
+            return `<tr>
+                <td>${i + 1}</td>
+                <td class="fw-medium">${c.name}</td>
+                <td class="text-end">${c.invoices}</td>
+                <td class="text-end fw-semibold">${fmtCurrency(c.revenue)}</td>
+                <td class="text-end ${c.outstanding > 0 ? 'text-danger' : ''}">${fmtCurrency(c.outstanding)}</td>
+                <td class="text-end">${pc}%</td>
+            </tr>`;
+        }).join('');
+        document.getElementById('tableCustomers').innerHTML = custHtml || '<tr><td colspan="6" class="text-center text-muted py-3">No data</td></tr>';
 
-                // Top customer / top item
-                const topCust = d.customers[0] || {name:'-', revenue:0};
-                const topItem = d.items[0] || {name:'-', revenue:0};
-                document.getElementById('footerTopCustomer').innerText = topCust.name;
-                document.getElementById('footerTopItem').innerText = topItem.name;
+        // Top items table
+        const itemsHtml = (d.items || []).map((i, idx) => {
+            return `<tr>
+                <td>${idx + 1}</td>
+                <td>${i.name}</td>
+                <td class="text-end">${fmt(i.qty)}</td>
+                <td class="text-end fw-semibold">${fmtCurrency(i.revenue)}</td>
+            </tr>`;
+        }).join('');
+        document.getElementById('tableItems').innerHTML = itemsHtml || '<tr><td colspan="4" class="text-center text-muted py-3">No data</td></tr>';
 
-                // Top customers table with % contribution
-                const totalRevenue = d.sales;
-                const customersHtml = (d.customers || []).slice(0,10).map(c=>{
-                    const pct = totalRevenue ? ((c.revenue/totalRevenue)*100).toFixed(1) : 0;
-                    return `<tr>
-          <td>${c.name}</td>
-          <td>${c.invoices}</td>
-          <td class="text-end">${fmtCurrency(c.revenue)}</td>
-          <td class="text-end">${pct}%</td>
-        </tr>`;
-                }).join('');
-                document.getElementById('tableCustomers').innerHTML = customersHtml;
+        // Invoice status table
+        const statuses = d.invoiceStatuses || [];
+        const statusHtml = statuses.map(s => {
+            const badgeClass = s.status === 'approved' ? 'bg-success' : s.status === 'draft' ? 'bg-secondary' : s.status === 'cancelled' ? 'bg-danger' : 'bg-warning';
+            return `<tr>
+                <td><span class="badge ${badgeClass}">${s.status}</span></td>
+                <td class="text-end">${s.count}</td>
+                <td class="text-end fw-semibold">${fmtCurrency(s.total)}</td>
+            </tr>`;
+        }).join('');
+        document.getElementById('tableInvoiceStatuses').innerHTML = statusHtml || '<tr><td colspan="3" class="text-center text-muted py-3">No data</td></tr>';
 
-                // items table
-                const itemsHtml = (d.items || []).slice(0,10).map(i=>{
-                    return `<tr>
-          <td>${i.name}</td>
-          <td class="text-end">${fmt(i.qty)}</td>
-          <td class="text-end">${fmtCurrency(i.revenue)}</td>
-        </tr>`;
-                }).join('');
-                document.getElementById('tableItems').innerHTML = itemsHtml;
+        // --- Charts ---
+        const colorPalette = ['#0b6aa0','#5b57ae','#16a34a','#f59e0b','#dc2626','#8b5cf6','#06b6d4','#f97316'];
+        const alpha = (c, a) => c + Math.round(a * 255).toString(16).padStart(2, '0');
 
-                // Charts: destroy previous if exists
-                Object.keys(charts).forEach(k => {
-                    try{ charts[k].destroy(); } catch(e){}
-                });
-                charts = {};
-
-                // Sales Trend (line)
-                const ctxTrend = document.getElementById('chartSalesTrend').getContext('2d');
-                charts.trend = new Chart(ctxTrend, {
-                    type:'line',
-                    data:{
-                        labels: generateLabels(d.salesTrend.length, rangeKey),
-                        datasets:[{
-                            label: 'Sales',
-                            data: d.salesTrend,
-                            borderColor: 'rgba(11,106,160,0.95)',
-                            backgroundColor: gradient(ctxTrend, 'rgba(11,106,160,0.12)'),
-                            tension: 0.27,
-                            pointRadius: 3,
-                            pointBackgroundColor: '#fff'
-                        }]
-                    },
-                    options: baseLineOptions()
-                });
-
-                // Sales vs Payments (bar)
-                const ctxSVP = document.getElementById('chartSalesVsPayments').getContext('2d');
-                charts.svp = new Chart(ctxSVP, {
-                    type:'bar',
-                    data:{
-                        labels:['Invoiced','Collected','Outstanding'],
-                        datasets:[{
-                            label:'SAR',
-                            data:[d.sales, d.collected, d.outstanding],
-                            backgroundColor:['rgba(11,106,160,0.9)','rgba(91,87,174,0.85)','rgba(239,68,68,0.9)']
-                        }]
-                    },
-                    /*options: {
-                        plugins:{legend:{display:false}},
-                        scales:{ y:{ beginAtZero:true } },
-                        maintainAspectRatio:false
-                    }*/
-                });
-
-                // Profit analysis (d.sales - d.cogs)
-                const profit = d.sales - (d.cogs || 0);
-                const profitPct = d.sales ? ((profit/d.sales)*100).toFixed(1) : 0;
-                charts.profit = new Chart(document.getElementById('chartProfit').getContext('2d'), {
-                    type:'doughnut',
-                    data:{
-                        labels:['Cost (COGS)','Profit'],
-                        datasets:[{
-                            data:[d.cogs || 0, Math.max(profit,0)],
-                            backgroundColor:['rgba(107,114,128,0.12)','rgba(16,185,129,0.9)']
-                        }]
-                    },
-                   /* options:{
-                        plugins:{legend:{position:'bottom'}},
-                        maintainAspectRatio:false
-                    }*/
-                });
-
-                // Categories (pie)
-                charts.cat = new Chart(document.getElementById('chartCategory').getContext('2d'), {
-                    type:'pie',
-                    data:{
-                        labels: d.categories.map(c=>c.label),
-                        datasets:[{ data: d.categories.map(c=>c.value), backgroundColor:generateColorPalette(d.categories.length) }]
-                    },
-                    //options:{ plugins:{legend:{position:'bottom'}}, maintainAspectRatio:false }
-                });
-
-                // Regions (doughnut)
-                charts.reg = new Chart(document.getElementById('chartRegion').getContext('2d'), {
-                    type:'doughnut',
-                    data:{
-                        labels: d.regions.map(r=>r.label),
-                        datasets:[{ data: d.regions.map(r=>r.value), backgroundColor:generateColorPalette(d.regions.length) }]
-                    },
-                    //options:{ plugins:{legend:{position:'bottom'}}, maintainAspectRatio:false }
-                });
-
-                // Salesperson (horizontal bar)
-                charts.sp = new Chart(document.getElementById('chartSalesperson').getContext('2d'), {
-                    type:'bar',
-                    data:{
-                        labels: d.salespeople.map(s=>s.name),
-                        datasets:[{ data: d.salespeople.map(s=>s.value), backgroundColor:'rgba(11,106,160,0.85)' }]
-                    },
-                    /*options:{
-                        indexAxis:'y',
-                        plugins:{legend:{display:false}},
-                        scales:{ x:{ beginAtZero:true } },
-                        maintainAspectRatio:false
-                    }*/
-                });
-
-            } // renderRange
-
-            /* ======= helpers and chart options ======= */
-            function generateLabels(n, rangeKey){
-                // if year -> months, else weekly labels
-                if(rangeKey === 'this_year') return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].slice(0,n);
-                // if small counts: W1..Wn
-                return Array.from({length:n},(v,i)=>'W'+(i+1));
+        // Sales Trend
+        const ctxTrend = document.getElementById('chartSalesTrend').getContext('2d');
+        const trendLabels = '{{ $range }}' === 'this_year'
+            ? ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].slice(0, d.salesTrend.length)
+            : Array.from({length: d.salesTrend.length}, (_, i) => 'W' + (i + 1));
+        new Chart(ctxTrend, {
+            type: 'line',
+            data: {
+                labels: trendLabels,
+                datasets: [{
+                    label: 'Sales',
+                    data: d.salesTrend,
+                    borderColor: '#0b6aa0',
+                    backgroundColor: (() => {
+                        const g = ctxTrend.createLinearGradient(0, 0, 0, 200);
+                        g.addColorStop(0, 'rgba(11,106,160,0.15)');
+                        g.addColorStop(1, 'rgba(11,106,160,0)');
+                        return g;
+                    })(),
+                    fill: true,
+                    tension: 0.35,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#0b6aa0',
+                    pointBorderWidth: 2,
+                    borderWidth: 2.5
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { grid: { color: 'rgba(0,0,0,0.05)' }, beginAtZero: true, ticks: { callback: v => 'SAR ' + fmt(v) } }
+                },
+                maintainAspectRatio: false
             }
+        });
 
-            function generateColorPalette(n){
-                const base = [
-                    'rgba(11,106,160,0.9)',
-                    'rgba(91,87,174,0.9)',
-                    'rgba(14,165,233,0.9)',
-                    'rgba(16,185,129,0.9)',
-                    'rgba(249,115,22,0.9)',
-                    'rgba(234,88,12,0.9)',
-                    'rgba(168,85,247,0.9)',
-                    'rgba(34,197,94,0.9)'
-                ];
-                return Array.from({length:n},(v,i)=> base[i % base.length]);
+        // Category pie
+        new Chart(document.getElementById('chartCategory').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: (d.categories || []).map(c => c.label),
+                datasets: [{
+                    data: (d.categories || []).map(c => c.value),
+                    backgroundColor: colorPalette.slice(0, Math.max((d.categories || []).length, 1)),
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 8, font: { size: 11 } } } },
+                maintainAspectRatio: false
             }
+        });
 
-            function baseLineOptions(){
-                /*return {
-                    plugins: { legend:{ display:false } },
-                    scales: {
-                        x: { grid:{display:false} },
-                        y: { grid:{color:'rgba(15,23,42,0.04)'}, beginAtZero:true }
-                    },
-                    maintainAspectRatio:false
-                };*/
+        // Region doughnut
+        new Chart(document.getElementById('chartRegion').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: (d.regions || []).map(r => r.label),
+                datasets: [{
+                    data: (d.regions || []).map(r => r.value),
+                    backgroundColor: colorPalette.slice(0, Math.max((d.regions || []).length, 1)),
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 8, font: { size: 11 } } } },
+                maintainAspectRatio: false
             }
+        });
 
-            function gradient(ctx, color){
-                const g = ctx.createLinearGradient(0,0,0,200);
-                g.addColorStop(0, color);
-                g.addColorStop(1, 'rgba(255,255,255,0)');
-                return g;
+        // Salesperson horizontal bar
+        new Chart(document.getElementById('chartSalesperson').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: (d.salespeople || []).map(s => s.name),
+                datasets: [{
+                    data: (d.salespeople || []).map(s => s.value),
+                    backgroundColor: '#0b6aa0',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: 'rgba(0,0,0,0.05)' }, beginAtZero: true, ticks: { callback: v => 'SAR ' + fmt(v) } },
+                    y: { grid: { display: false } }
+                },
+                maintainAspectRatio: false
             }
+        });
 
-            /* ======= init ======= */
-            document.getElementById('btn-apply').addEventListener('click', ()=>{
-                const range = document.getElementById('dateRange').value;
-                // Update URL with the selected range
-                window.location.href = '/sales/overview?range=' + range;
-            });
+        // Invoice Status bar
+        new Chart(document.getElementById('chartStatus').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: statuses.map(s => s.status.charAt(0).toUpperCase() + s.status.slice(1)),
+                datasets: [{
+                    label: 'Count',
+                    data: statuses.map(s => s.count),
+                    backgroundColor: statuses.map(s =>
+                        s.status === 'approved' ? '#16a34a' : s.status === 'draft' ? '#94a3b8' : s.status === 'cancelled' ? '#dc2626' : '#f59e0b'
+                    ),
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { grid: { color: 'rgba(0,0,0,0.05)' }, beginAtZero: true, ticks: { stepSize: 1 } }
+                },
+                maintainAspectRatio: false
+            }
+        });
 
-            // Set the initial value of the date range selector
-            document.getElementById('dateRange').value = '{{ $range ?? "this_month" }}';
+        // Footer stats
+        const topCust = d.customers?.[0];
+        const topItem = d.items?.[0];
+    }
 
-            // render initial with the range from the controller
-            renderRange('{{ $range ?? "this_month" }}');
+    document.addEventListener('DOMContentLoaded', render);
 
-            /* ======= OPTIONAL: allow clicking a KPI to filter (example) ======= */
-            document.getElementById('kpiOutstanding').addEventListener('click', ()=>{
-                alert('Outstanding clicked — implement drill-down to unpaid invoices.');
-            });
-
-        </script>
-        </div>
-
-    </main>
+    document.getElementById('btn-apply').addEventListener('click', () => {
+        const range = document.getElementById('dateRange').value;
+        window.location.href = '/sales/overview?range=' + range;
+    });
+    </script>
 </x-app-layout>

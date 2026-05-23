@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Sales;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
+use App\Models\Finance\Collection\Collection;
 use App\Models\Finance\CustomerInvoice\CustomerInvoice;
 use App\Models\Finance\CustomerInvoice\CustomerInvoiceSub;
 use App\Models\Finance\SupplierInvoice\SupplierInvoice;
+use App\Models\Master\Description;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -14,89 +16,66 @@ use Illuminate\Support\Facades\DB;
 
 class SalesOverviewController extends Controller
 {
-    public function index(Request $request)
+    private function getRange($request): array
     {
         $range = $request->input('range', 'this_month');
 
-        // Determine date range based on selection
-        switch ($range) {
-            case 'last_month':
-                $startDate = Carbon::now()->subMonth()->startOfMonth();
-                $endDate = Carbon::now()->subMonth()->endOfMonth();
-                break;
-            case 'this_year':
-                $startDate = Carbon::now()->startOfYear();
-                $endDate = Carbon::now()->endOfYear();
-                break;
-            case 'this_month':
-            default:
-                $startDate = Carbon::now()->startOfMonth();
-                $endDate = Carbon::now()->endOfMonth();
-                break;
-        }
+        return match ($range) {
+            'last_month' => [Carbon::now()->subMonth()->startOfMonth(), Carbon::now()->subMonth()->endOfMonth(), $range],
+            'this_year' => [Carbon::now()->startOfYear(), Carbon::now()->endOfYear(), $range],
+            default => [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth(), $range],
+        };
+    }
 
-        // Fetch data for the dashboard
+    public function index(Request $request)
+    {
+        [$startDate, $endDate, $range] = $this->getRange($request);
+
         $data = [
-            // KPIs
             'sales' => $this->getTotalSales($startDate, $endDate),
             'collected' => $this->getCollectedPayments($startDate, $endDate),
-            'outstanding' => $this->getOutstandingAmount($startDate, $endDate),
+            'outstanding' => $this->getOutstandingAmount(),
             'invoices_avg' => $this->getAverageInvoiceValue($startDate, $endDate),
             'recurring_ratio' => $this->getRecurringRatio($startDate, $endDate),
-
-            // Counts
             'invoices_count' => $this->getInvoicesCount($startDate, $endDate),
             'customers_count' => $this->getCustomersCount($startDate, $endDate),
-
-            // Trend data
             'salesTrend' => $this->getSalesTrend($startDate, $endDate, $range),
-
-            // Category breakdown
-            'categories' => $this->getSalesByCategory($startDate, $endDate),
-
-            // Region breakdown
+            'categories' => $this->getSalesByServiceType($startDate, $endDate),
             'regions' => $this->getSalesByRegion($startDate, $endDate),
-
-            // Salesperson performance
             'salespeople' => $this->getSalespeoplePerformance($startDate, $endDate),
-
-            // Top customers
             'customers' => $this->getTopCustomers($startDate, $endDate),
-
-            // Top items
             'items' => $this->getTopItems($startDate, $endDate),
-
-            // Cost of goods sold for profit calculation
-            'cogs' => $this->getCostOfGoodsSold($startDate, $endDate),
+            'invoiceStatuses' => $this->getInvoiceStatusBreakdown($startDate, $endDate),
+            'monthlyComparison' => $this->getMonthlyComparison(),
         ];
 
         return view('modules.sales.overview', compact('data', 'range'));
     }
 
-    private function getTotalSales($startDate, $endDate)
+    private function getTotalSales($startDate, $endDate): float
     {
-        return CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
+        return (float) CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
             ->where('status', 'approved')
             ->sum('base_grand_total');
     }
 
-    private function getCollectedPayments($startDate, $endDate)
+    private function getCollectedPayments($startDate, $endDate): float
     {
-        // This would ideally come from a payments/collections table
-        // For now, we'll estimate based on invoices that are marked as paid
-        return CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
+        return (float) Collection::whereBetween('collection_date', [$startDate, $endDate])
             ->where('status', 'approved')
-            ->sum('base_grand_total') * 0.8; // Assuming 80% collection rate
+            ->sum('base_grand_total');
     }
 
-    private function getOutstandingAmount($startDate, $endDate)
+    private function getOutstandingAmount(): float
     {
-        return CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
-            ->where('status', 'approved')
-            ->sum('base_grand_total') * 0.2; // Assuming 20% outstanding
+        $total = (float) CustomerInvoice::where('status', 'approved')
+            ->sum('base_grand_total');
+        $paid = (float) CustomerInvoice::where('status', 'approved')
+            ->sum('paid_amount');
+        return max(0, $total - $paid);
     }
 
-    private function getAverageInvoiceValue($startDate, $endDate)
+    private function getAverageInvoiceValue($startDate, $endDate): float
     {
         $count = CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
             ->where('status', 'approved')
@@ -109,233 +88,214 @@ class SalesOverviewController extends Controller
         return $count > 0 ? $total / $count : 0;
     }
 
-    private function getRecurringRatio($startDate, $endDate)
+    private function getRecurringRatio($startDate, $endDate): float
     {
-        // Count customers with more than one invoice in the period
-        $totalCustomers = CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
+        $totalCustomers = (int) CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
             ->where('status', 'approved')
             ->distinct('customer_id')
             ->count('customer_id');
 
-        $recurringCustomers = CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
+        $recurring = (int) CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
             ->where('status', 'approved')
             ->select('customer_id', DB::raw('COUNT(*) as invoice_count'))
             ->groupBy('customer_id')
             ->having('invoice_count', '>', 1)
             ->count();
 
-        return $totalCustomers > 0 ? $recurringCustomers / $totalCustomers : 0;
+        return $totalCustomers > 0 ? $recurring / $totalCustomers : 0;
     }
 
-    private function getInvoicesCount($startDate, $endDate)
+    private function getInvoicesCount($startDate, $endDate): int
     {
-        return CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
+        return (int) CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
             ->where('status', 'approved')
             ->count();
     }
 
-    private function getCustomersCount($startDate, $endDate)
+    private function getCustomersCount($startDate, $endDate): int
     {
-        return CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
+        return (int) CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
             ->where('status', 'approved')
             ->distinct('customer_id')
             ->count('customer_id');
     }
 
-    private function getSalesTrend($startDate, $endDate, $range)
+    private function getSalesTrend($startDate, $endDate, $range): array
     {
         $trend = [];
 
         if ($range === 'this_year') {
-            // Monthly trend for the year
             for ($i = 1; $i <= 12; $i++) {
                 $monthStart = Carbon::create(Carbon::now()->year, $i, 1)->startOfMonth();
                 $monthEnd = Carbon::create(Carbon::now()->year, $i, 1)->endOfMonth();
 
-                $sales = CustomerInvoice::whereBetween('invoice_date', [$monthStart, $monthEnd])
+                $sales = (float) CustomerInvoice::whereBetween('invoice_date', [$monthStart, $monthEnd])
                     ->where('status', 'approved')
-                    ->sum('grand_total');
+                    ->sum('base_grand_total');
 
                 $trend[] = $sales;
 
-                // Stop if we've reached the current month
                 if ($monthStart->month === Carbon::now()->month) {
                     break;
                 }
             }
         } else {
-            // Weekly trend for the month
             $currentDate = clone $startDate;
             $weekNumber = 1;
 
             while ($currentDate->lte($endDate)) {
                 $weekStart = clone $currentDate;
-                $weekEnd = clone $currentDate;
-                $weekEnd->addDays(6)->min($endDate);
+                $weekEnd = (clone $currentDate)->addDays(6)->min($endDate);
 
-                $sales = CustomerInvoice::whereBetween('invoice_date', [$weekStart, $weekEnd])
+                $sales = (float) CustomerInvoice::whereBetween('invoice_date', [$weekStart, $weekEnd])
                     ->where('status', 'approved')
-                    ->sum('grand_total');
+                    ->sum('base_grand_total');
 
                 $trend[] = $sales;
-
                 $currentDate->addDays(7);
                 $weekNumber++;
 
-                // Limit to 4-5 weeks
-                if ($weekNumber > 5) {
-                    break;
-                }
+                if ($weekNumber > 5) break;
             }
         }
 
         return $trend;
     }
 
-    private function getSalesByCategory($startDate, $endDate)
+    private function getSalesByServiceType($startDate, $endDate): array
     {
-        // This would ideally come from a category field in the invoice or invoice items
-        // For now, we'll create some sample categories based on customer types or invoice sub types
-        $categories = [];
-
-        // Example: Group by a category field or create artificial categories
-        $retailSales = CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
-            ->where('status', 'approved')
-            ->where('customer_id', '!=', null)
-            ->sum('grand_total') * 0.4; // 40% retail
-
-        $wholesaleSales = CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
-            ->where('status', 'approved')
-            ->where('customer_id', '!=', null)
-            ->sum('grand_total') * 0.35; // 35% wholesale
-
-        $onlineSales = CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
-            ->where('status', 'approved')
-            ->where('customer_id', '!=', null)
-            ->sum('grand_total') * 0.15; // 15% online
-
-        $serviceSales = CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
-            ->where('status', 'approved')
-            ->where('customer_id', '!=', null)
-            ->sum('grand_total') * 0.1; // 10% services
-
-        $categories = [
-            ['label' => 'Retail', 'value' => $retailSales],
-            ['label' => 'Wholesale', 'value' => $wholesaleSales],
-            ['label' => 'Online', 'value' => $onlineSales],
-            ['label' => 'Services', 'value' => $serviceSales],
-        ];
-
-        return $categories;
+        return CustomerInvoiceSub::whereHas('customerInvoice', fn($q) =>
+            $q->whereBetween('invoice_date', [$startDate, $endDate])->where('customer_invoices.status', 'approved')
+        )
+        ->join('descriptions', 'customer_invoice_subs.description_id', '=', 'descriptions.id')
+        ->select('descriptions.category as label', DB::raw('SUM(customer_invoice_subs.line_total) as value'))
+        ->whereNotNull('descriptions.category')
+        ->groupBy('descriptions.category')
+        ->orderBy('value', 'desc')
+        ->take(6)
+        ->get()
+        ->map(fn($r) => ['label' => $r->label, 'value' => (float) $r->value])
+        ->toArray();
     }
 
-    private function getSalesByRegion($startDate, $endDate)
+    private function getSalesByRegion($startDate, $endDate): array
     {
-        // This would ideally come from a region field in the customer or invoice
-        // For now, we'll create some sample regions
-        $totalSales = CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
-            ->where('status', 'approved')
-            ->sum('grand_total');
-
-        $regions = [
-            ['label' => 'Riyadh', 'value' => $totalSales * 0.5], // 50% Riyadh
-            ['label' => 'Jeddah', 'value' => $totalSales * 0.3], // 30% Jeddah
-            ['label' => 'Dammam', 'value' => $totalSales * 0.15], // 15% Dammam
-            ['label' => 'Other', 'value' => $totalSales * 0.05], // 5% Other
-        ];
-
-        return $regions;
+        return CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
+            ->where('customer_invoices.status', 'approved')
+            ->whereNotNull('customer_invoices.customer_id')
+            ->join('customers', 'customer_invoices.customer_id', '=', 'customers.id')
+            ->select('customers.city_en as label', DB::raw('SUM(customer_invoices.base_grand_total) as value'))
+            ->whereNotNull('customers.city_en')
+            ->groupBy('customers.city_en')
+            ->orderBy('value', 'desc')
+            ->take(6)
+            ->get()
+            ->map(fn($r) => ['label' => $r->label, 'value' => (float) $r->value])
+            ->toArray();
     }
 
-    private function getSalespeoplePerformance($startDate, $endDate)
+    private function getSalespeoplePerformance($startDate, $endDate): array
     {
-        // This would ideally come from a salesperson field in the invoice
-        // For now, we'll get some users and assign random sales values
-        $users = User::take(4)->get();
-        $totalSales = CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
-            ->where('status', 'approved')
-            ->sum('grand_total');
-
-        $salespeople = [];
-        $percentages = [0.35, 0.25, 0.22, 0.18]; // Distribution percentages
-
-        foreach ($users as $index => $user) {
-            $salespeople[] = [
-                'name' => $user->name,
-                'value' => $totalSales * ($percentages[$index] ?? 0.1)
-            ];
-        }
-
-        return $salespeople;
+        return CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
+            ->where('customer_invoices.status', 'approved')
+            ->whereNotNull('customer_invoices.created_by')
+            ->join('users', 'customer_invoices.created_by', '=', 'users.id')
+            ->select('users.name', DB::raw('SUM(customer_invoices.base_grand_total) as value'))
+            ->groupBy('users.id', 'users.name')
+            ->orderBy('value', 'desc')
+            ->take(5)
+            ->get()
+            ->map(fn($r) => ['name' => $r->name, 'value' => (float) $r->value])
+            ->toArray();
     }
 
-    private function getTopCustomers($startDate, $endDate)
+    private function getTopCustomers($startDate, $endDate): array
     {
-        $customers = CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
-            ->where('status', 'approved')
-            ->select('customer_id', DB::raw('COUNT(*) as invoice_count'), DB::raw('SUM(grand_total) as revenue'))
+        $rows = CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
+            ->where('customer_invoices.status', 'approved')
+            ->select('customer_id',
+                DB::raw('COUNT(*) as invoice_count'),
+                DB::raw('SUM(base_grand_total) as revenue'),
+                DB::raw('SUM(base_grand_total) - SUM(COALESCE(paid_amount, 0)) as outstanding')
+            )
             ->groupBy('customer_id')
             ->orderBy('revenue', 'desc')
             ->take(10)
             ->get();
 
-        $result = [];
-        foreach ($customers as $customer) {
-            if ($customer->customer_id) {
-                $customerInfo = Customer::find($customer->customer_id);
-                if ($customerInfo) {
-                    $result[] = [
-                        'name' => $customerInfo->name ?? $customerInfo->name_en ?? 'Customer #' . $customer->customer_id,
-                        'invoices' => $customer->invoice_count,
-                        'revenue' => $customer->revenue
-                    ];
-                }
-            }
-        }
+        $customers = Customer::whereIn('id', $rows->pluck('customer_id'))->get()->keyBy('id');
 
-        return $result;
+        return $rows->map(fn($r) => [
+            'name' => $customers[$r->customer_id]->name ?? "Customer #{$r->customer_id}",
+            'invoices' => (int) $r->invoice_count,
+            'revenue' => (float) $r->revenue,
+            'outstanding' => (float) $r->outstanding,
+        ])->toArray();
     }
 
-    private function getTopItems($startDate, $endDate)
+    private function getTopItems($startDate, $endDate): array
     {
-        // This would ideally come from invoice line items or products
-        // For now, we'll create some sample items based on invoice subs
-        $items = CustomerInvoiceSub::whereHas('customerInvoice', function ($query) use ($startDate, $endDate) {
-            $query->whereBetween('invoice_date', [$startDate, $endDate])
-                ->where('status', 'approved');
-        })
-        ->select('description_id', DB::raw('COUNT(*) as qty'), DB::raw('SUM(base_total_with_tax) as revenue'))
+        $items = CustomerInvoiceSub::whereHas('customerInvoice', fn($q) =>
+            $q->whereBetween('invoice_date', [$startDate, $endDate])->where('customer_invoices.status', 'approved')
+        )
+        ->select('description_id',
+            DB::raw('SUM(quantity) as qty'),
+            DB::raw('SUM(line_total) as revenue')
+        )
         ->groupBy('description_id')
         ->orderBy('revenue', 'desc')
         ->take(10)
         ->get();
 
-        $result = [];
-        foreach ($items as $item) {
-            $description = \App\Models\Master\Description::find($item->description_id);
-            $result[] = [
-                'name' => $description ? $description->name : 'Item #' . $item->description_id,
-                'qty' => $item->qty,
-                'revenue' => $item->revenue
-            ];
-        }
+        $descriptions = Description::whereIn('id', $items->pluck('description_id'))->get()->keyBy('id');
 
-        return $result;
+        return $items->map(fn($i) => [
+            'name' => $descriptions[$i->description_id]->name ?? "Item #{$i->description_id}",
+            'qty' => (float) $i->qty,
+            'revenue' => (float) $i->revenue,
+        ])->toArray();
     }
 
-    private function getCostOfGoodsSold($startDate, $endDate)
+    private function getInvoiceStatusBreakdown($startDate, $endDate): array
     {
-        // This would ideally come from COGS calculations or supplier invoices
-        // For now, we'll estimate based on supplier invoices in the period
-        $cogs = SupplierInvoice::whereBetween('invoice_date', [$startDate, $endDate])
-            ->where('status', 'approved')
-            ->sum('grand_total');
+        return CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
+            ->select('customer_invoices.status', DB::raw('COUNT(*) as count'), DB::raw('SUM(base_grand_total) as total'))
+            ->groupBy('customer_invoices.status')
+            ->get()
+            ->map(fn($r) => [
+                'status' => $r->status,
+                'count' => (int) $r->count,
+                'total' => (float) $r->total,
+            ])
+            ->toArray();
+    }
 
-        // If no supplier invoices, estimate as 60% of sales
-        if ($cogs == 0) {
-            $cogs = $this->getTotalSales($startDate, $endDate) * 0.6;
-        }
+    private function getMonthlyComparison(): array
+    {
+        $currentMonth = [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()];
+        $lastMonth = [Carbon::now()->subMonth()->startOfMonth(), Carbon::now()->subMonth()->endOfMonth()];
 
-        return $cogs;
+        $currentSales = (float) CustomerInvoice::whereBetween('invoice_date', $currentMonth)
+            ->where('status', 'approved')->sum('base_grand_total');
+
+        $lastSales = (float) CustomerInvoice::whereBetween('invoice_date', $lastMonth)
+            ->where('status', 'approved')->sum('base_grand_total');
+
+        $currentCount = (int) CustomerInvoice::whereBetween('invoice_date', $currentMonth)
+            ->where('status', 'approved')->count();
+
+        $lastCount = (int) CustomerInvoice::whereBetween('invoice_date', $lastMonth)
+            ->where('status', 'approved')->count();
+
+        $currentCollected = (float) Collection::whereBetween('collection_date', $currentMonth)
+            ->where('status', 'approved')->sum('base_grand_total');
+
+        $lastCollected = (float) Collection::whereBetween('collection_date', $lastMonth)
+            ->where('status', 'approved')->sum('base_grand_total');
+
+        return [
+            'current' => ['sales' => $currentSales, 'invoices' => $currentCount, 'collected' => $currentCollected],
+            'previous' => ['sales' => $lastSales, 'invoices' => $lastCount, 'collected' => $lastCollected],
+        ];
     }
 }

@@ -405,6 +405,12 @@
                                         <p>Sales Report</p>
                                     </a>
                                 </li>
+                                <li class="nav-item">
+                                    <a href="/reports/customer-activity-report"
+                                       class="nav-link {{ $submenu == 'customer-activity-report' ? 'active' : '' }}">
+                                        <p>Customer Activity Report</p>
+                                    </a>
+                                </li>
                             </ul>
                         </li>
                         <li class="nav-item {{ $menu == 'reports' ? 'menu-open' : '' }}">

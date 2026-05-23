@@ -5,12 +5,13 @@ CREDIT_NOTE = {
     load() {
         CREDIT_NOTE.form.load();
         CREDIT_NOTE.filter.load();
-        datepicker();
+        CREDIT_NOTE.list.load('all');
     },
     filter: {
         load: function () {
             CREDIT_NOTE.filter.filterBox();
             CREDIT_NOTE.filter.searchBox();
+            CREDIT_NOTE.filter.tabClick();
         },
         filterBox: function () {
             $('#apply-filter').off().on({
@@ -24,25 +25,26 @@ CREDIT_NOTE = {
             let searchTimeout;
             $('#customSearch').off().on({
                 keyup: function (e) {
-                    // If Enter key is pressed, search immediately
                     if (e.key === 'Enter') {
                         clearTimeout(searchTimeout);
                         CREDIT_NOTE.list.dataTable();
                         return;
                     }
-
-                    // Otherwise, debounce the search to avoid too many requests
                     clearTimeout(searchTimeout);
                     searchTimeout = setTimeout(function() {
                         CREDIT_NOTE.list.dataTable();
-                    }, 500); // Wait 500ms after user stops typing
+                    }, 500);
                 }
             });
         },
-        default: function (status = 0) {
-            let data = {}, tab = status ?? $("#listTabs").find('li button.active').attr('id');
+        tabClick: function () {
+            $('#listTabs .status-btn').off().on('click', function () {
+                CREDIT_NOTE.list.dataTable();
+            });
+        },
+        default: function () {
+            let data = {}, tab = $("#listTabs").find('li button.active').attr('id');
             let params = new URLSearchParams($('#list-filter').serialize());
-
             params.forEach((value, key) => {
                 if (data[key]) {
                     data[key] = [].concat(data[key], value);
@@ -58,7 +60,6 @@ CREDIT_NOTE = {
     },
     printPreview(printId) {
         const iframe = document.getElementById('print-frame');
-
         iframe.onload = function () {
             try {
                 iframe.contentWindow.focus();
@@ -70,26 +71,6 @@ CREDIT_NOTE = {
             }
         };
         iframe.src = '/' + CREDIT_NOTE.baseUrl + '/' + printId + '/print';
-    },
-    downloadPDF(printId) {
-        fetch('/adjustment/credit-note/' + printId + '/print')
-            .then(res => res.text())
-            .then(html => {
-                const container = document.createElement('div');
-                //container.style.display = 'none';
-                container.id = 'html-pdf';
-                container.className = 'px-4 pt-4';
-                container.innerHTML = html;
-                console.log(container);
-                //document.body.appendChild(container);
-                const opt = {
-                    margin: 0.2,
-                    filename: `creditNote-${printId}.pdf`,
-                };
-                html2pdf().set(opt).from(container).save().finally(() => {
-                    //document.body.removeChild(container);
-                });
-            });
     },
     list: {
         load(activeTab) {
@@ -106,7 +87,6 @@ CREDIT_NOTE = {
                 lengthChange: false,
                 pageLength: 25,
                 dom: 'rt<"row mt-2"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7 d-flex justify-content-end"p>>',
-                /*order: [[1, 'desc']],*/
                 ajax: {
                     url: GLOBAL_FN.buildUrl('adjustment/credit-note/data'),
                     type: 'POST',
@@ -118,15 +98,22 @@ CREDIT_NOTE = {
                         $('#dataTable tbody').find('.loading-row').remove();
                         GLOBAL_FN.setStatusCounts(json.statusCounts);
 
-                        // Update summary data
+                        // Update KPI summary
                         if (json.salesSummary) {
-                            $('#overall_sales').text(CREDIT_NOTE.list.formatNumber(json.salesSummary.overall_sales || 0));
-                            $('#total_draft_grand').text(CREDIT_NOTE.list.formatNumber(json.salesSummary.total_draft_grand || 0));
-                            $('#total_draft_sub').text(CREDIT_NOTE.list.formatNumber(json.salesSummary.total_draft_sub || 0));
-                            $('#total_draft_tax').text(CREDIT_NOTE.list.formatNumber(json.salesSummary.total_draft_tax || 0));
-                            $('#total_approved_grand').text(CREDIT_NOTE.list.formatNumber(json.salesSummary.total_approved_grand || 0));
-                            $('#total_approved_sub').text(CREDIT_NOTE.list.formatNumber(json.salesSummary.total_approved_sub || 0));
-                            $('#total_approved_tax').text(CREDIT_NOTE.list.formatNumber(json.salesSummary.total_approved_tax || 0));
+                            var s = json.salesSummary;
+                            $('#overall_sales').text(CREDIT_NOTE.list.formatNumber(s.overall_sales || 0));
+                            $('#draftTotal').text(CREDIT_NOTE.list.formatNumber(s.total_draft_grand || 0));
+                            $('#approvedTotal').text(CREDIT_NOTE.list.formatNumber(s.total_approved_grand || 0));
+                        }
+
+                        // Update badge counts
+                        if (json.statusCounts) {
+                            var c = json.statusCounts;
+                            $('#draftCount').text(c.DRAFT || 0);
+                            $('#approvedCount').text(c.APPROVED || 0);
+                            $('#cancelledCount').text(c.CANCELLED || 0);
+                            var total = (c.DRAFT || 0) + (c.APPROVED || 0) + (c.CANCELLED || 0);
+                            $('#allCount').text(total);
                         }
 
                         return json.data;
@@ -134,45 +121,43 @@ CREDIT_NOTE = {
                 },
                 columnDefs: [
                     {targets: [0], searchable: false},
-                    {targets: [0, 1, 2, 3, 4, 5, 6, 7, 8], orderable: false},
+                    {targets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], orderable: false},
                 ],
                 columns: [
+                    {data: 'DT_RowIndex', searchable: false},
                     {
                         data: 'row_no', render: function (data, type, row) {
-                            return '<strong>' + row.row_no + '</strong>';
+                            return '<strong>#' + row.row_no + '</strong>';
                         }
                     },
                     {
                         data: 'customer.name_en', render: function (data, type, row) {
-                            return '<div>' + row.customer.name_en + '</div><div class="small text-muted">Code: ' + row.customer.row_no + '</div>';
+                            return '<div>' + (row.customer ? row.customer.name_en : '-') + '</div>';
                         }
                     },
-                    {data: 'job_no'},
-                    {data: 'invoice_no'},
+                    {data: 'job_no', render: function (data) { return data || '-'; }},
+                    {data: 'invoice_no', render: function (data) { return data || '-'; }},
                     {
                         data: 'sub_total', render: function (data, type, row) {
-                            return '<div class="text-end text-secondary">' + row.sub_total + '</div>';
+                            return '<div class="text-end text-secondary">' + (row.sub_total ? CREDIT_NOTE.list.formatNumber(row.sub_total) : '0.00') + '</div>';
                         }
                     },
                     {
                         data: 'tax_total', render: function (data, type, row) {
-                            return '<div class="text-end text-secondary">' + row.tax_total + '</div>';
+                            return '<div class="text-end text-secondary">' + (row.tax_total ? CREDIT_NOTE.list.formatNumber(row.tax_total) : '0.00') + '</div>';
                         }
                     },
                     {
                         data: 'grand_total', render: function (data, type, row) {
-                            return '<div class="text-end fw-semibold">' + row.grand_total + '</div><div class="text-end"><small>' + row.currency + '</small></div>';
+                            return '<div class="text-end fw-semibold">' + (row.grand_total ? CREDIT_NOTE.list.formatNumber(row.grand_total) : '0.00') + '</div>';
                         }
                     },
                     {data: 'posted_at'},
                     GLOBAL_FN.dataTable.optionButton()
-
                 ],
                 language: {
                     search: ""
                 },
-                deferLoading: 0,
-
                 initComplete: function () {
                     CREDIT_NOTE.form.open();
                     webDataTable.actions.menu();
@@ -183,7 +168,7 @@ CREDIT_NOTE = {
             webDataTable.search(table);
         },
         formatNumber(num) {
-            return parseFloat(num).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+            return parseFloat(num || 0).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
         },
         extraActions(row) {
             CREDIT_NOTE.list.actions.statusChange(row);
@@ -206,17 +191,31 @@ CREDIT_NOTE = {
             },
             view(row) {
                 $('#row_view').off().on('click', function () {
-                    let customerId = row.attr('data-id');
+                    let recordId = row.attr('data-id');
+                    let recordName = row.attr('data-name') || 'Credit Note';
 
-                    // Open drawer
+                    // Update drawer subtitle
+                    $('#drawerSubtitle').text(recordName);
 
+                    // Reset to overview tab
+                    let overviewTab = document.getElementById('cn-overview-tab');
+                    if (overviewTab) {
+                        bootstrap.Tab.getOrCreateInstance(overviewTab).show();
+                    }
+
+                    // Clear other tabs
+                    $('#cnItemsContent, #cnDocumentsContent').html('');
+
+                    // Show drawer
                     let drawer = new bootstrap.Offcanvas(document.getElementById('moduleDrawer'));
                     drawer.show();
 
-                    // Load Overview
-                    $('#moduleOverview').html('<p>Loading...</p>');
-                    $.get('/adjustment/credit-note/' + customerId + '/overview', function (data) {
+                    // Load overview content
+                    $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
+                    $.get('/adjustment/credit-note/' + recordId + '/overview', function (data) {
                         $('#moduleOverview').html(data);
+                    }).fail(function () {
+                        $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load credit note details.</div>');
                     });
                 });
             },
@@ -253,15 +252,11 @@ CREDIT_NOTE = {
             $('#' + MODULE + '-tbody').off('click', '.add-row').on('click', '.add-row', function () {
                 let $tbody = $(this).closest('tbody');
                 let $newRow = $tbody.find('tr:first').clone();
-
-                // Clear values in cloned row
                 $newRow.find('input, select, textarea').val('');
                 $newRow.find('select').removeClass('tomselected').removeClass('ts-hidden-accessible');
                 $newRow.find('div.ts-wrapper').remove();
                 initTomSelectForm($newRow);
-
                 $tbody.append($newRow);
-                //PROFORMA_INVOICE.form.removeRow();
             });
         },
         removeRow() {
@@ -271,14 +266,11 @@ CREDIT_NOTE = {
                 if ($tbody.find('tr').length > 1) {
                     $tr.remove();
                 } else {
-                    // If only one row left, just clear it
-                    // $(this).closest('tr').find('input, select').val('');
                     $tr.find('input,textarea').val('');
                     $tr.find('select').each(function () {
                         $(this).val('');
                         if ($(this).hasClass('selectpicker')) {
                             $(this).selectpicker('destroy').addClass('selectpicker');
-                            console.log($(this).attr('id'));
                             selectPicker('#' + $(this).closest('table').attr('id'));
                         }
                     });

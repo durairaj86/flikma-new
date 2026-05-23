@@ -59,7 +59,7 @@ class CreditNoteController extends Controller
 
         // Base query for Credit Notes
         $rows = CreditNote::select(
-            'row_no',
+            'credit_notes.id as row_no',
             'credit_notes.id as id',
             'posted_at',
             'job_id',
@@ -67,10 +67,7 @@ class CreditNoteController extends Controller
             'customer_id',
             'invoice_id',
             'credit_notes.currency as currency',
-            'currency_rate',
-            'base_sub_total',
             'sub_total',
-            'base_tax_total',
             'tax_total',
             'grand_total',
             'credit_notes.status as status',
@@ -80,7 +77,7 @@ class CreditNoteController extends Controller
             ->with(['customer:id,name_en,name_ar,row_no'])
             ->with(['job:id,shipment_mode'])
             ->with(['invoice:id,row_no'])
-            ->when($request->tab, function ($q) use ($request) {
+            ->when($request->tab && $request->tab !== 'all', function ($q) use ($request) {
                 $q->where('credit_notes.status', CreditNoteEnum::fromName($request->tab));
             })
             ->when($job_id != 'list', function ($query) use ($job_id) {
@@ -98,7 +95,7 @@ class CreditNoteController extends Controller
             ->when(isset($filter['customSearch']) && !empty($filter['customSearch']), function ($query) use ($filter) {
                 $search = $filter['customSearch'];
                 $query->where(function ($q) use ($search) {
-                    $q->where('row_no', 'like', "%{$search}%")
+                    $q->where('credit_notes.id', 'like', "%{$search}%")
                         ->orWhere('job_no', 'like', "%{$search}%")
                         ->orWhereHas('customer', function ($q) use ($search) {
                             $q->where('name_en', 'like', "%{$search}%")
@@ -140,7 +137,7 @@ class CreditNoteController extends Controller
             ->when(isset($filter['customSearch']) && !empty($filter['customSearch']), function ($query) use ($filter) {
                 $search = $filter['customSearch'];
                 $query->where(function ($q) use ($search) {
-                    $q->where('row_no', 'like', "%{$search}%")
+                    $q->where('credit_notes.id', 'like', "%{$search}%")
                         ->orWhere('job_no', 'like', "%{$search}%")
                         ->orWhereHas('customer', function ($q) use ($search) {
                             $q->where('name_en', 'like', "%{$search}%")
@@ -191,7 +188,7 @@ class CreditNoteController extends Controller
             ->when(isset($filter['customSearch']) && !empty($filter['customSearch']), function ($query) use ($filter) {
                 $search = $filter['customSearch'];
                 $query->where(function ($q) use ($search) {
-                    $q->where('row_no', 'like', "%{$search}%")
+                    $q->where('credit_notes.id', 'like', "%{$search}%")
                         ->orWhere('job_no', 'like', "%{$search}%")
                         ->orWhereHas('customer', function ($q) use ($search) {
                             $q->where('name_en', 'like', "%{$search}%")
@@ -462,7 +459,7 @@ class CreditNoteController extends Controller
             'onclick' => 'CREDIT_NOTE.printPreview(' . $creditNote->id . ')',
             //'separator' => 'before',
         ]);
-        /*$contextMenu->push([
+        $contextMenu->push([
             'label' => __('View'),
             'code' => '01CSVW',
             'id' => 'row_view',
@@ -471,7 +468,7 @@ class CreditNoteController extends Controller
             'type' => 'item',
             'icon' => 'view',
             'separator' => 'after',
-        ]);*/
+        ]);
         $contextMenu->push([
             'label' => __('Send Email'),
             'code' => '01CSEM',
@@ -584,6 +581,13 @@ class CreditNoteController extends Controller
                 'status' => $creditNote->status,
             ],
         ]);
+    }
+
+    public function overview($id)
+    {
+        $creditNote = CreditNote::with(['creditNoteSubs', 'customer', 'job', 'invoice', 'documents'])->findOrFail($id);
+        $descriptions = Description::descriptions()->pluck('description', 'id')->toArray();
+        return view('modules.finance.credit-note.view-overview', compact('creditNote', 'descriptions'));
     }
 
     public function print($id)

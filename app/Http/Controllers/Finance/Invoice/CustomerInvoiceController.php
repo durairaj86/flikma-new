@@ -239,7 +239,7 @@ class CustomerInvoiceController extends Controller
             ->editColumn('currency', fn($model) => strtoupper($model->currency))
             ->addColumn('customer_name', fn($model) => $model->customer?->name_en ? truncateName($model->customer?->name_en, 15) : '-')
             ->addColumn('due_status', fn($model) => 'unpaid')
-            ->addColumn('job_activity', fn($model) => $activity->where('id', $model->job->activity_id)->pluck('name')->first())
+            ->addColumn('job_activity', fn($model) => $model->job ? ($activity->where('id', $model->job->activity_id)->pluck('name')->first() ?? '-') : '-')
             ->editColumn('grand_total', fn($model) => number_format($model->grand_total, $decimals))
             ->editColumn('invoice_date', fn($model) => Carbon::parse($model->invoice_date)->format('d-M-Y'))
             ->editColumn('due_at', fn($model) => Carbon::parse($model->due_at)->format('d-M-Y'))

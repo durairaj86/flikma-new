@@ -25,5 +25,8 @@ Route::get('/reports/job-balance-report', \App\Livewire\Report\Job\JobBalanceRep
 Route::get('/reports/job-income-report', \App\Livewire\Report\Job\JobIncomeReport::class);
 Route::get('/reports/provisional-report', \App\Livewire\Report\Job\ProvisionalReport::class);
 
+// Operation Reports
+Route::get('/reports/customer-activity-report', \App\Livewire\Report\Operation\CustomerActivityReport::class);
+
 // Sale Reports
 Route::get('/reports/sale-report', \App\Livewire\Report\Sale\SaleReport::class);

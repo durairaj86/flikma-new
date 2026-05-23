@@ -30,6 +30,7 @@
                         'color' => 'success',
                         'reports' => [
                             ['url' => '/reports/sale-report', 'name' => 'Sales Report', 'desc' => 'Daily, weekly, and monthly sales transaction summaries.'],
+                            ['url' => '/reports/customer-activity-report', 'name' => 'Customer Activity Report', 'desc' => 'Job activity, revenue, and profitability grouped by customer.'],
                         ]
                     ],
                     [

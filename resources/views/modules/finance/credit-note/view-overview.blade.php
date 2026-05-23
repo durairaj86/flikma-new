@@ -1,196 +1,186 @@
-@extends('includes.print-header')
-@section('print-content')
-    <div class="invoice-wrapper bg-white position-relative">
+@php
+    $statusMap = [
+        1 => ['label' => 'Draft',     'class' => 'bg-warning-subtle text-warning'],
+        2 => ['label' => 'Approved',  'class' => 'bg-success-subtle text-success'],
+        3 => ['label' => 'Cancelled', 'class' => 'bg-danger-subtle text-danger'],
+    ];
+    $statusInfo = $statusMap[$creditNote->status] ?? ['label' => 'Unknown', 'class' => 'bg-secondary-subtle text-secondary'];
+@endphp
 
-        {{-- DRAFT Watermark --}}
-        @if($customerInvoice->status == 1)
-            <div class="draft-watermark">DRAFT</div>
-        @endif
+<style>
+    .cn-overview-label { font-size: .78rem; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; color: #64748b; }
+    .cn-overview-value { font-size: .9rem; color: #1e293b; font-weight: 500; }
+    .cn-section-title { font-size: .74rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #94a3b8; border-bottom: 1px solid #f1f5f9; padding-bottom: .4rem; margin-bottom: .75rem; }
+    .cn-detail-row { display: flex; justify-content: space-between; align-items: baseline; padding: .35rem 0; border-bottom: 1px solid #f8fafc; }
+    .cn-detail-row:last-child { border-bottom: none; }
+    .cn-amount-row { display: flex; justify-content: space-between; align-items: center; padding: .3rem 0; }
+    .cn-grand-row { background: #f8fafc; margin: 0 -1rem; padding: .5rem 1rem; border-radius: 8px; }
+    .x-small { font-size: .75rem; }
+    .tabular-nums { font-variant-numeric: tabular-nums; }
+</style>
 
-        <!-- Action Buttons (screen only) -->
-        <div class="d-print-none d-flex justify-content-end align-items-center gap-2 mb-3">
-            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="CUSTOMER_INVOICE.printPreview('{{ $customerInvoice->id }}')">
-                <i class="bi bi-printer me-1"></i> Print
-            </button>
-            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="CUSTOMER_INVOICE.downloadPDF('{{ $customerInvoice->id }}')">
-                <i class="bi bi-file-earmark-pdf me-1"></i> Download PDF
-            </button>
-            <button type="button" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-x-circle me-1"></i> Cancel
-            </button>
-        </div>
-
-        <!-- Header -->
-        <div class="d-flex justify-content-between align-items-start mb-4 border-bottom pb-3">
-            <div class="d-flex align-items-center">
-                <img src="{{ asset('img/logo.png') }}" alt="Company Logo" style="height:70px;">
-                <div class="ms-3">
-                    <h5 class="mb-1 fw-bold text-dark">Flikma Networks Ltd.</h5>
-                    <small class="text-muted">
-                        123 Business Street, DAMMAM<br>
-                        Saudi Arabia - 600001
-                    </small>
-                </div>
-            </div>
-
-            <div class="text-end">
-                <h3 class="text-uppercase fw-bold text-primary mb-1">Invoice</h3>
-                <h5 class="fw-bold">#{{ $customerInvoice->row_no }}</h5>
-            </div>
-        </div>
-
-        <!-- Customer Info -->
-        <div class="row mb-4">
-            <div class="col-6">
-                <h6><strong>To,</strong></h6>
-                <div><strong>{{ $customerInvoice->customer->name }}</strong></div>
-                <div>{{ $customerInvoice->customer->address ?? '-' }}</div>
-                @if($customerInvoice->customer->email)
-                    <div>Email: {{ $customerInvoice->customer->email }}</div>
-                @endif
-                @if($customerInvoice->customer->phone)
-                    <div>Phone: {{ $customerInvoice->customer->phone }}</div>
-                @endif
-            </div>
-            <div class="col-6">
-                <div class="d-flex flex-column align-items-end gap-2">
-
-                    <div class="d-flex w-100 justify-content-end">
-                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">Invoice No:</div>
-                        <div class="text-end" style="min-width: 120px;">#{{ $customerInvoice->row_no }}</div>
-                    </div>
-
-                    <div class="d-flex w-100 justify-content-end">
-                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">Invoice Date:</div>
-                        <div class="text-end" style="min-width: 120px;">{{ $customerInvoice->invoice_date }}</div>
-                    </div>
-
-                    <div class="d-flex w-100 justify-content-end">
-                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">Due Date:</div>
-                        <div class="text-end" style="min-width: 120px;">{{ $customerInvoice->due_at }}</div>
-                    </div>
-
-                    <div class="d-flex w-100 justify-content-end">
-                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">Currency:</div>
-                        <div class="text-end" style="min-width: 120px;">{{ $customerInvoice->currency }}</div>
-                    </div>
-
-                    <div class="d-flex w-100 justify-content-end">
-                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">Exchange Rate:</div>
-                        <div class="text-end" style="min-width: 120px;">{{ number_format($customerInvoice->currency_rate, decimals()) }}</div>
-                    </div>
-
-                    <div class="d-flex w-100 justify-content-end">
-                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">Job:</div>
-                        <div class="text-end" style="min-width: 120px;">{{ $customerInvoice->job_no }}</div>
-                    </div>
-
-                    <div class="d-flex w-100 justify-content-end">
-                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">Status:</div>
-                        <div class="text-end" style="min-width: 120px;">
-                            <span class="badge bg-warning text-dark">
-                                {{ \App\Enums\CustomerInvoiceEnum::from($customerInvoice->status)->label() }}
-                            </span>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-
-        <!-- Item Details -->
-        @if($customerInvoice->customerInvoiceSubs && $customerInvoice->customerInvoiceSubs->count())
-            <div>
-                <table class="table table-invoice align-middle">
-                    <thead>
-                    <tr>
-                        <th style="width: 40px;">#</th>
-                        <th>Description</th>
-                        <th class="text-end">Qty</th>
-                        <th class="text-end">Unit</th>
-                        <th class="text-end">Unit Price</th>
-                        <th class="text-end">Tax</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach($customerInvoice->customerInvoiceSubs as $item)
-                        <tr>
-                            <td>{{ $loop->iteration }}</td>
-                            <td>{{ $descriptions[$item->description_id] }}</td>
-                            <td class="text-end">{{ $item->quantity }}</td>
-                            <td class="text-end">{{ $item->unit }}</td>
-                            <td class="text-end">{{ number_format($item->unit_price, decimals()) }}</td>
-                            <td class="text-end">{{ $item->tax_percent }}%</td>
-                        </tr>
-                    @endforeach
-                    </tbody>
-                </table>
-            </div>
-        @endif
-
-        <!-- Totals -->
-        <div class="total-section d-flex justify-content-between mt-4">
-            <div>
-                @php
-                    $qrData = "Customer Invoice: {$customerInvoice->row_no}\n"
-                        ."Customer: {$customerInvoice->customer->name}\n"
-                        ."Date: {$customerInvoice->invoice_date}\n"
-                        ."Total: ".amountFormat($customerInvoice->grand_total)." {$customerInvoice->currency}";
-                @endphp
-                {!! QrCode::size(100)->generate($qrData) !!}
-            </div>
-            <table class="total-table">
-                <tr>
-                    <td><strong>Subtotal</strong></td>
-                    <td class="text-end">{{ amountFormat($customerInvoice->sub_total) }}</td>
-                </tr>
-                <tr>
-                    <td><strong>Tax</strong></td>
-                    <td class="text-end">{{ amountFormat($customerInvoice->tax_total) }}</td>
-                </tr>
-                @if($customerInvoice->discount_total > 0)
-                    <tr>
-                        <td><strong>Discount</strong></td>
-                        <td class="text-end">-{{ amountFormat($customerInvoice->discount_total) }}</td>
-                    </tr>
-                @endif
-                <tr>
-                    <td><strong>Grand Total</strong>
-                        @if(strtoupper($customerInvoice->currency) !== 'SAR')
-                            <div class="currency-note">{{ amountFormat($customerInvoice->currency_rate) }} SAR</div>
-                        @endif
-                    </td>
-                    <td class="text-end">
-                        {{ amountFormat($customerInvoice->grand_total) }} {{ $customerInvoice->currency }}
-                        @if(strtoupper($customerInvoice->currency) !== 'SAR')
-                            @php $converted = $customerInvoice->grand_total * $customerInvoice->currency_rate; @endphp
-                            <div class="currency-note">{{ amountFormat($converted) }} SAR</div>
-                        @endif
-                    </td>
-                </tr>
-            </table>
-        </div>
-
-        <!-- Amount in Words -->
-        <div class="mt-2">
-            <strong>Amount in Words:</strong>
-            <span>{{ amountInWords(round($customerInvoice->grand_total, 2)) }} {{ $customerInvoice->currency }}</span>
-        </div>
-
-        <!-- Terms -->
-        @if($customerInvoice->terms)
-            <div class="terms-box mt-4">
-                <h6 class="fw-semibold mb-2">Terms & Conditions</h6>
-                <p class="mb-0">{{ $customerInvoice->terms }}</p>
-            </div>
-        @endif
-
-        <!-- Footer -->
-        <footer class="mt-5 pt-3 border-top text-center text-muted small">
-            <div class="d-flex justify-content-between">
-                <div>Email: info@company.com</div>
-                <div>Phone: +91-9876543210</div>
-            </div>
-        </footer>
+{{-- Action buttons --}}
+<div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+    <div>
+        <span class="badge {{ $statusInfo['class'] }} rounded-pill px-3 py-1 fw-semibold">
+            {{ $statusInfo['label'] }}
+        </span>
     </div>
-@endsection
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="CREDIT_NOTE.printPreview('{{ $creditNote->id }}')">
+            <i class="bi bi-printer me-1"></i> Print
+        </button>
+    </div>
+</div>
+
+{{-- Header card --}}
+<div class="card border-0 shadow-sm mb-3" style="border-radius: .75rem; overflow: hidden;">
+    <div class="card-body p-3">
+
+        <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+                <div class="fw-bold fs-5 text-dark">#{{ $creditNote->row_no }}</div>
+                <div class="text-muted small">Credit Note</div>
+            </div>
+            <div class="text-end">
+                <div class="fw-bold fs-5" style="color: #0b6aa0;">
+                    {{ number_format($creditNote->grand_total, decimals()) }}
+                    <small class="text-muted fw-normal fs-6">{{ strtoupper($creditNote->currency ?? 'SAR') }}</small>
+                </div>
+                <div class="text-muted small">Grand Total</div>
+            </div>
+        </div>
+
+        {{-- Basic Info --}}
+        <div class="cn-section-title">Basic Information</div>
+
+        <div class="cn-detail-row">
+            <span class="cn-overview-label">Date</span>
+            <span class="cn-overview-value">{{ \Carbon\Carbon::parse($creditNote->posted_at)->format('d M Y') }}</span>
+        </div>
+        <div class="cn-detail-row">
+            <span class="cn-overview-label">Customer</span>
+            <span class="cn-overview-value">{{ $creditNote->customer->name_en ?? '-' }}</span>
+        </div>
+        <div class="cn-detail-row">
+            <span class="cn-overview-label">Job</span>
+            <span class="cn-overview-value">{{ $creditNote->job_no ?? '-' }}</span>
+        </div>
+        <div class="cn-detail-row">
+            <span class="cn-overview-label">Invoice Ref</span>
+            <span class="cn-overview-value">{{ $creditNote->invoice->row_no ?? '-' }}</span>
+        </div>
+        <div class="cn-detail-row">
+            <span class="cn-overview-label">Type</span>
+            <span class="cn-overview-value">{{ ucfirst(str_replace('_', ' ', $creditNote->credit_note_type ?? '-')) }}</span>
+        </div>
+        @if($creditNote->reason)
+        <div class="cn-detail-row">
+            <span class="cn-overview-label">Reason</span>
+            <span class="cn-overview-value text-end" style="max-width: 65%;">{{ $creditNote->reason }}</span>
+        </div>
+        @endif
+
+    </div>
+</div>
+
+{{-- Totals card --}}
+<div class="card border-0 shadow-sm mb-3" style="border-radius: .75rem;">
+    <div class="card-body p-3">
+        <div class="cn-section-title">Amounts</div>
+
+        <div class="cn-amount-row">
+            <span class="cn-overview-label">Subtotal</span>
+            <span class="cn-overview-value tabular-nums">{{ number_format($creditNote->sub_total, decimals()) }}</span>
+        </div>
+        <div class="cn-amount-row">
+            <span class="cn-overview-label">Tax</span>
+            <span class="cn-overview-value tabular-nums">{{ number_format($creditNote->tax_total, decimals()) }}</span>
+        </div>
+        <hr class="my-2">
+        <div class="cn-amount-row cn-grand-row">
+            <span class="fw-bold text-dark">Grand Total</span>
+            <span class="fw-bold fs-6 tabular-nums" style="color: #0b6aa0;">
+                {{ number_format($creditNote->grand_total, decimals()) }}
+                <small class="text-muted fw-normal">{{ strtoupper($creditNote->currency ?? 'SAR') }}</small>
+            </span>
+        </div>
+    </div>
+</div>
+
+{{-- Line items card --}}
+@if($creditNote->creditNoteSubs && $creditNote->creditNoteSubs->count())
+<div class="card border-0 shadow-sm mb-3" style="border-radius: .75rem; overflow: hidden;">
+    <div class="card-header bg-white border-bottom py-2 px-3">
+        <span class="fw-semibold small text-dark">
+            <i class="bi bi-list-ul me-1 text-muted"></i>
+            Line Items ({{ $creditNote->creditNoteSubs->count() }})
+        </span>
+    </div>
+    <div class="p-0">
+        <table class="table table-sm align-middle mb-0" style="font-size: .82rem;">
+            <thead style="background: #f8fafc;">
+                <tr>
+                    <th class="px-3 py-2 fw-semibold text-muted border-0" style="font-size:.72rem;">Description</th>
+                    <th class="px-3 py-2 fw-semibold text-muted border-0 text-end" style="font-size:.72rem;">Qty</th>
+                    <th class="px-3 py-2 fw-semibold text-muted border-0 text-end" style="font-size:.72rem;">Price</th>
+                    <th class="px-3 py-2 fw-semibold text-muted border-0 text-end" style="font-size:.72rem;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($creditNote->creditNoteSubs as $item)
+                <tr>
+                    <td class="px-3 py-2">
+                        <div class="fw-medium">{{ $descriptions[$item->description_id] ?? $item->description ?? '-' }}</div>
+                        @if($item->comment)
+                            <div class="text-muted x-small">{{ $item->comment }}</div>
+                        @endif
+                    </td>
+                    <td class="px-3 py-2 text-end">{{ $item->quantity }}</td>
+                    <td class="px-3 py-2 text-end">{{ number_format($item->unit_price, decimals()) }}</td>
+                    <td class="px-3 py-2 text-end fw-semibold">{{ number_format($item->total, decimals()) }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+</div>
+@endif
+
+{{-- Terms --}}
+@if($creditNote->terms)
+<div class="card border-0 shadow-sm mb-3" style="border-radius: .75rem;">
+    <div class="card-body p-3">
+        <div class="cn-section-title">Terms &amp; Conditions</div>
+        <p class="mb-0 small text-secondary">{{ $creditNote->terms }}</p>
+    </div>
+</div>
+@endif
+
+{{-- Documents --}}
+@if($creditNote->documents && $creditNote->documents->count())
+<div class="card border-0 shadow-sm mb-3" style="border-radius: .75rem;">
+    <div class="card-header bg-white border-bottom py-2 px-3">
+        <span class="fw-semibold small text-dark">
+            <i class="bi bi-paperclip me-1 text-muted"></i>
+            Documents ({{ $creditNote->documents->count() }})
+        </span>
+    </div>
+    <div class="card-body p-3">
+        <div class="row g-2">
+            @foreach($creditNote->documents as $doc)
+            <div class="col-12">
+                <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank"
+                   class="d-flex align-items-center gap-2 text-decoration-none p-2 rounded"
+                   style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                    <i class="bi bi-file-earmark-text text-primary"></i>
+                    <span class="small text-dark fw-medium">{{ $doc->file_name }}</span>
+                    <i class="bi bi-box-arrow-up-right ms-auto text-muted" style="font-size: .75rem;"></i>
+                </a>
+            </div>
+            @endforeach
+        </div>
+    </div>
+</div>
+@endif
