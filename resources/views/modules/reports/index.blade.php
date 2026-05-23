@@ -21,6 +21,7 @@
                             ['url' => '/reports/job-report', 'name' => 'Job Report', 'desc' => 'General overview of all active and completed jobs.'],
                             ['url' => '/reports/job-balance-report', 'name' => 'Job Balance Report', 'desc' => 'Outstanding balances and payment statuses per job.'],
                             ['url' => '/reports/job-income-report', 'name' => 'Job Income Report', 'desc' => 'Analysis of revenue generated from specific job categories.'],
+                            ['url' => '/reports/provisional-report', 'name' => 'Provisional Report', 'desc' => 'Provisional vs actual cost and sales with profit/loss and margin per job.'],
                         ]
                     ],
                     [

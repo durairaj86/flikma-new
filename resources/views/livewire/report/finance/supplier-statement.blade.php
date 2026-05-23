@@ -41,6 +41,7 @@
                     </div>
                     <div class="col-lg-2 col-md-4">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">From Date</label>
+                        <input type="hidden" id="ss-start-date-hidden" wire:model="startDate" value="{{ $startDate }}" />
                         <input type="text" id="ss-start-date"
                                class="form-control bg-light border-0 py-2"
                                placeholder="dd-mm-yyyy"
@@ -48,6 +49,7 @@
                     </div>
                     <div class="col-lg-2 col-md-4">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">To Date</label>
+                        <input type="hidden" id="ss-end-date-hidden" wire:model="endDate" value="{{ $endDate }}" />
                         <input type="text" id="ss-end-date"
                                class="form-control bg-light border-0 py-2"
                                placeholder="dd-mm-yyyy"
@@ -205,11 +207,22 @@
     @script
     <script>
         (function () {
-            function initFlatpickr() {
-                const startEl = document.getElementById('ss-start-date');
-                const endEl   = document.getElementById('ss-end-date');
+            function syncHidden(hiddenId, dateStr) {
+                var hidden = document.getElementById(hiddenId);
+                if (hidden) {
+                    hidden.value = dateStr;
+                    hidden.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            }
 
-                if (startEl && !startEl._flatpickr) {
+            function initFlatpickr() {
+                var startEl = document.getElementById('ss-start-date');
+                var endEl   = document.getElementById('ss-end-date');
+
+                if (startEl && startEl._flatpickr) { startEl._flatpickr.destroy(); }
+                if (endEl   && endEl._flatpickr)   { endEl._flatpickr.destroy(); }
+
+                if (startEl) {
                     flatpickr(startEl, {
                         dateFormat:    'Y-m-d',
                         altInput:      true,
@@ -217,13 +230,13 @@
                         allowInput:    true,
                         disableMobile: true,
                         defaultDate:   startEl.value || null,
-                        onChange(selectedDates, dateStr) {
-                            $wire.set('startDate', dateStr, false);
+                        onChange: function (selectedDates, dateStr) {
+                            syncHidden('ss-start-date-hidden', dateStr);
                         },
                     });
                 }
 
-                if (endEl && !endEl._flatpickr) {
+                if (endEl) {
                     flatpickr(endEl, {
                         dateFormat:    'Y-m-d',
                         altInput:      true,
@@ -231,8 +244,8 @@
                         allowInput:    true,
                         disableMobile: true,
                         defaultDate:   endEl.value || null,
-                        onChange(selectedDates, dateStr) {
-                            $wire.set('endDate', dateStr, false);
+                        onChange: function (selectedDates, dateStr) {
+                            syncHidden('ss-end-date-hidden', dateStr);
                         },
                     });
                 }
@@ -240,9 +253,9 @@
 
             initFlatpickr();
 
-            Livewire.hook('commit', ({ component, commit, respond, succeed, fail }) => {
-                succeed(({ snapshot, effect }) => {
-                    queueMicrotask(() => initFlatpickr());
+            Livewire.hook('commit', function (ref) {
+                ref.succeed(function () {
+                    queueMicrotask(initFlatpickr);
                 });
             });
         })();

@@ -1,145 +1,191 @@
 @section('js', 'trial_balance')
 @section('page-title', 'Trial Balance')
 
-<div class="bg-white min-vh-100">
-    <div class="container-fluid py-3 px-3">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div class="d-flex align-items-center gap-3">
-                <a href="#" class="btn btn-light btn-sm rounded-circle border">
-                    <i class="bi bi-arrow-left"></i>
-                </a>
-                <div>
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb mb-0" style="font-size: 0.75rem;">
-                            <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-muted">Reports</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Trial Balance</li>
-                        </ol>
-                    </nav>
-                    <h4 class="fw-bold text-dark mb-0">Trial Balance</h4>
-                </div>
-            </div>
+<div class="tb-wrapper min-vh-100 bg-light py-4">
+    <div class="container-fluid px-lg-5">
 
-            <div class="d-flex gap-2">
-                <button class="btn btn-outline-secondary btn-sm px-3 fw-medium">
-                    <i class="bi bi-gear me-1"></i> Customize Report
-                </button>
-                <div class="vr mx-1"></div>
-                <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">
-                    <i class="bi bi-printer"></i>
-                </button>
-                <div class="dropdown">
-                    <button class="btn btn-primary btn-sm px-3 dropdown-toggle fw-medium" type="button" data-bs-toggle="dropdown">
-                        Export As
+        {{-- Page Header --}}
+        <div class="row align-items-center mb-4 d-print-none">
+            <div class="col-md-6">
+                <h1 class="h3 fw-bold mb-1" style="color:#0f172a;">Trial Balance</h1>
+                <p class="text-muted small mb-0">Double-entry verification — total debits must equal total credits</p>
+            </div>
+            <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                <div class="btn-group shadow-sm">
+                    <button class="btn btn-white border border-end-0" onclick="window.print()">
+                        <i class="bi bi-printer me-2"></i>Print
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow border-0">
-                        <li><a class="dropdown-item py-2 small" href="#"><i class="bi bi-file-pdf text-danger me-2"></i> PDF</a></li>
-                        <li><a class="dropdown-item py-2 small" href="#"><i class="bi bi-file-earmark-excel text-success me-2"></i> Excel (XLSX)</a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div class="border rounded-2 mb-4 bg-light-subtle p-3">
-            <div class="row g-3 align-items-center">
-                <div class="col-auto d-flex align-items-center gap-2">
-                    <span class="small text-muted fw-medium">Date Range:</span>
-                    <input type="date" class="form-control form-control-sm border-light-subtle shadow-sm"
-                           wire:model.live="startDate" style="width: 150px;">
-                    <span class="small text-muted">to</span>
-                    <input type="date" class="form-control form-control-sm border-light-subtle shadow-sm"
-                           wire:model.live="endDate" style="width: 150px;">
-                </div>
-
-                <div class="col-auto ms-auto" style="width: 300px;">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text bg-white border-end-0 text-muted">
-                            <i class="bi bi-search"></i>
-                        </span>
-                        <input type="text" class="form-control border-start-0 ps-0"
-                               placeholder="Search accounts..." wire:model.live.debounce.300ms="search">
+                    <div class="btn-group">
+                        <button class="btn btn-white border dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="bi bi-download me-2"></i>Export
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
+                            <li><a class="dropdown-item py-2" href="#"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
+                            <li><a class="dropdown-item py-2" href="#"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
+                        </ul>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{--<div class="text-center mb-5 mt-2">
-            <h5 class="mb-1 fw-bold">Trial Balance</h5>
-            <p class="text-muted small">
-                From <span class="text-dark fw-bold">{{ \Carbon\Carbon::parse($startDate)->format('d M Y') }}</span>
-                To <span class="text-dark fw-bold">{{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</span>
-            </p>
-        </div>--}}
-
-        <div class="report-table-wrapper">
-            <livewire:report.finance.trial-balance-table/>
+        {{-- Filters --}}
+        <div class="card border-0 shadow-sm mb-4 d-print-none">
+            <div class="card-body p-4">
+                <div class="row g-3 align-items-end">
+                    <div class="col-lg-2 col-md-4">
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">From Date</label>
+                        <input type="hidden" id="tb-start-hidden" wire:model.live="startDate" value="{{ $startDate }}" />
+                        <input type="text" id="tb-start-date"
+                               class="form-control bg-light border-0 py-2"
+                               placeholder="dd-mm-yyyy"
+                               value="{{ $startDate }}" />
+                    </div>
+                    <div class="col-lg-2 col-md-4">
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">To Date</label>
+                        <input type="hidden" id="tb-end-hidden" wire:model.live="endDate" value="{{ $endDate }}" />
+                        <input type="text" id="tb-end-date"
+                               class="form-control bg-light border-0 py-2"
+                               placeholder="dd-mm-yyyy"
+                               value="{{ $endDate }}" />
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Search Accounts</label>
+                        <input type="text"
+                               class="form-control bg-light border-0 py-2"
+                               placeholder="Account name or code…"
+                               wire:model.live.debounce.300ms="search" />
+                    </div>
+                    <div class="col-lg-4 col-md-2 d-flex align-items-end">
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-tb fw-bold py-2 px-4 shadow-sm"
+                                    wire:click="updatedStartDate('{{ $startDate }}')"
+                                    wire:loading.attr="disabled">
+                                <i class="bi bi-filter-left me-2"></i>
+                                <span wire:loading.remove>Generate</span>
+                                <span wire:loading><span class="spinner-border spinner-border-sm me-1"></span>Loading…</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="mt-5 pt-4 border-top text-center text-muted">
-            <p class="small">** This is a computer-generated report and does not require a physical signature. **</p>
+        {{-- Report period info bar --}}
+        <div class="d-flex align-items-center justify-content-between mb-3 px-1">
+            <div class="small text-muted">
+                <i class="bi bi-calendar3 me-1"></i>
+                Period: <strong class="text-dark">{{ \Carbon\Carbon::parse($startDate)->format('d M Y') }}</strong>
+                — <strong class="text-dark">{{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</strong>
+            </div>
+            <div class="small text-muted">
+                Generated: {{ now()->format('d M Y, H:i') }}
+            </div>
         </div>
+
+        {{-- Table card --}}
+        <div class="card border-0 shadow-sm overflow-hidden">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold">
+                    <i class="bi bi-list-columns me-2 text-tb"></i>Account Balances
+                </h6>
+                <span class="badge bg-tb-subtle text-tb border border-tb-subtle px-3 py-2">
+                    <i class="bi bi-currency-exchange me-1"></i>Currency: SAR
+                </span>
+            </div>
+            <div class="table-responsive">
+                <livewire:report.finance.trial-balance-table />
+            </div>
+        </div>
+
+        {{-- Print footer --}}
+        <div class="mt-4 p-3 bg-white border rounded shadow-sm d-none d-print-block">
+            <div class="row text-center text-muted x-small">
+                <div class="col-md-4">Prepared By: _________________</div>
+                <div class="col-md-4">Verified By: _________________</div>
+                <div class="col-md-4">Approved By: _________________</div>
+            </div>
+            <div class="text-center mt-2 x-small text-muted">
+                ✦ Computer-generated report — no physical signature required
+            </div>
+        </div>
+
     </div>
 
+    @script
+    <script>
+        (function () {
+            function syncHidden(hiddenId, dateStr) {
+                var hidden = document.getElementById(hiddenId);
+                if (hidden) {
+                    hidden.value = dateStr;
+                    hidden.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            }
+
+            function initFlatpickr() {
+                var startEl = document.getElementById('tb-start-date');
+                var endEl   = document.getElementById('tb-end-date');
+
+                if (startEl && startEl._flatpickr) { startEl._flatpickr.destroy(); }
+                if (endEl   && endEl._flatpickr)   { endEl._flatpickr.destroy(); }
+
+                if (startEl) {
+                    flatpickr(startEl, {
+                        dateFormat: 'Y-m-d', altInput: true, altFormat: 'd-m-Y',
+                        allowInput: true, disableMobile: true,
+                        defaultDate: startEl.value || null,
+                        onChange: function (selectedDates, dateStr) {
+                            syncHidden('tb-start-hidden', dateStr);
+                        },
+                    });
+                }
+                if (endEl) {
+                    flatpickr(endEl, {
+                        dateFormat: 'Y-m-d', altInput: true, altFormat: 'd-m-Y',
+                        allowInput: true, disableMobile: true,
+                        defaultDate: endEl.value || null,
+                        onChange: function (selectedDates, dateStr) {
+                            syncHidden('tb-end-hidden', dateStr);
+                        },
+                    });
+                }
+            }
+
+            initFlatpickr();
+            Livewire.hook('commit', function (ref) {
+                ref.succeed(function () { queueMicrotask(initFlatpickr); });
+            });
+        })();
+    </script>
+    @endscript
+
     <style>
-        /* Zoho Aesthetic: Clean, Soft, and Modern */
-        body {
-            background-color: #ffffff;
-            color: #444;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        :root {
+            --tb-primary: #1d4ed8;
+            --tb-dark:    #1e40af;
+            --tb-light:   #eff6ff;
         }
 
-        .breadcrumb-item + .breadcrumb-item::before {
-            content: ">";
-            font-size: 0.65rem;
-            color: #999;
-        }
+        .btn-tb { background-color: var(--tb-primary); border-color: var(--tb-primary); color: #fff; }
+        .btn-tb:hover { background-color: var(--tb-dark); border-color: var(--tb-dark); color: #fff; }
+        .text-tb { color: var(--tb-primary) !important; }
+        .bg-tb-subtle { background-color: #dbeafe !important; }
+        .border-tb-subtle { border-color: #93c5fd !important; }
 
-        /* Input Styling */
-        .form-control-sm {
-            border-radius: 4px;
-            border: 1px solid #d1d5db;
-        }
+        .ls-1 { letter-spacing: 0.05em; }
+        .x-small { font-size: 0.7rem; }
+        .tabular-nums { font-variant-numeric: tabular-nums; }
 
-        .form-control:focus {
-            border-color: #008cd1;
-            box-shadow: 0 0 0 2px rgba(0, 140, 209, 0.1);
-        }
-
-        /* Buttons */
-        .btn-primary {
-            background-color: #008cd1;
-            border-color: #008cd1;
-        }
-
-        .btn-primary:hover {
-            background-color: #007bb8;
-        }
-
-        .btn-outline-secondary {
-            border-color: #d1d5db;
-            color: #444;
-        }
-
-        .btn-outline-secondary:hover {
-            background-color: #f9fafb;
-            border-color: #c1c5cb;
-            color: #222;
-        }
-
-        .bg-light-subtle {
-            background-color: #f8fafc !important;
-        }
-
-        /* Table custom behavior for Zoho feel */
-        .report-table-wrapper table {
-            border-collapse: collapse;
+        .card { border-radius: 1rem; }
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 0.25rem rgba(29, 78, 216, 0.1);
+            border-color: var(--tb-primary);
         }
 
         @media print {
-            .btn, .breadcrumb, .border, .bg-light-subtle {
-                display: none !important;
-            }
-            body { background: white; }
-            .container-fluid { padding: 0 !important; }
+            body { background: white !important; }
+            .d-print-none { display: none !important; }
+            .card { box-shadow: none !important; border: 1px solid #eee !important; }
         }
     </style>
 </div>

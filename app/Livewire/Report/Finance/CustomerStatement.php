@@ -90,9 +90,7 @@ class CustomerStatement extends Component
 
     public function applyFilter()
     {
-        // Livewire batches wire:model + $wire.set() values before calling this,
-        // so $this->customerId, $this->startDate, $this->endDate are all up to date.
-        // render() will rebuild the statement with these values automatically.
+        // Triggers re-render with current filter values
     }
 
     public function resetFilter()

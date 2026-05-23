@@ -393,6 +393,12 @@
                                         <p>Job Income Report</p>
                                     </a>
                                 </li>
+                                <li class="nav-item">
+                                    <a href="/reports/provisional-report"
+                                       class="nav-link {{ $submenu == 'provisional-report' ? 'active' : '' }}">
+                                        <p>Provisional Report</p>
+                                    </a>
+                                </li>
                             </ul>
                         </li>
                         <li class="nav-item {{ $menu == 'invoice' ? 'menu-open' : '' }}">

@@ -47,6 +47,7 @@
                     </div>
                     <div class="col-lg-2 col-md-4">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">From Date</label>
+                        <input type="hidden" id="cs-start-date-hidden" wire:model="startDate" value="{{ $startDate }}" />
                         <input type="text" id="cs-start-date"
                                class="form-control bg-light border-0 py-2"
                                placeholder="dd-mm-yyyy"
@@ -54,6 +55,7 @@
                     </div>
                     <div class="col-lg-2 col-md-4">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">To Date</label>
+                        <input type="hidden" id="cs-end-date-hidden" wire:model="endDate" value="{{ $endDate }}" />
                         <input type="text" id="cs-end-date"
                                class="form-control bg-light border-0 py-2"
                                placeholder="dd-mm-yyyy"
@@ -61,8 +63,10 @@
                     </div>
                     <div class="col-lg-4 col-md-4">
                         <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-primary fw-bold py-2 flex-grow-1 shadow-sm" wire:click="applyFilter">
-                                <i class="bi bi-filter-left me-2"></i>Generate
+                            <button type="button" class="btn btn-primary fw-bold py-2 flex-grow-1 shadow-sm" wire:click="applyFilter" wire:loading.attr="disabled">
+                                <i class="bi bi-filter-left me-2"></i>
+                                <span wire:loading.remove>Generate</span>
+                                <span wire:loading><span class="spinner-border spinner-border-sm me-1"></span>Loading...</span>
                             </button>
                             <button type="button" class="btn btn-outline-secondary border-0 bg-light py-2 px-3" wire:click="resetFilter">
                                 <i class="bi bi-arrow-counterclockwise"></i>
@@ -192,11 +196,22 @@
     @script
     <script>
         (function () {
-            function initFlatpickr() {
-                const startEl = document.getElementById('cs-start-date');
-                const endEl   = document.getElementById('cs-end-date');
+            function syncHidden(hiddenId, dateStr) {
+                var hidden = document.getElementById(hiddenId);
+                if (hidden) {
+                    hidden.value = dateStr;
+                    hidden.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            }
 
-                if (startEl && !startEl._flatpickr) {
+            function initFlatpickr() {
+                var startEl = document.getElementById('cs-start-date');
+                var endEl   = document.getElementById('cs-end-date');
+
+                if (startEl && startEl._flatpickr) { startEl._flatpickr.destroy(); }
+                if (endEl   && endEl._flatpickr)   { endEl._flatpickr.destroy(); }
+
+                if (startEl) {
                     flatpickr(startEl, {
                         dateFormat:    'Y-m-d',
                         altInput:      true,
@@ -204,13 +219,13 @@
                         allowInput:    true,
                         disableMobile: true,
                         defaultDate:   startEl.value || null,
-                        onChange(selectedDates, dateStr) {
-                            $wire.set('startDate', dateStr, false);
+                        onChange: function (selectedDates, dateStr) {
+                            syncHidden('cs-start-date-hidden', dateStr);
                         },
                     });
                 }
 
-                if (endEl && !endEl._flatpickr) {
+                if (endEl) {
                     flatpickr(endEl, {
                         dateFormat:    'Y-m-d',
                         altInput:      true,
@@ -218,8 +233,8 @@
                         allowInput:    true,
                         disableMobile: true,
                         defaultDate:   endEl.value || null,
-                        onChange(selectedDates, dateStr) {
-                            $wire.set('endDate', dateStr, false);
+                        onChange: function (selectedDates, dateStr) {
+                            syncHidden('cs-end-date-hidden', dateStr);
                         },
                     });
                 }
@@ -227,11 +242,9 @@
 
             initFlatpickr();
 
-            // After each Livewire network round-trip, re-init if elements lost their flatpickr
-            Livewire.hook('commit', ({ component, commit, respond, succeed, fail }) => {
-                succeed(({ snapshot, effect }) => {
-                    // Run after DOM has been updated
-                    queueMicrotask(() => initFlatpickr());
+            Livewire.hook('commit', function (ref) {
+                ref.succeed(function () {
+                    queueMicrotask(initFlatpickr);
                 });
             });
         })();
