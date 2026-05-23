@@ -14,33 +14,39 @@ class SaleReport extends Component
     public $search = '';
     public $status = '';
     public $customerId = '';
-    public $customers = [];
 
     public function mount()
     {
-        // Default to current month
         $this->startDate = now()->startOfMonth()->format('Y-m-d');
         $this->endDate = now()->endOfMonth()->format('Y-m-d');
-
-        // Load customers
-        $this->loadCustomers();
     }
 
-    public function loadCustomers()
+    public function applyFilter()
     {
-        $query = Customer::select('id', 'name_en', 'name_ar', 'row_no')
-            ->where('status', 3) // Assuming 3 is confirmed status
-            ->orderBy('name_en');
+        $this->dispatch('dateRangeChanged', [
+            'startDate' => $this->startDate,
+            'endDate' => $this->endDate
+        ]);
+        $this->dispatch('searchChanged', $this->search);
+        $this->dispatch('statusChanged', $this->status);
+        $this->dispatch('customerChanged', $this->customerId);
+    }
 
-        if (!empty($this->search)) {
-            $query->where(function($q) {
-                $q->where('name_en', 'like', '%' . $this->search . '%')
-                  ->orWhere('name_ar', 'like', '%' . $this->search . '%')
-                  ->orWhere('row_no', 'like', '%' . $this->search . '%');
-            });
-        }
+    public function resetFilter()
+    {
+        $this->startDate = now()->startOfMonth()->format('Y-m-d');
+        $this->endDate = now()->endOfMonth()->format('Y-m-d');
+        $this->search = '';
+        $this->status = '';
+        $this->customerId = '';
 
-        $this->customers = $query->get()->toArray();
+        $this->dispatch('dateRangeChanged', [
+            'startDate' => $this->startDate,
+            'endDate' => $this->endDate
+        ]);
+        $this->dispatch('searchChanged', '');
+        $this->dispatch('statusChanged', '');
+        $this->dispatch('customerChanged', '');
     }
 
     public function updatedStartDate($value)
@@ -76,10 +82,8 @@ class SaleReport extends Component
 
     public function getSaleReportSummary()
     {
-        // Get sales (customer invoices) within date range
         $sales = CustomerInvoice::whereBetween(DB::raw('DATE(invoice_date)'), [$this->startDate, $this->endDate]);
 
-        // Apply search filter if provided
         if (!empty($this->search)) {
             $sales = $sales->where(function ($query) {
                 $query->where('row_no', 'like', '%' . $this->search . '%')
@@ -95,18 +99,15 @@ class SaleReport extends Component
             });
         }
 
-        // Apply customer filter if provided
         if (!empty($this->customerId)) {
             $sales = $sales->where('customer_id', $this->customerId);
         }
 
-        // Get counts by status
         $totalCount = $sales->count();
         $draftCount = (clone $sales)->where('status', 1)->count();
         $approvedCount = (clone $sales)->where('status', 3)->count();
         $cancelledCount = (clone $sales)->where('status', 4)->count();
 
-        // Get totals by status
         $totalAmount = (clone $sales)->sum('sub_total');
         $totalTax = (clone $sales)->sum('tax_total');
         $totalGrand = (clone $sales)->sum('grand_total');
@@ -118,6 +119,10 @@ class SaleReport extends Component
         $approvedAmount = (clone $sales)->where('status', 3)->sum('sub_total');
         $approvedTax = (clone $sales)->where('status', 3)->sum('tax_total');
         $approvedGrand = (clone $sales)->where('status', 3)->sum('grand_total');
+
+        $cancelledAmount = (clone $sales)->where('status', 4)->sum('sub_total');
+        $cancelledTax = (clone $sales)->where('status', 4)->sum('tax_total');
+        $cancelledGrand = (clone $sales)->where('status', 4)->sum('grand_total');
 
         return [
             'total_count' => $totalCount,
@@ -136,6 +141,10 @@ class SaleReport extends Component
             'approved_amount' => $approvedAmount,
             'approved_tax' => $approvedTax,
             'approved_grand' => $approvedGrand,
+
+            'cancelled_amount' => $cancelledAmount,
+            'cancelled_tax' => $cancelledTax,
+            'cancelled_grand' => $cancelledGrand,
         ];
     }
 
@@ -143,8 +152,15 @@ class SaleReport extends Component
     {
         $summary = $this->getSaleReportSummary();
 
+        $customers = Customer::select('id', 'name_en', 'name_ar', 'row_no')
+            ->where('status', 3)
+            ->orderBy('name_en')
+            ->get()
+            ->toArray();
+
         return view('livewire.report.sale.sale-report', [
-            'summary' => $summary
+            'summary' => $summary,
+            'customers' => $customers,
         ]);
     }
 }
