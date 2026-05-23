@@ -45,6 +45,12 @@
             #dataTable tbody tr td:first-child  { background-color: #fff; }
             #dataTable tbody tr:hover td:first-child { background-color: rgba(0,0,0,.04); }
 
+            /* Column Settings drag-over highlight */
+            .cs-drag-over {
+                border-color: #0d6efd !important;
+                background-color: #f0f7ff !important;
+            }
+
             /* Sticky last column (Edit) */
             #dataTable thead tr th:last-child,
             #dataTable tbody tr td:last-child {
@@ -220,6 +226,9 @@
                 <button class="btn btn-outline-secondary btn-round" id="filter-box">
                     <i class="bi bi-funnel"></i> Filter
                 </button>
+                <button class="btn btn-outline-secondary btn-round" id="columnSettingsBtn" title="Column Settings">
+                    <i class="bi bi-columns-gap"></i> Columns
+                </button>
                 <button class="btn btn-primary rounded-pill px-4" id="new">New Quotation</button>
             </div>
         </div>
@@ -272,44 +281,7 @@
                 <table class="table align-middle dataTable" id="dataTable" data-modal-size="lg">
                     <thead class="table-light sticky-top">
                     <tr>
-                        <th style="min-width:140px;">Quote No</th>
-                        <th style="min-width:200px;">Client</th>
-                        <th style="min-width:85px;">Branch</th>
-                        <th style="min-width:100px;">Date</th>
-                        <th style="min-width:90px;">Status</th>
-                        <th style="min-width:120px;">Latest Comments</th>
-                        <th style="min-width:150px;">Operational Activity</th>
-                        <th style="min-width:130px;">Origin</th>
-                        <th style="min-width:200px;">Destination</th>
-                        <th style="min-width:100px;">Valid From</th>
-                        <th style="min-width:90px;">Valid To</th>
-                        <th style="min-width:100px;">User Name</th>
-                        <th style="min-width:100px;">Sales Person</th>
-                        <th style="min-width:90px;">INCO Term</th>
-                        <th style="min-width:140px;">Carrier</th>
-                        <th style="min-width:120px;">Remarks</th>
-                        <th style="min-width:110px;">Shipment No.</th>
-                        <th style="min-width:80px;">Job No.</th>
-                        <th style="min-width:80px;">No.of Pcs</th>
-                        <th style="min-width:90px;">G.Weight</th>
-                        <th style="min-width:80px;">Volume</th>
-                        <th style="min-width:80px;">P.Sale</th>
-                        <th style="min-width:75px;">P.Cost</th>
-                        <th style="min-width:70px;">GP</th>
-                        <th style="min-width:65px;">GP%</th>
-                        <th style="min-width:120px;">Shipper Name</th>
-                        <th style="min-width:130px;">Consignee Name</th>
-                        <th style="min-width:110px;">Shipment Status</th>
-                        <th style="min-width:100px;">ETD</th>
-                        <th style="min-width:100px;">ETA</th>
-                        <th style="min-width:110px;">Origin Agent</th>
-                        <th style="min-width:140px;">Destination Agent</th>
-                        <th style="min-width:100px;">Enquiry No</th>
-                        <th style="min-width:120px;">Container Type</th>
-                        <th style="min-width:160px;">Vessel/Flight Name</th>
-                        <th style="min-width:140px;">Voyage/Flight No</th>
-                        <th style="min-width:130px;">Place Of Delivery</th>
-                        <th style="min-width:50px;"></th>
+                        {{-- Built dynamically by quotation.js from column settings --}}
                     </tr>
                     </thead>
                     <tbody></tbody>
@@ -453,6 +425,77 @@
                         <i class="bi bi-plus-lg me-1"></i> Create Quotation
                     </button>
                     <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Column Settings Modal -->
+    <div class="modal fade" id="columnSettingsModal" tabindex="-1" aria-labelledby="columnSettingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+
+                <div class="modal-header border-0 pb-0">
+                    <div>
+                        <h5 class="modal-title fw-semibold" id="columnSettingsModalLabel">
+                            <i class="bi bi-columns-gap text-primary me-2"></i>Column Settings
+                        </h5>
+                        <p class="text-muted small mb-0">Choose and arrange the columns shown in the quotation list</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body p-0" style="min-height:500px;">
+                    <div class="row g-0 h-100">
+
+                        <!-- Left: Available Fields -->
+                        <div class="col-md-4 border-end d-flex flex-column" style="max-height:520px;">
+                            <div class="p-3 border-bottom bg-light">
+                                <h6 class="fw-semibold mb-2 small text-uppercase text-muted">Available Fields</h6>
+                                <input type="text" id="csFieldSearch" class="form-control form-control-sm rounded-pill"
+                                       placeholder="Search fields…">
+                            </div>
+                            <div id="csFieldList" class="flex-grow-1 overflow-auto p-2"></div>
+                        </div>
+
+                        <!-- Right: Column Order -->
+                        <div class="col-md-8 d-flex flex-column" style="max-height:520px;">
+                            <div class="p-3 border-bottom bg-light d-flex align-items-center justify-content-between">
+                                <h6 class="fw-semibold mb-0 small text-uppercase text-muted">Column Order</h6>
+                                <span class="text-muted" style="font-size:0.75rem;">
+                                    <i class="bi bi-grip-vertical"></i> Drag to reorder &nbsp;·&nbsp;
+                                    <i class="bi bi-chevron-down"></i> Add sub-column
+                                </span>
+                            </div>
+                            <div id="csColumnList" class="flex-grow-1 overflow-auto p-3"></div>
+                        </div>
+                    </div>
+
+                    <!-- Preview -->
+                    <div class="border-top p-3 bg-light">
+                        <h6 class="small fw-semibold text-muted text-uppercase mb-2">
+                            <i class="bi bi-eye me-1"></i>Preview
+                        </h6>
+                        <div class="table-responsive" style="max-height:100px;overflow:auto;">
+                            <table class="table table-sm table-bordered mb-0 text-nowrap" id="csPreviewTable">
+                                <thead class="table-secondary">
+                                    <tr id="csPreviewRow"></tr>
+                                </thead>
+                                <tbody>
+                                    <tr id="csPreviewDataRow"></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill me-auto" id="csResetBtn">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>Reset to Default
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary rounded-pill px-4" id="csSaveBtn">
+                        <i class="bi bi-check2 me-1"></i>Save
+                    </button>
                 </div>
             </div>
         </div>

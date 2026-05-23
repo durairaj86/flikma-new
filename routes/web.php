@@ -85,6 +85,11 @@ Route::middleware('auth')->group(function () {
 
     Route::get('currency/rate/{base}/{target}', [\App\Http\Controllers\CurrencyExchangeController::class, 'getExchangeRate']);
 
+    // Column Settings (per-user, per-page column configuration)
+    Route::get('column-settings/{page}',    [\App\Http\Controllers\ColumnSettingsController::class, 'index']);
+    Route::post('column-settings/{page}',   [\App\Http\Controllers\ColumnSettingsController::class, 'save']);
+    Route::delete('column-settings/{page}', [\App\Http\Controllers\ColumnSettingsController::class, 'reset']);
+
     //Route::view('/sales/quotations', 'modules.quotation.list')->name('quotations');
     Route::view('reports', 'modules.reports.index');
     include 'sales.php';

@@ -6,6 +6,7 @@ QUOTATION = {
         QUOTATION.form.load();
         QUOTATION.filter.load();
         datepicker();
+        QUOTATION.columnSettings.bindBtn();
     },
     filter: {
         load: function () {
@@ -82,212 +83,583 @@ QUOTATION = {
             .then(res => res.text())
             .then(html => {
                 const container = document.createElement('div');
-                //container.style.display = 'none';
                 container.id = 'html-pdf';
                 container.className = 'px-4';
                 container.innerHTML = html;
-                console.log(container);
-                //document.body.appendChild(container);
                 const opt = {
                     margin: 0.2,
                     filename: `quotation-${printId}.pdf`,
                 };
-                html2pdf().set(opt).from(container).save().finally(() => {
-                    //document.body.removeChild(container);
-                });
+                html2pdf().set(opt).from(container).save();
             });
     },
+
+    // ─── Column Settings ───────────────────────────────────────────────────────
+    columnSettings: {
+        page: 'quotation',
+        _cache: null,      // {fields, columns, is_custom}
+        _state: [],        // columns being edited in modal
+        _fields: [],       // all available fields
+        _dragAbort: null,  // AbortController — removes stale drag listeners on each re-render
+
+        bindBtn() {
+            $('#columnSettingsBtn').off().on('click', () => QUOTATION.columnSettings.openModal());
+            $('#csSaveBtn').off().on('click',  () => QUOTATION.columnSettings.save());
+            $('#csResetBtn').off().on('click', () => QUOTATION.columnSettings.reset());
+        },
+
+        fetch(callback) {
+            if (this._cache) { callback(this._cache); return; }
+            $.get('/column-settings/' + this.page, (res) => {
+                this._cache = res;
+                callback(res);
+            });
+        },
+
+        openModal() {
+            this.fetch((res) => {
+                // Deep copy so edits don't mutate the cache until save
+                this._state  = JSON.parse(JSON.stringify(res.columns));
+                this._fields = res.fields;
+                this.renderFieldList();
+                this.renderColumnOrder();
+                this.renderPreview();
+                new bootstrap.Modal(document.getElementById('columnSettingsModal')).show();
+            });
+        },
+
+        // ── helpers ────────────────────────────────────────────────────────────
+        _selectedKeys() {
+            const keys = new Set();
+            this._state.forEach(col => {
+                keys.add(col.key);
+                (col.children || []).forEach(c => keys.add(c.key));
+            });
+            return keys;
+        },
+
+        _fieldMeta(key) {
+            return this._fields.find(f => f.key === key) || {};
+        },
+
+        // ── Left panel ─────────────────────────────────────────────────────────
+        renderFieldList() {
+            const selected = this._selectedKeys();
+            const groups   = {};
+
+            this._fields.forEach(f => {
+                if (!groups[f.category]) groups[f.category] = [];
+                groups[f.category].push(f);
+            });
+
+            let html = '';
+            Object.entries(groups).forEach(([cat, fields]) => {
+                html += `<div class="mb-3">
+                    <div class="text-muted fw-semibold small px-2 mb-1 text-uppercase" style="font-size:0.7rem;">${cat}</div>`;
+                fields.forEach(f => {
+                    const isParent = this._state.some(c => c.key === f.key);
+                    const isChild  = !isParent && selected.has(f.key);
+                    const isFixed  = f.fixed;
+
+                    let badgeHtml = '';
+                    if (isFixed)  badgeHtml += `<span class="badge bg-secondary ms-1" style="font-size:0.6rem;">Fixed</span>`;
+                    if (isParent) badgeHtml += `<span class="badge bg-primary ms-1" style="font-size:0.6rem;">Column</span>`;
+                    if (isChild)  badgeHtml += `<span class="badge bg-info text-dark ms-1" style="font-size:0.6rem;">Sub</span>`;
+
+                    const checked  = selected.has(f.key) ? 'checked' : '';
+                    const disabled = isFixed ? 'disabled' : '';
+
+                    html += `<div class="d-flex align-items-center gap-2 px-2 py-1 cs-field-item rounded hover-bg"
+                                  style="cursor:pointer;" data-key="${f.key}">
+                        <input type="checkbox" class="form-check-input cs-field-check flex-shrink-0 mt-0"
+                               id="csf_${f.key}" data-key="${f.key}" ${checked} ${disabled}>
+                        <label class="flex-grow-1 mb-0 small" for="csf_${f.key}" style="cursor:pointer;">
+                            ${f.label}${badgeHtml}
+                        </label>
+                    </div>`;
+                });
+                html += '</div>';
+            });
+
+            const $list = $('#csFieldList').html(html);
+
+            // Search filter
+            $('#csFieldSearch').off('input').on('input', function () {
+                const q = $(this).val().toLowerCase();
+                $list.find('.cs-field-item').each(function () {
+                    const label = $(this).find('label').text().toLowerCase();
+                    $(this).toggle(label.includes(q));
+                });
+            });
+
+            // Toggle click
+            $list.find('.cs-field-check').off('change').on('change', (e) => {
+                const key = $(e.currentTarget).data('key');
+                if ($(e.currentTarget).is(':checked')) {
+                    this._addAsParent(key);
+                } else {
+                    this._removeField(key);
+                }
+                this.renderFieldList();
+                this.renderColumnOrder();
+                this.renderPreview();
+            });
+        },
+
+        _addAsParent(key) {
+            const meta = this._fieldMeta(key);
+            // Remove from any existing children first
+            this._state.forEach(col => {
+                col.children = (col.children || []).filter(c => c.key !== key);
+            });
+            // Add as parent if not already
+            if (!this._state.some(c => c.key === key)) {
+                this._state.push({ key, label: meta.label || key, type: 'parent', children: [] });
+            }
+        },
+
+        _removeField(key) {
+            // Remove as parent
+            this._state = this._state.filter(c => c.key !== key);
+            // Remove as child from all parents
+            this._state.forEach(col => {
+                col.children = (col.children || []).filter(c => c.key !== key);
+            });
+        },
+
+        // ── Right panel ────────────────────────────────────────────────────────
+        renderColumnOrder() {
+            const selected = this._selectedKeys();
+            let html = '';
+
+            this._state.forEach((col, idx) => {
+                const meta    = this._fieldMeta(col.key);
+                const isFixed = meta.fixed;
+
+                // Start as draggable="false"; _initDrag enables it only on grip-handle mousedown
+                html += `<div class="cs-col-item border rounded mb-2 bg-white shadow-sm"
+                              draggable="false"
+                              data-idx="${idx}"
+                              data-fixed="${isFixed ? '1' : '0'}"
+                              style="user-select:none;">
+                    <div class="d-flex align-items-center gap-2 px-3 py-2">
+                        <i class="bi bi-grip-vertical text-muted cs-drag-handle" style="cursor:${isFixed ? 'default' : 'grab'};"></i>
+                        <input type="text" class="form-control form-control-sm border-0 p-0 fw-semibold cs-col-label"
+                               data-idx="${idx}" value="${col.label}" style="outline:none;background:transparent;min-width:60px;">
+                        <span class="badge bg-light text-muted border ms-auto" style="font-size:0.65rem;">${meta.category || ''}</span>
+                        ${isFixed ? '' : `<button type="button" class="btn btn-sm p-0 text-muted cs-remove-col" data-idx="${idx}" title="Remove">
+                            <i class="bi bi-x-lg" style="font-size:0.75rem;"></i>
+                        </button>`}
+                    </div>`;
+
+                // Children
+                const children = col.children || [];
+                if (children.length) {
+                    html += `<div class="border-top mx-3 mb-2 pt-2 ps-2">
+                        <div class="text-muted" style="font-size:0.7rem;font-weight:600;text-transform:uppercase;margin-bottom:4px;">Sub-columns</div>`;
+                    children.forEach((child, cIdx) => {
+                        html += `<div class="d-flex align-items-center gap-2 mb-1">
+                            <i class="bi bi-arrow-return-right text-muted" style="font-size:0.7rem;"></i>
+                            <input type="text" class="form-control form-control-sm border-0 p-0 cs-child-label"
+                                   data-idx="${idx}" data-cidx="${cIdx}" value="${child.label}"
+                                   style="outline:none;background:transparent;font-size:0.8rem;min-width:60px;">
+                            <button type="button" class="btn btn-sm p-0 text-muted ms-auto cs-remove-child"
+                                    data-idx="${idx}" data-cidx="${cIdx}" title="Remove sub-column">
+                                <i class="bi bi-x" style="font-size:0.75rem;"></i>
+                            </button>
+                        </div>`;
+                    });
+                    html += '</div>';
+                }
+
+                // Available children to add
+                const usedKeys  = selected;
+                const available = this._fields.filter(f => !usedKeys.has(f.key));
+                if (available.length) {
+                    html += `<div class="border-top mx-3 mb-2 pt-2">
+                        <select class="form-select form-select-sm cs-add-child" data-idx="${idx}"
+                                style="font-size:0.78rem;">
+                            <option value="">+ Add sub-column…</option>
+                            ${available.map(f => `<option value="${f.key}" data-label="${f.label}">${f.label}</option>`).join('')}
+                        </select>
+                    </div>`;
+                }
+
+                html += '</div>';
+            });
+
+            const $list = $('#csColumnList').html(html || '<p class="text-muted small text-center pt-4">No columns selected. Click fields on the left to add them.</p>');
+
+            // Label rename
+            $list.find('.cs-col-label').off('change').on('change', (e) => {
+                const idx = +$(e.currentTarget).data('idx');
+                this._state[idx].label = $(e.currentTarget).val();
+                this.renderPreview();
+            });
+            $list.find('.cs-child-label').off('change').on('change', (e) => {
+                const idx  = +$(e.currentTarget).data('idx');
+                const cIdx = +$(e.currentTarget).data('cidx');
+                this._state[idx].children[cIdx].label = $(e.currentTarget).val();
+                this.renderPreview();
+            });
+
+            // Remove parent column
+            $list.find('.cs-remove-col').off('click').on('click', (e) => {
+                const idx = +$(e.currentTarget).data('idx');
+                this._state.splice(idx, 1);
+                this.renderFieldList();
+                this.renderColumnOrder();
+                this.renderPreview();
+            });
+
+            // Remove child
+            $list.find('.cs-remove-child').off('click').on('click', (e) => {
+                const idx  = +$(e.currentTarget).data('idx');
+                const cIdx = +$(e.currentTarget).data('cidx');
+                this._state[idx].children.splice(cIdx, 1);
+                this.renderFieldList();
+                this.renderColumnOrder();
+                this.renderPreview();
+            });
+
+            // Add child from select
+            $list.find('.cs-add-child').off('change').on('change', (e) => {
+                const idx = +$(e.currentTarget).data('idx');
+                const key = $(e.currentTarget).val();
+                if (!key) return;
+                const label = $(e.currentTarget).find('option:selected').data('label') || key;
+                this._state[idx].children.push({ key, label });
+                this.renderFieldList();
+                this.renderColumnOrder();
+                this.renderPreview();
+            });
+
+            // Drag-to-reorder
+            this._initDrag($list[0]);
+        },
+
+        _initDrag(container) {
+            // Abort any listeners from a previous render so we never stack duplicates.
+            if (this._dragAbort) this._dragAbort.abort();
+            this._dragAbort = new AbortController();
+            const signal = this._dragAbort.signal;
+
+            let dragSrcIdx = null;
+
+            // Enable draggable ONLY while the grip handle is held down,
+            // so inputs/selects/buttons inside the card don't start a text-drag.
+            container.addEventListener('mousedown', (e) => {
+                const item = e.target.closest('.cs-col-item');
+                if (!item) return;
+                const onGrip  = !!e.target.closest('.cs-drag-handle');
+                const isFixed = item.dataset.fixed === '1';
+                item.setAttribute('draggable', (onGrip && !isFixed) ? 'true' : 'false');
+            }, { signal });
+
+            container.addEventListener('dragstart', (e) => {
+                const item = e.target.closest('.cs-col-item[draggable="true"]');
+                if (!item) { e.preventDefault(); return; }
+                dragSrcIdx = +item.dataset.idx;
+                item.style.opacity = '0.45';
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', String(dragSrcIdx)); // required by Firefox
+            }, { signal });
+
+            container.addEventListener('dragend', () => {
+                container.querySelectorAll('.cs-col-item').forEach(el => {
+                    el.style.opacity = '';
+                    el.classList.remove('cs-drag-over');
+                    el.setAttribute('draggable', 'false');
+                });
+                dragSrcIdx = null;
+            }, { signal });
+
+            container.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                const item = e.target.closest('.cs-col-item');
+                container.querySelectorAll('.cs-col-item').forEach(el => el.classList.remove('cs-drag-over'));
+                if (item) item.classList.add('cs-drag-over');
+            }, { signal });
+
+            container.addEventListener('dragleave', (e) => {
+                if (!container.contains(e.relatedTarget)) {
+                    container.querySelectorAll('.cs-col-item').forEach(el => el.classList.remove('cs-drag-over'));
+                }
+            }, { signal });
+
+            container.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                container.querySelectorAll('.cs-col-item').forEach(el => {
+                    el.classList.remove('cs-drag-over');
+                    el.setAttribute('draggable', 'false');
+                });
+
+                const item = e.target.closest('.cs-col-item');
+                if (!item || dragSrcIdx === null) return;
+
+                const targetIdx = +item.dataset.idx;
+                if (dragSrcIdx === targetIdx) return;
+
+                const moved = this._state.splice(dragSrcIdx, 1)[0];
+                this._state.splice(targetIdx, 0, moved);
+                dragSrcIdx = null;
+                this.renderColumnOrder();
+                this.renderPreview();
+            }, { signal });
+        },
+
+        // ── Preview ────────────────────────────────────────────────────────────
+        renderPreview() {
+            let headHtml = '', dataHtml = '';
+            this._state.forEach(col => {
+                const children = col.children || [];
+                let childHead  = children.map(c => `<small class="d-block text-muted lh-sm">${c.label}</small>`).join('');
+                let childData  = children.map(() => `<small class="d-block text-muted">—</small>`).join('');
+                headHtml += `<th class="text-nowrap small py-1 px-2">${col.label}${childHead}</th>`;
+                dataHtml += `<td class="small py-1 px-2">—${childData}</td>`;
+            });
+            // Actions column
+            headHtml += '<th class="small py-1 px-2" style="width:50px;"></th>';
+            dataHtml += '<td class="small py-1 px-2"><i class="bi bi-three-dots-vertical text-muted"></i></td>';
+
+            $('#csPreviewRow').html(headHtml);
+            $('#csPreviewDataRow').html(dataHtml);
+        },
+
+        // ── Save / Reset ───────────────────────────────────────────────────────
+        save() {
+            const token = $('meta[name="csrf-token"]').attr('content');
+            $.ajax({
+                url:         '/column-settings/' + this.page,
+                method:      'POST',
+                contentType: 'application/json',
+                data:        JSON.stringify({ _token: token, columns: this._state }),
+                success: (res) => {
+                    this._cache = null; // bust cache so next fetch is fresh
+                    toastr.success(res.message || 'Saved.');
+                    bootstrap.Modal.getInstance(document.getElementById('columnSettingsModal')).hide();
+                    QUOTATION.list.dataTable();
+                },
+                error: () => toastr.error('Could not save column settings.'),
+            });
+        },
+
+        reset() {
+            if (!confirm('Reset columns to default settings?')) return;
+            const token = $('meta[name="csrf-token"]').attr('content');
+            $.ajax({
+                url:    '/column-settings/' + this.page,
+                method: 'DELETE',
+                data:   { _token: token },
+                success: (res) => {
+                    this._cache = null;
+                    this._state = JSON.parse(JSON.stringify(res.columns));
+                    this.renderFieldList();
+                    this.renderColumnOrder();
+                    this.renderPreview();
+                    toastr.success(res.message || 'Reset to defaults.');
+                },
+                error: () => toastr.error('Could not reset column settings.'),
+            });
+        },
+    },
+
+    // ─── List ──────────────────────────────────────────────────────────────────
     list: {
         load(activeTab) {
             QUOTATION.list.dataTable(activeTab);
         },
+
+        // Special cell renderers keyed by field key
+        renderers: {
+            row_no(data) {
+                return `<span class="fw-semibold">${data ?? ''}</span>`;
+            },
+            status(data) {
+                const map = {
+                    'pending':   ['Pending',   'warning'],
+                    'accepted':  ['Accepted',  'success'],
+                    'converted': ['Converted', 'info'],
+                    'cancelled': ['Cancelled', 'danger'],
+                    'expired':   ['Expired',   'secondary'],
+                    'draft':     ['Draft',     'secondary'],
+                    'sent':      ['Sent',      'primary'],
+                    'rejected':  ['Rejected',  'danger'],
+                    'confirmed': ['Confirmed', 'success'],
+                };
+                const key = (data ?? '').toString().toLowerCase();
+                const [label, color] = map[key] ?? ['—', 'secondary'];
+                return `<span class="badge bg-${color} text-capitalize">${label}</span>`;
+            },
+            services(data) {
+                if (!data) return '';
+                const items = Array.isArray(data) ? data : data.toString().split(',');
+                return items.filter(Boolean).map(s =>
+                    `<span class="badge bg-light text-dark border me-1">${s.trim()}</span>`
+                ).join('');
+            },
+        },
+
+        /** Build a DataTable column definition from a column_json entry. */
+        _buildDtColumn(colDef, fields) {
+            const children = colDef.children || [];
+            const renderer = QUOTATION.list.renderers[colDef.key] || null;
+
+            if (!children.length) {
+                // Simple column
+                return {
+                    data: colDef.key,
+                    defaultContent: '',
+                    render: renderer ? (data) => renderer(data) : undefined,
+                };
+            }
+
+            // Parent with children stacked in one cell
+            return {
+                data: colDef.key,
+                defaultContent: '',
+                render(data, type, row) {
+                    const parentVal = renderer ? renderer(data) : (data ?? '');
+                    const childHtml = children.map(child => {
+                        const r   = QUOTATION.list.renderers[child.key] || null;
+                        const val = row[child.key] ?? '';
+                        return `<small class="d-block text-muted lh-sm">${r ? r(val) : val}</small>`;
+                    }).join('');
+                    return parentVal + childHtml;
+                },
+            };
+        },
+
+        /** Build the dynamic <thead><tr> HTML from column_json. */
+        _buildThead(columns, fields) {
+            const fieldMap = {};
+            fields.forEach(f => { fieldMap[f.key] = f; });
+
+            let html = '';
+            columns.forEach(col => {
+                const meta     = fieldMap[col.key] || {};
+                const minWidth = meta.min_width ? `min-width:${meta.min_width}px;` : '';
+                const children = col.children || [];
+                const childHtml = children.map(c =>
+                    `<small class="d-block text-muted lh-sm" style="font-weight:400;">${c.label}</small>`
+                ).join('');
+                html += `<th style="${minWidth}">${col.label}${childHtml}</th>`;
+            });
+            html += '<th style="min-width:50px;"></th>';
+            return html;
+        },
+
         dataTable(activeTab = null) {
             GLOBAL_FN.destroyDataTable();
-            activeTab = (activeTab && (typeof activeTab !== 'object')) ? activeTab : $("#listTabs").find('li button.active').attr('id');
+            activeTab = (activeTab && (typeof activeTab !== 'object'))
+                ? activeTab
+                : $("#listTabs").find('li button.active').attr('id');
 
-            // Non-orderable/non-searchable column indices (0-based)
-            // 1=Client(computed), 2=Branch, 4=Status, 5=LatestComments,
-            // 6=OperationalActivity(computed), 11=UserName, 12=SalesPerson(computed),
-            // 15=Remarks, 16=ShipmentNo, 17=JobNo, 18=NoOfPcs, 19=GWeight,
-            // 20=Volume, 21=P.Sale, 22=P.Cost, 23=GP, 24=GP%, 25=ShipperName,
-            // 26=ConsigneeName, 27=ShipmentStatus, 28=ETD, 29=ETA,
-            // 30=OriginAgent, 31=DestAgent, 32=EnquiryNo, 33=ContainerType,
-            // 34=VesselName, 35=VoyageNo, 37=Actions
-            let noSort = [1, 2, 4, 5, 6, 11, 12, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 37];
+            // Fetch column settings first, then init DataTable
+            QUOTATION.columnSettings.fetch((settings) => {
+                const columns  = settings.columns;
+                const fields   = settings.fields;
+                const fieldMap = {};
+                fields.forEach(f => { fieldMap[f.key] = f; });
 
-            let actionBtn = GLOBAL_FN.dataTable.optionButton();
-            actionBtn.className = (actionBtn.className ? actionBtn.className + ' ' : '') + 'text-center';
+                // Rebuild thead
+                $('#dataTable thead tr').html(QUOTATION.list._buildThead(columns, fields));
 
-            let table = $('#dataTable').DataTable({
-                processing: false,
-                serverSide: true,
-                autoWidth: false,
-                lengthChange: false,
-                paging: false,
-                dom: 'rt',
-                order: [[3, 'desc']],
-                ajax: {
-                    url: GLOBAL_FN.buildUrl('sales/quotation/data'),
-                    type: 'POST',
-                    data: function (d) {
-                        d.tab = activeTab;
-                        d.filterData = QUOTATION.filter.default();
-                    },
-                    dataSrc: function (json) {
-                        $('#dataTable tbody').find('.loading-row').remove();
-                        GLOBAL_FN.setStatusCounts(json.statusCounts);
-                        return json.data;
-                    }
-                },
-                columnDefs: [
-                    {targets: noSort, orderable: false, searchable: false},
-                ],
-                columns: [
-                    // 0 - Quote No (left sticky via CSS)
-                    {data: 'row_no', defaultContent: '', className: 'fw-semibold'},
-                    // 1 - Client
-                    {data: 'client_name', defaultContent: ''},
-                    // 2 - Branch (not in quotation module)
-                    {data: null, defaultContent: ''},
-                    // 3 - Date
-                    {data: 'posted_at', defaultContent: ''},
-                    // 4 - Status
-                    {
-                        data: 'status',
-                        render(data) {
-                            const map = {
-                                'pending':   ['Pending',   'warning'],
-                                'accepted':  ['Accepted',  'success'],
-                                'converted': ['Converted', 'info'],
-                                'cancelled': ['Cancelled', 'danger'],
-                                'expired':   ['Expired',   'secondary'],
-                                'draft':     ['Draft',     'light'],
-                                'sent':      ['Sent',      'primary'],
-                                'rejected':  ['Rejected',  'danger'],
-                                'confirmed': ['Confirmed', 'success'],
-                            };
-                            let key = (data ?? '').toString().toLowerCase();
-                            let [label, color] = map[key] ?? ['—', 'secondary'];
-                            return `<span class="badge bg-${color} text-capitalize">${label}</span>`;
+                // Build DataTable columns array
+                const dtColumns = columns.map(col => QUOTATION.list._buildDtColumn(col, fields));
+
+                // Orderable / non-orderable column indices
+                const noSort = dtColumns.map((_, i) => {
+                    const key  = columns[i].key;
+                    const meta = fieldMap[key] || {};
+                    return meta.orderable ? null : i;
+                }).filter(i => i !== null);
+                // Always disable last column (actions)
+                noSort.push(dtColumns.length);
+
+                // Default sort on first orderable column (or 0)
+                const firstOrderable = dtColumns.findIndex((_, i) => {
+                    const key  = columns[i].key;
+                    const meta = fieldMap[key] || {};
+                    return !!meta.orderable;
+                });
+                const defaultOrder = firstOrderable >= 0 ? [[firstOrderable, 'desc']] : [[0, 'desc']];
+
+                const actionBtn = GLOBAL_FN.dataTable.optionButton();
+                actionBtn.className = (actionBtn.className ? actionBtn.className + ' ' : '') + 'text-center';
+
+                let table = $('#dataTable').DataTable({
+                    processing:   false,
+                    serverSide:   true,
+                    autoWidth:    false,
+                    lengthChange: false,
+                    paging:       false,
+                    dom:          'rt',
+                    order:        defaultOrder,
+                    ajax: {
+                        url:  GLOBAL_FN.buildUrl('sales/quotation/data'),
+                        type: 'POST',
+                        data(d) {
+                            d.tab        = activeTab;
+                            d.filterData = QUOTATION.filter.default();
+                        },
+                        dataSrc(json) {
+                            $('#dataTable tbody').find('.loading-row').remove();
+                            GLOBAL_FN.setStatusCounts(json.statusCounts);
+                            return json.data;
                         }
                     },
-                    // 5 - Latest Comments
-                    {data: null, defaultContent: ''},
-                    // 6 - Operational Activity
-                    {data: 'activity_name', defaultContent: ''},
-                    // 7 - Origin (POL)
-                    {data: 'pol', defaultContent: ''},
-                    // 8 - Destination (POD)
-                    {data: 'pod', defaultContent: ''},
-                    // 9 - Valid From (same as posted_at for quotations)
-                    {data: 'posted_at', defaultContent: ''},
-                    // 10 - Valid To
-                    {data: 'valid_until', defaultContent: ''},
-                    // 11 - User Name
-                    {data: null, defaultContent: ''},
-                    // 12 - Sales Person
-                    {data: 'salesperson_name', defaultContent: ''},
-                    // 13 - INCO Term
-                    {data: 'incoterm', defaultContent: ''},
-                    // 14 - Carrier
-                    {data: 'carrier', defaultContent: ''},
-                    // 15 - Remarks
-                    {data: null, defaultContent: ''},
-                    // 16 - Shipment No.
-                    {data: null, defaultContent: ''},
-                    // 17 - Job No.
-                    {data: null, defaultContent: ''},
-                    // 18 - No.of Pcs
-                    {data: null, defaultContent: ''},
-                    // 19 - G.Weight
-                    {data: null, defaultContent: ''},
-                    // 20 - Volume
-                    {data: null, defaultContent: ''},
-                    // 21 - P.Sale
-                    {data: null, defaultContent: ''},
-                    // 22 - P.Cost
-                    {data: null, defaultContent: ''},
-                    // 23 - GP
-                    {data: null, defaultContent: ''},
-                    // 24 - GP%
-                    {data: null, defaultContent: ''},
-                    // 25 - Shipper Name
-                    {data: null, defaultContent: ''},
-                    // 26 - Consignee Name
-                    {data: null, defaultContent: ''},
-                    // 27 - Shipment Status
-                    {data: null, defaultContent: ''},
-                    // 28 - ETD
-                    {data: null, defaultContent: ''},
-                    // 29 - ETA
-                    {data: null, defaultContent: ''},
-                    // 30 - Origin Agent
-                    {data: null, defaultContent: ''},
-                    // 31 - Destination Agent
-                    {data: null, defaultContent: ''},
-                    // 32 - Enquiry No
-                    {data: null, defaultContent: ''},
-                    // 33 - Container Type
-                    {data: null, defaultContent: ''},
-                    // 34 - Vessel/Flight Name
-                    {data: null, defaultContent: ''},
-                    // 35 - Voyage/Flight No
-                    {data: null, defaultContent: ''},
-                    // 36 - Place Of Delivery
-                    {data: 'place_of_delivery', defaultContent: ''},
-                    // 37 - Edit (right sticky via CSS)
-                    actionBtn,
-                ],
-                language: {
-                    search: '',
-                    emptyTable: ' ',
-                    zeroRecords: ' ',
-                },
-                deferLoading: 0,
+                    columnDefs: [
+                        { targets: noSort, orderable: false, searchable: false },
+                    ],
+                    columns: [...dtColumns, actionBtn],
+                    language: {
+                        search:      '',
+                        emptyTable:  ' ',
+                        zeroRecords: ' ',
+                    },
+                    deferLoading: 0,
 
-                drawCallback: function () {
-                    const info = this.api().page.info();
-                    const noData    = info.recordsTotal === 0;
-                    const noResults = !noData && info.recordsDisplay === 0;
-                    const hasRows   = info.recordsDisplay > 0;
+                    drawCallback() {
+                        const info      = this.api().page.info();
+                        const noData    = info.recordsTotal === 0;
+                        const noResults = !noData && info.recordsDisplay === 0;
+                        const hasRows   = info.recordsDisplay > 0;
 
-                    $('#tableWrapper').toggleClass('d-none', !hasRows);
-                    $('#quotationEmptyState').toggleClass('d-none', hasRows);
-                    $('#emptyStateNoData').toggleClass('d-none', !noData);
-                    $('#emptyStateNoResults').toggleClass('d-none', !noResults);
-                },
+                        $('#tableWrapper').toggleClass('d-none', !hasRows);
+                        $('#quotationEmptyState').toggleClass('d-none', hasRows);
+                        $('#emptyStateNoData').toggleClass('d-none', !noData);
+                        $('#emptyStateNoResults').toggleClass('d-none', !noResults);
+                    },
 
-                initComplete: function () {
-                    QUOTATION.form.open();
-                    webDataTable.actions.menu();
+                    initComplete() {
+                        QUOTATION.form.open();
+                        webDataTable.actions.menu();
 
-                    // Dropdowns inside overflow:auto get clipped by the scroll container.
-                    // Re-initialise each one with Popper's fixed strategy so they
-                    // escape the overflow boundary and always appear above the layout.
-                    table.on('draw.dt', function () {
-                        $('#dataTable [data-bs-toggle="dropdown"]').each(function () {
-                            const inst = bootstrap.Dropdown.getInstance(this);
-                            if (inst) inst.dispose();
-                            new bootstrap.Dropdown(this, {
-                                popperConfig: { strategy: 'fixed' }
+                        table.on('draw.dt', function () {
+                            $('#dataTable [data-bs-toggle="dropdown"]').each(function () {
+                                const inst = bootstrap.Dropdown.getInstance(this);
+                                if (inst) inst.dispose();
+                                new bootstrap.Dropdown(this, { popperConfig: { strategy: 'fixed' } });
                             });
                         });
-                    });
-                }
+                    }
+                });
+
+                $('#customSearch').on('keyup', function () {
+                    table.search(this.value).draw();
+                });
+                webDataTable.loader(table);
+                webDataTable.search(table);
             });
-            $('#customSearch').on('keyup', function () {
-                table.search(this.value).draw();
-            });
-            //$('#dataTable_filter').closest('div.row').remove();
-            webDataTable.loader(table);
-            webDataTable.search(table);
-            //webDataTable.actions.menu();
         },
+
         extraActions(row) {
             QUOTATION.list.actions.statusChange(row);
             QUOTATION.list.actions.view(row);
             QUOTATION.list.actions.email(row);
-            //QUOTATION.list.actions.convertToJob(row);
         },
         actions: {
             statusChange(row) {
@@ -300,22 +672,11 @@ QUOTATION = {
                     }, $(this).attr('data-value'));
                 })
             },
-            /*convertToJob(row) {
-                $('#row_convert_to_job').off().on('click', function () {
-                    localStorage.setItem('convert-quotation', row.attr('data-id'));
-                    window.location.href = GLOBAL_FN.buildUrl(`operation/jobs`);
-                });
-            },*/
             view(row) {
                 $('#row_view').off().on('click', function () {
                     let customerId = row.attr('data-id');
-
-                    // Open drawer
-
                     let drawer = new bootstrap.Offcanvas(document.getElementById('moduleDrawer'));
                     drawer.show();
-
-                    // Load Overview
                     $('#moduleOverview').html('<p>Loading...</p>');
                     $.get('/sales/quotation/' + customerId + '/overview', function (data) {
                         $('#moduleOverview').html(data);
@@ -325,58 +686,34 @@ QUOTATION = {
             email(row) {
                 $('#row_email').off().on('click', function () {
                     let quotationId = row.attr('data-id');
-
-                    // Fetch email data from server
                     $.get('/sales/quotation/' + quotationId + '/email-data', function (data) {
-                        // Populate the email form
                         $('#emailTo').val(data.to);
                         $('#emailCc').val(data.cc);
                         $('#emailSubject').val('Quotation #' + data.id);
-
-                        // Show the drawer
                         let drawer = new bootstrap.Offcanvas(document.getElementById('sendEmailDrawer'));
                         drawer.show();
-
-                        // Handle form submission
                         $('#sendEmailForm').off('submit').on('submit', function (e) {
                             e.preventDefault();
-
-                            // Create FormData object
                             let formData = new FormData(this);
-
-                            // Show loading state
-                            const submitBtn = $(this).find('button[type="submit"]');
+                            const submitBtn     = $(this).find('button[type="submit"]');
                             const originalBtnText = submitBtn.html();
-                            submitBtn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Sending...');
+                            submitBtn.html('<span class="spinner-border spinner-border-sm"></span> Sending...');
                             submitBtn.prop('disabled', true);
-
-                            // Send the email
                             $.ajax({
-                                url: '/sales/quotation/send-email',
-                                type: 'POST',
-                                data: formData,
+                                url:         '/sales/quotation/send-email',
+                                type:        'POST',
+                                data:        formData,
                                 processData: false,
                                 contentType: false,
-                                success: function (response) {
-                                    // Close the drawer
+                                success(response) {
                                     bootstrap.Offcanvas.getInstance(document.getElementById('sendEmailDrawer')).hide();
-
-                                    // Show success message
                                     toastr.success(response.message);
-
-                                    // Reset form
                                     $('#sendEmailForm')[0].reset();
                                 },
-                                error: function (xhr) {
-                                    // Show error message
-                                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                                        toastr.error(xhr.responseJSON.message);
-                                    } else {
-                                        toastr.error('An error occurred while sending the email.');
-                                    }
+                                error(xhr) {
+                                    toastr.error(xhr.responseJSON?.message || 'An error occurred while sending the email.');
                                 },
-                                complete: function () {
-                                    // Reset button state
+                                complete() {
                                     submitBtn.html(originalBtnText);
                                     submitBtn.prop('disabled', false);
                                 }
@@ -387,6 +724,8 @@ QUOTATION = {
             }
         }
     },
+
+    // ─── Form ──────────────────────────────────────────────────────────────────
     form: {
         load() {
             QUOTATION.form.open();
@@ -398,24 +737,22 @@ QUOTATION = {
                     size: 'xxl',
                     scroll: false,
                     minHeight: '700px',
-                    content: {
-                        enquiryId: enquiryId
-                    }
+                    content: { enquiryId }
                 });
                 localStorage.removeItem('convert-enquiry');
             }
         },
         open() {
-            $('#new,#new-first').off().on('click', function (enquiryId = null) {
+            $('#new,#new-first').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'New Quotation',
-                    url: GLOBAL_FN.buildUrl('sales/quotation/create'),
-                    content: null,
-                    size: 'md',
-                    scroll: false,
+                    title:     'New Quotation',
+                    url:       GLOBAL_FN.buildUrl('sales/quotation/create'),
+                    content:   null,
+                    size:      'md',
+                    scroll:    false,
                     minHeight: 'min-height:70vh;',
                 });
-            })
+            });
         },
         openCallback() {
             QUOTATION.form.addContainer();
@@ -425,67 +762,43 @@ QUOTATION = {
             setTimeout(function () {
                 QUOTATION.form.customerProspectToggle();
                 QUOTATION.form.customerAddressFetch();
-            })
+            });
             GLOBAL_FN.activity.activityChange();
             QUOTATION.form.polPodLoad();
         },
         customerProspectToggle() {
-            // Handle customer select change
             $('#customer').on('change', function () {
                 const customerValue = $(this).val();
                 const prospectSelect = document.querySelector('#prospect');
-
                 if (customerValue && customerValue !== '') {
-                    // Disable prospect select when customer is selected
-                    if (prospectSelect && prospectSelect.tomselect) {
-                        prospectSelect.tomselect.disable();
-                    }
+                    if (prospectSelect?.tomselect) prospectSelect.tomselect.disable();
                 } else {
-                    // Enable prospect select when customer is cleared
-                    if (prospectSelect && prospectSelect.tomselect) {
-                        prospectSelect.tomselect.enable();
-                    }
+                    if (prospectSelect?.tomselect) prospectSelect.tomselect.enable();
                 }
             });
 
-            // Handle prospect select change
             $('#prospect').on('change', function () {
                 const prospectValue = $(this).val();
                 const customerSelect = document.querySelector('#customer');
-
                 if (prospectValue && prospectValue !== '') {
-                    // Disable customer select when prospect is selected
-                    if (customerSelect && customerSelect.tomselect) {
-                        customerSelect.tomselect.disable();
-                    }
+                    if (customerSelect?.tomselect) customerSelect.tomselect.disable();
                 } else {
-                    // Enable customer select when prospect is cleared
-                    if (customerSelect && customerSelect.tomselect) {
-                        customerSelect.tomselect.enable();
-                    }
+                    if (customerSelect?.tomselect) customerSelect.tomselect.enable();
                 }
             });
 
-            // Initial check on page load
-            const customerValue = $('#customer').val();
-            const prospectValue = $('#prospect').val();
+            const customerValue  = $('#customer').val();
+            const prospectValue  = $('#prospect').val();
             const customerSelect = document.querySelector('#customer');
             const prospectSelect = document.querySelector('#prospect');
-
-            // Check if we're in edit mode with a prospect
-            const isEditMode = $('#data-id').val() && $('#prospect').length > 0;
-            const hasProspectId = $('#prospect').data('has-prospect') === true || $('[name="prospect"]').find('option:selected').val() !== '';
+            const isEditMode     = $('#data-id').val() && $('#prospect').length > 0;
+            const hasProspectId  = $('#prospect').data('has-prospect') === true ||
+                                   $('[name="prospect"]').find('option:selected').val() !== '';
 
             if (customerValue && customerValue !== '') {
-                // Disable prospect select if customer is already selected
-                if (prospectSelect && prospectSelect.tomselect) {
-                    prospectSelect.tomselect.disable();
-                }
-            } else if (prospectValue && prospectValue !== '' || (isEditMode && hasProspectId)) {
-                // Disable customer select if prospect is already selected or we're editing a prospect
-                if (customerSelect && customerSelect.tomselect) {
-                    customerSelect.tomselect.disable();
-                }
+                if (prospectSelect?.tomselect) prospectSelect.tomselect.disable();
+            } else if ((prospectValue && prospectValue !== '') || (isEditMode && hasProspectId)) {
+                if (customerSelect?.tomselect) customerSelect.tomselect.disable();
             }
         },
         customerAddressFetch() {
@@ -501,23 +814,17 @@ QUOTATION = {
                 });
             }
 
-            // Load address for pre-selected customer (edit mode)
             const initial = $('#customer').val();
             if (initial) loadAddress(initial);
 
-            // Reload on change
             $('#customer').on('change', function () {
                 loadAddress($(this).val());
             });
         },
         shipmentMode(destroy = null) {
             if (destroy) {
-                let quotationPol = document.querySelector('#pol');
-                let quotationPod = document.querySelector('#pod');
-
-                // If already initialized, destroy first
-                quotationPol.tomselect.destroy();
-                quotationPod.tomselect.destroy();
+                document.querySelector('#pol').tomselect.destroy();
+                document.querySelector('#pod').tomselect.destroy();
                 QUOTATION.form.polPodLoad(true);
             }
         },
@@ -528,61 +835,46 @@ QUOTATION = {
             initTomSelectSearch('#carrier', port + 'Lines', 50, preLoad);
         },
         addContainer() {
-            // Add Container Row
             $('#addContainerRow').off().on('click', function () {
-                let $table = $('#containerTable tbody');
+                let $table  = $('#containerTable tbody');
                 let $newRow = $table.find('tr:first').clone();
-
-                // Clear values in cloned row
                 $newRow.find('input, select').val('');
-                //$newRow.find('.bootstrap-select button').remove();
                 $newRow.find('select').removeClass('tomselected').removeClass('ts-hidden-accessible');
                 $newRow.find('div.ts-wrapper').remove();
                 initTomSelectForm($newRow);
-                //selectPicker($newRow);
-
                 $table.append($newRow);
                 QUOTATION.form.removeRow();
             });
         },
         addPackage() {
-            // Add Package Row
             $('#addPackageRow').off().on('click', function () {
-                let $table = $('#packageTable tbody');
+                let $table  = $('#packageTable tbody');
                 let $newRow = $table.find('tr:first').clone();
-
-
-                // Clear values in cloned row
                 $newRow.find('input, select').val('');
                 $newRow.find('select').removeClass('tomselected').removeClass('ts-hidden-accessible');
                 $newRow.find('div.ts-wrapper').remove();
                 initTomSelectForm($newRow);
-
                 $table.append($newRow);
                 QUOTATION.form.removeRow();
             });
         },
         removeRow() {
-            // Remove Row (for both tables)
             $('#containerTable,#packageTable').off('click', '.remove-row').on('click', '.remove-row', function () {
                 let $tbody = $(this).closest('tbody');
-                const $tr = $(this).closest('tr');
+                const $tr  = $(this).closest('tr');
                 if ($tbody.find('tr').length > 1) {
                     $tr.remove();
                 } else {
-                    // If only one row left, just clear it
-                    // $(this).closest('tr').find('input, select').val('');
                     $tr.find('input').val('');
                     $tr.find('select').each(function () {
                         $(this).val('');
                         if ($(this).hasClass('selectpicker')) {
                             $(this).selectpicker('destroy').addClass('selectpicker');
-                            console.log($(this).attr('id'));
                             selectPicker('#' + $(this).closest('table').attr('id'));
                         }
                     });
                 }
-            })
+            });
         }
     },
 }
