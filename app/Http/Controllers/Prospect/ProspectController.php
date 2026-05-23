@@ -35,7 +35,7 @@ class ProspectController extends Controller
             ->addIndexColumn()
             ->setRowAttr([
                 'data-id' => fn($model) => $model->id,
-                'data-name' => fn($model) => htmlspecialchars($model->name_en, ENT_QUOTES, 'UTF-8'),
+                'data-name' => fn($model) => htmlspecialchars($model->name, ENT_QUOTES, 'UTF-8'),
                 'class' => 'row-item',
                 'id' => fn($model) => 'prospect-' . strtolower($model->row_no ?? $model->id),
             ])
@@ -99,7 +99,7 @@ class ProspectController extends Controller
         }
 
         // Set prospect data from quick form
-        $prospect->name_en = $request->input('quick_prospect_name');
+        $prospect->name = $request->input('quick_prospect_name');
         $prospect->email = $request->input('quick_prospect_email');
         $prospect->phone = $request->input('quick_prospect_phone');
         $prospect->address = $request->input('quick_prospect_address');

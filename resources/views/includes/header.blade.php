@@ -33,7 +33,10 @@
                         @include('includes.breadcrumb.'.$breadcrumb, ['page1'=>$page1??'','page2'=>$page2 ?? '','page3'=>$page3 ?? ''])
                     @endif
                 </nav>
-                <h5 class="fw-bold text-dark mb-0 text-truncate" style="max-width: 200px;">@yield('page-title')</h5>
+                <div class="d-flex align-items-center gap-2">
+                    <h5 class="fw-bold text-dark mb-0 text-truncate" style="max-width: 200px;">@yield('page-title')</h5>
+                    @stack('page-title-action')
+                </div>
             </div>
         </div>
 

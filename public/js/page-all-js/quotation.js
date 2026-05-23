@@ -104,133 +104,175 @@ QUOTATION = {
         dataTable(activeTab = null) {
             GLOBAL_FN.destroyDataTable();
             activeTab = (activeTab && (typeof activeTab !== 'object')) ? activeTab : $("#listTabs").find('li button.active').attr('id');
+
+            // Non-orderable/non-searchable column indices (0-based)
+            // 1=Client(computed), 2=Branch, 4=Status, 5=LatestComments,
+            // 6=OperationalActivity(computed), 11=UserName, 12=SalesPerson(computed),
+            // 15=Remarks, 16=ShipmentNo, 17=JobNo, 18=NoOfPcs, 19=GWeight,
+            // 20=Volume, 21=P.Sale, 22=P.Cost, 23=GP, 24=GP%, 25=ShipperName,
+            // 26=ConsigneeName, 27=ShipmentStatus, 28=ETD, 29=ETA,
+            // 30=OriginAgent, 31=DestAgent, 32=EnquiryNo, 33=ContainerType,
+            // 34=VesselName, 35=VoyageNo, 37=Actions
+            let noSort = [1, 2, 4, 5, 6, 11, 12, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 37];
+
+            let actionBtn = GLOBAL_FN.dataTable.optionButton();
+            actionBtn.className = (actionBtn.className ? actionBtn.className + ' ' : '') + 'text-center';
+
             let table = $('#dataTable').DataTable({
                 processing: false,
                 serverSide: true,
                 autoWidth: false,
                 lengthChange: false,
-                pageLength: 25,
-                dom: 'rt<"row mt-2"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7 d-flex justify-content-end"p>>',
-                order: [[1, 'desc']],
+                paging: false,
+                dom: 'rt',
+                order: [[3, 'desc']],
                 ajax: {
                     url: GLOBAL_FN.buildUrl('sales/quotation/data'),
                     type: 'POST',
                     data: function (d) {
-                        // Add tab parameter
                         d.tab = activeTab;
                         d.filterData = QUOTATION.filter.default();
                     },
                     dataSrc: function (json) {
-                        // Remove loader rows when data arrives
                         $('#dataTable tbody').find('.loading-row').remove();
                         GLOBAL_FN.setStatusCounts(json.statusCounts);
                         return json.data;
                     }
                 },
                 columnDefs: [
-                    {targets: [0], searchable: false},
-                    {targets: [0], orderable: false},
-                    /*{targets: [1], class: 'hide', visible: false},*/
+                    {targets: noSort, orderable: false, searchable: false},
                 ],
                 columns: [
-                    /*{data: 'DT_RowIndex', class: 'text-center hide-tooltip fav-index'},*/
-                    {data: 'row_no', class: 'hide-tooltip fav-index'},
+                    // 0 - Quote No (left sticky via CSS)
+                    {data: 'row_no', defaultContent: '', className: 'fw-semibold'},
+                    // 1 - Client
+                    {data: 'client_name', defaultContent: ''},
+                    // 2 - Branch (not in quotation module)
+                    {data: null, defaultContent: ''},
+                    // 3 - Date
+                    {data: 'posted_at', defaultContent: ''},
+                    // 4 - Status
                     {
-                        data: 'name',
-                        render: function (data, type, row) {
-                            return row.name.name + '<br><small class="text-muted">' + row.name.row_no + '</small>';
+                        data: 'status',
+                        render(data) {
+                            const map = {
+                                'pending':   ['Pending',   'warning'],
+                                'accepted':  ['Accepted',  'success'],
+                                'converted': ['Converted', 'info'],
+                                'cancelled': ['Cancelled', 'danger'],
+                                'expired':   ['Expired',   'secondary'],
+                                'draft':     ['Draft',     'light'],
+                                'sent':      ['Sent',      'primary'],
+                                'rejected':  ['Rejected',  'danger'],
+                                'confirmed': ['Confirmed', 'success'],
+                            };
+                            let key = (data ?? '').toString().toLowerCase();
+                            let [label, color] = map[key] ?? ['—', 'secondary'];
+                            return `<span class="badge bg-${color} text-capitalize">${label}</span>`;
                         }
                     },
-                    {data: 'services'},
-                    {data: 'activity.name'},
-                    {
-                        data: 'pol',
-                        render: function (data, type, row) {
-                            return `<div class="text-capitalize">${row.pol} -> ${row.pod}</div>`;
-                        }
-                    },
-                    {data: 'posted_at'},
-                    {data: 'valid_until'},
-                    {data: 'salesperson.name'},
-                    /*{
-                        data: 'shipment_type',
-                        render: function (data, type, row) {
-                            let icon = '';
-                            switch (row.shipment_type) {
-                                case 'air':
-                                    icon = '<i class="bi bi-airplane text-secondary me-1"></i>'; // free Font Awesome
-                                    break;
-                                case 'sea':
-                                    icon = '<i class="fa fa-ship text-secondary me-1"></i>';
-                                    break;
-                                case 'road':
-                                    icon = '<i class="bi bi-truck text-secondary me-1"></i>';
-                                    break;
-                                case 'rail':
-                                    icon = '<i class="bi bi-train-front text-secondary me-1"></i>';
-                                    break;
-                            }
-
-                            let typeText = row.shipment_type ? `<div>${(row.shipment_type)}</div>` : '';
-                            let categoryText = row.shipment_category ? `<div>${row.shipment_category}</div>` : '';
-
-                            return `<div class="d-flex align-items-start">
-                                    <div class="me-2" style="width:16px;">${icon}</div>
-                                    <div class="d-flex flex-column text-capitalize">
-                                        ${typeText}
-                                        ${categoryText}
-                                    </div>
-                                </div>`;
-                        }
-                    },
-                    {
-                        data: 'origin_city',
-                        render: function (data, type, row) {
-                            let origin = (row.origin_city || row.origin_country)
-                                ? `<div class="text-capitalize"><i class="fa fa-map-marker-alt text-success me-1"></i>${row.origin_city ?? ''}, ${row.origin_country ?? ''}</div>`
-                                : '';
-                            return origin;
-                        }
-                    },
-                    {
-                        data: 'destination_city',
-                        render: function (data, type, row) {
-                            let dest = (row.destination_city || row.destination_country)
-                                ? `<div class="text-capitalize"><i class="fa fa-map-marker-alt text-danger me-1"></i>${row.destination_city ?? ''}, ${row.destination_country ?? ''}</div>`
-                                : '';
-                            return dest;
-                        }
-                    },
-                    {
-                        data: 'pickup_date',
-                        render: function (data, type, row) {
-                            let pickup = row.pickup_date ? `<div><i class="bi bi-calendar-event text-primary me-1"></i>${row.pickup_date}</div>` : '';
-                            let delivery = row.delivery_date ? `<div><i class="bi bi-calendar-check text-success me-1"></i>${row.delivery_date}</div>` : '';
-                            return pickup + delivery;
-                        }
-                    },
-                    {
-                        data: 'weight',
-                        render: function (data, type, row) {
-                            let weight = row.weight ? `<div><span class="fw-semibold">Weight:</span> ${row.weight} kg</div>` : '';
-                            let volume = row.volume ? `<div><span class="fw-semibold">Volume:</span> ${row.volume} m³</div>` : '';
-                            return weight + volume;
-                        }
-                    },
-                    {data: 'expiry_date'},
-                    {data: 'created_at'},*/
-                    // Actions column
-                    GLOBAL_FN.dataTable.optionButton()
-
+                    // 5 - Latest Comments
+                    {data: null, defaultContent: ''},
+                    // 6 - Operational Activity
+                    {data: 'activity_name', defaultContent: ''},
+                    // 7 - Origin (POL)
+                    {data: 'pol', defaultContent: ''},
+                    // 8 - Destination (POD)
+                    {data: 'pod', defaultContent: ''},
+                    // 9 - Valid From (same as posted_at for quotations)
+                    {data: 'posted_at', defaultContent: ''},
+                    // 10 - Valid To
+                    {data: 'valid_until', defaultContent: ''},
+                    // 11 - User Name
+                    {data: null, defaultContent: ''},
+                    // 12 - Sales Person
+                    {data: 'salesperson_name', defaultContent: ''},
+                    // 13 - INCO Term
+                    {data: 'incoterm', defaultContent: ''},
+                    // 14 - Carrier
+                    {data: 'carrier', defaultContent: ''},
+                    // 15 - Remarks
+                    {data: null, defaultContent: ''},
+                    // 16 - Shipment No.
+                    {data: null, defaultContent: ''},
+                    // 17 - Job No.
+                    {data: null, defaultContent: ''},
+                    // 18 - No.of Pcs
+                    {data: null, defaultContent: ''},
+                    // 19 - G.Weight
+                    {data: null, defaultContent: ''},
+                    // 20 - Volume
+                    {data: null, defaultContent: ''},
+                    // 21 - P.Sale
+                    {data: null, defaultContent: ''},
+                    // 22 - P.Cost
+                    {data: null, defaultContent: ''},
+                    // 23 - GP
+                    {data: null, defaultContent: ''},
+                    // 24 - GP%
+                    {data: null, defaultContent: ''},
+                    // 25 - Shipper Name
+                    {data: null, defaultContent: ''},
+                    // 26 - Consignee Name
+                    {data: null, defaultContent: ''},
+                    // 27 - Shipment Status
+                    {data: null, defaultContent: ''},
+                    // 28 - ETD
+                    {data: null, defaultContent: ''},
+                    // 29 - ETA
+                    {data: null, defaultContent: ''},
+                    // 30 - Origin Agent
+                    {data: null, defaultContent: ''},
+                    // 31 - Destination Agent
+                    {data: null, defaultContent: ''},
+                    // 32 - Enquiry No
+                    {data: null, defaultContent: ''},
+                    // 33 - Container Type
+                    {data: null, defaultContent: ''},
+                    // 34 - Vessel/Flight Name
+                    {data: null, defaultContent: ''},
+                    // 35 - Voyage/Flight No
+                    {data: null, defaultContent: ''},
+                    // 36 - Place Of Delivery
+                    {data: 'place_of_delivery', defaultContent: ''},
+                    // 37 - Edit (right sticky via CSS)
+                    actionBtn,
                 ],
                 language: {
-                    search: "" // removes "Search:" label
+                    search: '',
+                    emptyTable: ' ',
+                    zeroRecords: ' ',
                 },
                 deferLoading: 0,
+
+                drawCallback: function () {
+                    const info = this.api().page.info();
+                    const noData    = info.recordsTotal === 0;
+                    const noResults = !noData && info.recordsDisplay === 0;
+                    const hasRows   = info.recordsDisplay > 0;
+
+                    $('#tableWrapper').toggleClass('d-none', !hasRows);
+                    $('#quotationEmptyState').toggleClass('d-none', hasRows);
+                    $('#emptyStateNoData').toggleClass('d-none', !noData);
+                    $('#emptyStateNoResults').toggleClass('d-none', !noResults);
+                },
 
                 initComplete: function () {
                     QUOTATION.form.open();
                     webDataTable.actions.menu();
+
+                    // Dropdowns inside overflow:auto get clipped by the scroll container.
+                    // Re-initialise each one with Popper's fixed strategy so they
+                    // escape the overflow boundary and always appear above the layout.
+                    table.on('draw.dt', function () {
+                        $('#dataTable [data-bs-toggle="dropdown"]').each(function () {
+                            const inst = bootstrap.Dropdown.getInstance(this);
+                            if (inst) inst.dispose();
+                            new bootstrap.Dropdown(this, {
+                                popperConfig: { strategy: 'fixed' }
+                            });
+                        });
+                    });
                 }
             });
             $('#customSearch').on('keyup', function () {
@@ -364,7 +406,7 @@ QUOTATION = {
             }
         },
         open() {
-            $('#new').off().on('click', function (enquiryId = null) {
+            $('#new,#new-first').off().on('click', function (enquiryId = null) {
                 webModal.openGlobalModal({
                     title: 'New Quotation',
                     url: GLOBAL_FN.buildUrl('sales/quotation/create'),

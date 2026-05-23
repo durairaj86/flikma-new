@@ -101,7 +101,7 @@
                                         <option value="{{ encodeId($prospect->id) }}"
                                                 data-subtext="{{ $prospect->row_no }}"
                                             @selected($prospect->id==$quotation->prospect_id)>
-                                            {{ $prospect->name_en }}
+                                            {{ $prospect->name }}
                                         </option>
                                     @endforeach
                                     <option data-divider="true"></option>
@@ -184,10 +184,10 @@
                                        maxlength="100">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Port of Loading (POL)</label>
+                                <label class="form-label">Origin</label>
                                 <select id="pol" name="pol" class="tom-select-search" autocomplete="off" required
-                                        data-placeholder="--Select Port of Loading--">
-                                    <option value="">--Select--</option>
+                                        data-placeholder="--Select Origin--">
+                                    <option value="">--Select Origin--</option>
                                     @if($quotation->pol)
                                         <option value="{{ $quotation->pol }}" selected>{{ $quotation->pol }}</option>
                                     @endif
@@ -197,11 +197,10 @@
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Port of Discharge (POD)</label>
+                                <label class="form-label">Destination</label>
                                 <select id="pod" name="pod" class="tom-select-search" autocomplete="off" required
-                                        data-placeholder="--Select Port of Discharge--">
-                                    <option value="" @selected(!$quotation->pod)>--Select
-                                        Port of Discharge--
+                                        data-placeholder="--Select Destination--">
+                                    <option value="" @selected(!$quotation->pod)>--Select Destination--
                                     </option>
                                     @if($quotation->pod)
                                         <option value="{{ $quotation->pod }}" selected>{{ $quotation->pod }}</option>

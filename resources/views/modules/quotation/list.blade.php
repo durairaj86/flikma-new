@@ -1,8 +1,62 @@
 @section('page-title','Quotations')
 @section('js','quotation')
+@push('page-title-action')
+    <button class="btn btn-link btn-sm text-muted p-0 text-decoration-none lh-1"
+            data-bs-toggle="modal" data-bs-target="#quotationWorkflowModal"
+            title="How quotations work">
+        <i class="bi bi-info-circle fs-6"></i><span class="d-none d-md-inline ms-1" style="font-size:0.8rem;">How it works</span>
+    </button>
+@endpush
 @section('extra-js','customer,prospect')
 <x-app-layout>
     <main class="gmail-content bg-white px-3">
+
+        <style>
+            /* Workflow flowchart */
+            .wf-box {
+                border: 2px solid;
+                border-radius: 10px;
+                padding: 10px 20px;
+                text-align: center;
+                min-width: 170px;
+                font-size: 0.875rem;
+                font-weight: 500;
+                line-height: 1.4;
+            }
+            .wf-box.wf-neutral  { border-color: #6c757d; background: #f8f9fa;  color: #495057; }
+            .wf-box.wf-pending  { border-color: #ffc107; background: #fffbf0;  color: #856404; }
+            .wf-box.wf-action   { border-color: #0d6efd; background: #f0f7ff;  color: #084298; }
+            .wf-box.wf-success  { border-color: #198754; background: #f0fff4;  color: #0f5132; }
+            .wf-box.wf-danger   { border-color: #dc3545; background: #fff5f5;  color: #842029; }
+            .wf-box.wf-job      { border-color: #0dcaf0; background: #f0fdff;  color: #055160; }
+            .wf-box.wf-decision { border-color: #6f42c1; background: #f8f0ff;  color: #432874; }
+            .wf-arrow { color: #adb5bd; font-size: 1.3rem; line-height: 1.3; text-align: center; }
+            .wf-badge { font-size: 0.7rem; border-radius: 20px; padding: 2px 8px; display: inline-block; margin-top: 4px; }
+
+            /* Sticky first column (Quote No) */
+            #dataTable thead tr th:first-child,
+            #dataTable tbody tr td:first-child {
+                position: sticky;
+                left: 0;
+                z-index: 2;
+                box-shadow: 3px 0 6px -3px rgba(0, 0, 0, .15);
+            }
+            #dataTable thead tr th:first-child { background-color: #f8f9fa; z-index: 3; }
+            #dataTable tbody tr td:first-child  { background-color: #fff; }
+            #dataTable tbody tr:hover td:first-child { background-color: rgba(0,0,0,.04); }
+
+            /* Sticky last column (Edit) */
+            #dataTable thead tr th:last-child,
+            #dataTable tbody tr td:last-child {
+                position: sticky;
+                right: 0;
+                z-index: 2;
+                box-shadow: -3px 0 6px -3px rgba(0, 0, 0, .15);
+            }
+            #dataTable thead tr th:last-child { background-color: #f8f9fa; z-index: 3; }
+            #dataTable tbody tr td:last-child  { background-color: #fff; }
+            #dataTable tbody tr:hover td:last-child { background-color: rgba(0,0,0,.04); }
+        </style>
 
         <div id="filterPanel" class="card shadow-sm border-0 d-none">
 
@@ -162,135 +216,245 @@
                     </ul>
                 </div>
             </div>
-            <div class="d-flex justify-content-between pt-3">
-                <div class="position-relative">
-                    <!-- Compact Filter button -->
-                    <button class="btn btn-outline-secondary btn-round me-2" id="filter-box"><i class="bi bi-funnel"></i>
-                        Filter
-                    </button>
-                </div>
+            <div class="d-flex justify-content-between pt-3 align-items-center gap-2">
+                <button class="btn btn-outline-secondary btn-round" id="filter-box">
+                    <i class="bi bi-funnel"></i> Filter
+                </button>
                 <button class="btn btn-primary rounded-pill px-4" id="new">New Quotation</button>
             </div>
         </div>
+
         <!-- Table Section -->
         <div class="shadow bdr-r-10 py-3 flex-grow-1">
-            <!-- Search & New -->
             <div class="d-flex justify-content-between px-3 flex-shrink-0">
-                {{--<div id="searchLabels" class="mb-3 d-flex flex-wrap gap-2"></div>--}}
-
-                <!-- Example static label -->
                 <div id="filtered-data"></div>
                 <div class="align-items-center gap-2">
                     <div class="search-box position-relative me-2">
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-
                         <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
                                placeholder="Search quotations..." aria-label="Search quotations...">
                     </div>
                 </div>
             </div>
 
-            <!-- Table with scroll -->
-            <div class="flex-grow-1 overflow-auto">
-                <table class="table align-middle dataTable" id="dataTable" data-modal-size="lg">
-                    <thead class="table-light sticky-top bg-white">
-                    <tr>
-                        <th>#</th>
-                        <th>Customer</th>
-                        <th>Services</th>
-                        <th>Activity</th>
-                        <th>POL -> POD</th>
-                        <th>Quotation Date</th>
-                        <th>Expiry Date</th>
-                        <th>Salesman</th>
-                        <th></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {{--<tr>
-                        <td>
-                            <strong>Quote Alpha-12345</strong><br>
-                            Received at Mumbai Warehouse
-                        </td>
-                        <td><span class="status-badge status-ontime">On Time</span></td>
-                        <td>A1BC23D45E</td>
-                        <td>Mumbai, IN</td>
-                        <td>Dubai, AE</td>
-                        <td>Aug 15, 2025</td>
-                        <td>Aug 30, 2025</td>
-                        <td>No</td>
-                        <td><i class="bi bi-three-dots"></i></td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <strong>Quote Beta-67890</strong><br>
-                            Received at Chennai Warehouse
-                        </td>
-                        <td><span class="status-badge status-delayed">Delayed</span></td>
-                        <td>XY9Z7AB56C</td>
-                        <td>Chennai, IN</td>
-                        <td>Singapore, SG</td>
-                        <td>Sep 5, 2025</td>
-                        <td>Sep 20, 2025</td>
-                        <td>Yes</td>
-                        <td><i class="bi bi-three-dots"></i></td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <strong>Quote Gamma-54321</strong><br>
-                            Received at Delhi Warehouse
-                        </td>
-                        <td><span class="status-badge status-intransit">In Transit</span></td>
-                        <td>MN10Z34PQ</td>
-                        <td>Delhi, IN</td>
-                        <td>Hamburg, DE</td>
-                        <td>Oct 1, 2025</td>
-                        <td>Oct 20, 2025</td>
-                        <td>No</td>
-                        <td><i class="bi bi-three-dots"></i></td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <strong>Quote Delta-96765</strong><br>
-                            Received at Bangalore Warehouse
-                        </td>
-                        <td><span class="status-badge status-cancelled">Cancelled</span></td>
-                        <td>T8U9OVWZ12</td>
-                        <td>Bangalore, IN</td>
-                        <td>London, UK</td>
-                        <td>Nov 5, 2025</td>
-                        <td>Nov 22, 2025</td>
-                        <td>No</td>
-                        <td><i class="bi bi-three-dots"></i></td>
-                    </tr>--}}
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Rejected Quotes -->
-            {{--<div class="rejected-box mt-4">
-                <h6 class="fw-bold">Rejected Quotes List</h6>
-                <p class="mb-1 text-muted">You rejected this quote & asked for edit.</p>
-                <small class="text-muted">Date: 23 July, 2023 | ID: #241041080</small>
-                <hr>
-                <div class="d-flex align-items-center">
-                    <div
-                        class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3"
-                        style="width:40px; height:40px;">
-                        H
+            <!-- Empty / zero-records state (shown instead of table) -->
+            <div id="quotationEmptyState" class="d-none text-center py-5 px-4">
+                <div id="emptyStateNoData">
+                    <div class="mb-3">
+                        <i class="bi bi-file-earmark-text-fill" style="font-size:3.5rem;color:#dde3ed;"></i>
                     </div>
-                    <div>
-                        <p class="mb-0 fw-bold">Himanshu Shrivastav</p>
-                        <small class="text-muted">himanshu12@gmail.com</small>
-                    </div>
-                    <div class="ms-auto text-end">
-                        <p class="mb-0">Quotation No<br><b>#131341</b></p>
-                        <small class="text-muted">From DB Schenker</small>
+                    <h5 class="fw-semibold text-muted mb-2">No Quotations Yet</h5>
+                    <p class="text-muted small mb-4 mx-auto" style="max-width:400px;">
+                        Manage your customer price requests here. Create a quotation, send it to your
+                        customer, and convert accepted quotes into jobs.
+                    </p>
+                    <div class="d-flex gap-2 justify-content-center flex-wrap">
+                        <button class="btn btn-primary rounded-pill px-4" id="new-first">
+                            <i class="bi bi-plus-lg me-1"></i> Create First Quotation
+                        </button>
+                        <button class="btn btn-outline-secondary rounded-pill px-4"
+                                data-bs-toggle="modal" data-bs-target="#quotationWorkflowModal">
+                            <i class="bi bi-diagram-3 me-1"></i> How It Works
+                        </button>
                     </div>
                 </div>
-            </div>--}}
+                <div id="emptyStateNoResults" class="d-none">
+                    <div class="mb-3">
+                        <i class="bi bi-search" style="font-size:3rem;color:#dde3ed;"></i>
+                    </div>
+                    <h5 class="fw-semibold text-muted mb-2">No Results Found</h5>
+                    <p class="text-muted small mb-0">Try adjusting your search or filter criteria.</p>
+                </div>
+            </div>
+
+            <!-- Table with scroll -->
+            <div class="flex-grow-1 overflow-auto" id="tableWrapper">
+                <table class="table align-middle dataTable" id="dataTable" data-modal-size="lg">
+                    <thead class="table-light sticky-top">
+                    <tr>
+                        <th style="min-width:140px;">Quote No</th>
+                        <th style="min-width:200px;">Client</th>
+                        <th style="min-width:85px;">Branch</th>
+                        <th style="min-width:100px;">Date</th>
+                        <th style="min-width:90px;">Status</th>
+                        <th style="min-width:120px;">Latest Comments</th>
+                        <th style="min-width:150px;">Operational Activity</th>
+                        <th style="min-width:130px;">Origin</th>
+                        <th style="min-width:200px;">Destination</th>
+                        <th style="min-width:100px;">Valid From</th>
+                        <th style="min-width:90px;">Valid To</th>
+                        <th style="min-width:100px;">User Name</th>
+                        <th style="min-width:100px;">Sales Person</th>
+                        <th style="min-width:90px;">INCO Term</th>
+                        <th style="min-width:140px;">Carrier</th>
+                        <th style="min-width:120px;">Remarks</th>
+                        <th style="min-width:110px;">Shipment No.</th>
+                        <th style="min-width:80px;">Job No.</th>
+                        <th style="min-width:80px;">No.of Pcs</th>
+                        <th style="min-width:90px;">G.Weight</th>
+                        <th style="min-width:80px;">Volume</th>
+                        <th style="min-width:80px;">P.Sale</th>
+                        <th style="min-width:75px;">P.Cost</th>
+                        <th style="min-width:70px;">GP</th>
+                        <th style="min-width:65px;">GP%</th>
+                        <th style="min-width:120px;">Shipper Name</th>
+                        <th style="min-width:130px;">Consignee Name</th>
+                        <th style="min-width:110px;">Shipment Status</th>
+                        <th style="min-width:100px;">ETD</th>
+                        <th style="min-width:100px;">ETA</th>
+                        <th style="min-width:110px;">Origin Agent</th>
+                        <th style="min-width:140px;">Destination Agent</th>
+                        <th style="min-width:100px;">Enquiry No</th>
+                        <th style="min-width:120px;">Container Type</th>
+                        <th style="min-width:160px;">Vessel/Flight Name</th>
+                        <th style="min-width:140px;">Voyage/Flight No</th>
+                        <th style="min-width:130px;">Place Of Delivery</th>
+                        <th style="min-width:50px;"></th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>{{-- #tableWrapper --}}
         </div>
     </main>
     @include('modules.email.send-email')
     @include('modules.quotation.quotation-view')
+
+    <!-- Quotation Workflow Modal -->
+    <div class="modal fade" id="quotationWorkflowModal" tabindex="-1" aria-labelledby="workflowModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <div>
+                        <h5 class="modal-title fw-semibold" id="workflowModalLabel">
+                            <i class="bi bi-diagram-3 text-primary me-2"></i>Quotation Workflow
+                        </h5>
+                        <p class="text-muted small mb-0">How quotations move through your system</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body pt-3 pb-4">
+
+                    <!-- Flowchart -->
+                    <div class="d-flex flex-column align-items-center gap-0">
+
+                        <!-- Two starting points -->
+                        <div class="d-flex justify-content-center gap-4 w-100">
+                            <div class="d-flex flex-column align-items-center">
+                                <div class="wf-box wf-neutral">
+                                    <i class="bi bi-clipboard-check me-1"></i>
+                                    From Enquiry
+                                    <div class="wf-badge bg-secondary text-white">Via Enquiry Module</div>
+                                </div>
+                                <div class="wf-arrow">↓</div>
+                            </div>
+                            <div class="d-flex flex-column align-items-center">
+                                <div class="wf-box wf-neutral">
+                                    <i class="bi bi-person-raised-hand me-1"></i>
+                                    Direct Quotation
+                                    <div class="wf-badge bg-secondary text-white">New Quotation Button</div>
+                                </div>
+                                <div class="wf-arrow">↓</div>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Create Quotation -->
+                        <div class="wf-box wf-pending">
+                            <div class="text-muted" style="font-size:0.7rem;font-weight:400;">STEP 1</div>
+                            <i class="bi bi-file-earmark-plus me-1"></i> Create Quotation
+                            <div class="wf-badge bg-warning text-dark">Pending</div>
+                        </div>
+                        <div class="wf-arrow">↓</div>
+
+                        <!-- Step 3: Send to Customer -->
+                        <div class="wf-box wf-action">
+                            <div class="text-muted" style="font-size:0.7rem;font-weight:400;">STEP 2</div>
+                            <i class="bi bi-send me-1"></i> Send to Customer
+                            <div class="text-muted mt-1" style="font-size:0.75rem;">via Email or Print PDF</div>
+                        </div>
+                        <div class="wf-arrow">↓</div>
+
+                        <!-- Decision -->
+                        <div class="wf-box wf-decision">
+                            <i class="bi bi-question-circle me-1"></i> Customer Decision
+                        </div>
+
+                        <!-- Split paths -->
+                        <div class="d-flex justify-content-center gap-5 w-100 mt-0">
+
+                            <!-- Left: Accepted path -->
+                            <div class="d-flex flex-column align-items-center">
+                                <div class="wf-arrow">↓</div>
+                                <div class="wf-box wf-success">
+                                    <i class="bi bi-check-circle me-1"></i> Accepted
+                                    <div class="wf-badge bg-success text-white">Accepted</div>
+                                </div>
+                                <div class="wf-arrow">↓</div>
+                                <div class="wf-box wf-action">
+                                    <div class="text-muted" style="font-size:0.7rem;font-weight:400;">STEP 3</div>
+                                    <i class="bi bi-arrow-repeat me-1"></i> Convert to Job
+                                </div>
+                                <div class="wf-arrow">↓</div>
+                                <div class="wf-box wf-job">
+                                    <i class="bi bi-briefcase-fill me-1"></i> Job Created
+                                    <div class="wf-badge text-white" style="background:#0dcaf0;">Operations</div>
+                                </div>
+                            </div>
+
+                            <!-- Right: Rejected path -->
+                            <div class="d-flex flex-column align-items-center">
+                                <div class="wf-arrow">↓</div>
+                                <div class="wf-box wf-danger">
+                                    <i class="bi bi-x-circle me-1"></i> Rejected / Expired
+                                </div>
+                                <div class="wf-arrow">↓</div>
+                                <div class="wf-box wf-danger">
+                                    <i class="bi bi-slash-circle me-1"></i> Cancelled
+                                    <div class="wf-badge bg-danger text-white">Cancelled</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Status legend -->
+                    <hr class="mt-4">
+                    <h6 class="fw-semibold text-muted mb-3 small text-uppercase">Status Guide</h6>
+                    <div class="row g-2">
+                        <div class="col-sm-6 col-md-3">
+                            <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#fffbf0;border:1px solid #ffc107;">
+                                <span class="badge bg-warning text-dark">Pending</span>
+                                <small class="text-muted">Awaiting customer response</small>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-3">
+                            <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#f0fff4;border:1px solid #198754;">
+                                <span class="badge bg-success">Accepted</span>
+                                <small class="text-muted">Customer approved quote</small>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-3">
+                            <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#f0fdff;border:1px solid #0dcaf0;">
+                                <span class="badge" style="background:#0dcaf0;">Converted</span>
+                                <small class="text-muted">Turned into a job</small>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-3">
+                            <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#fff5f5;border:1px solid #dc3545;">
+                                <span class="badge bg-danger">Cancelled</span>
+                                <small class="text-muted">Rejected or expired</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button class="btn btn-primary rounded-pill px-4" data-bs-dismiss="modal"
+                            onclick="setTimeout(()=>document.getElementById('new').click(),300)">
+                        <i class="bi bi-plus-lg me-1"></i> Create Quotation
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </x-app-layout>

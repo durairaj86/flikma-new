@@ -22,7 +22,7 @@
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Prospect Name <span class="text-danger">*</span></label>
                     <input type="text" id="quick-prospect-name" name="quick_prospect_name" class="form-control"
-                           value="{{ $prospect->name_en }}" required>
+                           value="{{ $prospect->name }}" required>
                 </div>
 
                 <div class="col-md-6 mb-3">

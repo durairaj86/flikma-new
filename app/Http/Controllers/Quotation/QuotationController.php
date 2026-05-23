@@ -205,52 +205,53 @@ class QuotationController extends Controller
         $filter = $request->filterData ?? [];
 
         $rows = Quotation::select(
-            'quotations.id as id',
-            'quotations.row_no as row_no',
-            'customer_id',
-            'prospect_id',
-            'posted_at',
-            'services',
-            'valid_until',
-            'activity_id',
-            'shipment_mode',
-            'shipment_category',
-            'incoterm',
-            'pol',
-            'pod',
-            'place_of_receipt',
-            'place_of_delivery',
-            'final_destination',
-            'carrier',
-            'quotations.salesperson_id as salesperson_id',
-            'quotations.company_id as company_id',
-            'quotations.status as status',
-            'quotations.created_at as created_at',
-        )->with(['customer:id,name_en,name_ar,email,phone,row_no', 'prospect:id,name_en,email,phone,row_no', 'activity:id,name', 'salesperson:id,name'])
-            ->where('quotations.status', QuotationEnum::fromName($request->tab))
-            ->when(isset($filter['filter-from-date'], $filter['filter-to-date']),
-                function ($query) use ($filter) {
-
-                    $from = Carbon::parse($filter['filter-from-date'])->startOfDay();
-                    $to   = Carbon::parse($filter['filter-to-date'])->addDay()->startOfDay();
-
-                    $query->where('posted_at', '>=', $from)
-                        ->where('posted_at', '<',  $to);
-                }
-            )
-            ->when(isset($filter['customers']) && !empty($filter['customers']), function ($query) use ($filter) {
-                $query->whereIn('customer_id', decodeIds($filter['customers']));
-            })
-            ->when(isset($filter['filter-pol']) && !empty($filter['filter-pol']), function ($query) use ($filter) {
-                $query->where('pol', 'like', "%{$filter['filter-pol']}%");
-            })
-            ->when(isset($filter['filter-pod']) && !empty($filter['filter-pod']), function ($query) use ($filter) {
-                $query->where('pod', 'like', "%{$filter['filter-pod']}%");
-            })
-            ->when(isset($filter['activity_id']) && !empty($filter['activity_id']), function ($query) use ($filter) {
-                $query->where('activity_id', $filter['activity_id']);
-            })
-            ->orderByDesc('quotations.id');
+            'quotations.id',
+            'quotations.row_no',
+            'quotations.posted_at',
+            'quotations.valid_until',
+            'quotations.services',
+            'quotations.shipment_mode',
+            'quotations.shipment_category',
+            'quotations.incoterm',
+            'quotations.pol',
+            'quotations.pod',
+            'quotations.place_of_receipt',
+            'quotations.place_of_delivery',
+            'quotations.final_destination',
+            'quotations.carrier',
+            'quotations.status',
+            'quotations.company_id',
+            'quotations.created_at',
+            DB::raw('COALESCE(customers.name_en, prospects.name) AS client_name'),
+            DB::raw('logistic_activities.name AS activity_name'),
+            DB::raw('sales_persons.name AS salesperson_name'),
+        )
+        ->leftJoin('customers', 'customers.id', '=', 'quotations.customer_id')
+        ->leftJoin('prospects', 'prospects.id', '=', 'quotations.prospect_id')
+        ->leftJoin('logistic_activities', 'logistic_activities.id', '=', 'quotations.activity_id')
+        ->leftJoin('sales_persons', 'sales_persons.id', '=', 'quotations.salesperson_id')
+        ->where('quotations.status', QuotationEnum::fromName($request->tab))
+        ->when(isset($filter['filter-from-date'], $filter['filter-to-date']),
+            function ($query) use ($filter) {
+                $from = Carbon::parse($filter['filter-from-date'])->startOfDay();
+                $to   = Carbon::parse($filter['filter-to-date'])->addDay()->startOfDay();
+                $query->where('quotations.posted_at', '>=', $from)
+                      ->where('quotations.posted_at', '<',  $to);
+            }
+        )
+        ->when(isset($filter['customers']) && !empty($filter['customers']), function ($query) use ($filter) {
+            $query->whereIn('quotations.customer_id', decodeIds($filter['customers']));
+        })
+        ->when(isset($filter['filter-pol']) && !empty($filter['filter-pol']), function ($query) use ($filter) {
+            $query->where('quotations.pol', 'like', "%{$filter['filter-pol']}%");
+        })
+        ->when(isset($filter['filter-pod']) && !empty($filter['filter-pod']), function ($query) use ($filter) {
+            $query->where('quotations.pod', 'like', "%{$filter['filter-pod']}%");
+        })
+        ->when(isset($filter['activity_id']) && !empty($filter['activity_id']), function ($query) use ($filter) {
+            $query->where('quotations.activity_id', $filter['activity_id']);
+        })
+        ->orderByDesc('quotations.id');
 
         // Get counts per status
         $statusCounts = Quotation::select('status', DB::raw('COUNT(*) as total'))
@@ -267,32 +268,14 @@ class QuotationController extends Controller
         return DataTables::eloquent($rows)
             ->addIndexColumn()
             ->setRowAttr([
-                'data-id' => fn($model) => $model->id,
+                'data-id'   => fn($model) => $model->id,
                 'data-name' => fn($model) => $model->row_no,
-                'class' => 'row-item',
-                'id' => fn($model) => 'quotation-' . strtolower($model->row_no ?? $model->id),
+                'class'     => 'row-item',
+                'id'        => fn($model) => 'quotation-' . strtolower($model->row_no ?? $model->id),
             ])
-            ->addColumn('name', function ($model) {
-                if ($model->customer_id) {
-                    return [
-                        'name' => $model->customer->name_en,
-                        'row_no' => $model->customer->row_no,
-                    ];
-                } else {
-                    return [
-                        'name' => $model->prospect->name_en,
-                        'row_no' => $model->prospect->row_no,
-                    ];
-                }
-            })
-            ->editColumn('services', function ($model) {
-                return getSelectedServices($model->services, true);
-            })
-            ->rawColumns(['status'])
-            ->editColumn('created_at', fn($model) => Carbon::parse($model->created_at)->format('d-m-Y'))
-            ->with([
-                'statusCounts' => $allCounts,  // ✅ send to DataTables response
-            ])
+            ->editColumn('services', fn($model) => getSelectedServices($model->services, true))
+            ->rawColumns(['services'])
+            ->with(['statusCounts' => $allCounts])
             ->toJson();
     }
 
@@ -350,8 +333,8 @@ class QuotationController extends Controller
                 } elseif ($field == "prospect_id" && $quotation->prospect_id != null) {
                     $prospectData = Prospect::findOrFail($quotation->$field);
                     $customer = new Customer();
-                    $customer->name_en = $prospectData->name_en;
-                    $customer->name_ar = $prospectData->name_en;
+                    $customer->name_en = $prospectData->name;
+                    $customer->name_ar = $prospectData->name;
                     $customer->email = $prospectData->email;
                     $customer->phone = $prospectData->phone;
                     $customer->address1_en = $prospectData->address;
