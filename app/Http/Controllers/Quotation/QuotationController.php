@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\QuotationMail;
 use App\Models\Customer\Customer;
 use App\Models\Job\Job;
+use App\Models\Master\Description;
 use App\Models\Master\LogisticActivity;
 use App\Models\Prospect\Prospect;
 use App\Models\Quotation\Quotation;
@@ -52,14 +53,16 @@ class QuotationController extends Controller
 
             $enquiryData = $quotation->enquiry_id;
         }
-        return view('modules.quotation.quotation-form', compact('polPod', 'quotation', 'enquiryData'));
+        $chargeDescriptions = Description::descriptions();
+        return view('modules.quotation.quotation-form', compact('polPod', 'quotation', 'enquiryData', 'chargeDescriptions'));
     }
 
     public function edit($id)
     {
-        $quotation = Quotation::with('containers', 'packages')->find($id);
+        $quotation = Quotation::with('containers', 'packages', 'charges')->find($id);
         $polPod = preloadPOLAndPOD($quotation->shipment_type);
-        return view('modules.quotation.quotation-form', compact('polPod', 'quotation'));
+        $chargeDescriptions = Description::descriptions();
+        return view('modules.quotation.quotation-form', compact('polPod', 'quotation', 'chargeDescriptions'));
     }
 
     public function store(Request $request)
@@ -112,6 +115,16 @@ class QuotationController extends Controller
             'width.*'            => 'nullable|numeric|min:0|max:9999.99',
             'height.*'           => 'nullable|numeric|min:0|max:9999.99',
             'package_weight.*'   => 'nullable|numeric|min:0|max:999999.99',*/
+
+            // Charges (array) — all nullable; charge tab is optional
+            'chg_description.*'  => 'nullable|string|max:255',
+            'chg_unit.*'         => 'nullable|string|max:100',
+            'chg_qty.*'          => 'nullable|integer|min:1|max:99999',
+            'chg_currency.*'     => 'nullable|string|max:10',
+            'chg_ex_rate.*'      => 'nullable|numeric|min:0|max:99999.999999',
+            'chg_amt_qty.*'      => 'nullable|numeric|min:0|max:999999999.99',
+            'chg_tax_group.*'    => 'nullable|string|max:50',
+            'chg_remarks.*'      => 'nullable|string|max:500',
         ]);
 
         if (isset($request['data-id']) and filled($request['data-id'])) {
@@ -175,14 +188,26 @@ class QuotationController extends Controller
             $containers = [];
             foreach ($request->container_size as $index => $size) {
                 $containers[] = [
-                    'container_number' => $request->container_number[$index] ?? null,
-                    'seal_number' => $request->seal_number[$index] ?? null,
-                    'container_size' => $size,
-                    'gross_weight' => $request->gross_weight[$index] ?? null,
-                    'net_weight' => $request->net_weight[$index] ?? null,
-                    'volume' => $request->volume[$index] ?? null,
-                    'hazardous' => $request->hazardous[$index],
-                    'quotation_id' => $quotation->id,
+                    'quotation_id'       => $quotation->id,
+                    'container_size'     => $size,
+                    'container_number'   => $request->container_number[$index] ?? null,
+                    'seal_number'        => $request->seal_number[$index] ?? null,
+                    'carrier'            => $request->carrier[$index] ?? null,
+                    'vessel_name'        => $request->vessel_name[$index] ?? null,
+                    'voyage_no'          => $request->voyage_no[$index] ?? null,
+                    'no_of_pcs'          => $request->no_of_pcs[$index] ?? null,
+                    'gross_weight'       => $request->gross_weight[$index] ?? null,
+                    'net_weight'         => $request->net_weight[$index] ?? null,
+                    'weight_unit'        => $request->weight_unit[$index] ?? null,
+                    'volume'             => $request->volume[$index] ?? null,
+                    'volume_weight'      => $request->volume_weight[$index] ?? null,
+                    'volume_unit'        => $request->volume_unit[$index] ?? null,
+                    'chargeable_unit'    => $request->chargeable_unit[$index] ?? null,
+                    'container_type'     => $request->container_type[$index] ?? null,
+                    'hs_code'            => $request->ctn_hs_code[$index] ?? null,
+                    'description'        => $request->description[$index] ?? null,
+                    'consignment_remarks'=> $request->consignment_remarks[$index] ?? null,
+                    'hazardous'          => $request->hazardous[$index] ?? 0,
                 ];
             }
             DB::table('quotation_containers')->where('quotation_id', $quotation->id)->delete();
@@ -206,6 +231,36 @@ class QuotationController extends Controller
             }
             DB::table('quotation_packages')->where('quotation_id', $quotation->id)->delete();
             DB::table('quotation_packages')->insert($packages);
+        }
+
+        // ✅ Insert charges
+        $descriptions = $request->chg_description ?? [];
+        if (!empty(array_filter($descriptions))) {
+            $charges = [];
+            foreach ($descriptions as $index => $desc) {
+                $qty    = (int)   ($request->chg_qty[$index]     ?? 1);
+                $exRate = (float) ($request->chg_ex_rate[$index] ?? 1);
+                $amtQty = (float) ($request->chg_amt_qty[$index] ?? 0);
+                $fcy    = $amtQty ? round($qty * $amtQty, 2)          : null;
+                $local  = $fcy    ? round($fcy * $exRate, 2)          : null;
+                $charges[] = [
+                    'quotation_id'       => $quotation->id,
+                    'line_no'            => $index + 1,
+                    'charge_description' => $desc,
+                    'unit'               => $request->chg_unit[$index]     ?? null,
+                    'qty'                => $qty,
+                    'currency'           => $request->chg_currency[$index] ?? 'SAR',
+                    'ex_rate'            => $exRate,
+                    'amount_per_qty'     => $amtQty ?: null,
+                    'fcy_amount'         => $fcy,
+                    'local_amount'       => $local,
+                    'tax_group_code'     => $request->chg_tax_group[$index] ?? null,
+                    'remarks'            => $request->chg_remarks[$index]   ?? null,
+                    'sort_order'         => $index,
+                ];
+            }
+            DB::table('quotation_charges')->where('quotation_id', $quotation->id)->delete();
+            DB::table('quotation_charges')->insert($charges);
         }
 
         return response()->json([

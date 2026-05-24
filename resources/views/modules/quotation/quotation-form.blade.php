@@ -1,4 +1,4 @@
-<div class="container px-4 py-3 align-items-center" id="modal-buttons" data-buttons="cancel,save"
+<div class="container-fluid px-4 py-3 align-items-center" id="modal-buttons" data-buttons="cancel,save"
      data-button-save="Save Quotation">
     <!-- Meta Info -->
     <div class="row g-3 align-items-center bg-white border-bottom py-2 mb-3 small">
@@ -55,6 +55,13 @@
                                 data-bs-toggle="tab" data-bs-target="#other"
                                 type="button">
                             <i class="bi bi bi-collection me-1"></i> Other Info
+                        </button>
+                    </li>
+                    <li class="nav-item me-2">
+                        <button class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn"
+                                data-bs-toggle="tab" data-bs-target="#charges"
+                                type="button">
+                            <i class="bi bi-receipt me-1"></i> Charges
                         </button>
                     </li>
                 </ul>
@@ -298,124 +305,141 @@
                 <!-- Container Tab -->
                 <div class="tab-pane mt-4" id="container" role="tabpanel">
 
-                    <div class="table-responsive">
-                    <table class="table align-middle table-bordered" id="containerTable">
-                        <thead class="table-light">
-                        <tr>
-                            <th style="min-width:120px">Size</th>
-                            <th style="min-width:130px">Container No.</th>
-                            <th style="min-width:110px">Seal No.</th>
-                            <th style="min-width:110px">Carrier</th>
-                            <th style="min-width:130px">Vessel Name</th>
-                            <th style="min-width:110px">Voyage No.</th>
-                            <th style="min-width:90px">No. of Pcs</th>
-                            <th style="min-width:110px">Gross Wt (Kg)</th>
-                            <th style="min-width:110px">Net Wt (Kg)</th>
-                            <th style="min-width:90px">Wt Unit</th>
-                            <th style="min-width:100px">Volume (CBM)</th>
-                            <th style="min-width:110px">Volume Weight</th>
-                            <th style="min-width:90px">Vol Unit</th>
-                            <th style="min-width:110px">Chargeable Unit</th>
-                            <th style="min-width:120px">Container Type</th>
-                            <th style="min-width:110px">HS Code</th>
-                            <th style="min-width:160px">Description</th>
-                            <th style="min-width:160px">Remarks</th>
-                            <th style="min-width:100px">Hazardous</th>
-                            <th width="40"></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {{--<tr>
-                        <td>
-                            <x-common.container_size></x-common.container_size>
-                        </td>
-                        <td><input type="text" name="container_number[]" class="form-control" autocomplete="off"
-                                   maxlength="20"></td>
-                        <td><input type="text" name="seal_number[]" class="form-control" autocomplete="off" maxlength="20">
-                        </td>
-                        <td><input type="number" name="gross_weight[]" class="form-control" autocomplete="off"
-                                   maxlength="8"></td>
-                        <td><input type="number" name="net_weight[]" class="form-control" autocomplete="off" maxlength="8">
-                        </td>
-                        <td><input type="number" name="volume[]" class="form-control" autocomplete="off" maxlength="10">
-                        </td>
-                        <td>
-                            <select name="hazardous[]" class="form-select">
-                                <option>No</option>
-                                <option>Yes</option>
-                            </select>
-                        </td>
-                        <td>
-                            <button type="button" class="btn btn-danger btn-sm remove-row">X</button>
-                        </td>
-                        </tr>--}}
-                        @php
-                            $containers = $quotation->containers && $quotation->containers->count() > 0
-                                ? $quotation->containers
-                                : [null];
-                        @endphp
-                        @foreach($containers as $container)
-                            <tr>
-                                <td><x-common.container_size :value="$container->container_size ?? ''"/></td>
-                                <td><input type="text" name="container_number[]" class="form-control"
-                                           value="{{ $container->container_number ?? '' }}" autocomplete="off"></td>
-                                <td><input type="text" name="seal_number[]" class="form-control"
-                                           value="{{ $container->seal_number ?? '' }}" autocomplete="off"></td>
-                                <td><input type="text" name="carrier[]" class="form-control"
-                                           value="{{ $container->carrier ?? '' }}" autocomplete="off"></td>
-                                <td><input type="text" name="vessel_name[]" class="form-control"
-                                           value="{{ $container->vessel_name ?? '' }}" autocomplete="off"></td>
-                                <td><input type="text" name="voyage_no[]" class="form-control"
-                                           value="{{ $container->voyage_no ?? '' }}" autocomplete="off"></td>
-                                <td><input type="number" name="no_of_pcs[]" class="form-control"
-                                           value="{{ $container->no_of_pcs ?? '' }}" min="0"></td>
-                                <td><input type="number" name="gross_weight[]" class="form-control"
-                                           value="{{ $container->gross_weight ?? '' }}" step="0.01" min="0"></td>
-                                <td><input type="number" name="net_weight[]" class="form-control"
-                                           value="{{ $container->net_weight ?? '' }}" step="0.01" min="0"></td>
-                                <td>
-                                    <input type="text" name="weight_unit[]" class="form-control"
-                                           value="{{ $container->weight_unit ?? '' }}"
-                                           list="ctn-weight-unit-list" placeholder="KGS">
-                                    <datalist id="ctn-weight-unit-list">
-                                        <option value="KGS"><option value="LBS"><option value="MT"><option value="TON">
-                                    </datalist>
-                                </td>
-                                <td><input type="number" name="volume[]" class="form-control"
-                                           value="{{ $container->volume ?? '' }}" step="0.01" min="0"></td>
-                                <td><input type="number" name="volume_weight[]" class="form-control"
-                                           value="{{ $container->volume_weight ?? '' }}" step="0.01" min="0"></td>
-                                <td>
-                                    <input type="text" name="volume_unit[]" class="form-control"
-                                           value="{{ $container->volume_unit ?? '' }}"
-                                           list="ctn-volume-unit-list" placeholder="CBM">
-                                    <datalist id="ctn-volume-unit-list">
-                                        <option value="CBM"><option value="CFT"><option value="CM">
-                                    </datalist>
-                                </td>
-                                <td><input type="number" name="chargeable_unit[]" class="form-control"
-                                           value="{{ $container->chargeable_unit ?? '' }}" step="0.01" min="0" readonly></td>
-                                <td><x-common.container_types name="container_type[]" :value="$container->container_type ?? null"/></td>
-                                <td><input type="text" name="hs_code[]" class="form-control"
-                                           value="{{ $container->hs_code ?? '' }}" autocomplete="off"></td>
-                                <td><textarea name="description[]" class="form-control" rows="1">{{ $container->description ?? '' }}</textarea></td>
-                                <td><textarea name="consignment_remarks[]" class="form-control" rows="1">{{ $container->consignment_remarks ?? '' }}</textarea></td>
-                                <td>
-                                    <select name="hazardous[]" class="form-control tom-select hazardous">
-                                        <option value="0" @selected(!isset($container->hazardous) || $container->hazardous == 0)>No</option>
-                                        <option value="1" @selected(($container->hazardous ?? 0) == 1)>Yes</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <button type="button" class="btn btn-danger btn-sm remove-row">X</button>
-                                </td>
-                            </tr>
-                        @endforeach
+                    @php
+                        $containers = $quotation->containers && $quotation->containers->count() > 0
+                            ? $quotation->containers
+                            : [null];
+                    @endphp
 
-                        </tbody>
-                    </table>
-                    </div>{{-- .table-responsive --}}
-                    <button type="button" id="addContainerRow" class="btn btn-sm btn-primary mt-2">+ Add Container</button>
+                    <div id="containerList">
+                    @foreach($containers as $container)
+                        <div class="container-card card mb-3 border">
+                            <div class="card-header d-flex justify-content-between align-items-center py-2 bg-light">
+                                <span class="fw-semibold small text-muted">Container / Consignment</span>
+                                <button type="button" class="btn btn-outline-danger btn-sm remove-row">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                            <div class="card-body p-3">
+                                <div class="row g-2">
+
+                                    <div class="col-md-4 col-sm-6">
+                                        <label class="form-label small mb-1">Size</label>
+                                        <x-common.container_size :value="$container->container_size ?? ''"/>
+                                    </div>
+                                    <div class="col-md-4 col-sm-6">
+                                        <label class="form-label small mb-1">Container No.</label>
+                                        <input type="text" name="container_number[]" class="form-control form-control-sm"
+                                               value="{{ $container->container_number ?? '' }}" autocomplete="off">
+                                    </div>
+                                    <div class="col-md-4 col-sm-6">
+                                        <label class="form-label small mb-1">Seal No.</label>
+                                        <input type="text" name="seal_number[]" class="form-control form-control-sm"
+                                               value="{{ $container->seal_number ?? '' }}" autocomplete="off">
+                                    </div>
+
+                                    <div class="col-md-4 col-sm-6">
+                                        <label class="form-label small mb-1">Carrier</label>
+                                        <input type="text" name="carrier[]" class="form-control form-control-sm"
+                                               value="{{ $container->carrier ?? '' }}" autocomplete="off">
+                                    </div>
+                                    <div class="col-md-4 col-sm-6">
+                                        <label class="form-label small mb-1">Vessel Name</label>
+                                        <input type="text" name="vessel_name[]" class="form-control form-control-sm"
+                                               value="{{ $container->vessel_name ?? '' }}" autocomplete="off">
+                                    </div>
+                                    <div class="col-md-4 col-sm-6">
+                                        <label class="form-label small mb-1">Voyage No.</label>
+                                        <input type="text" name="voyage_no[]" class="form-control form-control-sm"
+                                               value="{{ $container->voyage_no ?? '' }}" autocomplete="off">
+                                    </div>
+
+                                    <div class="col-md-2 col-sm-4">
+                                        <label class="form-label small mb-1">No. of Pcs</label>
+                                        <input type="number" name="no_of_pcs[]" class="form-control form-control-sm"
+                                               value="{{ $container->no_of_pcs ?? '' }}" min="0">
+                                    </div>
+                                    <div class="col-md-3 col-sm-4">
+                                        <label class="form-label small mb-1">Gross Wt (Kg)</label>
+                                        <input type="number" name="gross_weight[]" class="form-control form-control-sm"
+                                               value="{{ $container->gross_weight ?? '' }}" step="0.01" min="0">
+                                    </div>
+                                    <div class="col-md-3 col-sm-4">
+                                        <label class="form-label small mb-1">Net Wt (Kg)</label>
+                                        <input type="number" name="net_weight[]" class="form-control form-control-sm"
+                                               value="{{ $container->net_weight ?? '' }}" step="0.01" min="0">
+                                    </div>
+                                    <div class="col-md-2 col-sm-4">
+                                        <label class="form-label small mb-1">Wt Unit</label>
+                                        <input type="text" name="weight_unit[]" class="form-control form-control-sm"
+                                               value="{{ $container->weight_unit ?? '' }}"
+                                               list="ctn-weight-unit-list" placeholder="KGS">
+                                    </div>
+                                    <div class="col-md-2 col-sm-4">
+                                        <label class="form-label small mb-1">Hazardous</label>
+                                        <select name="hazardous[]" class="form-select form-select-sm tom-select hazardous">
+                                            <option value="0" @selected(!isset($container->hazardous) || $container->hazardous == 0)>No</option>
+                                            <option value="1" @selected(($container->hazardous ?? 0) == 1)>Yes</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-3 col-sm-4">
+                                        <label class="form-label small mb-1">Volume (CBM)</label>
+                                        <input type="number" name="volume[]" class="form-control form-control-sm"
+                                               value="{{ $container->volume ?? '' }}" step="0.01" min="0">
+                                    </div>
+                                    <div class="col-md-3 col-sm-4">
+                                        <label class="form-label small mb-1">Volume Weight</label>
+                                        <input type="number" name="volume_weight[]" class="form-control form-control-sm"
+                                               value="{{ $container->volume_weight ?? '' }}" step="0.01" min="0">
+                                    </div>
+                                    <div class="col-md-2 col-sm-4">
+                                        <label class="form-label small mb-1">Vol Unit</label>
+                                        <input type="text" name="volume_unit[]" class="form-control form-control-sm"
+                                               value="{{ $container->volume_unit ?? '' }}"
+                                               list="ctn-volume-unit-list" placeholder="CBM">
+                                    </div>
+                                    <div class="col-md-2 col-sm-4">
+                                        <label class="form-label small mb-1">Chargeable Unit</label>
+                                        <input type="number" name="chargeable_unit[]" class="form-control form-control-sm"
+                                               value="{{ $container->chargeable_unit ?? '' }}" step="0.01" min="0" readonly>
+                                    </div>
+                                    <div class="col-md-2 col-sm-4">
+                                        <label class="form-label small mb-1">HS Code</label>
+                                        <input type="text" name="ctn_hs_code[]" class="form-control form-control-sm"
+                                               value="{{ $container->hs_code ?? '' }}" autocomplete="off">
+                                    </div>
+
+                                    <div class="col-md-4 col-sm-6">
+                                        <label class="form-label small mb-1">Container Type</label>
+                                        <x-common.container_types name="container_type[]" :value="$container->container_type ?? null"/>
+                                    </div>
+                                    <div class="col-md-4 col-sm-6">
+                                        <label class="form-label small mb-1">Description</label>
+                                        <textarea name="description[]" class="form-control form-control-sm" rows="2">{{ $container->description ?? '' }}</textarea>
+                                    </div>
+                                    <div class="col-md-4 col-sm-6">
+                                        <label class="form-label small mb-1">Consignment Remarks</label>
+                                        <textarea name="consignment_remarks[]" class="form-control form-control-sm" rows="2">{{ $container->consignment_remarks ?? '' }}</textarea>
+                                    </div>
+
+                                </div>{{-- .row --}}
+                            </div>{{-- .card-body --}}
+                        </div>{{-- .container-card --}}
+                    @endforeach
+                    </div>{{-- #containerList --}}
+
+                    {{-- datalists (shared across all cards) --}}
+                    <datalist id="ctn-weight-unit-list">
+                        <option value="KGS"><option value="LBS"><option value="MT"><option value="TON">
+                    </datalist>
+                    <datalist id="ctn-volume-unit-list">
+                        <option value="CBM"><option value="CFT"><option value="CM">
+                    </datalist>
+
+                    <button type="button" id="addContainerRow" class="btn btn-sm btn-primary mt-1">
+                        <i class="bi bi-plus-circle me-1"></i>Add Container
+                    </button>
                 </div>
 
                 <!-- Package Tab -->
@@ -472,6 +496,134 @@
                     <button type="button" id="addPackageRow" class="btn btn-sm btn-primary">+ Add Package</button>
                 </div>
 
+                <!-- Charges Tab -->
+                <div class="tab-pane mt-3" id="charges" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm align-middle" id="chargesTable">
+                            <thead class="table-light">
+                            <tr>
+                                <th class="text-center" style="width:38px">#</th>
+                                <th style="min-width:200px">Charge Description</th>
+                                <th style="min-width:110px">Unit</th>
+                                <th style="min-width:60px">Qty</th>
+                                <th style="min-width:85px">Currency</th>
+                                <th style="min-width:80px">Ex.Rate</th>
+                                <th style="min-width:100px">Amount/Qty</th>
+                                <th style="min-width:105px">FCY Amount</th>
+                                <th style="min-width:110px">Amount (Local)</th>
+                                <th style="min-width:100px">Tax Group</th>
+                                <th style="min-width:140px">Remarks</th>
+                                <th style="width:70px" class="text-center">Action</th>
+                            </tr>
+                            </thead>
+                            <tbody id="chargesBody">
+                            @php
+                                $charges = $quotation->charges && $quotation->charges->count() > 0
+                                    ? $quotation->charges
+                                    : [null];
+                            @endphp
+                            @foreach($charges as $i => $charge)
+                                <tr class="charge-row">
+                                    <td class="text-center text-muted small chg-line-no">{{ $i + 1 }}</td>
+                                    <td>
+                                        <select name="chg_description[]" class="form-select form-select-sm chg-description">
+                                            <option value="">— Select —</option>
+                                            @foreach($chargeDescriptions as $desc)
+                                                <option value="{{ $desc->description }}"
+                                                    @selected(($charge->charge_description ?? '') === $desc->description)>
+                                                    {{ $desc->description }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select name="chg_unit[]" class="form-select form-select-sm chg-unit">
+                                            <option value="">— Select —</option>
+                                            @foreach(\App\Models\Master\Unit::units() as $unit)
+                                                <option value="{{ $unit->unit_name }}"
+                                                    @selected(($charge->unit ?? '') === $unit->unit_name)>
+                                                    {{ $unit->unit_name }}{{ $unit->unit_symbol ? ' ('.$unit->unit_symbol.')' : '' }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="number" name="chg_qty[]"
+                                               class="form-control form-control-sm chg-qty"
+                                               value="{{ $charge->qty ?? 1 }}" min="1" step="1">
+                                    </td>
+                                    <td>
+                                        <select name="chg_currency[]" class="form-select form-select-sm chg-currency">
+                                            @foreach(currencies() as $code => $name)
+                                                <option value="{{ $code }}"
+                                                    @selected(($charge->currency ?? 'SAR') === $code)>{{ $code }}</option>
+                                            @endforeach
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="number" name="chg_ex_rate[]"
+                                               class="form-control form-control-sm chg-ex-rate"
+                                               value="{{ $charge->ex_rate ?? 1 }}" step="0.000001" min="0">
+                                    </td>
+                                    <td>
+                                        <input type="number" name="chg_amt_qty[]"
+                                               class="form-control form-control-sm chg-amt-qty"
+                                               value="{{ $charge->amount_per_qty ?? '' }}"
+                                               step="0.01" min="0" placeholder="0.00">
+                                    </td>
+                                    <td>
+                                        <input type="number" name="chg_fcy_amount[]"
+                                               class="form-control form-control-sm chg-fcy-amount bg-light"
+                                               value="{{ $charge->fcy_amount ?? '' }}"
+                                               step="0.01" readonly placeholder="0.00">
+                                    </td>
+                                    <td>
+                                        <input type="number" name="chg_local_amount[]"
+                                               class="form-control form-control-sm chg-local-amount bg-light"
+                                               value="{{ $charge->local_amount ?? '' }}"
+                                               step="0.01" readonly placeholder="0.00">
+                                    </td>
+                                    <td>
+                                        <select name="chg_tax_group[]" class="form-select form-select-sm">
+                                            <option value="">—</option>
+                                            @foreach(vat() as $vat)
+                                                <option value="{{ $vat['code'] }}"
+                                                        data-subtext="{{ $vat['description'] }}"
+                                                    @selected(($charge->tax_group_code ?? '') === $vat['code'])>
+                                                    {{ $vat['name'] }} ({{ $vat['percent'] }}%)
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text" name="chg_remarks[]" class="form-control form-control-sm"
+                                               value="{{ $charge->remarks ?? '' }}" autocomplete="off">
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-outline-primary btn-sm chg-clone-row"
+                                                title="Clone"><i class="bi bi-copy"></i></button>
+                                        <button type="button" class="btn btn-outline-danger btn-sm chg-remove-row"
+                                                title="Delete"><i class="bi bi-trash"></i></button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                            </tbody>
+                            <tfoot>
+                            <tr class="table-light fw-semibold small">
+                                <td colspan="7" class="text-end pe-2">Totals:</td>
+                                <td><span id="chgGrandFcy">0.00</span></td>
+                                <td><span id="chgGrandLocal">0.00</span></td>
+                                <td colspan="3"></td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <button type="button" id="addChargeRow" class="btn btn-sm btn-primary mt-2">
+                        <i class="bi bi-plus-circle me-1"></i>Add Charge
+                    </button>
+                </div>
+
                 <!-- Other Info Tab -->
                 <div class="tab-pane" id="other" role="tabpanel">
                     <div class="row">
@@ -487,25 +639,3 @@
         </form>
     </div>
 </div>
-<script>
-// Sync carrier value from General tab to the read-only display in Container tab
-(function () {
-    function initCarrierSync() {
-        const generalCarrier = document.getElementById('carrier');
-        const displayCarrier = document.getElementById('ctn_carrier_display');
-        if (!generalCarrier || !displayCarrier) return;
-        const syncCarrier = () => {
-            displayCarrier.value = generalCarrier.value || '';
-        };
-        // TomSelect fires change on the original <select>
-        generalCarrier.addEventListener('change', syncCarrier);
-        // Initial sync after a tick so TomSelect can finish init
-        setTimeout(syncCarrier, 100);
-    }
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initCarrierSync);
-    } else {
-        initCarrierSync();
-    }
-})();
-</script>

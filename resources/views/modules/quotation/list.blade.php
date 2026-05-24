@@ -278,7 +278,7 @@
 
             <!-- Table with scroll -->
             <div class="flex-grow-1 overflow-auto" id="tableWrapper">
-                <table class="table align-middle dataTable" id="dataTable" data-modal-size="lg">
+                <table class="table align-middle dataTable" id="dataTable" data-modal-size="md">
                     <thead class="table-light sticky-top">
                     <tr>
                         {{-- Built dynamically by quotation.js from column settings --}}

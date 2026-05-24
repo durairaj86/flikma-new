@@ -42,6 +42,11 @@ class Quotation extends Model
         return $this->hasMany(QuotationPackage::class);
     }
 
+    public function charges()
+    {
+        return $this->hasMany(QuotationCharge::class)->orderBy('line_no');
+    }
+
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
