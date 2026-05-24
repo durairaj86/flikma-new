@@ -588,6 +588,7 @@ QUOTATION = {
             // race: each callback destroys whatever is there right before it
             // creates the new table, avoiding a DataTables double-init error.
             QUOTATION.columnSettings.fetch((settings) => {
+                $('#dtFooter').empty();   // clear relocated pagination before destroy
                 GLOBAL_FN.destroyDataTable();
 
                 const columns  = settings.columns;
@@ -626,8 +627,8 @@ QUOTATION = {
                     serverSide:   true,
                     autoWidth:    false,
                     lengthChange: false,
-                    paging:       false,
-                    dom:          'rt',
+                    pageLength:   25,
+                    dom:          'rtip',
                     order:        defaultOrder,
                     ajax: {
                         url:  GLOBAL_FN.buildUrl('sales/quotation/data'),
@@ -660,6 +661,7 @@ QUOTATION = {
                         const hasRows   = info.recordsDisplay > 0;
 
                         $('#tableWrapper').toggleClass('d-none', !hasRows);
+                        $('#dtFooter').toggleClass('d-none', !hasRows);
                         $('#quotationEmptyState').toggleClass('d-none', hasRows);
                         $('#emptyStateNoData').toggleClass('d-none', !noData);
                         $('#emptyStateNoResults').toggleClass('d-none', !noResults);
@@ -668,19 +670,12 @@ QUOTATION = {
                     initComplete() {
                         QUOTATION.form.open();
                         webDataTable.actions.menu();
-                        // NOTE: do NOT reference `table` here — it is still in the
-                        // temporal dead zone (let table = DataTable(...) hasn't
-                        // finished yet). Move any table.on() calls to after this block.
-                    }
-                });
 
-                // `table` is fully assigned here — safe to call table.on()
-                table.on('draw.dt', function () {
-                    $('#dataTable [data-bs-toggle="dropdown"]').each(function () {
-                        const inst = bootstrap.Dropdown.getInstance(this);
-                        if (inst) inst.dispose();
-                        new bootstrap.Dropdown(this, { popperConfig: { strategy: 'fixed' } });
-                    });
+                        // Move info and pagination outside #tableWrapper so they
+                        // don't scroll sideways with the table content.
+                        const $wrap = $('#dataTable').closest('.dataTables_wrapper');
+                        $('#dtFooter').append($wrap.find('.dataTables_info, .dataTables_paginate'));
+                    }
                 });
 
                 $('#customSearch').on('keyup', function () {

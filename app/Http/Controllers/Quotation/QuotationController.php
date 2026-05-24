@@ -148,10 +148,25 @@ class QuotationController extends Controller
         $quotation->terms = $request->terms;
         $quotation->shipper = $request->shipper;
         $quotation->commodity = $request->commodity;
-        //$quotation->volume = $request->volume;
         $quotation->pickup_date = $request->pickup_date;
         $quotation->pickup_address = $request->pickup_address;
 
+        // Container / Consignment header fields
+        $quotation->department        = $request->department;
+        $quotation->vessel_name       = $request->vessel_name;
+        $quotation->voyage_no         = $request->voyage_no;
+        $quotation->no_of_pcs         = $request->no_of_pcs ?: null;
+        $quotation->gross_weight      = $request->header_gross_weight ?: null;
+        $quotation->weight_unit       = $request->weight_unit;
+        $quotation->volume            = $request->header_volume ?: null;
+        $quotation->volume_weight     = $request->volume_weight ?: null;
+        $quotation->volume_unit       = $request->volume_unit;
+        $quotation->chargeable_unit   = $request->chargeable_unit ?: null;
+        $quotation->hs_code           = $request->header_hs_code;
+        $quotation->cargo_description = $request->cargo_description;
+        $quotation->consignment_remarks = $request->consignment_remarks;
+        $quotation->container_type    = $request->container_type;
+        $quotation->no_of_containers  = $request->no_of_containers ?: null;
 
         $quotation->save();
 

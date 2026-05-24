@@ -20,7 +20,12 @@ class Quotation extends Model
         'prepared_by', 'quotation_type', 'shipment_mode', 'shipment_category',
         'incoterm', 'pol', 'pod', 'place_of_receipt', 'place_of_delivery',
         'final_destination', 'carrier', 'terms', 'shipper', 'volume', 'pickup_date',
-        'prospect_id'
+        'prospect_id',
+        // Container / Consignment header fields
+        'department', 'vessel_name', 'voyage_no', 'no_of_pcs',
+        'gross_weight', 'weight_unit', 'volume_weight', 'volume_unit',
+        'chargeable_unit', 'hs_code', 'cargo_description', 'consignment_remarks',
+        'container_type', 'no_of_containers',
     ];
 
     protected $casts = [

@@ -26,7 +26,7 @@
     @disabled($disabled ?? false)
     id="{{ $multipleCustomers ? 'customers' : 'customer' }}"
     name="{{ $multipleCustomers ? 'customers' : 'customer' }}"
-    {{ $multipleCustomers ? 'multiple' : '' }}
+    {{--{{ $multipleCustomers ? 'multiple' : '' }}--}}
     {{ $required }}
 
 >

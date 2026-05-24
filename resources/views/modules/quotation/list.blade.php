@@ -43,7 +43,7 @@
             }
             #dataTable thead tr th:first-child { background-color: #f8f9fa; z-index: 3; }
             #dataTable tbody tr td:first-child  { background-color: #fff; }
-            #dataTable tbody tr:hover td:first-child { background-color: rgba(0,0,0,.04); }
+            #dataTable tbody tr:hover td:first-child { background-color: #f5f5f5; }
 
             /* Column Settings drag-over highlight */
             .cs-drag-over {
@@ -52,16 +52,16 @@
             }
 
             /* Sticky last column (Edit) */
-            #dataTable thead tr th:last-child,
+            /*#dataTable thead tr th:last-child,
             #dataTable tbody tr td:last-child {
                 position: sticky;
                 right: 0;
                 z-index: 2;
                 box-shadow: -3px 0 6px -3px rgba(0, 0, 0, .15);
-            }
+            }*/
             #dataTable thead tr th:last-child { background-color: #f8f9fa; z-index: 3; }
             #dataTable tbody tr td:last-child  { background-color: #fff; }
-            #dataTable tbody tr:hover td:last-child { background-color: rgba(0,0,0,.04); }
+            #dataTable tbody tr:hover td:last-child { background-color: #f5f5f5; }
         </style>
 
         <div id="filterPanel" class="card shadow-sm border-0 d-none">
@@ -287,6 +287,9 @@
                     <tbody></tbody>
                 </table>
             </div>{{-- #tableWrapper --}}
+
+            {{-- Pagination / info — outside the scrollable wrapper so it doesn't move on horizontal scroll --}}
+            <div id="dtFooter" class="d-none d-flex justify-content-between align-items-center px-3 py-2 border-top small text-muted flex-shrink-0"></div>
         </div>
     </main>
     @include('modules.email.send-email')

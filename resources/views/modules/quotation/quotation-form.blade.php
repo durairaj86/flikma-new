@@ -297,17 +297,31 @@
 
                 <!-- Container Tab -->
                 <div class="tab-pane mt-4" id="container" role="tabpanel">
-                    <table class="table align-middle" id="containerTable">
+
+                    <div class="table-responsive">
+                    <table class="table align-middle table-bordered" id="containerTable">
                         <thead class="table-light">
                         <tr>
-                            <th>Size</th>
-                            <th>Container No.</th>
-                            <th>Seal No.</th>
-                            <th>Gross Wt (Kg)</th>
-                            <th>Net Wt (Kg)</th>
-                            <th>CBM</th>
-                            <th>Hazardous</th>
-                            <th width="5%"></th>
+                            <th style="min-width:120px">Size</th>
+                            <th style="min-width:130px">Container No.</th>
+                            <th style="min-width:110px">Seal No.</th>
+                            <th style="min-width:110px">Carrier</th>
+                            <th style="min-width:130px">Vessel Name</th>
+                            <th style="min-width:110px">Voyage No.</th>
+                            <th style="min-width:90px">No. of Pcs</th>
+                            <th style="min-width:110px">Gross Wt (Kg)</th>
+                            <th style="min-width:110px">Net Wt (Kg)</th>
+                            <th style="min-width:90px">Wt Unit</th>
+                            <th style="min-width:100px">Volume (CBM)</th>
+                            <th style="min-width:110px">Volume Weight</th>
+                            <th style="min-width:90px">Vol Unit</th>
+                            <th style="min-width:110px">Chargeable Unit</th>
+                            <th style="min-width:120px">Container Type</th>
+                            <th style="min-width:110px">HS Code</th>
+                            <th style="min-width:160px">Description</th>
+                            <th style="min-width:160px">Remarks</th>
+                            <th style="min-width:100px">Hazardous</th>
+                            <th width="40"></th>
                         </tr>
                         </thead>
                         <tbody>
@@ -342,27 +356,54 @@
                         @endphp
                         @foreach($containers as $container)
                             <tr>
-                                <td>
-                                    <x-common.container_size :value="$container->container_size ?? ''"/>
-                                </td>
+                                <td><x-common.container_size :value="$container->container_size ?? ''"/></td>
                                 <td><input type="text" name="container_number[]" class="form-control"
-                                           value="{{ $container->container_number ?? '' }}"></td>
+                                           value="{{ $container->container_number ?? '' }}" autocomplete="off"></td>
                                 <td><input type="text" name="seal_number[]" class="form-control"
-                                           value="{{ $container->seal_number ?? '' }}"></td>
+                                           value="{{ $container->seal_number ?? '' }}" autocomplete="off"></td>
+                                <td><input type="text" name="carrier[]" class="form-control"
+                                           value="{{ $container->carrier ?? '' }}" autocomplete="off"></td>
+                                <td><input type="text" name="vessel_name[]" class="form-control"
+                                           value="{{ $container->vessel_name ?? '' }}" autocomplete="off"></td>
+                                <td><input type="text" name="voyage_no[]" class="form-control"
+                                           value="{{ $container->voyage_no ?? '' }}" autocomplete="off"></td>
+                                <td><input type="number" name="no_of_pcs[]" class="form-control"
+                                           value="{{ $container->no_of_pcs ?? '' }}" min="0"></td>
                                 <td><input type="number" name="gross_weight[]" class="form-control"
-                                           value="{{ $container->gross_weight ?? '' }}"></td>
+                                           value="{{ $container->gross_weight ?? '' }}" step="0.01" min="0"></td>
                                 <td><input type="number" name="net_weight[]" class="form-control"
-                                           value="{{ $container->net_weight ?? '' }}"></td>
+                                           value="{{ $container->net_weight ?? '' }}" step="0.01" min="0"></td>
+                                <td>
+                                    <input type="text" name="weight_unit[]" class="form-control"
+                                           value="{{ $container->weight_unit ?? '' }}"
+                                           list="ctn-weight-unit-list" placeholder="KGS">
+                                    <datalist id="ctn-weight-unit-list">
+                                        <option value="KGS"><option value="LBS"><option value="MT"><option value="TON">
+                                    </datalist>
+                                </td>
                                 <td><input type="number" name="volume[]" class="form-control"
-                                           value="{{ $container->volume ?? '' }}"></td>
+                                           value="{{ $container->volume ?? '' }}" step="0.01" min="0"></td>
+                                <td><input type="number" name="volume_weight[]" class="form-control"
+                                           value="{{ $container->volume_weight ?? '' }}" step="0.01" min="0"></td>
+                                <td>
+                                    <input type="text" name="volume_unit[]" class="form-control"
+                                           value="{{ $container->volume_unit ?? '' }}"
+                                           list="ctn-volume-unit-list" placeholder="CBM">
+                                    <datalist id="ctn-volume-unit-list">
+                                        <option value="CBM"><option value="CFT"><option value="CM">
+                                    </datalist>
+                                </td>
+                                <td><input type="number" name="chargeable_unit[]" class="form-control"
+                                           value="{{ $container->chargeable_unit ?? '' }}" step="0.01" min="0" readonly></td>
+                                <td><x-common.container_types name="container_type[]" :value="$container->container_type ?? null"/></td>
+                                <td><input type="text" name="hs_code[]" class="form-control"
+                                           value="{{ $container->hs_code ?? '' }}" autocomplete="off"></td>
+                                <td><textarea name="description[]" class="form-control" rows="1">{{ $container->description ?? '' }}</textarea></td>
+                                <td><textarea name="consignment_remarks[]" class="form-control" rows="1">{{ $container->consignment_remarks ?? '' }}</textarea></td>
                                 <td>
                                     <select name="hazardous[]" class="form-control tom-select hazardous">
-                                        <option
-                                            value="0" @selected(!isset($container->hazardous) || $container->hazardous == 0)>
-                                            No
-                                        </option>
-                                        <option value="1" {{ ($container->hazardous ?? '') == 1 ? 'selected':'' }}>Yes
-                                        </option>
+                                        <option value="0" @selected(!isset($container->hazardous) || $container->hazardous == 0)>No</option>
+                                        <option value="1" @selected(($container->hazardous ?? 0) == 1)>Yes</option>
                                     </select>
                                 </td>
                                 <td>
@@ -373,7 +414,8 @@
 
                         </tbody>
                     </table>
-                    <button type="button" id="addContainerRow" class="btn btn-sm btn-primary">+ Add Container</button>
+                    </div>{{-- .table-responsive --}}
+                    <button type="button" id="addContainerRow" class="btn btn-sm btn-primary mt-2">+ Add Container</button>
                 </div>
 
                 <!-- Package Tab -->
@@ -445,3 +487,25 @@
         </form>
     </div>
 </div>
+<script>
+// Sync carrier value from General tab to the read-only display in Container tab
+(function () {
+    function initCarrierSync() {
+        const generalCarrier = document.getElementById('carrier');
+        const displayCarrier = document.getElementById('ctn_carrier_display');
+        if (!generalCarrier || !displayCarrier) return;
+        const syncCarrier = () => {
+            displayCarrier.value = generalCarrier.value || '';
+        };
+        // TomSelect fires change on the original <select>
+        generalCarrier.addEventListener('change', syncCarrier);
+        // Initial sync after a tick so TomSelect can finish init
+        setTimeout(syncCarrier, 100);
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initCarrierSync);
+    } else {
+        initCarrierSync();
+    }
+})();
+</script>
