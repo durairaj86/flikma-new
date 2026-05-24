@@ -424,17 +424,38 @@ class JobController extends Controller
             'pod',
             'eta',
             'etd',
+            'ata',
+            'atd',
             'commodity',
             'awb_number',
+            'hbl_number',
+            'shipping_reference_no',
             'carrier',
             'shipper',
             'consignee',
+            'incoterm',
+            'place_of_receipt',
+            'place_of_delivery',
+            'final_destination',
             'weight',
             'volume',
             'no_of_pieces',
+            'pickup_date',
+            'delivery_date',
+            'remarks',
+            // Clearance fields stored directly on jobs
+            'doc_received',
+            'bl_receive_date',
+            'bayan_date',
+            'bayan_no',
+            'do_date',
+            'do_no',
+            'demurrage_date',
+            'hs_code',
+            'declaration_no',
             'jobs.company_id as company_id',
             'jobs.status as status',
-        )->with('customer:id,name_en,name_ar,email,phone', 'invoices', 'clearance:id,job_id,bayan_no')
+        )->with('customer:id,name_en,name_ar,email,phone', 'invoices', 'clearance:id,job_id,clearance_status,clearance_date')
             ->where('jobs.status', JobEnum::fromName($request->tab))
             ->when(isset($filter['filter-from-date'], $filter['filter-to-date']),
                 function ($query) use ($filter) {
@@ -483,25 +504,26 @@ class JobController extends Controller
                 'class' => 'row-item',
                 'id' => fn($model) => 'job-' . strtolower($model->row_no ?? $model->id),
             ])
-            ->editColumn('services', function ($model) {
-                return getSelectedServices($model->services, true);
-            })
-            ->rawColumns(['status'])
+            ->editColumn('services', fn($model) => getSelectedServices($model->services, true))
             ->editColumn('created_at', fn($model) => Carbon::parse($model->created_at)->format('d-m-Y'))
-            ->editColumn('activity_id', fn($model) => $activity->where('id', $model->activity_id)->pluck('name')->first())
-            ->editColumn('eta', fn($model) => filled($model->eta) ? 'ETA: ' . Carbon::parse($model->eta)->format('d-M') : '')
-            ->editColumn('etd', fn($model) => filled($model->etd) ? 'ETD: ' . Carbon::parse($model->eta)->format('d-M') : '')
-            ->editColumn('polCode', fn($model) => filled($model->pol) ? $model->polCode : '')
-            ->editColumn('podCode', fn($model) => filled($model->pod) ? $model->podCode : '')
-            ->addColumn('invoices', function ($model) {
-                return [
-                    'draft' => $model->invoices->where('status', 1)->count(),
-                    'approved' => $model->invoices->where('status', 3)->count(),
-                ];
-            })
-            ->with([
-                'statusCounts' => $allCounts,  // ✅ send to DataTables response
+            ->editColumn('eta', fn($model) => filled($model->eta) ? Carbon::parse($model->eta)->format('d-M-Y') : '')
+            ->editColumn('etd', fn($model) => filled($model->etd) ? Carbon::parse($model->etd)->format('d-M-Y') : '')
+            ->editColumn('doc_received',   fn($m) => filled($m->doc_received)   ? Carbon::parse($m->doc_received)->format('d-M-Y')   : '')
+            ->editColumn('bl_receive_date',fn($m) => filled($m->bl_receive_date)? Carbon::parse($m->bl_receive_date)->format('d-M-Y'): '')
+            ->editColumn('bayan_date',     fn($m) => filled($m->bayan_date)     ? Carbon::parse($m->bayan_date)->format('d-M-Y')     : '')
+            ->editColumn('do_date',        fn($m) => filled($m->do_date)        ? Carbon::parse($m->do_date)->format('d-M-Y')        : '')
+            ->editColumn('demurrage_date', fn($m) => filled($m->demurrage_date) ? Carbon::parse($m->demurrage_date)->format('d-M-Y') : '')
+            // Flat keys for column settings (computed / relation-based)
+            ->addColumn('customer_name',   fn($model) => $model->customer?->name_en ?? '')
+            ->addColumn('activity_name',   fn($model) => $activity->where('id', $model->activity_id)->pluck('name')->first() ?? '')
+            ->addColumn('clearance_status',fn($model) => $model->clearance?->clearance_status ?? '')
+            ->addColumn('clearance_date',  fn($model) => $model->clearance?->clearance_date ? Carbon::parse($model->clearance->clearance_date)->format('d-M-Y') : '')
+            ->addColumn('invoices', fn($model) => [
+                'draft'    => $model->invoices->where('status', 1)->count(),
+                'approved' => $model->invoices->where('status', 3)->count(),
             ])
+            ->rawColumns(['status'])
+            ->with(['statusCounts' => $allCounts])
             ->toJson();
     }
 

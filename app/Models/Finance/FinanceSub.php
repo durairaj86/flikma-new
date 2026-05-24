@@ -2,6 +2,9 @@
 
 namespace App\Models\Finance;
 
+use App\Models\Customer\Customer;
+use App\Models\Finance\Account\Account;
+use App\Models\Supplier\Supplier;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -38,12 +41,24 @@ class FinanceSub extends Model
         'company_id'
     ];
 
-    /**
-     * Get the finance entry that owns this finance sub entry.
-     */
     public function finance(): BelongsTo
     {
         return $this->belongsTo(Finance::class);
+    }
+
+    public function account(): BelongsTo
+    {
+        return $this->belongsTo(Account::class);
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    public function supplier(): BelongsTo
+    {
+        return $this->belongsTo(Supplier::class);
     }
 
     /**

@@ -164,29 +164,14 @@ class QuotationController extends Controller
         $quotation->pickup_date = $request->pickup_date;
         $quotation->pickup_address = $request->pickup_address;
 
-        // Container / Consignment header fields
-        $quotation->department        = $request->department;
-        $quotation->vessel_name       = $request->vessel_name;
-        $quotation->voyage_no         = $request->voyage_no;
-        $quotation->no_of_pcs         = $request->no_of_pcs ?: null;
-        $quotation->gross_weight      = $request->header_gross_weight ?: null;
-        $quotation->weight_unit       = $request->weight_unit;
-        $quotation->volume            = $request->header_volume ?: null;
-        $quotation->volume_weight     = $request->volume_weight ?: null;
-        $quotation->volume_unit       = $request->volume_unit;
-        $quotation->chargeable_unit   = $request->chargeable_unit ?: null;
-        $quotation->hs_code           = $request->header_hs_code;
-        $quotation->cargo_description = $request->cargo_description;
-        $quotation->consignment_remarks = $request->consignment_remarks;
-        $quotation->container_type    = $request->container_type;
-        $quotation->no_of_containers  = $request->no_of_containers ?: null;
-
         $quotation->save();
 
         // ✅ Insert containers
-        if (isset($request->container_size[0])) {
+        $containerSizes = array_filter($request->container_size ?? []);
+        if (!empty($containerSizes)) {
             $containers = [];
             foreach ($request->container_size as $index => $size) {
+                if (empty($size)) continue;
                 $containers[] = [
                     'quotation_id'       => $quotation->id,
                     'container_size'     => $size,
@@ -211,13 +196,17 @@ class QuotationController extends Controller
                 ];
             }
             DB::table('quotation_containers')->where('quotation_id', $quotation->id)->delete();
-            DB::table('quotation_containers')->insert($containers);
+            if (!empty($containers)) {
+                DB::table('quotation_containers')->insert($containers);
+            }
         }
 
         // ✅ Insert packages
-        if (isset($request->commodity_type[0])) {
+        $commodityTypes = array_filter($request->commodity_type ?? []);
+        if (!empty($commodityTypes)) {
             $packages = [];
             foreach ($request->commodity_type as $index => $type) {
+                if (empty($type)) continue;
                 $packages[] = [
                     'hs_code' => $request->hs_code[$index] ?? null,
                     'description_goods' => $request->description_goods[$index] ?? null,
@@ -230,7 +219,9 @@ class QuotationController extends Controller
                 ];
             }
             DB::table('quotation_packages')->where('quotation_id', $quotation->id)->delete();
-            DB::table('quotation_packages')->insert($packages);
+            if (!empty($packages)) {
+                DB::table('quotation_packages')->insert($packages);
+            }
         }
 
         // ✅ Insert charges

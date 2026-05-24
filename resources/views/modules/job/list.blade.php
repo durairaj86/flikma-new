@@ -170,16 +170,13 @@
                     </ul>
                 </div>
             </div>
-            <div class="d-flex justify-content-between pt-3">
-                <div class="position-relative">
-                    <!-- Compact Filter button -->
-                    <button class="btn btn-outline-primary btn-round me-2" id="filter-box"><i class="bi bi-funnel"></i>
-                        Filter
-                    </button>
-
-                    <!-- Filter panel (dropdown style) -->
-
-                </div>
+            <div class="d-flex justify-content-between pt-3 align-items-center gap-2">
+                <button class="btn btn-outline-primary btn-round me-2" id="filter-box">
+                    <i class="bi bi-funnel"></i> Filter
+                </button>
+                <button class="btn btn-outline-secondary btn-round" id="columnSettingsBtn" title="Column Settings">
+                    <i class="bi bi-columns-gap"></i> Columns
+                </button>
                 <button class="btn btn-primary rounded-pill px-4" id="new">New Job</button>
             </div>
         </div>
@@ -244,29 +241,21 @@
                     </tbody>
                 </table>
             </div>--}}
-                <table class="table align-middle" id="dataTable" style="border-collapse: separate; border-spacing: 0 12px;">
+            <div class="flex-grow-1 overflow-auto" id="tableWrapper">
+                <table class="table align-middle" id="dataTable" data-model-size="lg">
                     <thead>
-                    <tr class="text-secondary small text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">
-                        <th class="ps-4 border-0">Job / Service</th>
-                        <th class="border-0">Routing & Vessel</th>
-                        <th class="border-0">Payload Details</th>
-                        <th class="border-0">Tracking / Ref</th>
-                        <th class="border-0">Consignor & Consignee</th>
-                        {{--<th class="border-0">Ops Owner</th>--}}
-                        {{--<th class="text-end border-0">Financial Status</th>--}}
-
-                        <th class="text-end border-0">Milestone</th>
-                        <th class="text-end border-0">Job Date</th>
-                        <th class="border-0"></th>
-                    </tr>
+                    <tr id="dtTheadRow" class="text-secondary small text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;"></tr>
                     </thead>
-                    <tbody>
-
-
-                    </tbody>
+                    <tbody></tbody>
                 </table>
+            </div>
+            <div id="dtFooter" class="d-none d-flex justify-content-between align-items-center px-3 py-2 border-top small text-muted flex-shrink-0"></div>
 
             <style>
+                .cs-drag-over {
+                    border-color: #0d6efd !important;
+                    background-color: #f0f7ff !important;
+                }
                 .x-small { font-size: 0.7rem; }
                 /* Tooltip for priority icon */
                 [title]:hover::after {
@@ -327,4 +316,75 @@
     @include('modules.email.send-email')
     @include('modules.job.job-view')
 
+    <!-- Column Settings Modal -->
+    <div class="modal fade" id="columnSettingsModal" tabindex="-1" aria-labelledby="columnSettingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+
+                <div class="modal-header border-0 pb-0">
+                    <div>
+                        <h5 class="modal-title fw-semibold" id="columnSettingsModalLabel">
+                            <i class="bi bi-columns-gap text-primary me-2"></i>Column Settings
+                        </h5>
+                        <p class="text-muted small mb-0">Choose and arrange the columns shown in the job list</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body p-0" style="min-height:500px;">
+                    <div class="row g-0 h-100">
+
+                        <!-- Left: Available Fields -->
+                        <div class="col-md-4 border-end d-flex flex-column" style="max-height:520px;">
+                            <div class="p-3 border-bottom bg-light">
+                                <h6 class="fw-semibold mb-2 small text-uppercase text-muted">Available Fields</h6>
+                                <input type="text" id="csFieldSearch" class="form-control form-control-sm rounded-pill"
+                                       placeholder="Search fields…">
+                            </div>
+                            <div id="csFieldList" class="flex-grow-1 overflow-auto p-2"></div>
+                        </div>
+
+                        <!-- Right: Column Order -->
+                        <div class="col-md-8 d-flex flex-column" style="max-height:520px;">
+                            <div class="p-3 border-bottom bg-light d-flex align-items-center justify-content-between">
+                                <h6 class="fw-semibold mb-0 small text-uppercase text-muted">Column Order</h6>
+                                <span class="text-muted" style="font-size:0.75rem;">
+                                    <i class="bi bi-grip-vertical"></i> Drag to reorder &nbsp;·&nbsp;
+                                    <i class="bi bi-chevron-down"></i> Add sub-column
+                                </span>
+                            </div>
+                            <div id="csColumnList" class="flex-grow-1 overflow-auto p-3"></div>
+                        </div>
+                    </div>
+
+                    <!-- Preview -->
+                    <div class="border-top p-3 bg-light">
+                        <h6 class="small fw-semibold text-muted text-uppercase mb-2">
+                            <i class="bi bi-eye me-1"></i>Preview
+                        </h6>
+                        <div class="table-responsive" style="max-height:100px;overflow:auto;">
+                            <table class="table table-sm table-bordered mb-0 text-nowrap" id="csPreviewTable">
+                                <thead class="table-secondary">
+                                    <tr id="csPreviewRow"></tr>
+                                </thead>
+                                <tbody>
+                                    <tr id="csPreviewDataRow"></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill me-auto" id="csResetBtn">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>Reset to Default
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary rounded-pill px-4" id="csSaveBtn">
+                        <i class="bi bi-check2 me-1"></i>Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </x-app-layout>
