@@ -110,10 +110,16 @@ QUOTATION = {
 
         fetch(callback) {
             if (this._cache) { callback(this._cache); return; }
-            $.get('/column-settings/' + this.page, (res) => {
-                this._cache = res;
-                callback(res);
-            });
+            $.get('/column-settings/' + this.page)
+                .done((res) => {
+                    this._cache = res;
+                    callback(res);
+                })
+                .fail(() => {
+                    // Fall back to empty config so DataTable still initialises
+                    console.warn('Column settings fetch failed – using defaults.');
+                    callback({ fields: [], columns: [], is_custom: false });
+                });
         },
 
         openModal() {
@@ -154,28 +160,30 @@ QUOTATION = {
 
             let html = '';
             Object.entries(groups).forEach(([cat, fields]) => {
-                html += `<div class="mb-3">
-                    <div class="text-muted fw-semibold small px-2 mb-1 text-uppercase" style="font-size:0.7rem;">${cat}</div>`;
+                html += `<div class="mb-3 cs-field-group">
+                    <div class="text-muted fw-semibold small px-2 mb-1 text-uppercase cs-field-group-label" style="font-size:0.7rem;">${cat}</div>`;
                 fields.forEach(f => {
                     const isParent = this._state.some(c => c.key === f.key);
                     const isChild  = !isParent && selected.has(f.key);
                     const isFixed  = f.fixed;
 
+                    // Badges go OUTSIDE the label so search text stays clean
                     let badgeHtml = '';
-                    if (isFixed)  badgeHtml += `<span class="badge bg-secondary ms-1" style="font-size:0.6rem;">Fixed</span>`;
-                    if (isParent) badgeHtml += `<span class="badge bg-primary ms-1" style="font-size:0.6rem;">Column</span>`;
-                    if (isChild)  badgeHtml += `<span class="badge bg-info text-dark ms-1" style="font-size:0.6rem;">Sub</span>`;
+                    if (isFixed)  badgeHtml += `<span class="badge bg-secondary" style="font-size:0.6rem;">Fixed</span>`;
+                    if (isParent) badgeHtml += `<span class="badge bg-primary" style="font-size:0.6rem;">Column</span>`;
+                    if (isChild)  badgeHtml += `<span class="badge bg-info text-dark" style="font-size:0.6rem;">Sub</span>`;
 
                     const checked  = selected.has(f.key) ? 'checked' : '';
                     const disabled = isFixed ? 'disabled' : '';
 
                     html += `<div class="d-flex align-items-center gap-2 px-2 py-1 cs-field-item rounded hover-bg"
-                                  style="cursor:pointer;" data-key="${f.key}">
+                                  style="cursor:pointer;" data-key="${f.key}" data-label="${f.label.toLowerCase()}">
                         <input type="checkbox" class="form-check-input cs-field-check flex-shrink-0 mt-0"
                                id="csf_${f.key}" data-key="${f.key}" ${checked} ${disabled}>
-                        <label class="flex-grow-1 mb-0 small" for="csf_${f.key}" style="cursor:pointer;">
-                            ${f.label}${badgeHtml}
+                        <label class="mb-0 small" for="csf_${f.key}" style="cursor:pointer;flex:1;">
+                            ${f.label}
                         </label>
+                        <div class="flex-shrink-0 d-flex gap-1">${badgeHtml}</div>
                     </div>`;
                 });
                 html += '</div>';
@@ -183,14 +191,28 @@ QUOTATION = {
 
             const $list = $('#csFieldList').html(html);
 
-            // Search filter
-            $('#csFieldSearch').off('input').on('input', function () {
-                const q = $(this).val().toLowerCase();
+            // Helper: filter items using data-label attribute (avoids reading badge text from DOM)
+            const applySearch = () => {
+                const q = $('#csFieldSearch').val().trim().toLowerCase();
                 $list.find('.cs-field-item').each(function () {
-                    const label = $(this).find('label').text().toLowerCase();
-                    $(this).toggle(label.includes(q));
+                    const matches = q === '' || ($(this).attr('data-label') || '').includes(q);
+                    $(this).toggle(matches).attr('data-matches', matches ? '1' : '0');
                 });
-            });
+                $list.find('.cs-field-group').each(function () {
+                    // Show group if query is empty OR if it has at least one matching child
+                    $(this).toggle(q === '' || $(this).find('.cs-field-item[data-matches="1"]').length > 0);
+                });
+            };
+
+            // Re-apply current query after every re-render (checkbox toggle calls renderFieldList again).
+            // Only run if there's already something typed — avoids the :visible false-negative
+            // that occurs when the modal isn't yet in the DOM / visible.
+            if ($('#csFieldSearch').val().trim() !== '') {
+                applySearch();
+            }
+
+            // Bind input event (namespaced so checkbox re-renders don't stack listeners)
+            $('#csFieldSearch').off('input.cs').on('input.cs', applySearch);
 
             // Toggle click
             $list.find('.cs-field-check').off('change').on('change', (e) => {
@@ -379,7 +401,8 @@ QUOTATION = {
                 e.dataTransfer.dropEffect = 'move';
                 const item = e.target.closest('.cs-col-item');
                 container.querySelectorAll('.cs-col-item').forEach(el => el.classList.remove('cs-drag-over'));
-                if (item) item.classList.add('cs-drag-over');
+                // Don't highlight fixed columns — they are not valid drop targets
+                if (item && item.dataset.fixed !== '1') item.classList.add('cs-drag-over');
             }, { signal });
 
             container.addEventListener('dragleave', (e) => {
@@ -401,6 +424,9 @@ QUOTATION = {
 
                 const targetIdx = +item.dataset.idx;
                 if (dragSrcIdx === targetIdx) return;
+
+                // Never allow dropping onto a fixed column — it would displace it
+                if (item.dataset.fixed === '1') return;
 
                 const moved = this._state.splice(dragSrcIdx, 1)[0];
                 this._state.splice(targetIdx, 0, moved);
@@ -552,13 +578,18 @@ QUOTATION = {
         },
 
         dataTable(activeTab = null) {
-            GLOBAL_FN.destroyDataTable();
             activeTab = (activeTab && (typeof activeTab !== 'object'))
                 ? activeTab
                 : $("#listTabs").find('li button.active').attr('id');
 
-            // Fetch column settings first, then init DataTable
+            // Fetch column settings first, then init DataTable.
+            // destroyDataTable() is intentionally INSIDE the callback so that
+            // rapid double-calls (from startup.js timeout + window.load) don't
+            // race: each callback destroys whatever is there right before it
+            // creates the new table, avoiding a DataTables double-init error.
             QUOTATION.columnSettings.fetch((settings) => {
+                GLOBAL_FN.destroyDataTable();
+
                 const columns  = settings.columns;
                 const fields   = settings.fields;
                 const fieldMap = {};
@@ -637,15 +668,19 @@ QUOTATION = {
                     initComplete() {
                         QUOTATION.form.open();
                         webDataTable.actions.menu();
-
-                        table.on('draw.dt', function () {
-                            $('#dataTable [data-bs-toggle="dropdown"]').each(function () {
-                                const inst = bootstrap.Dropdown.getInstance(this);
-                                if (inst) inst.dispose();
-                                new bootstrap.Dropdown(this, { popperConfig: { strategy: 'fixed' } });
-                            });
-                        });
+                        // NOTE: do NOT reference `table` here — it is still in the
+                        // temporal dead zone (let table = DataTable(...) hasn't
+                        // finished yet). Move any table.on() calls to after this block.
                     }
+                });
+
+                // `table` is fully assigned here — safe to call table.on()
+                table.on('draw.dt', function () {
+                    $('#dataTable [data-bs-toggle="dropdown"]').each(function () {
+                        const inst = bootstrap.Dropdown.getInstance(this);
+                        if (inst) inst.dispose();
+                        new bootstrap.Dropdown(this, { popperConfig: { strategy: 'fixed' } });
+                    });
                 });
 
                 $('#customSearch').on('keyup', function () {
