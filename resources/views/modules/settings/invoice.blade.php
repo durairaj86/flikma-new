@@ -1,5 +1,4 @@
-@section('js','user')
-@section('page-title','Users')
+@section('page-title','Invoice Settings')
 <x-app-layout>
     <main class="gmail-content bg-white d-flex">
         @include('includes.settings-navigation')
@@ -29,10 +28,11 @@
                                                         <p class="mb-0 fw-bold">COMPANY NAME</p>
                                                         <p class="mb-0 small">Company Address</p>
                                                         <p class="mb-0 small">City, Postal Code</p>
+                                                        <p class="mb-0 small" id="preview-phone">Tel: +966 12 345 6789</p>
                                                     </div>
                                                 </div>
 
-                                                <div class="d-flex justify-content-between border-bottom border-dark">
+                                                <div class="d-flex justify-content-between border-bottom border-dark" id="preview-tax-header">
                                                     <h5 class="m-0 p-1 text-center w-50">TAX INVOICE</h5>
                                                     <h5 class="m-0 p-1 text-center w-50">فاتورة ضريبية</h5>
                                                 </div>
@@ -50,6 +50,7 @@
                                                             <p class="mb-0 small">عنوان العميل</p>
                                                         </div>
                                                     </div>
+                                                    <div id="preview-customer-extras" class="mt-1 small" style="display:none;"></div>
                                                 </div>
 
                                                 <div id="preview-invoice-details" class="border-bottom border-dark p-2">
@@ -105,29 +106,37 @@
                                                 </div>
 
                                                 <table class="table table-sm table-bordered mb-0 small">
-                                                    <thead class="table-light">
+                                                    <thead id="preview-item-thead">
                                                         <tr>
-                                                            <th>Description</th>
-                                                            <th>Qty</th>
-                                                            <th>Rate</th>
-                                                            <th>Amount</th>
+                                                            <th class="preview-col-hsn" style="display:none">HSN/SAC</th>
+                                                            <th class="preview-col-desc">Description</th>
+                                                            <th class="preview-col-qty">Qty</th>
+                                                            <th class="preview-col-rate">Rate</th>
+                                                            <th class="preview-col-discount" style="display:none">Discount</th>
+                                                            <th class="preview-col-amt">Amount</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         <tr>
-                                                            <td>Service Item</td>
-                                                            <td>1</td>
-                                                            <td>100.00</td>
-                                                            <td>100.00</td>
+                                                            <td class="preview-col-hsn" style="display:none">—</td>
+                                                            <td class="preview-col-desc">Service Item</td>
+                                                            <td class="preview-col-qty">1</td>
+                                                            <td class="preview-col-rate">100.00</td>
+                                                            <td class="preview-col-discount" style="display:none">—</td>
+                                                            <td class="preview-col-amt">100.00</td>
                                                         </tr>
                                                     </tbody>
                                                     <tfoot>
                                                         <tr>
-                                                            <td colspan="2" class="fw-bold">Total:</td>
+                                                            <td colspan="4" class="fw-bold">Total:</td>
                                                             <td colspan="2" class="text-end fw-bold">100.00 SAR</td>
+                                                        </tr>
+                                                        <tr id="preview-party-balance">
+                                                            <td colspan="6" class="small text-muted border-top">Party Balance: 500.00 SAR</td>
                                                         </tr>
                                                     </tfoot>
                                                 </table>
+                                                <div id="preview-misc-section" class="p-2 border-top border-dark small" style="display:none;"></div>
                                             </div>
                                         </div>
                                     </div>
@@ -469,6 +478,7 @@
                     // Add event listeners for toggle switches
                     document.querySelectorAll('.form-check-input[type="checkbox"][data-key]').forEach(function(toggle) {
                         toggle.addEventListener('change', function() {
+                            updatePreview();
                             saveSettings();
                         });
                     });
@@ -476,18 +486,15 @@
                     // Add event listeners for theme selection
                     document.querySelectorAll('.theme').forEach(function(theme) {
                         theme.addEventListener('click', function() {
-                            // Remove active class from all themes
                             document.querySelectorAll('.theme').forEach(function(t) {
                                 t.classList.remove('active', 'border-primary');
                                 t.style.transform = '';
                                 t.querySelector('.theme-name').classList.remove('text-primary');
                             });
-
-                            // Add active class to selected theme
                             this.classList.add('active', 'border-primary');
                             this.style.transform = 'translateY(-3px)';
                             this.querySelector('.theme-name').classList.add('text-primary');
-
+                            updatePreview();
                             saveSettings();
                         });
                     });
@@ -495,49 +502,27 @@
                     // Add event listeners for color selection
                     document.querySelectorAll('.color-show').forEach(function(color) {
                         color.addEventListener('click', function() {
-                            // Remove selected class from all colors
                             document.querySelectorAll('.color-show').forEach(function(c) {
                                 c.classList.remove('selected');
                                 c.style.outline = '';
                             });
-
-                            // Add selected class to selected color
                             this.classList.add('selected');
                             this.style.outline = '3px solid rgba(13,110,253,0.3)';
-
+                            updatePreview();
                             saveSettings();
                         });
                     });
 
-                    // Add event listeners for invoice details checkboxes
-                    document.querySelectorAll('#collapseInvoiceDetails input[type="checkbox"]').forEach(function(checkbox) {
+                    // All accordion checkboxes — update preview first, then save
+                    document.querySelectorAll(
+                        '#collapseInvoiceDetails input[type="checkbox"],' +
+                        '#collapsePartyDetails input[type="checkbox"],' +
+                        '#collapseMisc input[type="checkbox"],' +
+                        '#collapseItemCols input[type="checkbox"]'
+                    ).forEach(function(checkbox) {
                         checkbox.addEventListener('change', function() {
-                            saveSettings();
                             updatePreview();
-                        });
-                    });
-
-                    // Add event listeners for party details checkboxes
-                    document.querySelectorAll('#collapsePartyDetails input[type="checkbox"]').forEach(function(checkbox) {
-                        checkbox.addEventListener('change', function() {
                             saveSettings();
-                            updatePreview();
-                        });
-                    });
-
-                    // Add event listeners for miscellaneous details checkboxes
-                    document.querySelectorAll('#collapseMisc input[type="checkbox"]').forEach(function(checkbox) {
-                        checkbox.addEventListener('change', function() {
-                            saveSettings();
-                            updatePreview();
-                        });
-                    });
-
-                    // Add event listeners for item table columns checkboxes
-                    document.querySelectorAll('#collapseItemCols input[type="checkbox"]').forEach(function(checkbox) {
-                        checkbox.addEventListener('change', function() {
-                            saveSettings();
-                            updatePreview();
                         });
                     });
                 });
@@ -635,73 +620,201 @@
                 }
 
                 function updatePreview() {
-                    // Update the preview based on selected settings
+                    // ── Primary color ────────────────────────────────────────
+                    let primaryColor = '#0b6aa0';
+                    const selectedColor = document.querySelector('.color-show.selected');
+                    if (selectedColor) primaryColor = selectedColor.dataset.color;
+
+                    // Apply color to TAX INVOICE header row
+                    const taxHeader = document.getElementById('preview-tax-header');
+                    if (taxHeader) {
+                        taxHeader.style.backgroundColor = primaryColor;
+                        taxHeader.querySelectorAll('h5').forEach(function(h) {
+                            h.style.color = '#fff';
+                        });
+                    }
+
+                    // Apply color to item table header
+                    const itemThead = document.getElementById('preview-item-thead');
+                    if (itemThead) {
+                        itemThead.querySelectorAll('th').forEach(function(th) {
+                            th.style.backgroundColor = primaryColor;
+                            th.style.color = '#fff';
+                            th.style.borderColor = primaryColor;
+                        });
+                    }
+
+                    // ── Display toggle: phone number ─────────────────────────
+                    const phoneEl = document.getElementById('preview-phone');
+                    if (phoneEl) {
+                        phoneEl.style.display = document.getElementById('toggleShowPhone').checked ? '' : 'none';
+                    }
+
+                    // ── Display toggle: party balance ────────────────────────
+                    const balanceEl = document.getElementById('preview-party-balance');
+                    if (balanceEl) {
+                        balanceEl.style.display = document.getElementById('togglePartyBalance').checked ? '' : 'none';
+                    }
+
+                    // ── Item table column visibility ─────────────────────────
+                    function toggleCols(cls, show) {
+                        document.querySelectorAll('.' + cls).forEach(function(el) { el.style.display = show ? '' : 'none'; });
+                    }
+                    toggleCols('preview-col-hsn',      document.getElementById('colHsn').checked);
+                    toggleCols('preview-col-desc',     document.getElementById('toggleItemDesc').checked);
+                    toggleCols('preview-col-rate',     document.getElementById('colRate').checked);
+                    toggleCols('preview-col-discount', document.getElementById('colDiscount').checked);
+
+                    // ── Job details section ──────────────────────────────────
                     const previewJobDetails = document.getElementById('preview-job-details');
                     const previewInvoiceDetails = document.getElementById('preview-invoice-details');
 
-                    // Clear existing content
                     previewJobDetails.innerHTML = '';
                     previewInvoiceDetails.innerHTML = '';
 
-                    // Create job details content based on selected checkboxes
-                    let jobDetailsHTML = '<div class="row"><div class="col-6"><table class="w-100 small">';
+                    // Left column
+                    const leftRows = [
+                        ['colJobNumber',    'Job Number',       'JOB12345'],
+                        ['colRefNumber',    'Reference No.',    'REF-001'],
+                        ['colActivity',     'Activity',         'Sea Export'],
+                        ['colAwb',          'HBL / AWB No.',    'HBL12345'],
+                        ['colPolPod',       'POL / POD',        'JED / DXB'],
+                        ['colIncoterm',     'Incoterm',         'FOB'],
+                        ['colVoyage',       'Voyage / Flight',  'VF12345'],
+                        ['colShipMode',     'Shipment Mode',    'Sea'],
+                        ['colCarrier',      'Carrier',          'Carrier Name'],
+                        ['colShipCategory', 'Shipment Category','General'],
+                        ['colPlaceReceipt', 'Place of Receipt', 'Jeddah'],
+                    ];
 
-                    // Add job details based on selected checkboxes
-                    if (document.getElementById('colJobNumber').checked) {
-                        jobDetailsHTML += '<tr><td class="fw-bold" width="40%">Job Number:</td><td>JOB12345</td></tr>';
-                    }
-                    if (document.getElementById('colShipper') && document.getElementById('colShipper').checked) {
-                        jobDetailsHTML += '<tr><td class="fw-bold" width="40%">Shipper:</td><td>Shipper Name</td></tr>';
-                    } else {
-                        jobDetailsHTML += '<tr><td class="fw-bold" width="40%">Shipper:</td><td>Shipper Name</td></tr>';
-                    }
-                    if (document.getElementById('colAwb').checked) {
-                        jobDetailsHTML += '<tr><td class="fw-bold">HBL No:</td><td>HBL12345</td></tr>';
-                    }
-                    if (document.getElementById('colPolPod').checked) {
-                        jobDetailsHTML += '<tr><td class="fw-bold">Place of Origin:</td><td>Origin City</td></tr>';
-                    }
-                    if (document.getElementById('colIncoterm').checked) {
-                        jobDetailsHTML += '<tr><td class="fw-bold">Incoterm:</td><td>FOB</td></tr>';
-                    }
-                    if (document.getElementById('colVoyage').checked) {
-                        jobDetailsHTML += '<tr><td class="fw-bold">Voyage/Flight No:</td><td>VF12345</td></tr>';
-                    }
-                    if (document.getElementById('colShipMode').checked) {
-                        jobDetailsHTML += '<tr><td class="fw-bold">Shipment Mode:</td><td>Sea</td></tr>';
-                    }
-                    if (document.getElementById('colCarrier').checked) {
-                        jobDetailsHTML += '<tr><td class="fw-bold">Carrier:</td><td>Carrier Name</td></tr>';
-                    }
+                    // Right column
+                    const rightRows = [
+                        ['colEtd',          'ETD',              '05-Jan-23'],
+                        ['colEta',          'ETA',              '15-Jan-23'],
+                        ['colFinalDest',    'Final Destination','Destination City'],
+                        ['colCommodity',    'Commodity',        'General Cargo'],
+                        ['colPlaceDelivery','Place of Delivery','Dubai'],
+                        ['colPickupDate',   'Pickup Date',      '01-Jan-23'],
+                        ['colDeliveryDate', 'Delivery Date',    '20-Jan-23'],
+                    ];
 
-                    jobDetailsHTML += '</table></div><div class="col-6"><table class="w-100 small">';
+                    let leftHTML = '<table class="w-100 small"><tr><td class="fw-bold" width="45%">Shipper:</td><td>Shipper Name</td></tr>';
+                    leftRows.forEach(function(r) {
+                        if (document.getElementById(r[0]) && document.getElementById(r[0]).checked) {
+                            leftHTML += '<tr><td class="fw-bold">' + r[1] + ':</td><td>' + r[2] + '</td></tr>';
+                        }
+                    });
+                    leftHTML += '</table>';
 
-                    // Add more job details for the right column
-                    if (document.getElementById('colEtd').checked) {
-                        jobDetailsHTML += '<tr><td class="fw-bold" width="40%">ETD:</td><td>05-Jan-23</td></tr>';
-                    }
-                    if (document.getElementById('colEta').checked) {
-                        jobDetailsHTML += '<tr><td class="fw-bold" width="40%">ETA:</td><td>15-Jan-23</td></tr>';
-                    }
-                    if (document.getElementById('colFinalDest').checked) {
-                        jobDetailsHTML += '<tr><td class="fw-bold" width="40%">Final Destination:</td><td>Destination City</td></tr>';
-                    }
-                    if (document.getElementById('colCommodity').checked) {
-                        jobDetailsHTML += '<tr><td class="fw-bold" width="40%">Commodity:</td><td>General Cargo</td></tr>';
-                    }
+                    let rightHTML = '<table class="w-100 small">';
+                    rightRows.forEach(function(r) {
+                        if (document.getElementById(r[0]) && document.getElementById(r[0]).checked) {
+                            rightHTML += '<tr><td class="fw-bold" width="45%">' + r[1] + ':</td><td>' + r[2] + '</td></tr>';
+                        }
+                    });
+                    rightHTML += '</table>';
 
-                    jobDetailsHTML += '</table></div></div>';
+                    previewJobDetails.innerHTML =
+                        '<div class="row"><div class="col-6">' + leftHTML + '</div><div class="col-6">' + rightHTML + '</div></div>';
 
-                    // Update the preview
-                    previewJobDetails.innerHTML = jobDetailsHTML;
-
-                    // Create invoice details content
+                    // ── Invoice details section ──────────────────────────────
                     let invoiceDetailsHTML = '';
                     invoiceDetailsHTML += '<div class="row mb-2"><div class="col-4 fw-bold">Invoice No.:</div><div class="col-4 text-center">INV-12345</div><div class="col-4 text-end fw-bold">رقم الفاتورة:</div></div>';
                     invoiceDetailsHTML += '<div class="row"><div class="col-4 fw-bold">Invoice Date:</div><div class="col-4 text-center">01-Jan-23</div><div class="col-4 text-end fw-bold">تاريخ:</div></div>';
-
-                    // Update the preview
                     previewInvoiceDetails.innerHTML = invoiceDetailsHTML;
+
+                    // ── Party Details (Customer extra fields) ────────────────
+                    const partyRows = [
+                        ['partyCode',              'Customer Code',      'CUST-001'],
+                        ['partyUniqueCode',        'Unique Code',        'UC-001'],
+                        ['partyBusinessType',      'Business Type',      'Importer'],
+                        ['partyCrNumber',          'CR Number',          'CR123456'],
+                        ['partyVatNumber',         'VAT Number',         'VAT123456'],
+                        ['partyCreditLimit',       'Credit Limit',       '50,000 SAR'],
+                        ['partyCreditDays',        'Credit Days',        '30'],
+                        ['partyRegion',            'Region',             'Western'],
+                        ['partyPostalCode',        'Postal Code',        '21411'],
+                        ['partyCountry',           'Country',            'Saudi Arabia'],
+                        ['partyEmail',             'Email',              'customer@example.com'],
+                        ['partyAltPhone',          'Alt. Phone',         '+966 12 000 0000'],
+                        ['partyPreferredShipping', 'Preferred Shipping', 'Sea Freight'],
+                        ['partyPreferredCarrier',  'Preferred Carrier',  'Carrier Name'],
+                        ['partyDefaultPort',       'Default Port',       'Jeddah Port'],
+                        ['partyPaymentMethod',     'Payment Method',     'Bank Transfer'],
+                        ['partyIban',              'IBAN',               'SA0000000000000000'],
+                        ['partyPaymentTerms',      'Payment Terms',      'Net 30'],
+                        ['partySalesperson',       'Salesperson',        'Sales Person'],
+                    ];
+                    const extrasEl = document.getElementById('preview-customer-extras');
+                    if (extrasEl) {
+                        const checkedParty = partyRows.filter(function(r) {
+                            return document.getElementById(r[0]) && document.getElementById(r[0]).checked;
+                        });
+                        if (checkedParty.length > 0) {
+                            let extrasHTML = '<table class="w-100">';
+                            checkedParty.forEach(function(r) {
+                                extrasHTML += '<tr><td class="fw-bold" width="40%">' + r[1] + ':</td><td>' + r[2] + '</td></tr>';
+                            });
+                            extrasHTML += '</table>';
+                            extrasEl.innerHTML = extrasHTML;
+                            extrasEl.style.display = '';
+                        } else {
+                            extrasEl.innerHTML = '';
+                            extrasEl.style.display = 'none';
+                        }
+                    }
+
+                    // ── Miscellaneous Details ────────────────────────────────
+                    const miscRows = [
+                        ['miscInvoiceNotes',         'Invoice Notes',         'Thank you for your business.'],
+                        ['miscTermsConditions',      'Terms & Conditions',    'Payment due within 30 days.'],
+                        ['miscPaymentInstructions',  'Payment Instructions',  'Bank transfer to account IBAN...'],
+                        ['miscDeliveryInstructions', 'Delivery Instructions', 'Handle with care.'],
+                        ['miscHandlingInstructions', 'Special Handling',      'Fragile items, keep upright.'],
+                        ['miscAdditionalContacts',   'Additional Contacts',   'ops@company.com'],
+                        ['miscReferenceNumbers',     'Reference Numbers',     'PO-12345'],
+                        ['miscAttachments',          'Attachments',           'See attached documents.'],
+                        ['miscPackingSlip',          'Packing Slip',          'PS-001'],
+                        ['miscTransportInfo',        'Transport Information', 'Truck No. XYZ-123'],
+                        ['miscCustomsInfo',          'Customs Information',   'HS Code: 1234.56'],
+                        ['miscInsuranceInfo',        'Insurance Information', 'Policy No. INS-001'],
+                    ];
+                    const miscEl = document.getElementById('preview-misc-section');
+                    if (miscEl) {
+                        const checkedMisc = miscRows.filter(function(r) {
+                            return document.getElementById(r[0]) && document.getElementById(r[0]).checked;
+                        });
+                        if (checkedMisc.length > 0) {
+                            let miscHTML = '';
+                            checkedMisc.forEach(function(r) {
+                                miscHTML += '<div class="mb-1"><span class="fw-bold">' + r[1] + ':</span> ' + r[2] + '</div>';
+                            });
+                            miscEl.innerHTML = miscHTML;
+                            miscEl.style.display = '';
+                        } else {
+                            miscEl.innerHTML = '';
+                            miscEl.style.display = 'none';
+                        }
+                    }
+
+                    // ── Invoice Style / Theme ────────────────────────────────
+                    const activeThemeEl = document.querySelector('.theme.active');
+                    const selectedTheme = activeThemeEl ? activeThemeEl.dataset.theme : 'stylish';
+                    const outerBorderDiv = document.querySelector('#preview-content .border.border-dark');
+                    if (outerBorderDiv) {
+                        outerBorderDiv.style.borderRadius = '';
+                        outerBorderDiv.style.boxShadow = '';
+                        outerBorderDiv.style.borderWidth = '';
+                        if (selectedTheme === 'luxury') {
+                            outerBorderDiv.style.borderRadius = '8px';
+                            outerBorderDiv.style.boxShadow = '0 4px 16px rgba(0,0,0,0.18)';
+                        } else if (selectedTheme === 'billbook') {
+                            outerBorderDiv.style.borderRadius = '4px';
+                            outerBorderDiv.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+                        } else if (selectedTheme === 'advance-gst-tally') {
+                            outerBorderDiv.style.borderWidth = '2px';
+                        }
+                    }
                 }
 
                 function saveSettings() {
@@ -756,9 +869,6 @@
                     document.querySelectorAll('#collapseMisc input[type="checkbox"][data-misc-detail]').forEach(function(checkbox) {
                         miscDetails[checkbox.dataset.miscDetail] = checkbox.checked;
                     });
-
-                    // Update the preview
-                    updatePreview();
 
                     // Prepare data for AJAX request
                     const data = {

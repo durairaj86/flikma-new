@@ -33,7 +33,7 @@
                                                     <input type="file" id="logoInput" name="logoInput" class="d-none"
                                                            accept="image/png, image/jpeg">
                                                     <img id="logoPreview"
-                                                         src="{{ asset($company->logo_path) }}"
+                                                         src="{{ $company->logo_path ? asset('storage/'.$company->logo_path) : '' }}"
                                                          alt="Logo Preview"
                                                          class="img-fluid mb-2 rounded @if(!$company->logo_path) d-none @endif">
                                                     <div class="upload-text">
@@ -154,7 +154,7 @@
                                                         multiple placeholder="Business Type Selection">
                                                     @foreach(industrialTypes() as $typeValue => $typeName)
                                                         <option
-                                                            value="{{ $typeValue }}" @selected(in_array($typeValue,json_decode($company->business_type)))>{{ $typeName }}</option>
+                                                            value="{{ $typeValue }}" @selected(in_array($typeValue, $company->business_type ?? []))>{{ $typeName }}</option>
                                                     @endforeach
                                                 </select>
                                             </div>
@@ -241,7 +241,7 @@
                                                     <input type="file" id="signatureInput" name="signatureInput" hidden
                                                            accept="image/*">
                                                     <img id="signaturePreview"
-                                                         src="{{ asset($company->signature_path) }}"
+                                                         src="{{ $company->signature_path ? asset('storage/'.$company->signature_path) : '' }}"
                                                          alt="Signature Preview"
                                                          class="img-fluid mb-2 rounded @if(!$company->signature_path) d-none @endif">
                                                     <div class="upload-text">

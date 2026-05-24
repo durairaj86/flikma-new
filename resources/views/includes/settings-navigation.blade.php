@@ -26,36 +26,36 @@
 
         <ul class="nav flex-column fw-medium" id="master-navigation">
             <li class="nav-item" data-url="/settings/account">
-                <a href="{{ asset('/settings/account') }}"
-                   class="nav-link d-flex align-items-center py-2 {{ $page1 == 'account' ? 'active' : 'text-dark' }}">
+                <a href="{{ url('/settings/account') }}"
+                   class="nav-link d-flex align-items-center py-2 {{ request()->is('settings/account*') ? 'active' : 'text-dark' }}">
                     <i class="bi bi-person-circle text-secondary me-2"></i> Account
                 </a>
             </li>
 
             <li class="nav-item" data-url="/settings/company">
-                <a href="{{ asset('/settings/company') }}"
-                   class="nav-link d-flex align-items-center py-2 {{ $page1 == 'company' ? 'active' : 'text-dark' }}">
+                <a href="{{ url('/settings/company') }}"
+                   class="nav-link d-flex align-items-center py-2 {{ request()->is('settings/company*') ? 'active' : 'text-dark' }}">
                     <i class="bi bi-person-circle text-secondary me-2"></i> Manage Business
                 </a>
             </li>
 
             <li class="nav-item" data-url="/settings/invoice">
-                <a href="{{ asset('/settings/invoice') }}"
-                   class="nav-link d-flex align-items-center py-2 {{ $page1 == 'invoice' ? 'active' : 'text-dark' }}">
+                <a href="{{ url('/settings/invoice') }}"
+                   class="nav-link d-flex align-items-center py-2 {{ request()->is('settings/invoice*') ? 'active' : 'text-dark' }}">
                     <i class="bi bi-person-circle text-secondary me-2"></i> Invoice Settings
                 </a>
             </li>
 
             {{--<li class="nav-item" data-url="/settings/tax">
-                <a href="{{ asset('/settings/tax') }}"
-                   class="nav-link d-flex align-items-center py-2 {{ $page1 == 'tax' ? 'active' : 'text-dark' }}">
+                <a href="{{ url('/settings/tax') }}"
+                   class="nav-link d-flex align-items-center py-2 {{ request()->is('settings/tax*') ? 'active' : 'text-dark' }}">
                     <i class="bi bi-person-circle text-secondary me-2"></i> Tax Settings
                 </a>
             </li>--}}
 
             <li class="nav-item" data-url="/settings/zatca/register">
-                <a href="{{ asset('/settings/zatca/register') }}"
-                   class="nav-link d-flex align-items-center py-2 {{ $page1 == 'zatca' ? 'active' : 'text-dark' }}">
+                <a href="{{ url('/settings/zatca/register') }}"
+                   class="nav-link d-flex align-items-center py-2 {{ request()->is('settings/zatca*') ? 'active' : 'text-dark' }}">
                     <i class="bi bi-person-circle text-secondary me-2"></i> Zatca Integration
                 </a>
             </li>
