@@ -32,6 +32,10 @@
 >
     @unless($multipleCustomers)
         <option value="">--Select--</option>
+    @else
+        {{-- Empty option first so the browser never auto-selects a real
+             customer (a bare single-select silently filters every list). --}}
+        <option value=""></option>
     @endunless
 
     @foreach(($customers ?? \App\Models\Customer\Customer::confirmedCustomers()) as $customerData)

@@ -286,6 +286,34 @@ class QuotationController extends Controller
     {
         $filter = $request->filterData ?? [];
 
+        // Shared filters so the tab counts always match the visible list
+        // (company scoping is applied globally on the Quotation model).
+        $applyFilters = function ($query) use ($filter) {
+            $query->when(!empty($filter['filter-from-date']) && !empty($filter['filter-to-date']),
+                function ($query) use ($filter) {
+                    // posted_at is stored as a Y-m-d string, so compare plain
+                    // date strings — comparing against a datetime would drop
+                    // rows that fall exactly on the from-date.
+                    $from = Carbon::parse($filter['filter-from-date'])->toDateString();
+                    $to   = Carbon::parse($filter['filter-to-date'])->addDay()->toDateString();
+                    $query->where('quotations.posted_at', '>=', $from)
+                          ->where('quotations.posted_at', '<',  $to);
+                }
+            )
+            ->when(isset($filter['customers']) && !empty($filter['customers']), function ($query) use ($filter) {
+                $query->whereIn('quotations.customer_id', decodeIds($filter['customers']));
+            })
+            ->when(isset($filter['filter-pol']) && !empty($filter['filter-pol']), function ($query) use ($filter) {
+                $query->where('quotations.pol', 'like', "%{$filter['filter-pol']}%");
+            })
+            ->when(isset($filter['filter-pod']) && !empty($filter['filter-pod']), function ($query) use ($filter) {
+                $query->where('quotations.pod', 'like', "%{$filter['filter-pod']}%");
+            })
+            ->when(isset($filter['activity_id']) && !empty($filter['activity_id']), function ($query) use ($filter) {
+                $query->where('quotations.activity_id', $filter['activity_id']);
+            });
+        };
+
         $rows = Quotation::select(
             'quotations.id',
             'quotations.row_no',
@@ -321,31 +349,13 @@ class QuotationController extends Controller
         ->leftJoin('logistic_activities', 'logistic_activities.id', '=', 'quotations.activity_id')
         ->leftJoin('sales_persons', 'sales_persons.id', '=', 'quotations.salesperson_id')
         ->where('quotations.status', QuotationEnum::fromName($request->tab))
-        ->when(!empty($filter['filter-from-date']) && !empty($filter['filter-to-date']),
-            function ($query) use ($filter) {
-                $from = Carbon::parse($filter['filter-from-date'])->startOfDay();
-                $to   = Carbon::parse($filter['filter-to-date'])->addDay()->startOfDay();
-                $query->where('quotations.posted_at', '>=', $from)
-                      ->where('quotations.posted_at', '<',  $to);
-            }
-        )
-        ->when(isset($filter['customers']) && !empty($filter['customers']), function ($query) use ($filter) {
-            $query->whereIn('quotations.customer_id', decodeIds($filter['customers']));
-        })
-        ->when(isset($filter['filter-pol']) && !empty($filter['filter-pol']), function ($query) use ($filter) {
-            $query->where('quotations.pol', 'like', "%{$filter['filter-pol']}%");
-        })
-        ->when(isset($filter['filter-pod']) && !empty($filter['filter-pod']), function ($query) use ($filter) {
-            $query->where('quotations.pod', 'like', "%{$filter['filter-pod']}%");
-        })
-        ->when(isset($filter['activity_id']) && !empty($filter['activity_id']), function ($query) use ($filter) {
-            $query->where('quotations.activity_id', $filter['activity_id']);
-        })
+        ->tap($applyFilters)
         ->orderByDesc('quotations.id');
 
-        // Get counts per status
-        $statusCounts = Quotation::select('status', DB::raw('COUNT(*) as total'))
-            ->groupBy('status')
+        // Counts per status using the same filters as the list
+        $statusCounts = Quotation::select('quotations.status', DB::raw('COUNT(*) as total'))
+            ->tap($applyFilters)
+            ->groupBy('quotations.status')
             ->pluck('total', 'status')
             ->toArray();
 

@@ -74,7 +74,7 @@
                 </div>
             </div>
 
-            <div class="card-body">
+            <div class="card-body" id="content-wrapper">
 
                 <form id="list-filter" method="post" novalidate="novalidate">
                     @csrf
@@ -97,13 +97,13 @@
                                 </select>
                             </div>
 
-                            <div class="col-md-4 form-filter">
+                            <div class="col-md-3 form-filter">
                                 <label class="form-label fw-medium">Quotation Date</label>
                                 <div class="d-flex input-group-filter gap-2">
                                     <input type="date" class="form-control datepicker from-date default-filter" id="filter-from-date" name="filter-from-date"
-                                           value="{{ \Carbon\Carbon::today()->subMonth(6)->startOfMonth()->format('Y-m-d') }}">
+                                           value="{{ \Carbon\Carbon::today()->startOfYear()->format('d-m-Y') }}">
                                     <input type="date" class="form-control datepicker to-date default-filter" id="filter-to-date" name="filter-to-date"
-                                           value="{{ \Carbon\Carbon::today()->format('Y-m-d') }}">
+                                           value="{{ \Carbon\Carbon::today()->format('d-m-Y') }}">
                                 </div>
                             </div>
 
@@ -112,7 +112,7 @@
                                 <x-common.customers multiple></x-common.customers>
                             </div>
 
-                            <div class="col-md-3 form-filter pol-pod-select">
+                            <div class="col-md-2 form-filter pol-pod-select">
                                 <label class="form-label fw-medium">
                                     POL <small class="text-muted">(Port of Loading)</small>
                                 </label>
@@ -140,7 +140,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-3 pol-pod-select">
+                            <div class="col-md-2 pol-pod-select">
                                 <label class="form-label fw-medium">
                                     POD <small class="text-muted">(Port of Discharge)</small>
                                 </label>
