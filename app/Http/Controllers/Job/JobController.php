@@ -422,6 +422,33 @@ class JobController extends Controller
     public function fetchAllRows(Request $request): \Illuminate\Http\JsonResponse
     {
         $filter = $request->filterData;
+
+        // Shared filters so the tab counts always match the visible list
+        // (company scoping is applied globally on the Job model).
+        $applyFilters = function ($query) use ($filter) {
+            $query->when(isset($filter['filter-from-date'], $filter['filter-to-date']),
+                function ($query) use ($filter) {
+                    $from = Carbon::parse($filter['filter-from-date'])->startOfDay();
+                    $to = Carbon::parse($filter['filter-to-date'])->addDay()->startOfDay();
+
+                    $query->where('posted_at', '>=', $from)
+                        ->where('posted_at', '<', $to);
+                }
+            )
+            ->when($filter['customers'] ?? null, function ($query, $customers) {
+                $query->whereIn('customer_id', decodeIds($customers));
+            })
+            ->when($filter['filter_carrier'] ?? null, function ($query, $carrier) {
+                $query->where('carrier', 'like', "%{$carrier}%");
+            })
+            ->when($filter['filter-pol'] ?? null, function ($query, $pol) {
+                $query->where('pol', 'like', "%{$pol}%");
+            })
+            ->when($filter['filter-pod'] ?? null, function ($query, $pod) {
+                $query->where('pod', 'like', "%{$pod}%");
+            });
+        };
+
         $rows = Job::withTrashed()->select(
             'jobs.id as id',
             'jobs.row_no as row_no',
@@ -467,34 +494,14 @@ class JobController extends Controller
             'jobs.status as status',
         )->with('customer:id,name_en,name_ar,email,phone', 'invoices', 'clearance:id,job_id,clearance_status,clearance_date')
             ->where('jobs.status', JobEnum::fromName($request->tab))
-            ->when(isset($filter['filter-from-date'], $filter['filter-to-date']),
-                function ($query) use ($filter) {
-
-                    $from = Carbon::parse($filter['filter-from-date'])->startOfDay();
-                    $to = Carbon::parse($filter['filter-to-date'])->addDay()->startOfDay();
-
-                    $query->where('posted_at', '>=', $from)
-                        ->where('posted_at', '<', $to);
-                }
-            )
-            ->when($filter['customers'] ?? null, function ($query, $customers) {
-                $query->whereIn('customer_id', decodeIds($customers));
-            })
-            ->when($filter['filter_carrier'] ?? null, function ($query, $carrier) {
-                $query->where('carrier', 'like', "%{$carrier}%");
-            })
-            ->when($filter['filter-pol'] ?? null, function ($query, $pol) {
-                $query->where('pol', 'like', "%{$pol}%");
-            })
-            ->when($filter['filter-pod'] ?? null, function ($query, $pod) {
-                $query->where('pod', 'like', "%{$pod}%");
-            })
+            ->tap($applyFilters)
             ->orderByDesc('id');
 
 
-        // Get counts per status
-        $statusCounts = Job::withTrashed()->select('status', DB::raw('COUNT(*) as total'))
-            ->groupBy('status')
+        // Counts per status using the same filters as the list
+        $statusCounts = Job::withTrashed()->select('jobs.status', DB::raw('COUNT(*) as total'))
+            ->tap($applyFilters)
+            ->groupBy('jobs.status')
             ->pluck('total', 'status')
             ->toArray();
 

@@ -476,6 +476,7 @@ JOB = {
                 : $("#listTabs").find('li button.active').attr('id');
 
             JOB.columnSettings.fetch((settings) => {
+                $('#dtFooter').empty();   // clear relocated pagination before destroy
                 GLOBAL_FN.destroyDataTable();
 
                 const columns  = settings.columns;
@@ -507,7 +508,7 @@ JOB = {
                     serverSide: true,
                     autoWidth: false,
                     lengthChange: false,
-                    pageLength: 25,
+                    pageLength: parseInt($('#pageLength').val(), 10) || 25,
                     dom: 'rtip',
                     order: defaultOrder,
                     ajax: {
@@ -529,9 +530,15 @@ JOB = {
                     deferLoading: 0,
                     drawCallback() {
                         const info = this.api().page.info();
+                        const noData = info.recordsTotal === 0;
+                        const noResults = !noData && info.recordsDisplay === 0;
                         const hasRows = info.recordsDisplay > 0;
+
                         $('#tableWrapper').toggleClass('d-none', !hasRows);
                         $('#dtFooter').toggleClass('d-none', !hasRows);
+                        $('#jobEmptyState').toggleClass('d-none', hasRows);
+                        $('#emptyStateNoData').toggleClass('d-none', !noData);
+                        $('#emptyStateNoResults').toggleClass('d-none', !noResults);
                     },
                     initComplete() {
                         JOB.form.open();
@@ -543,6 +550,9 @@ JOB = {
 
                 $('#customSearch').on('keyup', function () {
                     table.search(this.value).draw();
+                });
+                $('#pageLength').off('change').on('change', function () {
+                    table.page.len(parseInt(this.value, 10) || 25).draw();
                 });
                 webDataTable.loader(table);
                 webDataTable.search(table);
@@ -662,7 +672,7 @@ JOB = {
             }*/
         },
         open() {
-            $('#new').off().on('click', function () {
+            $('#new,#new-first').off().on('click', function () {
                 let dataTableData = $('#dataTable');
                 let modelSize = dataTableData.data('model-size');
                 let minHeight = dataTableData.data('min-height');

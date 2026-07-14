@@ -22,6 +22,13 @@ class Job extends Model
     protected $casts = [
         'services' => 'array',
         'cargo_requirements' => 'array',
+        // jobs.status is a varchar column holding JobEnum's integer values
+        // as strings (e.g. '1'). Without this cast, every strict comparison
+        // against JobEnum::X->value in JobController::actions() ('1' === 1)
+        // silently fails, hiding every conditional menu item (Move to,
+        // Invoice, Edit, Delete) and leaving only the two unconditional
+        // ones (Print, View) visible on every job regardless of status.
+        'status' => 'integer',
     ];
     protected $appends = ['pol_code', 'pol_name','pod_code', 'pod_name'];
     public static $mapFromQuotation = [

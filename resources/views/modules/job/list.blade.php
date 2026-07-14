@@ -210,13 +210,41 @@
                     </button>
                 </div>
                 -->
-                <div class="align-items-center gap-2">
+                <div class="d-flex align-items-center gap-2">
                     <div class="search-box position-relative me-2">
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
 
                         <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
                                placeholder="Search jobs..." aria-label="Search jobs...">
                     </div>
+                    <select id="pageLength" class="form-select form-select-sm w-auto" aria-label="Rows per page">
+                        <option value="25" selected>25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Empty / zero-records state (shown instead of table) -->
+            <div id="jobEmptyState" class="d-none text-center py-5 px-4">
+                <div id="emptyStateNoData">
+                    <div class="mb-3">
+                        <i class="bi bi-truck" style="font-size:3.5rem;color:#dde3ed;"></i>
+                    </div>
+                    <h5 class="fw-semibold text-muted mb-2">No Jobs Yet</h5>
+                    <p class="text-muted small mb-4 mx-auto" style="max-width:400px;">
+                        Jobs created directly or converted from an accepted quotation will appear here.
+                    </p>
+                    <button class="btn btn-primary rounded-pill px-4" id="new-first">
+                        <i class="bi bi-plus-lg me-1"></i> Create First Job
+                    </button>
+                </div>
+                <div id="emptyStateNoResults" class="d-none">
+                    <div class="mb-3">
+                        <i class="bi bi-search" style="font-size:3rem;color:#dde3ed;"></i>
+                    </div>
+                    <h5 class="fw-semibold text-muted mb-2">No Results Found</h5>
+                    <p class="text-muted small mb-0">Try adjusting your search or filter criteria.</p>
                 </div>
             </div>
 
@@ -241,7 +269,7 @@
                     </tbody>
                 </table>
             </div>--}}
-            <div class="flex-grow-1 overflow-auto" id="tableWrapper">
+            <div class="flex-grow-1" id="tableWrapper">
                 <table class="table align-middle dataTable no-footer" id="dataTable" data-model-size="lg">
                     <thead>
                     <tr id="dtTheadRow" class="text-secondary small text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;"></tr>
