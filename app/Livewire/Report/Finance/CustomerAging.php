@@ -2,14 +2,18 @@
 
 namespace App\Livewire\Report\Finance;
 
+use App\Exports\ReportTableExport;
+use App\Livewire\Report\Concerns\BuildsAgingBuckets;
 use App\Models\Customer\Customer;
 use App\Models\Finance\CustomerInvoice\CustomerInvoice;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use Maatwebsite\Excel\Facades\Excel;
 
 class CustomerAging extends Component
 {
+    use BuildsAgingBuckets;
+
     public string $asOfDate = '';
     public string|int $customerId = '';
     public string $search = '';
@@ -51,18 +55,12 @@ class CustomerAging extends Component
 
     private function getAgingData(): array
     {
+        $bucketDefs = $this->agingBucketDefs();
+
         $empty = [
-            'customer'  => null,
-            'invoices'  => [],
-            'summary'   => [
-                'current'       => 0,
-                'days_1_30'     => 0,
-                'days_31_60'    => 0,
-                'days_61_90'    => 0,
-                'days_91_120'   => 0,
-                'days_over_120' => 0,
-                'grand_total'   => 0,
-            ],
+            'customer' => null,
+            'invoices' => [],
+            'summary'  => array_merge($this->emptyAgingBuckets(), ['grand_total' => 0.0]),
         ];
 
         if (empty($this->customerId)) {
@@ -92,15 +90,7 @@ class CustomerAging extends Component
 
         $asOfDate = Carbon::parse($this->asOfDate);
         $agingRows = [];
-        $summary = [
-            'current'       => 0,
-            'days_1_30'     => 0,
-            'days_31_60'    => 0,
-            'days_61_90'    => 0,
-            'days_91_120'   => 0,
-            'days_over_120' => 0,
-            'grand_total'   => 0,
-        ];
+        $summary = array_merge($this->emptyAgingBuckets(), ['grand_total' => 0.0]);
 
         foreach ($invoices as $inv) {
             $dueDate = Carbon::parse($inv->due_at ?? $inv->due_date ?? $inv->invoice_date);
@@ -112,37 +102,20 @@ class CustomerAging extends Component
 
             $daysOverdue = (int)$dueDate->diffInDays($asOfDate, false);
 
-            $buckets = array_fill_keys(['current', 'days_1_30', 'days_31_60', 'days_61_90', 'days_91_120', 'days_over_120'], 0.0);
-
-            if ($daysOverdue <= 0) {
-                $buckets['current'] = $balance;
-                $summary['current'] += $balance;
-            } elseif ($daysOverdue <= 30) {
-                $buckets['days_1_30'] = $balance;
-                $summary['days_1_30'] += $balance;
-            } elseif ($daysOverdue <= 60) {
-                $buckets['days_31_60'] = $balance;
-                $summary['days_31_60'] += $balance;
-            } elseif ($daysOverdue <= 90) {
-                $buckets['days_61_90'] = $balance;
-                $summary['days_61_90'] += $balance;
-            } elseif ($daysOverdue <= 120) {
-                $buckets['days_91_120'] = $balance;
-                $summary['days_91_120'] += $balance;
-            } else {
-                $buckets['days_over_120'] = $balance;
-                $summary['days_over_120'] += $balance;
-            }
-
+            $buckets = $this->emptyAgingBuckets();
+            $bucketKey = $this->agingBucketKey($daysOverdue);
+            $buckets[$bucketKey] = $balance;
+            $summary[$bucketKey] += $balance;
             $summary['grand_total'] += $balance;
 
-            $agingRows[] = array_merge([
+            $agingRows[] = [
                 'invoice_no'   => $inv->row_no,
                 'invoice_date' => Carbon::parse($inv->invoice_date)->format('d M Y'),
                 'due_date'     => $dueDate->format('d M Y'),
                 'days_overdue' => $daysOverdue,
                 'total'        => $balance,
-            ], $buckets);
+                'buckets'      => $buckets,
+            ];
         }
 
         return [
@@ -152,12 +125,62 @@ class CustomerAging extends Component
         ];
     }
 
+    public function exportExcel()
+    {
+        $data = $this->getAgingData();
+
+        if (!$data['customer']) {
+            return;
+        }
+
+        $bucketDefs = $this->agingBucketDefs();
+
+        $columns = array_merge(
+            ['Invoice #', 'Invoice Date', 'Due Date', 'Days Overdue'],
+            array_column($bucketDefs, 'label'),
+            ['Total']
+        );
+
+        $rows = [];
+        foreach ($data['invoices'] as $inv) {
+            $row = [$inv['invoice_no'], $inv['invoice_date'], $inv['due_date'], $inv['days_overdue']];
+            foreach ($bucketDefs as $def) {
+                $row[] = (float)$inv['buckets'][$def['key']] ?: '';
+            }
+            $row[] = (float)$inv['total'];
+            $rows[] = $row;
+        }
+
+        $totalsRow = ['', '', '', 'TOTAL'];
+        foreach ($bucketDefs as $def) {
+            $totalsRow[] = (float)$data['summary'][$def['key']];
+        }
+        $totalsRow[] = (float)$data['summary']['grand_total'];
+
+        $meta = [
+            'title' => 'CUSTOMER AGING REPORT',
+            'lines' => [
+                'Customer: ' . $data['customer']->name_en . ' (' . $data['customer']->row_no . ')',
+                'As of: ' . Carbon::parse($this->asOfDate)->format('d M Y')
+                    . '  |  Interval: ' . $this->agingInterval . ' days x ' . $this->agingColumns . ' columns',
+                'Generated on: ' . now()->format('d-m-Y H:i'),
+            ],
+            'numeric_from' => 5,
+        ];
+
+        $filename = 'CustomerAging-' . $data['customer']->row_no . '-' . $this->asOfDate . '.xlsx';
+
+        return Excel::download(new ReportTableExport($rows, $totalsRow, $columns, $meta), $filename);
+    }
+
     public function render()
     {
         $data = $this->getAgingData();
 
         return view('livewire.report.finance.customer-aging', array_merge([
-            'customers' => $this->customers,
+            'company'    => authUserCompany(),
+            'customers'  => $this->customers,
+            'bucketDefs' => $this->agingBucketDefs(),
         ], $data));
     }
 }

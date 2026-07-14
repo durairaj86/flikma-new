@@ -20,10 +20,6 @@
             </div>
 
             <div class="d-flex gap-2">
-                <button class="btn btn-outline-secondary btn-sm px-3 fw-medium">
-                    <i class="bi bi-gear me-1"></i> Customize Report
-                </button>
-                <div class="vr mx-1"></div>
                 <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">
                     <i class="bi bi-printer"></i>
                 </button>

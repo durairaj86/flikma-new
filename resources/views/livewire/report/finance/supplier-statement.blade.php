@@ -19,8 +19,8 @@
                             <i class="bi bi-download me-2"></i>Export
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                            <li><a class="dropdown-item py-2" href="#"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
-                            <li><a class="dropdown-item py-2" href="#"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
+                            <li><a class="dropdown-item py-2" href="#" onclick="ssExportPdf(event)"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
+                            <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
                         </ul>
                     </div>
                 </div>
@@ -32,33 +32,37 @@
                 <div class="row g-3 align-items-end">
                     <div class="col-lg-4">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">Supplier</label>
-                        <select class="form-select bg-light border-0 py-2 no-ts" wire:model="supplierId">
+                        <select class="form-select bg-light border-0 py-2 no-ts" wire:model.live="supplierId">
                             <option value="">Select a supplier...</option>
                             @foreach($suppliers as $sup)
-                                <option value="{{ $sup['id'] }}">{{ $sup['name_en'] }}</option>
+                                <option value="{{ $sup['id'] }}" wire:key="sup-opt-{{ $sup['id'] }}">{{ $sup['name_en'] }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="col-lg-2 col-md-4">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">From Date</label>
-                        <input type="hidden" id="ss-start-date-hidden" wire:model="startDate" value="{{ $startDate }}" />
-                        <input type="text" id="ss-start-date"
-                               class="form-control bg-light border-0 py-2"
-                               placeholder="dd-mm-yyyy"
-                               value="{{ $startDate }}" />
+                        <div wire:ignore>
+                            <input type="text" id="ss-start-date"
+                                   class="form-control bg-light border-0 py-2"
+                                   placeholder="dd-mm-yyyy"
+                                   value="{{ $startDate }}" />
+                        </div>
                     </div>
                     <div class="col-lg-2 col-md-4">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">To Date</label>
-                        <input type="hidden" id="ss-end-date-hidden" wire:model="endDate" value="{{ $endDate }}" />
-                        <input type="text" id="ss-end-date"
-                               class="form-control bg-light border-0 py-2"
-                               placeholder="dd-mm-yyyy"
-                               value="{{ $endDate }}" />
+                        <div wire:ignore>
+                            <input type="text" id="ss-end-date"
+                                   class="form-control bg-light border-0 py-2"
+                                   placeholder="dd-mm-yyyy"
+                                   value="{{ $endDate }}" />
+                        </div>
                     </div>
                     <div class="col-lg-4 col-md-4">
                         <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-supplier fw-bold py-2 flex-grow-1 shadow-sm" wire:click="applyFilter">
-                                <i class="bi bi-filter-left me-2"></i>Generate
+                            <button type="button" class="btn btn-supplier fw-bold py-2 flex-grow-1 shadow-sm" onclick="ssApplyFilter()" wire:loading.attr="disabled">
+                                <i class="bi bi-filter-left me-2"></i>
+                                <span wire:loading.remove>Generate</span>
+                                <span wire:loading><span class="spinner-border spinner-border-sm me-1"></span>Loading...</span>
                             </button>
                             <button type="button" class="btn btn-outline-secondary border-0 bg-light py-2 px-3" wire:click="resetFilter">
                                 <i class="bi bi-arrow-counterclockwise"></i>
@@ -70,7 +74,7 @@
         </div>
 
         @if($supplier)
-            <div class="row g-4">
+            <div class="row g-4 d-print-none">
                 <div class="col-xl-3">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body p-4">
@@ -124,9 +128,14 @@
 
                 <div class="col-xl-9">
                     <div class="card border-0 shadow-sm overflow-hidden">
-                        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
                             <h6 class="mb-0 fw-bold"><i class="bi bi-journal-text me-2 text-supplier"></i>Transaction Ledger</h6>
-                            <span class="badge bg-supplier-subtle text-supplier border border-supplier-subtle px-3 py-2">Currency: SAR</span>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-light text-dark border px-3 py-2">
+                                    Period: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} &mdash; {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
+                                </span>
+                                <span class="badge bg-supplier-subtle text-supplier border border-supplier-subtle px-3 py-2">Currency: SAR</span>
+                            </div>
                         </div>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0">
@@ -182,7 +191,7 @@
                         </div>
                     </div>
 
-                    <div class="mt-4 p-3 bg-white border rounded shadow-sm d-print-block">
+                    <div class="mt-4 p-3 bg-white border rounded shadow-sm">
                         <div class="row text-center text-muted x-small">
                             <div class="col-md-4">Prepared By: _________________</div>
                             <div class="col-md-4">Verified By: _________________</div>
@@ -190,6 +199,108 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            {{-- Bank-statement style layout: used for Print and PDF export only --}}
+            <div id="supplier-statement-print" class="stmt-print d-none d-print-block"
+                 data-pdf-filename="SupplierStatement-{{ $supplier->row_no }}-{{ $startDate }}_{{ $endDate }}.pdf">
+
+                <table class="stmt-meta">
+                    <tr>
+                        <td>
+                            <div class="stmt-company">{{ $company->name ?? config('app.name') }}</div>
+                            <div class="stmt-sub">
+                                @if(!empty($company->phone)) Phone: {{ $company->phone }} @endif
+                                @if(!empty($company->email)) &nbsp;|&nbsp; {{ $company->email }} @endif
+                            </div>
+                            @if(!empty($company->vat_number))
+                                <div class="stmt-sub">VAT No: {{ $company->vat_number }}</div>
+                            @endif
+                        </td>
+                        <td class="text-end">
+                            <div class="stmt-title">SUPPLIER STATEMENT OF ACCOUNT</div>
+                            <div class="stmt-sub">Period: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} to {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
+                            <div class="stmt-sub">Generated: {{ now()->format('d M Y H:i') }}</div>
+                            <div class="stmt-sub">Currency: SAR</div>
+                        </td>
+                    </tr>
+                </table>
+
+                <table class="stmt-meta stmt-box">
+                    <tr>
+                        <td>
+                            <div class="stmt-sub" style="text-transform: uppercase;">Supplier</div>
+                            <div class="stmt-strong">{{ $supplier->name_en }} ({{ $supplier->row_no }})</div>
+                            <div class="stmt-sub">
+                                @if($supplier->email) {{ $supplier->email }} @endif
+                                @if($supplier->phone) &nbsp;|&nbsp; {{ $supplier->phone }} @endif
+                            </div>
+                        </td>
+                        <td class="text-end">
+                            <table class="stmt-summary">
+                                <tr><td>Opening Balance</td><td class="text-end">{{ number_format($openingBalance, 2) }}</td></tr>
+                                <tr><td>Invoiced (+)</td><td class="text-end">{{ number_format($invoicedAmount, 2) }}</td></tr>
+                                <tr><td>Paid (-)</td><td class="text-end">{{ number_format($paidAmount, 2) }}</td></tr>
+                                <tr class="stmt-strong"><td>Closing Balance</td><td class="text-end">{{ number_format($closingBalance, 2) }}</td></tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+
+                <table class="stmt-table">
+                    <thead>
+                    <tr>
+                        <th style="width: 12%;">Date</th>
+                        <th style="width: 15%;">Voucher No</th>
+                        <th style="width: 15%;">Type</th>
+                        <th>Description</th>
+                        <th class="text-end" style="width: 13%;">Invoiced</th>
+                        <th class="text-end" style="width: 13%;">Paid</th>
+                        <th class="text-end" style="width: 14%;">Balance</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr class="stmt-strong">
+                        <td colspan="6">Balance Brought Forward</td>
+                        <td class="text-end">{{ number_format($openingBalance, 2) }}</td>
+                    </tr>
+                    @forelse($transactions as $txn)
+                        <tr>
+                            <td>{{ \Carbon\Carbon::parse($txn->reference_date)->format('d M Y') }}</td>
+                            <td>{{ $txn->voucher_no }}</td>
+                            <td>{{ $this->voucherTypeLabel($txn->voucher_type) }}</td>
+                            <td>{{ $txn->description }}</td>
+                            <td class="text-end">{{ $txn->voucher_type === 'SI' && (float)$txn->base_credit > 0 ? number_format((float)$txn->base_credit, 2) : '' }}</td>
+                            <td class="text-end">{{ $txn->voucher_type === 'PV' && (float)$txn->base_debit > 0 ? number_format((float)$txn->base_debit, 2) : '' }}</td>
+                            <td class="text-end">{{ number_format((float)$txn->balance, 2) }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center">No transactions found for the selected period.</td>
+                        </tr>
+                    @endforelse
+                    </tbody>
+                    <tfoot>
+                    <tr class="stmt-strong">
+                        <td colspan="4">Closing Totals</td>
+                        <td class="text-end">{{ number_format($invoicedAmount, 2) }}</td>
+                        <td class="text-end">{{ number_format($paidAmount, 2) }}</td>
+                        <td class="text-end">{{ number_format($closingBalance, 2) }}</td>
+                    </tr>
+                    </tfoot>
+                </table>
+
+                <div class="stmt-footnote">
+                    This is a system generated statement. Please report any discrepancy within 15 days of receipt.
+                </div>
+
+                <table class="stmt-meta stmt-signatures">
+                    <tr>
+                        <td>Prepared By: _________________</td>
+                        <td class="text-center">Verified By: _________________</td>
+                        <td class="text-end">Supplier Signature: _________________</td>
+                    </tr>
+                </table>
             </div>
         @else
             <div class="card border-0 shadow-sm text-center py-5">
@@ -207,57 +318,65 @@
     @script
     <script>
         (function () {
-            function syncHidden(hiddenId, dateStr) {
-                var hidden = document.getElementById(hiddenId);
-                if (hidden) {
-                    hidden.value = dateStr;
-                    hidden.dispatchEvent(new Event('input', { bubbles: true }));
-                }
-            }
-
             function initFlatpickr() {
-                var startEl = document.getElementById('ss-start-date');
-                var endEl   = document.getElementById('ss-end-date');
+                [['ss-start-date', 'startDate'], ['ss-end-date', 'endDate']].forEach(function (pair) {
+                    var el = document.getElementById(pair[0]);
+                    if (!el || el._flatpickr) return;
 
-                if (startEl && startEl._flatpickr) { startEl._flatpickr.destroy(); }
-                if (endEl   && endEl._flatpickr)   { endEl._flatpickr.destroy(); }
-
-                if (startEl) {
-                    flatpickr(startEl, {
+                    flatpickr(el, {
                         dateFormat:    'Y-m-d',
                         altInput:      true,
                         altFormat:     'd-m-Y',
                         allowInput:    true,
                         disableMobile: true,
-                        defaultDate:   startEl.value || null,
+                        defaultDate:   el.value || null,
                         onChange: function (selectedDates, dateStr) {
-                            syncHidden('ss-start-date-hidden', dateStr);
+                            if (dateStr) {
+                                $wire.set(pair[1], dateStr);
+                            }
                         },
                     });
-                }
-
-                if (endEl) {
-                    flatpickr(endEl, {
-                        dateFormat:    'Y-m-d',
-                        altInput:      true,
-                        altFormat:     'd-m-Y',
-                        allowInput:    true,
-                        disableMobile: true,
-                        defaultDate:   endEl.value || null,
-                        onChange: function (selectedDates, dateStr) {
-                            syncHidden('ss-end-date-hidden', dateStr);
-                        },
-                    });
-                }
+                });
             }
 
             initFlatpickr();
 
-            Livewire.hook('commit', function (ref) {
-                ref.succeed(function () {
-                    queueMicrotask(initFlatpickr);
-                });
+            // Generate: push whatever is in the pickers, then run the filter in one request.
+            window.ssApplyFilter = function () {
+                var s = document.getElementById('ss-start-date');
+                var e = document.getElementById('ss-end-date');
+                if (s && s.value) $wire.set('startDate', s.value, false);
+                if (e && e.value) $wire.set('endDate', e.value, false);
+                $wire.call('applyFilter');
+            };
+
+            // Reset: the server chose new dates — reflect them in the pickers.
+            $wire.on('statement-dates-reset', function (event) {
+                var s = document.getElementById('ss-start-date');
+                var e = document.getElementById('ss-end-date');
+                if (s && s._flatpickr) s._flatpickr.setDate(event.startDate, false);
+                if (e && e._flatpickr) e._flatpickr.setDate(event.endDate, false);
             });
+
+            window.ssExportPdf = function (e) {
+                e.preventDefault();
+                var area = document.getElementById('supplier-statement-print');
+                if (!area) {
+                    alert('Please select a supplier first.');
+                    return;
+                }
+                var clone = area.cloneNode(true);
+                clone.classList.remove('d-none');
+                clone.style.padding = '10px';
+                var opt = {
+                    margin: 0.4,
+                    filename: area.dataset.pdfFilename || 'SupplierStatement.pdf',
+                    html2canvas: { scale: 2, useCORS: true },
+                    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+                    pagebreak: { mode: ['avoid-all', 'css'] }
+                };
+                html2pdf().set(opt).from(clone).save();
+            };
         })();
     </script>
     @endscript
@@ -297,9 +416,10 @@
         @media print {
             body { background: white !important; }
             .d-print-none { display: none !important; }
-            .card { box-shadow: none !important; border: 1px solid #eee !important; }
-            .col-xl-3 { width: 100% !important; margin-bottom: 2rem; }
-            .col-xl-9 { width: 100% !important; }
+            .statement-wrapper { padding: 0 !important; background: white !important; }
+            .container-fluid { padding: 0 !important; }
         }
     </style>
+
+    @include('includes.report-print-css', ['orientation' => 'portrait'])
 </div>

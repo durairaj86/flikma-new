@@ -2,10 +2,12 @@
 
 namespace App\Livewire\Report\Finance;
 
+use App\Exports\ReportTableExport;
 use App\Models\Supplier\Supplier;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SupplierStatement extends Component
 {
@@ -66,11 +68,67 @@ class SupplierStatement extends Component
         if (count($this->suppliers) > 0) {
             $this->supplierId = (string)$this->suppliers[0]['id'];
         }
+
+        $this->dispatch('statement-dates-reset', startDate: $this->startDate, endDate: $this->endDate);
     }
 
     public function exportExcel()
     {
-        // placeholder – wire up when needed
+        $data = $this->getStatementData();
+
+        if (!$data['supplier']) {
+            return;
+        }
+
+        $columns = ['Date', 'Voucher No', 'Type', 'Description', 'Invoiced', 'Paid', 'Balance'];
+
+        $rows = [[
+            '', 'Balance Brought Forward', '', '', '', '', (float)$data['openingBalance'],
+        ]];
+
+        foreach ($data['transactions'] as $txn) {
+            $rows[] = [
+                Carbon::parse($txn->reference_date)->format('d M Y'),
+                $txn->voucher_no,
+                $this->voucherTypeLabel($txn->voucher_type),
+                $txn->description,
+                $txn->voucher_type === 'SI' ? (float)$txn->base_credit : '',
+                $txn->voucher_type === 'PV' ? (float)$txn->base_debit : '',
+                (float)$txn->balance,
+            ];
+        }
+
+        $totalsRow = [
+            '', '', '', 'CLOSING TOTALS',
+            (float)$data['invoicedAmount'],
+            (float)$data['paidAmount'],
+            (float)$data['closingBalance'],
+        ];
+
+        $meta = [
+            'title' => 'SUPPLIER STATEMENT',
+            'lines' => [
+                'Supplier: ' . $data['supplier']->name_en . ' (' . $data['supplier']->row_no . ')',
+                'Statement Period: ' . Carbon::parse($this->startDate)->format('d M Y')
+                    . ' to ' . Carbon::parse($this->endDate)->format('d M Y'),
+                'Generated on: ' . now()->format('d-m-Y H:i'),
+            ],
+            'numeric_from' => 5,
+        ];
+
+        $filename = 'SupplierStatement-' . $data['supplier']->row_no
+            . '-' . $this->startDate . '_' . $this->endDate . '.xlsx';
+
+        return Excel::download(new ReportTableExport($rows, $totalsRow, $columns, $meta), $filename);
+    }
+
+    public function voucherTypeLabel(?string $type): string
+    {
+        return match ($type) {
+            'SI' => 'Supplier Invoice',
+            'PV' => 'Payment Voucher',
+            default => (string)$type,
+        };
     }
 
     /* ─────────────────────────────── data ─────────────────────────────── */
@@ -172,6 +230,8 @@ class SupplierStatement extends Component
     {
         $data = $this->getStatementData();
 
-        return view('livewire.report.finance.supplier-statement', $data);
+        return view('livewire.report.finance.supplier-statement', array_merge([
+            'company' => authUserCompany(),
+        ], $data));
     }
 }

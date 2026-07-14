@@ -43,9 +43,11 @@
                     </div>
                     <div class="col-lg-3">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">As of Date</label>
-                        <input type="text" id="sa-as-of-date"
-                               class="form-control bg-light border-0 py-2 datepicker"
-                               wire:model="asOfDate" placeholder="dd-mm-yyyy" />
+                        <div wire:ignore>
+                            <input type="text" id="sa-as-of-date"
+                                   class="form-control bg-light border-0 py-2"
+                                   placeholder="dd-mm-yyyy" value="{{ $asOfDate }}" />
+                        </div>
                     </div>
                     <div class="col-lg-5">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">Search Invoice</label>
@@ -286,6 +288,29 @@
         @endif
 
     </div>
+
+    @script
+    <script>
+        (function () {
+            var el = document.getElementById('sa-as-of-date');
+            if (el && !el._flatpickr) {
+                flatpickr(el, {
+                    dateFormat:    'Y-m-d',
+                    altInput:      true,
+                    altFormat:     'd-m-Y',
+                    allowInput:    true,
+                    disableMobile: true,
+                    defaultDate:   el.value || null,
+                    onChange: function (selectedDates, dateStr) {
+                        if (dateStr) {
+                            $wire.set('asOfDate', dateStr);
+                        }
+                    },
+                });
+            }
+        })();
+    </script>
+    @endscript
 
     <style>
         :root {

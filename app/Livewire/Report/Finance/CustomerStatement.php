@@ -2,18 +2,20 @@
 
 namespace App\Livewire\Report\Finance;
 
+use App\Exports\Customer\CustomerStatementReportExport;
 use App\Models\Customer\Customer;
 use Livewire\Component;
+use Maatwebsite\Excel\Facades\Excel;
 
 class CustomerStatement extends Component
 {
-    public $startDate;
-    public $endDate;
-    public $search = '';
-    public $customerId;
-    public $currency;
-    public $currency_rate;
-    public $customers = [];
+    public string $startDate = '';
+    public string $endDate = '';
+    public string $search = '';
+    public string|int $customerId = '';
+    public ?string $currency = null;
+    public ?float $currency_rate = null;
+    public array $customers = [];
 
     public function mount()
     {
@@ -98,19 +100,40 @@ class CustomerStatement extends Component
         $this->startDate = now()->subMonth(3)->startOfMonth()->format('Y-m-d');
         $this->endDate = now()->format('Y-m-d');
         $this->search = '';
-        $this->customerId = null;
         $this->loadCustomers();
         if (count($this->customers) > 0) {
-            $this->customerId = (string)$this->customers[0]['id'];
+            $this->customerId = $this->customers[0]['id'];
         }
+
+        $this->dispatch('statement-dates-reset', startDate: $this->startDate, endDate: $this->endDate);
     }
 
     public function exportExcel()
     {
-        $this->dispatch('exportAsExcel');
+        $data = $this->buildStatement();
+
+        if (!$data['selectedCustomer']) {
+            return;
+        }
+
+        $summary = [
+            'name'          => $data['selectedCustomer']->name,
+            'customer_code' => $data['selectedCustomer']->code,
+            'start_date'    => $this->startDate,
+            'end_date'      => $this->endDate,
+            'opening'       => $data['openingBalance'],
+            'total_debit'   => $data['totalDebit'],
+            'total_credit'  => $data['totalCredit'],
+            'closing'       => $data['closingBalance'],
+        ];
+
+        $filename = 'CustomerStatement-' . $data['selectedCustomer']->code
+            . '-' . $this->startDate . '_' . $this->endDate . '.xlsx';
+
+        return Excel::download(new CustomerStatementReportExport($data['transactions'], $summary), $filename);
     }
 
-    public function render()
+    protected function buildStatement(): array
     {
         $selectedCustomer = null;
         $openingBalance   = 0;
@@ -200,14 +223,29 @@ class CustomerStatement extends Component
             }
         }
 
+        return [
+            'selectedCustomer' => $selectedCustomer,
+            'openingBalance'   => $openingBalance,
+            'totalDebit'       => $totalDebit,
+            'totalCredit'      => $totalCredit,
+            'closingBalance'   => $closingBalance,
+            'transactions'     => $transactions,
+        ];
+    }
+
+    public function render()
+    {
+        $data = $this->buildStatement();
+
         return view('livewire.report.finance.customer-statement', [
+            'company'         => authUserCompany(),
             'customers'       => $this->customers,
-            'selectedCustomer'=> $selectedCustomer,
-            'openingBalance'  => $openingBalance,
-            'totalDebit'      => $totalDebit,
-            'totalCredit'     => $totalCredit,
-            'closingBalance'  => $closingBalance,
-            'transactions'    => $transactions,
+            'selectedCustomer'=> $data['selectedCustomer'],
+            'openingBalance'  => $data['openingBalance'],
+            'totalDebit'      => $data['totalDebit'],
+            'totalCredit'     => $data['totalCredit'],
+            'closingBalance'  => $data['closingBalance'],
+            'transactions'    => $data['transactions'],
         ]);
     }
 }

@@ -71,7 +71,7 @@
     <link href="{{ asset('css/tom-select/tom-select.bootstrap5.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/flatpickr/flatpickr.min.css') }}">
 
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    {{-- Alpine is bundled with Livewire v3 (@livewireScripts) — do not load it separately --}}
 
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     @livewireStyles
@@ -121,8 +121,33 @@
             border: none;
             box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
         }
+
+        /* Hide app chrome when printing: only the page content should print */
+        @media print {
+            #sidebar-container,
+            header.navbar {
+                display: none !important;
+            }
+            body, html {
+                overflow: visible !important;
+                height: auto !important;
+            }
+            .wrapper {
+                display: block !important;
+                height: auto !important;
+                width: auto !important;
+            }
+            .main-content {
+                display: block !important;
+                height: auto !important;
+                background: white !important;
+            }
+            .content-scroll-area {
+                overflow: visible !important;
+                padding-bottom: 0 !important;
+            }
+        }
     </style>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     @include('includes.js')
 </head>
 <body data-module="@yield('js')">
