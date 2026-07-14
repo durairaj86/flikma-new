@@ -128,10 +128,6 @@
                                 <textarea name="remarks" class="form-control" rows="3">{{ $job->remarks }}</textarea>
                             </div>
                             <div class="col-md-4 mt-3">
-                                <label class="form-label required">Freza Job No <sup class="text-danger">*</sup></label>
-                                <input name="row_no" class="form-control" required value="{{ $job->row_no }}">
-                            </div>
-                            <div class="col-md-4 mt-3">
                                 <label class="form-label">Suppliers</label>
                                 <x-common.suppliers :value="$job->supplier_json" multiple="true"></x-common.suppliers>
                             </div>

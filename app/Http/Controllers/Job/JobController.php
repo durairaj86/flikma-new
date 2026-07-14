@@ -182,7 +182,16 @@ class JobController extends Controller
             $jobYear = Carbon::parse($request->posting_date)->format('Y');
             $lastJobNo = Job::whereYear('posted_at', $jobYear)->max('unique_row_no') ?? 0;
             $job->unique_row_no = $lastJobNo + 1;
-            //$job->row_no = 'AL/AI/' . date('y') . '/' . sprintf('%04d', $job->unique_row_no);
+            // Same format QuotationController::convertToJob uses, so a job
+            // number is consistent regardless of how the job was created.
+            // The form has no row_no input, so this must be generated here
+            // — it was previously read from a request field that never
+            // existed, leaving every new job without a job number.
+            $job->row_no = 'JOB-' . date('y') . '-' . sprintf('%04d', $job->unique_row_no);
+            // status defaults to the DB literal 'pending', which every read
+            // path (list/tabs/actions) fails to match against JobEnum's
+            // integer values — set it explicitly so a new job is visible.
+            $job->status = JobEnum::PENDING->value;
 
             $this->setBaseColumns($job);
         }
@@ -190,7 +199,6 @@ class JobController extends Controller
         $shipmentMode = LogisticActivity::activities()->where('id', $validated['activity_id'])->pluck('mode')->first();
 
         $job->customer_id = $validated['customer'];
-        $job->row_no = $request['row_no'];
         $job->posted_at = $validated['posting_date'];
         $job->salesperson_id = $validated['salesperson_id'] ?? null;
         $job->services = $validated['services'];
@@ -208,8 +216,10 @@ class JobController extends Controller
         $job->awb_number = $validated['awb_number'] ?? null;
         $job->hbl_number = $validated['hbl_number'] ?? null;
         $job->client_ref = $validated['client_ref'] ?? null;
-        $job->volume = $validated['volume'] ?? null;
-        $job->weight = $validated['weight'] ?? null;
+        // volume/weight are NOT NULL decimal columns (default 0); an empty
+        // form field must fall back to 0, not null.
+        $job->volume = $validated['volume'] ?? 0;
+        $job->weight = $validated['weight'] ?? 0;
         $job->commodity = $validated['commodity'] ?? null;
         $job->no_of_pieces = $validated['no_of_pieces'] ?? null;
 
@@ -429,7 +439,7 @@ class JobController extends Controller
             'commodity',
             'awb_number',
             'hbl_number',
-            'shipping_reference_no',
+            'shipping_ref',
             'carrier',
             'shipper',
             'consignee',
