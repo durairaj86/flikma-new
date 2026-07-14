@@ -110,47 +110,49 @@ class CustomerStatementTable extends Component
             ];
         }
 
-        // Customer Account IDs (Accounts Receivable)
-        $customerAccountIds = [1130]; // Assuming 1130 is the Accounts Receivable account
+        // Customer Account IDs (Accounts Receivable) — resolve by account code
+        $customerAccountIds = DB::table('accounts')->where('code', '1130')->pluck('id')->all() ?: [5];
 
         // Opening Balance before from_date
-        $openingDebit = DB::table('finance_sub')
-            ->where('customer_id', $this->customerId)
-            ->where('company_id', $companyId)
-            ->whereIn('account_id', $customerAccountIds)
-            ->where('reference_date', '<', $this->startDate)
-            ->sum('base_debit');
+        $openingQuery = DB::table('finance_sub as fs')
+            ->join('finance as f', 'fs.finance_id', '=', 'f.id')
+            ->where('fs.customer_id', $this->customerId)
+            ->where('fs.company_id', $companyId)
+            ->whereIn('fs.account_id', $customerAccountIds)
+            ->where('fs.reference_date', '<', $this->startDate)
+            ->where('f.is_approved', 1);
 
-        $openingCredit = DB::table('finance_sub')
-            ->where('customer_id', $this->customerId)
-            ->where('company_id', $companyId)
-            ->whereIn('account_id', $customerAccountIds)
-            ->where('reference_date', '<', $this->startDate)
-            ->sum('base_credit');
+        $openingDebit = (clone $openingQuery)->sum('fs.base_debit');
+        $openingCredit = (clone $openingQuery)->sum('fs.base_credit');
 
         $openingBalance = $openingDebit - $openingCredit; // Debit = asset
 
-        // Transactions in date range
-        $transactions = DB::table('finance as f')
-            ->leftJoin('jobs as j', 'f.job_id', '=', 'j.id')
-            ->where('f.company_id', $companyId)
-            ->where('f.customer_id', $this->customerId)
-            ->whereBetween('f.reference_date', [$this->startDate, $this->endDate])
+        // Transactions in date range — taken from the AR sub-ledger lines.
+        // (Finance headers always have total_debit == total_credit, so they
+        // can never move a running balance.)
+        $transactions = DB::table('finance_sub as fs')
+            ->join('finance as f', 'fs.finance_id', '=', 'f.id')
+            ->leftJoin('jobs as j', 'fs.job_id', '=', 'j.id')
+            ->where('fs.company_id', $companyId)
+            ->where('fs.customer_id', $this->customerId)
+            ->whereIn('fs.account_id', $customerAccountIds)
+            ->where('f.is_approved', 1)
+            ->whereBetween('fs.reference_date', [$this->startDate, $this->endDate])
             ->select(
-                'f.id',
-                'f.reference_date',
-                'f.voucher_no',
-                'f.voucher_type',
-                'f.reference_no',
+                'fs.id',
+                'fs.reference_date',
+                'fs.voucher_no',
+                'fs.voucher_type',
+                'fs.reference_no',
                 'j.row_no as job_number',
                 'f.narration as description',
-                'f.currency',
-                'f.exchange_rate',
-                'f.base_total_debit as base_debit',
-                'f.base_total_credit as base_credit'
+                'fs.currency',
+                'fs.exchange_rate',
+                'fs.base_debit',
+                'fs.base_credit'
             )
-            ->orderBy('f.reference_date')
-            ->orderBy('f.id')
+            ->orderBy('fs.reference_date')
+            ->orderBy('fs.id')
             ->get();
 
         // Running Balance
@@ -170,7 +172,9 @@ class CustomerStatementTable extends Component
             ->where('voucher_type', 'CV') // Receipt Voucher
             ->sum('base_credit');
 
-        $closingBalance = $openingBalance + $invoicedAmount - $paidAmount;
+        // Closing balance must reflect every AR movement (incl. credit notes),
+        // i.e. the final running balance, not just invoices minus receipts.
+        $closingBalance = $openingBalance + $transactions->sum('base_debit') - $transactions->sum('base_credit');
 
         return [
             'customer' => $customer,

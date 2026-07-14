@@ -8,10 +8,11 @@ use App\Models\Master\Description;
 use App\Traits\Log\LogHistoryTrait;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\CompanyScopeTrait;
 
 class ProformaInvoice extends Model
 {
-    use LogHistoryTrait;
+    use CompanyScopeTrait, LogHistoryTrait;
     public function proformaInvoiceSubs(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(ProformaInvoiceSub::class);

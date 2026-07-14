@@ -174,27 +174,10 @@ class EnquiryController extends Controller
     {
         $filter = $request->filterData ?? [];
 
-        $rows = Enquiry::select(
-            'id',
-            'row_no',
-            'unique_row_no',
-            'customer_id',
-            'prospect_id',
-            'shipment_mode',
-            'shipment_category',
-            'pol',
-            'pod',
-            'pickup_date',
-            'weight',
-            'volume',
-            'status',
-            'activity_id',
-            'expiry_date',
-            'created_at',
-            'company_id',
-        )->with(['customer:id,name_en,name_ar,email,phone,row_no', 'prospect:id,name,email,phone,row_no', 'activity:id,name'])
-            ->where('status', EnquiryEnum::fromName($request->tab))
-            ->when(isset($filter['filter-from-date'], $filter['filter-to-date']),
+        // Shared filters so the tab counts always match the visible list
+        // (company scoping is applied globally on the Enquiry model).
+        $applyFilters = function ($query) use ($filter) {
+            $query->when(isset($filter['filter-from-date'], $filter['filter-to-date']),
                 function ($query) use ($filter) {
 
                     $from = \Illuminate\Support\Carbon::parse($filter['filter-from-date'])->startOfDay();
@@ -215,11 +198,35 @@ class EnquiryController extends Controller
             })
             ->when(isset($filter['activity_id']) && !empty($filter['activity_id']), function ($query) use ($filter) {
                 $query->where('activity_id', $filter['activity_id']);
-            })
+            });
+        };
+
+        $rows = Enquiry::select(
+            'id',
+            'row_no',
+            'unique_row_no',
+            'customer_id',
+            'prospect_id',
+            'shipment_mode',
+            'shipment_category',
+            'pol',
+            'pod',
+            'pickup_date',
+            'weight',
+            'volume',
+            'status',
+            'activity_id',
+            'expiry_date',
+            'created_at',
+            'company_id',
+        )->with(['customer:id,name_en,name_ar,email,phone,row_no', 'prospect:id,name,email,phone,row_no', 'activity:id,name'])
+            ->where('status', EnquiryEnum::fromName($request->tab))
+            ->tap($applyFilters)
             ->orderbyDesc('unique_row_no');
 
-        // Get counts per status in one query
+        // Counts per status using the same filters as the list
         $statusCounts = Enquiry::select('status', DB::raw('COUNT(*) as total'))
+            ->tap($applyFilters)
             ->groupBy('status')
             ->pluck('total', 'status')
             ->toArray();

@@ -681,7 +681,7 @@ class CollectionController extends Controller
         $finance->base_currency = 'SAR';
         $finance->base_total_debit = $baseInvoiceTotal;
         $finance->base_total_credit = $baseInvoiceTotal;
-        $finance->job_id = $collection->job_id ?? 0;
+        $finance->job_id = $collection->job_id;
         $finance->job_no = $collection->job_no ?? '';
         $finance->is_approved = 1;
         $finance->posted_at = now();
@@ -758,54 +758,28 @@ class CollectionController extends Controller
             ]);
         }
 
-        // CR Accounts Receivable per invoice (split by invoice amount)
+        // CR Accounts Receivable per invoice (full amount collected).
+        // The VAT liability was already recognised when the invoice was
+        // approved (DR AR / CR Revenue / CR Output VAT), so the collection
+        // must clear AR for the gross amount — crediting Output VAT again
+        // here would double-count the tax and leave a phantom AR balance.
         foreach ($collectionInvoices as $collectionInvoice) {
             $invoice = $collectionInvoice->customerInvoice;
 
-            // Calculate tax proportion for this invoice payment
-            $invoiceGrandTotal = $invoice->grand_total;
-            $taxProportion = 0;
-
-            if ($invoiceGrandTotal > 0) {
-                $taxProportion = ($invoice->tax_total / $invoiceGrandTotal) * $collectionInvoice->amount;
-            }
-
-            $subAmount = $collectionInvoice->amount - $taxProportion;
-
-            // CR Accounts Receivable (net of VAT)
             $financeSubs[] = array_merge($commonData, [
                 'account_id'     => 5, // 1130 Accounts Receivable
                 'reference_date' => formDate($collection->collection_date),
                 'reference_no'   => $invoice->row_no,
                 'description'    => 'Collection for invoice ' . $invoice->row_no,
                 'debit'          => 0,
-                'credit'         => $subAmount,
+                'credit'         => $collectionInvoice->amount,
                 'base_debit'     => 0,
-                'base_credit'    => $subAmount * $collection->currency_rate,
+                'base_credit'    => $collectionInvoice->amount * $collection->currency_rate,
                 'job_id'         => $invoice->job_id ?? null,
                 'job_no'         => $invoice->job_no ?? '',
                 'linked_id'      => $collectionInvoice->id,
                 'linked_type'    => CollectionInvoice::class,
             ]);
-
-            // CR Output VAT Payable (VAT portion collected)
-            if ($taxProportion > 0) {
-                $financeSubs[] = array_merge($commonData, [
-                    'account_id'     => 20, // 2130 Output VAT Payable
-                    'reference_date' => formDate($collection->collection_date),
-                    'reference_no'   => $invoice->row_no,
-                    'description'    => 'Output VAT collected for invoice ' . $invoice->row_no,
-                    'debit'          => 0,
-                    'credit'         => $taxProportion,
-                    'base_debit'     => 0,
-                    'base_credit'    => $taxProportion * $collection->currency_rate,
-                    'is_tax_line'    => 1,
-                    'job_id'         => $invoice->job_id ?? null,
-                    'job_no'         => $invoice->job_no ?? '',
-                    'linked_id'      => $collectionInvoice->id,
-                    'linked_type'    => CollectionInvoice::class,
-                ]);
-            }
         }
 
         // Insert all finance sub entries

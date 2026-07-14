@@ -5,9 +5,12 @@ namespace App\Models\Finance;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\CompanyScopeTrait;
 
 class Finance extends Model
 {
+    use CompanyScopeTrait;
+
     protected $table = 'finance';
 
     protected $fillable = [

@@ -14,10 +14,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use App\Traits\CompanyScopeTrait;
 
 class Expense extends Model
 {
-    use LogHistoryTrait;
+    use CompanyScopeTrait, LogHistoryTrait;
     protected $fillable = [
         'company_id',
         'branch_id',

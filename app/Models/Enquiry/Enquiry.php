@@ -10,10 +10,11 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\CompanyScopeTrait;
 
 class Enquiry extends Model
 {
-    use LogHistoryTrait;
+    use CompanyScopeTrait, LogHistoryTrait;
 
     //public $fillable = ['customer_id', 'company_id', 'user_id', 'shipment_type', 'shipment_category'];
 

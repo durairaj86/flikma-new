@@ -6,10 +6,11 @@ use App\Traits\CompanyScopeWithNullTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use App\Traits\CompanyOrGlobalScopeTrait;
 
 class LogisticActivity extends Model
 {
-    use CompanyScopeWithNullTrait;
+    use CompanyOrGlobalScopeTrait, CompanyScopeWithNullTrait;
 
     protected static string $cache = 'activities:';
     protected static array $cacheColumns = [

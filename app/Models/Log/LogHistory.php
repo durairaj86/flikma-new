@@ -5,9 +5,12 @@ namespace App\Models\Log;
 use App\Models\User;
 use App\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\CompanyScopeTrait;
 
 class LogHistory extends Model
 {
+    use CompanyScopeTrait;
+
     protected $fillable = [
         'company_id',
         'loggable_type',

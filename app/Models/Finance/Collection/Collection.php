@@ -15,10 +15,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\CompanyScopeTrait;
 
 class Collection extends Model
 {
-    use LogHistoryTrait, SoftDeletes;
+    use CompanyScopeTrait, LogHistoryTrait, SoftDeletes;
 
     protected $fillable = [
         'row_no', 'customer_id', 'job_id', 'job_no', 'collection_date', 'collection_method',

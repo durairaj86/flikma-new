@@ -10,10 +10,11 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use App\Traits\CompanyScopeTrait;
 
 class Supplier extends BaseModel
 {
-    use LogHistoryTrait;
+    use CompanyScopeTrait, LogHistoryTrait;
     // Allow mass assignment for these fields
     protected $fillable = [
         'row_no', 'unique_row_no', 'name_en', 'name_ar', 'currency', 'business_type', 'cr_number', 'vat_number',

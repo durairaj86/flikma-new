@@ -258,6 +258,17 @@ ol.breadcrumb li.link {
     position: absolute;
 }*/
 
+/* Extra modal sizes used by webModal.openGlobalModal (size: 'xxl' / '3xl').
+   Bootstrap only ships modal-sm/lg/xl, so without these the dialog falls
+   back to the 500px default. */
+.modal-xxl {
+    max-width: min(1400px, 95vw);
+}
+
+.modal-3xl {
+    max-width: min(1600px, 96vw);
+}
+
 body.modal-open {
     padding-right: 0 !important; /*for full wrapper size only*/
 }

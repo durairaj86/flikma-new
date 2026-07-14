@@ -8,10 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use App\Traits\CompanyScopeTrait;
 
 class Salesperson extends Model
 {
-    use SoftDeletes, LogHistoryTrait;
+    use CompanyScopeTrait, SoftDeletes, LogHistoryTrait;
 
     protected $fillable = [
         'row_no', 'name', 'email', 'phone', 'designation',

@@ -10,10 +10,11 @@ use App\Models\Zatca\ZatcaHistory;
 use App\Traits\Log\LogHistoryTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\CompanyScopeTrait;
 
 class CreditNote extends Model
 {
-    use LogHistoryTrait, SoftDeletes;
+    use CompanyScopeTrait, LogHistoryTrait, SoftDeletes;
 
     public function creditNoteSubs(): \Illuminate\Database\Eloquent\Relations\HasMany
     {

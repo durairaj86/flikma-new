@@ -9,6 +9,8 @@ use App\Models\Finance\Account\Account;
 use App\Models\Finance\Adjustment\CreditNote;
 use App\Models\Finance\Adjustment\CreditNoteSub;
 use App\Models\Finance\CustomerInvoice\CustomerInvoice;
+use App\Models\Finance\Finance;
+use App\Models\Finance\FinanceSub;
 use App\Models\Job\Job;
 use App\Models\Master\Description;
 use Illuminate\Http\Request;
@@ -510,6 +512,7 @@ class CreditNoteController extends Controller
     public function updateStatus($id, $status): \Illuminate\Http\JsonResponse
     {
         $creditNote = CreditNote::findOrFail($id);
+        $previousStatus = $creditNote->status;
         $message = 'Credit note status updated successfully!';
 
         DB::beginTransaction();
@@ -539,6 +542,9 @@ class CreditNoteController extends Controller
                 $creditNote->row_no = 'CR-' . date('y') . '-' . sprintf('%04d', $creditNote->unique_row_no);
                 $creditNote->save();
 
+                // Post the credit note to the general ledger
+                $this->createCreditNoteFinanceEntries($creditNote);
+
                 $data = [];
                 if ($zatca['zatcaRegister']) {
                     $creditNote->load(['customer']);
@@ -566,6 +572,11 @@ class CreditNoteController extends Controller
             } else {
                 $creditNote->status = $status;
                 $creditNote->save();
+
+                // Remove GL entries when the credit note leaves APPROVED
+                if ($previousStatus == CreditNoteEnum::APPROVED->value) {
+                    $this->deleteCreditNoteFinanceEntries($creditNote->id);
+                }
             }
             DB::commit();
         } catch (Exception $e) {
@@ -581,6 +592,148 @@ class CreditNoteController extends Controller
                 'status' => $creditNote->status,
             ],
         ]);
+    }
+
+    /**
+     * Post an approved credit note to the general ledger:
+     * DR revenue (per line account) + DR Output VAT / CR Accounts Receivable.
+     * Mirrors the customer-invoice posting in reverse.
+     */
+    private function createCreditNoteFinanceEntries(CreditNote $creditNote): void
+    {
+        $this->deleteCreditNoteFinanceEntries($creditNote->id);
+
+        $currencyRate = $creditNote->currency_rate ?? 1;
+        $grandTotal = $creditNote->grand_total ?? 0;
+        $baseGrandTotal = $grandTotal * $currencyRate;
+
+        $finance = new Finance();
+        $finance->voucher_no = $creditNote->row_no;
+        $finance->voucher_type = 'CN';
+        $finance->reference_no = $creditNote->row_no;
+        $finance->reference_date = formDate($creditNote->posted_at);
+        $finance->customer_id = $creditNote->customer_id;
+        $finance->narration = 'Credit Note: ' . $creditNote->row_no
+            . ($creditNote->invoice_no ? ' against invoice ' . $creditNote->invoice_no : '');
+        $finance->currency = $creditNote->currency ?? 'SAR';
+        $finance->exchange_rate = $currencyRate;
+        $finance->total_debit = $grandTotal;
+        $finance->total_credit = $grandTotal;
+        $finance->base_currency = 'SAR';
+        $finance->base_total_debit = $baseGrandTotal;
+        $finance->base_total_credit = $baseGrandTotal;
+        $finance->job_id = $creditNote->job_id;
+        $finance->job_no = $creditNote->job_no ?? '';
+        $finance->is_approved = 1;
+        $finance->posted_at = now();
+        $finance->linked_id = $creditNote->id;
+        $finance->linked_type = CreditNote::class;
+        $finance->company_id = $creditNote->company_id;
+        $finance->user_id = Auth::id();
+        $finance->save();
+
+        $commonData = [
+            'finance_id' => $finance->id,
+            'voucher_no' => $finance->voucher_no,
+            'voucher_type' => $finance->voucher_type,
+            'reference_no' => $finance->reference_no,
+            'reference_date' => formDate($creditNote->posted_at),
+            'currency' => $finance->currency,
+            'exchange_rate' => $currencyRate,
+            'base_currency' => 'SAR',
+            'customer_id' => $creditNote->customer_id,
+            'job_id' => $creditNote->job_id,
+            'job_no' => $creditNote->job_no ?? '',
+            'company_id' => $creditNote->company_id,
+            'user_id' => Auth::id(),
+            'is_tax_line' => 0,
+            'is_auto_generated' => 1,
+            'linked_id' => $creditNote->id,
+            'linked_type' => CreditNote::class,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
+
+        $financeSubs = [];
+
+        // DR revenue reversal per line (uses each line's account)
+        foreach ($creditNote->creditNoteSubs as $sub) {
+            $lineTotal = $sub->total ?? $sub->line_total ?? 0;
+            $financeSubs[] = array_merge($commonData, [
+                'account_id' => $sub->account_id ?? 38, // fall back to 4160 Sales Revenue
+                'description' => 'Credit Note - ' . ($sub->description ?? $creditNote->row_no),
+                'debit' => $lineTotal,
+                'credit' => 0,
+                'base_debit' => $lineTotal * $currencyRate,
+                'base_credit' => 0,
+            ]);
+        }
+
+        // DR Output VAT reversal
+        if (($creditNote->tax_total ?? 0) > 0) {
+            $financeSubs[] = array_merge($commonData, [
+                'account_id' => 20, // 2130 Output VAT Payable
+                'description' => 'Output VAT reversal - Credit Note ' . $creditNote->row_no,
+                'debit' => $creditNote->tax_total,
+                'credit' => 0,
+                'base_debit' => $creditNote->tax_total * $currencyRate,
+                'base_credit' => 0,
+                'is_tax_line' => 1,
+            ]);
+        }
+
+        // CR Accounts Receivable for the full credit amount
+        $financeSubs[] = array_merge($commonData, [
+            'account_id' => 5, // 1130 Accounts Receivable
+            'description' => 'Receivable reduction - Credit Note ' . $creditNote->row_no,
+            'debit' => 0,
+            'credit' => $grandTotal,
+            'base_debit' => 0,
+            'base_credit' => $baseGrandTotal,
+        ]);
+
+        FinanceSub::insert($financeSubs);
+
+        // Reflect the credit against the linked invoice's settled amount so
+        // the collection screen no longer offers the credited balance.
+        if ($creditNote->invoice_id) {
+            $invoice = CustomerInvoice::find($creditNote->invoice_id);
+            if ($invoice) {
+                $invoice->paid_amount = ($invoice->paid_amount ?? 0) + $grandTotal;
+                $invoice->base_paid_amount = ($invoice->base_paid_amount ?? 0) + $baseGrandTotal;
+                $invoice->save();
+            }
+        }
+    }
+
+    /**
+     * Remove the GL entries of a credit note (used on re-post / un-approve)
+     * and revert the settled amount on the linked invoice.
+     */
+    private function deleteCreditNoteFinanceEntries($creditNoteId): void
+    {
+        $financeEntries = Finance::where('linked_id', $creditNoteId)
+            ->where('linked_type', CreditNote::class)
+            ->get();
+
+        if ($financeEntries->isEmpty()) {
+            return;
+        }
+
+        $creditNote = CreditNote::find($creditNoteId);
+        if ($creditNote && $creditNote->invoice_id) {
+            $invoice = CustomerInvoice::find($creditNote->invoice_id);
+            if ($invoice) {
+                $invoice->paid_amount = max(0, ($invoice->paid_amount ?? 0) - ($creditNote->grand_total ?? 0));
+                $invoice->base_paid_amount = max(0, ($invoice->base_paid_amount ?? 0) - (($creditNote->grand_total ?? 0) * ($creditNote->currency_rate ?? 1)));
+                $invoice->save();
+            }
+        }
+
+        foreach ($financeEntries as $finance) {
+            FinanceSub::where('finance_id', $finance->id)->delete();
+            $finance->delete();
+        }
     }
 
     public function overview($id)

@@ -175,7 +175,7 @@ function convert($amount, $currency = 'ريال سعودي')
 
 function appVersion(): string
 {
-    return "1.0.53";
+    return "1.0.54";
 }
 
 function toArabicNumber($number)
@@ -199,6 +199,11 @@ function formDate($date): ?string
     }
 
     try {
+        // Already ISO (Y-m-d, optionally with time) — return the date part as-is
+        if (preg_match('/^\d{4}-\d{2}-\d{2}/', $date)) {
+            return substr($date, 0, 10);
+        }
+
         // Automatically detect separator and format
         return Carbon::createFromFormat(str_contains($date, '/') ? 'd/m/Y' : 'd-m-Y', $date)
             ->format('Y-m-d');

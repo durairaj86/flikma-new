@@ -756,7 +756,7 @@ class CustomerInvoiceController extends Controller
             $finance->base_total_debit = $customerInvoice->base_grand_total;
             $finance->base_total_credit = $customerInvoice->base_grand_total;
 
-            $finance->job_id = $customerInvoice->job_id ?? 0;
+            $finance->job_id = $customerInvoice->job_id;
             $finance->job_no = $customerInvoice->job_no ?? '';
             $finance->is_approved = 1;
             $finance->posted_at = now();

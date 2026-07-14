@@ -9,10 +9,11 @@ use App\Traits\Log\LogHistoryTrait;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use App\Traits\CompanyScopeTrait;
 
 class SupplierInvoice extends Model
 {
-    use LogHistoryTrait;
+    use CompanyScopeTrait, LogHistoryTrait;
     public function supplierInvoiceSubs(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(SupplierInvoiceSub::class);

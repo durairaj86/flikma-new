@@ -7,10 +7,11 @@ use App\Traits\CompanyScopeWithNullTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\CompanyOrGlobalScopeTrait;
 
 class Account extends BaseModel
 {
-    use CompanyScopeWithNullTrait;
+    use CompanyOrGlobalScopeTrait, CompanyScopeWithNullTrait;
     protected $fillable = [
         'name', 'code', 'type', 'parent_id', 'account_number',
         'is_grouped', 'is_last', 'is_level', 'is_active'

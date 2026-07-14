@@ -70,6 +70,7 @@
         <form id="moduleForm" novalidate action="{{ request()->url() }}">
             @csrf
             <input type="hidden" name="data-id" value="{{ $quotation->id }}">
+            <input type="hidden" name="enquiry_id" value="{{ $quotation->enquiry_id }}">
 
             <div class="tab-content" id="quotationTabsContent">
 
@@ -321,109 +322,108 @@
                                 </button>
                             </div>
                             <div class="card-body p-3">
-                                <div class="row g-2">
-
-                                    <div class="col-md-4 col-sm-6">
+                                {{-- Row 1 --}}
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-xl col-md-3 col-sm-6">
                                         <label class="form-label small mb-1">Size</label>
                                         <x-common.container_size :value="$container->container_size ?? ''"/>
                                     </div>
-                                    <div class="col-md-4 col-sm-6">
+                                    <div class="col-xl col-md-3 col-sm-6">
                                         <label class="form-label small mb-1">Container No.</label>
                                         <input type="text" name="container_number[]" class="form-control form-control-sm"
                                                value="{{ $container->container_number ?? '' }}" autocomplete="off">
                                     </div>
-                                    <div class="col-md-4 col-sm-6">
+                                    <div class="col-xl col-md-3 col-sm-6">
                                         <label class="form-label small mb-1">Seal No.</label>
                                         <input type="text" name="seal_number[]" class="form-control form-control-sm"
                                                value="{{ $container->seal_number ?? '' }}" autocomplete="off">
                                     </div>
-
-                                    <div class="col-md-4 col-sm-6">
+                                    <div class="col-xl col-md-3 col-sm-6">
                                         <label class="form-label small mb-1">Carrier</label>
-                                        <input type="text" name="carrier[]" class="form-control form-control-sm"
+                                        <input type="text" name="ctn_carrier[]" class="form-control form-control-sm"
                                                value="{{ $container->carrier ?? '' }}" autocomplete="off">
                                     </div>
-                                    <div class="col-md-4 col-sm-6">
+                                    <div class="col-xl col-md-3 col-sm-6">
                                         <label class="form-label small mb-1">Vessel Name</label>
                                         <input type="text" name="vessel_name[]" class="form-control form-control-sm"
                                                value="{{ $container->vessel_name ?? '' }}" autocomplete="off">
                                     </div>
-                                    <div class="col-md-4 col-sm-6">
+                                    <div class="col-xl col-md-3 col-sm-6">
                                         <label class="form-label small mb-1">Voyage No.</label>
                                         <input type="text" name="voyage_no[]" class="form-control form-control-sm"
                                                value="{{ $container->voyage_no ?? '' }}" autocomplete="off">
                                     </div>
-
-                                    <div class="col-md-2 col-sm-4">
+                                    <div class="col-xl col-md-3 col-sm-4">
                                         <label class="form-label small mb-1">No. of Pcs</label>
                                         <input type="number" name="no_of_pcs[]" class="form-control form-control-sm"
                                                value="{{ $container->no_of_pcs ?? '' }}" min="0">
                                     </div>
-                                    <div class="col-md-3 col-sm-4">
+                                    <div class="col-xl col-md-3 col-sm-4">
                                         <label class="form-label small mb-1">Gross Wt (Kg)</label>
                                         <input type="number" name="gross_weight[]" class="form-control form-control-sm"
                                                value="{{ $container->gross_weight ?? '' }}" step="0.01" min="0">
                                     </div>
-                                    <div class="col-md-3 col-sm-4">
+                                    <div class="col-xl col-md-3 col-sm-4">
                                         <label class="form-label small mb-1">Net Wt (Kg)</label>
                                         <input type="number" name="net_weight[]" class="form-control form-control-sm"
                                                value="{{ $container->net_weight ?? '' }}" step="0.01" min="0">
                                     </div>
-                                    <div class="col-md-2 col-sm-4">
+                                    <div class="col-xl col-md-3 col-sm-4">
                                         <label class="form-label small mb-1">Wt Unit</label>
                                         <input type="text" name="weight_unit[]" class="form-control form-control-sm"
                                                value="{{ $container->weight_unit ?? '' }}"
                                                list="ctn-weight-unit-list" placeholder="KGS">
                                     </div>
-                                    <div class="col-md-2 col-sm-4">
+                                </div>
+
+                                {{-- Row 2 --}}
+                                <div class="row g-2 align-items-end mt-1">
+                                    <div class="col-xl col-md-3 col-sm-4">
                                         <label class="form-label small mb-1">Hazardous</label>
                                         <select name="hazardous[]" class="form-select form-select-sm tom-select hazardous">
                                             <option value="0" @selected(!isset($container->hazardous) || $container->hazardous == 0)>No</option>
                                             <option value="1" @selected(($container->hazardous ?? 0) == 1)>Yes</option>
                                         </select>
                                     </div>
-
-                                    <div class="col-md-3 col-sm-4">
+                                    <div class="col-xl col-md-3 col-sm-4">
                                         <label class="form-label small mb-1">Volume (CBM)</label>
                                         <input type="number" name="volume[]" class="form-control form-control-sm"
                                                value="{{ $container->volume ?? '' }}" step="0.01" min="0">
                                     </div>
-                                    <div class="col-md-3 col-sm-4">
+                                    <div class="col-xl col-md-3 col-sm-4">
                                         <label class="form-label small mb-1">Volume Weight</label>
                                         <input type="number" name="volume_weight[]" class="form-control form-control-sm"
                                                value="{{ $container->volume_weight ?? '' }}" step="0.01" min="0">
                                     </div>
-                                    <div class="col-md-2 col-sm-4">
+                                    <div class="col-xl col-md-3 col-sm-4">
                                         <label class="form-label small mb-1">Vol Unit</label>
                                         <input type="text" name="volume_unit[]" class="form-control form-control-sm"
                                                value="{{ $container->volume_unit ?? '' }}"
                                                list="ctn-volume-unit-list" placeholder="CBM">
                                     </div>
-                                    <div class="col-md-2 col-sm-4">
+                                    <div class="col-xl col-md-3 col-sm-4">
                                         <label class="form-label small mb-1">Chargeable Unit</label>
                                         <input type="number" name="chargeable_unit[]" class="form-control form-control-sm"
                                                value="{{ $container->chargeable_unit ?? '' }}" step="0.01" min="0" readonly>
                                     </div>
-                                    <div class="col-md-2 col-sm-4">
+                                    <div class="col-xl col-md-3 col-sm-4">
                                         <label class="form-label small mb-1">HS Code</label>
                                         <input type="text" name="ctn_hs_code[]" class="form-control form-control-sm"
                                                value="{{ $container->hs_code ?? '' }}" autocomplete="off">
                                     </div>
-
-                                    <div class="col-md-4 col-sm-6">
+                                    <div class="col-xl col-md-3 col-sm-6">
                                         <label class="form-label small mb-1">Container Type</label>
                                         <x-common.container_types name="container_type[]" :value="$container->container_type ?? null"/>
                                     </div>
-                                    <div class="col-md-4 col-sm-6">
+                                    <div class="col-xl col-md-3 col-sm-6">
                                         <label class="form-label small mb-1">Description</label>
-                                        <textarea name="description[]" class="form-control form-control-sm" rows="2">{{ $container->description ?? '' }}</textarea>
+                                        <textarea name="description[]" class="form-control form-control-sm" rows="1">{{ $container->description ?? '' }}</textarea>
                                     </div>
-                                    <div class="col-md-4 col-sm-6">
+                                    <div class="col-xl col-md-3 col-sm-6">
                                         <label class="form-label small mb-1">Consignment Remarks</label>
-                                        <textarea name="consignment_remarks[]" class="form-control form-control-sm" rows="2">{{ $container->consignment_remarks ?? '' }}</textarea>
+                                        <textarea name="consignment_remarks[]" class="form-control form-control-sm" rows="1">{{ $container->consignment_remarks ?? '' }}</textarea>
                                     </div>
-
-                                </div>{{-- .row --}}
+                                </div>
                             </div>{{-- .card-body --}}
                         </div>{{-- .container-card --}}
                     @endforeach

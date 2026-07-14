@@ -5,10 +5,11 @@ namespace App\Models\Item;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use App\Traits\CompanyScopeTrait;
 
 class Item extends Model
 {
-    use \App\Traits\Log\LogHistoryTrait;
+    use CompanyScopeTrait, \App\Traits\Log\LogHistoryTrait;
     protected static string $cache = 'items:';
 
     protected static array $cacheColumns = [

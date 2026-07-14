@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Job extends Model
 {
-    use LogHistoryTrait, SoftDeletes;
+    use CompanyScopeTrait, LogHistoryTrait, SoftDeletes;
 
     public $fillable = ['status'];
     protected $casts = [

@@ -10,10 +10,11 @@ use App\Traits\Log\LogHistoryTrait;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Traits\CompanyScopeTrait;
 
 class Quotation extends Model
 {
-    use LogHistoryTrait;
+    use CompanyScopeTrait, LogHistoryTrait;
 
     protected $fillable = [
         'customer_id', 'posted_at', 'valid_until', 'services', 'salesman',

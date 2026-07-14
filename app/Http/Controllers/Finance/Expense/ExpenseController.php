@@ -520,7 +520,7 @@ class ExpenseController extends Controller
             $finance->base_currency = 'SAR'; // Assuming SAR is the base currency
             $finance->base_total_debit = $expense->base_grand_total ?? 0;
             $finance->base_total_credit = $expense->base_grand_total ?? 0;
-            $finance->job_id = $expense->job_id ?? 0;
+            $finance->job_id = $expense->job_id;
             $finance->job_no = $expense->job_no ?? '';
             $finance->is_approved = 1; // Approved
             $finance->posted_at = now();

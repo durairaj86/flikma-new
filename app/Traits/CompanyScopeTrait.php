@@ -6,7 +6,7 @@ use App\Scopes\CompanyScope;
 
 trait CompanyScopeTrait
 {
-    protected static function booted()
+    protected static function bootCompanyScopeTrait()
     {
         static::addGlobalScope(new CompanyScope);
     }

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Quotation;
 
+use App\Enums\EnquiryEnum;
 use App\Enums\QuotationEnum;
 use App\Http\Controllers\Controller;
+use App\Models\Enquiry\Enquiry;
 use App\Mail\QuotationMail;
 use App\Models\Customer\Customer;
 use App\Models\Job\Job;
@@ -50,11 +52,19 @@ class QuotationController extends Controller
             $quotation->incoterm = $enquiry->incoterm ?? null;
             $quotation->volume = $enquiry->volume ?? null;
             $quotation->pickup_date = $enquiry->pickup_date ?? null;
+            $quotation->enquiry_id = $enquiry->enquiry_id ?? null;
 
             $enquiryData = $quotation->enquiry_id;
         }
         $chargeDescriptions = Description::descriptions();
         return view('modules.quotation.quotation-form', compact('polPod', 'quotation', 'enquiryData', 'chargeDescriptions'));
+    }
+
+    public function createFromEnquiry(Request $request, $enquiry_id)
+    {
+        $request->merge(['enquiryId' => $enquiry_id]);
+
+        return $this->modal($request);
     }
 
     public function edit($id)
@@ -97,6 +107,7 @@ class QuotationController extends Controller
             'shipper' => 'nullable|string|max:100',
             //'volume' => 'nullable|numeric|min:0|max:999999.99',
             'pickup_date' => 'nullable|date',
+            'enquiry_id' => 'nullable|integer|exists:enquiries,id',
 
             // Containers (array)
             /*'container_number.*' => 'nullable|string|max:20',
@@ -163,8 +174,18 @@ class QuotationController extends Controller
         $quotation->commodity = $request->commodity;
         $quotation->pickup_date = $request->pickup_date;
         $quotation->pickup_address = $request->pickup_address;
+        if ($request->filled('enquiry_id')) {
+            $quotation->enquiry_id = $request->enquiry_id;
+        }
 
         $quotation->save();
+
+        // Mark the source enquiry as converted to quotation
+        if ($quotation->enquiry_id) {
+            Enquiry::where('id', $quotation->enquiry_id)
+                ->where('status', '!=', EnquiryEnum::QUOTATION->value)
+                ->update(['status' => EnquiryEnum::QUOTATION->value]);
+        }
 
         // ✅ Insert containers
         $containerSizes = array_filter($request->container_size ?? []);
@@ -177,7 +198,7 @@ class QuotationController extends Controller
                     'container_size'     => $size,
                     'container_number'   => $request->container_number[$index] ?? null,
                     'seal_number'        => $request->seal_number[$index] ?? null,
-                    'carrier'            => $request->carrier[$index] ?? null,
+                    'carrier'            => $request->ctn_carrier[$index] ?? null,
                     'vessel_name'        => $request->vessel_name[$index] ?? null,
                     'voyage_no'          => $request->voyage_no[$index] ?? null,
                     'no_of_pcs'          => $request->no_of_pcs[$index] ?? null,
@@ -439,13 +460,23 @@ class QuotationController extends Controller
         $quotation->save();
 
         // Attach containers
+        $jobContainerColumns = \Schema::getColumnListing('job_containers');
         foreach ($quotation->containers as $c) {
-            $job->containers()->create($c->toArray());
+            $attributes = collect($c->getAttributes())
+                ->only($jobContainerColumns)
+                ->except(['id', 'created_at', 'updated_at'])
+                ->all();
+            $job->containers()->create($attributes);
         }
 
         // Attach packages
+        $jobPackageColumns = \Schema::getColumnListing('job_packages');
         foreach ($quotation->packages as $p) {
-            $job->packages()->create($p->toArray());
+            $attributes = collect($p->getAttributes())
+                ->only($jobPackageColumns)
+                ->except(['id', 'created_at', 'updated_at'])
+                ->all();
+            $job->packages()->create($attributes);
         }
 
         return $job->load(['containers', 'packages']);

@@ -739,7 +739,7 @@ class PaymentController extends Controller
         $finance->base_currency = 'SAR';
         $finance->base_total_debit = $payment->base_grand_total;
         $finance->base_total_credit = $payment->base_grand_total;
-        $finance->job_id = $payment->job_id ?? 0;
+        $finance->job_id = $payment->job_id;
         $finance->job_no = $payment->job_no ?? '';
         $finance->is_approved = 1;
         $finance->posted_at = now();

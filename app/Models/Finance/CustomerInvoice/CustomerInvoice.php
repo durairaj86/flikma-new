@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CustomerInvoice extends Model
 {
-    use LogHistoryTrait, SoftDeletes;
+    use CompanyScopeTrait, LogHistoryTrait, SoftDeletes;
 
     public function customerInvoiceSubs(): \Illuminate\Database\Eloquent\Relations\HasMany
     {

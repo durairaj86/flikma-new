@@ -9,10 +9,11 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use App\Traits\CompanyScopeTrait;
 
 class Prospect extends Model
 {
-    use LogHistoryTrait;
+    use CompanyScopeTrait, LogHistoryTrait;
     protected static string $cache = 'prospectCustomers:';
     protected static array $cacheColumns = [
         'id', 'name', 'email', 'phone', 'row_no'

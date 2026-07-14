@@ -7,10 +7,11 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use App\Traits\CompanyScopeTrait;
 
 class MonthlySalary extends BaseModel
 {
-    use HasFactory, SoftDeletes;
+    use CompanyScopeTrait, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'employee_id',

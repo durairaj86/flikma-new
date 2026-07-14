@@ -16,10 +16,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\CompanyScopeTrait;
 
 class Payment extends Model
 {
-    use LogHistoryTrait, SoftDeletes;
+    use CompanyScopeTrait, LogHistoryTrait, SoftDeletes;
 
     protected $fillable = [
         'row_no', 'supplier_id', 'job_id', 'job_no', 'payment_date', 'payment_method',

@@ -102,8 +102,8 @@ class SupplierStatementTable extends Component
             ];
         }
 
-        // Supplier Account IDs (Accounts Payable — account ID 18)
-        $supplierAccountIds = [18];
+        // Supplier Account IDs (Accounts Payable) — resolve by account code
+        $supplierAccountIds = DB::table('accounts')->where('code', '2110')->pluck('id')->all() ?: [18];
 
         // Opening Balance before from_date (AP sub-ledger entries before period)
         $openingQuery = DB::table('finance_sub as fs')
@@ -119,28 +119,32 @@ class SupplierStatementTable extends Component
 
         $openingBalance = $openingCredit - $openingDebit; // Credit balance = amount owed to supplier
 
-        // Transactions in date range
-        $transactions = DB::table('finance as f')
-            ->leftJoin('jobs as j', 'f.job_id', '=', 'j.id')
-            ->where('f.company_id', $companyId)
-            ->where('f.supplier_id', $this->supplierId)
+        // Transactions in date range — taken from the AP sub-ledger lines.
+        // (Finance headers always have total_debit == total_credit, so they
+        // can never move a running balance.)
+        $transactions = DB::table('finance_sub as fs')
+            ->join('finance as f', 'fs.finance_id', '=', 'f.id')
+            ->leftJoin('jobs as j', 'fs.job_id', '=', 'j.id')
+            ->where('fs.company_id', $companyId)
+            ->where('fs.supplier_id', $this->supplierId)
+            ->whereIn('fs.account_id', $supplierAccountIds)
             ->where('f.is_approved', 1)
-            ->whereBetween('f.reference_date', [$this->startDate, $this->endDate])
+            ->whereBetween('fs.reference_date', [$this->startDate, $this->endDate])
             ->select(
-                'f.id',
-                'f.reference_date',
-                'f.voucher_no',
-                'f.voucher_type',
-                'f.reference_no',
+                'fs.id',
+                'fs.reference_date',
+                'fs.voucher_no',
+                'fs.voucher_type',
+                'fs.reference_no',
                 'j.row_no as job_number',
                 'f.narration as description',
-                'f.currency',
-                'f.exchange_rate',
-                'f.base_total_debit as base_debit',
-                'f.base_total_credit as base_credit'
+                'fs.currency',
+                'fs.exchange_rate',
+                'fs.base_debit',
+                'fs.base_credit'
             )
-            ->orderBy('f.reference_date')
-            ->orderBy('f.id')
+            ->orderBy('fs.reference_date')
+            ->orderBy('fs.id')
             ->get();
 
         // Running Balance
@@ -160,7 +164,9 @@ class SupplierStatementTable extends Component
             ->where('voucher_type', 'PV') // Payment Voucher
             ->sum('base_debit');
 
-        $closingBalance = $openingBalance + $invoicedAmount - $paidAmount;
+        // Closing balance must reflect every AP movement (incl. debit notes),
+        // i.e. the final running balance, not just invoices minus payments.
+        $closingBalance = $openingBalance + $transactions->sum('base_credit') - $transactions->sum('base_debit');
 
         return [
             'supplier' => $supplier,

@@ -30,7 +30,11 @@ function services($selected = null, $direct = null): array|string
 
 function getSelectedServices($services, $nameOnly = null)
 {
-    $serviceArray = array_filter(array_intersect_key(services(), array_flip($services)));
+    if (empty($services)) {
+        return $nameOnly ? '' : [];
+    }
+
+    $serviceArray = array_filter(array_intersect_key(services(), array_flip((array) $services)));
     if ($nameOnly) {
         return implode(', ', $serviceArray);
     }
