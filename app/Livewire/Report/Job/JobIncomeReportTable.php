@@ -79,9 +79,10 @@ class JobIncomeReportTable extends Component
         $totalIncome = 0;
 
         foreach ($jobs as $job) {
-            // Get customer invoices (income) for this job
+            // Get all customer invoices (income) for this job — not filtered
+            // by status, so the per-job breakdown can show approved vs draft
+            // separately (matching how the summary cards split the same data).
             $customerInvoices = CustomerInvoice::where('job_id', $job->id)
-                ->where('status', 3) // 3 = approved (customer_invoices.status is numeric, not a string label)
                 ->with('customerInvoiceSubs.description')
                 ->get();
 
@@ -92,6 +93,8 @@ class JobIncomeReportTable extends Component
 
             $invoiceDetails = [];
             $jobTotalIncome = 0;
+            $approvedIncome = 0;
+            $draftIncome = 0;
 
             foreach ($customerInvoices as $invoice) {
                 $invoiceTotal = 0;
@@ -110,11 +113,19 @@ class JobIncomeReportTable extends Component
                         // relation of the same name — $sub->description is
                         // already the text, not a related model.
                         'description' => $sub->description ?? 'N/A',
-                        'amount' => $amount
+                        'amount' => $amount,
+                        'invoice_status' => $invoice->status,
                     ];
                 }
 
                 $jobTotalIncome += $invoiceTotal;
+
+                // 3 = approved, 1 = draft (customer_invoices.status is numeric)
+                if ($invoice->status == 3) {
+                    $approvedIncome += $invoiceTotal;
+                } elseif ($invoice->status == 1) {
+                    $draftIncome += $invoiceTotal;
+                }
             }
 
             // Add to total income
@@ -127,7 +138,10 @@ class JobIncomeReportTable extends Component
                     'job_date' => $job->posted_at,
                     'customer' => $job->customer->name ?? 'N/A',
                     'activity' => $job->activity->name ?? 'N/A',
+                    'invoice_count' => $customerInvoices->count(),
                     'total_income' => $jobTotalIncome,
+                    'approved_income' => $approvedIncome,
+                    'draft_income' => $draftIncome,
                     'invoice_details' => $invoiceDetails,
                     'status' => $job->status
                 ];
