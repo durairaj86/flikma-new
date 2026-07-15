@@ -48,7 +48,9 @@ class JobBalanceReportTable extends Component
     public function getJobBalanceReportData()
     {
         // Get jobs within date range
-        $jobs = Job::whereBetween(DB::raw('DATE(posted_at)'), [$this->startDate, $this->endDate]);
+        $companyId = auth()->user()->company_id ?? 1;
+        $jobs = Job::where('company_id', $companyId)
+            ->whereBetween(DB::raw('DATE(posted_at)'), [$this->startDate, $this->endDate]);
 
         // Apply search filter if provided
         if (!empty($this->search)) {
@@ -80,23 +82,18 @@ class JobBalanceReportTable extends Component
         $totalProfit = 0;
 
         foreach ($jobs as $job) {
-            // Get customer invoices (income) for this job
-            $customerInvoices = CustomerInvoice::where('job_id', $job->id)
-                ->where('status', 'approved')
-                ->with('customerInvoiceSubs')
-                ->get();
+            // Get customer invoices (income) for this job — not filtered by
+            // status, matching the cards' definition (JobBalanceReport.php),
+            // which sums grand_total across all invoices regardless of status.
+            $customerInvoices = CustomerInvoice::where('job_id', $job->id)->get();
 
             // Get supplier invoices (expenses) for this job
-            $supplierInvoices = SupplierInvoice::where('job_id', $job->id)
-                ->where('status', 'approved')
-                ->with('supplierInvoiceSubs')
-                ->get();
+            $supplierInvoices = SupplierInvoice::where('job_id', $job->id)->get();
 
-            // Calculate total income
-            $income = $customerInvoices->sum('total_amount') ?? 0;
-
-            // Calculate total expense
-            $expense = $supplierInvoices->sum('total_amount') ?? 0;
+            // customer_invoices/supplier_invoices have no "total_amount"
+            // column — the real total is grand_total.
+            $income = $customerInvoices->sum('grand_total') ?? 0;
+            $expense = $supplierInvoices->sum('grand_total') ?? 0;
 
             // Calculate profit
             $profit = $income - $expense;
