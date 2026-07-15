@@ -47,7 +47,9 @@ class JobIncomeReportTable extends Component
     public function getJobIncomeReportData()
     {
         // Get jobs within date range
-        $jobs = Job::whereBetween(DB::raw('DATE(posted_at)'), [$this->startDate, $this->endDate]);
+        $companyId = auth()->user()->company_id ?? 1;
+        $jobs = Job::where('company_id', $companyId)
+            ->whereBetween(DB::raw('DATE(posted_at)'), [$this->startDate, $this->endDate]);
 
         // Apply search filter if provided
         if (!empty($this->search)) {
@@ -79,7 +81,7 @@ class JobIncomeReportTable extends Component
         foreach ($jobs as $job) {
             // Get customer invoices (income) for this job
             $customerInvoices = CustomerInvoice::where('job_id', $job->id)
-                ->where('status', 'approved')
+                ->where('status', 3) // 3 = approved (customer_invoices.status is numeric, not a string label)
                 ->with('customerInvoiceSubs.description')
                 ->get();
 
@@ -95,13 +97,19 @@ class JobIncomeReportTable extends Component
                 $invoiceTotal = 0;
 
                 foreach ($invoice->customerInvoiceSubs as $sub) {
-                    $amount = $sub->amount ?? 0;
+                    // customer_invoice_subs has no "amount" column — the
+                    // tax-inclusive line total is total_with_tax.
+                    $amount = $sub->total_with_tax ?? 0;
                     $invoiceTotal += $amount;
 
                     $invoiceDetails[] = [
                         'invoice_number' => $invoice->invoice_number,
                         'invoice_date' => $invoice->invoice_date,
-                        'description' => $sub->description->name ?? 'N/A',
+                        // customer_invoice_subs has its own plain "description"
+                        // text column, which shadows the description() belongsTo
+                        // relation of the same name — $sub->description is
+                        // already the text, not a related model.
+                        'description' => $sub->description ?? 'N/A',
                         'amount' => $amount
                     ];
                 }
