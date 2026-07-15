@@ -375,12 +375,12 @@
                                 <p>Job Report <i class="nav-arrow bi bi-chevron-right"></i></p>
                             </a>
                             <ul class="nav nav-treeview ms-3">
-                                <li class="nav-item">
+                                {{--<li class="nav-item">
                                     <a href="/reports/job-report"
                                        class="nav-link {{ $submenu == 'job-report' ? 'active' : '' }}">
                                         <p>Job Report</p>
                                     </a>
-                                </li>
+                                </li>--}}
                                 <li class="nav-item">
                                     <a href="/reports/job-balance-report"
                                        class="nav-link {{ $submenu == 'job-balance-report' ? 'active' : '' }}">
