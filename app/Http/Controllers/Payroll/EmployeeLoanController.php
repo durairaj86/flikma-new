@@ -124,7 +124,7 @@ class EmployeeLoanController extends Controller
             DB::rollBack();
             return response()->json([
                 'status' => 'error',
-                'message' => 'Error saving waybill: ' . $e->getMessage()
+                'message' => 'Error saving employee loan: ' . $e->getMessage()
             ], 500);
         }
     }

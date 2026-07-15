@@ -231,7 +231,7 @@ class MonthlySalaryController extends Controller
         }
 
         $basicSalary = BasicSalary::where('employee_id', $employeeId)
-            ->where('status', 'confirmed')
+            ->where('status', 'active')
             ->orderBy('effective_date', 'desc')
             ->first();
 

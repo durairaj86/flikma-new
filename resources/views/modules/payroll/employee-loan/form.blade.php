@@ -63,14 +63,14 @@
                     <div class="col-md-4">
                         <label class="form-label required">Loan Date <sup class="text-danger">*</sup></label>
                         <input type="date" id="loan_date" name="loan_date" class="form-control datepicker"
-                               value="{{ isset($employeeLoan) ? showDate($employeeLoan->loan_date) : '' }}" required>
+                               value="{{ isset($employeeLoan) ? formDate($employeeLoan->loan_date) : '' }}" required>
                     </div>
 
                     <!-- First Payment Date -->
                     <div class="col-md-4">
                         <label class="form-label required">First Payment Date <sup class="text-danger">*</sup></label>
                         <input type="date" id="first_payment_date" name="first_payment_date" class="form-control datepicker"
-                               value="{{ isset($employeeLoan) ? showDate($employeeLoan->first_payment_date) : '' }}" required>
+                               value="{{ isset($employeeLoan) ? formDate($employeeLoan->first_payment_date) : '' }}" required>
                     </div>
 
                     <!-- Payment Method -->
