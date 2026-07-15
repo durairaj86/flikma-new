@@ -104,6 +104,7 @@ PROFORMA_INVOICE = {
         dataTable(activeTab = null) {
             GLOBAL_FN.destroyDataTable();
             activeTab = (activeTab && (typeof activeTab !== 'object')) ? activeTab : $("#listTabs").find('li button.active').attr('id');
+            let templates = PROFORMA_INVOICE.list.templates;
             let table = $('#dataTable').DataTable({
                 processing: false,
                 serverSide: true,
@@ -124,65 +125,47 @@ PROFORMA_INVOICE = {
                     dataSrc: function (json) {
                         $('#dataTable tbody').find('.loading-row').remove();
                         GLOBAL_FN.setStatusCounts(json.statusCounts);
+                        PROFORMA_INVOICE.list.cardSummary(json.salesSummary, json.statusCounts);
                         return json.data;
                     }
                 },
                 columnDefs: [
                     {targets: [0], searchable: false},
-                    {targets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], orderable: false},
+                    {targets: [0, 1, 2, 3, 4, 5, 6, 7], orderable: false},
                 ],
                 columns: [
                     {
-                        data: 'row_no', render: function (data, type, row) {
-                            return '<strong>' + row.row_no + '</strong>';
-                        }
-                    },
-                    {data: 'job_no'},
-                    /*{
-                        data: 'job_no', render: function (data, type, row) {
-                            return '<div>' + row.job_no + '</div><div class="small text-muted">Code: ' + row.job.shipment_mode + '</div>';
-                        }
-                    },*/
-                    {
-                        data: 'customer.name_en', render: function (data, type, row) {
-                            return '<div>' + row.customer.name_en + '</div><div class="small text-muted">Code: ' + row.customer.row_no + '</div>';
-                        }
+                        data: 'row_no', render: (data, type, row) => templates.invoiceNumber(row)
                     },
                     {
-                        data: 'currency', render: function (data, type, row) {
-                            if (row.currency == baseCurrency) {
-                                return '<div>' + row.currency + '</div>';
-                            } else {
-                                return '<div>' + row.currency + ' → SAR</div><small class="text-muted">1 ' + row.currency + ' = ' + row.currency_rate + ' ' + baseCurrency + '</small>';
-                            }
+                        data: 'job_no', render: (data, type, row) => templates.job(row)
+                    },
+                    {
+                        data: 'customer', render: (data, type, row) => templates.customer(row)
+                    },
+                    {
+                        // sub_total/tax_total/grand_total are already
+                        // number_format()-ed server-side via editColumn (with
+                        // thousands commas), so they must not be re-wrapped
+                        // with amountFormat() — Intl.NumberFormat can't parse
+                        // an already comma-formatted string and returns NaN.
+                        data: 'sub_total', class: 'text-end', render: function (data, type, row) {
+                            return '<div class="cell-primary">' + row.sub_total + '</div><div class="cell-secondary">' + row.currency + '</div>';
                         }
                     },
                     {
-                        data: 'base_sub_total', render: function (data, type, row) {
-                            return '<div class="text-end text-secondary">' + row.base_sub_total + '</div><div class="text-end"><small class="text-muted">' + baseCurrency + '</small></div>';
+                        data: 'tax_total', class: 'text-end', render: function (data, type, row) {
+                            return '<div class="cell-primary">' + row.tax_total + '</div>';
                         }
                     },
                     {
-                        data: 'base_tax_total', render: function (data, type, row) {
-                            return '<div class="text-end text-secondary">' + row.base_tax_total + '</div><div class="text-end"><small class="text-muted">' + baseCurrency + '</small></div>';
+                        data: 'grand_total', class: 'text-end', render: function (data, type, row) {
+                            return '<div class="cell-primary fw-semibold">' + row.grand_total + '</div>';
                         }
                     },
                     {
-                        data: 'sub_total', render: function (data, type, row) {
-                            return '<div class="text-end">' + row.sub_total + '</div><div class="text-end"><small>' + row.currency + '</small></div>';
-                        }
+                        data: 'posted_at', render: (data, type, row) => templates.date(row)
                     },
-                    {
-                        data: 'tax_total', render: function (data, type, row) {
-                            return '<div class="text-end">' + row.tax_total + '</div><div class="text-end"><small>' + row.currency + '</small></div>';
-                        }
-                    },
-                    {
-                        data: 'grand_total', render: function (data, type, row) {
-                            return '<div class="text-end fw-semibold">' + row.grand_total + '</div><div class="text-end"><small>' + row.currency + '</small></div>';
-                        }
-                    },
-                    {data: 'posted_at'},
                     GLOBAL_FN.dataTable.optionButton()
 
                 ],
@@ -202,6 +185,43 @@ PROFORMA_INVOICE = {
             $('#dataTable_filter').closest('div.row').remove();
             webDataTable.loader(table);
             webDataTable.search(table);
+        },
+        cardSummary(data, counts) {
+            if (data) {
+                $('#total_draft_grand').text(amountFormat(data.total_draft_grand));
+                $('#total_draft_sub').text(amountFormat(data.total_draft_sub));
+                $('#total_draft_tax').text(amountFormat(data.total_draft_tax));
+                $('#total_approved_grand').text(amountFormat(data.total_approved_grand));
+                $('#total_approved_sub').text(amountFormat(data.total_approved_sub));
+                $('#total_approved_tax').text(amountFormat(data.total_approved_tax));
+            }
+            if (counts) {
+                $('#cardAllCount').text(counts.all ?? Object.values(counts).reduce((a, b) => a + (parseInt(b) || 0), 0));
+                $('#cardApprovedCount').text(counts.APPROVED ?? 0);
+                $('#cardDraftCount').text(counts.DRAFT ?? 0);
+            }
+        },
+        templates: {
+            // Every cell below follows the same 2-line convention: a bold
+            // primary line, and one small muted caption underneath.
+            statusBadge: {
+                1: '<span class="badge bg-secondary-subtle text-secondary-emphasis">Draft</span>',
+                2: '<span class="badge bg-info-subtle text-info-emphasis">Sent</span>',
+                3: '<span class="badge bg-success-subtle text-success-emphasis">Approved</span>',
+                4: '<span class="badge bg-danger-subtle text-danger-emphasis">Rejected</span>',
+                5: '<span class="badge bg-danger-subtle text-danger-emphasis">Cancelled</span>',
+                6: '<span class="badge bg-primary-subtle text-primary-emphasis">Converted</span>',
+            },
+            invoiceNumber: (row) => `<div class="cell-primary">${row.row_no ?? ''}</div><div class="mt-1">${PROFORMA_INVOICE.list.templates.statusBadge[row.status] ?? ''}</div>`,
+
+            job: (row) => `<div class="cell-primary">${row.job_no ?? '—'}</div><div class="cell-secondary">${row.job_activity ?? ''}</div>`,
+
+            // A proforma invoice's customer_id is only populated when it was
+            // created against a job (store() only sets it `if ($job)`), so
+            // row.customer can be null — guard every access.
+            customer: (row) => `<div class="cell-primary">${row.customer?.name_en ?? '—'}</div><div class="cell-secondary">${row.customer?.row_no ?? ''}</div>`,
+
+            date: (row) => `<div class="cell-primary">${row.posted_at ?? ''}</div>`,
         },
         extraActions(row) {
             PROFORMA_INVOICE.list.actions.statusChange(row);

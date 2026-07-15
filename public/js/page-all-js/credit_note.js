@@ -79,6 +79,7 @@ CREDIT_NOTE = {
         dataTable(activeTab = null) {
             GLOBAL_FN.destroyDataTable();
             activeTab = (activeTab && (typeof activeTab !== 'object')) ? activeTab : $("#listTabs").find('li button.active').attr('id');
+            let templates = CREDIT_NOTE.list.templates;
             let table = $('#dataTable').DataTable({
                 processing: false,
                 serverSide: true,
@@ -96,6 +97,8 @@ CREDIT_NOTE = {
                     },
                     dataSrc: function (json) {
                         $('#dataTable tbody').find('.loading-row').remove();
+                        // Updates the KPI cards (#draftCount/#approvedCount/#cancelledCount/#allCount) —
+                        // left untouched, do not repoint these ids to the tabs.
                         GLOBAL_FN.setStatusCounts(json.statusCounts);
 
                         // Update KPI summary
@@ -106,53 +109,64 @@ CREDIT_NOTE = {
                             $('#approvedTotal').text(CREDIT_NOTE.list.formatNumber(s.total_approved_grand || 0));
                         }
 
-                        // Update badge counts
+                        // Update the tab counts — distinct ids from the KPI
+                        // cards above (tabXCount vs XCount) so the two don't collide.
                         if (json.statusCounts) {
                             var c = json.statusCounts;
-                            $('#draftCount').text(c.DRAFT || 0);
-                            $('#approvedCount').text(c.APPROVED || 0);
-                            $('#cancelledCount').text(c.CANCELLED || 0);
-                            var total = (c.DRAFT || 0) + (c.APPROVED || 0) + (c.CANCELLED || 0);
-                            $('#allCount').text(total);
+                            $('#tabDraftCount').text(c.DRAFT || 0);
+                            $('#tabApprovedCount').text(c.APPROVED || 0);
+                            $('#tabCancelledCount').text(c.CANCELLED || 0);
+                            $('#tabAllCount').text(c.all ?? ((c.DRAFT || 0) + (c.APPROVED || 0) + (c.CANCELLED || 0)));
                         }
 
                         return json.data;
                     }
                 },
                 columnDefs: [
-                    {targets: [0], searchable: false},
-                    {targets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], orderable: false},
+                    {targets: [0, 1, 2, 3, 4, 5, 6, 7, 8], orderable: false},
                 ],
                 columns: [
-                    {data: 'DT_RowIndex', searchable: false},
                     {
-                        data: 'row_no', render: function (data, type, row) {
-                            return '<strong>#' + row.row_no + '</strong>';
+                        data: 'row_no', render: (data, type, row) => templates.creditNoteNumber(row)
+                    },
+                    {
+                        data: 'customer', render: (data, type, row) => templates.customer(row)
+                    },
+                    {
+                        data: 'job_no', render: (data, type, row) => templates.job(row)
+                    },
+                    {
+                        data: 'invoice_no', render: function (data, type, row) {
+                            return '<div class="cell-primary">' + (row.invoice_no ?? '—') + '</div>';
                         }
                     },
                     {
-                        data: 'customer.name_en', render: function (data, type, row) {
-                            return '<div>' + (row.customer ? row.customer.name_en : '-') + '</div>';
-                        }
-                    },
-                    {data: 'job_no', render: function (data) { return data || '-'; }},
-                    {data: 'invoice_no', render: function (data) { return data || '-'; }},
-                    {
-                        data: 'sub_total', render: function (data, type, row) {
-                            return '<div class="text-end text-secondary">' + (row.sub_total ? CREDIT_NOTE.list.formatNumber(row.sub_total) : '0.00') + '</div>';
-                        }
-                    },
-                    {
-                        data: 'tax_total', render: function (data, type, row) {
-                            return '<div class="text-end text-secondary">' + (row.tax_total ? CREDIT_NOTE.list.formatNumber(row.tax_total) : '0.00') + '</div>';
+                        // sub_total/tax_total/grand_total are already
+                        // number_format()-ed server-side via editColumn, so
+                        // they must not be re-formatted client-side — the
+                        // old formatNumber() ran parseFloat() on an already
+                        // comma-formatted string like "10,434.78", which
+                        // JS truncates at the first comma (silently wrong
+                        // amounts on any row ≥ 1,000, not just "NaN").
+                        data: 'sub_total', class: 'text-end', render: function (data, type, row) {
+                            return '<div class="cell-primary">' + (row.sub_total ?? '0.00') + '</div><div class="cell-secondary">' + (row.currency ?? '') + '</div>';
                         }
                     },
                     {
-                        data: 'grand_total', render: function (data, type, row) {
-                            return '<div class="text-end fw-semibold">' + (row.grand_total ? CREDIT_NOTE.list.formatNumber(row.grand_total) : '0.00') + '</div>';
+                        data: 'tax_total', class: 'text-end', render: function (data, type, row) {
+                            return '<div class="cell-primary">' + (row.tax_total ?? '0.00') + '</div>';
                         }
                     },
-                    {data: 'posted_at'},
+                    {
+                        data: 'grand_total', class: 'text-end', render: function (data, type, row) {
+                            return '<div class="cell-primary fw-semibold">' + (row.grand_total ?? '0.00') + '</div>';
+                        }
+                    },
+                    {
+                        data: 'posted_at', render: function (data, type, row) {
+                            return '<div class="cell-primary">' + (row.posted_at ?? '') + '</div>';
+                        }
+                    },
                     GLOBAL_FN.dataTable.optionButton()
                 ],
                 language: {
@@ -169,6 +183,21 @@ CREDIT_NOTE = {
         },
         formatNumber(num) {
             return parseFloat(num || 0).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        },
+        templates: {
+            // Every cell below follows the same 2-line convention used on
+            // the customer/supplier/proforma invoice lists: a bold primary
+            // line, and one small muted caption underneath.
+            statusBadge: {
+                1: '<span class="badge bg-secondary-subtle text-secondary-emphasis">Draft</span>',
+                2: '<span class="badge bg-success-subtle text-success-emphasis">Approved</span>',
+                3: '<span class="badge bg-danger-subtle text-danger-emphasis">Cancelled</span>',
+            },
+            creditNoteNumber: (row) => `<div class="cell-primary">#${row.row_no ?? ''}</div><div class="mt-1">${CREDIT_NOTE.list.templates.statusBadge[row.status] ?? ''}</div>`,
+
+            customer: (row) => `<div class="cell-primary">${row.customer?.name_en ?? '—'}</div><div class="cell-secondary">${row.customer?.row_no ?? ''}</div>`,
+
+            job: (row) => `<div class="cell-primary">${row.job_no ?? '—'}</div><div class="cell-secondary">${row.job?.shipment_mode ?? ''}</div>`,
         },
         extraActions(row) {
             CREDIT_NOTE.list.actions.statusChange(row);

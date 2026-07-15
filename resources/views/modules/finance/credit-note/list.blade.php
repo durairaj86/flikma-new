@@ -40,6 +40,48 @@
                 border: 1px solid rgba(0,0,0,0.04);
                 padding: .6rem 1rem;
             }
+
+            /* Clean flat table — no floating row cards, just a thin divider
+               between rows, matching the redesigned invoice list pages. */
+            #dataTable {
+                border-collapse: collapse;
+            }
+
+            #dataTable thead th {
+                background-color: #fff;
+                color: #6c757d;
+                font-weight: 600;
+                border-bottom: 1px solid #e9ecef;
+                padding: 0.65rem 1rem;
+                white-space: nowrap;
+            }
+
+            #dataTable tbody td {
+                padding: 0.65rem 1rem;
+                border-bottom: 1px solid #f1f3f5;
+                vertical-align: middle;
+            }
+
+            #dataTable tbody tr:hover td {
+                background-color: #fafbfc;
+            }
+
+            #dataTable tbody tr:last-child td {
+                border-bottom: none;
+            }
+
+            /* Two-line cell convention: bold primary line, muted small caption */
+            .cell-primary {
+                font-weight: 600;
+                color: #212529;
+                line-height: 1.3;
+            }
+
+            .cell-secondary {
+                font-size: 0.75rem;
+                color: #868e96;
+                line-height: 1.3;
+            }
         </style>
 
         <div class="container-fluid px-lg-5">
@@ -161,30 +203,42 @@
             </div>
 
             {{-- Status Tabs --}}
-            <div class="d-flex align-items-center gap-3 mb-3">
-                <ul class="nav nav-pills nav-pills-sm gap-1" id="listTabs" role="tablist">
-                    <li class="nav-item">
-                        <button class="nav-link active py-1.5 px-3 status-btn" data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="all" style="font-size:.82rem;">
-                            All <span class="badge bg-secondary bg-opacity-10 text-secondary ms-1" id="allCount-badge">0</span>
-                        </button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link py-1.5 px-3 status-btn" data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="draft" style="font-size:.82rem;">
-                            Draft <span class="badge bg-warning bg-opacity-10 text-warning ms-1" id="draftCount-badge">0</span>
-                        </button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link py-1.5 px-3 status-btn" data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="approved" style="font-size:.82rem;">
-                            Approved <span class="badge bg-success bg-opacity-10 text-success ms-1" id="approvedCount-badge">0</span>
-                        </button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link py-1.5 px-3 status-btn" data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="cancelled" style="font-size:.82rem;">
-                            Cancelled <span class="badge bg-danger bg-opacity-10 text-danger ms-1" id="cancelledCount-badge">0</span>
-                        </button>
-                    </li>
-                </ul>
-                <div class="ms-auto">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div class="align-items-center flex-shrink-0">
+                    <div class="gap-4">
+                        <ul class="nav status-tabs align-items-center border-bottom mb-0" id="listTabs" role="tablist">
+                            <li class="nav-item me-2">
+                                <button class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn active"
+                                        data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="all">
+                                    <span><i class="bi bi-collection me-1"></i> All -</span>
+                                    <span class="status-count ms-2" id="tabAllCount">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item me-2">
+                                <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
+                                        data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="draft">
+                                    <span><i class="bi bi-clock me-1"></i> Draft -</span>
+                                    <span class="status-count ms-2" id="tabDraftCount">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item me-2">
+                                <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
+                                        data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="approved">
+                                    <span><i class="bi bi-check-circle me-1"></i> Approved -</span>
+                                    <span class="status-count ms-2" id="tabApprovedCount">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
+                                        data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="cancelled">
+                                    <span><i class="bi bi-x-circle me-1"></i> Cancelled -</span>
+                                    <span class="status-count ms-2" id="tabCancelledCount">0</span>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="pt-2">
                     <div class="search-box position-relative" style="min-width:200px;">
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                         <input type="text" id="customSearch" class="form-control form-control-sm rounded-pill ps-5" placeholder="Search..." aria-label="Search...">
@@ -194,17 +248,16 @@
 
             {{-- Table --}}
             <div class="cn-card p-0">
-                <table class="table cn-table align-middle mb-0 dataTable" id="dataTable">
-                    <thead class="table-light">
-                        <tr>
-                            <th>#</th>
-                            <th>Credit Note No</th>
+                <table class="table align-middle mb-0 dataTable" id="dataTable">
+                    <thead>
+                        <tr class="text-muted text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.03em;">
+                            <th>Credit Note #</th>
                             <th>Customer</th>
-                            <th>Job No</th>
-                            <th>Invoice No</th>
-                            <th class="text-end">Subtotal</th>
+                            <th>Job</th>
+                            <th>Invoice</th>
+                            <th class="text-end">Excl. VAT</th>
                             <th class="text-end">Tax</th>
-                            <th class="text-end">Total (SAR)</th>
+                            <th class="text-end">Total</th>
                             <th>Date</th>
                             <th></th>
                         </tr>

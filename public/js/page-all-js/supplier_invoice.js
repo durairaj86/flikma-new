@@ -116,50 +116,42 @@ SUPPLIER_INVOICE = {
                     dataSrc: function (json) {
                         $('#dataTable tbody').find('.loading-row').remove();
                         GLOBAL_FN.setStatusCounts(json.statusCounts);
+                        SUPPLIER_INVOICE.list.cardSummary(json.salesSummary, json.statusCounts);
                         return json.data;
                     }
                 },
                 columnDefs: [
                     {targets: [0], searchable: false},
-                    {targets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], orderable: false},
+                    {targets: [0, 1, 2, 3, 4, 5, 6, 7, 8], orderable: false},
                 ],
                 columns: [
                     {
-                        data: 'row_no', render: function (data, type, row) {
-                            return templates.rowInfo(data, row);
-                        }
-                    },
-                    {data: 'invoice_number'},
-                    {
-                        data: 'job_no', render: function (data, type, row) {
-                            return templates.jobInfo(row);
-                        }
+                        data: 'row_no', render: (data, type, row) => templates.invoiceNumber(row)
                     },
                     {
-                        data: 'supplier.name_en', render: function (data, type, row) {
-                            return templates.supplier(row);
+                        data: 'job_no', render: (data, type, row) => templates.job(row)
+                    },
+                    {
+                        data: 'supplier.name_en', render: (data, type, row) => templates.supplier(row)
+                    },
+                    {
+                        data: 'sub_total', class: 'text-end', render: function (data, type, row) {
+                            return '<div class="cell-primary">' + amountFormat(row.sub_total) + '</div><div class="cell-secondary">' + row.currency + '</div>';
                         }
                     },
                     {
-                        data: 'base_total', class: 'text-end', render: function (data, type, row) {
-                            return '<div class="text-end text-secondary">' + amountFormat(row.base_tax_total + row.base_sub_total) + '</div><div class="text-end"><small class="text-muted">' + baseCurrency + '</small></div>';
+                        data: 'tax_total', class: 'text-end', render: function (data, type, row) {
+                            return '<div class="cell-primary">' + amountFormat(row.tax_total) + '</div>';
                         }
                     },
                     {
-                        data: 'grand_total', class: 'text-end', render: function (data, type, row) {
-                            return '<div class="text-end fw-semibold">' + amountFormat(row.grand_total) + '</div><div class="text-end"><small>' + row.currency + '</small></div>';
-                        }
+                        data: 'balance', class: 'text-end', render: (data, type, row) => templates.balance(row)
                     },
                     {
-                        data: 'balance', class: 'text-end', render: function (data, type, row) {
-                            return '<div class="fw-bold text-danger fs-6">' + amountFormat(parseFloat(row.grand_total) - parseFloat(row.paid_amount || 0)) + '</div>';
-                        }
+                        data: 'invoice_date', class: 'text-end', render: (data, type, row) => templates.invoice(row)
                     },
-                    {data: 'invoice_date', class: 'text-end', render: function (data, type, row) { return templates.invoice(row); } },
                     {
-                        data: 'due_at', class: 'text-end', render: function (data, type, row) {
-                            return templates.aging(row);
-                        }
+                        data: 'due_at', class: 'text-end', render: (data, type, row) => templates.aging(row)
                     },
                     GLOBAL_FN.dataTable.optionButton()
 
@@ -181,27 +173,48 @@ SUPPLIER_INVOICE = {
             webDataTable.loader(table);
             webDataTable.search(table);
         },
+        cardSummary(data, counts) {
+            if (data) {
+                $('#total_draft_grand').text(amountFormat(data.total_draft_grand));
+                $('#total_draft_sub').text(amountFormat(data.total_draft_sub));
+                $('#total_draft_tax').text(amountFormat(data.total_draft_tax));
+                $('#total_approved_grand').text(amountFormat(data.total_approved_grand));
+                $('#total_approved_sub').text(amountFormat(data.total_approved_sub));
+                $('#total_approved_tax').text(amountFormat(data.total_approved_tax));
+            }
+            if (counts) {
+                $('#cardAllCount').text(counts.all ?? Object.values(counts).reduce((a, b) => a + (parseInt(b) || 0), 0));
+                $('#cardApprovedCount').text(counts.APPROVED ?? 0);
+                $('#cardDraftCount').text(counts.DRAFT ?? 0);
+            }
+        },
         templates: {
-            rowInfo: (data, row) => {
-                return `<div class="fw-bold text-dark mb-0">${row.row_no}</div><div class="text-muted" style="font-size: 0.7rem;">JOB: <span class="text-primary fw-bold">${row.job_no ?? '-'}</span></div>`;
+            // Every cell below follows the same 2-line convention: a bold
+            // primary line, and one small muted caption underneath.
+            statusBadge: {
+                1: '<span class="badge bg-secondary-subtle text-secondary-emphasis">Draft</span>',
+                2: '<span class="badge bg-info-subtle text-info-emphasis">Sent</span>',
+                3: '<span class="badge bg-success-subtle text-success-emphasis">Approved</span>',
+                4: '<span class="badge bg-danger-subtle text-danger-emphasis">Rejected</span>',
+                5: '<span class="badge bg-danger-subtle text-danger-emphasis">Cancelled</span>',
+                6: '<span class="badge bg-primary-subtle text-primary-emphasis">Converted</span>',
             },
-            supplier: (row) => {
-                const name = row.supplier && row.supplier.name_en ? row.supplier.name_en : '-';
-                const code = row.supplier && row.supplier.row_no ? row.supplier.row_no : '';
-                return `<div class="lh-sm"><div class="small fw-bold text-dark">${name}</div><div class="text-muted" style="font-size: 0.7rem;">${code}</div></div>`;
+            invoiceNumber: (row) => `<div class="cell-primary">${row.row_no ?? ''}</div><div class="mt-1">${SUPPLIER_INVOICE.list.templates.statusBadge[row.status] ?? ''}</div>`,
+
+            job: (row) => `<div class="cell-primary">${row.job_no ?? '—'}</div><div class="cell-secondary">${row.job_activity ?? ''}</div>`,
+
+            supplier: (row) => `<div class="cell-primary">${row.supplier?.name_en ?? ''}</div><div class="cell-secondary">${row.supplier?.row_no ?? ''}</div>`,
+
+            // due_status isn't provided by this endpoint, so paid/unpaid is
+            // computed here from the real totals (same as customer invoice).
+            balance: (row) => {
+                const grand = parseFloat(String(row.grand_total).replace(/,/g, '')) || 0;
+                const paid = parseFloat(row.paid_amount) || 0;
+                const isPaid = grand > 0 && paid >= grand;
+                return `<div class="cell-primary">${amountFormat(grand - paid)}</div><div class="cell-secondary ${isPaid ? 'text-success' : 'text-danger'}">${isPaid ? 'Paid' : 'Unpaid'}</div>`;
             },
-            jobInfo: (row) => {
-                const mode = row.job && row.job.shipment_mode ? row.job.shipment_mode : null;
-                const icon = mode === 'air' ? 'bi-airplane' : 'bi-truck';
-                const hasMode = !!mode;
-                const jobNo = row.job_no ?? '-';
-                return `<div class="d-flex align-items-center gap-2">${hasMode ? `<i class="bi ${icon} text-primary" style="font-size: 0.8rem;"></i>` : ''}<span class="fw-bold text-dark">${jobNo}</span></div>`;
-            },
-            invoice: (row) => {
-                const inv = row.invoice_date ?? '';
-                const due = row.due_at ?? '';
-                return `<div class="lh-sm"><div class="x-small text-muted text-uppercase">Inv: <span class="text-dark fw-medium">${inv}</span></div><div class="x-small text-muted text-uppercase mt-1">Due: <span class="text-danger fw-bold">${due}</span></div></div>`;
-            },
+
+            invoice: (row) => `<div class="cell-primary">${row.invoice_date ?? ''}</div><div class="cell-secondary">Due ${row.due_at ?? ''}</div>`,
             aging: (row) => {
                 // Prefer server-provided aging (parity with customer list)
                 if (row.due_days && row.due_days.label) {

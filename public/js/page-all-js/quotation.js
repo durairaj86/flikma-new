@@ -879,49 +879,36 @@ QUOTATION = {
             initTomSelectSearch('#carrier', port + 'Lines', 50, preLoad);
         },
         addContainer() {
-            $('#addContainerRow').off().on('click', function () {
-                let $list = $('#containerList');
-                let $newCard = $list.find('.container-card:first').clone();
-                $newCard.find('input, textarea').val('');
-                $newCard.find('select').val('').removeClass('tomselected ts-hidden-accessible');
-                $newCard.find('div.ts-wrapper').remove();
-                initTomSelectForm($newCard);
-                $list.append($newCard);
-                QUOTATION.form.removeRow();
-            });
-        },
-        addPackage() {
-            $('#addPackageRow').off().on('click', function () {
-                let $table = $('#packageTable tbody');
-                let $newRow = $table.find('tr:first').clone();
-                $newRow.find('input, select').val('');
+            // Same table-row-clone pattern as JOB.form.addContainer()
+            $('#containerTable').off('click', '.addContainerRow').on('click', '.addContainerRow', function () {
+                let $tbody = $(this).closest('tbody');
+                let $newRow = $tbody.find('tr:first').clone();
+
+                $newRow.find('input, select, textarea').val('');
                 $newRow.find('select').removeClass('tomselected').removeClass('ts-hidden-accessible');
                 $newRow.find('div.ts-wrapper').remove();
                 initTomSelectForm($newRow);
-                $table.append($newRow);
-                QUOTATION.form.removeRow();
+
+                $tbody.append($newRow);
+            });
+        },
+        addPackage() {
+            // Same table-row-clone pattern as JOB.form.addPackage()
+            $('#packageTable').off('click', '.addPackageRow').on('click', '.addPackageRow', function () {
+                let $tbody = $(this).closest('tbody');
+                let $newRow = $tbody.find('tr:first').clone();
+
+                $newRow.find('input, select, textarea').val('');
+                $newRow.find('select').removeClass('tomselected').removeClass('ts-hidden-accessible');
+                $newRow.find('div.ts-wrapper').remove();
+                initTomSelectForm($newRow);
+
+                $tbody.append($newRow);
             });
         },
         removeRow() {
-            // Container cards
-            $('#containerList').off('click', '.remove-row').on('click', '.remove-row', function () {
-                let $list = $('#containerList');
-                let $card = $(this).closest('.container-card');
-                if ($list.find('.container-card').length > 1) {
-                    $card.remove();
-                } else {
-                    $card.find('input, textarea').val('');
-                    $card.find('select').each(function () {
-                        if (this.tomselect) {
-                            this.tomselect.clear();
-                        } else {
-                            $(this).val('');
-                        }
-                    });
-                }
-            });
-            // Package table rows
-            $('#packageTable').off('click', '.remove-row').on('click', '.remove-row', function () {
+            // Container / package table rows (same table structure for both)
+            $('#containerTable,#packageTable').off('click', '.remove-row').on('click', '.remove-row', function () {
                 let $tbody = $(this).closest('tbody');
                 const $tr = $(this).closest('tr');
                 if ($tbody.find('tr').length > 1) {
@@ -929,10 +916,10 @@ QUOTATION = {
                 } else {
                     $tr.find('input').val('');
                     $tr.find('select').each(function () {
-                        $(this).val('');
-                        if ($(this).hasClass('selectpicker')) {
-                            $(this).selectpicker('destroy').addClass('selectpicker');
-                            selectPicker('#' + $(this).closest('table').attr('id'));
+                        if (this.tomselect) {
+                            this.tomselect.clear();
+                        } else {
+                            $(this).val('');
                         }
                     });
                 }

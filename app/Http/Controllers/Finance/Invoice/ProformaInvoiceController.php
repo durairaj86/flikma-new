@@ -10,6 +10,7 @@ use App\Models\Finance\ProformaInvoice\ProformaInvoice;
 use App\Models\Finance\ProformaInvoice\ProformaInvoiceSub;
 use App\Models\Job\Job;
 use App\Models\Master\Description;
+use App\Models\Master\LogisticActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -56,6 +57,34 @@ class ProformaInvoiceController extends Controller
             $job_id = decodeId($job_id);
         }
         $filter = $request->filterData ?? [];
+
+        // Shared filters so the tab counts and summary cards always match
+        // the visible list (company scoping is applied globally on the
+        // ProformaInvoice model).
+        $applyFilters = function ($query) use ($filter, $job_id) {
+            $query->when($job_id != 'list', function ($query) use ($job_id) {
+                $query->where('job_id', $job_id);
+            })
+            ->when(isset($filter['filter-from-date'], $filter['filter-to-date']),
+                function ($query) use ($filter) {
+                    $from = Carbon::parse($filter['filter-from-date'])->startOfDay();
+                    $to = Carbon::parse($filter['filter-to-date'])->addDay()->startOfDay();
+
+                    $query->where('posted_at', '>=', $from)
+                        ->where('posted_at', '<', $to);
+                }
+            )
+            ->when(isset($filter['customers']) && !empty($filter['customers']), function ($query) use ($filter) {
+                $query->whereIn('customer_id', decodeIds($filter['customers']));
+            })
+            ->when(isset($filter['filter-pol']) && !empty($filter['filter-pol']), function ($query) use ($filter) {
+                $query->where('pol', 'like', "%{$filter['filter-pol']}%");
+            })
+            ->when(isset($filter['filter-pod']) && !empty($filter['filter-pod']), function ($query) use ($filter) {
+                $query->where('pod', 'like', "%{$filter['filter-pod']}%");
+            });
+        };
+
         $rows = ProformaInvoice::select(
             'proforma_invoices.id as id',
             'row_no',
@@ -75,70 +104,46 @@ class ProformaInvoiceController extends Controller
             'proforma_invoices.company_id as company_id',
         )
             ->with(['customer:id,name_en,name_ar,row_no'])
-            ->with(['job:id,shipment_mode'])// eager load customer
+            ->with(['job:id,shipment_mode,activity_id'])
             ->when($request->tab, function ($q) use ($request) {
                 $q->where('proforma_invoices.status', ProformaInvoiceEnum::fromName($request->tab));
             })
-            ->when($job_id != 'list', function ($query) use ($job_id) {
-                $query->where('job_id', $job_id);
-            })
-            ->when(isset($filter['filter-from-date'], $filter['filter-to-date']),
-                function ($query) use ($filter) {
+            ->tap($applyFilters)
+            ->orderBy('proforma_invoices.id', 'desc');
 
-                    $from = Carbon::parse($filter['filter-from-date'])->startOfDay();
-                    $to = Carbon::parse($filter['filter-to-date'])->addDay()->startOfDay();
-
-                    $query->where('posted_at', '>=', $from)
-                        ->where('posted_at', '<', $to);
-                }
-            )
-            ->when(isset($filter['customers']) && !empty($filter['customers']), function ($query) use ($filter) {
-                $query->whereIn('customer_id', decodeIds($filter['customers']));
-            })
-            ->when(isset($filter['filter-pol']) && !empty($filter['filter-pol']), function ($query) use ($filter) {
-                $query->where('pol', 'like', "%{$filter['filter-pol']}%");
-            })
-            ->when(isset($filter['filter-pod']) && !empty($filter['filter-pod']), function ($query) use ($filter) {
-                $query->where('pod', 'like', "%{$filter['filter-pod']}%");
-            })->orderBy('proforma_invoices.id', 'desc');
-
-        // ✅ Get counts per status
+        // Counts per status using the same filters as the list
         $statusCounts = ProformaInvoice::select('status', DB::raw('COUNT(*) as total'))
-            ->when($job_id != 'list', function ($query) use ($job_id) {
-                $query->where('job_id', $job_id);
-            })
-            ->when(isset($filter['filter-from-date'], $filter['filter-to-date']),
-                function ($query) use ($filter) {
-
-                    $from = Carbon::parse($filter['filter-from-date'])->startOfDay();
-                    $to = Carbon::parse($filter['filter-to-date'])->addDay()->startOfDay();
-
-                    $query->where('posted_at', '>=', $from)
-                        ->where('posted_at', '<', $to);
-                }
-            )
-            ->when(isset($filter['customers']) && !empty($filter['customers']), function ($query) use ($filter) {
-                $query->whereIn('customer_id', decodeIds($filter['customers']));
-            })
-            ->when(isset($filter['filter-pol']) && !empty($filter['filter-pol']), function ($query) use ($filter) {
-                $query->where('pol', 'like', "%{$filter['filter-pol']}%");
-            })
-            ->when(isset($filter['filter-pod']) && !empty($filter['filter-pod']), function ($query) use ($filter) {
-                $query->where('pod', 'like', "%{$filter['filter-pod']}%");
-            })
+            ->tap($applyFilters)
             ->groupBy('status')
             ->pluck('total', 'status')
             ->toArray();
+
+        // Summary card totals (Draft/Approved), same shape as the customer
+        // and supplier invoice lists.
+        $salesSummary = ProformaInvoice::select([
+            DB::raw('SUM(grand_total) as overall_sales'),
+            DB::raw('SUM(CASE WHEN status = 1 THEN grand_total ELSE 0 END) as total_draft_grand'),
+            DB::raw('SUM(CASE WHEN status = 1 THEN sub_total ELSE 0 END) as total_draft_sub'),
+            DB::raw('SUM(CASE WHEN status = 1 THEN tax_total ELSE 0 END) as total_draft_tax'),
+            DB::raw('SUM(CASE WHEN status = 3 THEN grand_total ELSE 0 END) as total_approved_grand'),
+            DB::raw('SUM(CASE WHEN status = 3 THEN sub_total ELSE 0 END) as total_approved_sub'),
+            DB::raw('SUM(CASE WHEN status = 3 THEN tax_total ELSE 0 END) as total_approved_tax'),
+        ])
+            ->tap($applyFilters)
+            ->first();
 
         // ✅ Normalize counts for all statuses
         $allCounts = [];
         foreach (ProformaInvoiceEnum::cases() as $status) {
             $allCounts[$status->name] = $statusCounts[$status->value] ?? 0;
         }
+        $allCounts['all'] = array_sum($allCounts);
         $decimals = decimals();
+        $activity = LogisticActivity::activities();
         // ✅ Return formatted DataTable
         return DataTables::eloquent($rows)
             ->addIndexColumn()
+            ->addColumn('job_activity', fn($model) => $model->job ? ($activity->where('id', $model->job->activity_id)->pluck('name')->first() ?? '-') : '-')
             ->setRowAttr([
                 'data-id' => fn($model) => $model->id,
                 'data-name' => fn($model) => 'Proforma #' . htmlspecialchars($model->invoice_no, ENT_QUOTES, 'UTF-8'),
@@ -147,7 +152,6 @@ class ProformaInvoiceController extends Controller
             ])
             ->editColumn('invoice_date', fn($model) => \Carbon\Carbon::parse($model->invoice_date)->format('d-m-Y'))
             ->editColumn('currency', fn($model) => strtoupper($model->currency))
-            ->addColumn('customer_name', fn($model) => $model->customer?->name_en ?? '-')
             ->editColumn('amount_with_tax', fn($model) => number_format($model->grand_total, $decimals))
             ->editColumn('base_tax_total', fn($model) => number_format($model->base_tax_total, $decimals))
             ->editColumn('base_sub_total', fn($model) => number_format($model->base_sub_total, $decimals))
@@ -157,6 +161,7 @@ class ProformaInvoiceController extends Controller
             /*->editColumn('created_at', fn($model) => \Carbon\Carbon::parse($model->created_at)->format('d-m-Y'))*/
             ->with([
                 'statusCounts' => $allCounts,
+                'salesSummary' => $salesSummary,
             ])
             ->toJson();
     }
@@ -291,7 +296,13 @@ class ProformaInvoiceController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Error saving Proforma Invoice: ' . $e->getMessage());
+            // This form is submitted via AJAX (same pattern as Supplier/
+            // Customer Invoice); a back()-redirect response is invisible to
+            // that JS and the modal just silently does nothing on error.
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error saving Proforma Invoice: ' . $e->getMessage(),
+            ], 500);
         }
     }
 

@@ -214,7 +214,11 @@ class ExpenseController extends Controller
 
             foreach ($accounts as $index => $account) {
                 if (!$account) continue;
-                $employee = $request->employee_id[$index] ?? 0;
+                // The employee select's "no selection" option submits an
+                // empty string, not an absent key — must be treated as null
+                // too, or it gets coerced to 0 which violates the FK to users.
+                $employee = $request->employee_id[$index] ?? null;
+                $employee = $employee !== '' ? $employee : null;
                 $quantity = $request->quantity[$index] ?? 0;
                 $rate = $request->unit_price[$index] ?? 0;
                 $taxRate = vatPercent($request->tax[$index] ?? 0);

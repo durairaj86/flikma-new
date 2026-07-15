@@ -74,7 +74,7 @@
                 </div>
             </div>
 
-            <div class="card-body" id="content-wrapper">
+            <div class="card-body">
 
                 <form id="list-filter" method="post" novalidate="novalidate">
                     @csrf

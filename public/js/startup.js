@@ -202,7 +202,7 @@ let GLOBAL_FN = {
         GLOBAL_FN.listNavTabs();
         GLOBAL_FN.activityFeed();
         FILTER.load();
-        initTomSelectForm($('#content-wrapper'));
+        initTomSelectForm($('#content-wrapper,#list-filter'));
     },
     activityFeed() {
         $('#activity-feed').click(function () {

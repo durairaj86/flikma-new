@@ -764,7 +764,6 @@ JOB = {
                 initTomSelectForm($newRow);
 
                 $tbody.append($newRow);
-                JOB.form.calculation.package();
             });
         },
         /*removeRow() {

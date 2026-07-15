@@ -305,155 +305,137 @@
 
                 <!-- Container Tab -->
                 <div class="tab-pane mt-4" id="container" role="tabpanel">
-
-                    @php
-                        $containers = $quotation->containers && $quotation->containers->count() > 0
-                            ? $quotation->containers
-                            : [null];
-                    @endphp
-
-                    <div id="containerList">
-                    @foreach($containers as $container)
-                        <div class="container-card card mb-3 border">
-                            <div class="card-header d-flex justify-content-between align-items-center py-2 bg-light">
-                                <span class="fw-semibold small text-muted">Container / Consignment</span>
-                                <button type="button" class="btn btn-outline-danger btn-sm remove-row">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </div>
-                            <div class="card-body p-3">
-                                {{-- Row 1 --}}
-                                <div class="row g-2 align-items-end">
-                                    <div class="col-xl col-md-3 col-sm-6">
-                                        <label class="form-label small mb-1">Size</label>
+                    <div class="mb-3">
+                        <table class="table" id="containerTable">
+                            <thead>
+                            <tr>
+                                <th>Size</th>
+                                <th>Type</th>
+                                <th>Number</th>
+                                <th>Seal No</th>
+                                <th>Gross Weight (Kg)</th>
+                                <th>Net Weight (Kg)</th>
+                                <th>Volume (CBM)</th>
+                                <th>Hazardous</th>
+                                <th>Quantity & UOM</th>
+                                <th>Remarks</th>
+                                <th width="5%"></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @php
+                                $containers = $quotation->containers && $quotation->containers->count() > 0
+                                    ? $quotation->containers
+                                    : [new \App\Models\Quotation\QuotationContainer()];
+                            @endphp
+                            @foreach($containers as $container)
+                                <tr>
+                                    <td>
                                         <x-common.container_size :value="$container->container_size ?? ''"/>
-                                    </div>
-                                    <div class="col-xl col-md-3 col-sm-6">
-                                        <label class="form-label small mb-1">Container No.</label>
-                                        <input type="text" name="container_number[]" class="form-control form-control-sm"
-                                               value="{{ $container->container_number ?? '' }}" autocomplete="off">
-                                    </div>
-                                    <div class="col-xl col-md-3 col-sm-6">
-                                        <label class="form-label small mb-1">Seal No.</label>
-                                        <input type="text" name="seal_number[]" class="form-control form-control-sm"
-                                               value="{{ $container->seal_number ?? '' }}" autocomplete="off">
-                                    </div>
-                                    <div class="col-xl col-md-3 col-sm-6">
-                                        <label class="form-label small mb-1">Carrier</label>
-                                        <input type="text" name="ctn_carrier[]" class="form-control form-control-sm"
-                                               value="{{ $container->carrier ?? '' }}" autocomplete="off">
-                                    </div>
-                                    <div class="col-xl col-md-3 col-sm-6">
-                                        <label class="form-label small mb-1">Vessel Name</label>
-                                        <input type="text" name="vessel_name[]" class="form-control form-control-sm"
-                                               value="{{ $container->vessel_name ?? '' }}" autocomplete="off">
-                                    </div>
-                                    <div class="col-xl col-md-3 col-sm-6">
-                                        <label class="form-label small mb-1">Voyage No.</label>
-                                        <input type="text" name="voyage_no[]" class="form-control form-control-sm"
-                                               value="{{ $container->voyage_no ?? '' }}" autocomplete="off">
-                                    </div>
-                                    <div class="col-xl col-md-3 col-sm-4">
-                                        <label class="form-label small mb-1">No. of Pcs</label>
-                                        <input type="number" name="no_of_pcs[]" class="form-control form-control-sm"
-                                               value="{{ $container->no_of_pcs ?? '' }}" min="0">
-                                    </div>
-                                    <div class="col-xl col-md-3 col-sm-4">
-                                        <label class="form-label small mb-1">Gross Wt (Kg)</label>
-                                        <input type="number" name="gross_weight[]" class="form-control form-control-sm"
-                                               value="{{ $container->gross_weight ?? '' }}" step="0.01" min="0">
-                                    </div>
-                                    <div class="col-xl col-md-3 col-sm-4">
-                                        <label class="form-label small mb-1">Net Wt (Kg)</label>
-                                        <input type="number" name="net_weight[]" class="form-control form-control-sm"
-                                               value="{{ $container->net_weight ?? '' }}" step="0.01" min="0">
-                                    </div>
-                                    <div class="col-xl col-md-3 col-sm-4">
-                                        <label class="form-label small mb-1">Wt Unit</label>
-                                        <input type="text" name="weight_unit[]" class="form-control form-control-sm"
-                                               value="{{ $container->weight_unit ?? '' }}"
-                                               list="ctn-weight-unit-list" placeholder="KGS">
-                                    </div>
-                                </div>
+                                    </td>
 
-                                {{-- Row 2 --}}
-                                <div class="row g-2 align-items-end mt-1">
-                                    <div class="col-xl col-md-3 col-sm-4">
-                                        <label class="form-label small mb-1">Hazardous</label>
-                                        <select name="hazardous[]" class="form-select form-select-sm tom-select hazardous">
-                                            <option value="0" @selected(!isset($container->hazardous) || $container->hazardous == 0)>No</option>
-                                            <option value="1" @selected(($container->hazardous ?? 0) == 1)>Yes</option>
+                                    <td>
+                                        <x-common.container_types :value="$container->container_type ?? null"/>
+                                    </td>
+
+                                    <td>
+                                        <input type="text" name="container_no[]" class="form-control"
+                                               placeholder="ABC1234567" value="{{ $container->container_number ?? '' }}">
+                                    </td>
+
+                                    <td>
+                                        <input type="text" name="seal_no[]" class="form-control"
+                                               placeholder="SEAL001" value="{{ $container->seal_number ?? '' }}">
+                                    </td>
+
+                                    <td>
+                                        <input type="text" name="gross[]" class="form-control float" maxlength="10"
+                                               step="0.01" value="{{ $container->gross_weight ?? '' }}">
+                                    </td>
+
+                                    <td>
+                                        <input type="text" name="net[]" class="form-control float"
+                                               step="0.01" value="{{ $container->net_weight ?? '' }}">
+                                    </td>
+
+                                    <td>
+                                        <input type="text" name="vol[]" class="form-control float"
+                                               step="0.01" value="{{ $container->volume ?? '' }}">
+                                    </td>
+
+                                    <td>
+                                        <select name="haz[]" class="tom-select">
+                                            <option value="0" {{ ($container->hazardous ?? '') == 0 ? 'selected':'' }}>
+                                                No
+                                            </option>
+                                            <option value="1" {{ ($container->hazardous ?? '') == 1 ? 'selected':'' }}>
+                                                Yes
+                                            </option>
                                         </select>
-                                    </div>
-                                    <div class="col-xl col-md-3 col-sm-4">
-                                        <label class="form-label small mb-1">Volume (CBM)</label>
-                                        <input type="number" name="volume[]" class="form-control form-control-sm"
-                                               value="{{ $container->volume ?? '' }}" step="0.01" min="0">
-                                    </div>
-                                    <div class="col-xl col-md-3 col-sm-4">
-                                        <label class="form-label small mb-1">Volume Weight</label>
-                                        <input type="number" name="volume_weight[]" class="form-control form-control-sm"
-                                               value="{{ $container->volume_weight ?? '' }}" step="0.01" min="0">
-                                    </div>
-                                    <div class="col-xl col-md-3 col-sm-4">
-                                        <label class="form-label small mb-1">Vol Unit</label>
-                                        <input type="text" name="volume_unit[]" class="form-control form-control-sm"
-                                               value="{{ $container->volume_unit ?? '' }}"
-                                               list="ctn-volume-unit-list" placeholder="CBM">
-                                    </div>
-                                    <div class="col-xl col-md-3 col-sm-4">
-                                        <label class="form-label small mb-1">Chargeable Unit</label>
-                                        <input type="number" name="chargeable_unit[]" class="form-control form-control-sm"
-                                               value="{{ $container->chargeable_unit ?? '' }}" step="0.01" min="0" readonly>
-                                    </div>
-                                    <div class="col-xl col-md-3 col-sm-4">
-                                        <label class="form-label small mb-1">HS Code</label>
-                                        <input type="text" name="ctn_hs_code[]" class="form-control form-control-sm"
-                                               value="{{ $container->hs_code ?? '' }}" autocomplete="off">
-                                    </div>
-                                    <div class="col-xl col-md-3 col-sm-6">
-                                        <label class="form-label small mb-1">Container Type</label>
-                                        <x-common.container_types name="container_type[]" :value="$container->container_type ?? null"/>
-                                    </div>
-                                    <div class="col-xl col-md-3 col-sm-6">
-                                        <label class="form-label small mb-1">Description</label>
-                                        <textarea name="description[]" class="form-control form-control-sm" rows="1">{{ $container->description ?? '' }}</textarea>
-                                    </div>
-                                    <div class="col-xl col-md-3 col-sm-6">
-                                        <label class="form-label small mb-1">Consignment Remarks</label>
-                                        <textarea name="consignment_remarks[]" class="form-control form-control-sm" rows="1">{{ $container->consignment_remarks ?? '' }}</textarea>
-                                    </div>
-                                </div>
-                            </div>{{-- .card-body --}}
-                        </div>{{-- .container-card --}}
-                    @endforeach
-                    </div>{{-- #containerList --}}
+                                    </td>
 
-                    {{-- datalists (shared across all cards) --}}
-                    <datalist id="ctn-weight-unit-list">
-                        <option value="KGS"><option value="LBS"><option value="MT"><option value="TON">
-                    </datalist>
-                    <datalist id="ctn-volume-unit-list">
-                        <option value="CBM"><option value="CFT"><option value="CM">
-                    </datalist>
+                                    <td>
+                                        <div class="input-group">
+                                            <input type="text" step="0.01" name="container_qty[]"
+                                                   class="form-control integer" maxlength="6"
+                                                   placeholder="Qty"
+                                                   value="{{ $container->qty ?? '' }}">
+                                            <select name="container_uom[]" class="tom-select">
+                                                <option value="PCS" {{ ($container->uom ?? '')=='PCS'?'selected':'' }}>
+                                                    PCS
+                                                </option>
+                                                <option value="CTN" {{ ($container->uom ?? '')=='CTN'?'selected':'' }}>
+                                                    CTN
+                                                </option>
+                                                <option value="PKG" {{ ($container->uom ?? '')=='PKG'?'selected':'' }}>
+                                                    PKG
+                                                </option>
+                                                <option value="MT" {{ ($container->uom ?? '')=='MT'?'selected':'' }}>
+                                                    MT
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </td>
 
-                    <button type="button" id="addContainerRow" class="btn btn-sm btn-primary mt-1">
-                        <i class="bi bi-plus-circle me-1"></i>Add Container
-                    </button>
+                                    <td>
+                                        <input type="text" name="container_remark[]" class="form-control"
+                                               placeholder="Notes" value="{{ $container->remarks ?? '' }}">
+                                    </td>
+
+                                    <td class=" align-content-center">
+                                        <div class="d-flex justify-content-between gap-3 action-icons">
+                                            <div class="addContainerRow">
+                                                <i class="bi bi-plus-circle text-muted"></i>
+                                            </div>
+                                            <div class="remove-row">
+                                                <i class="bi bi-trash text-danger"></i>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                            @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+
                 </div>
 
                 <!-- Package Tab -->
                 <div class="tab-pane mt-4" id="package" role="tabpanel">
                     <table class="table align-middle" id="packageTable">
-                        <thead class="table-light">
+                        <thead>
                         <tr>
-                            <th>Commodity</th>
+                            <th>Type</th>
                             <th>Description</th>
-                            <th>HS Code</th>
+                            <th>Qty</th>
                             <th>L (cm)</th>
                             <th>W (cm)</th>
                             <th>H (cm)</th>
                             <th>Weight (Kg)</th>
+                            <th>Volume (m3)</th>
+                            <th>Total Weight (Kg)</th>
+                            <th>Chargeable Weight (Kg)</th>
                             <th width="5%"></th>
                         </tr>
                         </thead>
@@ -461,39 +443,87 @@
                         @php
                             $packages = $quotation->packages && $quotation->packages->count() > 0
                                 ? $quotation->packages
-                                : [null];
+                                : [new \App\Models\Quotation\QuotationPackage()];
                         @endphp
                         @foreach($packages as $package)
                             <tr>
                                 <td>
-                                    <select name="commodity_type[]" class="form-control tom-select">
+                                    <select name="package_type[]" class="tom-select" data-max-width="100">
                                         <option value="">Select</option>
-                                        @foreach(commodityType() as $id => $name)
-                                            <option
-                                                value="{{ $id }}" @selected($package && $package->commodity_type == $id)>{{ $name }}</option>
+                                        @foreach(packageType() as $id => $name)
+                                            <option value="{{ $id }}"
+                                                {{ $package && $package->package_type == $id ? 'selected' : '' }}>
+                                                {{ $name }}
+                                            </option>
                                         @endforeach
                                     </select>
                                 </td>
-                                <td><input type="text" name="description_goods[]" class="form-control"
-                                           value="{{ $package->description_goods ?? '' }}"></td>
-                                <td><input type="text" name="hs_code[]" class="form-control"
-                                           value="{{ $package->hs_code ?? '' }}"></td>
-                                <td><input type="number" name="length[]" class="form-control"
-                                           value="{{ $package->length ?? '' }}"></td>
-                                <td><input type="number" name="width[]" class="form-control"
-                                           value="{{ $package->width ?? '' }}"></td>
-                                <td><input type="number" name="height[]" class="form-control"
-                                           value="{{ $package->height ?? '' }}"></td>
-                                <td><input type="number" name="package_weight[]" class="form-control"
-                                           value="{{ $package->package_weight ?? '' }}"></td>
+
                                 <td>
-                                    <button type="button" class="btn btn-danger btn-sm remove-row">X</button>
+                                    <input type="text" name="description_goods[]" class="form-control"
+                                           value="{{ $package->description_goods ?? '' }}">
+                                </td>
+
+                                <td>
+                                    <input type="text" name="quantity[]" class="form-control integer quantity"
+                                           data-decimal="3"
+                                           value="{{ amountFormat($package->quantity,3) ?? '' }}">
+                                </td>
+
+                                <td>
+                                    <input type="text" name="length[]" class="form-control float length"
+                                           data-decimal="3"
+                                           value="{{ amountFormat($package->length,3) ?? '' }}">
+                                </td>
+
+                                <td>
+                                    <input type="text" name="width[]" class="form-control float width" data-decimal="3"
+                                           value="{{ amountFormat($package->width,3) ?? '' }}">
+                                </td>
+
+                                <td>
+                                    <input type="text" name="height[]" class="form-control float height"
+                                           data-decimal="3"
+                                           value="{{ amountFormat($package->height,3) ?? '' }}">
+                                </td>
+
+                                <td>
+                                    <input type="text" name="package_weight[]" class="form-control float weight"
+                                           data-decimal="3"
+                                           value="{{ amountFormat($package->package_weight,3) ?? '' }}">
+                                </td>
+
+                                <td>
+                                    <input type="text" name="package_volume[]" class="form-control float volume"
+                                           value="{{ amountFormat($package->volume,3) ?? '' }}">
+                                </td>
+
+                                <td>
+                                    <input type="text" name="total_weight[]" class="form-control float total_weight"
+                                           data-decimal="3"
+                                           value="{{ amountFormat($package->total_weight,3) ?? '' }}">
+                                </td>
+
+                                <td>
+                                    <input type="text" name="chargeable_weight[]"
+                                           class="form-control float chargeable_weight" data-decimal="3"
+                                           value="{{ amountFormat($package->chargeable_weight,3) ?? '' }}">
+                                </td>
+
+                                <td class="align-content-center">
+                                    <div class="d-flex justify-content-between gap-3 action-icons">
+                                        <div class="addPackageRow">
+                                            <i class="bi bi-plus-circle text-muted"></i>
+                                        </div>
+                                        <div class="remove-row">
+                                            <i class="bi bi-trash text-danger"></i>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach
                         </tbody>
                     </table>
-                    <button type="button" id="addPackageRow" class="btn btn-sm btn-primary">+ Add Package</button>
                 </div>
 
                 <!-- Charges Tab -->

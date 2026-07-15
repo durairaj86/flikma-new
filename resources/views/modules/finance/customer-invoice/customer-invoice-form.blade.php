@@ -67,10 +67,10 @@
                             </small>
                         @endif
                     </div>
-                    <div class="col-md-4 mt-3">
+                    {{--<div class="col-md-4 mt-3">
                         <label class="form-label required">Freza Invoice No <sup class="text-danger">*</sup></label>
                         <input name="row_no" class="form-control" required value="{{ $customer->row_no }}">
-                    </div>
+                    </div>--}}
 
                     <!-- Currency -->
                     <div class="col-md-4">

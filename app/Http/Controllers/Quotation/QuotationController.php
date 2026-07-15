@@ -109,23 +109,30 @@ class QuotationController extends Controller
             'pickup_date' => 'nullable|date',
             'enquiry_id' => 'nullable|integer|exists:enquiries,id',
 
-            // Containers (array)
-            /*'container_number.*' => 'nullable|string|max:20',
-            'seal_number.*'      => 'nullable|string|max:20',
-            'container_size.*'   => 'required|string|in:20ft,40ft,40ft HC,45ft',
-            'gross_weight.*'     => 'nullable|numeric|min:0|max:999999.99',
-            'net_weight.*'       => 'nullable|numeric|min:0|max:999999.99',
-            'volume.*'           => 'nullable|numeric|min:0|max:999999.99',
-            'hazardous.*'        => 'nullable|in:Yes,No',*/
+            // Containers (array) — same field set as Job's Container tab
+            'container_size.*'   => 'nullable|string|max:50',
+            'container_type.*'   => 'nullable|string',
+            'container_no.*'     => 'nullable|string|max:50',
+            'seal_no.*'          => 'nullable|string|max:50',
+            'gross.*'            => 'nullable|numeric|min:0',
+            'net.*'              => 'nullable|numeric|min:0',
+            'vol.*'              => 'nullable|numeric|min:0',
+            'haz.*'              => 'nullable|in:0,1',
+            'container_qty.*'    => 'nullable|numeric|min:0',
+            'container_uom.*'    => 'nullable|string|max:10',
+            'container_remark.*' => 'nullable|string|max:255',
 
-            // Packages (array)
-            /*'hs_code.*'          => 'nullable|string|max:20',
-            'description_goods.*'=> 'nullable|string|max:255',
-            'commodity_type.*'   => 'required|string|in:General,Hazardous,Perishable,Reefer',
-            'length.*'           => 'nullable|numeric|min:0|max:9999.99',
-            'width.*'            => 'nullable|numeric|min:0|max:9999.99',
-            'height.*'           => 'nullable|numeric|min:0|max:9999.99',
-            'package_weight.*'   => 'nullable|numeric|min:0|max:999999.99',*/
+            // Packages (array) — same field set as Job's Package tab
+            'package_type.*'      => 'nullable|string|max:50',
+            'description_goods.*' => 'nullable|string|max:255',
+            'quantity.*'           => 'nullable|numeric|min:0',
+            'length.*'             => 'nullable|numeric|min:0',
+            'width.*'              => 'nullable|numeric|min:0',
+            'height.*'             => 'nullable|numeric|min:0',
+            'package_weight.*'     => 'nullable|numeric|min:0',
+            'package_volume.*'     => 'nullable|numeric|min:0',
+            'total_weight.*'       => 'nullable|numeric|min:0',
+            'chargeable_weight.*'  => 'nullable|numeric|min:0',
 
             // Charges (array) — all nullable; charge tab is optional
             'chg_description.*'  => 'nullable|string|max:255',
@@ -187,33 +194,24 @@ class QuotationController extends Controller
                 ->update(['status' => EnquiryEnum::QUOTATION->value]);
         }
 
-        // ✅ Insert containers
-        $containerSizes = array_filter($request->container_size ?? []);
-        if (!empty($containerSizes)) {
+        // ✅ Insert containers (same field set as Job's Container tab)
+        if ($request->has('container_size')) {
             $containers = [];
             foreach ($request->container_size as $index => $size) {
-                if (empty($size)) continue;
+                if (!$size) continue;
                 $containers[] = [
-                    'quotation_id'       => $quotation->id,
-                    'container_size'     => $size,
-                    'container_number'   => $request->container_number[$index] ?? null,
-                    'seal_number'        => $request->seal_number[$index] ?? null,
-                    'carrier'            => $request->ctn_carrier[$index] ?? null,
-                    'vessel_name'        => $request->vessel_name[$index] ?? null,
-                    'voyage_no'          => $request->voyage_no[$index] ?? null,
-                    'no_of_pcs'          => $request->no_of_pcs[$index] ?? null,
-                    'gross_weight'       => $request->gross_weight[$index] ?? null,
-                    'net_weight'         => $request->net_weight[$index] ?? null,
-                    'weight_unit'        => $request->weight_unit[$index] ?? null,
-                    'volume'             => $request->volume[$index] ?? null,
-                    'volume_weight'      => $request->volume_weight[$index] ?? null,
-                    'volume_unit'        => $request->volume_unit[$index] ?? null,
-                    'chargeable_unit'    => $request->chargeable_unit[$index] ?? null,
-                    'container_type'     => $request->container_type[$index] ?? null,
-                    'hs_code'            => $request->ctn_hs_code[$index] ?? null,
-                    'description'        => $request->description[$index] ?? null,
-                    'consignment_remarks'=> $request->consignment_remarks[$index] ?? null,
-                    'hazardous'          => $request->hazardous[$index] ?? 0,
+                    'quotation_id'    => $quotation->id,
+                    'container_size'  => $size,
+                    'container_number'=> $request->container_no[$index] ?? null,
+                    'seal_number'     => $request->seal_no[$index] ?? null,
+                    'gross_weight'    => $request->gross[$index] ?? null,
+                    'net_weight'      => $request->net[$index] ?? null,
+                    'volume'          => $request->vol[$index] ?? null,
+                    'hazardous'       => $request->haz[$index] ?? 0,
+                    'qty'             => $request->container_qty[$index] ?? null,
+                    'uom'             => $request->container_uom[$index] ?? null,
+                    'remarks'         => $request->container_remark[$index] ?? null,
+                    'container_type'  => $request->container_type[$index] ?? 'dry',
                 ];
             }
             DB::table('quotation_containers')->where('quotation_id', $quotation->id)->delete();
@@ -222,21 +220,23 @@ class QuotationController extends Controller
             }
         }
 
-        // ✅ Insert packages
-        $commodityTypes = array_filter($request->commodity_type ?? []);
-        if (!empty($commodityTypes)) {
+        // ✅ Insert packages (same field set as Job's Package tab)
+        if ($request->has('package_type')) {
             $packages = [];
-            foreach ($request->commodity_type as $index => $type) {
-                if (empty($type)) continue;
+            foreach ($request->package_type as $index => $package_type) {
+                if (!$package_type && !$request->description_goods[$index]) continue;
                 $packages[] = [
-                    'hs_code' => $request->hs_code[$index] ?? null,
+                    'quotation_id'      => $quotation->id,
+                    'package_type'      => $package_type,
                     'description_goods' => $request->description_goods[$index] ?? null,
-                    'commodity_type' => $type,
-                    'length' => $request->length[$index] ?? null,
-                    'width' => $request->width[$index] ?? null,
-                    'height' => $request->height[$index] ?? null,
-                    'package_weight' => $request->package_weight[$index] ?? null,
-                    'quotation_id' => $quotation->id,
+                    'quantity'          => $request->quantity[$index] ?? null,
+                    'length'            => $request->length[$index] ?? null,
+                    'width'             => $request->width[$index] ?? null,
+                    'height'            => $request->height[$index] ?? null,
+                    'package_weight'    => $request->package_weight[$index] ?? null,
+                    'total_weight'      => $request->total_weight[$index] ?? null,
+                    'chargeable_weight' => $request->chargeable_weight[$index] ?? null,
+                    'volume'            => $request->package_volume[$index] ?? null,
                 ];
             }
             DB::table('quotation_packages')->where('quotation_id', $quotation->id)->delete();

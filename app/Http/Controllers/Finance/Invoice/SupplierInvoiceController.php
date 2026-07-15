@@ -11,6 +11,7 @@ use App\Models\Finance\SupplierInvoice\SupplierInvoice;
 use App\Models\Finance\SupplierInvoice\SupplierInvoiceSub;
 use App\Models\Job\Job;
 use App\Models\Master\Description;
+use App\Models\Master\LogisticActivity;
 use App\Traits\Finance\SupplierFinanceOperation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -67,6 +68,28 @@ class SupplierInvoiceController extends Controller
             $job_id = decodeId($job_id);
         }
         $filter = $request->filterData ?? [];
+
+        // Shared filters so the tab counts and summary cards always match
+        // the visible list (company scoping is applied globally on the
+        // SupplierInvoice model).
+        $applyFilters = function ($query) use ($filter, $job_id) {
+            $query->when($job_id != 'list', function ($query) use ($job_id) {
+                $query->where('job_id', $job_id);
+            })
+            ->when(isset($filter['filter-from-date'], $filter['filter-to-date']),
+                function ($query) use ($filter) {
+                    $from = Carbon::parse($filter['filter-from-date'])->startOfDay();
+                    $to   = Carbon::parse($filter['filter-to-date'])->addDay()->startOfDay();
+
+                    $query->where('invoice_date', '>=', $from)
+                        ->where('invoice_date', '<',  $to);
+                }
+            )
+            ->when(isset($filter['suppliers']) && !empty($filter['suppliers']), function ($query) use ($filter) {
+                $query->whereIn('supplier_id', decodeIds($filter['suppliers']));
+            });
+        };
+
         $rows = SupplierInvoice::select(
             'row_no',
             'supplier_invoices.id as id',
@@ -89,33 +112,16 @@ class SupplierInvoiceController extends Controller
             'supplier_invoices.company_id as company_id',
         )
             ->with(['supplier:id,name_en,name_ar,row_no'])
-            ->with(['job:id,shipment_mode'])// eager load customer
+            ->with(['job:id,shipment_mode,activity_id'])
             ->when($request->tab, function ($q) use ($request) {
                 $q->where('supplier_invoices.status', SupplierInvoiceEnum::fromName($request->tab));
             })
-            ->when($job_id != 'list', function ($query) use ($job_id) {
-                $query->where('job_id', $job_id);
-            })
-            ->when(isset($filter['filter-from-date'], $filter['filter-to-date']),
-                function ($query) use ($filter) {
-
-                    $from = Carbon::parse($filter['filter-from-date'])->startOfDay();
-                    $to   = Carbon::parse($filter['filter-to-date'])->addDay()->startOfDay();
-
-                    $query->where('invoice_date', '>=', $from)
-                        ->where('invoice_date', '<',  $to);
-                }
-            )
-            ->when(isset($filter['suppliers']) && !empty($filter['suppliers']), function ($query) use ($filter) {
-                $query->whereIn('supplier_id', decodeIds($filter['suppliers']));
-            })
+            ->tap($applyFilters)
             ->orderBy('supplier_invoices.id', 'desc');
 
-        // ✅ Get counts per status
+        // Counts per status using the same filters as the list
         $statusCounts = SupplierInvoice::select('status', DB::raw('COUNT(*) as total'))
-            ->when($job_id != 'list', function ($query) use ($job_id) {
-                $query->where('job_id', $job_id);
-            })
+            ->tap($applyFilters)
             ->groupBy('status')
             ->pluck('total', 'status')
             ->toArray();
@@ -125,10 +131,28 @@ class SupplierInvoiceController extends Controller
         foreach (SupplierInvoiceEnum::cases() as $status) {
             $allCounts[$status->name] = $statusCounts[$status->value] ?? 0;
         }
+        $allCounts['all'] = array_sum($allCounts);
+
+        // Summary card totals (Draft/Approved), same shape as the customer
+        // invoice list so the same card + JS pattern can be reused.
+        $salesSummary = SupplierInvoice::select([
+            DB::raw('SUM(grand_total) as overall_sales'),
+            DB::raw('SUM(CASE WHEN status = 1 THEN grand_total ELSE 0 END) as total_draft_grand'),
+            DB::raw('SUM(CASE WHEN status = 1 THEN sub_total ELSE 0 END) as total_draft_sub'),
+            DB::raw('SUM(CASE WHEN status = 1 THEN tax_total ELSE 0 END) as total_draft_tax'),
+            DB::raw('SUM(CASE WHEN status = 3 THEN grand_total ELSE 0 END) as total_approved_grand'),
+            DB::raw('SUM(CASE WHEN status = 3 THEN sub_total ELSE 0 END) as total_approved_sub'),
+            DB::raw('SUM(CASE WHEN status = 3 THEN tax_total ELSE 0 END) as total_approved_tax'),
+        ])
+            ->tap($applyFilters)
+            ->first();
+
         $decimals = decimals();
+        $activity = LogisticActivity::activities();
         // ✅ Return formatted DataTable
         return DataTables::eloquent($rows)
             ->addIndexColumn()
+            ->addColumn('job_activity', fn($model) => $model->job ? ($activity->where('id', $model->job->activity_id)->pluck('name')->first() ?? '-') : '-')
             ->setRowAttr([
                 'data-id' => fn($model) => $model->id,
                 'data-name' => fn($model) => 'Supplier #' . htmlspecialchars($model->invoice_no, ENT_QUOTES, 'UTF-8'),
@@ -137,7 +161,6 @@ class SupplierInvoiceController extends Controller
             ])
             ->editColumn('invoice_date', fn($model) => Carbon::parse($model->invoice_date)->format('d-M-Y'))
             ->editColumn('currency', fn($model) => strtoupper($model->currency))
-            ->addColumn('customer_name', fn($model) => $model->customer?->name_en ?? '-')
             ->editColumn('base_total', fn($model) => number_format($model->base_tax_total + $model->base_sub_total, $decimals))
             ->editColumn('grand_total', fn($model) => number_format($model->grand_total, $decimals))
             ->editColumn('due_at', fn($model) => Carbon::parse($model->due_at)->format('d-M-Y'))
@@ -169,6 +192,7 @@ class SupplierInvoiceController extends Controller
             /*->editColumn('created_at', fn($model) => \Carbon\Carbon::parse($model->created_at)->format('d-m-Y'))*/
             ->with([
                 'statusCounts' => $allCounts,
+                'salesSummary' => $salesSummary,
             ])
             ->toJson();
     }

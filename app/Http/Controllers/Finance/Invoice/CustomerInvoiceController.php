@@ -98,9 +98,9 @@ class CustomerInvoiceController extends Controller
         )
             ->with(['customer:id,name_en,name_ar,row_no'])
             ->with(['job:id,shipment_mode,pol,pod,activity_id,carrier,shipment_mode'])// eager load customer
-            /*->when($request->tab, function ($q) use ($request) {
+            ->when($request->tab, function ($q) use ($request) {
                 $q->where('customer_invoices.status', CustomerInvoiceEnum::fromName($request->tab));
-            })*/
+            })
             ->when($job_id != 'list', function ($query) use ($job_id) {
                 $query->where('job_id', $job_id);
             })
@@ -315,7 +315,15 @@ class CustomerInvoiceController extends Controller
         } else {
             $customer = new CustomerInvoice();
 
-            //$customer->row_no = 'DR' . date('ydis') . rand(100, 999);
+            // Draft number now (row_no input was removed from the form, and
+            // this generator was disabled without a replacement, so every
+            // new invoice saved with row_no = NULL). unique_row_no anchors
+            // both this draft number and the invoice number assigned on
+            // approval below, so the two stay related to the same sequence.
+            $year = Carbon::parse($request->invoice_date)->format('Y');
+            $lastRowNo = CustomerInvoice::whereYear('invoice_date', $year)->max('unique_row_no') ?? 0;
+            $customer->unique_row_no = $lastRowNo + 1;
+            $customer->row_no = 'DR-' . date('y') . '-' . sprintf('%04d', $customer->unique_row_no);
 
             $job = Job::select('row_no')->find($request->input('job_id'));
             if ($job) {
@@ -343,8 +351,11 @@ class CustomerInvoiceController extends Controller
         $grandTotal = $subTotal + $taxTotal;
 
         // 🔹 Assign totals
+        // row_no is generated once above (new invoice) and never touched
+        // again here — this used to unconditionally overwrite it with an
+        // empty request field on every save, including edits of an
+        // already-numbered draft.
         $customer->job_id = $validated['job_id'] ?? null;
-        $customer->row_no = $request['row_no'] ?? null;
         $customer->customer_id = $validated['customer'] ?? null;
         $customer->invoice_date = $validated['invoice_date'];
         $customer->due_at = $validated['due_date'];
@@ -617,7 +628,7 @@ class CustomerInvoiceController extends Controller
                 $lastRowNo = CustomerInvoice::whereYear('invoice_date', $year)->max('unique_row_no') ?? 0;
                 $customerInvoice->unique_row_no = $lastRowNo + 1;
                 $customerInvoice->draft_no = $customerInvoice->row_no;
-                //$customerInvoice->row_no = 'IN/' . date('y') . '/' . sprintf('%04d', $customerInvoice->unique_row_no);//Temporary
+                $customerInvoice->row_no = 'IN/' . date('y') . '/' . sprintf('%04d', $customerInvoice->unique_row_no);
                 $customerInvoice->save();
 
                 // Create finance entries when invoice is approved

@@ -124,35 +124,14 @@ CUSTOMER_INVOICE = {
                 },
                 columnDefs: [
                     {targets: [0], searchable: false},
-                    {targets: [0, 1, 2, 3, 4, 5, 6, 7, 8], orderable: false},
-                    /*{targets: [0, 1, 2, 3, 4, 5, 6, 7, 8], class: 'px-3 py-2 text-nowrap'},*/
+                    {targets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], orderable: false},
                 ],
                 columns: [
-                    /*{
-                        data: 'row_no', render: function (data, type, row) {
-                            let text = '<span class="badge bg-danger-subtle text-muted me-2 text-xsmall">Cancelled</span>';
-                            if (row.status == 1) {
-                                $class = 'text-muted';
-                                text = ''
-                            } else if (row.status == 3) {
-                                $class = 'main-text fw-bold';
-                                text = '<span class="badge bg-primary-subtle text-success  me-2 text-xsmall">Approved</span>';
-                            } else {
-                                $class = 'text-danger';
-                            }
-                            if (row.tax_submit_status == 4) {
-                                text = '<span class="badge bg-success-subtle text-success me-2 text-xsmall">Cleared</span>';
-                            } else if (row.tax_submit_status == 5) {
-                                text = '<span class="badge bg-warning-subtle text-success me-2 text-xsmall">Reported</span>';
-                            }
-                            return '<div class="' + $class + ' pb-1">' + row.row_no + '</div>' + text + '<!--<span class="badge rounded-pill bg-success-subtle text-success text-xsmall">Paid</span>-->';
-                        }
-                    },*/
                     {
-                        data: 'row_no',
-                        class: 'ps-4 ',
-                        style: 'border-left: 6px solid #0d6efd; border-top-left-radius: 10px; border-bottom-left-radius: 10px;',
-                        render: (data, type, row) => templates.rowInfo(data, row)
+                        data: 'row_no', render: (data, type, row) => templates.invoiceNumber(row)
+                    },
+                    {
+                        data: 'job_no', render: (data, type, row) => templates.job(row)
                     },
                     {
                         data: 'customer_name', render: (data, type, row) => templates.customer(row)
@@ -160,54 +139,18 @@ CUSTOMER_INVOICE = {
                     {
                         data: 'customer_name', render: (data, type, row) => templates.polPod(row)
                     },
-                    /*{
-                        data: 'customer.name_en', render: function (data, type, row) {
-                            return '<div class="fw-bold">' + row.job_no + '</div><div class="text-secondary small">' + row.job_activity + '</div>';
-                        }
-                    },*/
-                    /*{
-                        data: 'job.pol', render: function (data, type, row) {
-                            let pol_pod = '';
-                            if (row.job.pol) {
-                                pol_pod = '<span class="text-secondary small me-1">POL:</span><span>' + row.job.pol + '</span>';
-                            }
-                            if (row.job.pod) {
-                                if (pol_pod) {
-                                    pol_pod += '<br>';
-                                }
-                                return pol_pod + '<span class="text-secondary small me-1">POD:</span><span>' + row.job.pod + '</span>';
-                            }
-                            return pol_pod;
-                        }
-                    },*/
-                    /*{
-                        data: 'currency', render: function (data, type, row) {
-                            if (row.currency == baseCurrency) {
-                                return '<div>' + row.currency + '</div>';
-                            } else {
-                                return '<div>' + row.currency + ' → SAR</div><small class="text-muted">1 ' + row.currency + ' = ' + row.currency_rate + ' ' + baseCurrency + '</small>';
-                            }
-                        }
-                    },*/
-                    /*{
-                        data: 'base_total', render: function (data, type, row) {
-                            return '<div class="text-end text-secondary">' + row.base_total + '</div><div class="text-end"><small class="text-muted">' + baseCurrency + '</small></div>';
-                        }
-                    },*/
                     {
                         data: 'sub_total', class: 'text-end', render: function (data, type, row) {
-                            return '<div class="fw-bold text-dark">' + amountFormat(row.sub_total) + '</div><div class="text-muted x-small">' + row.currency + '</div>';
+                            return '<div class="cell-primary">' + amountFormat(row.sub_total) + '</div><div class="cell-secondary">' + row.currency + '</div>';
                         }
                     },
                     {
                         data: 'tax_total', class: 'text-end', render: function (data, type, row) {
-                            return '<div class="fw-medium text-muted">' + amountFormat(row.tax_total) + '</div>';
+                            return '<div class="cell-primary">' + amountFormat(row.tax_total) + '</div>';
                         }
                     },
                     {
-                        data: 'balance', class: 'text-end', render: function (data, type, row) {
-                            return '<div class="fw-bold text-danger fs-6">' + row.balance + '</div>';
-                        }
+                        data: 'balance', class: 'text-end', render: (data, type, row) => templates.balance(row)
                     },
                     {
                         data: 'invoice_date', class: 'text-end', render: (data, type, row) => templates.invoice(row)
@@ -253,40 +196,45 @@ CUSTOMER_INVOICE = {
             $('#total_approved_tax').text(amountFormat(data.total_approved_tax));
         },
         templates: {
-            rowInfo: (data, row) => {
-                let text = '<span class="badge bg-danger-subtle text-muted me-2 text-xsmall">Cancelled</span>';
-                if (row.status == 1) {
-                    $class = 'text-muted';
-                    text = '<span class="badge bg-secondary-subtle me-2 text-xsmall">Draft</span>';
-                } else if (row.status == 3) {
-                    $class = 'main-text fw-bold';
-                    text = '<span class="badge bg-primary-subtle text-success me-2 text-xsmall">Approved</span>';
-                } else {
-                    $class = 'text-danger';
-                }
-                if (row.tax_submit_status == 4) {
-                    text = '<span class="badge bg-success-subtle text-success me-2 text-xsmall">Cleared</span>';
-                } else if (row.tax_submit_status == 5) {
-                    text = '<span class="badge bg-warning-subtle text-success me-2 text-xsmall">Reported</span>';
-                }
+            // Every cell below follows the same 2-line convention: a bold
+            // primary line, and one small muted caption underneath.
+            statusBadge: {
+                1: '<span class="badge bg-secondary-subtle text-secondary-emphasis">Draft</span>',
+                2: '<span class="badge bg-info-subtle text-info-emphasis">Sent</span>',
+                3: '<span class="badge bg-success-subtle text-success-emphasis">Approved</span>',
+                4: '<span class="badge bg-danger-subtle text-danger-emphasis">Rejected</span>',
+                5: '<span class="badge bg-danger-subtle text-danger-emphasis">Cancelled</span>',
+                6: '<span class="badge bg-primary-subtle text-primary-emphasis">Converted</span>',
+            },
+            invoiceNumber: (row) => `<div class="cell-primary">${row.row_no ?? ''}</div><div class="mt-1">${CUSTOMER_INVOICE.list.templates.statusBadge[row.status] ?? ''}</div>`,
 
-                return `<div class="fw-bold text-dark mb-0">${row.row_no}</div><div class="text-muted" style="font-size: 0.7rem;">JOB: <span class="text-primary fw-bold">${row.job_no}</span></div><div class="${$class} pb-1">` + text + `</div>`
+            job: (row) => `<div class="cell-primary">${row.job_no ?? '—'}</div><div class="cell-secondary">${row.job_activity ?? ''}</div>`,
+
+            customer: (row) => `<div class="cell-primary">${row.customer?.name_en ?? ''}</div><div class="cell-secondary">${row.customer?.row_no ?? ''}</div>`,
+
+            polPod: (row) => {
+                // Not every customer invoice is tied to a job (e.g. those
+                // created directly, not from a job), so row.job can be null.
+                if (!row.job || (!row.job.pol_code && !row.job.pod_code)) return '<span class="cell-secondary">—</span>';
+                return `<div class="cell-primary d-flex align-items-center gap-1">
+                            <span>${row.job.pol_code ?? ''}</span>
+                            <i class="bi ${row.job.shipment_mode == 'air' ? 'bi-airplane' : 'bi-truck'} text-primary" style="font-size: 0.7rem;"></i>
+                            <span>${row.job.pod_code ?? ''}</span>
+                        </div><div class="cell-secondary">${row.job.carrier ?? ''}</div>`;
             },
 
-            customer: (row) => `<div class="lh-sm"><div class="small fw-bold text-dark">${row.customer.name_en}</div><div class="text-muted" style="font-size: 0.7rem;">${row.customer.row_no}</div></div>`,
-            polPod: (row) => `<div class="d-flex align-items-center gap-2">
-                                    <span class="fw-bold text-dark">${row.job.pol_code}</span>
-                                    <i class="bi ${row.job.shipment_mode == 'air' ? 'bi-airplane' : 'bi-truck'} text-primary" style="font-size: 0.8rem;"></i>
-                                    <span class="fw-bold text-dark">${row.job.pod_code}</span>
-                                </div><div class="x-small text-muted mt-1">Flight: ${row.job.carrier}</div>`,
-            invoice: (row) => `<div class="lh-sm">
-                                    <div class="x-small text-muted text-uppercase">Inv: <span class="text-dark fw-medium">${row.invoice_date}</span></div>
-                                    <div class="x-small text-muted text-uppercase mt-1">Due: <span class="text-danger fw-bold">${row.due_at}</span></div>
-                                </div>`,
-            aging: (row) => `<div class="badge ${row.due_days.class} border border-opacity-10 px-3 py-2" style="font-size: 0.65rem;">
-                                    ${row.due_days.label}
-                                </div>`,
-            //<div class="text-info fw-medium" style="font-size: 0.7rem;"><i class="bi bi-person-check me-1"></i>Ops: Anil S.</div>
+            invoice: (row) => `<div class="cell-primary">${row.invoice_date}</div><div class="cell-secondary">Due ${row.due_at}</div>`,
+
+            aging: (row) => `<span class="badge ${row.due_days.class} border border-opacity-10 px-2 py-1" style="font-size: 0.65rem;">${row.due_days.label}</span>`,
+
+            // due_status from the API is a hardcoded stub (always "unpaid"),
+            // so paid/unpaid is computed here from the real totals instead.
+            balance: (row) => {
+                const grand = parseFloat(String(row.grand_total).replace(/,/g, '')) || 0;
+                const paid = parseFloat(row.paid_amount) || 0;
+                const isPaid = grand > 0 && paid >= grand;
+                return `<div class="cell-primary">${row.balance}</div><div class="cell-secondary ${isPaid ? 'text-success' : 'text-danger'}">${isPaid ? 'Paid' : 'Unpaid'}</div>`;
+            },
         },
         extraActions(row) {
             CUSTOMER_INVOICE.list.actions.statusChange(row);

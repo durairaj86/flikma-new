@@ -118,93 +118,64 @@
         </div>
 
 
-        <div class="container-fluid pb-4">
-            <div class="row g-4">
+        <div class="container-fluid pb-3">
+            <div class="row g-3">
 
                 <div class="col-12 col-lg-4">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <div>
-                                    <h6 class="text-uppercase text-muted fw-bold small mb-1">Total Net Sales</h6>
-                                    <h4 class="fw-black mb-0 text-primary"><span id="overall_sales">0.00</span> <small class="fs-6 fw-medium">SAR</small></h4>
-                                </div>
-                                <div class="bg-primary-subtle p-3 rounded-3">
-                                    <i class="bi bi-file-earmark-bar-graph fs-4 text-primary"></i>
-                                </div>
+                    <div class="rounded-3 bg-body-tertiary px-4 py-3 h-100">
+                        <h6 class="text-uppercase text-muted fw-semibold small mb-3" style="letter-spacing:.03em;">Summary</h6>
+                        <div class="row g-2 text-center">
+                            <div class="col-4">
+                                <div id="allCount" class="fs-4 fw-bold mb-0">0</div>
+                                <small class="text-muted">Total Invoices</small>
                             </div>
-
-                            <div class="row g-0 text-center border-top pt-3">
-                                <div class="col-3 border-end">
-                                    <div id="allCount" class="h5 fw-bold mb-0">0</div>
-                                    <small class="text-muted text-uppercase" style="font-size: 0.65rem;">Total</small>
-                                </div>
-                                <div class="col-3 border-end">
-                                    <div id="approvedCount" class="h5 fw-bold text-success mb-0">0</div>
-                                    <small class="text-muted text-uppercase" style="font-size: 0.65rem;">Paid</small>
-                                </div>
-                                <div class="col-3 border-end">
-                                    <div id="draftCount" class="h5 fw-bold text-warning mb-0">0</div>
-                                    <small class="text-muted text-uppercase" style="font-size: 0.65rem;">Draft</small>
-                                </div>
-                                <div class="col-3">
-                                    <div id="cancelledCount" class="h5 fw-bold text-danger mb-0">0</div>
-                                    <small class="text-muted text-uppercase" style="font-size: 0.65rem;">Void</small>
-                                </div>
+                            <div class="col-4">
+                                <div id="approvedCount" class="fs-4 fw-bold mb-0">0</div>
+                                <small class="text-muted">Approved</small>
+                            </div>
+                            <div class="col-4">
+                                <div id="draftCount" class="fs-4 fw-bold mb-0">0</div>
+                                <small class="text-muted">Draft</small>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="col-12 col-lg-4">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <div>
-                                    <h6 class="text-uppercase text-muted fw-bold small mb-1">Outstanding Receivable</h6>
-                                    <h4 class="fw-black mb-0 text-danger"><span id="total_approved_grand">0.00</span> <small class="fs-6 fw-medium text-dark">SAR</small></h4>
-                                </div>
-                                <div class="bg-success-subtle p-3 rounded-3">
-                                    <i class="bi bi-check-circle fs-4 text-success"></i>
-                                </div>
+                    <div class="rounded-3 bg-success-subtle px-4 py-3 h-100">
+                        <h6 class="text-uppercase text-success-emphasis fw-semibold small mb-3" style="letter-spacing:.03em;">Approved Invoices</h6>
+                        <div class="row g-2 text-center">
+                            <div class="col-4">
+                                <div id="total_approved_sub" class="fs-4 fw-bold mb-0">0.00</div>
+                                <small class="text-muted">Total Amount</small>
                             </div>
-
-                            <div class="d-flex gap-4 border-top pt-3">
-                                <div>
-                                    <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.7rem;">Excl. Tax</small>
-                                    <span id="total_approved_sub" class="fw-bold">0.00</span>
-                                </div>
-                                <div>
-                                    <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.7rem;">VAT Amount</small>
-                                    <span id="total_approved_tax" class="fw-bold">0.00</span>
-                                </div>
+                            <div class="col-4">
+                                <div id="total_approved_tax" class="fs-4 fw-bold mb-0">0.00</div>
+                                <small class="text-muted">Total Tax</small>
+                            </div>
+                            <div class="col-4">
+                                <div id="total_approved_grand" class="fs-4 fw-bold mb-0">0.00</div>
+                                <small class="text-muted">Net Sales</small>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="col-12 col-lg-4">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <div>
-                                    <h6 class="text-uppercase text-muted fw-bold small mb-1">Net Draft Value</h6>
-                                    <h4 class="fw-black mb-0 text-dark"><span id="total_draft_grand">0.00</span> <small class="fs-6 fw-medium">SAR</small></h4>
-                                </div>
-                                <div class="bg-secondary-subtle p-3 rounded-3">
-                                    <i class="bi bi-pencil-square fs-4 text-secondary"></i>
-                                </div>
+                    <div class="rounded-3 bg-warning-subtle px-4 py-3 h-100">
+                        <h6 class="text-uppercase text-warning-emphasis fw-semibold small mb-3" style="letter-spacing:.03em;">Draft Invoices</h6>
+                        <div class="row g-2 text-center">
+                            <div class="col-4">
+                                <div id="total_draft_sub" class="fs-4 fw-bold mb-0">0.00</div>
+                                <small class="text-muted">Total Amount</small>
                             </div>
-
-                            <div class="d-flex gap-4 border-top pt-3">
-                                <div>
-                                    <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.7rem;">Excl. Tax</small>
-                                    <span id="total_draft_sub" class="fw-bold">0.00</span>
-                                </div>
-                                <div>
-                                    <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.7rem;">VAT Amount</small>
-                                    <span id="total_draft_tax" class="fw-bold">0.00</span>
-                                </div>
+                            <div class="col-4">
+                                <div id="total_draft_tax" class="fs-4 fw-bold mb-0">0.00</div>
+                                <small class="text-muted">Total Tax</small>
+                            </div>
+                            <div class="col-4">
+                                <div id="total_draft_grand" class="fs-4 fw-bold mb-0">0.00</div>
+                                <small class="text-muted">Net Sales</small>
                             </div>
                         </div>
                     </div>
@@ -229,18 +200,19 @@
             </div>
 
             <div class="">
-                <table class="table align-middle dataTable" style="border-collapse: separate; border-spacing: 0 10px;" id="dataTable" data-min-height="min-height:75vh;" data-title="Job" data-model-size="lg">
-                    <thead class="table-light bg-white">
-                    <tr class="text-muted" style="font-size: 0.65rem; letter-spacing: 0.5px;">
-                        <th class="border-0">Invoice / Job Ref</th>
-                        <th class="border-0">Customer</th>
-                        <th class="border-0">Route & Carrier</th>
-                        <th class="text-end border-0">Total Excl. VAT</th>
-                        <th class="text-end border-0">Tax Amount</th>
-                        <th class="text-end border-0">Balance Due</th>
-                        <th class="border-0">Dates</th>
-                        <th class="text-end border-0">Aging / Status</th>
-                        <th class="border-0"></th>
+                <table class="table align-middle dataTable" id="dataTable" data-min-height="min-height:75vh;" data-title="Job" data-model-size="lg">
+                    <thead>
+                    <tr class="text-muted text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.03em;">
+                        <th>Invoice #</th>
+                        <th>Job</th>
+                        <th>Customer</th>
+                        <th>Route</th>
+                        <th class="text-end">Excl. VAT</th>
+                        <th class="text-end">Tax</th>
+                        <th class="text-end">Balance Due</th>
+                        <th>Dates</th>
+                        <th class="text-end">Aging</th>
+                        <th></th>
                     </tr>
                     </thead>
                     <tbody></tbody>
@@ -252,65 +224,48 @@
     @include('modules.finance.customer-invoice.customer-invoice-view')
 </x-app-layout>
 <style>
-    /* Typography and Alignment */
-    .main-text {
+    /* Clean flat table — no floating row cards, just a thin divider
+       between rows, matching a standard finance-app list. */
+    #dataTable {
+        border-collapse: collapse;
+    }
+
+    #dataTable thead th {
+        background-color: #fff;
+        color: #6c757d;
+        font-weight: 600;
+        border-bottom: 1px solid #e9ecef;
+        padding: 0.65rem 1rem;
+        white-space: nowrap;
+    }
+
+    #dataTable tbody td {
+        padding: 0.65rem 1rem;
+        border-bottom: 1px solid #f1f3f5;
+        vertical-align: middle;
+    }
+
+    #dataTable tbody tr:hover td {
+        background-color: #fafbfc;
+    }
+
+    #dataTable tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Two-line cell convention: bold primary line, muted small caption */
+    .cell-primary {
         font-weight: 600;
         color: #212529;
+        line-height: 1.3;
     }
 
-    .sub-text {
-        font-size: 0.85rem;
-        color: #6c757d;
+    .cell-secondary {
+        font-size: 0.75rem;
+        color: #868e96;
+        line-height: 1.3;
     }
 
-    .amount-text {
-        font-weight: 700;
-        color: #0d6efd; /* Primary blue for main amounts */
-    }
-
-    .amount-text.paid {
-        color: #198754; /* Green for paid amounts */
-    }
-
-    /* Status Pills */
-    .status-pill {
-        padding: 3px 8px;
-        border-radius: 5px;
-        font-weight: 600;
-        font-size: 0.65rem;
-        margin-bottom: 2px;
-    }
-
-    .status-paid {
-        background-color: #d1e7dd; /* Light green */
-        color: #0f5132; /* Dark green */
-    }
-
-    .status-overdue {
-        background-color: #f8d7da; /* Light red */
-        color: #842029; /* Dark red */
-    }
-
-    .status-approved {
-        background-color: #cfe2ff; /* Light blue */
-        color: #084298; /* Dark blue */
-    }
-
-    .status-draft {
-        background-color: #fff3cd; /* Light yellow */
-        color: #664d03; /* Dark yellow */
-    }
-
-    /* Action Button Styling */
-    .btn-action {
-        width: 30px;
-        height: 30px;
-        padding: 0;
-        line-height: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
     .x-small {
         font-size: 0.65rem;
     }

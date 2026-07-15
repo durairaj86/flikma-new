@@ -35,7 +35,7 @@
                                 </select>
                             </div>
 
-                            <div class="col-md-4 form-filter">
+                            <div class="col-md-3 form-filter">
                                 <label class="form-label fw-medium">Invoice Date</label>
                                 <div class="d-flex input-group-filter gap-2">
                                     <input type="date" class="form-control datepicker from-date default-filter" id="filter-from-date" name="filter-from-date"
@@ -50,7 +50,7 @@
                                 <x-common.customers multiple></x-common.customers>
                             </div>
 
-                            <div class="col-md-3 form-filter pol-pod-select">
+                            <div class="col-md-2 form-filter pol-pod-select">
                                 <label class="form-label fw-medium">
                                     POL <small class="text-muted">(Port of Loading)</small>
                                 </label>
@@ -78,7 +78,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-3 pol-pod-select">
+                            <div class="col-md-2 pol-pod-select">
                                 <label class="form-label fw-medium">
                                     POD <small class="text-muted">(Port of Discharge)</small>
                                 </label>
@@ -185,6 +185,73 @@
                 <button class="btn btn-primary rounded-pill px-4" id="new" data-loader-id="{{ $job_id ?? 'list' }}">New Proforma Invoice</button>
             </div>
         </div>
+
+        <div class="container-fluid pb-3">
+            <div class="row g-3">
+
+                <div class="col-12 col-lg-4">
+                    <div class="rounded-3 bg-body-tertiary px-4 py-3 h-100">
+                        <h6 class="text-uppercase text-muted fw-semibold small mb-3" style="letter-spacing:.03em;">Summary</h6>
+                        <div class="row g-2 text-center">
+                            <div class="col-4">
+                                <div id="cardAllCount" class="fs-4 fw-bold mb-0">0</div>
+                                <small class="text-muted">Total Invoices</small>
+                            </div>
+                            <div class="col-4">
+                                <div id="cardApprovedCount" class="fs-4 fw-bold mb-0">0</div>
+                                <small class="text-muted">Approved</small>
+                            </div>
+                            <div class="col-4">
+                                <div id="cardDraftCount" class="fs-4 fw-bold mb-0">0</div>
+                                <small class="text-muted">Draft</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-4">
+                    <div class="rounded-3 bg-success-subtle px-4 py-3 h-100">
+                        <h6 class="text-uppercase text-success-emphasis fw-semibold small mb-3" style="letter-spacing:.03em;">Approved Invoices</h6>
+                        <div class="row g-2 text-center">
+                            <div class="col-4">
+                                <div id="total_approved_sub" class="fs-4 fw-bold mb-0">0.00</div>
+                                <small class="text-muted">Total Amount</small>
+                            </div>
+                            <div class="col-4">
+                                <div id="total_approved_tax" class="fs-4 fw-bold mb-0">0.00</div>
+                                <small class="text-muted">Total Tax</small>
+                            </div>
+                            <div class="col-4">
+                                <div id="total_approved_grand" class="fs-4 fw-bold mb-0">0.00</div>
+                                <small class="text-muted">Net Total</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-4">
+                    <div class="rounded-3 bg-warning-subtle px-4 py-3 h-100">
+                        <h6 class="text-uppercase text-warning-emphasis fw-semibold small mb-3" style="letter-spacing:.03em;">Draft Invoices</h6>
+                        <div class="row g-2 text-center">
+                            <div class="col-4">
+                                <div id="total_draft_sub" class="fs-4 fw-bold mb-0">0.00</div>
+                                <small class="text-muted">Total Amount</small>
+                            </div>
+                            <div class="col-4">
+                                <div id="total_draft_tax" class="fs-4 fw-bold mb-0">0.00</div>
+                                <small class="text-muted">Total Tax</small>
+                            </div>
+                            <div class="col-4">
+                                <div id="total_draft_grand" class="fs-4 fw-bold mb-0">0.00</div>
+                                <small class="text-muted">Net Total</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
         <div class="shadow bdr-r-10 py-3 flex-grow-1">
             <div class="d-flex justify-content-between px-3 flex-shrink-0">
                 {{--<div id="searchLabels" class="mb-3 d-flex flex-wrap gap-2"></div>--}}
@@ -202,16 +269,13 @@
             </div>
             <div class="flex-grow-1">
                 <table class="table align-middle dataTable" id="dataTable" data-min-height="min-height:75vh;" data-title="Job" data-model-size="lg">
-                    <thead class="table-light bg-white">
-                    <tr>
-                        <th>PI No</th>
-                        <th>Job Ref</th>
+                    <thead>
+                    <tr class="text-muted text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.03em;">
+                        <th>Invoice #</th>
+                        <th>Job</th>
                         <th>Customer</th>
-                        <th>Currency</th>
-                        <th class="text-end">Subtotal (Base)</th>
-                        <th class="text-end">Tax (Base)</th>
-                        <th class="text-end">Subtotal (Inv.)</th>
-                        <th class="text-end">Tax (Inv.)</th>
+                        <th class="text-end">Excl. VAT</th>
+                        <th class="text-end">Tax</th>
                         <th class="text-end">Total</th>
                         <th>Date</th>
                         <th></th>
@@ -224,6 +288,49 @@
     </main>
     @include('modules.email.send-email')
     @include('modules.finance.proforma-invoice.proforma-invoice-view')
+    <style>
+        /* Clean flat table — no floating row cards, just a thin divider
+           between rows, matching a standard finance-app list. */
+        #dataTable {
+            border-collapse: collapse;
+        }
+
+        #dataTable thead th {
+            background-color: #fff;
+            color: #6c757d;
+            font-weight: 600;
+            border-bottom: 1px solid #e9ecef;
+            padding: 0.65rem 1rem;
+            white-space: nowrap;
+        }
+
+        #dataTable tbody td {
+            padding: 0.65rem 1rem;
+            border-bottom: 1px solid #f1f3f5;
+            vertical-align: middle;
+        }
+
+        #dataTable tbody tr:hover td {
+            background-color: #fafbfc;
+        }
+
+        #dataTable tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Two-line cell convention: bold primary line, muted small caption */
+        .cell-primary {
+            font-weight: 600;
+            color: #212529;
+            line-height: 1.3;
+        }
+
+        .cell-secondary {
+            font-size: 0.75rem;
+            color: #868e96;
+            line-height: 1.3;
+        }
+    </style>
 </x-app-layout>
 <script>
 
