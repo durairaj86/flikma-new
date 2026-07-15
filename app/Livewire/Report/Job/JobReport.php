@@ -2,8 +2,10 @@
 
 namespace App\Livewire\Report\Job;
 
+use App\Exports\ReportTableExport;
 use App\Models\Job\Job;
 use Livewire\Component;
+use Maatwebsite\Excel\Facades\Excel;
 
 class JobReport extends Component
 {
@@ -67,6 +69,47 @@ class JobReport extends Component
     public function updatedStatus($value)
     {
         $this->dispatch('statusChanged', $value);
+    }
+
+    public function exportExcel()
+    {
+        $child = new JobReportTable();
+        $child->startDate = $this->startDate;
+        $child->endDate = $this->endDate;
+        $child->search = $this->search;
+        $child->status = $this->status;
+        $data = $child->getJobReportData();
+
+        $columns = ['Job No', 'Date', 'Customer', 'Activity', 'AWB/MBL', 'HBL/HAWB', 'POL', 'POD', 'Status'];
+
+        $rows = [];
+        foreach ($data['jobs'] as $job) {
+            $rows[] = [
+                $job->row_no,
+                \Carbon\Carbon::parse($job->posted_at)->format('d M Y'),
+                $job->customer->name ?? 'N/A',
+                $job->activity->name ?? 'N/A',
+                $job->awb_no ?? '',
+                $job->hbl_no ?? '',
+                $job->pol ?? '',
+                $job->pod ?? '',
+                ucfirst($job->status ?? ''),
+            ];
+        }
+
+        $totalsRow = ['', '', '', '', '', '', '', '', 'Total: ' . count($data['jobs']) . ' job(s)'];
+
+        $meta = [
+            'title' => 'JOB REPORT',
+            'lines' => [
+                'Period: ' . \Carbon\Carbon::parse($this->startDate)->format('d M Y') . ' — ' . \Carbon\Carbon::parse($this->endDate)->format('d M Y'),
+                'Generated on: ' . now()->format('d-m-Y H:i'),
+            ],
+        ];
+
+        $filename = 'JobReport-' . $this->startDate . '-' . $this->endDate . '.xlsx';
+
+        return Excel::download(new ReportTableExport($rows, $totalsRow, $columns, $meta), $filename);
     }
 
     public function render()

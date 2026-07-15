@@ -2,10 +2,12 @@
 
 namespace App\Livewire\Report\Finance;
 
+use App\Exports\ReportTableExport;
 use App\Models\Finance\Account\Account;
 use App\Models\Finance\FinanceSub;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use Maatwebsite\Excel\Facades\Excel;
 
 class BalanceSheet extends Component
 {
@@ -60,6 +62,45 @@ class BalanceSheet extends Component
     public function updatedSearch($value)
     {
         $this->dispatch('searchChanged', $value);
+    }
+
+    public function exportExcel()
+    {
+        // Reuse the child table component's query rather than duplicating
+        // it — the Print/PDF/Excel buttons live here on the parent, but the
+        // account-balance calculation lives on BalanceSheetTable.
+        $child = new BalanceSheetTable();
+        $child->startDate = $this->startDate;
+        $child->endDate = $this->endDate;
+        $child->search = $this->search;
+        $data = $child->getBalanceSheetData();
+
+        $rows = [];
+        foreach ($data['assets'] as $acc) {
+            $rows[] = ['Asset', $acc['account_code'], $acc['account_name'], (float) $acc['balance']];
+        }
+        foreach ($data['liabilities'] as $acc) {
+            $rows[] = ['Liability', $acc['account_code'], $acc['account_name'], (float) $acc['balance']];
+        }
+        foreach ($data['equity'] as $acc) {
+            $rows[] = ['Equity', $acc['account_code'], $acc['account_name'], (float) $acc['balance']];
+        }
+
+        $columns = ['Section', 'Code', 'Account Name', 'Balance'];
+        $totalsRow = ['', '', 'Total Assets: ' . number_format($data['total_assets'], 2) . '  |  Total Liabilities & Equity: ' . number_format($data['total_liabilities_equity'], 2), (float) $data['total_assets']];
+
+        $meta = [
+            'title' => 'BALANCE SHEET',
+            'lines' => [
+                'As of: ' . \Carbon\Carbon::parse($this->endDate)->format('d M Y'),
+                'Generated on: ' . now()->format('d-m-Y H:i'),
+            ],
+            'numeric_from' => 4,
+        ];
+
+        $filename = 'BalanceSheet-' . $this->endDate . '.xlsx';
+
+        return Excel::download(new ReportTableExport($rows, $totalsRow, $columns, $meta), $filename);
     }
 
     public function render()

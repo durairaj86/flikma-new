@@ -21,6 +21,7 @@
     }
 @endphp
 
+<div class="d-print-none">
 {{-- Summary cards (same style as provisional report) --}}
 @if(count($accounts) > 0)
 <div class="row g-3 p-3 border-bottom">
@@ -184,6 +185,74 @@
     </tfoot>
     @endif
 </table>
+</div>
+
+{{-- Bank-statement style layout: used for Print and PDF export only --}}
+<div id="tb-print" class="stmt-print d-none d-print-block"
+     data-pdf-filename="TrialBalance-{{ $startDate ?? '' }}-{{ $endDate ?? '' }}.pdf">
+
+    <table class="stmt-meta">
+        <tr>
+            <td>
+                <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
+            </td>
+            <td class="text-end">
+                <div class="stmt-title">TRIAL BALANCE</div>
+                <div class="stmt-sub">Period: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
+                <div class="stmt-sub">Generated: {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; Currency: SAR</div>
+            </td>
+        </tr>
+    </table>
+
+    <table class="stmt-table">
+        <thead>
+        <tr>
+            <th>Code</th>
+            <th>Account Name</th>
+            <th>Type</th>
+            <th class="text-end">Debit</th>
+            <th class="text-end">Credit</th>
+        </tr>
+        </thead>
+        <tbody>
+        @forelse($accounts as $acc)
+            <tr>
+                <td>{{ $acc['account_code'] }}</td>
+                <td>{{ $acc['account_name'] }}</td>
+                <td>{{ $acc['account_type'] }}</td>
+                <td class="text-end">{{ $acc['debit'] > 0 ? number_format($acc['debit'], 2) : '' }}</td>
+                <td class="text-end">{{ $acc['credit'] > 0 ? number_format($acc['credit'], 2) : '' }}</td>
+            </tr>
+        @empty
+            <tr>
+                <td colspan="5" class="text-center">No accounts found for the selected period or search criteria.</td>
+            </tr>
+        @endforelse
+        </tbody>
+        <tfoot>
+        <tr class="stmt-strong">
+            <td colspan="3">Grand Total</td>
+            <td class="text-end">{{ number_format($debitTotal, 2) }}</td>
+            <td class="text-end">{{ number_format($creditTotal, 2) }}</td>
+        </tr>
+        </tfoot>
+    </table>
+
+    <div class="stmt-footnote">
+        {{ $balanced ? 'Books are balanced.' : 'Difference of ' . number_format($diff, 2) . ' between debit and credit totals.' }}
+    </div>
+    <div class="stmt-signatures">
+        <table class="stmt-meta">
+            <tr>
+                <td>Prepared By: _________________</td>
+                <td>Verified By: _________________</td>
+                <td>Approved By: _________________</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+@include('includes.report-print-css', ['orientation' => 'portrait'])
 
 <style>
 /* ── Trial Balance table — provisional report design system ── */

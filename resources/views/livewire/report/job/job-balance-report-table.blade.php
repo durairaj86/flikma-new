@@ -1,5 +1,5 @@
 <div>
-    <div class="table-responsive">
+    <div class="table-responsive d-print-none">
         <table class="table table-hover align-middle mb-0">
             <thead>
                 <tr class="bg-light text-muted small text-uppercase fw-bold ls-1">
@@ -69,4 +69,71 @@
             @endif
         </table>
     </div>
+
+    {{-- Bank-statement style layout: used for Print and PDF export only --}}
+    <div id="jbr-print" class="stmt-print d-none d-print-block"
+         data-pdf-filename="JobBalanceReport-{{ $startDate ?? '' }}-{{ $endDate ?? '' }}.pdf">
+
+        <table class="stmt-meta">
+            <tr>
+                <td>
+                    <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
+                </td>
+                <td class="text-end">
+                    <div class="stmt-title">JOB BALANCE REPORT</div>
+                    <div class="stmt-sub">Period: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
+                    <div class="stmt-sub">Generated: {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; Currency: SAR</div>
+                </td>
+            </tr>
+        </table>
+
+        <table class="stmt-table">
+            <thead>
+            <tr>
+                <th>Job No</th>
+                <th>Date</th>
+                <th>Customer</th>
+                <th>Activity</th>
+                <th class="text-end">Income</th>
+                <th class="text-end">Expense</th>
+                <th class="text-end">Profit / Loss</th>
+            </tr>
+            </thead>
+            <tbody>
+            @forelse($jobBalanceReportData['jobs'] as $job)
+                <tr>
+                    <td>{{ $job['job_number'] }}</td>
+                    <td>{{ \Carbon\Carbon::parse($job['job_date'])->format('d M Y') }}</td>
+                    <td>{{ $job['customer'] }}</td>
+                    <td>{{ $job['activity'] }}</td>
+                    <td class="text-end">{{ number_format($job['income'], 2) }}</td>
+                    <td class="text-end">{{ number_format($job['expense'], 2) }}</td>
+                    <td class="text-end">{{ number_format($job['profit'], 2) }}</td>
+                </tr>
+            @empty
+                <tr><td colspan="7" class="text-center">No balance data found for the selected period.</td></tr>
+            @endforelse
+            </tbody>
+            <tfoot>
+            <tr class="stmt-strong">
+                <td colspan="4">Total</td>
+                <td class="text-end">{{ number_format($jobBalanceReportData['total_income'] ?? 0, 2) }}</td>
+                <td class="text-end">{{ number_format($jobBalanceReportData['total_expense'] ?? 0, 2) }}</td>
+                <td class="text-end">{{ number_format($jobBalanceReportData['total_profit'] ?? 0, 2) }}</td>
+            </tr>
+            </tfoot>
+        </table>
+
+        <div class="stmt-signatures">
+            <table class="stmt-meta">
+                <tr>
+                    <td>Prepared By: _________________</td>
+                    <td>Verified By: _________________</td>
+                    <td>Approved By: _________________</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    @include('includes.report-print-css', ['orientation' => 'landscape'])
 </div>

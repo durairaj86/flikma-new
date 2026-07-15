@@ -2932,3 +2932,39 @@ function noComma(inputString) {
     const cleanedString = safeString.replace(/,/g, '');
     return parseFloat(cleanedString, 10);
 }
+
+// Generic PDF export for report pages: clones a hidden bank-statement-style
+// print block (see includes/report-print-css.blade.php, class .stmt-print)
+// and feeds it to html2pdf. Every report's "PDF Document" link should call
+// this instead of hand-rolling its own clone/html2pdf boilerplate.
+//
+// Usage: onclick="reportExportPdf(event, 'my-print-block-id')"
+// Optional third arg overrides html2pdf options, e.g. { orientation: 'landscape' }.
+function reportExportPdf(e, printElementId, opts) {
+    if (e && e.preventDefault) e.preventDefault();
+    opts = opts || {};
+
+    var area = document.getElementById(printElementId);
+    if (!area) {
+        if (typeof toastr !== 'undefined') {
+            toastr.error('Nothing to export yet — apply filters to load the report first.');
+        } else {
+            alert('Nothing to export yet — apply filters to load the report first.');
+        }
+        return;
+    }
+
+    var clone = area.cloneNode(true);
+    clone.classList.remove('d-none');
+    clone.style.padding = '10px';
+
+    var opt = {
+        margin: opts.margin ?? 0.4,
+        filename: opts.filename || area.dataset.pdfFilename || 'Report.pdf',
+        html2canvas: {scale: 2, useCORS: true},
+        jsPDF: {unit: 'in', format: 'a4', orientation: opts.orientation || 'portrait'},
+        pagebreak: {mode: ['avoid-all', 'css']}
+    };
+
+    html2pdf().set(opt).from(clone).save();
+}

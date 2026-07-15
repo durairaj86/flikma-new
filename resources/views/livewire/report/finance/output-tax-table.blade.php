@@ -1,5 +1,5 @@
 <div>
-    <div class="table-responsive">
+    <div class="table-responsive d-print-none">
         <table class="table table-hover align-middle mb-0">
             <thead>
                 <tr class="bg-light text-muted small text-uppercase fw-bold ls-1">
@@ -55,4 +55,62 @@
             @endif
         </table>
     </div>
+
+    {{-- Bank-statement style layout: used for Print and PDF export only --}}
+    <div id="ot-print" class="stmt-print d-none d-print-block"
+         data-pdf-filename="OutputTax-{{ $startDate ?? '' }}-{{ $endDate ?? '' }}.pdf">
+
+        <table class="stmt-meta">
+            <tr>
+                <td>
+                    <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
+                </td>
+                <td class="text-end">
+                    <div class="stmt-title">OUTPUT TAX REPORT</div>
+                    <div class="stmt-sub">Period: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
+                    <div class="stmt-sub">Generated: {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; Currency: SAR</div>
+                </td>
+            </tr>
+        </table>
+
+        <table class="stmt-table">
+            <thead>
+            <tr>
+                <th>Account</th>
+                <th>Reference No</th>
+                <th>Date</th>
+                <th>Description</th>
+                <th class="text-end">Tax Amount</th>
+            </tr>
+            </thead>
+            <tbody>
+            @forelse($outputTaxData['output_tax_transactions'] as $transaction)
+                <tr>
+                    <td>{{ $transaction['account_code'] }} {{ $transaction['account_name'] }}</td>
+                    <td>{{ $transaction['reference_no'] }}</td>
+                    <td>{{ \Carbon\Carbon::parse($transaction['reference_date'])->format('d M Y') }}</td>
+                    <td>{{ $transaction['description'] }}</td>
+                    <td class="text-end">{{ number_format($transaction['amount'], 2) }}</td>
+                </tr>
+            @empty
+                <tr><td colspan="5" class="text-center">No output tax transactions found for this period.</td></tr>
+            @endforelse
+            </tbody>
+            <tfoot>
+            <tr class="stmt-strong"><td colspan="4">Total Output Tax</td><td class="text-end">{{ number_format($outputTaxData['total_output_tax'] ?? 0, 2) }}</td></tr>
+            </tfoot>
+        </table>
+
+        <div class="stmt-signatures">
+            <table class="stmt-meta">
+                <tr>
+                    <td>Prepared By: _________________</td>
+                    <td>Verified By: _________________</td>
+                    <td>Approved By: _________________</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    @include('includes.report-print-css', ['orientation' => 'portrait'])
 </div>

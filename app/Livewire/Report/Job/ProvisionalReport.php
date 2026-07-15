@@ -194,6 +194,72 @@ class ProvisionalReport extends Component
         $modes = Job::where('company_id', $companyId)->whereNotNull('shipment_mode')->where('shipment_mode', '!=', '')->distinct()->pluck('shipment_mode');
         $types = Job::where('company_id', $companyId)->whereNotNull('shipment_type')->where('shipment_type', '!=', '')->distinct()->pluck('shipment_type');
 
+        return [$rows, $totals, $modes, $types];
+    }
+
+    public function exportExcel()
+    {
+        [$rows, $totals] = $this->getReportData();
+
+        if ($this->viewMode === 'activity') {
+            $columns = ['Activity', 'Jobs', 'Provisional Cost', 'Actual Cost', 'Provisional Sales', 'Actual Sales', 'Profit / Loss', 'Margin %'];
+            $exportRows = [];
+            foreach ($rows as $row) {
+                $exportRows[] = [
+                    $row['activity'], $row['job_count'],
+                    (float) $row['provisional_cost'], (float) $row['actual_cost'],
+                    (float) $row['provisional_sales'], (float) $row['actual_sales'],
+                    (float) $row['profit_loss'], round($row['margin'], 1),
+                ];
+            }
+            $totalsRow = [
+                'TOTAL', collect($rows)->sum('job_count'),
+                (float) $totals['provisional_cost'], (float) $totals['actual_cost'],
+                (float) $totals['provisional_sales'], (float) $totals['actual_sales'],
+                (float) $totals['profit_loss'], round($totals['margin'], 1),
+            ];
+            $numericFrom = 2;
+        } else {
+            $columns = ['Job No', 'Date', 'Mode', 'Type', 'Provisional Cost', 'Actual Cost', 'Provisional Sales', 'Actual Sales', 'Profit / Loss', 'Margin %'];
+            $exportRows = [];
+            foreach ($rows as $row) {
+                $job = $row['job'];
+                $exportRows[] = [
+                    $job->row_no,
+                    \Carbon\Carbon::parse($job->posted_at)->format('d M Y'),
+                    $job->shipment_mode, $job->shipment_type,
+                    (float) $row['provisional_cost'], (float) $row['actual_cost'],
+                    (float) $row['provisional_sales'], (float) $row['actual_sales'],
+                    (float) $row['profit_loss'], round($row['margin'], 1),
+                ];
+            }
+            $totalsRow = [
+                '', '', '', 'TOTAL',
+                (float) $totals['provisional_cost'], (float) $totals['actual_cost'],
+                (float) $totals['provisional_sales'], (float) $totals['actual_sales'],
+                (float) $totals['profit_loss'], round($totals['margin'], 1),
+            ];
+            $numericFrom = 5;
+        }
+
+        $meta = [
+            'title' => 'PROVISIONAL REPORT' . ($this->viewMode === 'activity' ? ' (BY ACTIVITY)' : ' (BY JOB)'),
+            'lines' => [
+                'Period: ' . \Carbon\Carbon::parse($this->startDate)->format('d M Y') . ' — ' . \Carbon\Carbon::parse($this->endDate)->format('d M Y'),
+                'Generated on: ' . now()->format('d-m-Y H:i'),
+            ],
+            'numeric_from' => $numericFrom,
+        ];
+
+        $filename = 'ProvisionalReport-' . $this->startDate . '-' . $this->endDate . '.xlsx';
+
+        return Excel::download(new ReportTableExport($exportRows, $totalsRow, $columns, $meta), $filename);
+    }
+
+    public function render()
+    {
+        [$rows, $totals, $modes, $types] = $this->getReportData();
+
         return view('livewire.report.job.provisional-report', [
             'rows'   => $rows,
             'totals' => $totals,

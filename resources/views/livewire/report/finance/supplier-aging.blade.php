@@ -20,8 +20,8 @@
                             <i class="bi bi-download me-2"></i>Export
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                            <li><a class="dropdown-item py-2" href="#"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
-                            <li><a class="dropdown-item py-2" href="#"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
+                            <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'sa-print')"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
+                            <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
                         </ul>
                     </div>
                 </div>
@@ -63,7 +63,7 @@
 
         @if($supplier)
             {{-- Summary Cards --}}
-            <div class="row g-3 mb-4">
+            <div class="row g-3 mb-4 d-print-none">
                 <div class="col-md-2 col-6">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body text-center py-3">
@@ -114,7 +114,7 @@
                 </div>
             </div>
 
-            <div class="row g-4">
+            <div class="row g-4 d-print-none">
                 {{-- Supplier Info Panel --}}
                 <div class="col-xl-3">
                     <div class="card border-0 shadow-sm h-100">
@@ -275,6 +275,89 @@
                 </div>
             </div>
 
+            {{-- Bank-statement style layout: used for Print and PDF export only --}}
+            <div id="sa-print" class="stmt-print d-none d-print-block"
+                 data-pdf-filename="SupplierAging-{{ $supplier->row_no }}-{{ $asOfDate }}.pdf">
+
+                <table class="stmt-meta">
+                    <tr>
+                        <td>
+                            <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
+                        </td>
+                        <td class="text-end">
+                            <div class="stmt-title">SUPPLIER AGING REPORT</div>
+                            <div class="stmt-sub">As of: {{ \Carbon\Carbon::parse($asOfDate)->format('d M Y') }}</div>
+                            <div class="stmt-sub">Generated: {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; Currency: SAR</div>
+                        </td>
+                    </tr>
+                </table>
+
+                <table class="stmt-meta stmt-box">
+                    <tr>
+                        <td>
+                            <div class="stmt-sub" style="text-transform: uppercase;">Supplier</div>
+                            <div class="stmt-strong">{{ $supplier->name_en }} ({{ $supplier->row_no }})</div>
+                            <div class="stmt-sub">
+                                @if($supplier->email) {{ $supplier->email }} @endif
+                                @if($supplier->phone) &nbsp;|&nbsp; {{ $supplier->phone }} @endif
+                            </div>
+                        </td>
+                        <td class="text-end">
+                            <table class="stmt-summary">
+                                <tr class="stmt-strong"><td>Total Outstanding</td><td class="text-end">{{ number_format($summary['grand_total'], 2) }}</td></tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+
+                <table class="stmt-table">
+                    <thead>
+                    <tr>
+                        <th>Invoice #</th>
+                        <th>Date</th>
+                        <th>Due Date</th>
+                        <th class="text-end">Current</th>
+                        <th class="text-end">1-30</th>
+                        <th class="text-end">31-60</th>
+                        <th class="text-end">61-90</th>
+                        <th class="text-end">91-120</th>
+                        <th class="text-end">&gt;120</th>
+                        <th class="text-end">Total</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @forelse($invoices as $inv)
+                        <tr>
+                            <td>{{ $inv['invoice_no'] }}</td>
+                            <td>{{ $inv['invoice_date'] }}</td>
+                            <td>{{ $inv['due_date'] }}</td>
+                            <td class="text-end">{{ $inv['current'] > 0 ? number_format($inv['current'], 2) : '' }}</td>
+                            <td class="text-end">{{ $inv['days_1_30'] > 0 ? number_format($inv['days_1_30'], 2) : '' }}</td>
+                            <td class="text-end">{{ $inv['days_31_60'] > 0 ? number_format($inv['days_31_60'], 2) : '' }}</td>
+                            <td class="text-end">{{ $inv['days_61_90'] > 0 ? number_format($inv['days_61_90'], 2) : '' }}</td>
+                            <td class="text-end">{{ $inv['days_91_120'] > 0 ? number_format($inv['days_91_120'], 2) : '' }}</td>
+                            <td class="text-end">{{ $inv['days_over_120'] > 0 ? number_format($inv['days_over_120'], 2) : '' }}</td>
+                            <td class="text-end stmt-strong">{{ number_format($inv['total'], 2) }}</td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="10" class="text-center">No outstanding invoices found.</td></tr>
+                    @endforelse
+                    </tbody>
+                    <tfoot>
+                    <tr class="stmt-strong">
+                        <td colspan="3">Total</td>
+                        <td class="text-end">{{ number_format($summary['current'], 2) }}</td>
+                        <td class="text-end">{{ number_format($summary['days_1_30'], 2) }}</td>
+                        <td class="text-end">{{ number_format($summary['days_31_60'], 2) }}</td>
+                        <td class="text-end">{{ number_format($summary['days_61_90'], 2) }}</td>
+                        <td class="text-end">{{ number_format($summary['days_91_120'], 2) }}</td>
+                        <td class="text-end">{{ number_format($summary['days_over_120'], 2) }}</td>
+                        <td class="text-end">{{ number_format($summary['grand_total'], 2) }}</td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+
         @else
             <div class="card border-0 shadow-sm text-center py-5">
                 <div class="card-body">
@@ -311,6 +394,8 @@
         })();
     </script>
     @endscript
+
+    @include('includes.report-print-css')
 
     <style>
         :root {

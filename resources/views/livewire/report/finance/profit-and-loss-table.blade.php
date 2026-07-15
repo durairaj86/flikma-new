@@ -1,5 +1,5 @@
 <div>
-    <div class="row justify-content-center">
+    <div class="row justify-content-center d-print-none">
         <div class="col-xl-12">
             <div class="table-responsive">
                 <table class="table mb-0">
@@ -101,6 +101,75 @@
             @endif
         </div>
     </div>
+
+    {{-- Bank-statement style layout: used for Print and PDF export only --}}
+    <div id="pl-print" class="stmt-print d-none d-print-block"
+         data-pdf-filename="ProfitAndLoss-{{ $startDate ?? '' }}-{{ $endDate ?? '' }}.pdf">
+
+        <table class="stmt-meta">
+            <tr>
+                <td>
+                    <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
+                </td>
+                <td class="text-end">
+                    <div class="stmt-title">PROFIT &amp; LOSS STATEMENT</div>
+                    <div class="stmt-sub">Period: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
+                    <div class="stmt-sub">Generated: {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; Currency: SAR</div>
+                </td>
+            </tr>
+        </table>
+
+        <table class="stmt-table">
+            <thead>
+            <tr><th colspan="2">REVENUE</th></tr>
+            </thead>
+            <tbody>
+            @forelse($profitAndLossData['revenue'] as $account)
+                <tr>
+                    <td>{{ $account['account_code'] }} {{ $account['account_name'] }}</td>
+                    <td class="text-end">{{ number_format($account['balance'], 2) }}</td>
+                </tr>
+            @empty
+                <tr><td colspan="2" class="text-center">No revenue accounts with activity</td></tr>
+            @endforelse
+            </tbody>
+            <tfoot>
+            <tr class="stmt-strong"><td>Total Revenue</td><td class="text-end">{{ number_format($profitAndLossData['total_revenue'] ?? 0, 2) }}</td></tr>
+            </tfoot>
+        </table>
+
+        <table class="stmt-table">
+            <thead>
+            <tr><th colspan="2">EXPENSES</th></tr>
+            </thead>
+            <tbody>
+            @forelse($profitAndLossData['expenses'] as $account)
+                <tr>
+                    <td>{{ $account['account_code'] }} {{ $account['account_name'] }}</td>
+                    <td class="text-end">{{ number_format($account['balance'], 2) }}</td>
+                </tr>
+            @empty
+                <tr><td colspan="2" class="text-center">No expense accounts with activity</td></tr>
+            @endforelse
+            </tbody>
+            <tfoot>
+            <tr class="stmt-strong"><td>Total Expenses</td><td class="text-end">{{ number_format($profitAndLossData['total_expenses'] ?? 0, 2) }}</td></tr>
+            <tr class="stmt-strong"><td>Net Income / (Loss)</td><td class="text-end">{{ number_format($profitAndLossData['net_income'] ?? 0, 2) }}</td></tr>
+            </tfoot>
+        </table>
+
+        <div class="stmt-signatures">
+            <table class="stmt-meta">
+                <tr>
+                    <td>Prepared By: _________________</td>
+                    <td>Verified By: _________________</td>
+                    <td>Approved By: _________________</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    @include('includes.report-print-css', ['orientation' => 'portrait'])
 
     <style>
         .tabular-nums { font-variant-numeric: tabular-nums; }

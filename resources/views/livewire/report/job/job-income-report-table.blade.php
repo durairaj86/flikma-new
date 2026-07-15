@@ -1,5 +1,5 @@
 <div>
-    <div class="table-responsive">
+    <div class="table-responsive d-print-none">
         <table class="table table-hover align-middle mb-0">
             <thead>
                 <tr class="bg-light text-muted small text-uppercase fw-bold ls-1">
@@ -120,6 +120,75 @@
             @endif
         </table>
     </div>
+
+    {{-- Bank-statement style layout: used for Print and PDF export only —
+         flattened (no collapse), since collapsed content doesn't print. --}}
+    <div id="jir-print" class="stmt-print d-none d-print-block"
+         data-pdf-filename="JobIncomeReport-{{ $startDate ?? '' }}-{{ $endDate ?? '' }}.pdf">
+
+        <table class="stmt-meta">
+            <tr>
+                <td>
+                    <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
+                </td>
+                <td class="text-end">
+                    <div class="stmt-title">JOB INCOME REPORT</div>
+                    <div class="stmt-sub">Period: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
+                    <div class="stmt-sub">Generated: {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; Currency: SAR</div>
+                </td>
+            </tr>
+        </table>
+
+        <table class="stmt-table">
+            <thead>
+            <tr>
+                <th>Job No</th>
+                <th>Customer</th>
+                <th>Activity</th>
+                <th class="text-end">Invoices</th>
+                <th class="text-end">Approved Income</th>
+                <th class="text-end">Draft Income</th>
+                <th class="text-end">Job Total</th>
+                <th>Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            @forelse($jobIncomeReportData['jobs'] as $job)
+                <tr>
+                    <td>{{ $job['job_number'] }}</td>
+                    <td>{{ $job['customer'] }}</td>
+                    <td>{{ $job['activity'] }}</td>
+                    <td class="text-end">{{ $job['invoice_count'] }}</td>
+                    <td class="text-end">{{ number_format($job['approved_income'], 2) }}</td>
+                    <td class="text-end">{{ number_format($job['draft_income'], 2) }}</td>
+                    <td class="text-end stmt-strong">{{ number_format($job['total_income'], 2) }}</td>
+                    <td>{{ ucfirst($job['status'] ?: '—') }}</td>
+                </tr>
+            @empty
+                <tr><td colspan="8" class="text-center">No income data found for the selected period.</td></tr>
+            @endforelse
+            </tbody>
+            <tfoot>
+            <tr class="stmt-strong">
+                <td colspan="6">Grand Total</td>
+                <td class="text-end">{{ number_format($jobIncomeReportData['total_income'] ?? 0, 2) }}</td>
+                <td></td>
+            </tr>
+            </tfoot>
+        </table>
+
+        <div class="stmt-signatures">
+            <table class="stmt-meta">
+                <tr>
+                    <td>Prepared By: _________________</td>
+                    <td>Verified By: _________________</td>
+                    <td>Approved By: _________________</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    @include('includes.report-print-css', ['orientation' => 'portrait'])
 
     <style>
         .jir-toggle-btn[aria-expanded="true"] .jir-toggle-icon {

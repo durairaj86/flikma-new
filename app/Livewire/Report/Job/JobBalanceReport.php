@@ -2,10 +2,12 @@
 
 namespace App\Livewire\Report\Job;
 
+use App\Exports\ReportTableExport;
 use App\Models\Finance\CustomerInvoice\CustomerInvoice;
 use App\Models\Finance\SupplierInvoice\SupplierInvoice;
 use App\Models\Job\Job;
 use Livewire\Component;
+use Maatwebsite\Excel\Facades\Excel;
 
 class JobBalanceReport extends Component
 {
@@ -69,6 +71,46 @@ class JobBalanceReport extends Component
     public function updatedStatus($value)
     {
         $this->dispatch('statusChanged', $value);
+    }
+
+    public function exportExcel()
+    {
+        $child = new JobBalanceReportTable();
+        $child->startDate = $this->startDate;
+        $child->endDate = $this->endDate;
+        $child->search = $this->search;
+        $child->status = $this->status;
+        $data = $child->getJobBalanceReportData();
+
+        $columns = ['Job No', 'Date', 'Customer', 'Activity', 'Income', 'Expense', 'Profit / Loss'];
+
+        $rows = [];
+        foreach ($data['jobs'] as $job) {
+            $rows[] = [
+                $job['job_number'],
+                \Carbon\Carbon::parse($job['job_date'])->format('d M Y'),
+                $job['customer'],
+                $job['activity'],
+                (float) $job['income'],
+                (float) $job['expense'],
+                (float) $job['profit'],
+            ];
+        }
+
+        $totalsRow = ['', '', '', 'TOTAL', (float) $data['total_income'], (float) $data['total_expense'], (float) $data['total_profit']];
+
+        $meta = [
+            'title' => 'JOB BALANCE REPORT',
+            'lines' => [
+                'Period: ' . \Carbon\Carbon::parse($this->startDate)->format('d M Y') . ' — ' . \Carbon\Carbon::parse($this->endDate)->format('d M Y'),
+                'Generated on: ' . now()->format('d-m-Y H:i'),
+            ],
+            'numeric_from' => 5,
+        ];
+
+        $filename = 'JobBalanceReport-' . $this->startDate . '-' . $this->endDate . '.xlsx';
+
+        return Excel::download(new ReportTableExport($rows, $totalsRow, $columns, $meta), $filename);
     }
 
     public function render()

@@ -28,8 +28,8 @@
                         Export As
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow border-0">
-                        <li><a class="dropdown-item py-2 small" href="#"><i class="bi bi-file-pdf text-danger me-2"></i> PDF</a></li>
-                        <li><a class="dropdown-item py-2 small" href="#"><i class="bi bi-file-earmark-excel text-success me-2"></i> Excel (XLSX)</a></li>
+                        <li><a class="dropdown-item py-2 small" href="#" onclick="reportExportPdf(event, 'sas-print', {orientation: 'landscape'})"><i class="bi bi-file-pdf text-danger me-2"></i> PDF</a></li>
+                        <li><a class="dropdown-item py-2 small" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-earmark-excel text-success me-2"></i> Excel (XLSX)</a></li>
                     </ul>
                 </div>
             </div>

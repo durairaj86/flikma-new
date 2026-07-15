@@ -2,9 +2,11 @@
 
 namespace App\Livewire\Report\Job;
 
+use App\Exports\ReportTableExport;
 use App\Models\Finance\CustomerInvoice\CustomerInvoice;
 use App\Models\Job\Job;
 use Livewire\Component;
+use Maatwebsite\Excel\Facades\Excel;
 
 class JobIncomeReport extends Component
 {
@@ -68,6 +70,47 @@ class JobIncomeReport extends Component
     public function updatedStatus($value)
     {
         $this->dispatch('statusChanged', $value);
+    }
+
+    public function exportExcel()
+    {
+        $child = new JobIncomeReportTable();
+        $child->startDate = $this->startDate;
+        $child->endDate = $this->endDate;
+        $child->search = $this->search;
+        $child->status = $this->status;
+        $data = $child->getJobIncomeReportData();
+
+        $columns = ['Job No', 'Customer', 'Activity', 'Invoices', 'Approved Income', 'Draft Income', 'Job Total', 'Status'];
+
+        $rows = [];
+        foreach ($data['jobs'] as $job) {
+            $rows[] = [
+                $job['job_number'],
+                $job['customer'],
+                $job['activity'],
+                $job['invoice_count'],
+                (float) $job['approved_income'],
+                (float) $job['draft_income'],
+                (float) $job['total_income'],
+                ucfirst($job['status'] ?: ''),
+            ];
+        }
+
+        $totalsRow = ['', '', 'GRAND TOTAL', '', '', '', (float) $data['total_income'], ''];
+
+        $meta = [
+            'title' => 'JOB INCOME REPORT',
+            'lines' => [
+                'Period: ' . \Carbon\Carbon::parse($this->startDate)->format('d M Y') . ' — ' . \Carbon\Carbon::parse($this->endDate)->format('d M Y'),
+                'Generated on: ' . now()->format('d-m-Y H:i'),
+            ],
+            'numeric_from' => 4,
+        ];
+
+        $filename = 'JobIncomeReport-' . $this->startDate . '-' . $this->endDate . '.xlsx';
+
+        return Excel::download(new ReportTableExport($rows, $totalsRow, $columns, $meta), $filename);
     }
 
     public function render()

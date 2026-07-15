@@ -1,5 +1,5 @@
 <div>
-    <div class="row g-5">
+    <div class="row g-5 d-print-none">
         <div class="col-lg-6">
             <h5 class="fw-bold text-primary border-bottom border-2 pb-2 mb-3 text-uppercase small ls-1">
                 Assets
@@ -100,6 +100,94 @@
             @endif
         </div>
     </div>
+
+    {{-- Bank-statement style layout: used for Print and PDF export only --}}
+    <div id="bs-print" class="stmt-print d-none d-print-block"
+         data-pdf-filename="BalanceSheet-{{ $endDate ?? '' }}.pdf">
+
+        <table class="stmt-meta">
+            <tr>
+                <td>
+                    <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
+                </td>
+                <td class="text-end">
+                    <div class="stmt-title">BALANCE SHEET</div>
+                    <div class="stmt-sub">As of: {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
+                    <div class="stmt-sub">Generated: {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; Currency: SAR</div>
+                </td>
+            </tr>
+        </table>
+
+        <table class="stmt-table">
+            <thead>
+            <tr><th colspan="2">ASSETS</th></tr>
+            </thead>
+            <tbody>
+            @forelse($balanceSheetData['assets'] as $account)
+                <tr>
+                    <td>{{ $account['account_code'] }} {{ $account['account_name'] }}</td>
+                    <td class="text-end">{{ number_format($account['balance'], 2) }}</td>
+                </tr>
+            @empty
+                <tr><td colspan="2" class="text-center">No asset accounts with activity</td></tr>
+            @endforelse
+            </tbody>
+            <tfoot>
+            <tr class="stmt-strong"><td>Total Assets</td><td class="text-end">{{ number_format($balanceSheetData['total_assets'] ?? 0, 2) }}</td></tr>
+            </tfoot>
+        </table>
+
+        <table class="stmt-table">
+            <thead>
+            <tr><th colspan="2">LIABILITIES</th></tr>
+            </thead>
+            <tbody>
+            @forelse($balanceSheetData['liabilities'] as $account)
+                <tr>
+                    <td>{{ $account['account_code'] }} {{ $account['account_name'] }}</td>
+                    <td class="text-end">{{ number_format($account['balance'], 2) }}</td>
+                </tr>
+            @empty
+                <tr><td colspan="2" class="text-center">No liability accounts</td></tr>
+            @endforelse
+            </tbody>
+            <tfoot>
+            <tr class="stmt-strong"><td>Total Liabilities</td><td class="text-end">{{ number_format($balanceSheetData['total_liabilities'] ?? 0, 2) }}</td></tr>
+            </tfoot>
+        </table>
+
+        <table class="stmt-table">
+            <thead>
+            <tr><th colspan="2">EQUITY</th></tr>
+            </thead>
+            <tbody>
+            @forelse($balanceSheetData['equity'] as $account)
+                <tr>
+                    <td>{{ $account['account_code'] }} {{ $account['account_name'] }}</td>
+                    <td class="text-end">{{ number_format($account['balance'], 2) }}</td>
+                </tr>
+            @empty
+                <tr><td colspan="2" class="text-center">No equity accounts</td></tr>
+            @endforelse
+            </tbody>
+            <tfoot>
+            <tr class="stmt-strong"><td>Total Equity</td><td class="text-end">{{ number_format($balanceSheetData['total_equity'] ?? 0, 2) }}</td></tr>
+            <tr class="stmt-strong"><td>Total Liabilities &amp; Equity</td><td class="text-end">{{ number_format($balanceSheetData['total_liabilities_equity'] ?? 0, 2) }}</td></tr>
+            </tfoot>
+        </table>
+
+        <div class="stmt-signatures">
+            <table class="stmt-meta">
+                <tr>
+                    <td>Prepared By: _________________</td>
+                    <td>Verified By: _________________</td>
+                    <td>Approved By: _________________</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    @include('includes.report-print-css', ['orientation' => 'portrait'])
 
     <style>
         .ls-1 { letter-spacing: 0.05em; }

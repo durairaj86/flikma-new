@@ -20,8 +20,8 @@
                             <i class="bi bi-download me-2"></i>Export
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                            <li><a class="dropdown-item py-2" href="#"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
-                            <li><a class="dropdown-item py-2" href="#"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
+                            <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'pr-print', {orientation: 'landscape'})"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
+                            <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
                         </ul>
                     </div>
                 </div>
@@ -179,7 +179,7 @@
         @endif
 
         {{-- Table --}}
-        <div class="card border-0 shadow-sm overflow-hidden">
+        <div class="card border-0 shadow-sm overflow-hidden d-print-none">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <h6 class="mb-0 fw-bold">
                     <i class="bi {{ $viewMode === 'activity' ? 'bi-activity' : 'bi-table' }} me-2 text-pr"></i>
@@ -510,58 +510,47 @@
                     </tfoot>
                 </table>
             @else
-                @forelse($rows as $row)
-                    @php $job = $row['job']; @endphp
-                    <table class="stmt-meta stmt-box">
-                        <tr>
-                            <td>
-                                <div class="stmt-strong">{{ $job->row_no }}</div>
-                                <div class="stmt-sub">{{ \Carbon\Carbon::parse($job->posted_at)->format('d M Y') }} &nbsp;|&nbsp; {{ $job->shipment_mode }} {{ $job->shipment_type }}</div>
-                            </td>
-                            <td class="text-end">
-                                <table class="stmt-summary">
-                                    <tr><td>Provisional Cost</td><td class="text-end">{{ number_format($row['provisional_cost'], 2) }}</td></tr>
-                                    <tr><td>Actual Cost</td><td class="text-end">{{ number_format($row['actual_cost'], 2) }}</td></tr>
-                                    <tr><td>Provisional Sales</td><td class="text-end">{{ number_format($row['provisional_sales'], 2) }}</td></tr>
-                                    <tr><td>Actual Sales</td><td class="text-end">{{ number_format($row['actual_sales'], 2) }}</td></tr>
-                                    <tr class="stmt-strong"><td>Profit / Loss</td><td class="text-end">{{ number_format($row['profit_loss'], 2) }} ({{ number_format($row['margin'], 1) }}%)</td></tr>
-                                </table>
-                            </td>
-                        </tr>
-                    </table>
-                    @if(count($row['details']) > 0)
-                        <table class="stmt-table">
-                            <thead>
-                            <tr>
-                                <th>Type</th>
-                                <th>Row No</th>
-                                <th>Date</th>
-                                <th class="text-end">Amount</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            @foreach($row['details'] as $detail)
-                                <tr>
-                                    <td>{{ $detail['type'] }}</td>
-                                    <td>{{ $detail['row_no'] ?? '—' }}</td>
-                                    <td>{{ $detail['date'] ? \Carbon\Carbon::parse($detail['date'])->format('d M Y') : '—' }}</td>
-                                    <td class="text-end">{{ number_format($detail['amount'], 2) }}</td>
-                                </tr>
-                            @endforeach
-                            </tbody>
-                        </table>
-                    @endif
-                @empty
-                    <div class="stmt-footnote">No jobs found for the selected period.</div>
-                @endforelse
-
                 <table class="stmt-table">
+                    <thead>
+                    <tr>
+                        <th>Job No</th>
+                        <th>Date</th>
+                        <th>Mode / Type</th>
+                        <th class="text-end">Provisional Cost</th>
+                        <th class="text-end">Actual Cost</th>
+                        <th class="text-end">Provisional Sales</th>
+                        <th class="text-end">Actual Sales</th>
+                        <th class="text-end">Profit / Loss</th>
+                        <th class="text-end">Margin</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @forelse($rows as $row)
+                        @php $job = $row['job']; @endphp
+                        <tr>
+                            <td>{{ $job->row_no }}</td>
+                            <td>{{ \Carbon\Carbon::parse($job->posted_at)->format('d M Y') }}</td>
+                            <td>{{ $job->shipment_mode }} {{ $job->shipment_type }}</td>
+                            <td class="text-end">{{ number_format($row['provisional_cost'], 2) }}</td>
+                            <td class="text-end">{{ number_format($row['actual_cost'], 2) }}</td>
+                            <td class="text-end">{{ number_format($row['provisional_sales'], 2) }}</td>
+                            <td class="text-end">{{ number_format($row['actual_sales'], 2) }}</td>
+                            <td class="text-end stmt-strong">{{ number_format($row['profit_loss'], 2) }}</td>
+                            <td class="text-end">{{ number_format($row['margin'], 1) }}%</td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="9" class="text-center">No jobs found for the selected period.</td></tr>
+                    @endforelse
+                    </tbody>
                     <tfoot>
                     <tr class="stmt-strong">
-                        <td>Totals</td>
-                        <td class="text-end">Prov. Cost: {{ number_format($totals['provisional_cost'], 2) }}</td>
-                        <td class="text-end">Actual Cost: {{ number_format($totals['actual_cost'], 2) }}</td>
-                        <td class="text-end">Profit/Loss: {{ number_format($totals['profit_loss'], 2) }} ({{ number_format($totals['margin'], 1) }}%)</td>
+                        <td colspan="3">Totals</td>
+                        <td class="text-end">{{ number_format($totals['provisional_cost'], 2) }}</td>
+                        <td class="text-end">{{ number_format($totals['actual_cost'], 2) }}</td>
+                        <td class="text-end">{{ number_format($totals['provisional_sales'], 2) }}</td>
+                        <td class="text-end">{{ number_format($totals['actual_sales'], 2) }}</td>
+                        <td class="text-end">{{ number_format($totals['profit_loss'], 2) }}</td>
+                        <td class="text-end">{{ number_format($totals['margin'], 1) }}%</td>
                     </tr>
                     </tfoot>
                 </table>

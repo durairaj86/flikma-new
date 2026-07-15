@@ -2,10 +2,12 @@
 
 namespace App\Livewire\Report\Finance;
 
+use App\Exports\ReportTableExport;
 use App\Models\Finance\Account\Account;
 use App\Models\Finance\FinanceSub;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProfitAndLoss extends Component
 {
@@ -60,6 +62,43 @@ class ProfitAndLoss extends Component
     public function updatedSearch($value)
     {
         $this->dispatch('searchChanged', $value);
+    }
+
+    public function exportExcel()
+    {
+        // Reuse the child table component's query rather than duplicating
+        // it — the Print/PDF/Excel buttons live here on the parent, but the
+        // account-balance calculation lives on ProfitAndLossTable.
+        $child = new ProfitAndLossTable();
+        $child->startDate = $this->startDate;
+        $child->endDate = $this->endDate;
+        $child->search = $this->search;
+        $data = $child->getProfitAndLossData();
+
+        $rows = [];
+        foreach ($data['revenue'] as $acc) {
+            $rows[] = ['Revenue', $acc['account_code'], $acc['account_name'], (float) $acc['balance']];
+        }
+        foreach ($data['expenses'] as $acc) {
+            $rows[] = ['Expense', $acc['account_code'], $acc['account_name'], (float) $acc['balance']];
+        }
+
+        $columns = ['Section', 'Code', 'Account Name', 'Balance'];
+        $totalsRow = ['', '', 'Net Income / (Loss)', (float) $data['net_income']];
+
+        $meta = [
+            'title' => 'PROFIT & LOSS STATEMENT',
+            'lines' => [
+                'Period: ' . \Carbon\Carbon::parse($this->startDate)->format('d M Y') . ' — ' . \Carbon\Carbon::parse($this->endDate)->format('d M Y'),
+                'Total Revenue: ' . number_format($data['total_revenue'], 2) . '  |  Total Expenses: ' . number_format($data['total_expenses'], 2),
+                'Generated on: ' . now()->format('d-m-Y H:i'),
+            ],
+            'numeric_from' => 4,
+        ];
+
+        $filename = 'ProfitAndLoss-' . $this->startDate . '-' . $this->endDate . '.xlsx';
+
+        return Excel::download(new ReportTableExport($rows, $totalsRow, $columns, $meta), $filename);
     }
 
     public function render()

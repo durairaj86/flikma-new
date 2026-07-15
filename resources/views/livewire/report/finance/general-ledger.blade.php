@@ -20,8 +20,8 @@
                             <i class="bi bi-download me-2"></i>Export
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                            <li><a class="dropdown-item py-2" href="#"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
-                            <li><a class="dropdown-item py-2" href="#"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
+                            <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'gl-print', {orientation: 'landscape'})"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
+                            <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
                         </ul>
                     </div>
                 </div>
@@ -82,7 +82,7 @@
         </div>
 
         {{-- Period info bar --}}
-        <div class="d-flex align-items-center justify-content-between mb-3 px-1">
+        <div class="d-flex align-items-center justify-content-between mb-3 px-1 d-print-none">
             <div class="small text-muted">
                 <i class="bi bi-calendar3 me-1"></i>
                 Period: <strong class="text-dark">{{ \Carbon\Carbon::parse($startDate)->format('d M Y') }}</strong>
@@ -98,7 +98,7 @@
 
         {{-- Ledger content --}}
         <div class="card border-0 shadow-sm overflow-hidden">
-            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center d-print-none">
                 <h6 class="mb-0 fw-bold">
                     <i class="bi bi-journal-text me-2 text-gl"></i>Account Transaction Ledger
                 </h6>
@@ -108,18 +108,6 @@
             </div>
             <div>
                 <livewire:report.finance.general-ledger-table />
-            </div>
-        </div>
-
-        {{-- Print footer --}}
-        <div class="mt-4 p-3 bg-white border rounded shadow-sm d-none d-print-block">
-            <div class="row text-center text-muted x-small">
-                <div class="col-md-4">Prepared By: _________________</div>
-                <div class="col-md-4">Verified By: _________________</div>
-                <div class="col-md-4">Approved By: _________________</div>
-            </div>
-            <div class="text-center mt-2 x-small text-muted">
-                ✦ Computer-generated report — no physical signature required
             </div>
         </div>
 

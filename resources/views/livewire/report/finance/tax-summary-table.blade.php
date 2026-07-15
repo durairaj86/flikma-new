@@ -5,7 +5,7 @@
         $netTax = $taxSummaryData['net_tax'] ?? 0;
     @endphp
 
-    <div class="row g-4">
+    <div class="row g-4 d-print-none">
         <div class="col-lg-6">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-header bg-white py-3 border-bottom">
@@ -84,7 +84,7 @@
     </div>
 
     {{-- Reconciliation --}}
-    <div class="mt-4 card border-0 shadow-sm overflow-hidden">
+    <div class="mt-4 card border-0 shadow-sm overflow-hidden d-print-none">
         <div class="card-body p-4 border-top border-4 {{ $netTax >= 0 ? 'border-danger' : 'border-success' }}">
             <div class="row align-items-center">
                 <div class="col-md-8">
@@ -105,6 +105,64 @@
             </div>
         </div>
     </div>
+
+    {{-- Bank-statement style layout: used for Print and PDF export only --}}
+    <div id="ts-print" class="stmt-print d-none d-print-block"
+         data-pdf-filename="TaxSummary-{{ $startDate ?? '' }}-{{ $endDate ?? '' }}.pdf">
+
+        <table class="stmt-meta">
+            <tr>
+                <td>
+                    <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
+                </td>
+                <td class="text-end">
+                    <div class="stmt-title">TAX SUMMARY (VAT)</div>
+                    <div class="stmt-sub">Period: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
+                    <div class="stmt-sub">Generated: {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; Currency: SAR</div>
+                </td>
+            </tr>
+        </table>
+
+        <table class="stmt-table">
+            <thead>
+            <tr>
+                <th>Code</th>
+                <th>Account Name</th>
+                <th>Type</th>
+                <th class="text-end">Balance</th>
+            </tr>
+            </thead>
+            <tbody>
+            @forelse($taxSummaryData['tax_accounts'] as $account)
+                <tr>
+                    <td>{{ $account['account_code'] }}</td>
+                    <td>{{ $account['account_name'] }}</td>
+                    <td>{{ $account['type'] }}</td>
+                    <td class="text-end">{{ number_format($account['balance'], 2) }}</td>
+                </tr>
+            @empty
+                <tr><td colspan="4" class="text-center">No tax activity in this period.</td></tr>
+            @endforelse
+            </tbody>
+            <tfoot>
+            <tr class="stmt-strong"><td colspan="3">Total Input VAT</td><td class="text-end">{{ number_format($totalInput, 2) }}</td></tr>
+            <tr class="stmt-strong"><td colspan="3">Total Output VAT</td><td class="text-end">{{ number_format($totalOutput, 2) }}</td></tr>
+            <tr class="stmt-strong"><td colspan="3">Net Tax {{ $netTax >= 0 ? '(Payable)' : '(Refundable)' }}</td><td class="text-end">{{ number_format(abs($netTax), 2) }}</td></tr>
+            </tfoot>
+        </table>
+
+        <div class="stmt-signatures">
+            <table class="stmt-meta">
+                <tr>
+                    <td>Prepared By: _________________</td>
+                    <td>Verified By: _________________</td>
+                    <td>Approved By: _________________</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    @include('includes.report-print-css', ['orientation' => 'portrait'])
 
     <style>
         .tabular-nums { font-variant-numeric: tabular-nums; }

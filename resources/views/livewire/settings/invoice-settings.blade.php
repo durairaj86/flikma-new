@@ -426,17 +426,6 @@
                                 </button>
                             </div>
                         </div>
-
-                        <div class="mt-4 pt-3 border-top">
-                            <div class="d-flex align-items-center mb-3">
-                                <label class="form-check-label radio-container d-flex align-items-center me-3" for="customThemeRadio">
-                                    <input class="form-check-input" type="radio" name="themeMode" id="customThemeRadio">
-                                    <span class="fw-bold fs-6 ms-2">Create Custom Theme</span>
-                                    <i class="bi bi-info-circle ms-2 text-muted" data-bs-toggle="tooltip" title="Design your own template from scratch."></i>
-                                </label>
-                            </div>
-                            <button class="btn btn-outline-primary w-100 fw-bold" id="createCustomBtn"><i class="bi bi-magic me-2"></i> Design Your Own Layout</button>
-                        </div>
                     </div>
 
                     <div class="select-color pt-3">

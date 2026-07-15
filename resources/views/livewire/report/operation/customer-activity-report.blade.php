@@ -20,8 +20,8 @@
                             <i class="bi bi-download me-2"></i>Export
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                            <li><a class="dropdown-item py-2" href="#"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
-                            <li><a class="dropdown-item py-2" href="#"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
+                            <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'car-print', {orientation: 'landscape'})"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
+                            <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
                         </ul>
                     </div>
                 </div>
@@ -74,7 +74,7 @@
 
         {{-- Summary Cards --}}
         @if($totals['total_customers'] > 0)
-        <div class="row g-3 mb-4">
+        <div class="row g-3 mb-4 d-print-none">
             <div class="col-lg col-md-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-3 text-center">
@@ -121,7 +121,7 @@
         @endif
 
         {{-- Table --}}
-        <div class="card border-0 shadow-sm overflow-hidden">
+        <div class="card border-0 shadow-sm overflow-hidden d-print-none">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <h6 class="mb-0 fw-bold">
                     <i class="bi bi-people me-2 text-pr"></i>
@@ -205,14 +205,79 @@
             </div>
         </div>
 
-        {{-- Print footer --}}
-        <div class="mt-4 p-3 bg-white border rounded shadow-sm d-none d-print-block">
-            <div class="row text-center text-muted x-small">
-                <div class="col-md-4">Prepared By: _________________</div>
-                <div class="col-md-4">Verified By: _________________</div>
-                <div class="col-md-4">Date: {{ now()->format('d M Y') }}</div>
+        {{-- Bank-statement style layout: used for Print and PDF export only --}}
+        <div id="car-print" class="stmt-print d-none d-print-block"
+             data-pdf-filename="CustomerActivityReport-{{ $startDate ?? '' }}-{{ $endDate ?? '' }}.pdf">
+
+            <table class="stmt-meta">
+                <tr>
+                    <td>
+                        <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
+                    </td>
+                    <td class="text-end">
+                        <div class="stmt-title">CUSTOMER ACTIVITY REPORT</div>
+                        <div class="stmt-sub">Period: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
+                        <div class="stmt-sub">Generated: {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; Currency: SAR</div>
+                    </td>
+                </tr>
+            </table>
+
+            <table class="stmt-table">
+                <thead>
+                <tr>
+                    <th>Customer</th>
+                    <th class="text-end">Jobs</th>
+                    <th class="text-end">Active</th>
+                    <th class="text-end">Completed</th>
+                    <th class="text-end">Draft</th>
+                    <th class="text-end">Revenue</th>
+                    <th class="text-end">Cost</th>
+                    <th class="text-end">Profit / Loss</th>
+                    <th class="text-end">Margin</th>
+                </tr>
+                </thead>
+                <tbody>
+                @forelse($rows as $row)
+                    <tr>
+                        <td>{{ $row['customer']->name_en }} ({{ $row['customer']->row_no }})</td>
+                        <td class="text-end">{{ $row['job_count'] }}</td>
+                        <td class="text-end">{{ $row['active'] }}</td>
+                        <td class="text-end">{{ $row['completed'] }}</td>
+                        <td class="text-end">{{ $row['draft'] }}</td>
+                        <td class="text-end">{{ number_format($row['revenue'], 2) }}</td>
+                        <td class="text-end">{{ number_format($row['cost'], 2) }}</td>
+                        <td class="text-end">{{ number_format($row['profit'], 2) }}</td>
+                        <td class="text-end">{{ number_format($row['margin'], 1) }}%</td>
+                    </tr>
+                @empty
+                    <tr><td colspan="9" class="text-center">No customer activity found for the selected period.</td></tr>
+                @endforelse
+                </tbody>
+                <tfoot>
+                <tr class="stmt-strong">
+                    <td>{{ $totals['total_customers'] }} Customers</td>
+                    <td class="text-end">{{ $totals['total_jobs'] }}</td>
+                    <td></td><td></td><td></td>
+                    <td class="text-end">{{ number_format($totals['total_revenue'], 2) }}</td>
+                    <td class="text-end">{{ number_format($totals['total_cost'], 2) }}</td>
+                    <td class="text-end">{{ number_format($totals['total_profit'], 2) }}</td>
+                    <td class="text-end"></td>
+                </tr>
+                </tfoot>
+            </table>
+
+            <div class="stmt-signatures">
+                <table class="stmt-meta">
+                    <tr>
+                        <td>Prepared By: _________________</td>
+                        <td>Verified By: _________________</td>
+                        <td>Approved By: _________________</td>
+                    </tr>
+                </table>
             </div>
         </div>
+
+        @include('includes.report-print-css', ['orientation' => 'landscape'])
 
     </div>
 

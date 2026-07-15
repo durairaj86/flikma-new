@@ -22,8 +22,8 @@
                             <i class="bi bi-download me-2"></i>Export
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                            <li><a class="dropdown-item py-2" href="#"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
-                            <li><a class="dropdown-item py-2" href="#"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
+                            <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'ot-print')"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
+                            <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
                         </ul>
                     </div>
                 </div>
@@ -75,7 +75,7 @@
         </div>
 
         {{-- Summary Cards --}}
-        <div class="row g-3 mb-4">
+        <div class="row g-3 mb-4 d-print-none">
             <div class="col-lg-6 col-md-6">
                 <div class="card border-0 shadow-sm h-100 border-start border-4 border-success">
                     <div class="card-body p-3">
@@ -98,7 +98,7 @@
 
         {{-- Table --}}
         <div class="card border-0 shadow-sm overflow-hidden">
-            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center d-print-none">
                 <h6 class="mb-0 fw-bold">
                     <i class="bi bi-journal-arrow-up me-2 text-pr"></i>
                     Output VAT Transactions
@@ -113,17 +113,8 @@
         </div>
 
         {{-- Disclaimer --}}
-        <div class="mt-4 text-center text-muted">
+        <div class="mt-4 text-center text-muted d-print-none">
             <p class="small">** This is a computer-generated report for internal use. Verify against official ZATCA records. **</p>
-        </div>
-
-        {{-- Print footer --}}
-        <div class="mt-4 p-3 bg-white border rounded shadow-sm d-none d-print-block">
-            <div class="row text-center text-muted x-small">
-                <div class="col-md-4">Prepared By: _________________</div>
-                <div class="col-md-4">Verified By: _________________</div>
-                <div class="col-md-4">Date: {{ now()->format('d M Y') }}</div>
-            </div>
         </div>
 
     </div>

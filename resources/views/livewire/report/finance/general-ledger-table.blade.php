@@ -25,6 +25,7 @@
     ];
 @endphp
 
+<div class="d-print-none">
 {{-- Summary cards — same as provisional report --}}
 @if(count($activeAccounts) > 0)
 <div class="row g-3 p-3 border-bottom">
@@ -216,6 +217,98 @@
         <div class="x-small">Select a different date range or account to view transactions.</div>
     </div>
 @endif
+</div>
+
+{{-- Bank-statement style layout: used for Print and PDF export only --}}
+<div id="gl-print" class="stmt-print d-none d-print-block"
+     data-pdf-filename="GeneralLedger-{{ $startDate ?? '' }}-{{ $endDate ?? '' }}.pdf">
+
+    <table class="stmt-meta">
+        <tr>
+            <td>
+                <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
+            </td>
+            <td class="text-end">
+                <div class="stmt-title">GENERAL LEDGER</div>
+                <div class="stmt-sub">Period: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
+                <div class="stmt-sub">Generated: {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; Currency: SAR</div>
+            </td>
+        </tr>
+    </table>
+
+    @forelse($activeAccounts as $code => $acc)
+        <table class="stmt-meta stmt-box">
+            <tr>
+                <td>
+                    <div class="stmt-strong">{{ $acc['account_code'] }} — {{ $acc['account_name'] }}</div>
+                    <div class="stmt-sub">Opening Balance: {{ number_format($acc['opening_balance'], 2) }}</div>
+                </td>
+                <td class="text-end">
+                    <div class="stmt-sub">Closing Balance</div>
+                    <div class="stmt-strong">{{ number_format($acc['closing_balance'], 2) }}</div>
+                </td>
+            </tr>
+        </table>
+        <table class="stmt-table">
+            <thead>
+            <tr>
+                <th>Date</th>
+                <th>Voucher No</th>
+                <th>Description</th>
+                <th class="text-end">Debit</th>
+                <th class="text-end">Credit</th>
+                <th class="text-end">Balance</th>
+            </tr>
+            </thead>
+            <tbody>
+            @forelse($acc['transactions'] as $txn)
+                <tr>
+                    <td>{{ $txn['date'] }}</td>
+                    <td>{{ $txn['voucher_no'] }}</td>
+                    <td>{{ $txn['description'] }}</td>
+                    <td class="text-end">{{ $txn['debit'] > 0 ? number_format($txn['debit'], 2) : '' }}</td>
+                    <td class="text-end">{{ $txn['credit'] > 0 ? number_format($txn['credit'], 2) : '' }}</td>
+                    <td class="text-end">{{ number_format($txn['balance'], 2) }}</td>
+                </tr>
+            @empty
+                <tr><td colspan="6" class="text-center">No transactions in this period.</td></tr>
+            @endforelse
+            </tbody>
+            <tfoot>
+            <tr class="stmt-strong">
+                <td colspan="3">Total</td>
+                <td class="text-end">{{ number_format($acc['total_debit'], 2) }}</td>
+                <td class="text-end">{{ number_format($acc['total_credit'], 2) }}</td>
+                <td class="text-end">{{ number_format($acc['closing_balance'], 2) }}</td>
+            </tr>
+            </tfoot>
+        </table>
+    @empty
+        <div class="stmt-footnote">No ledger data found for the selected period.</div>
+    @endforelse
+
+    <table class="stmt-table">
+        <tfoot>
+        <tr class="stmt-strong">
+            <td>Grand Total</td>
+            <td class="text-end">{{ number_format($grandTotalDebit, 2) }}</td>
+            <td class="text-end">{{ number_format($grandTotalCredit, 2) }}</td>
+        </tr>
+        </tfoot>
+    </table>
+
+    <div class="stmt-signatures">
+        <table class="stmt-meta">
+            <tr>
+                <td>Prepared By: _________________</td>
+                <td>Verified By: _________________</td>
+                <td>Approved By: _________________</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+@include('includes.report-print-css', ['orientation' => 'landscape'])
 
 <style>
 /* ── General Ledger table — provisional report design system ── */

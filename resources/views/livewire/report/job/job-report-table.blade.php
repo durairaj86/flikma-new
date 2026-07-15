@@ -1,5 +1,5 @@
 <div>
-    <div class="table-responsive">
+    <div class="table-responsive d-print-none">
         <table class="table table-hover align-middle mb-0">
             <thead>
                 <tr class="bg-light text-muted small text-uppercase fw-bold ls-1">
@@ -60,4 +60,59 @@
             </tbody>
         </table>
     </div>
+
+    {{-- Bank-statement style layout: used for Print and PDF export only --}}
+    <div id="jr-print" class="stmt-print d-none d-print-block"
+         data-pdf-filename="JobReport-{{ $startDate ?? '' }}-{{ $endDate ?? '' }}.pdf">
+
+        <table class="stmt-meta">
+            <tr>
+                <td>
+                    <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
+                </td>
+                <td class="text-end">
+                    <div class="stmt-title">JOB REPORT</div>
+                    <div class="stmt-sub">Period: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
+                    <div class="stmt-sub">Generated: {{ now()->format('d M Y H:i') }}</div>
+                </td>
+            </tr>
+        </table>
+
+        <table class="stmt-table">
+            <thead>
+            <tr>
+                <th>Job No</th>
+                <th>Date</th>
+                <th>Customer</th>
+                <th>Activity</th>
+                <th>AWB/MBL</th>
+                <th>HBL/HAWB</th>
+                <th>POL</th>
+                <th>POD</th>
+                <th>Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            @forelse($jobReportData['jobs'] as $job)
+                <tr>
+                    <td>{{ $job->row_no }}</td>
+                    <td>{{ \Carbon\Carbon::parse($job->posted_at)->format('d M Y') }}</td>
+                    <td>{{ $job->customer->name ?? 'N/A' }}</td>
+                    <td>{{ $job->activity->name ?? 'N/A' }}</td>
+                    <td>{{ $job->awb_no ?? '—' }}</td>
+                    <td>{{ $job->hbl_no ?? '—' }}</td>
+                    <td>{{ $job->pol ?? '—' }}</td>
+                    <td>{{ $job->pod ?? '—' }}</td>
+                    <td>{{ ucfirst($job->status ?? '—') }}</td>
+                </tr>
+            @empty
+                <tr><td colspan="9" class="text-center">No jobs found for the selected period.</td></tr>
+            @endforelse
+            </tbody>
+        </table>
+
+        <div class="stmt-footnote">Total jobs: {{ count($jobReportData['jobs']) }}</div>
+    </div>
+
+    @include('includes.report-print-css', ['orientation' => 'landscape'])
 </div>

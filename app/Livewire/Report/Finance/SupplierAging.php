@@ -2,11 +2,13 @@
 
 namespace App\Livewire\Report\Finance;
 
+use App\Exports\ReportTableExport;
 use App\Models\Supplier\Supplier;
 use App\Models\Finance\SupplierInvoice\SupplierInvoice;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SupplierAging extends Component
 {
@@ -150,6 +152,52 @@ class SupplierAging extends Component
             'invoices' => $agingRows,
             'summary'  => $summary,
         ];
+    }
+
+    public function exportExcel()
+    {
+        $data = $this->getAgingData();
+
+        if (!$data['supplier']) {
+            return;
+        }
+
+        $bucketLabels = [
+            'current' => 'Current', 'days_1_30' => '1-30 Days', 'days_31_60' => '31-60 Days',
+            'days_61_90' => '61-90 Days', 'days_91_120' => '91-120 Days', 'days_over_120' => 'Over 120 Days',
+        ];
+
+        $columns = array_merge(['Invoice #', 'Invoice Date', 'Due Date', 'Days Overdue'], array_values($bucketLabels), ['Total']);
+
+        $rows = [];
+        foreach ($data['invoices'] as $inv) {
+            $row = [$inv['invoice_no'], $inv['invoice_date'], $inv['due_date'], $inv['days_overdue']];
+            foreach (array_keys($bucketLabels) as $key) {
+                $row[] = (float) $inv[$key] ?: '';
+            }
+            $row[] = (float) $inv['total'];
+            $rows[] = $row;
+        }
+
+        $totalsRow = ['', '', '', 'TOTAL'];
+        foreach (array_keys($bucketLabels) as $key) {
+            $totalsRow[] = (float) $data['summary'][$key];
+        }
+        $totalsRow[] = (float) $data['summary']['grand_total'];
+
+        $meta = [
+            'title' => 'SUPPLIER AGING REPORT',
+            'lines' => [
+                'Supplier: ' . $data['supplier']->name_en . ' (' . $data['supplier']->row_no . ')',
+                'As of: ' . Carbon::parse($this->asOfDate)->format('d M Y'),
+                'Generated on: ' . now()->format('d-m-Y H:i'),
+            ],
+            'numeric_from' => 5,
+        ];
+
+        $filename = 'SupplierAging-' . $data['supplier']->row_no . '-' . $this->asOfDate . '.xlsx';
+
+        return Excel::download(new ReportTableExport($rows, $totalsRow, $columns, $meta), $filename);
     }
 
     public function render()
