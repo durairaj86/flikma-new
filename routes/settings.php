@@ -14,6 +14,7 @@ Route::prefix('settings')->group(function () {
     //Route::view('/company', 'modules.settings.company')->name('settings.company');
     Route::get('/invoice', [InvoiceSettingsController::class, 'edit'])->name('settings.invoice');
     Route::post('/invoice', [InvoiceSettingsController::class, 'store'])->name('settings.invoice.store');
+    Route::post('/invoice/preview', [\App\Http\Controllers\Finance\Invoice\CustomerInvoiceController::class, 'previewTemplate'])->name('settings.invoice.preview');
     Route::view('/tax', 'modules.settings.tax')->name('settings.tax');
 
 

@@ -13,139 +13,26 @@
                             <!-- Left side - Preview -->
                             <div class="col-md-6 border-end">
                                 <div class="p-3">
-                                    <h5 class="fw-bold mb-3 text-primary d-flex align-items-center"><i class="bi bi-eye me-2"></i> Invoice Preview</h5>
-                                    <div id="invoice-preview" class="border rounded p-3" style="height: 75vh; overflow-y: auto;">
-                                        <div class="text-center mb-3 text-muted">
-                                            <p>Preview will update based on selected settings</p>
-                                        </div>
-                                        <!-- Invoice preview content will be loaded here -->
-                                        <div id="preview-content">
-                                            <!-- Simplified invoice preview structure -->
-                                            <div class="border border-dark">
-                                                <div class="d-flex justify-content-between border-bottom border-dark p-2">
-                                                    <div class="logo-box">COMPANY LOGO</div>
-                                                    <div class="text-end">
-                                                        <p class="mb-0 fw-bold">COMPANY NAME</p>
-                                                        <p class="mb-0 small">Company Address</p>
-                                                        <p class="mb-0 small">City, Postal Code</p>
-                                                        <p class="mb-0 small" id="preview-phone">Tel: +966 12 345 6789</p>
-                                                    </div>
-                                                </div>
-
-                                                <div class="d-flex justify-content-between border-bottom border-dark" id="preview-tax-header">
-                                                    <h5 class="m-0 p-1 text-center w-50">TAX INVOICE</h5>
-                                                    <h5 class="m-0 p-1 text-center w-50">فاتورة ضريبية</h5>
-                                                </div>
-
-                                                <div class="border-bottom border-dark p-2">
-                                                    <div class="row">
-                                                        <div class="col-6 border-end">
-                                                            <p class="mb-1 fw-bold">Customer:</p>
-                                                            <p class="mb-0 small">Customer Name</p>
-                                                            <p class="mb-0 small">Customer Address</p>
-                                                        </div>
-                                                        <div class="col-6 text-end">
-                                                            <p class="mb-1 fw-bold">العميل:</p>
-                                                            <p class="mb-0 small">اسم العميل</p>
-                                                            <p class="mb-0 small">عنوان العميل</p>
-                                                        </div>
-                                                    </div>
-                                                    <div id="preview-customer-extras" class="mt-1 small" style="display:none;"></div>
-                                                </div>
-
-                                                <div id="preview-invoice-details" class="border-bottom border-dark p-2">
-                                                    <!-- Invoice details will be dynamically updated -->
-                                                    <div class="row mb-2">
-                                                        <div class="col-4 fw-bold">Invoice No.:</div>
-                                                        <div class="col-4 text-center">INV-12345</div>
-                                                        <div class="col-4 text-end fw-bold">رقم الفاتورة:</div>
-                                                    </div>
-                                                    <div class="row">
-                                                        <div class="col-4 fw-bold">Invoice Date:</div>
-                                                        <div class="col-4 text-center">01-Jan-23</div>
-                                                        <div class="col-4 text-end fw-bold">تاريخ:</div>
-                                                    </div>
-                                                </div>
-
-                                                <div id="preview-job-details" class="p-2">
-                                                    <!-- Job details will be dynamically updated -->
-                                                    <div class="row">
-                                                        <div class="col-6">
-                                                            <table class="w-100 small">
-                                                                <tr>
-                                                                    <td class="fw-bold" width="40%">Shipper:</td>
-                                                                    <td>Shipper Name</td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="fw-bold">HBL No:</td>
-                                                                    <td>HBL12345</td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="fw-bold">Place of Origin:</td>
-                                                                    <td>Origin City</td>
-                                                                </tr>
-                                                            </table>
-                                                        </div>
-                                                        <div class="col-6">
-                                                            <table class="w-100 small">
-                                                                <tr>
-                                                                    <td class="fw-bold" width="40%">Job Number:</td>
-                                                                    <td>JOB12345</td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="fw-bold">Job Date:</td>
-                                                                    <td>01-Jan-23</td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="fw-bold">ETD:</td>
-                                                                    <td>05-Jan-23</td>
-                                                                </tr>
-                                                            </table>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <table class="table table-sm table-bordered mb-0 small">
-                                                    <thead id="preview-item-thead">
-                                                        <tr>
-                                                            <th class="preview-col-hsn" style="display:none">HSN/SAC</th>
-                                                            <th class="preview-col-desc">Description</th>
-                                                            <th class="preview-col-qty">Qty</th>
-                                                            <th class="preview-col-rate">Rate</th>
-                                                            <th class="preview-col-discount" style="display:none">Discount</th>
-                                                            <th class="preview-col-amt">Amount</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td class="preview-col-hsn" style="display:none">—</td>
-                                                            <td class="preview-col-desc">Service Item</td>
-                                                            <td class="preview-col-qty">1</td>
-                                                            <td class="preview-col-rate">100.00</td>
-                                                            <td class="preview-col-discount" style="display:none">—</td>
-                                                            <td class="preview-col-amt">100.00</td>
-                                                        </tr>
-                                                    </tbody>
-                                                    <tfoot>
-                                                        <tr>
-                                                            <td colspan="4" class="fw-bold">Total:</td>
-                                                            <td colspan="2" class="text-end fw-bold">100.00 SAR</td>
-                                                        </tr>
-                                                        <tr id="preview-party-balance">
-                                                            <td colspan="6" class="small text-muted border-top">Party Balance: 500.00 SAR</td>
-                                                        </tr>
-                                                    </tfoot>
-                                                </table>
-                                                <div id="preview-misc-section" class="p-2 border-top border-dark small" style="display:none;"></div>
-                                            </div>
-                                        </div>
+                                    <h5 class="fw-bold mb-3 text-primary d-flex align-items-center">
+                                        <i class="bi bi-eye me-2"></i> Invoice Preview
+                                        <span id="preview-loading" class="spinner-border spinner-border-sm text-primary ms-2" style="display:none;"></span>
+                                    </h5>
+                                    <div id="invoice-preview" class="border rounded" style="height: 75vh; overflow: hidden;">
+                                        <iframe id="preview-frame" title="Invoice preview" style="width:100%; height:100%; border:0;"></iframe>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Right side - Settings -->
                             <div class="col-md-6">
-                                <div class="overflow-auto" style="max-height: 85vh;">
+                                <div class="d-flex justify-content-between align-items-center px-4 px-md-5 py-3 border-bottom bg-white sticky-top" style="top: 0; z-index: 10;">
+                                    <span id="unsaved-indicator" class="small text-warning fw-medium" style="display:none;"><i class="bi bi-circle-fill me-1" style="font-size:6px;"></i>Unsaved changes</span>
+                                    <span id="saved-indicator" class="small text-success fw-medium"><i class="bi bi-check-circle me-1"></i>Saved</span>
+                                    <button type="button" id="saveSettingsBtn" class="btn btn-primary btn-sm px-4 fw-bold ms-auto">
+                                        <i class="bi bi-save me-1"></i> Save
+                                    </button>
+                                </div>
+                                <div class="overflow-auto" style="max-height: 78vh;">
                                     <div class="p-4 p-md-5 border-bottom">
                                         <h5 class="fw-bold mb-4 text-primary d-flex align-items-center"><i class="bi bi-palette me-2"></i> Design & Branding</h5>
 
@@ -161,7 +48,16 @@
                                         <div class="theme-container" style="width: 140px;">
                                             <div class="theme active border border-primary p-2 rounded-3 text-center shadow-sm" data-theme="stylish" style="cursor:pointer; transform: translateY(-3px);">
                                                 <div class="image-container" style="height: 80px; display:flex; align-items:center; justify-content:center;">
-                                                    <img src="https://mybillbook.in/app//assets/images/themes/stylish.svg" alt="Stylish" class="img-fluid rounded" style="max-height:100%;">
+                                                    <svg viewBox="0 0 100 80" width="100%" height="100%" style="max-height:100%;">
+                                                        <rect x="4" y="4" width="92" height="72" fill="#fff" stroke="#333" stroke-width="1.5"/>
+                                                        <rect x="4" y="4" width="92" height="14" fill="none" stroke="#333" stroke-width="1"/>
+                                                        <text x="50" y="13" font-size="7" font-weight="700" text-anchor="middle" fill="#333">TAX INVOICE</text>
+                                                        <line x1="4" y1="30" x2="96" y2="30" stroke="#999" stroke-width="0.5"/>
+                                                        <line x1="4" y1="38" x2="96" y2="38" stroke="#999" stroke-width="0.5"/>
+                                                        <rect x="8" y="46" width="84" height="8" fill="#e0e0e0"/>
+                                                        <line x1="8" y1="58" x2="92" y2="58" stroke="#ccc" stroke-width="0.5"/>
+                                                        <line x1="8" y1="64" x2="92" y2="64" stroke="#ccc" stroke-width="0.5"/>
+                                                    </svg>
                                                 </div>
                                                 <div class="theme-name small fw-medium mt-2 text-primary">Stylish</div>
                                             </div>
@@ -170,7 +66,16 @@
                                         <div class="theme-container" style="width: 140px;">
                                             <div class="theme border p-2 rounded-3 text-center" data-theme="luxury" style="cursor:pointer;">
                                                 <div class="image-container" style="height: 80px; display:flex; align-items:center; justify-content:center;">
-                                                    <img src="https://mybillbook.in/app//assets/images/themes/luxury-theme.svg" alt="Luxury" class="img-fluid rounded" style="max-height:100%;">
+                                                    <svg viewBox="0 0 100 80" width="100%" height="100%" style="max-height:100%;">
+                                                        <rect x="4" y="4" width="92" height="72" rx="4" fill="#fff" stroke="#0b6aa0" stroke-width="1.5"/>
+                                                        <text x="50" y="18" font-size="8" font-family="Georgia, serif" font-weight="700" text-anchor="middle" fill="#0b6aa0">TAX INVOICE</text>
+                                                        <line x1="10" y1="24" x2="90" y2="24" stroke="#0b6aa0" stroke-width="1"/>
+                                                        <rect x="8" y="30" width="38" height="18" rx="2" fill="none" stroke="#ddd" stroke-width="0.5"/>
+                                                        <rect x="54" y="30" width="38" height="18" rx="2" fill="none" stroke="#ddd" stroke-width="0.5"/>
+                                                        <rect x="8" y="52" width="84" height="6" fill="#0b6aa0"/>
+                                                        <line x1="8" y1="62" x2="92" y2="62" stroke="#eee" stroke-width="0.5"/>
+                                                        <line x1="8" y1="68" x2="92" y2="68" stroke="#eee" stroke-width="0.5"/>
+                                                    </svg>
                                                 </div>
                                                 <div class="theme-name small fw-medium mt-2">Luxury</div>
                                             </div>
@@ -179,7 +84,18 @@
                                         <div class="theme-container" style="width: 140px;">
                                             <div class="theme border p-2 rounded-3 text-center" data-theme="advance-gst-tally" style="cursor:pointer;">
                                                 <div class="image-container" style="height: 80px; display:flex; align-items:center; justify-content:center;">
-                                                    <img src="https://mybillbook.in/app//assets/images/themes/advance-gst-tally.svg" alt="Advanced GST (Tally)" class="img-fluid rounded" style="max-height:100%;">
+                                                    <svg viewBox="0 0 100 80" width="100%" height="100%" style="max-height:100%;">
+                                                        <rect x="4" y="4" width="92" height="72" fill="#fff" stroke="#000" stroke-width="2"/>
+                                                        <rect x="4" y="4" width="92" height="10" fill="#eee" stroke="#000" stroke-width="1"/>
+                                                        <text x="50" y="11.5" font-size="6" font-family="monospace" font-weight="700" text-anchor="middle" fill="#000">TAX INVOICE</text>
+                                                        <line x1="4" y1="24" x2="96" y2="24" stroke="#000" stroke-width="1"/>
+                                                        <line x1="50" y1="14" x2="50" y2="24" stroke="#000" stroke-width="0.5"/>
+                                                        <line x1="4" y1="38" x2="96" y2="38" stroke="#000" stroke-width="1"/>
+                                                        <line x1="50" y1="24" x2="50" y2="38" stroke="#000" stroke-width="0.5"/>
+                                                        <rect x="4" y="44" width="92" height="7" fill="#000"/>
+                                                        <line x1="4" y1="58" x2="96" y2="58" stroke="#666" stroke-width="0.5"/>
+                                                        <line x1="4" y1="65" x2="96" y2="65" stroke="#666" stroke-width="0.5"/>
+                                                    </svg>
                                                 </div>
                                                 <div class="theme-name small fw-medium mt-2">Advanced GST (Tally)</div>
                                             </div>
@@ -188,7 +104,14 @@
                                         <div class="theme-container" style="width: 140px;">
                                             <div class="theme border p-2 rounded-3 text-center" data-theme="billbook" style="cursor:pointer;">
                                                 <div class="image-container" style="height: 80px; display:flex; align-items:center; justify-content:center;">
-                                                    <img src="https://mybillbook.in/app//assets/images/themes/billbook.svg" alt="Billbook" class="img-fluid rounded" style="max-height:100%;">
+                                                    <svg viewBox="0 0 100 80" width="100%" height="100%" style="max-height:100%;">
+                                                        <rect x="4" y="4" width="92" height="72" rx="6" fill="#fff" stroke="#e5e7eb" stroke-width="1"/>
+                                                        <rect x="60" y="10" width="32" height="12" rx="3" fill="#0b6aa0"/>
+                                                        <text x="76" y="18.5" font-size="6" font-weight="700" text-anchor="middle" fill="#fff">INVOICE</text>
+                                                        <rect x="8" y="28" width="84" height="12" rx="3" fill="#f9fafb"/>
+                                                        <rect x="8" y="44" width="40" height="24" rx="3" fill="none" stroke="#e5e7eb" stroke-width="0.75"/>
+                                                        <rect x="52" y="44" width="40" height="24" rx="3" fill="none" stroke="#e5e7eb" stroke-width="0.75"/>
+                                                    </svg>
                                                 </div>
                                                 <div class="theme-name small fw-medium mt-2">Billbook</div>
                                             </div>
@@ -464,11 +387,15 @@
                     // Initialize the preview
                     updatePreview();
 
-                    // Add event listeners for toggle switches
+                    // Toggle switches, color, and checkboxes patch the already-loaded
+                    // preview iframe directly (pure client-side, zero network requests).
+                    // Only the theme thumbnail click re-fetches, since switching the
+                    // whole layout can't be faked by patching the old one.
                     document.querySelectorAll('.form-check-input[type="checkbox"][data-key]').forEach(function(toggle) {
                         toggle.addEventListener('change', function() {
-                            updatePreview();
-                            saveSettings();
+                            const toggleKey = DATA_KEY_TO_TOGGLE[this.dataset.key];
+                            if (toggleKey) applyLocalToggle(toggleKey, this.checked);
+                            markUnsaved();
                         });
                     });
 
@@ -484,11 +411,12 @@
                             this.style.transform = 'translateY(-3px)';
                             this.querySelector('.theme-name').classList.add('text-primary');
                             updatePreview();
-                            saveSettings();
+                            markUnsaved();
                         });
                     });
 
-                    // Add event listeners for color selection
+                    // Add event listeners for color selection — patches the preview's
+                    // dynamic color <style> directly, no request.
                     document.querySelectorAll('.color-show').forEach(function(color) {
                         color.addEventListener('click', function() {
                             document.querySelectorAll('.color-show').forEach(function(c) {
@@ -497,24 +425,101 @@
                             });
                             this.classList.add('selected');
                             this.style.outline = '3px solid rgba(13,110,253,0.3)';
-                            updatePreview();
-                            saveSettings();
+                            applyLocalColor(this.dataset.color);
+                            markUnsaved();
                         });
                     });
 
-                    // All accordion checkboxes — update preview first, then save
-                    document.querySelectorAll(
-                        '#collapseInvoiceDetails input[type="checkbox"],' +
-                        '#collapsePartyDetails input[type="checkbox"],' +
-                        '#collapseMisc input[type="checkbox"],' +
-                        '#collapseItemCols input[type="checkbox"]'
-                    ).forEach(function(checkbox) {
+                    // Item table column checkboxes — patch matching data-toggle cells
+                    document.querySelectorAll('#collapseItemCols input[type="checkbox"]').forEach(function(checkbox) {
                         checkbox.addEventListener('change', function() {
-                            updatePreview();
-                            saveSettings();
+                            const toggleKey = ITEM_COLUMN_TOGGLES[this.id];
+                            if (toggleKey) applyLocalToggle(toggleKey, this.checked);
+                            markUnsaved();
                         });
                     });
+
+                    // Invoice Details / Party Details accordions already use the exact
+                    // same key strings as the templates' data-toggle attributes.
+                    document.querySelectorAll(
+                        '#collapseInvoiceDetails input[type="checkbox"][data-invoice-detail],' +
+                        '#collapsePartyDetails input[type="checkbox"][data-party-detail]'
+                    ).forEach(function(checkbox) {
+                        checkbox.addEventListener('change', function() {
+                            const toggleKey = this.dataset.invoiceDetail || this.dataset.partyDetail;
+                            applyLocalToggle(toggleKey, this.checked);
+                            markUnsaved();
+                        });
+                    });
+
+                    // Miscellaneous Details has no backing column in any template
+                    // (see memory note) — nothing to patch locally, just tracks unsaved.
+                    document.querySelectorAll('#collapseMisc input[type="checkbox"]').forEach(function(checkbox) {
+                        checkbox.addEventListener('change', markUnsaved);
+                    });
+
+                    document.getElementById('saveSettingsBtn').addEventListener('click', function() {
+                        saveSettings();
+                        updatePreview();
+                    });
                 });
+
+                function markUnsaved() {
+                    document.getElementById('unsaved-indicator').style.display = '';
+                    document.getElementById('saved-indicator').style.display = 'none';
+                }
+
+                function markSaved() {
+                    document.getElementById('unsaved-indicator').style.display = 'none';
+                    document.getElementById('saved-indicator').style.display = '';
+                }
+
+                // ── Client-side preview patching (zero network requests) ──────────
+                // Every optional block in the 4 real templates is always present in
+                // the DOM, tagged data-toggle="<key>", hidden via inline display:none
+                // when its setting is off. So toggling a checkbox just flips that
+                // inline style directly on the already-loaded iframe — no re-fetch.
+                function getPreviewDoc() {
+                    const frame = document.getElementById('preview-frame');
+                    return frame && frame.contentDocument ? frame.contentDocument : null;
+                }
+
+                function applyLocalToggle(key, visible) {
+                    const doc = getPreviewDoc();
+                    if (!doc) return;
+                    doc.querySelectorAll('[data-toggle="' + key + '"]').forEach(function(el) {
+                        el.style.display = visible ? '' : 'none';
+                    });
+                }
+
+                function applyLocalColor(color) {
+                    const doc = getPreviewDoc();
+                    if (!doc) return;
+                    const styleEl = doc.getElementById('dynamic-color-style');
+                    const templateEl = doc.getElementById('color-css-template');
+                    if (!styleEl || !templateEl) return;
+                    const template = JSON.parse(templateEl.textContent);
+                    styleEl.textContent = template.split('__COLOR__').join(color);
+                }
+
+                // Maps the "Display Options" checkboxes' camelCase data-key to the
+                // snake_case key the templates use for data-toggle.
+                const DATA_KEY_TO_TOGGLE = {
+                    partyBalance: 'party_balance',
+                    itemDescription: 'item_description',
+                    showPhone: 'show_phone',
+                    showTime: 'show_time',
+                    // freeItemQty / altUnit have no backing column in this app's
+                    // invoice schema, so there's nothing in the template to toggle.
+                };
+
+                // Maps the "Item Table Columns" checkboxes to their data-toggle key.
+                const ITEM_COLUMN_TOGGLES = {
+                    colHsn: 'hsn_sac',
+                    colUnit: 'unit',
+                    colRate: 'rate',
+                    colDiscount: 'discount',
+                };
 
                 function initializeSettings() {
                     // If settings are available, initialize the UI
@@ -608,296 +613,101 @@
                     @endif
                 }
 
-                function updatePreview() {
-                    // ── Primary color ────────────────────────────────────────
-                    let primaryColor = '#0b6aa0';
-                    const selectedColor = document.querySelector('.color-show.selected');
-                    if (selectedColor) primaryColor = selectedColor.dataset.color;
-
-                    // Apply color to TAX INVOICE header row
-                    const taxHeader = document.getElementById('preview-tax-header');
-                    if (taxHeader) {
-                        taxHeader.style.backgroundColor = primaryColor;
-                        taxHeader.querySelectorAll('h5').forEach(function(h) {
-                            h.style.color = '#fff';
-                        });
-                    }
-
-                    // Apply color to item table header
-                    const itemThead = document.getElementById('preview-item-thead');
-                    if (itemThead) {
-                        itemThead.querySelectorAll('th').forEach(function(th) {
-                            th.style.backgroundColor = primaryColor;
-                            th.style.color = '#fff';
-                            th.style.borderColor = primaryColor;
-                        });
-                    }
-
-                    // ── Display toggle: phone number ─────────────────────────
-                    const phoneEl = document.getElementById('preview-phone');
-                    if (phoneEl) {
-                        phoneEl.style.display = document.getElementById('toggleShowPhone').checked ? '' : 'none';
-                    }
-
-                    // ── Display toggle: party balance ────────────────────────
-                    const balanceEl = document.getElementById('preview-party-balance');
-                    if (balanceEl) {
-                        balanceEl.style.display = document.getElementById('togglePartyBalance').checked ? '' : 'none';
-                    }
-
-                    // ── Item table column visibility ─────────────────────────
-                    function toggleCols(cls, show) {
-                        document.querySelectorAll('.' + cls).forEach(function(el) { el.style.display = show ? '' : 'none'; });
-                    }
-                    toggleCols('preview-col-hsn',      document.getElementById('colHsn').checked);
-                    toggleCols('preview-col-desc',     document.getElementById('toggleItemDesc').checked);
-                    toggleCols('preview-col-rate',     document.getElementById('colRate').checked);
-                    toggleCols('preview-col-discount', document.getElementById('colDiscount').checked);
-
-                    // ── Job details section ──────────────────────────────────
-                    const previewJobDetails = document.getElementById('preview-job-details');
-                    const previewInvoiceDetails = document.getElementById('preview-invoice-details');
-
-                    previewJobDetails.innerHTML = '';
-                    previewInvoiceDetails.innerHTML = '';
-
-                    // Left column
-                    const leftRows = [
-                        ['colJobNumber',    'Job Number',       'JOB12345'],
-                        ['colRefNumber',    'Reference No.',    'REF-001'],
-                        ['colActivity',     'Activity',         'Sea Export'],
-                        ['colAwb',          'HBL / AWB No.',    'HBL12345'],
-                        ['colPolPod',       'POL / POD',        'JED / DXB'],
-                        ['colIncoterm',     'Incoterm',         'FOB'],
-                        ['colVoyage',       'Voyage / Flight',  'VF12345'],
-                        ['colShipMode',     'Shipment Mode',    'Sea'],
-                        ['colCarrier',      'Carrier',          'Carrier Name'],
-                        ['colShipCategory', 'Shipment Category','General'],
-                        ['colPlaceReceipt', 'Place of Receipt', 'Jeddah'],
-                    ];
-
-                    // Right column
-                    const rightRows = [
-                        ['colEtd',          'ETD',              '05-Jan-23'],
-                        ['colEta',          'ETA',              '15-Jan-23'],
-                        ['colFinalDest',    'Final Destination','Destination City'],
-                        ['colCommodity',    'Commodity',        'General Cargo'],
-                        ['colPlaceDelivery','Place of Delivery','Dubai'],
-                        ['colPickupDate',   'Pickup Date',      '01-Jan-23'],
-                        ['colDeliveryDate', 'Delivery Date',    '20-Jan-23'],
-                    ];
-
-                    let leftHTML = '<table class="w-100 small"><tr><td class="fw-bold" width="45%">Shipper:</td><td>Shipper Name</td></tr>';
-                    leftRows.forEach(function(r) {
-                        if (document.getElementById(r[0]) && document.getElementById(r[0]).checked) {
-                            leftHTML += '<tr><td class="fw-bold">' + r[1] + ':</td><td>' + r[2] + '</td></tr>';
-                        }
-                    });
-                    leftHTML += '</table>';
-
-                    let rightHTML = '<table class="w-100 small">';
-                    rightRows.forEach(function(r) {
-                        if (document.getElementById(r[0]) && document.getElementById(r[0]).checked) {
-                            rightHTML += '<tr><td class="fw-bold" width="45%">' + r[1] + ':</td><td>' + r[2] + '</td></tr>';
-                        }
-                    });
-                    rightHTML += '</table>';
-
-                    previewJobDetails.innerHTML =
-                        '<div class="row"><div class="col-6">' + leftHTML + '</div><div class="col-6">' + rightHTML + '</div></div>';
-
-                    // ── Invoice details section ──────────────────────────────
-                    let invoiceDetailsHTML = '';
-                    invoiceDetailsHTML += '<div class="row mb-2"><div class="col-4 fw-bold">Invoice No.:</div><div class="col-4 text-center">INV-12345</div><div class="col-4 text-end fw-bold">رقم الفاتورة:</div></div>';
-                    invoiceDetailsHTML += '<div class="row"><div class="col-4 fw-bold">Invoice Date:</div><div class="col-4 text-center">01-Jan-23</div><div class="col-4 text-end fw-bold">تاريخ:</div></div>';
-                    previewInvoiceDetails.innerHTML = invoiceDetailsHTML;
-
-                    // ── Party Details (Customer extra fields) ────────────────
-                    const partyRows = [
-                        ['partyCode',              'Customer Code',      'CUST-001'],
-                        ['partyUniqueCode',        'Unique Code',        'UC-001'],
-                        ['partyBusinessType',      'Business Type',      'Importer'],
-                        ['partyCrNumber',          'CR Number',          'CR123456'],
-                        ['partyVatNumber',         'VAT Number',         'VAT123456'],
-                        ['partyCreditLimit',       'Credit Limit',       '50,000 SAR'],
-                        ['partyCreditDays',        'Credit Days',        '30'],
-                        ['partyRegion',            'Region',             'Western'],
-                        ['partyPostalCode',        'Postal Code',        '21411'],
-                        ['partyCountry',           'Country',            'Saudi Arabia'],
-                        ['partyEmail',             'Email',              'customer@example.com'],
-                        ['partyAltPhone',          'Alt. Phone',         '+966 12 000 0000'],
-                        ['partyPreferredShipping', 'Preferred Shipping', 'Sea Freight'],
-                        ['partyPreferredCarrier',  'Preferred Carrier',  'Carrier Name'],
-                        ['partyDefaultPort',       'Default Port',       'Jeddah Port'],
-                        ['partyPaymentMethod',     'Payment Method',     'Bank Transfer'],
-                        ['partyIban',              'IBAN',               'SA0000000000000000'],
-                        ['partyPaymentTerms',      'Payment Terms',      'Net 30'],
-                        ['partySalesperson',       'Salesperson',        'Sales Person'],
-                    ];
-                    const extrasEl = document.getElementById('preview-customer-extras');
-                    if (extrasEl) {
-                        const checkedParty = partyRows.filter(function(r) {
-                            return document.getElementById(r[0]) && document.getElementById(r[0]).checked;
-                        });
-                        if (checkedParty.length > 0) {
-                            let extrasHTML = '<table class="w-100">';
-                            checkedParty.forEach(function(r) {
-                                extrasHTML += '<tr><td class="fw-bold" width="40%">' + r[1] + ':</td><td>' + r[2] + '</td></tr>';
-                            });
-                            extrasHTML += '</table>';
-                            extrasEl.innerHTML = extrasHTML;
-                            extrasEl.style.display = '';
-                        } else {
-                            extrasEl.innerHTML = '';
-                            extrasEl.style.display = 'none';
-                        }
-                    }
-
-                    // ── Miscellaneous Details ────────────────────────────────
-                    const miscRows = [
-                        ['miscInvoiceNotes',         'Invoice Notes',         'Thank you for your business.'],
-                        ['miscTermsConditions',      'Terms & Conditions',    'Payment due within 30 days.'],
-                        ['miscPaymentInstructions',  'Payment Instructions',  'Bank transfer to account IBAN...'],
-                        ['miscDeliveryInstructions', 'Delivery Instructions', 'Handle with care.'],
-                        ['miscHandlingInstructions', 'Special Handling',      'Fragile items, keep upright.'],
-                        ['miscAdditionalContacts',   'Additional Contacts',   'ops@company.com'],
-                        ['miscReferenceNumbers',     'Reference Numbers',     'PO-12345'],
-                        ['miscAttachments',          'Attachments',           'See attached documents.'],
-                        ['miscPackingSlip',          'Packing Slip',          'PS-001'],
-                        ['miscTransportInfo',        'Transport Information', 'Truck No. XYZ-123'],
-                        ['miscCustomsInfo',          'Customs Information',   'HS Code: 1234.56'],
-                        ['miscInsuranceInfo',        'Insurance Information', 'Policy No. INS-001'],
-                    ];
-                    const miscEl = document.getElementById('preview-misc-section');
-                    if (miscEl) {
-                        const checkedMisc = miscRows.filter(function(r) {
-                            return document.getElementById(r[0]) && document.getElementById(r[0]).checked;
-                        });
-                        if (checkedMisc.length > 0) {
-                            let miscHTML = '';
-                            checkedMisc.forEach(function(r) {
-                                miscHTML += '<div class="mb-1"><span class="fw-bold">' + r[1] + ':</span> ' + r[2] + '</div>';
-                            });
-                            miscEl.innerHTML = miscHTML;
-                            miscEl.style.display = '';
-                        } else {
-                            miscEl.innerHTML = '';
-                            miscEl.style.display = 'none';
-                        }
-                    }
-
-                    // ── Invoice Style / Theme ────────────────────────────────
-                    const activeThemeEl = document.querySelector('.theme.active');
-                    const selectedTheme = activeThemeEl ? activeThemeEl.dataset.theme : 'stylish';
-                    const outerBorderDiv = document.querySelector('#preview-content .border.border-dark');
-                    if (outerBorderDiv) {
-                        outerBorderDiv.style.borderRadius = '';
-                        outerBorderDiv.style.boxShadow = '';
-                        outerBorderDiv.style.borderWidth = '';
-                        if (selectedTheme === 'luxury') {
-                            outerBorderDiv.style.borderRadius = '8px';
-                            outerBorderDiv.style.boxShadow = '0 4px 16px rgba(0,0,0,0.18)';
-                        } else if (selectedTheme === 'billbook') {
-                            outerBorderDiv.style.borderRadius = '4px';
-                            outerBorderDiv.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-                        } else if (selectedTheme === 'advance-gst-tally') {
-                            outerBorderDiv.style.borderWidth = '2px';
-                        }
-                    }
-                }
-
-                function saveSettings() {
-                    // Get selected theme
+                // Gathers the full current form state, shared by both the live
+                // preview request and the persisted save request.
+                function gatherFormState() {
                     let theme = 'stylish';
-                    document.querySelectorAll('.theme.active').forEach(function(t) {
-                        theme = t.dataset.theme;
-                    });
+                    document.querySelectorAll('.theme.active').forEach(function(t) { theme = t.dataset.theme; });
 
-                    // Get selected color
                     let color = '#0b6aa0';
-                    document.querySelectorAll('.color-show.selected').forEach(function(c) {
-                        color = c.dataset.color;
-                    });
+                    document.querySelectorAll('.color-show.selected').forEach(function(c) { color = c.dataset.color; });
 
-                    // Get toggle switch values
-                    const partyBalance = document.getElementById('togglePartyBalance').checked;
-                    const freeItemQty = document.getElementById('toggleFreeItem').checked;
-                    const itemDescription = document.getElementById('toggleItemDesc').checked;
-                    const altUnit = document.getElementById('toggleAltUnit').checked;
-                    const showPhone = document.getElementById('toggleShowPhone').checked;
-                    const showTime = document.getElementById('toggleShowTime').checked;
-
-                    // Get invoice details checkbox values
-                    const awbHbl = document.getElementById('colAwb').checked;
-                    const incoterm = document.getElementById('colIncoterm').checked;
-                    const polPod = document.getElementById('colPolPod').checked;
-                    const voyageFlight = document.getElementById('colVoyage').checked;
-                    const shipmentMode = document.getElementById('colShipMode').checked;
-                    const carrier = document.getElementById('colCarrier').checked;
-
-                    // Get item table columns checkbox values
-                    const hsnSac = document.getElementById('colHsn').checked;
-                    const unit = document.getElementById('colUnit').checked;
-                    const rate = document.getElementById('colRate').checked;
-                    const discount = document.getElementById('colDiscount').checked;
-
-                    // Collect invoice details JSON data
                     const invoiceDetails = {};
                     document.querySelectorAll('#collapseInvoiceDetails input[type="checkbox"][data-invoice-detail]').forEach(function(checkbox) {
                         invoiceDetails[checkbox.dataset.invoiceDetail] = checkbox.checked;
                     });
 
-                    // Collect party details JSON data
                     const partyDetails = {};
                     document.querySelectorAll('#collapsePartyDetails input[type="checkbox"][data-party-detail]').forEach(function(checkbox) {
                         partyDetails[checkbox.dataset.partyDetail] = checkbox.checked;
                     });
 
-                    // Collect miscellaneous details JSON data
                     const miscDetails = {};
                     document.querySelectorAll('#collapseMisc input[type="checkbox"][data-misc-detail]').forEach(function(checkbox) {
                         miscDetails[checkbox.dataset.miscDetail] = checkbox.checked;
                     });
 
-                    // Prepare data for AJAX request
-                    const data = {
+                    return {
                         theme: theme,
                         primary_color: color,
-                        party_balance: partyBalance ? 1 : 0,
-                        free_item_qty: freeItemQty ? 1 : 0,
-                        item_description: itemDescription ? 1 : 0,
-                        alt_unit: altUnit ? 1 : 0,
-                        show_phone: showPhone ? 1 : 0,
-                        show_time: showTime ? 1 : 0,
-                        awb_hbl: awbHbl ? 1 : 0,
-                        incoterm: incoterm ? 1 : 0,
-                        pol_pod: polPod ? 1 : 0,
-                        voyage_flight: voyageFlight ? 1 : 0,
-                        shipment_mode: shipmentMode ? 1 : 0,
-                        carrier: carrier ? 1 : 0,
-                        hsn_sac: hsnSac ? 1 : 0,
-                        unit: unit ? 1 : 0,
-                        rate: rate ? 1 : 0,
-                        discount: discount ? 1 : 0,
+                        party_balance: document.getElementById('togglePartyBalance').checked ? 1 : 0,
+                        free_item_qty: document.getElementById('toggleFreeItem').checked ? 1 : 0,
+                        item_description: document.getElementById('toggleItemDesc').checked ? 1 : 0,
+                        alt_unit: document.getElementById('toggleAltUnit').checked ? 1 : 0,
+                        show_phone: document.getElementById('toggleShowPhone').checked ? 1 : 0,
+                        show_time: document.getElementById('toggleShowTime').checked ? 1 : 0,
+                        awb_hbl: document.getElementById('colAwb').checked ? 1 : 0,
+                        incoterm: document.getElementById('colIncoterm').checked ? 1 : 0,
+                        pol_pod: document.getElementById('colPolPod').checked ? 1 : 0,
+                        voyage_flight: document.getElementById('colVoyage').checked ? 1 : 0,
+                        shipment_mode: document.getElementById('colShipMode').checked ? 1 : 0,
+                        carrier: document.getElementById('colCarrier').checked ? 1 : 0,
+                        hsn_sac: document.getElementById('colHsn').checked ? 1 : 0,
+                        unit: document.getElementById('colUnit').checked ? 1 : 0,
+                        rate: document.getElementById('colRate').checked ? 1 : 0,
+                        discount: document.getElementById('colDiscount').checked ? 1 : 0,
                         invoice_details: invoiceDetails,
                         party_details: partyDetails,
                         misc_details: miscDetails,
                         _token: '{{ csrf_token() }}'
                     };
+                }
 
-                    // Send AJAX request
+                // Renders the ACTUAL template (chosen theme + current toggles) against
+                // a real invoice via the server, so the preview pane matches the real print/PDF output.
+                let previewRequestSeq = 0;
+                function updatePreview() {
+                    const seq = ++previewRequestSeq;
+                    const loadingEl = document.getElementById('preview-loading');
+                    if (loadingEl) loadingEl.style.display = '';
+
+                    fetch('{{ route("settings.invoice.preview") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify(gatherFormState())
+                    })
+                    .then(response => response.text())
+                    .then(html => {
+                        if (seq !== previewRequestSeq) return; // a newer request has since started
+                        document.getElementById('preview-frame').srcdoc = html;
+                        if (loadingEl) loadingEl.style.display = 'none';
+                    })
+                    .catch(error => {
+                        console.error('Error rendering preview:', error);
+                        if (loadingEl) loadingEl.style.display = 'none';
+                    });
+                }
+
+                function saveSettings() {
+                    const btn = document.getElementById('saveSettingsBtn');
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving...';
+
                     fetch('{{ route("settings.invoice.store") }}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
                         },
-                        body: JSON.stringify(data)
+                        body: JSON.stringify(gatherFormState())
                     })
                     .then(response => response.json())
                     .then(data => {
                         if (data.status === 'success') {
-                            // Show success message
+                            markSaved();
                             const toast = document.createElement('div');
                             toast.className = 'position-fixed bottom-0 end-0 p-3';
                             toast.style.zIndex = '5';
@@ -917,12 +727,15 @@
                                 toast.remove();
                             }, 3000);
                         } else {
-                            // Show error message
                             console.error('Error saving settings:', data.message);
                         }
                     })
                     .catch(error => {
                         console.error('Error saving settings:', error);
+                    })
+                    .finally(() => {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="bi bi-save me-1"></i> Save';
                     });
                 }
             </script>

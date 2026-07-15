@@ -609,6 +609,15 @@
             }
         }
     </style>
+    @php
+        $__colorCssTpl = '
+            .invoice-title-row.dyn-color { border-bottom: 3px solid __COLOR__ !important; }
+            .invoice-title-row.dyn-color .english-title, .invoice-title-row.dyn-color .arabic-title { color: __COLOR__; }
+            .charges-table thead tr.dyn-color { background-color: __COLOR__; }
+        ';
+    @endphp
+    <style id="dynamic-color-style">{!! str_replace('__COLOR__', $settings->primary_color ?? '#0b6aa0', $__colorCssTpl) !!}</style>
+    <script id="color-css-template" type="application/json">{!! json_encode($__colorCssTpl) !!}</script>
 </head>
 <body>
 <table>
@@ -641,7 +650,7 @@
                 @if($customerInvoice->status == 1)
                     <div class="draft-watermark">DRAFT</div>
                 @endif
-                <div class="invoice-title-row border-bottom border-dark">
+                <div class="invoice-title-row border-bottom border-dark dyn-color">
                     <h2 class="english-title text-center">TAX INVOICE</h2>
                     <h2 class="arabic-title text-center">فاتورة ضريبية</h2>
                 </div>
@@ -659,10 +668,13 @@
                                 <p class="text-uppercase">{{ $customerInvoice->customer->city_en }}
                                     , {{ $customerInvoice->customer->country }}
                                     , {{ $customerInvoice->customer->postal_code }}</p>
-                                <p>Phone: {{ $customerInvoice->customer->phone }}</p>
+                                <p data-toggle="show_phone" style="{{ ($settings->show_phone ?? true) ? '' : 'display:none' }}">Phone: {{ $customerInvoice->customer->phone }}</p>
                                 <p style="font-weight: 700;">VAT No.: {{ $customerInvoice->customer->vat_number }}
                                     /{{ $customerInvoice->customer->cr_number }}</p>
                                 <p>Credit Term: CASH</p>
+                                @foreach($extraPartyFields ?? [] as $field)
+                                    <p data-toggle="{{ $field['key'] }}" style="{{ $field['visible'] ? '' : 'display:none' }}">{{ $field['label_en'] }}: {{ $field['value'] }}</p>
+                                @endforeach
                             </div>
                         </div>
 
@@ -675,9 +687,12 @@
                                 <p>المملكة العربية السعودية, 13242</p>--}}
                                 <p>{{ $customerInvoice->customer->city_ar }}, العربية
                                     السعودية, {{ $customerInvoice->customer->postal_code }}</p>
-                                <p>{{ $customerInvoice->customer->phone }} هاتف: </p>
+                                <p data-toggle="show_phone" style="{{ ($settings->show_phone ?? true) ? '' : 'display:none' }}">{{ $customerInvoice->customer->phone }} هاتف: </p>
                                 <p>رقم ضريبة القيمة المضافة للعميل: {{ $customerInvoice->customer->vat_number }}
                                     /{{ $customerInvoice->customer->cr_number }}</p>
+                                @foreach($extraPartyFields ?? [] as $field)
+                                    <p data-toggle="{{ $field['key'] }}" style="{{ $field['visible'] ? '' : 'display:none' }}">{{ $field['value'] }} :{{ $field['label_ar'] }}</p>
+                                @endforeach
                             </div>
                             <div class="customer-label-col">
                                 <p class="mb-0">العميل:</p>
@@ -701,6 +716,9 @@
                             <div class="label-english">Invoice Date:</div>
                             <div
                                 class="data-value text-uppercase">{{ \Carbon\Carbon::parse($customerInvoice->invoice_date)->format('d-M-y') }}
+                                @if(\Carbon\Carbon::parse($customerInvoice->invoice_date)->isToday())
+                                    <span data-toggle="show_time" style="{{ ($settings->show_time ?? false) ? '' : 'display:none' }}">{{ \Carbon\Carbon::parse($customerInvoice->created_at)->format('h:i A') }}</span>
+                                @endif
                             </div>
                             <div class="label-arabic">تاريخ:</div>
                         </div>
@@ -724,63 +742,83 @@
                         <tr>
                             <td class="label-col">Shipper</td>
                             <td class="separator-col">:</td>
-                            <td class="data-col">{{ $job->shipper }}</td>
+                            <td class="data-col">{{ $job?->shipper }}</td>
                             <td class="text-end text-muted small" lang="ar" dir="rtl">الشاحن</td>
                         </tr>
                         <tr>
                             <td class="label-col">Consignee</td>
                             <td class="separator-col">:</td>
-                            <td class="data-col">{{ $job->consignee }}</td>
+                            <td class="data-col">{{ $job?->consignee }}</td>
                             <td class="text-end text-muted small" lang="ar" dir="rtl">المرسل إليه</td>
                         </tr>
-                        <tr>
-                            <td class="label-col">HBL No</td>
+                        <tr data-toggle="awb_hbl" style="{{ ($settings->awb_hbl ?? false) ? '' : 'display:none' }}">
+                            <td class="label-col">AWB / HBL No</td>
                             <td class="separator-col">:</td>
-                            <td class="data-col">{{ $job->hbl_no }}</td>
+                            <td class="data-col">{{ collect([$job?->awb_number, $job?->hbl_number])->filter()->implode(' / ') }}</td>
                             <td class="text-end text-muted small" lang="ar" dir="rtl">رقم بوليصة الشحن الفرعية</td>
                         </tr>
-                        <tr>
+                        <tr data-toggle="pol_pod" style="{{ ($settings->pol_pod ?? false) ? '' : 'display:none' }}">
                             <td class="label-col">Place of Origin</td>
                             <td class="separator-col">:</td>
-                            <td class="data-col">{{ $job->pol }}</td>
+                            <td class="data-col">{{ $job?->pol }}</td>
                             <td class="text-end text-muted small" lang="ar" dir="rtl">بلد المنشأ</td>
                         </tr>
-                        <tr>
+                        <tr data-toggle="pol_pod" style="{{ ($settings->pol_pod ?? false) ? '' : 'display:none' }}">
                             <td class="label-col">Final destination</td>
                             <td class="separator-col">:</td>
-                            <td class="data-col">{{ $job->pod }}</td>
+                            <td class="data-col">{{ $job?->pod }}</td>
                             <td class="text-end text-muted small" lang="ar" dir="rtl">الوجهة النهائية</td>
                         </tr>
-                        <tr>
+                        <tr data-toggle="carrier" style="{{ ($settings->carrier ?? false) ? '' : 'display:none' }}">
                             <td class="label-col">Vessel / Flight</td>
                             <td class="separator-col">:</td>
-                            <td class="data-col">{{ $job->carrier }}</td>
+                            <td class="data-col">{{ $job?->carrier }}</td>
                             <td class="text-end text-muted small" lang="ar" dir="rtl">الناقل / الرحلة</td>
                         </tr>
-                        <tr>
+                        <tr data-toggle="voyage_flight" style="{{ ($settings->voyage_flight ?? false) ? '' : 'display:none' }}">
                             <td class="label-col">Voyage/Flight No.</td>
                             <td class="separator-col">:</td>
-                            <td class="data-col">{{ $job->voyage_flight_no }}</td>
+                            <td class="data-col">{{ $job?->voyage_flight_no }}</td>
                             <td class="text-end text-muted small" lang="ar" dir="rtl">رقم الرحلة</td>
+                        </tr>
+                        <tr data-toggle="incoterm" style="{{ ($settings->incoterm ?? false) ? '' : 'display:none' }}">
+                            <td class="label-col">Incoterm</td>
+                            <td class="separator-col">:</td>
+                            <td class="data-col">{{ $job?->incoterm }}</td>
+                            <td class="text-end text-muted small" lang="ar" dir="rtl">شروط التسليم</td>
+                        </tr>
+                        <tr data-toggle="shipment_mode" style="{{ ($settings->shipment_mode ?? false) ? '' : 'display:none' }}">
+                            <td class="label-col">Shipment Mode</td>
+                            <td class="separator-col">:</td>
+                            <td class="data-col">{{ $job?->shipment_mode }}</td>
+                            <td class="text-end text-muted small" lang="ar" dir="rtl">وسيلة الشحن</td>
                         </tr>
                         <tr>
                             <td class="label-col">Shipper Ref No.</td>
                             <td class="separator-col">:</td>
-                            <td class="data-col">{{ $job->shipping_ref }}</td>
+                            <td class="data-col">{{ $job?->shipping_ref }}</td>
                             <td class="text-end text-muted small" lang="ar" dir="rtl">رقم مرجع الشاحن</td>
                         </tr>
                         <tr>
                             <td class="label-col">Customer P/O No.</td>
                             <td class="separator-col">:</td>
-                            <td class="data-col"></td>
+                            <td class="data-col">{{ $job?->client_ref }}</td>
                             <td class="text-end text-muted small" lang="ar" dir="rtl">رقم طلب الشراء</td>
                         </tr>
                         <tr>
                             <td class="label-col">Remarks</td>
                             <td class="separator-col">:</td>
-                            <td class="data-col">{{ $job->remarks }}</td>
+                            <td class="data-col">{{ $job?->remarks }}</td>
                             <td class="text-end text-muted small" lang="ar" dir="rtl">ملاحظات</td>
                         </tr>
+                        @foreach($extraJobFields ?? [] as $field)
+                        <tr data-toggle="{{ $field['key'] }}" style="{{ $field['visible'] ? '' : 'display:none' }}">
+                            <td class="label-col">{{ $field['label_en'] }}</td>
+                            <td class="separator-col">:</td>
+                            <td class="data-col">{{ $field['value'] }}</td>
+                            <td class="text-end text-muted small" lang="ar" dir="rtl">{{ $field['label_ar'] }}</td>
+                        </tr>
+                        @endforeach
                         </tbody>
                     </table>
                     <div style="border-right: 1px solid #000"></div>
@@ -789,21 +827,21 @@
                         <tr>
                             <td class="label-col">Job Number</td>
                             <td class="separator-col">:</td>
-                            <td class="data-col">{{ $job->row_no }}
-                                / {{ \Carbon\Carbon::parse($job->posted_at)->format('d-M-y') }}</td>
+                            <td class="data-col">{{ $job?->row_no }}
+                                / {{ \Carbon\Carbon::parse($job?->posted_at)->format('d-M-y') }}</td>
                             <td class="text-end" lang="ar" dir="rtl">رقم الوظيفة</td>
                         </tr>
                         <tr>
                             <td class="label-col">Job Date</td>
                             <td class="separator-col">:</td>
-                            <td class="data-col text-uppercase">{{ \Carbon\Carbon::parse($job->posted_at)->format('d-M-y') }}</td>
+                            <td class="data-col text-uppercase">{{ \Carbon\Carbon::parse($job?->posted_at)->format('d-M-y') }}</td>
                             <td class="text-end" lang="ar" dir="rtl">تاريخ الوظيفة</td>
                         </tr>
                         <tr>
                             <td class="label-col">Master Number</td>
                             <td class="separator-col">:</td>
-                            <td class="data-col text-uppercase">{{ $job->awb_no }}
-                                / {{ \Carbon\Carbon::parse($job->posted_at)->format('d-M-y') }}</td>
+                            <td class="data-col text-uppercase">{{ $job?->awb_number }}
+                                / {{ \Carbon\Carbon::parse($job?->posted_at)->format('d-M-y') }}</td>
                             <td class="text-end" lang="ar" dir="rtl">رقم البوليصة الرئيسي</td>
                         </tr>
                         <tr>
@@ -813,11 +851,11 @@
                             <td class="text-end" lang="ar" dir="rtl">رقم بوليصة الشحن الفرعية</td>
                         </tr>
 
-                        @if($job->no_of_pieces)
+                        @if($job?->no_of_pieces)
                             <tr>
                                 <td class="label-col">Number of Packs</td>
                                 <td class="separator-col">:</td>
-                                <td class="data-col">{{ $job->no_of_pieces }}</td>
+                                <td class="data-col">{{ $job?->no_of_pieces }}</td>
                                 <td class="text-end" lang="ar" dir="rtl">عدد الطرود</td>
                             </tr>
                         @else
@@ -826,11 +864,11 @@
                             @endphp
                         @endif
 
-                        @if($job->weight)
+                        @if($job?->weight)
                             <tr>
                                 <td class="label-col">Weight in Kgs</td>
                                 <td class="separator-col">:</td>
-                                <td class="data-col">{{ $job->weight }}</td>
+                                <td class="data-col">{{ $job?->weight }}</td>
                                 <td class="text-end" lang="ar" dir="rtl">الوزن بالكيلو جرام</td>
                             </tr>
                         @else
@@ -839,11 +877,11 @@
                             @endphp
                         @endif
 
-                        @if($job->volume)
+                        @if($job?->volume)
                             <tr>
                                 <td class="label-col">Volume in CBM</td>
                                 <td class="separator-col">:</td>
-                                <td class="data-col">{{ $job->volume }}</td>
+                                <td class="data-col">{{ $job?->volume }}</td>
                                 <td class="text-end" lang="ar" dir="rtl">الحجم بالمتر المكعب</td>
                             </tr>
                         @else
@@ -855,13 +893,13 @@
                         <tr>
                             <td class="label-col">ETD</td>
                             <td class="separator-col">:</td>
-                            <td class="data-col text-uppercase">{{ \Carbon\Carbon::parse($job->etd)->format('d-M-y') }}</td>
+                            <td class="data-col text-uppercase">{{ \Carbon\Carbon::parse($job?->etd)->format('d-M-y') }}</td>
                             <td class="text-end" lang="ar" dir="rtl">التاريخ المتوقع للمغادرة</td>
                         </tr>
                         <tr>
                             <td class="label-col">ETA</td>
                             <td class="separator-col">:</td>
-                            <td class="data-col text-uppercase">{{ \Carbon\Carbon::parse($job->eta)->format('d-M-y') }}</td>
+                            <td class="data-col text-uppercase">{{ \Carbon\Carbon::parse($job?->eta)->format('d-M-y') }}</td>
                             <td class="text-end" lang="ar" dir="rtl">التاريخ المتوقع للوصول</td>
                         </tr>
                         <tr>
@@ -881,14 +919,17 @@
                 <table class="charges-table">
                     <thead>
                     <tr class="header-spacer">
-                        <th colspan="10"
+                        <th colspan="12"
                             style="height: 138px; border: none !important; padding: 0 !important; background: transparent !important;"></th>
                     </tr>
-                    <tr>
+                    <tr class="dyn-color" style="color: #fff;">
                         <th class="charge-desc">Charge Description <br> بيان الرسوم</th>
+                        <th data-toggle="hsn_sac" style="width: 6%; {{ ($settings->hsn_sac ?? false) ? '' : 'display:none' }}">HSN/SAC <br> رمز التصنيف</th>
                         <th style="width: 5%;">Curr. <br> العملة</th>
-                        <th style="width: 8%;">Rate Per Unit <br> السعر لكل وحدة</th>
-                        <th style="width: 5%;">Unit <br> وحدة</th>
+                        <th data-toggle="rate" style="width: 8%; {{ ($settings->rate ?? true) ? '' : 'display:none' }}">Rate Per Unit <br> السعر لكل وحدة</th>
+                        <th style="width: 5%;">Qty <br> الكمية</th>
+                        <th data-toggle="unit" style="width: 5%; {{ ($settings->unit ?? true) ? '' : 'display:none' }}">Unit <br> وحدة</th>
+                        <th data-toggle="discount" style="width: 6%; {{ ($settings->discount ?? false) ? '' : 'display:none' }}">Discount <br> الخصم</th>
                         <th style="width: 10%;">Curr. Amount <br> مبلغ العملة</th>
                         <th style="width: 5%;">/ROE <br> سعر الصرف</th>
                         <th style="width: 10%;">Total Price excl. VAT <br> السعر الجمالي بدون الضريبة</th>
@@ -901,11 +942,14 @@
                     @foreach($customerInvoice->customerInvoiceSubs as $k => $items)
                         <tr>
                             <td class="charge-desc text-uppercase">{{ $items->description }} @if($items->comment)
-                                    - <span>{{ $items->comment }}</span>
+                                    <span data-toggle="item_description" style="{{ ($settings->item_description ?? true) ? '' : 'display:none' }}">- {{ $items->comment }}</span>
                                 @endif</td>
+                            <td data-toggle="hsn_sac" style="{{ ($settings->hsn_sac ?? false) ? '' : 'display:none' }}">-</td>
                             <td>{{ $customerInvoice->currency }}</td>
-                            <td>{{ amountFormat($items->unit_price) }}</td>
+                            <td data-toggle="rate" style="{{ ($settings->rate ?? true) ? '' : 'display:none' }}">{{ amountFormat($items->unit_price) }}</td>
                             <td>{{ $items->quantity }}</td>
+                            <td data-toggle="unit" style="{{ ($settings->unit ?? true) ? '' : 'display:none' }}">{{ $items->unit }}</td>
+                            <td data-toggle="discount" style="{{ ($settings->discount ?? false) ? '' : 'display:none' }}">0.00</td>
                             <td>{{ amountFormat($items->total) }}</td>
                             <td>1.000000</td>
                             <td>{{ amountFormat($items->total) }}</td>
@@ -916,6 +960,9 @@
                     @endforeach
                     </tbody>
                 </table>
+                <div data-toggle="party_balance" style="font-size: 8.5pt; padding: 4px 8px; border-bottom: 1px solid #000; {{ ($settings->party_balance ?? false) ? '' : 'display:none' }}">
+                    <strong>Customer Outstanding Balance:</strong> {{ amountFormat($customerBalance) }} {{ $company->currency ?? 'SAR' }}
+                </div>
 
                 <div class="page">
                     <div class="total-summary-section">
@@ -994,7 +1041,7 @@
                                 <tr>
                                     <td>{{ $container['container_number'] }}</td>
                                     <td>{{ $container['qty'] ?? '' }}</td>
-                                    <td>{{ containerSize($container['container_size']) }}</td>
+                                    <td>{{ $container['container_size'] ? containerSize($container['container_size']) : '' }}</td>
                                 </tr>
                             @endforeach
                             </tbody>

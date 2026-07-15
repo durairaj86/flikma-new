@@ -80,7 +80,7 @@ function containerSize($requiredData = null): array|string
         '40FR' => '40\' Flat Rack (40FR)',
         '20TK' => '20\' Tank (20TK)',
     ];
-    return $requiredData ? $size[$requiredData] : $size;
+    return $requiredData ? ($size[$requiredData] ?? $requiredData) : $size;
 }
 
 function shipmentMode(): array

@@ -694,44 +694,139 @@ class CustomerInvoiceController extends Controller
 
     public function print($id)
     {
-
-        //$descriptions = descriptions()->pluck('description', 'id')->toArray();
-
         $customerInvoice = $this->allPrint($id);
+        $settings = \App\Models\Settings\InvoiceSettings::invoiceSettings();
 
-        /*$printData = [
-            'invoice' => $invoiceData,
-        ];*/
+        [$template, $data] = $this->buildPrintViewData($customerInvoice, $settings);
 
-        //$html = view('print.' . $template, $printData)->render();
-        /*$html = view('print.table_1', $printData)->with(['file' => 'modern_grid_invoice'])->render();
+        return view($template, $data);
+    }
 
-        $customerName = preg_replace('/[^a-zA-Z0-9]/', '', $invoiceData->customer->name);
-        $date = date('Y-m-d');
-        $fileName = "Invoice_{$customerName}_{$invoiceData->row_no}_{$date}.pdf";
+    /**
+     * Render one of the 4 invoice themes against a real invoice using
+     * NOT-YET-SAVED settings values, so the Invoice Settings page's preview
+     * pane can show the actual template output as the user toggles options,
+     * without persisting every keystroke.
+     */
+    public function previewTemplate(Request $request)
+    {
+        $customerInvoice = CustomerInvoice::with('customerInvoiceSubs', 'customer', 'job.activity', 'jobContainers', 'jobPackages')
+            ->where('company_id', companyId())
+            ->latest('id')
+            ->first();
 
-        return createPDF($html, $fileName, !$invoiceData->approved_json);*/
+        if (!$customerInvoice) {
+            return response('<div style="padding:40px;text-align:center;font-family:Arial,sans-serif;color:#888;">No invoice found yet to preview against &mdash; create a customer invoice first.</div>');
+        }
+
+        $settings = new \App\Models\Settings\InvoiceSettings($request->only([
+            'theme', 'primary_color', 'party_balance', 'free_item_qty', 'item_description', 'alt_unit',
+            'show_phone', 'show_time', 'awb_hbl', 'incoterm', 'pol_pod', 'voyage_flight', 'shipment_mode',
+            'carrier', 'hsn_sac', 'unit', 'rate', 'discount',
+        ]));
+        $settings->custom_fields = json_encode([
+            'invoice_details' => $request->input('invoice_details', []),
+            'party_details' => $request->input('party_details', []),
+            'misc_details' => $request->input('misc_details', []),
+        ]);
+
+        [$template, $data] = $this->buildPrintViewData($customerInvoice, $settings);
+
+        return view($template, $data);
+    }
+
+    /**
+     * Every optional block/column in the templates is always rendered into the
+     * DOM, tagged with data-toggle="<key>", and hidden via inline
+     * style="display:none" when its setting is off — `display:none` elements
+     * are skipped by both the browser's native print and html2pdf, so this is
+     * safe for the real invoice output. It also means the Invoice Settings page
+     * can flip checkboxes purely client-side (toggle that inline style on the
+     * already-rendered preview iframe) with zero extra server requests.
+     */
+    private function buildPrintViewData(CustomerInvoice $customerInvoice, \App\Models\Settings\InvoiceSettings $settings): array
+    {
         $descriptions = Description::descriptions()->pluck('description', 'id')->toArray();
-        /*$pdf = PDF::loadView(
-            'modules.finance.proforma-invoice.view-overview',
-            compact('proforma', 'descriptions'),
-            [],
-            ['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true, 'tempDir' => storage_path('app/tmp')]
-        );*/
-        /*$pdf = PDF::loadView('modules.finance.proforma-invoice.view-overview', compact('proforma', 'descriptions'))
-            ->setPaper('A4', 'portrait');*/
-        //return $pdf->download("CustomerInvoice-{$customer->row_no}.pdf");
-        //$fileName = "CustomerInvoice-{$customer->row_no}.pdf";
-
-        // 👇 This sends PDF inline (not download)
-        //return $pdf->stream($fileName);
         $bank = Bank::orderBy('sort')->first();
         $company = authUserCompany();
-        $jobContainers = $customerInvoice->jobContainers->select('container_size', 'qty', 'container_number')/*->groupBy('container_size')*/ ?? [];
-        $jobPackages = $customerInvoice->jobPackages/*->groupBy('container_size')*/ ?? [];
+        $jobContainers = $customerInvoice->jobContainers->map(fn ($c) => [
+            'container_size' => $c->container_size,
+            'qty' => $c->qty,
+            'container_number' => $c->container_number,
+        ]);
+        $jobPackages = $customerInvoice->jobPackages ?? [];
 
-        //return view('modules.finance.customer-invoice.print', compact('customerInvoice', 'descriptions', 'bank', 'company', 'jobContainers', 'jobPackages'));
-        return view('modules.print.format-2.print', compact('customerInvoice', 'descriptions', 'bank', 'company', 'jobContainers', 'jobPackages'));
+        $customFields = json_decode($settings->custom_fields ?? '[]', true) ?: [];
+        $invoiceDetailToggles = $customFields['invoice_details'] ?? [];
+        $partyDetailToggles = $customFields['party_details'] ?? [];
+
+        $job = $customerInvoice->job;
+        $customer = $customerInvoice->customer;
+
+        // Customer's overall outstanding balance across approved invoices
+        // (same definition/query shape as CustomerAging report, for consistency).
+        $customerBalance = 0.0;
+        if ($customer) {
+            $customerBalance = (float) CustomerInvoice::where('customer_id', $customer->id)
+                ->where('status', 3)
+                ->whereRaw('COALESCE(paid_amount, 0) < grand_total')
+                ->get()
+                ->sum(fn ($inv) => (float) $inv->grand_total - (float) ($inv->paid_amount ?? 0));
+        }
+
+        // Extra job-detail rows, only the ones toggled on AND backed by a real column.
+        $extraJobFields = collect([
+            ['key' => 'job_number', 'label_en' => 'Job Number', 'label_ar' => 'رقم الوظيفة', 'value' => $job->row_no ?? null],
+            ['key' => 'reference_number', 'label_en' => 'Reference Number', 'label_ar' => 'الرقم المرجعي', 'value' => $job->client_ref ?? null],
+            ['key' => 'activity', 'label_en' => 'Logistics Activity', 'label_ar' => 'النشاط اللوجستي', 'value' => optional($job?->activity)->name],
+            ['key' => 'shipment_category', 'label_en' => 'Shipment Category', 'label_ar' => 'فئة الشحنة', 'value' => $job->shipment_category ?? null],
+            ['key' => 'place_of_receipt', 'label_en' => 'Place of Receipt', 'label_ar' => 'مكان الاستلام', 'value' => $job->place_of_receipt ?? null],
+            ['key' => 'place_of_delivery', 'label_en' => 'Place of Delivery', 'label_ar' => 'مكان التسليم', 'value' => $job->place_of_delivery ?? null],
+            ['key' => 'final_destination', 'label_en' => 'Final Destination', 'label_ar' => 'الوجهة النهائية', 'value' => $job->final_destination ?? null],
+            ['key' => 'commodity', 'label_en' => 'Commodity', 'label_ar' => 'البضاعة', 'value' => $job->commodity ?? null],
+            ['key' => 'pickup_date', 'label_en' => 'Pickup Date', 'label_ar' => 'تاريخ الاستلام', 'value' => $job?->pickup_date ? showDate($job->pickup_date) : null],
+            ['key' => 'delivery_date', 'label_en' => 'Delivery Date', 'label_ar' => 'تاريخ التسليم', 'value' => $job?->delivery_date ? showDate($job->delivery_date) : null],
+            ['key' => 'eta', 'label_en' => 'ETA', 'label_ar' => 'التاريخ المتوقع للوصول', 'value' => $job?->eta ? showDate($job->eta) : null],
+            ['key' => 'etd', 'label_en' => 'ETD', 'label_ar' => 'التاريخ المتوقع للمغادرة', 'value' => $job?->etd ? showDate($job->etd) : null],
+        ])->filter(fn ($f) => filled($f['value']))
+          ->map(fn ($f) => $f + ['visible' => $invoiceDetailToggles[$f['key']] ?? false])
+          ->values();
+
+        // Extra customer-detail rows, same rule.
+        $extraPartyFields = collect([
+            ['key' => 'code', 'label_en' => 'Customer Code', 'label_ar' => 'رمز العميل', 'value' => $customer->row_no ?? null],
+            ['key' => 'business_type', 'label_en' => 'Business Type', 'label_ar' => 'نوع النشاط', 'value' => $customer->business_type ?? null],
+            ['key' => 'cr_number', 'label_en' => 'CR Number', 'label_ar' => 'رقم السجل التجاري', 'value' => $customer->cr_number ?? null],
+            ['key' => 'vat_number', 'label_en' => 'VAT Number', 'label_ar' => 'الرقم الضريبي', 'value' => $customer->vat_number ?? null],
+            ['key' => 'credit_limit', 'label_en' => 'Credit Limit', 'label_ar' => 'حد الائتمان', 'value' => $customer?->credit_limit ? amountFormat($customer->credit_limit) : null],
+            ['key' => 'credit_days', 'label_en' => 'Credit Days', 'label_ar' => 'أيام الائتمان', 'value' => $customer->credit_days ?? null],
+            ['key' => 'postal_code', 'label_en' => 'Postal Code', 'label_ar' => 'الرمز البريدي', 'value' => $customer->postal_code ?? null],
+            ['key' => 'country', 'label_en' => 'Country', 'label_ar' => 'الدولة', 'value' => $customer->country ?? null],
+            ['key' => 'email', 'label_en' => 'Email', 'label_ar' => 'البريد الإلكتروني', 'value' => $customer->email ?? null],
+            ['key' => 'alt_phone', 'label_en' => 'Alt. Phone', 'label_ar' => 'هاتف بديل', 'value' => $customer->alt_phone ?? null],
+            ['key' => 'preferred_shipping', 'label_en' => 'Preferred Shipping', 'label_ar' => 'الشحن المفضل', 'value' => $customer->preferred_shipping ?? null],
+            ['key' => 'preferred_carrier', 'label_en' => 'Preferred Carrier', 'label_ar' => 'الناقل المفضل', 'value' => $customer->preferred_carrier ?? null],
+            ['key' => 'default_port', 'label_en' => 'Default Port', 'label_ar' => 'الميناء الافتراضي', 'value' => $customer->default_port ?? null],
+            ['key' => 'payment_method', 'label_en' => 'Payment Method', 'label_ar' => 'طريقة الدفع', 'value' => $customer->payment_method ?? null],
+            ['key' => 'iban', 'label_en' => 'IBAN', 'label_ar' => 'الآيبان', 'value' => $customer->iban ?? null],
+            ['key' => 'payment_terms', 'label_en' => 'Payment Terms', 'label_ar' => 'شروط الدفع', 'value' => $customer->payment_terms ?? null],
+            ['key' => 'salesperson', 'label_en' => 'Salesperson', 'label_ar' => 'مندوب المبيعات', 'value' => optional($customer?->salesperson)->name],
+        ])->filter(fn ($f) => filled($f['value']))
+          ->map(fn ($f) => $f + ['visible' => $partyDetailToggles[$f['key']] ?? false])
+          ->values();
+
+        $themeTemplates = [
+            'stylish' => 'modules.print.format-2.print',
+            'luxury' => 'modules.print.format-3.print',
+            'advance-gst-tally' => 'modules.print.format-4.print',
+            'billbook' => 'modules.print.format-5.print',
+        ];
+        $template = $themeTemplates[$settings->theme] ?? $themeTemplates['stylish'];
+
+        return [$template, compact(
+            'customerInvoice', 'descriptions', 'bank', 'company', 'jobContainers', 'jobPackages',
+            'settings', 'customerBalance', 'extraJobFields', 'extraPartyFields'
+        )];
     }
 
     public function allPrint($id)
