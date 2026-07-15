@@ -259,7 +259,17 @@ AIRWAY_BILL = {
             AIRWAY_BILL.form.addRow();
             AIRWAY_BILL.form.removeRow();
             AIRWAY_BILL.form.customer.change();
+            AIRWAY_BILL.form.jobChange();
             AIRWAY_BILL.form.polPodLoad();
+        },
+        jobChange() {
+            $('#job_id').off('change').on('change', function () {
+                let customerId = $(this).find('option:selected').attr('data-customer-id') || '';
+                let customerEl = document.getElementById('customer');
+                if (customerEl && customerEl.tomselect) {
+                    customerEl.tomselect.setValue(customerId);
+                }
+            });
         },
         polPodLoad(preLoad = null) {
             initTomSelectSearch('#origin_airport', 'air', 100, preLoad);

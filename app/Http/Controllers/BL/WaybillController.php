@@ -119,11 +119,10 @@ class WaybillController extends Controller
             } else {
                 // Create new waybill
                 $waybill = new Waybill();
-                $year = Carbon::parse($request->input('waybill_date'))->format('y');
-                $lastNo = Waybill::where('waybill_date', $year . '%')->max('unique_row_no') ?? 0;
-                $waybill->unique_row_no = $year . sprintf('%04d', $lastNo + 1);
-                $waybill->row_no = 'WB' . $waybill->unique_row_no;
-                //$job->row_no = 'AL/AI/' . date('y') . '/' . sprintf('%04d', $job->unique_row_no);
+                $billDate = Carbon::parse($request->input('waybill_date'));
+                $lastNo = Waybill::whereYear('waybill_date', $billDate->format('Y'))->max('unique_row_no') ?? 0;
+                $waybill->unique_row_no = $lastNo + 1;
+                $waybill->row_no = 'WB' . $billDate->format('y') . sprintf('%04d', $waybill->unique_row_no);
 
                 $this->setBaseColumns($waybill);
                 $waybill->job_id = $request->input('job_id');
@@ -137,6 +136,7 @@ class WaybillController extends Controller
                 $waybill->service_type = $request->input('service_type');
                 $waybill->payment_method = $request->input('payment_method');
                 $waybill->special_instructions = $request->input('special_instructions');
+                $waybill->status = 'pending';
                 $waybill->save();
             }
 

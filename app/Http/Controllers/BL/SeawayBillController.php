@@ -45,12 +45,14 @@ class SeawayBillController extends Controller
         $seawayBill->seaway_bill_date = Carbon::parse($seawayBill->seaway_bill_date)->format('Y-m-d');
         $seawayBill->delivery_date = Carbon::parse($seawayBill->delivery_date)->format('Y-m-d');
 
+        // departure_time/arrival_time are TIME columns (no date component) —
+        // format to match the H:i-only flatpickr picker, not a full ISO datetime.
         if ($seawayBill->departure_time) {
-            $seawayBill->departure_time = Carbon::parse($seawayBill->departure_time)->format('Y-m-d\TH:i');
+            $seawayBill->departure_time = Carbon::parse($seawayBill->departure_time)->format('H:i');
         }
 
         if ($seawayBill->arrival_time) {
-            $seawayBill->arrival_time = Carbon::parse($seawayBill->arrival_time)->format('Y-m-d\TH:i');
+            $seawayBill->arrival_time = Carbon::parse($seawayBill->arrival_time)->format('H:i');
         }
 
         $jobs = \App\Models\Job\Job::orderBy('id', 'desc')->get();
@@ -79,8 +81,8 @@ class SeawayBillController extends Controller
             'destination_port' => 'required|string|max:100',
             'vessel_name' => 'nullable|string|max:100',
             'voyage_number' => 'nullable|string|max:50',
-            'departure_time' => 'nullable|date',
-            'arrival_time' => 'nullable|date',
+            'departure_time' => 'nullable|date_format:H:i',
+            'arrival_time' => 'nullable|date_format:H:i',
             'shipment_type' => 'required|in:document,parcel,freight',
             'service_type' => 'required|in:standard,express,same_day',
             'payment_method' => 'required|in:prepaid,collect,third_party',
@@ -115,7 +117,7 @@ class SeawayBillController extends Controller
                 $waybill = SeawayBill::findOrFail($seawayBillId);
                 $waybill->update([
                     'job_id' => $request->input('job_id'),
-                    'customer_id' => $request->input('customer_id'),
+                    'customer_id' => $request->input('customer'),
                     'seaway_bill_date' => $request->input('seaway_bill_date'),
                     'delivery_date' => $request->input('delivery_date'),
                     'delivery_address' => $request->input('delivery_address'),
@@ -138,10 +140,10 @@ class SeawayBillController extends Controller
             } else {
                 // Create new seaway bill
                 $waybill = new SeawayBill();
-                $year = Carbon::parse($request->input('seaway_bill_date'))->format('y');
-                $lastNo = SeawayBill::where('seaway_bill_date', $year . '%')->max('unique_row_no') ?? 0;
-                $waybill->unique_row_no = $year . sprintf('%04d', $lastNo + 1);
-                $waybill->row_no = 'SWB' . $waybill->unique_row_no;
+                $billDate = Carbon::parse($request->input('seaway_bill_date'));
+                $lastNo = SeawayBill::whereYear('seaway_bill_date', $billDate->format('Y'))->max('unique_row_no') ?? 0;
+                $waybill->unique_row_no = $lastNo + 1;
+                $waybill->row_no = 'SWB' . $billDate->format('y') . sprintf('%04d', $waybill->unique_row_no);
 
                 $this->setBaseColumns($waybill);
 

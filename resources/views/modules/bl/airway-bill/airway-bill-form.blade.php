@@ -21,11 +21,12 @@
                     <!-- Job Reference -->
                     <div class="col-md-4">
                         <label class="form-label required">Job <sup class="text-danger">*</sup></label>
-                        <select name="job_id" class="tom-select" data-live-search="true" required>
+                        <select name="job_id" id="job_id" class="tom-select" data-live-search="true" required>
                             <option value="">Select Job</option>
                             @foreach($jobs as $job)
                                 <option value="{{ $job->id }}"
-                                        @selected($airwayBill->job_id == $job->id) data-subtext="{{ $job->customer->name_en }}">
+                                        @selected($airwayBill->job_id == $job->id) data-subtext="{{ $job->customer->name_en }}"
+                                        data-customer-id="{{ $job->customer ? encodeId($job->customer_id) : '' }}">
                                     {{ $job->row_no }}
                                 </option>
                             @endforeach
@@ -43,7 +44,7 @@
                     <div class="col-md-4">
                         <label class="form-label required">Airway Bill Date <sup class="text-danger">*</sup></label>
                         <input type="date" id="airway_bill_date" name="airway_bill_date" class="form-control datepicker"
-                               value="{{ showDate($airwayBill->airway_bill_date) }}" required>
+                               value="{{ formDate($airwayBill->airway_bill_date) }}" required>
                     </div>
 
                     <!-- Airway Bill No -->
@@ -56,7 +57,7 @@
                     <div class="col-md-4">
                         <label class="form-label required">Delivery Date <sup class="text-danger">*</sup></label>
                         <input type="date" id="delivery_date" name="delivery_date" class="form-control datepicker"
-                               value="{{ showDate($airwayBill->delivery_date) }}" required>
+                               value="{{ formDate($airwayBill->delivery_date) }}" required>
                     </div>
 
                     <!-- Attachments -->
@@ -143,14 +144,14 @@
                     <!-- Departure Time -->
                     <div class="col-md-3">
                         <label class="form-label">Departure Time</label>
-                        <input type="datetime-local" name="departure_time" class="form-control timepicker" autocomplete="off"
+                        <input type="text" name="departure_time" class="form-control timepicker" autocomplete="off"
                                value="{{ $airwayBill->departure_time ?? '' }}">
                     </div>
 
                     <!-- Arrival Time -->
                     <div class="col-md-3">
                         <label class="form-label">Arrival Time</label>
-                        <input type="datetime-local" name="arrival_time" class="form-control timepicker" autocomplete="off"
+                        <input type="text" name="arrival_time" class="form-control timepicker" autocomplete="off"
                                value="{{ $airwayBill->arrival_time ?? '' }}">
                     </div>
                 </div>

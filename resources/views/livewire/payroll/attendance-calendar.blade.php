@@ -16,7 +16,7 @@
             <!-- Filter Controls -->
             <div class="row">
                 <div class="bg-light rounded p-3 mb-4 col-3">
-                    <div class="g-3 align-items-end" wire:ignore>
+                    <div class="g-3 align-items-end" wire:ignore id="content-wrapper">
                         <div class="d-flex justify-content-between mb-4">
                             <div>
                                 <label class="form-label fw-medium">Month</label>

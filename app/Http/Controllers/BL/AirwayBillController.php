@@ -45,12 +45,14 @@ class AirwayBillController extends Controller
         $airwayBill->airway_bill_date = Carbon::parse($airwayBill->airway_bill_date)->format('Y-m-d');
         $airwayBill->delivery_date = Carbon::parse($airwayBill->delivery_date)->format('Y-m-d');
 
+        // departure_time/arrival_time are TIME columns (no date component) —
+        // format to match the H:i-only flatpickr picker, not a full ISO datetime.
         if ($airwayBill->departure_time) {
-            $airwayBill->departure_time = Carbon::parse($airwayBill->departure_time)->format('Y-m-d\TH:i');
+            $airwayBill->departure_time = Carbon::parse($airwayBill->departure_time)->format('H:i');
         }
 
         if ($airwayBill->arrival_time) {
-            $airwayBill->arrival_time = Carbon::parse($airwayBill->arrival_time)->format('Y-m-d\TH:i');
+            $airwayBill->arrival_time = Carbon::parse($airwayBill->arrival_time)->format('H:i');
         }
 
         $jobs = \App\Models\Job\Job::orderBy('id', 'desc')->get();
@@ -79,8 +81,8 @@ class AirwayBillController extends Controller
             'destination_airport' => 'required|string|max:100',
             'carrier' => 'nullable|string|max:100',
             'flight_number' => 'nullable|string|max:50',
-            'departure_time' => 'nullable|date',
-            'arrival_time' => 'nullable|date',
+            'departure_time' => 'nullable|date_format:H:i',
+            'arrival_time' => 'nullable|date_format:H:i',
             'shipment_type' => 'required|in:document,parcel,freight',
             'service_type' => 'required|in:standard,express,same_day',
             'payment_method' => 'required|in:prepaid,collect,third_party',
@@ -115,7 +117,7 @@ class AirwayBillController extends Controller
                 $waybill = AirwayBill::findOrFail($airwayBillId);
                 $waybill->update([
                     'job_id' => $request->input('job_id'),
-                    'customer_id' => $request->input('customer_id'),
+                    'customer_id' => $request->input('customer'),
                     'airway_bill_date' => $request->input('airway_bill_date'),
                     'delivery_date' => $request->input('delivery_date'),
                     'delivery_address' => $request->input('delivery_address'),
@@ -138,10 +140,10 @@ class AirwayBillController extends Controller
             } else {
                 // Create new airway bill
                 $waybill = new AirwayBill();
-                $year = Carbon::parse($request->input('airway_bill_date'))->format('y');
-                $lastNo = AirwayBill::where('airway_bill_date', $year . '%')->max('unique_row_no') ?? 0;
-                $waybill->unique_row_no = $year . sprintf('%04d', $lastNo + 1);
-                $waybill->row_no = 'AWB' . $waybill->unique_row_no;
+                $billDate = Carbon::parse($request->input('airway_bill_date'));
+                $lastNo = AirwayBill::whereYear('airway_bill_date', $billDate->format('Y'))->max('unique_row_no') ?? 0;
+                $waybill->unique_row_no = $lastNo + 1;
+                $waybill->row_no = 'AWB' . $billDate->format('y') . sprintf('%04d', $waybill->unique_row_no);
 
                 $this->setBaseColumns($waybill);
 

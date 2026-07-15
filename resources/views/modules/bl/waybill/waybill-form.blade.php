@@ -21,11 +21,12 @@
                     <!-- Job Reference -->
                     <div class="col-md-4">
                         <label class="form-label required">Job <sup class="text-danger">*</sup></label>
-                        <select name="job_id" class="tom-select" data-live-search="true" required>
+                        <select name="job_id" id="job_id" class="tom-select" data-live-search="true" required>
                             <option value="">Select Job</option>
                             @foreach($jobs as $job)
                                 <option value="{{ $job->id }}"
-                                        @selected($waybill->job_id == $job->id) data-subtext="{{ $job->customer->name_en }}">
+                                        @selected($waybill->job_id == $job->id) data-subtext="{{ $job->customer?->name_en }}"
+                                        data-customer-id="{{ $job->customer ? encodeId($job->customer_id) : '' }}">
                                     {{ $job->row_no }}
                                 </option>
                             @endforeach
@@ -42,14 +43,14 @@
                     <div class="col-md-4">
                         <label class="form-label required">Waybill Date <sup class="text-danger">*</sup></label>
                         <input type="date" id="waybill_date" name="waybill_date" class="form-control datepicker"
-                               value="{{ showDate($waybill->waybill_date) }}" required>
+                               value="{{ formDate($waybill->waybill_date) }}" required>
                     </div>
 
                     <!-- Delivery Date -->
                     <div class="col-md-4">
                         <label class="form-label required">Delivery Date <sup class="text-danger">*</sup></label>
                         <input type="date" id="delivery_date" name="delivery_date" class="form-control datepicker"
-                               value="{{ showDate($waybill->delivery_date) }}" required>
+                               value="{{ formDate($waybill->delivery_date) }}" required>
                     </div>
 
                     <!-- Attachments -->

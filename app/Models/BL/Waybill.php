@@ -28,6 +28,7 @@ class Waybill extends Model
         'service_type',
         'payment_method',
         'special_instructions',
+        'status',
     ];
 
     protected $dates = [

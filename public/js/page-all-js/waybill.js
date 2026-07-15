@@ -259,6 +259,16 @@ WAYBILL = {
             WAYBILL.form.addRow();
             WAYBILL.form.removeRow();
             WAYBILL.form.customer.change();
+            WAYBILL.form.jobChange();
+        },
+        jobChange() {
+            $('#job_id').off('change').on('change', function () {
+                let customerId = $(this).find('option:selected').attr('data-customer-id') || '';
+                let customerEl = document.getElementById('customer');
+                if (customerEl && customerEl.tomselect) {
+                    customerEl.tomselect.setValue(customerId);
+                }
+            });
         },
         addRow() {
             $('#WAYBILL-tbody').off('click', '.add-row').on('click', '.add-row', function () {

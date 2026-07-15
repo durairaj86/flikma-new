@@ -259,7 +259,17 @@ SEAWAY_BILL = {
             SEAWAY_BILL.form.addRow();
             SEAWAY_BILL.form.removeRow();
             SEAWAY_BILL.form.customer.change();
+            SEAWAY_BILL.form.jobChange();
             SEAWAY_BILL.form.polPodLoad();
+        },
+        jobChange() {
+            $('#job_id').off('change').on('change', function () {
+                let customerId = $(this).find('option:selected').attr('data-customer-id') || '';
+                let customerEl = document.getElementById('customer');
+                if (customerEl && customerEl.tomselect) {
+                    customerEl.tomselect.setValue(customerId);
+                }
+            });
         },
         polPodLoad(preLoad = null) {
             initTomSelectSearch('#origin_port', 'sea', 100, preLoad);
