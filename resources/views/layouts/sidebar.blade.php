@@ -22,7 +22,12 @@
                 </li>
 
                 <!-- Customers -->
-                <li class="nav-item {{ in_array($menu,['customers','customer','prospects']) ? 'menu-open' : '' }}">
+                @php
+                    $customerReportSlugs = ['customer-statement', 'customer-aging', 'customer-aging-all'];
+                    $customersOpen = in_array($menu, ['customers', 'customer', 'prospects'])
+                        || ($menu == 'reports' && in_array($submenu, $customerReportSlugs));
+                @endphp
+                <li class="nav-item {{ $customersOpen ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link">
                         <i class="nav-icon bi bi-people-fill"></i>
                         <p>
@@ -39,21 +44,21 @@
                         </li>
                         <li class="nav-item">
                             <a href="/reports/customer-statement"
-                               class="nav-link {{ $submenu == 'statement' ? 'active' : '' }}"
+                               class="nav-link {{ $submenu == 'customer-statement' ? 'active' : '' }}"
                                id="menu-customer-statement-list">
                                 <p>Customer Statement</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/reports/customer-aging"
-                               class="nav-link {{ $submenu == 'aging' ? 'active' : '' }}"
+                               class="nav-link {{ $submenu == 'customer-aging' ? 'active' : '' }}"
                                id="menu-customer-aging-list">
                                 <p>Customer Aging</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/reports/customer-aging-all"
-                               class="nav-link {{ $submenu == 'aging-all' ? 'active' : '' }}"
+                               class="nav-link {{ $submenu == 'customer-aging-all' ? 'active' : '' }}"
                                id="menu-customer-aging-all-list">
                                 <p>Customer Aging (All)</p>
                             </a>
@@ -68,7 +73,12 @@
                 </li>
 
                 <!-- Suppliers / Agents -->
-                <li class="nav-item {{ $menu == 'suppliers' ? 'menu-open' : '' }}">
+                @php
+                    $supplierReportSlugs = ['supplier-statement', 'supplier-aging', 'supplier-aging-all'];
+                    $suppliersOpen = $menu == 'suppliers'
+                        || ($menu == 'reports' && in_array($submenu, $supplierReportSlugs));
+                @endphp
+                <li class="nav-item {{ $suppliersOpen ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link">
                         <i class="nav-icon bi bi-truck"></i>
                         <p>
@@ -85,20 +95,20 @@
                         </li>
                         <li class="nav-item">
                             <a href="/reports/supplier-statement"
-                               class="nav-link {{ $submenu == 'statement' ? 'active' : '' }}">
+                               class="nav-link {{ $submenu == 'supplier-statement' ? 'active' : '' }}">
                                 <p>Supplier Statement</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/reports/supplier-aging"
-                               class="nav-link {{ $submenu == 'aging' ? 'active' : '' }}"
+                               class="nav-link {{ $submenu == 'supplier-aging' ? 'active' : '' }}"
                                id="menu-supplier-aging-list">
                                 <p>Supplier Aging</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/reports/supplier-aging-all"
-                               class="nav-link {{ $submenu == 'aging-all' ? 'active' : '' }}"
+                               class="nav-link {{ $submenu == 'supplier-aging-all' ? 'active' : '' }}"
                                id="menu-supplier-aging-all-list">
                                 <p>Supplier Aging (All)</p>
                             </a>
@@ -254,12 +264,12 @@
                                 <p>Expenses</p>
                             </a>
                         </li>
-                        <li class="nav-item">
+                        {{--<li class="nav-item">
                             <a href="/finance/asset"
                                class="nav-link {{ $submenu == 'asset' ? 'active' : '' }}">
                                 <p>Assets</p>
                             </a>
-                        </li>
+                        </li>--}}
                         <li class="nav-item">
                             <a href="/finance/accounts"
                                class="nav-link {{ $submenu == 'accounts' ? 'active' : '' }}">
@@ -370,7 +380,10 @@
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
-                        <li class="nav-item {{ $menu == 'invoice' ? 'menu-open' : '' }}">
+                        @php
+                            $jobReportSlugs = ['job-balance-report', 'job-income-report', 'provisional-report'];
+                        @endphp
+                        <li class="nav-item {{ in_array($submenu, $jobReportSlugs) ? 'menu-open' : '' }}">
                             <a href="#" class="nav-link">
                                 <p>Job Report <i class="nav-arrow bi bi-chevron-right"></i></p>
                             </a>
@@ -401,7 +414,10 @@
                                 </li>
                             </ul>
                         </li>
-                        <li class="nav-item {{ $menu == 'invoice' ? 'menu-open' : '' }}">
+                        @php
+                            $opsReportSlugs = ['sale-report', 'customer-activity-report'];
+                        @endphp
+                        <li class="nav-item {{ in_array($submenu, $opsReportSlugs) ? 'menu-open' : '' }}">
                             <a href="#" class="nav-link">
                                 <p>Operations Report <i class="nav-arrow bi bi-chevron-right"></i></p>
                             </a>

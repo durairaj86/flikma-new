@@ -387,7 +387,7 @@
                             <div class="theme-container" style="width: 140px;">
                                 <div class="theme active border border-primary p-2 rounded-3 text-center shadow-sm" data-theme="stylish" style="cursor:pointer; transform: translateY(-3px);" wire:click="$set('theme', 'stylish')">
                                     <div class="image-container" style="height: 80px; display:flex; align-items:center; justify-content:center;">
-                                        <img src="https://mybillbook.in/app//assets/images/themes/stylish.svg" alt="Stylish" class="img-fluid rounded" style="max-height:100%;">
+                                        <img src="#" alt="Stylish" class="img-fluid rounded" style="max-height:100%;">
                                     </div>
                                     <div class="theme-name small fw-medium mt-2 text-primary">Stylish</div>
                                 </div>
@@ -396,7 +396,7 @@
                             <div class="theme-container" style="width: 140px;">
                                 <div class="theme border p-2 rounded-3 text-center" data-theme="luxury" style="cursor:pointer;" wire:click="$set('theme', 'luxury')">
                                     <div class="image-container" style="height: 80px; display:flex; align-items:center; justify-content:center;">
-                                        <img src="https://mybillbook.in/app//assets/images/themes/luxury-theme.svg" alt="Luxury" class="img-fluid rounded" style="max-height:100%;">
+                                        <img src="#" alt="Luxury" class="img-fluid rounded" style="max-height:100%;">
                                     </div>
                                     <div class="theme-name small fw-medium mt-2">Luxury</div>
                                 </div>
@@ -405,7 +405,7 @@
                             <div class="theme-container" style="width: 140px;">
                                 <div class="theme border p-2 rounded-3 text-center" data-theme="advance-gst-tally" style="cursor:pointer;" wire:click="$set('theme', 'advance-gst-tally')">
                                     <div class="image-container" style="height: 80px; display:flex; align-items:center; justify-content:center;">
-                                        <img src="https://mybillbook.in/app//assets/images/themes/advance-gst-tally.svg" alt="Advanced GST (Tally)" class="img-fluid rounded" style="max-height:100%;">
+                                        <img src="#" alt="Advanced GST (Tally)" class="img-fluid rounded" style="max-height:100%;">
                                     </div>
                                     <div class="theme-name small fw-medium mt-2">Advanced GST (Tally)</div>
                                 </div>
@@ -414,7 +414,7 @@
                             <div class="theme-container" style="width: 140px;">
                                 <div class="theme border p-2 rounded-3 text-center" data-theme="billbook" style="cursor:pointer;" wire:click="$set('theme', 'billbook')">
                                     <div class="image-container" style="height: 80px; display:flex; align-items:center; justify-content:center;">
-                                        <img src="https://mybillbook.in/app//assets/images/themes/billbook.svg" alt="Billbook" class="img-fluid rounded" style="max-height:100%;">
+                                        <img src="#" alt="Billbook" class="img-fluid rounded" style="max-height:100%;">
                                     </div>
                                     <div class="theme-name small fw-medium mt-2">Billbook</div>
                                 </div>
