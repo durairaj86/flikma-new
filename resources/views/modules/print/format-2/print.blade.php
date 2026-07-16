@@ -1093,31 +1093,31 @@
                                         <tbody>
                                         <tr>
                                             <td>Account Name:</td>
-                                            <td>{{ $bank->account_holder }}</td>
+                                            <td>{{ $bank?->account_holder }}</td>
                                         </tr>
                                         <tr>
                                             <td>Account Name (Arabic):</td>
-                                            <td>{{ $bank->account_holder_arabic }}</td>
+                                            <td>{{ $bank?->account_holder_arabic }}</td>
                                         </tr>
                                         <tr>
                                             <td>Bank Name:</td>
-                                            <td>{{ $bank->bank_name }}</td>
+                                            <td>{{ $bank?->bank_name }}</td>
                                         </tr>
                                         <tr>
                                             <td>Account No:</td>
-                                            <td>{{ $bank->account_number }}</td>
+                                            <td>{{ $bank?->account_number }}</td>
                                         </tr>
                                         <tr>
                                             <td>IBAN No:</td>
-                                            <td>{{ $bank->iban_code }}</td>
+                                            <td>{{ $bank?->iban_code }}</td>
                                         </tr>
                                         <tr>
                                             <td>Bank Address:</td>
-                                            <td>{{ $bank->bank_address }}</td>
+                                            <td>{{ $bank?->bank_address }}</td>
                                         </tr>
                                         <tr>
                                             <td>SWIFT Code:</td>
-                                            <td>{{ $bank->swift_code }}</td>
+                                            <td>{{ $bank?->swift_code }}</td>
                                         </tr>
                                         </tbody>
                                     </table>

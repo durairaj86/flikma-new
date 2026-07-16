@@ -185,7 +185,7 @@ class PaymentController extends Controller
 
             foreach ($request->input('supplier_invoice_ids') as $index => $invoiceId) {
                 $invoice = SupplierInvoice::find($invoiceId);
-                $amount = $request->input('invoice_amounts')[$invoiceId];
+                $amount = $request->input('invoice_amounts')[$index];
 
                 // Validate that amount doesn't exceed the invoice grand_total
                 if ($amount > $invoice->grand_total) {
@@ -242,7 +242,7 @@ class PaymentController extends Controller
                     'payment_id' => $payment->id,
                     'supplier_invoice_id' => $invoiceId,
                     'company_id' => companyId(),
-                    'amount' => $request->input('invoice_amounts')[$invoiceId],
+                    'amount' => $request->input('invoice_amounts')[$index],
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];

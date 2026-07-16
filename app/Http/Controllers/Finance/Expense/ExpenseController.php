@@ -291,7 +291,7 @@ class ExpenseController extends Controller
             DB::commit();
             return response()->json([
                 'status' => 'success',
-                'message' => 'Supplier invoice created successfully',
+                'message' => 'Expense created successfully',
                 'customer_id' => $expense->id,
             ]);
         } catch (\Exception $e) {

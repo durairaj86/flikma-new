@@ -102,6 +102,35 @@ QUOTATION = {
         _fields: [],       // all available fields
         _dragAbort: null,  // AbortController — removes stale drag listeners on each re-render
 
+        // Mirrors App\Helpers\ModuleDefaultColumns::quotation() — used only if the
+        // /column-settings/quotation request fails, so the list/modal never renders empty.
+        _fallback: {
+            fields: [
+                {key: 'row_no', label: 'Quote No', category: 'General', min_width: 140, fixed: true},
+                {key: 'client_name', label: 'Client', category: 'General', min_width: 200},
+                {key: 'posted_at', label: 'Date', category: 'General', min_width: 100, orderable: true},
+                {key: 'valid_until', label: 'Valid To', category: 'General', min_width: 90, orderable: true},
+                {key: 'status', label: 'Status', category: 'General', min_width: 90},
+                {key: 'activity_name', label: 'Activity', category: 'General', min_width: 150},
+                {key: 'salesperson_name', label: 'Sales Person', category: 'General', min_width: 120},
+                {key: 'pol', label: 'Origin (POL)', category: 'Routing', min_width: 130, orderable: true},
+                {key: 'pod', label: 'Destination (POD)', category: 'Routing', min_width: 160, orderable: true},
+                {key: 'incoterm', label: 'INCO Term', category: 'Cargo', min_width: 90},
+                {key: 'carrier', label: 'Carrier', category: 'Cargo', min_width: 140},
+            ],
+            columns: [
+                {key: 'row_no', label: 'Quote No', type: 'parent', children: []},
+                {key: 'client_name', label: 'Client', type: 'parent', children: []},
+                {key: 'posted_at', label: 'Date', type: 'parent', children: [{key: 'valid_until', label: 'Valid To'}]},
+                {key: 'status', label: 'Status', type: 'parent', children: []},
+                {key: 'activity_name', label: 'Activity', type: 'parent', children: []},
+                {key: 'pol', label: 'Origin', type: 'parent', children: [{key: 'pod', label: 'Destination'}]},
+                {key: 'salesperson_name', label: 'Sales Person', type: 'parent', children: []},
+                {key: 'incoterm', label: 'INCO Term', type: 'parent', children: [{key: 'carrier', label: 'Carrier'}]},
+            ],
+            is_custom: false,
+        },
+
         bindBtn() {
             $('#columnSettingsBtn').off().on('click', () => QUOTATION.columnSettings.openModal());
             $('#csSaveBtn').off().on('click', () => QUOTATION.columnSettings.save());
@@ -115,13 +144,13 @@ QUOTATION = {
             }
             $.get('/column-settings/' + this.page)
                 .done((res) => {
-                    this._cache = res;
-                    callback(res);
+                    const hasColumns = res && Array.isArray(res.columns) && res.columns.length > 0;
+                    this._cache = hasColumns ? res : this._fallback;
+                    callback(this._cache);
                 })
                 .fail(() => {
-                    // Fall back to empty config so DataTable still initialises
-                    console.warn('Column settings fetch failed – using defaults.');
-                    callback({fields: [], columns: [], is_custom: false});
+                    console.warn('Column settings fetch failed – using built-in defaults.');
+                    callback(this._fallback);
                 });
         },
 

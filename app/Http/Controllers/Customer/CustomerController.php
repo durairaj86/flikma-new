@@ -308,23 +308,23 @@ class CustomerController extends Controller
         $customer->business_type = $validated['business_type'];
         $customer->cr_number = $validated['cr_number'] ?? null;
         $customer->vat_number = $validated['vat_number'] ?? null;
-        $customer->credit_limit = $validated['credit_limit'];
-        $customer->credit_days = $validated['credit_days'];
-        $customer->address1_en = $validated['address1_en'];
-        $customer->address1_ar = $validated['address1_ar'];
-        $customer->city_en = $validated['city_en'];
-        $customer->city_ar = $validated['city_ar'];
-        $customer->building_number = $validated['building_number'];
-        $customer->plot_no = $validated['plot_no'];
-        $customer->postal_code = $validated['postal_code'];
+        $customer->credit_limit = $validated['credit_limit'] ?? null;
+        $customer->credit_days = $validated['credit_days'] ?? null;
+        $customer->address1_en = $validated['address1_en'] ?? null;
+        $customer->address1_ar = $validated['address1_ar'] ?? null;
+        $customer->city_en = $validated['city_en'] ?? null;
+        $customer->city_ar = $validated['city_ar'] ?? null;
+        $customer->building_number = $validated['building_number'] ?? null;
+        $customer->plot_no = $validated['plot_no'] ?? null;
+        $customer->postal_code = $validated['postal_code'] ?? null;
         $customer->country = $validated['country'];
         $customer->email = $validated['email'];
         $customer->phone = $validated['phone'];
-        $customer->alt_phone = $validated['alt_phone'];
-        $customer->default_port = $validated['default_port'];
-        $customer->preferred_shipping = $validated['preferred_shipping'];
-        $customer->payment_terms = $validated['payment_terms'];
-        $customer->salesperson_id = $validated['salesperson_id'];
+        $customer->alt_phone = $validated['alt_phone'] ?? null;
+        $customer->default_port = $validated['default_port'] ?? null;
+        $customer->preferred_shipping = $validated['preferred_shipping'] ?? null;
+        $customer->payment_terms = $validated['payment_terms'] ?? null;
+        $customer->salesperson_id = $validated['salesperson_id'] ?? null;
         $customer->save();
 
         return response()->json([

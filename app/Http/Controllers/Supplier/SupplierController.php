@@ -227,21 +227,21 @@ class SupplierController extends Controller
         $supplier->name_ar = $validated['name_ar'];
         $supplier->currency = $validated['currency'];
         $supplier->business_type = $validated['business_type'];
-        $supplier->cr_number = $validated['cr_number'];
-        $supplier->vat_number = $validated['vat_number'];
-        $supplier->credit_limit = $validated['credit_limit'];
-        $supplier->credit_days = $validated['credit_days'];
-        $supplier->address1_en = $validated['address1_en'];
-        $supplier->address1_ar = $validated['address1_ar'];
-        $supplier->city_en = $validated['city_en'];
-        $supplier->city_ar = $validated['city_ar'];
-        $supplier->building_number = $validated['building_number'];
-        $supplier->plot_no = $validated['plot_no'];
-        $supplier->postal_code = $validated['postal_code'];
+        $supplier->cr_number = $validated['cr_number'] ?? null;
+        $supplier->vat_number = $validated['vat_number'] ?? null;
+        $supplier->credit_limit = $validated['credit_limit'] ?? null;
+        $supplier->credit_days = $validated['credit_days'] ?? null;
+        $supplier->address1_en = $validated['address1_en'] ?? null;
+        $supplier->address1_ar = $validated['address1_ar'] ?? null;
+        $supplier->city_en = $validated['city_en'] ?? null;
+        $supplier->city_ar = $validated['city_ar'] ?? null;
+        $supplier->building_number = $validated['building_number'] ?? null;
+        $supplier->plot_no = $validated['plot_no'] ?? null;
+        $supplier->postal_code = $validated['postal_code'] ?? null;
         $supplier->country = $validated['country'];
         $supplier->email = $validated['email'] ?? null;
         $supplier->phone = $validated['phone'] ?? null;
-        $supplier->alt_phone = $validated['alt_phone'];
+        $supplier->alt_phone = $validated['alt_phone'] ?? null;
         $supplier->save();
 
         return response()->json([

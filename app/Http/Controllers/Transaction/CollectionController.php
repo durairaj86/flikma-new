@@ -164,7 +164,7 @@ class CollectionController extends Controller
 
             foreach ($request->input('customer_invoice_ids') as $index => $invoiceId) {
                 $invoice = CustomerInvoice::find($invoiceId);
-                $amount = $request->input('invoice_amounts')[$invoiceId];
+                $amount = $request->input('invoice_amounts')[$index];
 
                 // Validate that amount doesn't exceed the invoice grand_total
                 if ($amount > $invoice->grand_total) {
@@ -218,7 +218,7 @@ class CollectionController extends Controller
                     'collection_id' => $collection->id,
                     'customer_invoice_id' => $invoiceId,
                     'company_id' => companyId(),
-                    'amount' => $request->input('invoice_amounts')[$invoiceId],
+                    'amount' => $request->input('invoice_amounts')[$index],
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
@@ -230,7 +230,7 @@ class CollectionController extends Controller
                 // If this is an approved collection, update the paid_amount in customer invoices
                 if ($collection->status == CollectionEnum::APPROVED->value) {
                     foreach ($request->input('customer_invoice_ids') as $index => $invoiceId) {
-                        $amount = $request->input('invoice_amounts')[$invoiceId];
+                        $amount = $request->input('invoice_amounts')[$index];
                         $customerInvoice = CustomerInvoice::find($invoiceId);
                         if ($customerInvoice) {
                             $customerInvoice->paid_amount = ($customerInvoice->paid_amount ?? 0) + $amount;

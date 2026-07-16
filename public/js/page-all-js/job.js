@@ -17,6 +17,35 @@ JOB = {
         _fields: [],
         _dragAbort: null,
 
+        // Mirrors App\Helpers\ModuleDefaultColumns::job() — used only if the
+        // /column-settings/job request fails, so the list/modal never renders empty.
+        _fallback: {
+            fields: [
+                {key: 'row_no', label: 'Job No', category: 'General', min_width: 130, fixed: true},
+                {key: 'customer_name', label: 'Customer', category: 'General', min_width: 180},
+                {key: 'status', label: 'Status', category: 'General', min_width: 90},
+                {key: 'services', label: 'Services', category: 'General', min_width: 140},
+                {key: 'activity_name', label: 'Activity', category: 'General', min_width: 150},
+                {key: 'shipment_mode', label: 'Shipment Mode', category: 'General', min_width: 120},
+                {key: 'posted_at', label: 'Job Date', category: 'General', min_width: 100, orderable: true},
+                {key: 'created_at', label: 'Created At', category: 'General', min_width: 130, orderable: true},
+                {key: 'pol', label: 'Origin (POL)', category: 'Routing', min_width: 130},
+                {key: 'pod', label: 'Destination (POD)', category: 'Routing', min_width: 160},
+                {key: 'carrier', label: 'Carrier', category: 'Vessel', min_width: 140},
+                {key: 'etd', label: 'ETD', category: 'Vessel', min_width: 100, orderable: true},
+                {key: 'eta', label: 'ETA', category: 'Vessel', min_width: 100, orderable: true},
+            ],
+            columns: [
+                {key: 'row_no', label: 'Job No', type: 'parent', children: [{key: 'services', label: 'Services'}]},
+                {key: 'customer_name', label: 'Customer', type: 'parent', children: []},
+                {key: 'pol', label: 'Origin', type: 'parent', children: [{key: 'pod', label: 'Destination'}]},
+                {key: 'carrier', label: 'Carrier', type: 'parent', children: [{key: 'etd', label: 'ETD'}, {key: 'eta', label: 'ETA'}]},
+                {key: 'status', label: 'Status', type: 'parent', children: []},
+                {key: 'posted_at', label: 'Job Date', type: 'parent', children: []},
+            ],
+            is_custom: false,
+        },
+
         bindBtn() {
             // Move modal to body to avoid stacking-context/overflow clipping issues
             const $modal = $('#columnSettingsModal');
@@ -36,10 +65,14 @@ JOB = {
         fetch(callback) {
             if (this._cache) { callback(this._cache); return; }
             $.get('/column-settings/' + this.page)
-                .done((res) => { this._cache = res; callback(res); })
+                .done((res) => {
+                    const hasColumns = res && Array.isArray(res.columns) && res.columns.length > 0;
+                    this._cache = hasColumns ? res : this._fallback;
+                    callback(this._cache);
+                })
                 .fail(() => {
-                    console.warn('Column settings fetch failed – using defaults.');
-                    callback({fields: [], columns: [], is_custom: false});
+                    console.warn('Column settings fetch failed – using built-in defaults.');
+                    callback(this._fallback);
                 });
         },
 
