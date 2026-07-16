@@ -41,8 +41,8 @@ PROSPECT = {
                 columns: [
                     {data: 'DT_RowIndex', class: 'hide-tooltip fav-index'},
                     {
-                        data: 'name_en', render: function (data, type, row) {
-                            return row.name_en;
+                        data: 'name', render: function (data, type, row) {
+                            return row.name;
                         }
                     },
                     {

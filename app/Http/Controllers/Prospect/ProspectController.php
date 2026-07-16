@@ -20,13 +20,13 @@ class ProspectController extends Controller
         $rows = Prospect::select(
             'id',
             'row_no',
-            'name_en',
+            'name',
             'email',
             'phone',
             'salesperson_id',
             'created_at',
             'company_id'
-        )->with('salesperson:id,name')->where('customer', '!=', 1);
+        )->with('salesperson:id,name');
 
         // Normalize counts for all statuses (so missing ones appear as 0)
         $allCounts = ['all' => $rows->count()];
@@ -118,7 +118,7 @@ class ProspectController extends Controller
 
     public function actions($id)
     {
-        $prospect = Prospect::select('id')->where('customer', '!=', 1)->findOrFail($id);
+        $prospect = Prospect::select('id')->findOrFail($id);
         $contextMenu = collect([]);
         $edit = $delete = [];
         $contextMenu->push([
