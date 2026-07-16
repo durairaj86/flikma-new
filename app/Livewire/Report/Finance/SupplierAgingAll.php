@@ -3,72 +3,133 @@
 namespace App\Livewire\Report\Finance;
 
 use App\Exports\ReportTableExport;
+use App\Livewire\Report\Concerns\BuildsAgingBuckets;
+use App\Models\Finance\SupplierInvoice\SupplierInvoice;
+use Carbon\Carbon;
 use Livewire\Component;
 use Maatwebsite\Excel\Facades\Excel;
 
 class SupplierAgingAll extends Component
 {
-    public $asOfDate;
-    public $search = '';
+    use BuildsAgingBuckets;
 
-    public function mount()
+    public string $asOfDate = '';
+    public string $search = '';
+
+    public function mount(): void
     {
-        // Default to current date
         $this->asOfDate = now()->format('Y-m-d');
     }
 
-    public function updatedAsOfDate()
+    public function getAgingData(): array
     {
-        $this->dispatch('asOfDateChanged', $this->asOfDate);
-    }
+        $asOfDate = Carbon::parse($this->asOfDate);
 
-    public function updatedSearch()
-    {
-        $this->dispatch('searchChanged', $this->search);
+        $invoices = SupplierInvoice::with('supplier:id,name_en,row_no')
+            ->where('status', 3)
+            ->where(function ($q) {
+                $q->whereRaw('COALESCE(paid_amount, 0) < grand_total');
+            })
+            ->whereHas('supplier', function ($q) {
+                if (!empty($this->search)) {
+                    $q->where(function ($inner) {
+                        $inner->where('name_en', 'like', '%' . $this->search . '%')
+                            ->orWhere('row_no', 'like', '%' . $this->search . '%');
+                    });
+                }
+            })
+            ->orderBy('invoice_date')
+            ->get();
+
+        $bySupplier = [];
+        $totals = array_merge($this->emptyAgingBuckets(), ['grand_total' => 0.0]);
+
+        foreach ($invoices as $invoice) {
+            $balance = (float)$invoice->grand_total - (float)($invoice->paid_amount ?? 0);
+
+            if ($balance <= 0 || !$invoice->supplier) {
+                continue;
+            }
+
+            $dueDate = Carbon::parse($invoice->due_at ?? $invoice->invoice_date);
+            $daysOverdue = (int)$dueDate->diffInDays($asOfDate, false);
+            $bucketKey = $this->agingBucketKey($daysOverdue);
+
+            $suppId = $invoice->supplier_id;
+            if (!isset($bySupplier[$suppId])) {
+                $bySupplier[$suppId] = array_merge($this->emptyAgingBuckets(), [
+                    'supplier_id'   => $suppId,
+                    'supplier_name' => $invoice->supplier->name_en,
+                    'supplier_code' => $invoice->supplier->row_no,
+                    'total'         => 0.0,
+                ]);
+            }
+
+            $bySupplier[$suppId][$bucketKey] += $balance;
+            $bySupplier[$suppId]['total'] += $balance;
+            $totals[$bucketKey] += $balance;
+            $totals['grand_total'] += $balance;
+        }
+
+        $suppliers = array_values($bySupplier);
+        usort($suppliers, fn($a, $b) => strcasecmp($a['supplier_name'] ?? '', $b['supplier_name'] ?? ''));
+
+        return [
+            'suppliers' => $suppliers,
+            'totals'    => $totals,
+        ];
     }
 
     public function exportExcel()
     {
-        $child = new SupplierAgingSummary();
-        $child->asOfDate = $this->asOfDate;
-        $child->search = $this->search;
-        $data = $child->getAgingData();
+        $data = $this->getAgingData();
+        $bucketDefs = $this->agingBucketDefs();
 
-        $columns = ['Supplier Code', 'Supplier Name', 'Current', '1-30 Days', '31-60 Days', '61-90 Days', '91-120 Days', 'Over 120 Days', 'Total'];
+        $columns = array_merge(
+            ['Supplier ID', 'Supplier Name'],
+            array_column($bucketDefs, 'label'),
+            ['Total']
+        );
 
         $rows = [];
-        foreach ($data['suppliers'] as $s) {
-            $rows[] = [
-                $s['supplier_code'], $s['supplier_name'],
-                (float) $s['current'] ?: '', (float) $s['days_1_30'] ?: '', (float) $s['days_31_60'] ?: '',
-                (float) $s['days_61_90'] ?: '', (float) $s['days_91_120'] ?: '', (float) $s['days_over_120'] ?: '',
-                (float) $s['total'],
-            ];
+        foreach ($data['suppliers'] as $supp) {
+            $row = [$supp['supplier_code'], $supp['supplier_name']];
+            foreach ($bucketDefs as $def) {
+                $row[] = (float)$supp[$def['key']] ?: '';
+            }
+            $row[] = (float)$supp['total'];
+            $rows[] = $row;
         }
 
-        $totalsRow = [
-            '', 'TOTAL',
-            (float) $data['totals']['current'], (float) $data['totals']['days_1_30'], (float) $data['totals']['days_31_60'],
-            (float) $data['totals']['days_61_90'], (float) $data['totals']['days_91_120'], (float) $data['totals']['days_over_120'],
-            (float) $data['totals']['grand_total'],
-        ];
+        $totalsRow = ['', 'TOTAL'];
+        foreach ($bucketDefs as $def) {
+            $totalsRow[] = (float)$data['totals'][$def['key']];
+        }
+        $totalsRow[] = (float)$data['totals']['grand_total'];
 
         $meta = [
             'title' => 'SUPPLIER AGING SUMMARY',
             'lines' => [
-                'As of: ' . \Carbon\Carbon::parse($this->asOfDate)->format('d M Y'),
+                'As of: ' . Carbon::parse($this->asOfDate)->format('d M Y')
+                    . '  |  Interval: ' . $this->agingInterval . ' days x ' . $this->agingColumns . ' columns',
                 'Generated on: ' . now()->format('d-m-Y H:i'),
             ],
             'numeric_from' => 3,
         ];
 
-        $filename = 'SupplierAgingSummary-' . $this->asOfDate . '.xlsx';
-
-        return Excel::download(new ReportTableExport($rows, $totalsRow, $columns, $meta), $filename);
+        return Excel::download(
+            new ReportTableExport($rows, $totalsRow, $columns, $meta),
+            'SupplierAgingSummary-' . $this->asOfDate . '.xlsx'
+        );
     }
 
     public function render()
     {
-        return view('livewire.report.finance.supplier-aging-summary');
+        $data = $this->getAgingData();
+
+        return view('livewire.report.finance.supplier-aging-summary', array_merge([
+            'company'    => authUserCompany(),
+            'bucketDefs' => $this->agingBucketDefs(),
+        ], $data));
     }
 }
