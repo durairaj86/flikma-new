@@ -13,9 +13,12 @@ use Illuminate\Support\Facades\Route;
     return view('welcome');
 });*/
 Route::redirect('/', '/login', 302);
-Route::view('/register', 'auth.register')->name('register');
 
 Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::get('/welcome', function () {
+    return view('auth.welcome');
+})->middleware(['auth', 'verified'])->name('welcome');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

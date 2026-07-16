@@ -65,6 +65,36 @@
                         </div>
 
                         <div class="form-floating mb-3">
+                            <input type="text"
+                                   name="company_name"
+                                   class="form-control @error('company_name') is-invalid @enderror"
+                                   id="floatingCompanyName"
+                                   placeholder="Acme Logistics"
+                                   value="{{ old('company_name') }}"
+                                   required>
+                            <label for="floatingCompanyName" class="text-muted small">Company Name</label>
+                            @error('company_name')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <select name="country"
+                                    class="form-select @error('country') is-invalid @enderror"
+                                    id="floatingCountry"
+                                    required>
+                                <option value="" disabled {{ old('country') ? '' : 'selected' }}>Select a country&hellip;</option>
+                                @foreach(['Saudi Arabia', 'United Arab Emirates', 'Bahrain', 'Jordan', 'Qatar'] as $countryName)
+                                    <option value="{{ $countryName }}" @selected(old('country', 'Saudi Arabia') == $countryName)>{{ $countryName }}</option>
+                                @endforeach
+                            </select>
+                            <label for="floatingCountry" class="text-muted small">Country</label>
+                            @error('country')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="form-floating mb-3">
                             <input type="password"
                                    name="password"
                                    class="form-control @error('password') is-invalid @enderror"

@@ -36,6 +36,10 @@ class AuthenticatedSessionController extends Controller
             session(['company_id' => $companyId]);
         }
 
+        if (! Auth::user()->hasVerifiedEmail()) {
+            return redirect()->route('verification.notice');
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
