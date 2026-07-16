@@ -101,7 +101,8 @@ AIRWAY_BILL = {
                 columnDefs: [
                     {targets: [0], searchable: false},
                     {targets: [0, 1, 2, 3, 4, 5, 6, 7, 8], orderable: false},
-                    {targets: [0, 1, 2, 3, 4, 5, 6, 7, 8], class: 'px-3 py-2 text-nowrap'},
+                    {targets: [0, 1, 2, 5, 6, 7, 8], class: 'px-3 py-2 text-nowrap'},
+                    {targets: [3, 4], class: 'px-3 py-2'},
                 ],
                 columns: [
                     {
@@ -146,14 +147,14 @@ AIRWAY_BILL = {
                                 if (origin_destination) {
                                     origin_destination += '<br>';
                                 }
-                                return origin_destination + '<span class="text-secondary small me-1">Destination:</span><span>' + row.destination_airport + '</span>';
+                                origin_destination += '<span class="text-secondary small me-1">Destination:</span><span>' + row.destination_airport + '</span>';
                             }
-                            return origin_destination;
+                            return '<div class="text-wrap" style="min-width:180px;max-width:260px;white-space:normal;word-break:break-word;">' + origin_destination + '</div>';
                         }
                     },
                     {
                         data: 'delivery_address', render: function (data, type, row) {
-                            return '<div>' + row.delivery_address + '</div>';
+                            return '<div class="text-wrap" style="min-width:200px;max-width:280px;white-space:normal;word-break:break-word;">' + (row.delivery_address || '') + '</div>';
                         }
                     },
                     {data: 'delivery_date'},
