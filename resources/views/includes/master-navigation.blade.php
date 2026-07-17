@@ -21,6 +21,14 @@
                 </a>
             </li>
 
+            <!-- Departments -->
+            <li class="nav-item" data-url="/masters/departments">
+                <a href="{{ asset('/masters/departments') }}"
+                   class="nav-link d-flex align-items-center py-2 {{ $page1 == 'departments' ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-diagram-3 text-secondary me-2"></i> Departments
+                </a>
+            </li>
+
             <!-- Transport Directory -->
             <li class="nav-item">
                 <button class="nav-link d-flex align-items-center py-2 w-100 border-0 bg-transparent text-dark"

@@ -67,21 +67,7 @@ Navbar
                 <li class="nav-item">
 
                     <a class="nav-link"
-                       href="{{ route('website.home') }}#why-flikma">Why Flikma</a>
-
-                </li>
-
-                <li class="nav-item">
-
-                    <a class="nav-link"
-                       href="#">Solutions</a>
-
-                </li>
-
-                <li class="nav-item">
-
-                    <a class="nav-link"
-                       href="#">Industries</a>
+                       href="{{ route('website.why-flikma') }}">Why Flikma</a>
 
                 </li>
 
@@ -89,13 +75,6 @@ Navbar
 
                     <a class="nav-link active"
                        href="{{ route('website.pricing') }}">Pricing</a>
-
-                </li>
-
-                <li class="nav-item">
-
-                    <a class="nav-link"
-                       href="#">Resources</a>
 
                 </li>
 

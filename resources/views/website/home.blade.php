@@ -66,21 +66,7 @@ Navbar
                 <li class="nav-item">
 
                     <a class="nav-link"
-                       href="{{ route('website.home') }}#why-flikma">Why Flikma</a>
-
-                </li>
-
-                <li class="nav-item">
-
-                    <a class="nav-link"
-                       href="#">Solutions</a>
-
-                </li>
-
-                <li class="nav-item">
-
-                    <a class="nav-link"
-                       href="#">Industries</a>
+                       href="{{ route('website.why-flikma') }}">Why Flikma</a>
 
                 </li>
 
@@ -88,13 +74,6 @@ Navbar
 
                     <a class="nav-link"
                        href="{{ route('website.pricing') }}">Pricing</a>
-
-                </li>
-
-                <li class="nav-item">
-
-                    <a class="nav-link"
-                       href="#">Resources</a>
 
                 </li>
 
@@ -1046,179 +1025,6 @@ Compliance Section
 
 
 
-<!-- ==========================================
-Why Flikma
-========================================== -->
-
-<section class="why-section py-5 bg-light" id="why-flikma">
-
-    <div class="container">
-
-        <div class="row align-items-center g-5 mb-5">
-
-            <div class="col-lg-6">
-
-                <span class="section-tag">
-                    WHY FLIKMA
-                </span>
-
-                <h2 class="section-title mt-3">
-                    Purpose-Built For Freight Forwarders, Not Generic Accounting Software
-                </h2>
-
-                <p class="section-desc mt-4">
-                    Flikma was designed specifically around how freight and logistics
-                    businesses actually operate — enquiries, quotations, jobs and
-                    ZATCA-compliant billing in one connected system, instead of stitching
-                    together spreadsheets, a generic accounting tool and manual invoice generation.
-                </p>
-
-                <div class="row mt-4">
-
-                    <div class="col-md-6">
-                        <div class="compliance-item">
-                            <i class="bi bi-check-circle-fill"></i>
-                            Built for Freight & Transportation
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="compliance-item">
-                            <i class="bi bi-check-circle-fill"></i>
-                            ZATCA Phase 2 Included
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="compliance-item">
-                            <i class="bi bi-check-circle-fill"></i>
-                            Multi-Company Ready
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="compliance-item">
-                            <i class="bi bi-check-circle-fill"></i>
-                            Full Audit Trail
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="mt-5">
-
-                    <a href="{{ url('/register') }}" class="btn btn-primary btn-lg rounded-pill">
-                        Create Your Free Account
-                    </a>
-
-                </div>
-
-            </div>
-
-            <div class="col-lg-6 text-center">
-
-                <img src="img/why/why-flikma.svg"
-                     class="img-fluid rounded-4 shadow-lg">
-
-            </div>
-
-        </div>
-
-        <div class="row g-4">
-
-            <div class="col-lg-3">
-
-                <div class="why-card">
-
-                    <i class="bi bi-cloud-fill"></i>
-
-                    <h5>
-
-                        Cloud Based
-
-                    </h5>
-
-                    <p>
-
-                        Access anywhere.
-
-                    </p>
-
-                </div>
-
-            </div>
-
-            <div class="col-lg-3">
-
-                <div class="why-card">
-
-                    <i class="bi bi-shield-check"></i>
-
-                    <h5>
-
-                        Secure
-
-                    </h5>
-
-                    <p>
-
-                        Enterprise grade security.
-
-                    </p>
-
-                </div>
-
-            </div>
-
-            <div class="col-lg-3">
-
-                <div class="why-card">
-
-                    <i class="bi bi-phone"></i>
-
-                    <h5>
-
-                        Responsive
-
-                    </h5>
-
-                    <p>
-
-                        Works on every device.
-
-                    </p>
-
-                </div>
-
-            </div>
-
-            <div class="col-lg-3">
-
-                <div class="why-card">
-
-                    <i class="bi bi-lightning-charge-fill"></i>
-
-                    <h5>
-
-                        Fast
-
-                    </h5>
-
-                    <p>
-
-                        High performance ERP.
-
-                    </p>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
 
 
 

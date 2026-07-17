@@ -472,6 +472,73 @@ function roleDisplay($role)
     };
 }
 
+/**
+ * The Super User is the person who registered the company (role === 1).
+ * They always have full access to every module — no department rights
+ * checks apply to them.
+ */
+function isSuperUser($user = null): bool
+{
+    $user = $user ?? auth()->user();
+    return $user && (int) $user->role === 1;
+}
+
+function appModules(): array
+{
+    return config('modules', []);
+}
+
+/**
+ * Resolve a request path (no leading slash, e.g. "masters/users") to a
+ * module key from config/modules.php. Returns null when the path doesn't
+ * belong to any registered module (e.g. dashboard, profile, settings account).
+ */
+function resolveModuleFromPath(string $path): ?string
+{
+    $path = ltrim($path, '/');
+
+    foreach (appModules() as $moduleKey => $module) {
+        foreach ($module['prefixes'] as $prefix) {
+            if ($path === $prefix || str_starts_with($path, $prefix . '/')) {
+                return $moduleKey;
+            }
+        }
+    }
+
+    return null;
+}
+
+/**
+ * Whether the given (or currently authenticated) user may perform $action
+ * ('view', 'create', 'edit', 'delete') on $module. The Super User always
+ * passes. Users with no department, or whose department has no explicit
+ * permission row for the module, are denied by default.
+ */
+function userCan(string $module, string $action = 'view', $user = null): bool
+{
+    $user = $user ?? auth()->user();
+
+    if (!$user) {
+        return false;
+    }
+
+    if (isSuperUser($user)) {
+        return true;
+    }
+
+    if (!$user->department_id) {
+        return false;
+    }
+
+    $column = 'can_' . $action;
+    $permission = \App\Models\Master\DepartmentModulePermission::query()
+        ->where('department_id', $user->department_id)
+        ->where('module', $module)
+        ->first();
+
+    return $permission ? (bool) $permission->{$column} : false;
+}
+
 function vat(): array
 {
     return [

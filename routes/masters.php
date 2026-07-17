@@ -35,6 +35,15 @@ Route::post('/masters/incoterm/data', [\App\Http\Controllers\Master\IncotermsCon
 Route::view('/masters/currencies', 'modules.master.currency.list');
 Route::post('/masters/currency/data', [\App\Http\Controllers\Master\CurrencyController::class, 'fetchAllRows'])->name('currency.data');
 
+Route::view('/masters/departments', 'modules.master.department.list')->name('departments');
+Route::post('/masters/department/data', [\App\Http\Controllers\Master\DepartmentController::class, 'fetchAllRows'])->name('department.data');
+Route::get('/masters/department/create', [\App\Http\Controllers\Master\DepartmentController::class, 'modal']);
+Route::post('/masters/department/create', [\App\Http\Controllers\Master\DepartmentController::class, 'store']);
+Route::get('/masters/department/{id}/create', [\App\Http\Controllers\Master\DepartmentController::class, 'edit']);
+Route::post('/masters/department/{id}/create', [\App\Http\Controllers\Master\DepartmentController::class, 'store']);
+Route::get('masters/department/{id}/actions', [\App\Http\Controllers\Master\DepartmentController::class, 'actions']);
+Route::post('/masters/department/{id}/status/{status}', [\App\Http\Controllers\Master\DepartmentController::class, 'updateStatus']);
+
 Route::view('/masters/users', 'modules.master.user.list')->name('users');
 Route::post('/masters/user/data', [\App\Http\Controllers\Master\UserController::class, 'fetchAllRows'])->name('user.data');
 Route::get('/masters/user/create', [\App\Http\Controllers\Master\UserController::class, 'modal']);

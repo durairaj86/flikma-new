@@ -52,7 +52,8 @@ USER = {
                     },
                     {
                         data: 'department.name', render: function (data, type, row) {
-                            return row.department.name + '<br>' + row.role;
+                            let departmentName = row.department ? row.department.name : '-';
+                            return departmentName + '<br>' + row.role;
                         }
                     },
                     {data: 'last_login'},

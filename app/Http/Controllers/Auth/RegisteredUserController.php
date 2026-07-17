@@ -68,6 +68,11 @@ class RegisteredUserController extends Controller
             $user->email = $request->email;
             $user->password = Hash::make($request->password);
             $user->company_id = $company->id;
+            // The person who registers the company is its Super User —
+            // they always have full access and are never subject to
+            // department-based user rights.
+            $user->role = 1;
+            $user->status = 'active';
             $user->save();
 
             return $user;
