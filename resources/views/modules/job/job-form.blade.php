@@ -98,7 +98,7 @@
                                 <x-common.service :value="$job->services"></x-common.service>
                             </div>
                             <div class="col-md-4 mt-3">
-                                <label for="activity_id" class="form-label required">Activity <sup
+                                <label for="activity_id" class="form-label required">Department <sup
                                         class="text-danger">*</sup></label>
                                 <x-common.activity :value="$job->activity_id"
                                                    shipmentMode="{{ $job->shipment_mode }}"></x-common.activity>

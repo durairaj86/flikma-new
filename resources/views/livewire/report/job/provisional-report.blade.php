@@ -211,6 +211,7 @@
                             <span class="d-block text-muted" style="font-size:0.65rem;">Actual</span>Sales
                         </th>
                         <th class="text-end border-0">Profit / Loss</th>
+                        <th class="border-0">Cost vs Budget</th>
                         <th class="text-end pe-4 border-0">Margin</th>
                     </tr>
                     </thead>
@@ -252,6 +253,25 @@
                             <td class="text-end tabular-nums fw-bold {{ $row['profit_loss'] >= 0 ? 'text-success' : 'text-danger' }}">
                                 {{ number_format($row['profit_loss'], 2) }}
                             </td>
+                            <td style="min-width:110px;">
+                                @php
+                                    $baseCost = $row['provisional_cost'] > 0 ? $row['provisional_cost'] : $row['actual_cost'];
+                                    $costPct  = $baseCost > 0 ? min(100, ($row['actual_cost'] / $baseCost) * 100) : 0;
+                                    $overBudget = $row['actual_cost'] > $row['provisional_cost'] && $row['provisional_cost'] > 0;
+                                @endphp
+                                <div class="progress pr-variance-bar" style="height:6px;">
+                                    <div class="progress-bar {{ $overBudget ? 'bg-danger' : 'bg-pr' }}" style="width: {{ $costPct }}%"></div>
+                                </div>
+                                <div class="x-small text-muted mt-1">
+                                    Cost @if($row['provisional_cost'] > 0)
+                                        <span class="{{ $overBudget ? 'text-danger fw-bold' : 'text-success' }}">
+                                            {{ $overBudget ? '▲' : '▼' }} {{ number_format(abs((($row['actual_cost'] - $row['provisional_cost']) / $row['provisional_cost']) * 100), 1) }}%
+                                        </span>
+                                    @else
+                                        <span class="text-muted">n/a</span>
+                                    @endif
+                                </div>
+                            </td>
                             <td class="text-end pe-4">
                                 <span class="badge rounded-pill px-2 py-1 {{ $row['margin'] >= 20 ? 'bg-success-subtle text-success' : ($row['margin'] >= 10 ? 'bg-warning-subtle text-warning' : ($row['margin'] > 0 ? 'bg-secondary-subtle text-secondary' : 'bg-danger-subtle text-danger')) }}">
                                     {{ number_format($row['margin'], 1) }}%
@@ -260,7 +280,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center py-5 text-muted">
+                            <td colspan="9" class="text-center py-5 text-muted">
                                 <div class="bg-light rounded-circle p-4 d-inline-block mb-3">
                                     <i class="bi bi-bar-chart h2 text-muted"></i>
                                 </div>
@@ -279,6 +299,7 @@
                         <td class="text-end tabular-nums text-muted">{{ number_format($totals['provisional_sales'], 2) }}</td>
                         <td class="text-end tabular-nums text-pr">{{ number_format($totals['actual_sales'], 2) }}</td>
                         <td class="text-end tabular-nums {{ $totals['profit_loss'] >= 0 ? 'text-success' : 'text-danger' }}">{{ number_format($totals['profit_loss'], 2) }}</td>
+                        <td></td>
                         <td class="text-end pe-4 {{ $totals['margin'] >= 0 ? 'text-success' : 'text-danger' }}">{{ number_format($totals['margin'], 1) }}%</td>
                     </tr>
                     </tfoot>
@@ -307,6 +328,7 @@
                             <span class="d-block text-muted" style="font-size:0.65rem;">Actual</span>Sales
                         </th>
                         <th class="text-end border-0">Profit / Loss</th>
+                        <th class="border-0">Cost vs Budget</th>
                         <th class="text-end pe-4 border-0">Margin</th>
                     </tr>
                     </thead>
@@ -358,6 +380,25 @@
                             <td class="text-end tabular-nums fw-bold {{ $row['profit_loss'] >= 0 ? 'text-success' : 'text-danger' }}">
                                 {{ number_format($row['profit_loss'], 2) }}
                             </td>
+                            <td style="min-width:110px;">
+                                @php
+                                    $baseCost = $row['provisional_cost'] > 0 ? $row['provisional_cost'] : $row['actual_cost'];
+                                    $costPct  = $baseCost > 0 ? min(100, ($row['actual_cost'] / $baseCost) * 100) : 0;
+                                    $overBudget = $row['actual_cost'] > $row['provisional_cost'] && $row['provisional_cost'] > 0;
+                                @endphp
+                                <div class="progress pr-variance-bar" style="height:6px;">
+                                    <div class="progress-bar {{ $overBudget ? 'bg-danger' : 'bg-pr' }}" style="width: {{ $costPct }}%"></div>
+                                </div>
+                                <div class="x-small text-muted mt-1">
+                                    @if($row['provisional_cost'] > 0)
+                                        <span class="{{ $overBudget ? 'text-danger fw-bold' : 'text-success' }}">
+                                            {{ $overBudget ? '▲' : '▼' }} {{ number_format(abs((($row['actual_cost'] - $row['provisional_cost']) / $row['provisional_cost']) * 100), 1) }}%
+                                        </span>
+                                    @else
+                                        <span class="text-muted">n/a</span>
+                                    @endif
+                                </div>
+                            </td>
                             <td class="text-end pe-4">
                                 <span class="badge rounded-pill px-2 py-1 {{ $row['margin'] >= 20 ? 'bg-success-subtle text-success' : ($row['margin'] >= 10 ? 'bg-warning-subtle text-warning' : ($row['margin'] > 0 ? 'bg-secondary-subtle text-secondary' : 'bg-danger-subtle text-danger')) }}">
                                     {{ number_format($row['margin'], 1) }}%
@@ -366,7 +407,7 @@
                         </tr>
                         @if(count($row['details']) > 0)
                             <tr class="pr-collapse-details-row">
-                                <td colspan="10" class="p-0 border-0">
+                                <td colspan="11" class="p-0 border-0">
                                     <div class="collapse" id="{{ $prCollapseId }}">
                                         <div class="bg-light-subtle px-4 py-3">
                                             <table class="table table-sm mb-0 bg-transparent">
@@ -407,7 +448,7 @@
                         @endif
                     @empty
                         <tr>
-                            <td colspan="10" class="text-center py-5 text-muted">
+                            <td colspan="11" class="text-center py-5 text-muted">
                                 <div class="bg-light rounded-circle p-4 d-inline-block mb-3">
                                     <i class="bi bi-bar-chart h2 text-muted"></i>
                                 </div>
@@ -425,6 +466,7 @@
                         <td class="text-end tabular-nums text-muted">{{ number_format($totals['provisional_sales'], 2) }}</td>
                         <td class="text-end tabular-nums text-pr">{{ number_format($totals['actual_sales'], 2) }}</td>
                         <td class="text-end tabular-nums {{ $totals['profit_loss'] >= 0 ? 'text-success' : 'text-danger' }}">{{ number_format($totals['profit_loss'], 2) }}</td>
+                        <td></td>
                         <td class="text-end pe-4 {{ $totals['margin'] >= 0 ? 'text-success' : 'text-danger' }}">{{ number_format($totals['margin'], 1) }}%</td>
                     </tr>
                     </tfoot>
@@ -639,8 +681,10 @@
         .btn-pr { background-color: var(--pr-primary); border-color: var(--pr-primary); color: #fff; }
         .btn-pr:hover { background-color: var(--pr-dark); border-color: var(--pr-dark); color: #fff; }
         .text-pr { color: var(--pr-primary) !important; }
+        .bg-pr { background-color: var(--pr-primary) !important; }
         .bg-pr-subtle { background-color: #e0f2fe !important; }
         .border-pr-subtle { border-color: #bae6fd !important; }
+        .pr-variance-bar { background-color: #e9ecef; border-radius: 3px; overflow: hidden; }
 
         .btn-outline-pr { color: var(--pr-primary); border-color: var(--pr-primary); }
         .btn-outline-pr:hover, .btn-check:checked + .btn-outline-pr {

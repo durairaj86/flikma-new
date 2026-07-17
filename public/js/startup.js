@@ -758,18 +758,48 @@ let webModal = {
                         contentType: false,
                         success: function (response) {
                             if (response.status === 'success') {
-                                toastr.success(response.message);
+                                const pendingApprove = webModal._pendingApprove;
+                                webModal._pendingApprove = false;
 
-                                // Reload DataTable
-                                $('#dataTable').DataTable().ajax.reload(null, false);
+                                const finish = function () {
+                                    toastr.success(response.message);
 
-                                // Close modal
-                                modal.hide();
+                                    // Reload DataTable
+                                    $('#dataTable').DataTable().ajax.reload(null, false);
 
-                                // Reset form
-                                $('#customerForm')[0].reset();
-                                console.log(response, callback);
-                                if (callback) callback(response);
+                                    // Close modal
+                                    modal.hide();
+
+                                    // Reset form
+                                    $('#customerForm')[0].reset();
+                                    console.log(response, callback);
+                                    if (callback) callback(response);
+                                };
+
+                                // "Save and Approve": chain a second call to the
+                                // module's own status-update endpoint (data-driven
+                                // via data-approve-url/data-approve-id-key on
+                                // #modal-buttons) — no module-specific JS needed.
+                                const buttonsCfg = $('#modal-buttons');
+                                const approveUrlTemplate = buttonsCfg.data('approve-url');
+                                const approveIdKey = buttonsCfg.data('approve-id-key') || 'id';
+
+                                if (pendingApprove && approveUrlTemplate && response[approveIdKey]) {
+                                    $.ajax({
+                                        url: String(approveUrlTemplate).replace('{id}', response[approveIdKey]),
+                                        method: 'POST',
+                                        headers: {
+                                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                                        },
+                                        success: finish,
+                                        error: function () {
+                                            toastr.warning('Saved, but approving it failed — it is still saved as a draft.');
+                                            finish();
+                                        }
+                                    });
+                                } else {
+                                    finish();
+                                }
                             } else {
                                 if (response.status === 'error') {
                                     toastr.error(response.message);
@@ -827,10 +857,16 @@ let webModal = {
                 <i class="bi bi-plus-circle me-1"></i> Save & New
             </button>`;
         }
-        if (buttonsConfig.includes('saveDraft')) {
+        if (buttonsConfig.includes('saveDraft') && form.length) {
             html += `
-            <button type="button" class="btn btn-warning" id="modalSaveAsDraftBtn">
-                <i class="bi bi-eye me-1"></i> Save as Draft
+            <button type="button" class="btn btn-outline-secondary" form="${form.attr('id')}" id="modalSaveAsDraftBtn">
+                <i class="bi bi-file-earmark me-1"></i> ${buttons.data('button-draft') ?? 'Save as Draft'}
+            </button>`;
+        }
+        if (buttonsConfig.includes('saveApprove') && form.length) {
+            html += `
+            <button type="button" class="btn btn-success" form="${form.attr('id')}" id="modalSaveApproveBtn">
+                <i class="bi bi-check2-circle me-1"></i> ${buttons.data('button-approve') ?? 'Save and Approve'}
             </button>`;
         }
         if (buttonsConfig.includes('save') && form.length) {
@@ -844,6 +880,20 @@ let webModal = {
         html += '</div>';
         //footer.html(html).show();
         showButtons.html(html).show();
+
+        // "Save as Draft" / "Save and Approve" are plain buttons (not
+        // type="submit") so a chained approve call can run after the normal
+        // save succeeds. Both just submit the same form as the regular Save
+        // button would; "Save and Approve" additionally flags the pending
+        // approve call, consumed once in submitForm()'s success handler.
+        modalEl.off('click', '#modalSaveAsDraftBtn').on('click', '#modalSaveAsDraftBtn', function () {
+            webModal._pendingApprove = false;
+            form.trigger('submit');
+        });
+        modalEl.off('click', '#modalSaveApproveBtn').on('click', '#modalSaveApproveBtn', function () {
+            webModal._pendingApprove = true;
+            form.trigger('submit');
+        });
     },
     quickModal: {
         open(options) {
@@ -1671,6 +1721,8 @@ webDataTable = {
                 proforma_invoice: 'bi bi-clipboard-check',
                 supplier_invoice: 'bi bi-file-earmark-ruled',
                 customer_invoice: 'bi bi-clipboard-data',
+                payment: 'bi bi-cash-coin',
+                history: 'bi bi-clock-history',
             };
             return map[key] || "fa fa-question-circle"; // fallback icon
         },

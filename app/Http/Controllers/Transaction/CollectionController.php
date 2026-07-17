@@ -30,19 +30,54 @@ class CollectionController extends Controller
 
     /**
      * Show the form for creating a new collection.
+     *
+     * "Record Payment" on a customer invoice (invoiceId query param — the
+     * plain invoice id, same as the row's data-id used by every other row
+     * action on that list, not hashids-encoded) gets its own dedicated,
+     * single-invoice view — recordPaymentModal() below — since it only ever
+     * concerns the one invoice the user clicked from. It still posts to this
+     * same controller's store()/updateStatus(), unchanged.
      */
-    public function modal()
+    public function modal(Request $request)
     {
+        if ($request->filled('invoiceId')) {
+            $targetInvoice = CustomerInvoice::with('customer:id,name_en,row_no')->find((int) $request->get('invoiceId'));
+
+            if ($targetInvoice) {
+                return $this->recordPaymentModal($targetInvoice);
+            }
+        }
+
         $collection = new Collection();
         $customers = Customer::select('id', 'name_en')->orderBy('name_en')->get();
         $parents = Account::whereIn('id', [3, 4])->orderBy('name')->get();//2=>Bank & Cash sub accounts
 
         $subAccounts = Account::whereIn('parent_id', [3, 4])->where('is_grouped', 0)->orderBy('name')->get();
-        // Initialize empty supplier invoices collection for new payment
         $customerInvoices = collect();
         $selectedInvoice = [];
 
         return view('modules.transaction.collection.collection-form', compact('collection', 'customers', 'parents', 'subAccounts', 'customerInvoices', 'selectedInvoice'));
+    }
+
+    /**
+     * Dedicated "Record Payment" layout for a single invoice — a fresh,
+     * purpose-built view (not the multi-invoice collection-form table), but
+     * submitting the exact same field names so store()/updateStatus() need
+     * no changes at all.
+     */
+    private function recordPaymentModal(CustomerInvoice $invoice)
+    {
+        $collection = new Collection();
+        $collection->customer_id = $invoice->customer_id;
+
+        $parents = Account::whereIn('id', [3, 4])->orderBy('name')->get();
+        $subAccounts = Account::whereIn('parent_id', [3, 4])->where('is_grouped', 0)->orderBy('name')->get();
+
+        $totalPaid = CollectionInvoice::where('customer_invoice_id', $invoice->id)->sum('amount');
+        $invoice->paid_amount = $totalPaid;
+        $invoice->balance_amount = $invoice->grand_total - $totalPaid;
+
+        return view('modules.transaction.collection.record-payment-form', compact('collection', 'invoice', 'parents', 'subAccounts'));
     }
 
     /**
@@ -164,7 +199,7 @@ class CollectionController extends Controller
 
             foreach ($request->input('customer_invoice_ids') as $index => $invoiceId) {
                 $invoice = CustomerInvoice::find($invoiceId);
-                $amount = $request->input('invoice_amounts')[$index];
+                $amount = $request->input('invoice_amounts')[$invoiceId];
 
                 // Validate that amount doesn't exceed the invoice grand_total
                 if ($amount > $invoice->grand_total) {
@@ -191,7 +226,7 @@ class CollectionController extends Controller
             $collection->collection_date = $validated['collection_date'];
             $collection->account = $validated['account'][0];
             //$collection->collection_method = $validated['collection_method'];
-            $collection->reference_no = $validated['reference_no'];
+            $collection->reference_no = $validated['reference_no'] ?? null;
             $collection->currency = $validated['currency'];
             $collection->currency_rate = $validated['currency_rate'];
             $collection->sub_total = $subTotal;
@@ -204,7 +239,7 @@ class CollectionController extends Controller
             $collection->base_bank_charges = $bankCharges * $validated['currency_rate'];
             $collection->base_other_charges = $otherCharges * $validated['currency_rate'];
             $collection->base_grand_total = $grandTotal * $validated['currency_rate'];
-            $collection->notes = $validated['notes'];
+            $collection->notes = $validated['notes'] ?? null;
 
             $collection->save();
 
@@ -218,7 +253,7 @@ class CollectionController extends Controller
                     'collection_id' => $collection->id,
                     'customer_invoice_id' => $invoiceId,
                     'company_id' => companyId(),
-                    'amount' => $request->input('invoice_amounts')[$index],
+                    'amount' => $request->input('invoice_amounts')[$invoiceId],
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
@@ -230,7 +265,7 @@ class CollectionController extends Controller
                 // If this is an approved collection, update the paid_amount in customer invoices
                 if ($collection->status == CollectionEnum::APPROVED->value) {
                     foreach ($request->input('customer_invoice_ids') as $index => $invoiceId) {
-                        $amount = $request->input('invoice_amounts')[$index];
+                        $amount = $request->input('invoice_amounts')[$invoiceId];
                         $customerInvoice = CustomerInvoice::find($invoiceId);
                         if ($customerInvoice) {
                             $customerInvoice->paid_amount = ($customerInvoice->paid_amount ?? 0) + $amount;

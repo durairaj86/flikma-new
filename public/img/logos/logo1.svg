@@ -1,0 +1,5 @@
+<svg width="150" height="38" viewBox="0 0 150 38" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="7" width="24" height="24" rx="6" fill="#0b1736"/>
+  <path d="M6 19h12M12 13v12" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+  <text x="32" y="26" font-family="Manrope, sans-serif" font-size="20" font-weight="800" fill="#1b1f28">PortLink</text>
+</svg>

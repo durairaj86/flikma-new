@@ -1,0 +1,635 @@
+/*==========================================================
+  RESPONSIVE.CSS
+  Bootstrap 5 Responsive
+==========================================================*/
+
+
+/*==========================
+XXL
+===========================*/
+
+@media (max-width:1600px){
+
+    .hero-content h1{
+
+        font-size:42px;
+
+    }
+
+    .hero-main-image{
+
+        width:500px;
+
+    }
+
+}
+
+
+/*==========================
+XL
+===========================*/
+
+@media (max-width:1400px){
+
+    .section-title{
+
+        font-size:30px;
+
+    }
+
+    .hero-content h1{
+
+        font-size:40px;
+
+    }
+
+    .hero-content p{
+
+        font-size:15px;
+
+    }
+
+    .hero-main-image{
+
+        width:460px;
+
+    }
+
+    .hero-img-one{
+
+        width:150px;
+
+    }
+
+    .hero-img-two{
+
+        width:150px;
+
+    }
+
+    .hero-img-three{
+
+        width:150px;
+
+    }
+
+    .floating-card{
+
+        right:0;
+
+    }
+
+}
+
+
+/*==========================
+Large
+===========================*/
+
+@media (max-width:1199px){
+
+    .navbar-nav{
+
+        margin-top:20px;
+
+    }
+
+    .navbar .btn{
+
+        width:100%;
+
+        margin-top:10px;
+
+    }
+
+    .hero-section{
+
+        padding:90px 0;
+
+    }
+
+    .hero-content h1{
+
+        font-size:36px;
+
+    }
+
+    .hero-images{
+
+        min-height:580px;
+
+        margin-top:60px;
+
+    }
+
+    .hero-main-image{
+
+        width:430px;
+
+    }
+
+    .hero-img-one{
+
+        left:10px;
+
+    }
+
+    .hero-img-two{
+
+        right:0;
+
+    }
+
+    .hero-img-three{
+
+        left:40px;
+
+    }
+
+    .section-title{
+
+        font-size:28px;
+
+    }
+
+    .dashboard-section h2{
+
+        font-size:28px;
+
+    }
+
+    .cta-box h2{
+
+        font-size:30px;
+
+    }
+
+}
+
+
+/*==========================
+Tablet
+===========================*/
+
+@media (max-width:991px){
+
+    .hero-section{
+
+        text-align:center;
+
+    }
+
+    .hero-content p{
+
+        margin:auto;
+
+        margin-bottom:40px;
+
+    }
+
+    .hero-buttons{
+
+        justify-content:center;
+
+    }
+
+    .hero-features{
+
+        margin-top:40px;
+
+    }
+
+    .hero-images{
+
+        margin-top:80px;
+
+        min-height:500px;
+
+    }
+
+    .hero-main-image{
+
+        width:100%;
+
+    }
+
+    .hero-img-one{
+
+        width:140px;
+
+        left:0;
+
+    }
+
+    .hero-img-two{
+
+        width:140px;
+
+        right:0;
+
+    }
+
+    .hero-img-three{
+
+        width:140px;
+
+    }
+
+    .floating-card{
+
+        position:relative;
+
+        margin:auto;
+
+        margin-top:30px;
+
+        right:auto;
+
+        bottom:auto;
+
+        width:320px;
+
+    }
+
+    .section-title{
+
+        font-size:26px;
+
+    }
+
+    .dashboard-section{
+
+        text-align:center;
+
+    }
+
+    .dashboard-section img{
+
+        margin-bottom:50px;
+
+    }
+
+    .feature-item{
+
+        text-align:left;
+
+    }
+
+    .compliance-section{
+
+        text-align:center;
+
+    }
+
+    .compliance-section img{
+
+        margin-top:60px;
+
+    }
+
+    .footer{
+
+        text-align:center;
+
+    }
+
+    .social-icons{
+
+        justify-content:center;
+
+    }
+
+    .footer ul{
+
+        margin-bottom:40px;
+
+    }
+
+}
+
+
+/*==========================
+Mobile
+===========================*/
+
+@media (max-width:767px){
+
+    .hero-section{
+
+        padding:70px 0;
+
+    }
+
+    .hero-content h1{
+
+        font-size:30px;
+
+        line-height:1.2;
+
+    }
+
+    .hero-content p{
+
+        font-size:14px;
+
+    }
+
+    .section-title{
+
+        font-size:22px;
+
+    }
+
+    .section-desc{
+
+        font-size:14px;
+
+    }
+
+    .hero-main-image{
+
+        border-radius:18px;
+
+    }
+
+    .hero-images{
+
+        min-height:420px;
+
+    }
+
+    .hero-img-one{
+
+        width:100px;
+
+    }
+
+    .hero-img-two{
+
+        width:100px;
+
+    }
+
+    .hero-img-three{
+
+        width:100px;
+
+    }
+
+    .hero-buttons{
+
+        flex-direction:column;
+
+    }
+
+    .hero-buttons .btn{
+
+        width:100%;
+
+    }
+
+    .solution-card{
+
+        padding:30px;
+
+    }
+
+    .solution-card h4{
+
+        font-size:19px;
+
+    }
+
+    .dashboard-section{
+
+        padding:80px 0;
+
+    }
+
+    .dashboard-section h2{
+
+        font-size:24px;
+
+    }
+
+    .feature-item{
+
+        gap:15px;
+
+    }
+
+    .feature-item i{
+
+        width:46px;
+
+        height:46px;
+
+    }
+
+    .why-card{
+
+        padding:35px 25px;
+
+    }
+
+    .why-card i{
+
+        width:70px;
+
+        height:70px;
+
+        font-size:30px;
+
+    }
+
+    .testimonial-card{
+
+        padding:30px;
+
+    }
+
+    .cta-box{
+
+        padding:60px 25px;
+
+    }
+
+    .cta-box h2{
+
+        font-size:26px;
+
+    }
+
+    .cta-box p{
+
+        font-size:15px;
+
+    }
+
+}
+
+
+/*==========================
+Small Mobile
+===========================*/
+
+@media (max-width:575px){
+
+    .container{
+
+        padding-left:18px;
+
+        padding-right:18px;
+
+    }
+
+    .hero-content h1{
+
+        font-size:26px;
+
+    }
+
+    .hero-badge{
+
+        font-size:13px;
+
+    }
+
+    .section-title{
+
+        font-size:20px;
+
+    }
+
+    .hero-img-one,
+
+    .hero-img-two,
+
+    .hero-img-three{
+
+        display:none;
+
+    }
+
+    .floating-card{
+
+        width:100%;
+
+        padding:18px;
+
+    }
+
+    .floating-card .icon{
+
+        width:50px;
+
+        height:50px;
+
+    }
+
+    .stat-box{
+
+        padding:30px;
+
+    }
+
+    .stat-box h2{
+
+        font-size:26px;
+
+    }
+
+    .solution-card{
+
+        padding:25px;
+
+    }
+
+    .dashboard-image::before,
+
+    .dashboard-image::after{
+
+        display:none;
+
+    }
+
+    .compliance-item{
+
+        padding:16px;
+
+        font-size:15px;
+
+    }
+
+    .partner-logo{
+
+        height:90px;
+
+    }
+
+    .partner-logo img{
+
+        max-width:120px;
+
+    }
+
+    .social-icons{
+
+        flex-wrap:wrap;
+
+    }
+
+    .footer{
+
+        padding:70px 0 20px;
+
+    }
+
+}
+
+
+/*==========================
+Extra Small
+===========================*/
+
+@media (max-width:400px){
+
+    .hero-content h1{
+
+        font-size:22px;
+
+    }
+
+    .hero-content p{
+
+        font-size:14px;
+
+    }
+
+    .btn{
+
+        font-size:14px;
+
+        padding:12px 20px;
+
+    }
+
+    .section-title{
+
+        font-size:18px;
+
+    }
+
+    .cta-box h2{
+
+        font-size:22px;
+
+    }
+
+    .cta-box p{
+
+        font-size:14px;
+
+    }
+
+}

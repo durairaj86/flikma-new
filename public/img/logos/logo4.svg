@@ -1,0 +1,5 @@
+<svg width="150" height="38" viewBox="0 0 150 38" xmlns="http://www.w3.org/2000/svg">
+  <rect x="2" y="10" width="20" height="18" rx="4" fill="#0b1736"/>
+  <path d="M7 19h10" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+  <text x="30" y="26" font-family="Manrope, sans-serif" font-size="20" font-weight="800" fill="#1b1f28">SwiftCourier</text>
+</svg>

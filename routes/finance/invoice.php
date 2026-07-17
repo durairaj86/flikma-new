@@ -44,5 +44,6 @@ Route::namespace('finance')->prefix('invoice')->group(function () {
         Route::post('/{id}/status/{status}', [CustomerInvoiceController::class, 'updateStatus']);
         Route::get('/{id}/overview', [CustomerInvoiceController::class, 'overview']);
         Route::get('/{id}/print', [CustomerInvoiceController::class, 'print']);
+        Route::get('/{id}/payment-history', [CustomerInvoiceController::class, 'paymentHistory']);
     });
 });

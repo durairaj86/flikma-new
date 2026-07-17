@@ -240,6 +240,8 @@ CUSTOMER_INVOICE = {
             CUSTOMER_INVOICE.list.actions.statusChange(row);
             CUSTOMER_INVOICE.list.actions.view(row);
             CUSTOMER_INVOICE.list.actions.email(row);
+            CUSTOMER_INVOICE.list.actions.recordPayment(row);
+            CUSTOMER_INVOICE.list.actions.paymentHistory(row);
         },
         actions: {
             statusChange(row) {
@@ -276,8 +278,49 @@ CUSTOMER_INVOICE = {
                     let drawer = new bootstrap.Offcanvas(document.getElementById('sendEmailDrawer'));
                     drawer.show();
                 });
+            },
+            recordPayment(row) {
+                $('#row_record_payment').off().on('click', function () {
+                    CUSTOMER_INVOICE.recordPayment(row.attr('data-id'));
+                });
+            },
+            paymentHistory(row) {
+                $('#row_payment_history').off().on('click', function () {
+                    let invoiceId = row.attr('data-id');
+
+                    let drawer = new bootstrap.Offcanvas(document.getElementById('paymentHistoryDrawer'));
+                    drawer.show();
+
+                    $('#paymentHistoryBody').html('<p>Loading...</p>');
+                    $.get('/invoice/customer/' + invoiceId + '/payment-history', function (data) {
+                        $('#paymentHistoryBody').html(data);
+                    });
+                });
             }
         }
+    },
+    /**
+     * Opens the Collection ("Record Payment") modal pre-selected for this
+     * invoice's customer, with this invoice pre-checked at its outstanding
+     * balance. Reuses the existing Collection create modal/controller as-is —
+     * this only supplies the invoiceId query param it reads.
+     */
+    recordPayment(invoiceId) {
+        // Close the drawer first if this was triggered from within it
+        const historyDrawerEl = document.getElementById('paymentHistoryDrawer');
+        const historyDrawer = bootstrap.Offcanvas.getInstance(historyDrawerEl);
+        if (historyDrawer) historyDrawer.hide();
+
+        webModal.openGlobalModal({
+            title: 'Record Payment',
+            url: GLOBAL_FN.buildUrl('transaction/collections/create'),
+            content: {
+                invoiceId: invoiceId
+            },
+            size: 'xl',
+            scroll: true,
+            minHeight: 'min-height:70vh;',
+        });
     },
     form: {
         load() {
