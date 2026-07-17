@@ -172,6 +172,26 @@ SUPPLIER_INVOICE = {
             $('#dataTable_filter').closest('div.row').remove();
             webDataTable.loader(table);
             webDataTable.search(table);
+
+            $('#dataTable tbody').off('click', '.supplier-invoice-no-link').on('click', '.supplier-invoice-no-link', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                let $row = $(this).closest('tr');
+                SUPPLIER_INVOICE.list.openDrawer($row.attr('data-id'), $row.attr('data-name'));
+            });
+        },
+        openDrawer(supplierInvoiceId, invoiceNo) {
+            $('#drawerSubtitle').text(invoiceNo || '');
+
+            let drawer = bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer'));
+            drawer.show();
+
+            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
+            $.get('/invoice/supplier/' + supplierInvoiceId + '/overview-drawer', function (data) {
+                $('#moduleOverview').html(data);
+            }).fail(function () {
+                $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load invoice details.</div>');
+            });
         },
         cardSummary(data, counts) {
             if (data) {
@@ -199,7 +219,7 @@ SUPPLIER_INVOICE = {
                 5: '<span class="badge bg-danger-subtle text-danger-emphasis">Cancelled</span>',
                 6: '<span class="badge bg-primary-subtle text-primary-emphasis">Converted</span>',
             },
-            invoiceNumber: (row) => `<div class="cell-primary">${row.row_no ?? ''}</div><div class="mt-1">${SUPPLIER_INVOICE.list.templates.statusBadge[row.status] ?? ''}</div>`,
+            invoiceNumber: (row) => `<div class="cell-primary fw-bold text-primary supplier-invoice-no-link" style="cursor:pointer;">${row.row_no ?? ''}</div><div class="mt-1">${SUPPLIER_INVOICE.list.templates.statusBadge[row.status] ?? ''}</div>`,
 
             job: (row) => `<div class="cell-primary">${row.job_no ?? '—'}</div><div class="cell-secondary">${row.job_activity ?? ''}</div>`,
 
@@ -287,18 +307,7 @@ SUPPLIER_INVOICE = {
             },
             view(row) {
                 $('#row_view').off().on('click', function () {
-                    let customerId = row.attr('data-id');
-
-                    // Open drawer
-
-                    let drawer = new bootstrap.Offcanvas(document.getElementById('moduleDrawer'));
-                    drawer.show();
-
-                    // Load Overview
-                    $('#moduleOverview').html('<p>Loading...</p>');
-                    $.get('/invoice/supplier/' + customerId + '/overview', function (data) {
-                        $('#moduleOverview').html(data);
-                    });
+                    SUPPLIER_INVOICE.list.openDrawer(row.attr('data-id'), row.attr('data-name'));
                 });
             },
             email(row) {

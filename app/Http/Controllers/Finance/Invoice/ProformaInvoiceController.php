@@ -146,9 +146,9 @@ class ProformaInvoiceController extends Controller
             ->addColumn('job_activity', fn($model) => $model->job ? ($activity->where('id', $model->job->activity_id)->pluck('name')->first() ?? '-') : '-')
             ->setRowAttr([
                 'data-id' => fn($model) => $model->id,
-                'data-name' => fn($model) => 'Proforma #' . htmlspecialchars($model->invoice_no, ENT_QUOTES, 'UTF-8'),
+                'data-name' => fn($model) => 'Proforma Invoice #' . htmlspecialchars($model->row_no, ENT_QUOTES, 'UTF-8'),
                 'class' => 'row-item',
-                'id' => fn($model) => 'proforma-' . strtolower($model->invoice_no ?? $model->id),
+                'id' => fn($model) => 'proforma-' . strtolower($model->row_no ?? $model->id),
             ])
             ->editColumn('invoice_date', fn($model) => \Carbon\Carbon::parse($model->invoice_date)->format('d-m-Y'))
             ->editColumn('currency', fn($model) => strtoupper($model->currency))
