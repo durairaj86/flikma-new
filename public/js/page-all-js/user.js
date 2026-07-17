@@ -5,10 +5,16 @@ USER = {
     load() {
         USER.form.open();
         USER.profile.save();
+        USER.list.bindTabs();
     },
     list: {
         load(activeTab) {
             USER.list.dataTable(activeTab);
+        },
+        bindTabs() {
+            $('#listTabs button').off('click').on('click', function () {
+                USER.list.dataTable($(this).attr('id'));
+            });
         },
         dataTable(activeTab = null) {
             GLOBAL_FN.destroyDataTable();
@@ -27,9 +33,13 @@ USER = {
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                     },
+                    data: function (d) {
+                        d.tab = activeTab;
+                    },
                     dataSrc: function (json) {
                         // Remove loader rows when data arrives
                         $('#dataTable tbody').find('.loading-row').remove();
+                        GLOBAL_FN.setStatusCounts(json.statusCounts);
                         return json.data;
                     }
                 },

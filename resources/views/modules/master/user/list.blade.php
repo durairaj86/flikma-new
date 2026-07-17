@@ -38,7 +38,7 @@
                                 class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="allUsers">
                                 <span><i class="bi bi-people-fill text-danger me-1"></i> All -</span>
-                                <span class="status-count ms-2" id="allUsersCount">0</span>
+                                <span class="status-count ms-2" id="allusersCount">0</span>
                             </button>
                         </li>
                     </ul>

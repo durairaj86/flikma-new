@@ -15,10 +15,30 @@ use Yajra\DataTables\Facades\DataTables;
 
 class UserController extends Controller
 {
-    public function fetchAllRows()
+    public function fetchAllRows(Request $request)
     {
 
-        $rows = User::with('department')->select('id', 'name', 'email', 'phone', 'role', 'last_login', 'department_id', 'company_id', 'created_at');
+        $companyId = companyId();
+
+        $statusCounts = [
+            'user' => User::where('company_id', $companyId)->where('status', 'active')->count(),
+            'employee' => User::where('company_id', $companyId)->where('role', 4)->count(),
+            'terminated' => User::where('company_id', $companyId)->where('status', '!=', 'active')->count(),
+            'allusers' => User::where('company_id', $companyId)->count(),
+        ];
+
+        $rows = User::with('department')
+            ->select('id', 'name', 'email', 'phone', 'role', 'last_login', 'department_id', 'company_id', 'created_at')
+            ->when($request->tab === 'user', function ($q) {
+                $q->where('status', 'active');
+            })
+            ->when($request->tab === 'employee', function ($q) {
+                $q->where('role', 4);
+            })
+            ->when($request->tab === 'terminated', function ($q) {
+                $q->where('status', '!=', 'active');
+            });
+
         return DataTables::eloquent($rows)
             ->addIndexColumn()
             ->setRowAttr([
@@ -31,6 +51,7 @@ class UserController extends Controller
             ->editColumn('role', function ($model) {
                 return roleDisplay($model->role);
             })
+            ->with(['statusCounts' => $statusCounts])
             ->editColumn('created_at', function ($model) {
                 return Carbon::parse($model->created_at)->format('d-m-Y');
             })
