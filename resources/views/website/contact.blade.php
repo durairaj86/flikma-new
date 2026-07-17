@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Request a Flikma demo or get in touch with our team — logistics ERP for freight forwarders and 3PLs.">
+
+    <title>Contact Us - Flikma Logistics ERP</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link href="{{ asset('css/website/style.css') }}" rel="stylesheet">
+
+    <link href="{{ asset('css/website/responsive.css') }}" rel="stylesheet">
+
+    <link href="{{ asset('css/website/contact.css') }}" rel="stylesheet">
+
+</head>
+
+<body>
+
+
+<!-- ==========================
+Navbar
+=========================== -->
+
+<nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top py-3">
+
+    <div class="container">
+
+        <a class="navbar-brand fw-bold fs-3" href="{{ route('website.home') }}">
+
+            <img src="{{ asset('img/logo.svg') }}" height="42">
+
+        </a>
+
+        <button class="navbar-toggler"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbar">
+
+            <span class="navbar-toggler-icon"></span>
+
+        </button>
+
+        <div class="collapse navbar-collapse"
+             id="navbar">
+
+            <ul class="navbar-nav mx-auto">
+
+                <li class="nav-item">
+
+                    <a class="nav-link"
+                       href="{{ route('website.home') }}">Home</a>
+
+                </li>
+
+                <li class="nav-item">
+
+                    <a class="nav-link"
+                       href="{{ route('website.home') }}#why-flikma">Why Flikma</a>
+
+                </li>
+
+                <li class="nav-item">
+
+                    <a class="nav-link"
+                       href="#">Solutions</a>
+
+                </li>
+
+                <li class="nav-item">
+
+                    <a class="nav-link"
+                       href="#">Industries</a>
+
+                </li>
+
+                <li class="nav-item">
+
+                    <a class="nav-link"
+                       href="{{ route('website.pricing') }}">Pricing</a>
+
+                </li>
+
+                <li class="nav-item">
+
+                    <a class="nav-link"
+                       href="#">Resources</a>
+
+                </li>
+
+                <li class="nav-item">
+
+                    <a class="nav-link active"
+                       href="{{ route('website.contact') }}">Contact</a>
+
+                </li>
+
+            </ul>
+
+
+            <div class="d-flex gap-3">
+
+                <a href="{{ url('/login') }}" class="btn btn-outline-dark rounded-pill px-4">
+
+                    Login
+
+                </a>
+
+                <a href="{{ route('website.contact') }}" class="btn btn-primary rounded-pill px-4">
+
+                    Book Demo
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</nav>
+
+
+<!-- =====================
+Page Header
+====================== -->
+
+<section class="page-header">
+
+    <div class="container text-center">
+
+        <span class="section-tag">Contact Us</span>
+
+        <h1 class="mt-3">
+
+            Let's Talk Logistics
+
+        </h1>
+
+        <p class="page-header-desc mx-auto">
+
+            Book a personalized demo or send us a message — our team typically
+            replies within one business day.
+
+        </p>
+
+    </div>
+
+</section>
+
+
+<!-- =====================
+Contact Section
+====================== -->
+
+<section class="contact-section">
+
+    <div class="container">
+
+        <div class="row g-5">
+
+            <div class="col-lg-4">
+
+                <div class="contact-info-card mb-4">
+
+                    <div class="contact-info-icon">
+                        <i class="bi bi-telephone-fill"></i>
+                    </div>
+
+                    <h5>Call Us</h5>
+
+                    <p>+966 11 123 4567</p>
+                    <p class="text-muted-sm">Sun&ndash;Thu, 9:00 AM &ndash; 6:00 PM (KSA)</p>
+
+                </div>
+
+                <div class="contact-info-card mb-4">
+
+                    <div class="contact-info-icon">
+                        <i class="bi bi-envelope-fill"></i>
+                    </div>
+
+                    <h5>Email Us</h5>
+
+                    <p>info@flikma.com</p>
+                    <p class="text-muted-sm">We reply within one business day</p>
+
+                </div>
+
+                <div class="contact-info-card">
+
+                    <div class="contact-info-icon">
+                        <i class="bi bi-geo-alt-fill"></i>
+                    </div>
+
+                    <h5>Visit Us</h5>
+
+                    <p>Riyadh, Saudi Arabia</p>
+                    <p class="text-muted-sm">By appointment only</p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-8">
+
+                <div class="contact-form-card">
+
+                    @if(session('contact_success'))
+                        <div class="alert alert-success d-flex align-items-center gap-2" role="alert">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <div>{{ session('contact_success') }}</div>
+                        </div>
+                    @endif
+
+                    <form method="POST" action="{{ route('website.contact.submit') }}">
+                        @csrf
+
+                        <div class="row g-3">
+
+                            <div class="col-md-6">
+                                <label class="form-label">Full Name <span class="text-danger">*</span></label>
+                                <input type="text" name="name" value="{{ old('name') }}"
+                                       class="form-control @error('name') is-invalid @enderror" required>
+                                @error('name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Work Email <span class="text-danger">*</span></label>
+                                <input type="email" name="email" value="{{ old('email') }}"
+                                       class="form-control @error('email') is-invalid @enderror" required>
+                                @error('email')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Company Name</label>
+                                <input type="text" name="company" value="{{ old('company') }}"
+                                       class="form-control @error('company') is-invalid @enderror">
+                                @error('company')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Phone Number</label>
+                                <input type="text" name="phone" value="{{ old('phone') }}"
+                                       class="form-control @error('phone') is-invalid @enderror">
+                                @error('phone')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">What are you interested in?</label>
+                                <select name="interest" class="form-select @error('interest') is-invalid @enderror">
+                                    <option value="">Select an option</option>
+                                    <option value="Request a Demo" {{ old('interest') == 'Request a Demo' ? 'selected' : '' }}>Request a Demo</option>
+                                    <option value="Pricing" {{ old('interest') == 'Pricing' ? 'selected' : '' }}>Pricing</option>
+                                    <option value="Implementation & Onboarding" {{ old('interest') == 'Implementation & Onboarding' ? 'selected' : '' }}>Implementation &amp; Onboarding</option>
+                                    <option value="Support" {{ old('interest') == 'Support' ? 'selected' : '' }}>Existing Customer Support</option>
+                                    <option value="Other" {{ old('interest') == 'Other' ? 'selected' : '' }}>Other</option>
+                                </select>
+                                @error('interest')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">Message</label>
+                                <textarea name="message" rows="4"
+                                          class="form-control @error('message') is-invalid @enderror"
+                                          placeholder="Tell us a bit about your operation...">{{ old('message') }}</textarea>
+                                @error('message')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary rounded-pill px-5 py-3 fw-bold">
+                                    Request Demo
+                                </button>
+                            </div>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ==========================================
+Footer
+========================================== -->
+
+<footer class="footer">
+
+    <div class="container">
+
+        <div class="row">
+
+            <div class="col-lg-4">
+
+                <img src="{{ asset('img/logo-white.svg') }}"
+                     height="42">
+
+                <p class="mt-4">
+
+                    Flikma is an integrated cloud ERP for Freight,
+                    Transportation,
+                    Billing and ZATCA e-Invoicing.
+
+                </p>
+
+            </div>
+
+            <div class="col-lg-2">
+
+                <h5>
+
+                    Company
+
+                </h5>
+
+                <ul>
+
+                    <li><a href="#">About</a></li>
+
+                    <li><a href="#">Careers</a></li>
+
+                    <li><a href="{{ route('website.contact') }}">Contact</a></li>
+
+                    <li><a href="#">Blog</a></li>
+
+                </ul>
+
+            </div>
+
+            <div class="col-lg-2">
+
+                <h5>
+
+                    Products
+
+                </h5>
+
+                <ul>
+
+                    <li><a href="#">Freight ERP</a></li>
+
+                    <li><a href="#">Transport</a></li>
+
+                    <li><a href="#">Billing</a></li>
+
+                </ul>
+
+            </div>
+
+            <div class="col-lg-2">
+
+                <h5>
+
+                    Support
+
+                </h5>
+
+                <ul>
+
+                    <li><a href="#">Documentation</a></li>
+
+                    <li><a href="#">Help Center</a></li>
+
+                    <li><a href="#">Privacy</a></li>
+
+                    <li><a href="#">Terms</a></li>
+
+                </ul>
+
+            </div>
+
+            <div class="col-lg-2">
+
+                <h5>
+
+                    Follow
+
+                </h5>
+
+                <div class="social-icons">
+
+                    <a href="#"><i class="bi bi-facebook"></i></a>
+
+                    <a href="#"><i class="bi bi-instagram"></i></a>
+
+                    <a href="#"><i class="bi bi-linkedin"></i></a>
+
+                    <a href="#"><i class="bi bi-twitter-x"></i></a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <hr class="my-5">
+
+        <div class="text-center">
+
+            &copy; {{ date('Y') }} Flikma. All Rights Reserved.
+
+        </div>
+
+    </div>
+
+</footer>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
+
+<script src="{{ asset('js/app.js') }}"></script>
+
+</body>
+
+</html>
