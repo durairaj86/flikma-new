@@ -278,8 +278,15 @@ Page Header
             <div class="col-lg-3 col-md-6">
                 <div class="feature-tile h-100">
                     <div class="feature-tile-icon"><i class="bi bi-wallet2"></i></div>
-                    <h5>Basic & Monthly Salary</h5>
-                    <p>Configure basic salary structures and run monthly payroll with full audit history.</p>
+                    <h5>Basic Salary</h5>
+                    <p>Configure each employee's basic salary structure as the base every payroll run starts from.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="feature-tile h-100">
+                    <div class="feature-tile-icon"><i class="bi bi-cash-stack"></i></div>
+                    <h5>Monthly Salary</h5>
+                    <p>Run monthly payroll with full payment tracking and audit history.</p>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
