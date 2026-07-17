@@ -1,0 +1,57 @@
+<svg width="600" height="480" viewBox="0 0 600 480" xmlns="http://www.w3.org/2000/svg">
+  <rect width="600" height="480" rx="24" fill="#ffffff"/>
+  <rect width="600" height="50" rx="24" fill="#f7f9fc"/>
+  <rect width="600" height="26" fill="#f7f9fc"/>
+  <circle cx="26" cy="25" r="7" fill="#ff5f57"/>
+  <circle cx="50" cy="25" r="7" fill="#ffbd2e"/>
+  <circle cx="74" cy="25" r="7" fill="#28c840"/>
+
+  <text x="40" y="90" font-family="Manrope, sans-serif" font-size="18" font-weight="800" fill="#0b1736">Tax Invoice</text>
+  <rect x="460" y="66" width="100" height="30" rx="15" fill="#eafbf1"/>
+  <text x="475" y="86" font-family="Manrope, sans-serif" font-size="11" font-weight="700" fill="#16a34a">ZATCA OK</text>
+
+  <!-- invoice body -->
+  <rect x="40" y="112" width="330" height="1" fill="#edf1f5"/>
+  <text x="40" y="140" font-family="Manrope, sans-serif" font-size="11" fill="#667085">Invoice No.</text>
+  <text x="150" y="140" font-family="Manrope, sans-serif" font-size="11" font-weight="700" fill="#0b1736">INV-2026-00841</text>
+  <text x="40" y="164" font-family="Manrope, sans-serif" font-size="11" fill="#667085">VAT Number</text>
+  <text x="150" y="164" font-family="Manrope, sans-serif" font-size="11" font-weight="700" fill="#0b1736">3001234567890003</text>
+  <text x="40" y="188" font-family="Manrope, sans-serif" font-size="11" fill="#667085">Date</text>
+  <text x="150" y="188" font-family="Manrope, sans-serif" font-size="11" font-weight="700" fill="#0b1736">17 Jul 2026</text>
+
+  <rect x="40" y="210" width="330" height="1" fill="#edf1f5"/>
+  <text x="40" y="234" font-family="Manrope, sans-serif" font-size="11" font-weight="800" fill="#0b1736">Line Items</text>
+  <text x="40" y="258" font-family="Manrope, sans-serif" font-size="10" fill="#404554">Freight Charges</text>
+  <text x="320" y="258" font-family="Manrope, sans-serif" font-size="10" fill="#404554" text-anchor="end">4,200.00</text>
+  <text x="40" y="280" font-family="Manrope, sans-serif" font-size="10" fill="#404554">Customs Clearance</text>
+  <text x="320" y="280" font-family="Manrope, sans-serif" font-size="10" fill="#404554" text-anchor="end">850.00</text>
+  <rect x="40" y="296" width="330" height="1" fill="#edf1f5"/>
+  <text x="40" y="320" font-family="Manrope, sans-serif" font-size="11" fill="#667085">VAT (15%)</text>
+  <text x="320" y="320" font-family="Manrope, sans-serif" font-size="11" fill="#404554" text-anchor="end">757.50</text>
+  <text x="40" y="346" font-family="Manrope, sans-serif" font-size="13" font-weight="800" fill="#0b1736">Total</text>
+  <text x="320" y="346" font-family="Manrope, sans-serif" font-size="13" font-weight="800" fill="#0d6efd" text-anchor="end">5,807.50 SAR</text>
+
+  <!-- QR + signature panel -->
+  <rect x="410" y="112" width="150" height="150" rx="14" fill="#f7f9fc"/>
+  <rect x="430" y="132" width="16" height="16" fill="#0b1736"/>
+  <rect x="454" y="132" width="16" height="16" fill="#0b1736"/>
+  <rect x="478" y="132" width="16" height="16" fill="#0b1736"/>
+  <rect x="502" y="132" width="16" height="16" fill="#0b1736"/>
+  <rect x="430" y="156" width="16" height="16" fill="#0b1736"/>
+  <rect x="502" y="156" width="16" height="16" fill="#0b1736"/>
+  <rect x="454" y="180" width="16" height="16" fill="#0b1736"/>
+  <rect x="478" y="180" width="16" height="16" fill="#0b1736"/>
+  <rect x="430" y="204" width="16" height="16" fill="#0b1736"/>
+  <rect x="502" y="204" width="16" height="16" fill="#0b1736"/>
+  <rect x="454" y="228" width="16" height="16" fill="#0b1736"/>
+  <rect x="478" y="228" width="16" height="16" fill="#0b1736"/>
+  <text x="485" y="280" font-family="Manrope, sans-serif" font-size="9" fill="#667085" text-anchor="middle">ZATCA QR</text>
+
+  <rect x="410" y="278" width="150" height="80" rx="14" fill="#eef5ff"/>
+  <text x="425" y="300" font-family="Manrope, sans-serif" font-size="10" font-weight="800" fill="#0b1736">Digital Signature</text>
+  <text x="425" y="320" font-family="Manrope, sans-serif" font-size="9" fill="#667085">Signed &amp; validated</text>
+  <path d="M425 335 L440 345 L465 320" stroke="#22c55e" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <rect x="40" y="400" width="520" height="1" fill="#edf1f5"/>
+  <text x="40" y="428" font-family="Manrope, sans-serif" font-size="10" fill="#667085">PDF/A-3 with embedded XML &#8212; Phase 2 compliant e-invoice</text>
+</svg>
