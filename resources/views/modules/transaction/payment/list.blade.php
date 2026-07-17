@@ -183,5 +183,7 @@
                 </div>
             </div>
         </div>
+
+        @include('modules.transaction.payment.payment-view')
     </main>
 </x-app-layout>

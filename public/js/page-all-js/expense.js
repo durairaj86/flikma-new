@@ -102,7 +102,7 @@ EXPENSE = {
                 columns: [
                     {
                         data: 'row_no', render: function (data, type, row) {
-                            return '<strong>' + row.row_no + '</strong>';
+                            return '<strong class="text-primary expense-no-link" style="cursor:pointer;">' + row.row_no + '</strong>';
                         }
                     },
                     {data: 'posted_at'},
@@ -150,6 +150,26 @@ EXPENSE = {
             $('#dataTable_filter').closest('div.row').remove();
             webDataTable.loader(table);
             webDataTable.search(table);
+
+            $('#dataTable tbody').off('click', '.expense-no-link').on('click', '.expense-no-link', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                let $row = $(this).closest('tr');
+                EXPENSE.list.openDrawer($row.attr('data-id'), $row.attr('data-name'));
+            });
+        },
+        openDrawer(expenseId, expenseNo) {
+            $('#drawerSubtitle').text(expenseNo || '');
+
+            let drawer = bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer'));
+            drawer.show();
+
+            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
+            $.get('/finance/expense/' + expenseId + '/overview-drawer', function (data) {
+                $('#moduleOverview').html(data);
+            }).fail(function () {
+                $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load expense details.</div>');
+            });
         },
         extraActions(row) {
             EXPENSE.list.actions.statusChange(row);
@@ -169,17 +189,7 @@ EXPENSE = {
             },
             view(row) {
                 $('#row_view').off().on('click', function () {
-                    let expenseId = row.attr('data-id');
-
-                    // Open drawer
-                    let drawer = new bootstrap.Offcanvas(document.getElementById('moduleDrawer'));
-                    drawer.show();
-
-                    // Load Overview
-                    $('#moduleOverview').html('<p>Loading...</p>');
-                    $.get('/finance/expense/' + expenseId + '/overview', function (data) {
-                        $('#moduleOverview').html(data);
-                    });
+                    EXPENSE.list.openDrawer(row.attr('data-id'), row.attr('data-name'));
                 });
             },
             delete(row) {

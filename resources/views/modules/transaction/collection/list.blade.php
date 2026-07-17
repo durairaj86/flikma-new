@@ -183,5 +183,7 @@
                 </div>
             </div>
         </div>
+
+        @include('modules.transaction.collection.collection-view')
     </main>
 </x-app-layout>

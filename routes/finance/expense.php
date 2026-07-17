@@ -13,6 +13,7 @@ Route::namespace('finance')->prefix('finance/expense')->group(function () {
     Route::get('/{id}/actions', [ExpenseController::class, 'actions']);
     Route::post('/{id}/status/{status}', [ExpenseController::class, 'updateStatus']);
     Route::get('/{id}/overview', [ExpenseController::class, 'overview']);
+    Route::get('/{id}/overview-drawer', [ExpenseController::class, 'overviewDrawer']);
     Route::get('/{id}/print', [ExpenseController::class, 'print']);
     Route::delete('/{id}', [ExpenseController::class, 'destroy'])->name('expenses.destroy');
 

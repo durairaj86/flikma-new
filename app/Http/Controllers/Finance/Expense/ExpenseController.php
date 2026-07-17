@@ -69,9 +69,9 @@ class ExpenseController extends Controller
             ->addIndexColumn()
             ->setRowAttr([
                 'data-id' => fn($model) => $model->id,
-                'data-name' => fn($model) => 'Expense #' . htmlspecialchars($model->invoice_no, ENT_QUOTES, 'UTF-8'),
+                'data-name' => fn($model) => 'Expense #' . htmlspecialchars($model->row_no, ENT_QUOTES, 'UTF-8'),
                 'class' => 'row-item',
-                'id' => fn($model) => 'expense-' . strtolower($model->invoice_no ?? $model->id),
+                'id' => fn($model) => 'expense-' . strtolower($model->row_no ?? $model->id),
             ])
             ->editColumn('currency', fn($model) => strtoupper($model->currency))
             ->addColumn('customer_name', fn($model) => $model->customer?->name_en ?? '-')
@@ -461,6 +461,16 @@ class ExpenseController extends Controller
             ->findOrFail($id);
 
         return view('modules.finance.expense.view-overview', compact('expense'));
+    }
+
+    public function overviewDrawer($id)
+    {
+        $expense = Expense::with(['vendor', 'customer', 'job', 'expenseSubs.account', 'documents'])
+            ->findOrFail($id);
+
+        $employees = \App\Models\User::pluck('name', 'id')->toArray();
+
+        return view('modules.finance.expense.view-overview-drawer', compact('expense', 'employees'));
     }
 
     public function print($id)

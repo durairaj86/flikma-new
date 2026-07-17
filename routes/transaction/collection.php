@@ -19,6 +19,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // View collection
         Route::get('/{id}', [CollectionController::class, 'show'])->name('show');
 
+        // Drawer overview (AJAX partial)
+        Route::get('/{id}/overview-drawer', [CollectionController::class, 'overviewDrawer'])->name('overview-drawer');
+
         // Edit collection
         Route::get('/{id}/edit', [CollectionController::class, 'edit'])->name('edit');
 

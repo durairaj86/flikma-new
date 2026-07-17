@@ -81,7 +81,11 @@ PAYMENT = {
                 ],
                 columns: [
                     {data: 'DT_RowIndex', class: 'hide-tooltip fav-index'},
-                    {data: 'row_no', name: 'row_no'},
+                    {
+                        data: 'row_no', name: 'row_no', render: function (data, type, row) {
+                            return '<span class="fw-bold text-primary payment-no-link" style="cursor:pointer;">' + (row.row_no ?? '') + '</span>';
+                        }
+                    },
                     {data: 'supplier_name', name: 'supplier_name'},
                     /*{data: 'job_no', name: 'job_no'},*/
                     {data: 'payment_date', name: 'payment_date'},
@@ -117,6 +121,27 @@ PAYMENT = {
             // Initialize table utilities
             webDataTable.loader(table);
             webDataTable.search(table);
+
+            $('#dataTable tbody').off('click', '.payment-no-link').on('click', '.payment-no-link', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                let $row = $(this).closest('tr');
+                PAYMENT.list.openDrawer($row.attr('data-id'), $row.attr('data-name'));
+            });
+        },
+
+        openDrawer(paymentId, paymentNo) {
+            $('#drawerSubtitle').text(paymentNo || '');
+
+            let drawer = bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer'));
+            drawer.show();
+
+            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
+            $.get('/' + PAYMENT.baseUrl + '/' + paymentId + '/overview-drawer', function (data) {
+                $('#moduleOverview').html(data);
+            }).fail(function () {
+                $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load payment details.</div>');
+            });
         },
 
         extraActions(row) {
@@ -143,8 +168,7 @@ PAYMENT = {
 
             view(row) {
                 $('#row_view').off().on('click', function () {
-                    const id = row.attr('data-id');
-                    window.location.href = `/${PAYMENT.baseUrl}/${id}`;
+                    PAYMENT.list.openDrawer(row.attr('data-id'), row.attr('data-name'));
                 });
             },
 

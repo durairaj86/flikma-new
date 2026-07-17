@@ -303,6 +303,17 @@ class CollectionController extends Controller
     }
 
     /**
+     * Return the drawer (offcanvas) partial for the specified collection.
+     */
+    public function overviewDrawer($id)
+    {
+        $collection = Collection::with(['customer', 'job', 'collectionInvoices.customerInvoice', 'documents', 'createdBy', 'approvedBy'])
+            ->findOrFail($id);
+
+        return view('modules.transaction.collection.view-overview-drawer', compact('collection'));
+    }
+
+    /**
      * Get customer invoices for a specific customer.
      */
     public function getCustomerInvoices($customerId)

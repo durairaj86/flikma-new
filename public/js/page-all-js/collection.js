@@ -49,7 +49,11 @@ COLLECTION = {
                 ],
                 columns: [
                     {data: 'DT_RowIndex', class: 'hide-tooltip fav-index'},
-                    {data: 'row_no', name: 'row_no'},
+                    {
+                        data: 'row_no', name: 'row_no', render: function (data, type, row) {
+                            return '<span class="fw-bold text-primary collection-no-link" style="cursor:pointer;">' + (row.row_no ?? '') + '</span>';
+                        }
+                    },
                     {data: 'customer_name', name: 'customer_name'},
                     /*{data: 'job_no', name: 'job_no'},*/
                     {data: 'collection_date', name: 'collection_date'},
@@ -85,6 +89,27 @@ COLLECTION = {
             // Initialize table utilities
             webDataTable.loader(table);
             webDataTable.search(table);
+
+            $('#dataTable tbody').off('click', '.collection-no-link').on('click', '.collection-no-link', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                let $row = $(this).closest('tr');
+                COLLECTION.list.openDrawer($row.attr('data-id'), $row.attr('data-name'));
+            });
+        },
+
+        openDrawer(collectionId, collectionNo) {
+            $('#drawerSubtitle').text(collectionNo || '');
+
+            let drawer = bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer'));
+            drawer.show();
+
+            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
+            $.get('/' + COLLECTION.baseUrl + '/' + collectionId + '/overview-drawer', function (data) {
+                $('#moduleOverview').html(data);
+            }).fail(function () {
+                $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load collection details.</div>');
+            });
         },
 
         extraActions(row) {
@@ -111,8 +136,7 @@ COLLECTION = {
 
             view(row) {
                 $('#row_view').off().on('click', function () {
-                    const id = row.attr('data-id');
-                    window.location.href = `/${COLLECTION.baseUrl}/${id}`;
+                    COLLECTION.list.openDrawer(row.attr('data-id'), row.attr('data-name'));
                 });
             },
 

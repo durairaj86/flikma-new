@@ -323,6 +323,17 @@ class PaymentController extends Controller
     }
 
     /**
+     * Return the drawer (offcanvas) partial for the specified payment.
+     */
+    public function overviewDrawer($id)
+    {
+        $payment = Payment::with(['supplier', 'job', 'paymentInvoices.supplierInvoice', 'additionalTransactions.account', 'documents', 'createdBy', 'approvedBy'])
+            ->findOrFail($id);
+
+        return view('modules.transaction.payment.view-overview-drawer', compact('payment'));
+    }
+
+    /**
      * Get supplier invoices for a specific supplier.
      */
     public function getSupplierInvoices($supplierId)

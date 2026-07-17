@@ -19,6 +19,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // View payment
         Route::get('/{id}', [PaymentController::class, 'show'])->name('show');
 
+        // Drawer overview (AJAX partial)
+        Route::get('/{id}/overview-drawer', [PaymentController::class, 'overviewDrawer'])->name('overview-drawer');
+
         // Edit payment
         Route::get('/{id}/edit', [PaymentController::class, 'edit'])->name('edit');
 
