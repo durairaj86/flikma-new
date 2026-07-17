@@ -640,6 +640,13 @@ class QuotationController extends Controller
         return view('modules.quotation.view-overview', compact('quotation'));
     }
 
+    public function overviewDrawer($id)
+    {
+        $quotation = Quotation::with(['containers', 'packages', 'charges', 'customer', 'prospect', 'activity'])->findOrFail($id);
+        $quotation->party = $quotation->customer_id ? $quotation->customer : $quotation->prospect;
+        return view('modules.quotation.view-overview-drawer', compact('quotation'));
+    }
+
     public function print($id)
     {
         $quotation = Quotation::with(['containers', 'packages', 'customer', 'prospect'])->find($id);

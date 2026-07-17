@@ -533,10 +533,33 @@ QUOTATION = {
             QUOTATION.list.dataTable(activeTab);
         },
 
+        openDrawer(quotationId, quotationNo) {
+            // Update drawer subtitle
+            $('#drawerSubtitle').text(quotationNo || '');
+
+            // Reset to the General tab
+            let generalTab = document.getElementById('quotation-general-tab');
+            if (generalTab) {
+                bootstrap.Tab.getOrCreateInstance(generalTab).show();
+            }
+
+            // Show drawer
+            let drawer = bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer'));
+            drawer.show();
+
+            // Load all tabs' content in one call
+            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
+            $.get('/sales/quotation/' + quotationId + '/overview-drawer', function (data) {
+                $('#moduleOverview').html(data);
+            }).fail(function () {
+                $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load quotation details.</div>');
+            });
+        },
+
         // Special cell renderers keyed by field key
         renderers: {
             row_no(data) {
-                return `<span class="fw-semibold">${data ?? ''}</span>`;
+                return `<span class="fw-semibold text-primary quotation-no-link" style="cursor:pointer;">${data ?? ''}</span>`;
             },
             status(data) {
                 const map = {
@@ -722,6 +745,15 @@ QUOTATION = {
                 });
                 webDataTable.loader(table);
                 webDataTable.search(table);
+
+                // Clicking the quote number itself also opens the details drawer,
+                // same as the "View" row action.
+                $('#dataTable tbody').off('click', '.quotation-no-link').on('click', '.quotation-no-link', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    let $row = $(this).closest('tr');
+                    QUOTATION.list.openDrawer($row.attr('data-id'), $row.attr('data-name'));
+                });
             });
         },
 
@@ -743,13 +775,7 @@ QUOTATION = {
             },
             view(row) {
                 $('#row_view').off().on('click', function () {
-                    let customerId = row.attr('data-id');
-                    let drawer = new bootstrap.Offcanvas(document.getElementById('moduleDrawer'));
-                    drawer.show();
-                    $('#moduleOverview').html('<p>Loading...</p>');
-                    $.get('/sales/quotation/' + customerId + '/overview', function (data) {
-                        $('#moduleOverview').html(data);
-                    });
+                    QUOTATION.list.openDrawer(row.attr('data-id'), row.attr('data-name'));
                 });
             },
             email(row) {

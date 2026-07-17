@@ -441,6 +441,12 @@ class EnquiryController extends Controller
         return view('modules.enquiry.view-overview', compact('enquiry'));
     }
 
+    public function overviewDrawer($id)
+    {
+        $enquiry = Enquiry::with(['customer', 'prospect', 'activity'])->findOrFail($id);
+        return view('modules.enquiry.view-overview-drawer', compact('enquiry'));
+    }
+
     public function print($id)
     {
         $enquiry = Enquiry::find($id);

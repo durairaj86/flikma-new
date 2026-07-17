@@ -15,6 +15,7 @@ Route::namespace('sales')->prefix('sales')->group(function () {
     Route::get('/enquiry/{id}/actions', [\App\Http\Controllers\Enquiry\EnquiryController::class, 'actions']);
     Route::post('/enquiry/{id}/status/{status}', [\App\Http\Controllers\Enquiry\EnquiryController::class, 'updateStatus']);
     Route::get('/enquiry/{id}/overview', [\App\Http\Controllers\Enquiry\EnquiryController::class, 'overview']);
+    Route::get('/enquiry/{id}/overview-drawer', [\App\Http\Controllers\Enquiry\EnquiryController::class, 'overviewDrawer']);
     Route::get('/enquiry/{id}/print', [EnquiryController::class, 'print']);
     Route::get('/enquiry/{id}/get-data', [EnquiryController::class, 'getEnquiryData']);
 
@@ -28,6 +29,7 @@ Route::namespace('sales')->prefix('sales')->group(function () {
     Route::get('/quotation/{id}/actions', [\App\Http\Controllers\Quotation\QuotationController::class, 'actions']);
     Route::post('/quotation/{id}/status/{status}', [\App\Http\Controllers\Quotation\QuotationController::class, 'updateStatus']);
     Route::get('/quotation/{id}/overview', [\App\Http\Controllers\Quotation\QuotationController::class, 'overview']);
+    Route::get('/quotation/{id}/overview-drawer', [\App\Http\Controllers\Quotation\QuotationController::class, 'overviewDrawer']);
     Route::get('/quotation/{id}/print', [QuotationController::class, 'print']);
     Route::get('/quotation/{id}/email-data', [QuotationController::class, 'getQuotationEmailData']);
     Route::post('/quotation/send-email', [QuotationController::class, 'sendEmail']);

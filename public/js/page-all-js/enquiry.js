@@ -102,6 +102,22 @@ ENQUIRY = {
         load(activeTab) {
             ENQUIRY.list.dataTable(activeTab);
         },
+        openDrawer(enquiryId, enquiryNo) {
+            // Update drawer subtitle
+            $('#drawerSubtitle').text(enquiryNo || '');
+
+            // Show drawer
+            let drawer = bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer'));
+            drawer.show();
+
+            // Load content
+            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
+            $.get('/sales/enquiry/' + enquiryId + '/overview-drawer', function (data) {
+                $('#moduleOverview').html(data);
+            }).fail(function () {
+                $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load enquiry details.</div>');
+            });
+        },
         dataTable(activeTab = null) {
             GLOBAL_FN.destroyDataTable();
             activeTab = (activeTab && (typeof activeTab !== 'object')) ? activeTab : $("#listTabs").find('li button.active').attr('id');
@@ -135,7 +151,12 @@ ENQUIRY = {
                 ],
                 columns: [
                     /*{data: 'DT_RowIndex', class: 'text-center hide-tooltip fav-index'},*/
-                    {data: 'row_no', class: 'hide-tooltip fav-index'},
+                    {
+                        data: 'row_no', class: 'hide-tooltip fav-index',
+                        render: function (data) {
+                            return `<span class="fw-semibold text-primary enquiry-no-link" style="cursor:pointer;">${data ?? ''}</span>`;
+                        }
+                    },
                     {
                         data: 'name',
                         render: function (data, type, row) {
@@ -206,6 +227,15 @@ ENQUIRY = {
             webDataTable.loader(table);
             webDataTable.search(table);
             //webDataTable.actions.menu();
+
+            // Clicking the enquiry number itself also opens the details drawer,
+            // same as the "View" row action.
+            $('#dataTable tbody').off('click', '.enquiry-no-link').on('click', '.enquiry-no-link', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                let $row = $(this).closest('tr');
+                ENQUIRY.list.openDrawer($row.attr('data-id'), $row.attr('data-name'));
+            });
         },
         extraActions(row) {
             ENQUIRY.list.actions.statusChange(row);
@@ -226,18 +256,7 @@ ENQUIRY = {
             },
             view(row) {
                 $('#row_view').off().on('click', function () {
-                    let customerId = row.attr('data-id');
-
-                    // Open drawer
-
-                    let drawer = new bootstrap.Offcanvas(document.getElementById('moduleDrawer'));
-                    drawer.show();
-
-                    // Load Overview
-                    $('#moduleOverview').html('<p>Loading...</p>');
-                    $.get('/sales/enquiry/' + customerId + '/overview', function (data) {
-                        $('#moduleOverview').html(data);
-                    });
+                    ENQUIRY.list.openDrawer(row.attr('data-id'), row.attr('data-name'));
                 });
             },
             email(row) {
