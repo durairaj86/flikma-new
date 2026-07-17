@@ -13,6 +13,7 @@ Route::namespace('operations')->prefix('operation')->group(function () {
     Route::get('/job/{id}/actions', [\App\Http\Controllers\Job\JobController::class, 'actions']);
     Route::post('/job/{id}/status/{status}', [\App\Http\Controllers\Job\JobController::class, 'updateStatus']);
     Route::get('/job/{id}/overview', [\App\Http\Controllers\Job\JobController::class, 'overview']);
+    Route::get('/job/{id}/overview-drawer', [\App\Http\Controllers\Job\JobController::class, 'overviewDrawer']);
     Route::get('/job/{id}/delete', [\App\Http\Controllers\Job\JobController::class, 'delete']);
     Route::get('/job/{id}/print', [JobController::class, 'print']);
 });

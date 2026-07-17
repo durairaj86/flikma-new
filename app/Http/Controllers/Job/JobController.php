@@ -720,6 +720,15 @@ class JobController extends Controller
         return view('modules.job.view-overview', compact('job'));
     }
 
+    public function overviewDrawer($id)
+    {
+        $job = Job::with(['customer', 'containers', 'packages', 'activity', 'documents'])
+            ->withTrashed()
+            ->findOrFail($id);
+
+        return view('modules.job.view-overview-drawer', compact('job'));
+    }
+
     public function delete($id)
     {
         $job = Job::findOrFail($id);

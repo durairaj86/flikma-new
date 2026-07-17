@@ -180,6 +180,65 @@
                 <button class="btn btn-primary rounded-pill px-4" id="new">New Job</button>
             </div>
         </div>
+
+        <div class="container-fluid pb-3">
+            <div class="row g-3">
+
+                <div class="col-12 col-lg-4">
+                    <div class="rounded-3 bg-body-tertiary px-4 py-3 h-100">
+                        <h6 class="text-uppercase text-muted fw-semibold small mb-3" style="letter-spacing:.03em;">Summary</h6>
+                        <div class="row g-2 text-center">
+                            <div class="col-4">
+                                <div id="summaryTotalJobs" class="fs-4 fw-bold mb-0">0</div>
+                                <small class="text-muted">Total Jobs</small>
+                            </div>
+                            <div class="col-4">
+                                <div id="summaryPendingJobs" class="fs-4 fw-bold mb-0">0</div>
+                                <small class="text-muted">Pending</small>
+                            </div>
+                            <div class="col-4">
+                                <div id="summaryCompletedJobs" class="fs-4 fw-bold mb-0">0</div>
+                                <small class="text-muted">Completed</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-4">
+                    <div class="rounded-3 bg-success-subtle px-4 py-3 h-100">
+                        <h6 class="text-uppercase text-success-emphasis fw-semibold small mb-3" style="letter-spacing:.03em;">Completed Jobs</h6>
+                        <div class="row g-2 text-center">
+                            <div class="col-6">
+                                <div id="completedJobsCount" class="fs-4 fw-bold mb-0">0</div>
+                                <small class="text-muted">Completed</small>
+                            </div>
+                            <div class="col-6">
+                                <div id="completionRate" class="fs-4 fw-bold mb-0">0%</div>
+                                <small class="text-muted">Completion Rate</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-4">
+                    <div class="rounded-3 bg-warning-subtle px-4 py-3 h-100">
+                        <h6 class="text-uppercase text-warning-emphasis fw-semibold small mb-3" style="letter-spacing:.03em;">Needs Attention</h6>
+                        <div class="row g-2 text-center">
+                            <div class="col-6">
+                                <div id="cancelledJobsCount" class="fs-4 fw-bold mb-0">0</div>
+                                <small class="text-muted">Cancelled</small>
+                            </div>
+                            <div class="col-6">
+                                <div id="trashedJobsCount" class="fs-4 fw-bold mb-0">0</div>
+                                <small class="text-muted">Trashed</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
         <div class="shadow bdr-r-10 py-3 flex-grow-1">
             <!-- Search & New -->
             <div class="d-flex justify-content-between px-3 flex-shrink-0">
@@ -296,25 +355,47 @@
                     border-radius: 4px;
                     margin-top: -25px;
                 }
+                /* Clean flat table — no floating row cards, just a thin divider
+                   between rows, matching the Customer Invoice list. */
                 #dataTable {
-                    /* Force separation */
-                    border-collapse: separate !important;
-                    /* 0 horizontal space, 12px vertical space */
-                    border-spacing: 0 12px !important;
+                    border-collapse: collapse;
                 }
 
-                #dataTable tbody tr {
-                    /* Optional: shadow makes the "floating" effect look better */
-                    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+                #dataTable thead th {
+                    background-color: #fff;
+                    color: #6c757d;
+                    font-weight: 600;
+                    border-bottom: 1px solid #e9ecef;
+                    padding: 0.65rem 1rem;
+                    white-space: nowrap;
                 }
 
-                #dataTable td {
-                    /* Ensure borders don't double up */
-                   /* border-bottom: 1px solid #dee2e6;*/
+                #dataTable tbody td {
+                    padding: 0.65rem 1rem;
+                    border-bottom: 1px solid #f1f3f5;
+                    vertical-align: middle;
                 }
 
-                /* Round the corners of the floating rows */
+                #dataTable tbody tr:hover td {
+                    background-color: #fafbfc;
+                }
 
+                #dataTable tbody tr:last-child td {
+                    border-bottom: none;
+                }
+
+                /* Two-line cell convention: bold primary line, muted small caption */
+                .cell-primary {
+                    font-weight: 600;
+                    color: #212529;
+                    line-height: 1.3;
+                }
+
+                .cell-secondary {
+                    font-size: 0.75rem;
+                    color: #868e96;
+                    line-height: 1.3;
+                }
             </style>
 
             <!-- Rejected Quotes -->

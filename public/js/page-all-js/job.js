@@ -434,10 +434,58 @@ JOB = {
             JOB.list.dataTable(activeTab);
         },
 
+        setSummaryCards(counts) {
+            if (!counts) return;
+            // Backend keys may come back in any case (e.g. "PENDING"),
+            // normalize to lowercase before reading.
+            const normalized = {};
+            Object.entries(counts).forEach(([key, value]) => {
+                normalized[key.toLowerCase()] = value;
+            });
+
+            const pending = normalized.pending || 0;
+            const completed = normalized.completed || 0;
+            const cancelled = normalized.cancelled || 0;
+            const trashed = normalized.trashed || 0;
+            const total = pending + completed + cancelled + trashed;
+            const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            $('#summaryTotalJobs').text(total);
+            $('#summaryPendingJobs').text(pending);
+            $('#summaryCompletedJobs').text(completed);
+            $('#completedJobsCount').text(completed);
+            $('#completionRate').text(rate + '%');
+            $('#cancelledJobsCount').text(cancelled);
+            $('#trashedJobsCount').text(trashed);
+        },
+
+        openDrawer(jobId, jobNo) {
+            // Update drawer subtitle
+            $('#drawerSubtitle').text(jobNo || '');
+
+            // Reset to the General tab
+            let generalTab = document.getElementById('job-general-tab');
+            if (generalTab) {
+                bootstrap.Tab.getOrCreateInstance(generalTab).show();
+            }
+
+            // Show drawer
+            let drawer = bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer'));
+            drawer.show();
+
+            // Load all tabs' content in one call
+            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
+            $.get('/operation/job/' + jobId + '/overview-drawer', function (data) {
+                $('#moduleOverview').html(data);
+            }).fail(function () {
+                $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load job details.</div>');
+            });
+        },
+
         // Field-level renderers (plain data → HTML)
         renderers: {
             row_no(data) {
-                return `<span class="fw-bold text-dark">${data ?? ''}</span>`;
+                return `<span class="fw-bold text-primary job-no-link" style="cursor:pointer;">${data ?? ''}</span>`;
             },
             status(data) {
                 const map = {
@@ -554,6 +602,7 @@ JOB = {
                         dataSrc(json) {
                             $('#dataTable tbody').find('.loading-row').remove();
                             GLOBAL_FN.setStatusCounts(json.statusCounts);
+                            JOB.list.setSummaryCards(json.statusCounts);
                             return json.data;
                         }
                     },
@@ -589,6 +638,15 @@ JOB = {
                 });
                 webDataTable.loader(table);
                 webDataTable.search(table);
+
+                // Clicking the job number itself also opens the details drawer,
+                // same as the "View" row action.
+                $('#dataTable tbody').off('click', '.job-no-link').on('click', '.job-no-link', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    let $row = $(this).closest('tr');
+                    JOB.list.openDrawer($row.attr('data-id'), $row.attr('data-name'));
+                });
             });
         },
         templates: {
@@ -657,18 +715,7 @@ JOB = {
             },
             view(row) {
                 $('#row_view').off().on('click', function () {
-                    let jobId = row.attr('data-id');
-
-                    // Open drawer
-
-                    let drawer = new bootstrap.Offcanvas(document.getElementById('moduleDrawer'));
-                    drawer.show();
-
-                    // Load Overview
-                    $('#moduleOverview').html('<p>Loading...</p>');
-                    $.get('/operation/job/' + jobId + '/overview', function (data) {
-                        $('#moduleOverview').html(data);
-                    });
+                    JOB.list.openDrawer(row.attr('data-id'), row.attr('data-name'));
                 });
             },
             delete(row) {
