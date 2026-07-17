@@ -27,6 +27,7 @@ Route::get('/reports/provisional-report', \App\Livewire\Report\Job\ProvisionalRe
 
 // Operation Reports
 Route::get('/reports/customer-activity-report', \App\Livewire\Report\Operation\CustomerActivityReport::class);
+Route::get('/reports/customer-balance-summary', \App\Livewire\Report\Operation\CustomerBalanceSummary::class);
 
 // Sale Reports
 Route::get('/reports/sale-report', \App\Livewire\Report\Sale\SaleReport::class);

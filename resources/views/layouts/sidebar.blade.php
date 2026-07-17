@@ -415,7 +415,7 @@
                             </ul>
                         </li>
                         @php
-                            $opsReportSlugs = ['sale-report', 'customer-activity-report'];
+                            $opsReportSlugs = ['sale-report', 'customer-activity-report', 'customer-balance-summary'];
                         @endphp
                         <li class="nav-item {{ in_array($submenu, $opsReportSlugs) ? 'menu-open' : '' }}">
                             <a href="#" class="nav-link">
@@ -432,6 +432,12 @@
                                     <a href="/reports/customer-activity-report"
                                        class="nav-link {{ $submenu == 'customer-activity-report' ? 'active' : '' }}">
                                         <p>Customer Activity Report</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/reports/customer-balance-summary"
+                                       class="nav-link {{ $submenu == 'customer-balance-summary' ? 'active' : '' }}">
+                                        <p>Customer Balance Summary</p>
                                     </a>
                                 </li>
                             </ul>

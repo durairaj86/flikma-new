@@ -411,6 +411,12 @@
                                         <p>Customer Activity Report</p>
                                     </a>
                                 </li>
+                                <li class="nav-item">
+                                    <a href="/reports/customer-balance-summary"
+                                       class="nav-link {{ $submenu == 'customer-balance-summary' ? 'active' : '' }}">
+                                        <p>Customer Balance Summary</p>
+                                    </a>
+                                </li>
                             </ul>
                         </li>
                         <li class="nav-item {{ $menu == 'reports' ? 'menu-open' : '' }}">

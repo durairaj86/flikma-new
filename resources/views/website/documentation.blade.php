@@ -609,7 +609,7 @@ Page Header
                 <div class="docs-leaf-flow">
                     <img src="{{ asset('img/docs/leaf/flow-operations-reports.svg') }}" alt="Operations Reports flow">
                 </div>
-                <p>The Sales Report gives a view of revenue over time, and the Customer Activity Report shows how active (or quiet) each customer has been &mdash; useful for spotting accounts that need attention. Together they give you both a revenue view and a customer-engagement view without having to build either report manually.</p>
+                <p>The Sales Report gives a view of revenue over time, and the Customer Activity Report shows how active (or quiet) each customer has been &mdash; useful for spotting accounts that need attention. The Customer Balance Summary lists every customer's opening balance, invoiced amount, amount received and closing balance for the period, all in one table &mdash; a fast way to see who owes what without opening individual statements.</p>
             </div>
             <div class="docs-leaf" id="finance-reports">
                 <h4>Finance Reports</h4>
