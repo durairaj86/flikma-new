@@ -231,9 +231,9 @@ class CustomerInvoiceController extends Controller
             ->addIndexColumn()
             ->setRowAttr([
                 'data-id' => fn($model) => $model->id,
-                'data-name' => fn($model) => 'Proforma #' . htmlspecialchars($model->invoice_no, ENT_QUOTES, 'UTF-8'),
+                'data-name' => fn($model) => 'Customer Invoice #' . htmlspecialchars($model->invoice_no, ENT_QUOTES, 'UTF-8'),
                 'class' => 'row-item',
-                'id' => fn($model) => 'proforma-' . strtolower($model->invoice_no ?? $model->id),
+                'id' => fn($model) => 'customer-invoice-' . strtolower($model->invoice_no ?? $model->id),
             ])
             ->editColumn('invoice_date', fn($model) => \Carbon\Carbon::parse($model->invoice_date)->format('d-m-Y'))
             ->editColumn('currency', fn($model) => strtoupper($model->currency))
@@ -716,6 +716,13 @@ class CustomerInvoiceController extends Controller
         $customerInvoice = CustomerInvoice::with('customerInvoiceSubs', 'customer', 'job')->findOrFail($id);
         $descriptions = Description::descriptions()->pluck('description', 'id')->toArray();
         return view('modules.finance.customer-invoice.view-overview', compact('customerInvoice', 'descriptions'));
+    }
+
+    public function overviewDrawer($id)
+    {
+        $customerInvoice = CustomerInvoice::with('customerInvoiceSubs', 'customer', 'job')->findOrFail($id);
+        $descriptions = Description::descriptions()->pluck('description', 'id')->toArray();
+        return view('modules.finance.customer-invoice.view-overview-drawer', compact('customerInvoice', 'descriptions'));
     }
 
     /**

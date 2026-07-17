@@ -576,6 +576,13 @@ class SupplierInvoiceController extends Controller
         return view('modules.finance.supplier-invoice.view-overview', compact('supplierInvoice', 'descriptions'));
     }
 
+    public function overviewDrawer($id)
+    {
+        $supplierInvoice = SupplierInvoice::with('supplierInvoiceSubs', 'supplier')->findOrFail($id);
+        $descriptions = Description::descriptions()->pluck('description', 'id')->toArray();
+        return view('modules.finance.supplier-invoice.view-overview-drawer', compact('supplierInvoice', 'descriptions'));
+    }
+
     public function print($id)
     {
 

@@ -455,6 +455,13 @@ class ProformaInvoiceController extends Controller
         return view('modules.finance.proforma-invoice.view-overview', compact('proforma', 'descriptions'));
     }
 
+    public function overviewDrawer($id)
+    {
+        $proforma = ProformaInvoice::with('proformaInvoiceSubs', 'customer')->findOrFail($id);
+        $descriptions = Description::descriptions()->pluck('description', 'id')->toArray();
+        return view('modules.finance.proforma-invoice.view-overview-drawer', compact('proforma', 'descriptions'));
+    }
+
     public function print($id)
     {
 

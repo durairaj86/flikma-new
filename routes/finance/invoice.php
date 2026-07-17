@@ -17,6 +17,7 @@ Route::namespace('finance')->prefix('invoice')->group(function () {
         Route::get('/{id}/actions', [ProformaInvoiceController::class, 'actions']);
         Route::post('/{id}/status/{status}', [ProformaInvoiceController::class, 'updateStatus']);
         Route::get('/{id}/overview', [ProformaInvoiceController::class, 'overview']);
+        Route::get('/{id}/overview-drawer', [ProformaInvoiceController::class, 'overviewDrawer']);
         Route::get('/{id}/print', [ProformaInvoiceController::class, 'print']);
     });
     Route::prefix('supplier')->group(function () {
@@ -30,6 +31,7 @@ Route::namespace('finance')->prefix('invoice')->group(function () {
         Route::get('/{id}/actions', [SupplierInvoiceController::class, 'actions']);
         Route::post('/{id}/status/{status}', [SupplierInvoiceController::class, 'updateStatus']);
         Route::get('/{id}/overview', [SupplierInvoiceController::class, 'overview']);
+        Route::get('/{id}/overview-drawer', [SupplierInvoiceController::class, 'overviewDrawer']);
         Route::get('/{id}/print', [SupplierInvoiceController::class, 'print']);
     });
     Route::prefix('customer')->group(function () {
@@ -43,6 +45,7 @@ Route::namespace('finance')->prefix('invoice')->group(function () {
         Route::get('/{id}/actions', [CustomerInvoiceController::class, 'actions']);
         Route::post('/{id}/status/{status}', [CustomerInvoiceController::class, 'updateStatus']);
         Route::get('/{id}/overview', [CustomerInvoiceController::class, 'overview']);
+        Route::get('/{id}/overview-drawer', [CustomerInvoiceController::class, 'overviewDrawer']);
         Route::get('/{id}/print', [CustomerInvoiceController::class, 'print']);
         Route::get('/{id}/payment-history', [CustomerInvoiceController::class, 'paymentHistory']);
     });
