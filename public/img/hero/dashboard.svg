@@ -1,0 +1,69 @@
+<svg width="600" height="480" viewBox="0 0 600 480" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="mapGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#eaf2ff"/>
+      <stop offset="100%" stop-color="#dce9ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="480" rx="20" fill="#ffffff"/>
+  <!-- window chrome -->
+  <rect width="600" height="44" rx="20" fill="#f7f9fc"/>
+  <rect width="600" height="24" fill="#f7f9fc"/>
+  <circle cx="24" cy="22" r="6" fill="#ff5f57"/>
+  <circle cx="46" cy="22" r="6" fill="#ffbd2e"/>
+  <circle cx="68" cy="22" r="6" fill="#28c840"/>
+  <rect x="140" y="12" width="320" height="20" rx="10" fill="#eef2f8"/>
+
+  <!-- sidebar -->
+  <rect x="0" y="44" width="90" height="436" fill="#0b1736"/>
+  <circle cx="45" cy="80" r="16" fill="#0d6efd"/>
+  <rect x="30" y="120" width="30" height="6" rx="3" fill="#3a4f7a"/>
+  <rect x="25" y="150" width="40" height="26" rx="8" fill="#0d6efd"/>
+  <rect x="30" y="196" width="30" height="6" rx="3" fill="#3a4f7a"/>
+  <rect x="30" y="230" width="30" height="6" rx="3" fill="#3a4f7a"/>
+  <rect x="30" y="264" width="30" height="6" rx="3" fill="#3a4f7a"/>
+  <rect x="30" y="298" width="30" height="6" rx="3" fill="#3a4f7a"/>
+
+  <!-- top stat cards -->
+  <rect x="112" y="64" width="150" height="70" rx="14" fill="#eef5ff"/>
+  <text x="128" y="98" font-family="Manrope, sans-serif" font-size="22" font-weight="800" fill="#0b1736">1,248</text>
+  <text x="128" y="118" font-family="Manrope, sans-serif" font-size="11" fill="#667085">Total Shipments</text>
+
+  <rect x="274" y="64" width="150" height="70" rx="14" fill="#eafbf1"/>
+  <text x="290" y="98" font-family="Manrope, sans-serif" font-size="22" font-weight="800" fill="#0b1736">623</text>
+  <text x="290" y="118" font-family="Manrope, sans-serif" font-size="11" fill="#667085">In Transit</text>
+
+  <rect x="436" y="64" width="140" height="70" rx="14" fill="#fff6e6"/>
+  <text x="452" y="98" font-family="Manrope, sans-serif" font-size="22" font-weight="800" fill="#0b1736">512</text>
+  <text x="452" y="118" font-family="Manrope, sans-serif" font-size="11" fill="#667085">Delivered</text>
+
+  <!-- map card -->
+  <rect x="112" y="150" width="304" height="200" rx="14" fill="url(#mapGrad)"/>
+  <path d="M130 300 Q220 200 300 260 T400 190" stroke="#0d6efd" stroke-width="3" fill="none" stroke-dasharray="6 6"/>
+  <circle cx="130" cy="300" r="7" fill="#0d6efd"/>
+  <circle cx="300" cy="260" r="7" fill="#22c55e"/>
+  <circle cx="400" cy="190" r="7" fill="#0b1736"/>
+  <rect x="122" y="160" width="120" height="24" rx="12" fill="#ffffff"/>
+  <text x="132" y="176" font-family="Manrope, sans-serif" font-size="10" font-weight="700" fill="#0b1736">Live Tracking</text>
+
+  <!-- side list -->
+  <rect x="436" y="150" width="140" height="200" rx="14" fill="#f7f9fc"/>
+  <text x="450" y="172" font-family="Manrope, sans-serif" font-size="11" font-weight="800" fill="#0b1736">Top Routes</text>
+  <rect x="450" y="184" width="112" height="30" rx="8" fill="#ffffff"/>
+  <rect x="450" y="220" width="112" height="30" rx="8" fill="#ffffff"/>
+  <rect x="450" y="256" width="112" height="30" rx="8" fill="#ffffff"/>
+  <rect x="450" y="292" width="112" height="30" rx="8" fill="#ffffff"/>
+
+  <!-- bottom table -->
+  <rect x="112" y="366" width="464" height="98" rx="14" fill="#ffffff" stroke="#edf1f5" stroke-width="2"/>
+  <text x="128" y="388" font-family="Manrope, sans-serif" font-size="11" font-weight="800" fill="#0b1736">Recent Shipments</text>
+  <rect x="128" y="400" width="440" height="1" fill="#edf1f5"/>
+  <text x="128" y="418" font-family="Manrope, sans-serif" font-size="10" fill="#404554">JOB-26-0041</text>
+  <text x="260" y="418" font-family="Manrope, sans-serif" font-size="10" fill="#667085">Jeddah &#8594; Dubai</text>
+  <rect x="480" y="406" width="70" height="18" rx="9" fill="#eef5ff"/>
+  <text x="488" y="419" font-family="Manrope, sans-serif" font-size="9" font-weight="700" fill="#0d6efd">In Transit</text>
+  <text x="128" y="444" font-family="Manrope, sans-serif" font-size="10" fill="#404554">JOB-26-0040</text>
+  <text x="260" y="444" font-family="Manrope, sans-serif" font-size="10" fill="#667085">Dammam &#8594; Riyadh</text>
+  <rect x="480" y="432" width="70" height="18" rx="9" fill="#eafbf1"/>
+  <text x="488" y="445" font-family="Manrope, sans-serif" font-size="9" font-weight="700" fill="#22c55e">Delivered</text>
+</svg>

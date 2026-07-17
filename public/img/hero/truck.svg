@@ -1,0 +1,30 @@
+<svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="skyTruck" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#eaf2ff"/>
+      <stop offset="100%" stop-color="#d7e7ff"/>
+    </linearGradient>
+    <linearGradient id="cabTruck" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d6efd"/>
+      <stop offset="100%" stop-color="#0b1736"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#skyTruck)"/>
+  <rect y="330" width="400" height="70" fill="#c7dbfb"/>
+  <rect y="345" width="400" height="10" fill="#0b1736" opacity="0.15"/>
+  <!-- trailer -->
+  <rect x="40" y="160" width="200" height="140" rx="10" fill="#ffffff" stroke="#0b1736" stroke-width="4"/>
+  <line x1="90" y1="160" x2="90" y2="300" stroke="#cfe1ff" stroke-width="4"/>
+  <line x1="140" y1="160" x2="140" y2="300" stroke="#cfe1ff" stroke-width="4"/>
+  <line x1="190" y1="160" x2="190" y2="300" stroke="#cfe1ff" stroke-width="4"/>
+  <!-- cab -->
+  <path d="M240 220 L300 220 L330 260 L330 300 L240 300 Z" fill="url(#cabTruck)"/>
+  <rect x="252" y="235" width="40" height="30" rx="4" fill="#9fc3f7"/>
+  <!-- wheels -->
+  <circle cx="100" cy="310" r="26" fill="#0b1736"/>
+  <circle cx="100" cy="310" r="11" fill="#c7dbfb"/>
+  <circle cx="190" cy="310" r="26" fill="#0b1736"/>
+  <circle cx="190" cy="310" r="11" fill="#c7dbfb"/>
+  <circle cx="300" cy="310" r="26" fill="#0b1736"/>
+  <circle cx="300" cy="310" r="11" fill="#c7dbfb"/>
+</svg>

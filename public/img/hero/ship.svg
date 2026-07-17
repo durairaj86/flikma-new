@@ -1,0 +1,25 @@
+<svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="skyShip" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#eaf2ff"/>
+      <stop offset="100%" stop-color="#cfe1ff"/>
+    </linearGradient>
+    <linearGradient id="hullShip" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d6efd"/>
+      <stop offset="100%" stop-color="#0b1736"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#skyShip)"/>
+  <rect y="290" width="400" height="110" fill="#9fc3f7"/>
+  <rect y="300" width="400" height="100" fill="#7fb0f5"/>
+  <!-- hull -->
+  <path d="M40 300 L360 300 L330 260 L70 260 Z" fill="url(#hullShip)"/>
+  <rect x="70" y="230" width="30" height="30" fill="#0b1736"/>
+  <rect x="140" y="200" width="30" height="60" fill="#0d6efd"/>
+  <rect x="200" y="180" width="30" height="80" fill="#0b1736"/>
+  <rect x="260" y="205" width="30" height="55" fill="#0d6efd"/>
+  <rect x="150" y="150" width="70" height="35" fill="#0b1736" rx="3"/>
+  <rect x="165" y="130" width="8" height="25" fill="#0b1736"/>
+  <circle cx="230" cy="80" r="34" fill="#ffffff" opacity="0.7"/>
+  <circle cx="280" cy="60" r="22" fill="#ffffff" opacity="0.6"/>
+</svg>

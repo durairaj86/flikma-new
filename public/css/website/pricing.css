@@ -1,0 +1,362 @@
+/* ===========================================================
+FLIKMA - PRICING PAGE
+Builds on style.css / responsive.css design tokens
+=========================================================== */
+
+/*==========================================================
+Page Header
+==========================================================*/
+
+.page-header{
+
+    padding:100px 0 60px;
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+
+}
+
+.page-header::before{
+
+    content:'';
+    position:absolute;
+    width:800px;
+    height:800px;
+    right:-300px;
+    top:-350px;
+    border-radius:50%;
+    background:#f3f8ff;
+    z-index:-1;
+
+}
+
+.page-header h1{
+
+    font-size:38px;
+    font-weight:800;
+    line-height:1.25;
+    color:var(--secondary);
+    margin-bottom:20px;
+
+}
+
+.page-header-desc{
+
+    color:var(--text);
+    font-size:16px;
+    max-width:620px;
+
+}
+
+/*==========================================================
+Pricing Cards
+==========================================================*/
+
+.pricing-section{
+
+    padding:20px 0 100px;
+    background:#ffffff;
+
+}
+
+.plan-card{
+
+    background:#fff;
+    border-radius:var(--radius-lg);
+    border:1px solid var(--border);
+    padding:45px 35px;
+    height:100%;
+    position:relative;
+    transition:var(--transition);
+
+}
+
+.plan-card:hover{
+
+    transform:translateY(-8px);
+    box-shadow:0 25px 60px rgba(0,0,0,.08);
+
+}
+
+.plan-card.featured{
+
+    border:2px solid var(--primary);
+    box-shadow:0 30px 70px rgba(13,110,253,.12);
+
+}
+
+.plan-badge{
+
+    position:absolute;
+    top:-15px;
+    left:50%;
+    transform:translateX(-50%);
+    background:var(--primary);
+    color:#fff;
+    padding:7px 22px;
+    border-radius:50px;
+    font-size:12px;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+
+}
+
+.plan-icon{
+
+    width:56px;
+    height:56px;
+    border-radius:16px;
+    background:#eef5ff;
+    color:var(--primary);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:24px;
+    margin-bottom:22px;
+
+}
+
+.plan-card.featured .plan-icon{
+
+    background:var(--primary);
+    color:#fff;
+
+}
+
+.plan-name{
+
+    font-size:13px;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:#8a94a7;
+
+}
+
+.plan-price{
+
+    font-size:38px;
+    font-weight:800;
+    color:var(--secondary);
+    margin:12px 0 8px;
+
+}
+
+.plan-price span{
+
+    font-size:15px;
+    font-weight:600;
+    color:#667085;
+
+}
+
+.plan-desc{
+
+    color:#667085;
+    font-size:14px;
+    margin-bottom:28px;
+
+}
+
+.plan-card .btn{
+
+    font-weight:700;
+    padding:13px 20px;
+
+}
+
+.plan-features{
+
+    margin-top:30px;
+
+}
+
+.plan-features li{
+
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:15px;
+    font-weight:600;
+    font-size:13px;
+    color:#404554;
+
+}
+
+.plan-features li i{
+
+    color:#22c55e;
+    font-size:16px;
+    flex-shrink:0;
+
+}
+
+/*==========================================================
+Comparison Table
+==========================================================*/
+
+.comparison-section{
+
+    padding:100px 0;
+    background:#f7faff;
+
+}
+
+.comparison-table{
+
+    width:100%;
+    background:#fff;
+    border-radius:var(--radius-lg);
+    overflow:hidden;
+    border:1px solid var(--border);
+    box-shadow:0 12px 35px rgba(0,0,0,.04);
+    border-collapse:separate;
+    border-spacing:0;
+
+}
+
+.comparison-table thead th{
+
+    font-size:12px;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    color:#667085;
+    padding:22px 20px;
+    text-align:center;
+    background:#fafbfd;
+    border-bottom:1px solid var(--border);
+
+}
+
+.comparison-table thead th.highlight-col{
+
+    background:#eef5ff;
+    color:var(--primary);
+
+}
+
+.comparison-table tbody td{
+
+    padding:16px 20px;
+    font-size:13px;
+    color:#404554;
+    text-align:center;
+    border-bottom:1px solid #f2f4f8;
+
+}
+
+.comparison-table tbody tr:last-child td{
+
+    border-bottom:none;
+
+}
+
+.comparison-table tbody td.highlight-col{
+
+    background:#f7faff;
+
+}
+
+.text-check{
+
+    color:var(--primary)!important;
+
+}
+
+/*==========================================================
+FAQ
+==========================================================*/
+
+.faq-section{
+
+    background:#fff;
+
+}
+
+.faq-section .accordion-item{
+
+    border:none;
+    border-bottom:1px solid var(--border);
+
+}
+
+.faq-section .accordion-button{
+
+    font-weight:700;
+    font-size:15px;
+    color:var(--secondary);
+    padding:22px 0;
+    background:transparent;
+    box-shadow:none;
+
+}
+
+.faq-section .accordion-button:not(.collapsed){
+
+    color:var(--primary);
+    background:transparent;
+    box-shadow:none;
+
+}
+
+.faq-section .accordion-button:focus{
+
+    box-shadow:none;
+
+}
+
+.faq-section .accordion-body{
+
+    padding:0 0 22px;
+    color:#667085;
+    font-size:14px;
+
+}
+
+/*==========================================================
+Responsive
+==========================================================*/
+
+@media (max-width:767px){
+
+    .page-header{
+
+        padding:70px 0 40px;
+
+    }
+
+    .page-header h1{
+
+        font-size:28px;
+
+    }
+
+    .page-header-desc{
+
+        font-size:14px;
+
+    }
+
+    .plan-card{
+
+        padding:35px 25px;
+
+    }
+
+    .comparison-section{
+
+        padding:60px 0;
+
+    }
+
+    .comparison-table thead th,
+    .comparison-table tbody td{
+
+        font-size:12px;
+        padding:12px 10px;
+
+    }
+
+}
