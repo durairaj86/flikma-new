@@ -124,7 +124,7 @@ USER = {
                     title: 'Add User',
                     url: GLOBAL_FN.buildUrl('masters/user/create'),
                     content: null,
-                    size: 'xl',
+                    size: 'md',
                     callBack: null
                 });
             })
