@@ -1,0 +1,65 @@
+<svg width="700" height="520" viewBox="0 0 700 520" xmlns="http://www.w3.org/2000/svg">
+  <rect width="700" height="520" rx="24" fill="#ffffff"/>
+  <rect width="700" height="50" rx="24" fill="#f7f9fc"/>
+  <rect width="700" height="26" fill="#f7f9fc"/>
+  <circle cx="26" cy="25" r="7" fill="#ff5f57"/>
+  <circle cx="50" cy="25" r="7" fill="#ffbd2e"/>
+  <circle cx="74" cy="25" r="7" fill="#28c840"/>
+
+  <!-- sidebar -->
+  <rect x="0" y="50" width="100" height="470" fill="#0b1736"/>
+  <circle cx="50" cy="90" r="18" fill="#0d6efd"/>
+  <rect x="35" y="140" width="30" height="26" rx="7" fill="#0d6efd"/>
+  <rect x="35" y="180" width="30" height="7" rx="3.5" fill="#3a4f7a"/>
+  <rect x="35" y="215" width="30" height="7" rx="3.5" fill="#3a4f7a"/>
+  <rect x="35" y="250" width="30" height="7" rx="3.5" fill="#3a4f7a"/>
+  <rect x="35" y="285" width="30" height="7" rx="3.5" fill="#3a4f7a"/>
+  <rect x="35" y="320" width="30" height="7" rx="3.5" fill="#3a4f7a"/>
+
+  <!-- header row -->
+  <text x="128" y="90" font-family="Manrope, sans-serif" font-size="20" font-weight="800" fill="#0b1736">Operations Overview</text>
+  <rect x="500" y="66" width="150" height="34" rx="17" fill="#eef5ff"/>
+  <text x="518" y="88" font-family="Manrope, sans-serif" font-size="12" font-weight="700" fill="#0d6efd">This Month</text>
+
+  <!-- KPI cards -->
+  <rect x="128" y="118" width="130" height="88" rx="16" fill="#eef5ff"/>
+  <text x="146" y="160" font-family="Manrope, sans-serif" font-size="26" font-weight="800" fill="#0b1736">312</text>
+  <text x="146" y="182" font-family="Manrope, sans-serif" font-size="11" fill="#667085">Active Jobs</text>
+
+  <rect x="270" y="118" width="130" height="88" rx="16" fill="#eafbf1"/>
+  <text x="288" y="160" font-family="Manrope, sans-serif" font-size="26" font-weight="800" fill="#0b1736">1.2M</text>
+  <text x="288" y="182" font-family="Manrope, sans-serif" font-size="11" fill="#667085">Revenue (SAR)</text>
+
+  <rect x="412" y="118" width="130" height="88" rx="16" fill="#fff6e6"/>
+  <text x="430" y="160" font-family="Manrope, sans-serif" font-size="26" font-weight="800" fill="#0b1736">96%</text>
+  <text x="430" y="182" font-family="Manrope, sans-serif" font-size="11" fill="#667085">On-Time Delivery</text>
+
+  <rect x="554" y="118" width="118" height="88" rx="16" fill="#fdeef0"/>
+  <text x="570" y="160" font-family="Manrope, sans-serif" font-size="26" font-weight="800" fill="#0b1736">18</text>
+  <text x="570" y="182" font-family="Manrope, sans-serif" font-size="11" fill="#667085">Pending Invoices</text>
+
+  <!-- chart card -->
+  <rect x="128" y="226" width="300" height="220" rx="16" fill="#f7f9fc"/>
+  <text x="146" y="252" font-family="Manrope, sans-serif" font-size="13" font-weight="800" fill="#0b1736">Shipment Volume</text>
+  <polyline points="150,410 190,380 230,395 270,340 310,360 350,300 390,320" fill="none" stroke="#0d6efd" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="150,410 190,380 230,395 270,340 310,360 350,300 390,320 390,420 150,420" fill="#0d6efd" opacity="0.12"/>
+
+  <!-- table card -->
+  <rect x="444" y="226" width="228" height="220" rx="16" fill="#ffffff" stroke="#edf1f5" stroke-width="2"/>
+  <text x="460" y="252" font-family="Manrope, sans-serif" font-size="13" font-weight="800" fill="#0b1736">Departments</text>
+  <rect x="460" y="266" width="196" height="1" fill="#edf1f5"/>
+  <text x="460" y="290" font-family="Manrope, sans-serif" font-size="11" fill="#404554">Freight Forwarding</text>
+  <text x="460" y="316" font-family="Manrope, sans-serif" font-size="11" fill="#404554">Transportation</text>
+  <text x="460" y="342" font-family="Manrope, sans-serif" font-size="11" fill="#404554">Warehouse</text>
+  <text x="460" y="368" font-family="Manrope, sans-serif" font-size="11" fill="#404554">Billing</text>
+  <text x="460" y="394" font-family="Manrope, sans-serif" font-size="11" fill="#404554">Customer Portal</text>
+  <circle cx="640" cy="286" r="5" fill="#22c55e"/>
+  <circle cx="640" cy="312" r="5" fill="#22c55e"/>
+  <circle cx="640" cy="338" r="5" fill="#ffbd2e"/>
+  <circle cx="640" cy="364" r="5" fill="#22c55e"/>
+  <circle cx="640" cy="390" r="5" fill="#22c55e"/>
+
+  <!-- bottom bar -->
+  <rect x="128" y="462" width="544" height="34" rx="10" fill="#f7f9fc"/>
+  <text x="146" y="484" font-family="Manrope, sans-serif" font-size="11" fill="#667085">All systems synced across departments in real time</text>
+</svg>
