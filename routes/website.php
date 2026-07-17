@@ -10,6 +10,7 @@ Route::name('website.')->group(function () {
     Route::view('/products', 'website.products')->name('products');
     Route::view('/why-flikma', 'website.why-flikma')->name('why-flikma');
     Route::view('/pricing', 'website.pricing')->name('pricing');
+    Route::view('/documentation', 'website.documentation')->name('documentation');
     Route::get('/contact', [ContactController::class, 'show'])->name('contact');
     Route::post('/contact', [ContactController::class, 'store'])->name('contact.submit');
 });

@@ -74,7 +74,21 @@ Navbar
                 <li class="nav-item">
 
                     <a class="nav-link"
+                       href="{{ route('website.features') }}">Features</a>
+
+                </li>
+
+                <li class="nav-item">
+
+                    <a class="nav-link"
                        href="{{ route('website.pricing') }}">Pricing</a>
+
+                </li>
+
+                <li class="nav-item">
+
+                    <a class="nav-link"
+                       href="{{ route('website.documentation') }}">Documentation</a>
 
                 </li>
 
@@ -367,7 +381,7 @@ Footer
 
                 <ul>
 
-                    <li><a href="#">Documentation</a></li>
+                    <li><a href="{{ route('website.documentation') }}">Documentation</a></li>
 
                     <li><a href="#">Help Center</a></li>
 

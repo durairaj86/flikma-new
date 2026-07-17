@@ -73,7 +73,21 @@ Navbar
                 <li class="nav-item">
 
                     <a class="nav-link"
+                       href="{{ route('website.features') }}">Features</a>
+
+                </li>
+
+                <li class="nav-item">
+
+                    <a class="nav-link"
                        href="{{ route('website.pricing') }}">Pricing</a>
+
+                </li>
+
+                <li class="nav-item">
+
+                    <a class="nav-link"
+                       href="{{ route('website.documentation') }}">Documentation</a>
 
                 </li>
 
@@ -559,235 +573,203 @@ Solutions
 
         <div class="text-center mb-5">
 
-<span class="section-tag">
-
-OUR SOLUTIONS
-
-</span>
+            <span class="section-tag">
+                OUR SOLUTIONS
+            </span>
 
             <h2 class="section-title mt-3">
-
-                Everything Required To Run A Modern Logistics Business
-
+                One Platform For Every Part Of Your Logistics Business
             </h2>
 
             <p class="section-desc">
-
-                One integrated cloud platform covering every operational process.
-
+                From the first enquiry to the final report &mdash; six connected
+                modules, not six different tools.
             </p>
 
         </div>
 
-        <div class="row g-4 justify-content-center">
+        <div class="row g-4">
 
-            <div class="col-lg-6">
+            <div class="col-lg-4 col-md-6">
 
                 <div class="solution-card h-100">
 
                     <div class="icon">
-
-                        <i class="bi bi-airplane-fill"></i>
-
+                        <i class="bi bi-cart"></i>
                     </div>
 
-                    <h4>
-
-                        Freight Forwarding
-
-                    </h4>
+                    <h4>Sales & Job Management</h4>
 
                     <p>
-
-                        Manage Air Freight,
-                        Sea Freight,
-                        Import,
-                        Export,
-                        Quotation,
-                        Job Costing,
-                        Shipment Tracking
-                        and Documentation.
-
+                        Capture enquiries, price them as quotations, and convert
+                        approved quotes straight into operational jobs &mdash;
+                        nothing gets re-typed between steps.
                     </p>
 
                     <ul>
-
-                        <li>Air Export</li>
-
-                        <li>Air Import</li>
-
-                        <li>Sea Export</li>
-
-                        <li>Sea Import</li>
-
-                        <li>Consolidation</li>
-
-                        <li>Shipment Tracking</li>
-
+                        <li>Enquiry & Quotation builder</li>
+                        <li>One-click convert to Job</li>
+                        <li>Full cargo & shipment tracking</li>
                     </ul>
 
-                    <a href="#" class="read-more">
-
+                    <a href="{{ route('website.documentation') }}#sales" class="read-more">
                         Learn More
-
                         <i class="bi bi-arrow-right"></i>
-
                     </a>
 
                 </div>
 
             </div>
 
-            <div class="col-lg-6">
+            <div class="col-lg-4 col-md-6">
 
                 <div class="solution-card h-100">
 
                     <div class="icon bg-success">
-
-                        <i class="bi bi-truck"></i>
-
+                        <i class="bi bi-file-earmark-text"></i>
                     </div>
 
-                    <h4>
-
-                        Transportation
-
-                    </h4>
+                    <h4>Bill of Lading</h4>
 
                     <p>
-
-                        Fleet Management,
-                        Vehicle Allocation,
-                        Trip Planning,
-                        Driver Management,
-                        Fuel Monitoring,
-                        Trip Costing,
-                        Delivery Management.
-
+                        Generate Airway Bills, Seaway Bills and Waybills directly
+                        from a confirmed job, ready to print and share as proof
+                        of shipment.
                     </p>
 
                     <ul>
-
-                        <li>Trip Sheet</li>
-
-                        <li>GPS Tracking</li>
-
-                        <li>Driver Portal</li>
-
-                        <li>Fleet Maintenance</li>
-
-                        <li>Delivery Proof</li>
-
-                        <li>Billing</li>
-
+                        <li>Airway, Seaway & Waybill documents</li>
+                        <li>Auto-filled from job data</li>
+                        <li>Print-ready customer layout</li>
                     </ul>
 
-                    <a href="#" class="read-more">
-
+                    <a href="{{ route('website.documentation') }}#bl" class="read-more">
                         Learn More
-
                         <i class="bi bi-arrow-right"></i>
-
                     </a>
 
                 </div>
 
             </div>
 
-        </div>
+            <div class="col-lg-4 col-md-6">
 
-        <div class="row mt-4 g-4">
-
-            <div class="col-lg-4">
-
-                <div class="solution-card">
+                <div class="solution-card h-100">
 
                     <div class="icon bg-danger">
-
                         <i class="bi bi-receipt"></i>
-
                     </div>
 
-                    <h4>
-
-                        Billing & Accounting
-
-                    </h4>
+                    <h4>Invoicing & Billing</h4>
 
                     <p>
-
-                        Customer Billing,
-                        Vendor Bills,
-                        Credit Notes,
-                        Debit Notes,
-                        Journal,
-                        Ledger,
-                        Financial Reports.
-
+                        Raise proforma, customer and supplier invoices straight
+                        from job data, with credit notes and a full chart of
+                        accounts behind every transaction.
                     </p>
+
+                    <ul>
+                        <li>Proforma, Customer & Supplier invoices</li>
+                        <li>Credit notes with full audit trail</li>
+                        <li>Automatic ledger posting</li>
+                    </ul>
+
+                    <a href="{{ route('website.documentation') }}#finances" class="read-more">
+                        Learn More
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
 
                 </div>
 
             </div>
 
-            <div class="col-lg-4">
+            <div class="col-lg-4 col-md-6">
 
-                <div class="solution-card">
+                <div class="solution-card h-100">
+
+                    <div class="icon bg-warning">
+                        <i class="bi bi-cash-coin"></i>
+                    </div>
+
+                    <h4>Payments & Collections</h4>
+
+                    <p>
+                        Settle supplier invoices and record customer receipts
+                        &mdash; in full or in part &mdash; with your bank and
+                        cash balances updated the moment you save.
+                    </p>
+
+                    <ul>
+                        <li>Full or partial payments</li>
+                        <li>Multi-invoice settlement in one go</li>
+                        <li>Bank & cash balances always current</li>
+                    </ul>
+
+                    <a href="{{ route('website.documentation') }}#transactions" class="read-more">
+                        Learn More
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+
+                <div class="solution-card h-100">
 
                     <div class="icon bg-info">
-
                         <i class="bi bi-file-earmark-check-fill"></i>
-
                     </div>
 
-                    <h4>
-
-                        ZATCA Phase 2
-
-                    </h4>
+                    <h4>ZATCA Phase 2 Compliance</h4>
 
                     <p>
-
-                        Saudi Arabia Electronic Invoice
-                        Generation,
-                        Digital Signature,
-                        XML,
-                        PDF/A-3,
-                        QR Code,
-                        API Integration.
-
+                        Every customer invoice is generated with the QR code,
+                        digital signature and XML data Saudi e-invoicing
+                        regulations require &mdash; built in automatically.
                     </p>
+
+                    <ul>
+                        <li>XML generation & digital signature</li>
+                        <li>QR code on every invoice</li>
+                        <li>One-time branch registration</li>
+                    </ul>
+
+                    <a href="{{ route('website.documentation') }}#settings-zatca" class="read-more">
+                        Learn More
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
 
                 </div>
 
             </div>
 
-            <div class="col-lg-4">
+            <div class="col-lg-4 col-md-6">
 
-                <div class="solution-card">
+                <div class="solution-card h-100">
 
                     <div class="icon bg-dark">
-
-                        <i class="bi bi-phone-fill"></i>
-
+                        <i class="bi bi-person-badge"></i>
                     </div>
 
-                    <h4>
-
-                        Customer Portal
-
-                    </h4>
+                    <h4>Payroll</h4>
 
                     <p>
-
-                        Customers can Track Shipments,
-                        Invoices,
-                        Statements,
-                        Reports,
-                        Documents
-                        and Payments.
-
+                        Track attendance, calculate monthly salaries, and manage
+                        employee loans, all from one connected payroll module.
                     </p>
+
+                    <ul>
+                        <li>Daily attendance register</li>
+                        <li>Automated monthly salary run</li>
+                        <li>Employee loan & installment tracking</li>
+                    </ul>
+
+                    <a href="{{ route('website.documentation') }}#payroll" class="read-more">
+                        Learn More
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
 
                 </div>
 
@@ -932,7 +914,46 @@ Compliance Section
                     digital signatures and complete audit history.
                 </p>
 
-                <div class="row mt-5">
+                <div class="row mt-5 g-3">
+
+                    <div class="col">
+                        <div class="workflow-step">
+                            <div class="workflow-step-number" style="width:44px;height:44px;font-size:16px;">1</div>
+                            <h5 style="font-size:13.5px;">Invoice Created</h5>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="workflow-step">
+                            <div class="workflow-step-number" style="width:44px;height:44px;font-size:16px;">2</div>
+                            <h5 style="font-size:13.5px;">XML Generated</h5>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="workflow-step">
+                            <div class="workflow-step-number" style="width:44px;height:44px;font-size:16px;">3</div>
+                            <h5 style="font-size:13.5px;">Digitally Signed</h5>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="workflow-step">
+                            <div class="workflow-step-number" style="width:44px;height:44px;font-size:16px;">4</div>
+                            <h5 style="font-size:13.5px;">QR Code Attached</h5>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="workflow-step">
+                            <div class="workflow-step-number" style="width:44px;height:44px;font-size:16px;">5</div>
+                            <h5 style="font-size:13.5px;">Submitted to ZATCA</h5>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="row mt-4">
 
                     <div class="col-md-6">
 
@@ -1024,6 +1045,68 @@ Compliance Section
 </section>
 
 
+<!-- ==========================================
+Pricing Teaser
+========================================== -->
+
+<section class="pricing-teaser-section py-5 bg-light">
+
+    <div class="container">
+
+        <div class="text-center mb-5">
+
+            <span class="section-tag">Pricing</span>
+
+            <h2 class="section-title mt-3">
+                Simple Plans That Grow With You
+            </h2>
+
+            <p class="section-desc mx-auto">
+                No setup fees. No hidden charges. Cancel anytime.
+            </p>
+
+        </div>
+
+        <div class="row g-4 justify-content-center">
+
+            <div class="col-lg-4 col-md-6">
+                <div class="pricing-teaser-card">
+                    <div class="pricing-teaser-name">Starter</div>
+                    <div class="pricing-teaser-price">SAR 299<span>/month</span></div>
+                    <p>For small forwarders getting off spreadsheets.</p>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="pricing-teaser-card featured">
+                    <span class="pricing-teaser-badge">Most Popular</span>
+                    <div class="pricing-teaser-name">Modern</div>
+                    <div class="pricing-teaser-price">SAR 699<span>/month</span></div>
+                    <p>For growing teams that need full financial control.</p>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="pricing-teaser-card">
+                    <div class="pricing-teaser-name">Deluxe</div>
+                    <div class="pricing-teaser-price">Custom</div>
+                    <p>For multi-branch and multi-company operations.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="text-center mt-4">
+
+            <a href="{{ route('website.pricing') }}" class="btn btn-outline-dark rounded-pill px-4 py-3 fw-bold">
+                See Full Plan Comparison
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
 
 
 
@@ -1042,22 +1125,53 @@ CTA
 
             <h2>
 
-                Ready To Transform Your Logistics Business?
+                Get Started In Minutes
 
             </h2>
 
             <p>
 
-                Book a personalized demo today.
+                Create your account, add your first customer, and send your first
+                ZATCA-ready invoice today.
 
             </p>
 
-            <a href="{{ route('website.contact') }}"
-               class="btn btn-light btn-lg rounded-pill">
+            <div class="cta-benefits">
 
-                Book Free Demo
+                <div class="cta-benefit">
+                    <i class="bi bi-check-circle-fill"></i>
+                    No credit card required
+                </div>
 
-            </a>
+                <div class="cta-benefit">
+                    <i class="bi bi-check-circle-fill"></i>
+                    Guided onboarding for your team
+                </div>
+
+                <div class="cta-benefit">
+                    <i class="bi bi-check-circle-fill"></i>
+                    ZATCA-ready from day one
+                </div>
+
+            </div>
+
+            <div class="mt-4 d-flex gap-3 justify-content-center flex-wrap">
+
+                <a href="{{ url('/register') }}"
+                   class="btn btn-light btn-lg rounded-pill">
+
+                    Create Your Free Account
+
+                </a>
+
+                <a href="{{ route('website.contact') }}"
+                   class="btn btn-outline-light btn-lg rounded-pill">
+
+                    Book Free Demo
+
+                </a>
+
+            </div>
 
         </div>
 
@@ -1144,7 +1258,7 @@ Footer
 
                 <ul>
 
-                    <li><a href="#">Documentation</a></li>
+                    <li><a href="{{ route('website.documentation') }}">Documentation</a></li>
 
                     <li><a href="#">Help Center</a></li>
 

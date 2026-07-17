@@ -1128,6 +1128,88 @@ Partner Logos
 }
 
 /*==========================================================
+Pricing Teaser
+==========================================================*/
+
+.pricing-teaser-card{
+
+    background:#fff;
+    border:1px solid #e9edf5;
+    border-radius:var(--radius);
+    padding:36px 30px;
+    text-align:center;
+    height:100%;
+    position:relative;
+    transition:var(--transition);
+
+}
+
+.pricing-teaser-card:hover{
+
+    transform:translateY(-6px);
+    box-shadow:var(--shadow);
+
+}
+
+.pricing-teaser-card.featured{
+
+    border-color:var(--primary);
+    box-shadow:0 20px 50px rgba(13,110,253,.12);
+
+}
+
+.pricing-teaser-badge{
+
+    position:absolute;
+    top:-14px;
+    left:50%;
+    transform:translateX(-50%);
+    background:var(--primary);
+    color:#fff;
+    font-size:12px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    padding:6px 16px;
+    border-radius:999px;
+
+}
+
+.pricing-teaser-name{
+
+    font-size:18px;
+    font-weight:800;
+    color:var(--dark);
+    margin-bottom:10px;
+
+}
+
+.pricing-teaser-price{
+
+    font-size:32px;
+    font-weight:800;
+    color:var(--primary);
+    margin-bottom:14px;
+
+}
+
+.pricing-teaser-price span{
+
+    font-size:14px;
+    font-weight:600;
+    color:#8a93a6;
+
+}
+
+.pricing-teaser-card p{
+
+    color:#5f6777;
+    font-size:14.5px;
+    margin:0;
+
+}
+
+/*==========================================================
 CTA
 ==========================================================*/
 
@@ -1201,6 +1283,42 @@ CTA
     font-weight:700;
     padding:16px 45px;
     border-radius:50px;
+
+}
+
+.cta-box .btn-outline-light{
+
+    border-width:2px;
+    color:#fff;
+
+}
+
+.cta-benefits{
+
+    position:relative;
+    z-index:2;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:14px 32px;
+    margin-top:28px;
+
+}
+
+.cta-benefit{
+
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:14.5px;
+    font-weight:600;
+    color:rgba(255,255,255,.92);
+
+}
+
+.cta-benefit i{
+
+    color:#fff;
 
 }
 
