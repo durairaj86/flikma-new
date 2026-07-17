@@ -1,5 +1,12 @@
 @section('js','proforma_invoice')
 @section('page-title','Proforma Invoice')
+@push('page-title-action')
+    <button class="btn btn-link btn-sm text-muted p-0 text-decoration-none lh-1"
+            data-bs-toggle="modal" data-bs-target="#proformaInvoiceWorkflowModal"
+            title="How proforma invoices work">
+        <i class="bi bi-info-circle fs-6"></i><span class="d-none d-md-inline ms-1" style="font-size:0.8rem;">How it works</span>
+    </button>
+@endpush
 <x-app-layout>
     <main class="gmail-content bg-white px-3">
         <div id="filterPanel" class="card shadow-sm border-0 d-none">
@@ -330,7 +337,151 @@
             color: #868e96;
             line-height: 1.3;
         }
+
+        /* Workflow flowchart */
+        .wf-box {
+            border: 2px solid;
+            border-radius: 10px;
+            padding: 10px 20px;
+            text-align: center;
+            min-width: 170px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+        .wf-box.wf-neutral  { border-color: #6c757d; background: #f8f9fa;  color: #495057; }
+        .wf-box.wf-pending  { border-color: #ffc107; background: #fffbf0;  color: #856404; }
+        .wf-box.wf-action   { border-color: #0d6efd; background: #f0f7ff;  color: #084298; }
+        .wf-box.wf-success  { border-color: #198754; background: #f0fff4;  color: #0f5132; }
+        .wf-box.wf-danger   { border-color: #dc3545; background: #fff5f5;  color: #842029; }
+        .wf-box.wf-job      { border-color: #0dcaf0; background: #f0fdff;  color: #055160; }
+        .wf-box.wf-decision { border-color: #6f42c1; background: #f8f0ff;  color: #432874; }
+        .wf-arrow { color: #adb5bd; font-size: 1.3rem; line-height: 1.3; text-align: center; }
+        .wf-badge { font-size: 0.7rem; border-radius: 20px; padding: 2px 8px; display: inline-block; margin-top: 4px; }
     </style>
+
+    <!-- Proforma Invoice Workflow Modal -->
+    <div class="modal fade" id="proformaInvoiceWorkflowModal" tabindex="-1" aria-labelledby="proformaInvoiceWorkflowModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <div>
+                        <h5 class="modal-title fw-semibold" id="proformaInvoiceWorkflowModalLabel">
+                            <i class="bi bi-diagram-3 text-primary me-2"></i>Proforma Invoice Workflow
+                        </h5>
+                        <p class="text-muted small mb-0">How proforma invoices move through your system</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body pt-3 pb-4">
+
+                    <!-- Flowchart -->
+                    <div class="d-flex flex-column align-items-center gap-0">
+
+                        <div class="wf-box wf-pending">
+                            <div class="text-muted" style="font-size:0.7rem;font-weight:400;">STEP 1</div>
+                            <i class="bi bi-file-earmark-plus me-1"></i> Create Proforma Invoice
+                            <div class="wf-badge bg-secondary text-white">Draft</div>
+                        </div>
+                        <div class="wf-arrow">↓</div>
+
+                        <div class="wf-box wf-action">
+                            <div class="text-muted" style="font-size:0.7rem;font-weight:400;">STEP 2</div>
+                            <i class="bi bi-send me-1"></i> Send to Customer
+                            <div class="wf-badge bg-info text-white">Sent</div>
+                        </div>
+                        <div class="wf-arrow">↓</div>
+
+                        <!-- Decision -->
+                        <div class="wf-box wf-decision">
+                            <i class="bi bi-question-circle me-1"></i> Customer Decision
+                        </div>
+
+                        <div class="d-flex justify-content-center gap-5 w-100 mt-0">
+
+                            <!-- Left: Approved path -->
+                            <div class="d-flex flex-column align-items-center">
+                                <div class="wf-arrow">↓</div>
+                                <div class="wf-box wf-success">
+                                    <i class="bi bi-check-circle me-1"></i> Approved
+                                    <div class="wf-badge bg-success text-white">Approved</div>
+                                </div>
+                                <div class="wf-arrow">↓</div>
+                                <div class="wf-box wf-job">
+                                    <i class="bi bi-arrow-repeat me-1"></i> Convert to Customer Invoice
+                                    <div class="wf-badge text-white" style="background:#0dcaf0;">Converted</div>
+                                </div>
+                            </div>
+
+                            <!-- Right: Rejected path -->
+                            <div class="d-flex flex-column align-items-center">
+                                <div class="wf-arrow">↓</div>
+                                <div class="wf-box wf-danger">
+                                    <i class="bi bi-x-circle me-1"></i> Rejected
+                                    <div class="wf-badge bg-danger text-white">Rejected</div>
+                                </div>
+                                <div class="wf-arrow">↓</div>
+                                <div class="wf-box wf-danger">
+                                    <i class="bi bi-slash-circle me-1"></i> Cancelled
+                                    <div class="wf-badge bg-danger text-white">Cancelled</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Status legend -->
+                    <hr class="mt-4">
+                    <h6 class="fw-semibold text-muted mb-3 small text-uppercase">Status Guide</h6>
+                    <div class="row g-2">
+                        <div class="col-sm-6 col-md-4">
+                            <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#f8f9fa;border:1px solid #6c757d;">
+                                <span class="badge bg-secondary">Draft</span>
+                                <small class="text-muted">Being prepared</small>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4">
+                            <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#f0f7ff;border:1px solid #0d6efd;">
+                                <span class="badge bg-info text-white">Sent</span>
+                                <small class="text-muted">Awaiting customer response</small>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4">
+                            <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#f0fff4;border:1px solid #198754;">
+                                <span class="badge bg-success">Approved</span>
+                                <small class="text-muted">Customer approved</small>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4">
+                            <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#fff5f5;border:1px solid #dc3545;">
+                                <span class="badge bg-danger">Rejected</span>
+                                <small class="text-muted">Customer declined</small>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4">
+                            <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#fff5f5;border:1px solid #dc3545;">
+                                <span class="badge bg-danger">Cancelled</span>
+                                <small class="text-muted">Withdrawn</small>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4">
+                            <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#f0fdff;border:1px solid #0dcaf0;">
+                                <span class="badge" style="background:#0dcaf0;">Converted</span>
+                                <small class="text-muted">Turned into a Customer Invoice</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button class="btn btn-primary rounded-pill px-4" data-bs-dismiss="modal"
+                            onclick="setTimeout(()=>document.getElementById('new').click(),300)">
+                        <i class="bi bi-plus-lg me-1"></i> Create Proforma Invoice
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </x-app-layout>
 <script>
 
