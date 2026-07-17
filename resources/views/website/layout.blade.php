@@ -301,8 +301,8 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <h6 class="mb-2">Contact Us</h6>
-                    <div class="small mb-1"><i class="bi bi-telephone me-2"></i>+966 11 123 4567</div>
-                    <div class="small mb-1"><i class="bi bi-envelope me-2"></i>info@flikma.com</div>
+                    <div class="small mb-1"><i class="bi bi-telephone me-2"></i>+966 595555343</div>
+                    <div class="small mb-1"><i class="bi bi-envelope me-2"></i>support@flikma.com</div>
                     <div class="small"><i class="bi bi-geo-alt me-2"></i>Riyadh, Saudi Arabia</div>
                 </div>
             </div>

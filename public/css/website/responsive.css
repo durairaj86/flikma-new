@@ -314,6 +314,30 @@ Mobile
 
 @media (max-width:767px){
 
+    .page-header{
+
+        padding:70px 0 40px;
+
+    }
+
+    .page-header h1{
+
+        font-size:28px;
+
+    }
+
+    .page-header-desc{
+
+        font-size:14px;
+
+    }
+
+    .features-group-section{
+
+        padding:50px 0;
+
+    }
+
     .hero-section{
 
         padding:70px 0;

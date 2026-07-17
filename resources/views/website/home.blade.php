@@ -33,95 +33,7 @@
 Navbar
 =========================== -->
 
-<nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top py-3">
-
-    <div class="container">
-
-        <a class="navbar-brand fw-bold fs-3" href="{{ route('website.home') }}">
-
-            <img src="img/logos/logo.png" {{--height="42"--}}>
-
-        </a>
-
-        <button class="navbar-toggler"
-                data-bs-toggle="collapse"
-                data-bs-target="#navbar">
-
-            <span class="navbar-toggler-icon"></span>
-
-        </button>
-
-        <div class="collapse navbar-collapse"
-             id="navbar">
-
-            <ul class="navbar-nav mx-auto">
-
-                <li class="nav-item">
-
-                    <a class="nav-link active"
-                       href="{{ route('website.home') }}">Home</a>
-
-                </li>
-
-                <li class="nav-item">
-
-                    <a class="nav-link"
-                       href="{{ route('website.why-flikma') }}">Why Flikma</a>
-
-                </li>
-
-                <li class="nav-item">
-
-                    <a class="nav-link"
-                       href="{{ route('website.features') }}">Features</a>
-
-                </li>
-
-                <li class="nav-item">
-
-                    <a class="nav-link"
-                       href="{{ route('website.pricing') }}">Pricing</a>
-
-                </li>
-
-                <li class="nav-item">
-
-                    <a class="nav-link"
-                       href="{{ route('website.documentation') }}">Documentation</a>
-
-                </li>
-
-                <li class="nav-item">
-
-                    <a class="nav-link"
-                       href="{{ route('website.contact') }}">Contact</a>
-
-                </li>
-
-            </ul>
-
-
-            <div class="d-flex gap-3">
-
-                <a href="{{ url('/login') }}" class="btn btn-outline-dark rounded-pill px-4">
-
-                    Login
-
-                </a>
-
-                <a href="{{ route('website.contact') }}" class="btn btn-primary rounded-pill px-4">
-
-                    Book Demo
-
-                </a>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</nav>
+@include('website.partials.nav')
 
 
 <!-- =====================
@@ -159,8 +71,8 @@ Modern Cloud ERP
                         Transportation,
                         Custom Clearance,
                         Billing,
-                        Customer Portal,
-                        Vendor Portal
+                        Bill of Lading,
+                        Payroll
                         and ZATCA e-Invoicing
                         from one powerful system.
 
@@ -810,13 +722,13 @@ POWERFUL ERP
 
                 <h2 class="mt-3">
 
-                    One Dashboard For Every Department
+                    See Your Whole Operation At A Glance
 
                 </h2>
 
                 <p>
 
-                    Monitor your entire logistics operation from one unified dashboard.
+                    Jobs, invoices and finances in one unified dashboard &mdash; no switching between tools.
 
                 </p>
 
@@ -870,9 +782,9 @@ POWERFUL ERP
 
                         <div>
 
-                            <h5>Customer Portal</h5>
+                            <h5>Role-Based Access</h5>
 
-                            <p>Self-service access for customers.</p>
+                            <p>Department rights control what each user can see and do.</p>
 
                         </div>
 
@@ -1185,126 +1097,7 @@ CTA
 Footer
 ========================================== -->
 
-<footer class="footer">
-
-    <div class="container">
-
-        <div class="row">
-
-            <div class="col-lg-4">
-
-                <img src="img/logo-white.svg"
-                     height="42">
-
-                <p class="mt-4">
-
-                    Flikma is an integrated cloud ERP for Freight,
-                    Transportation,
-                    Billing and ZATCA e-Invoicing.
-
-                </p>
-
-            </div>
-
-            <div class="col-lg-2">
-
-                <h5>
-
-                    Company
-
-                </h5>
-
-                <ul>
-
-                    <li><a href="#">About</a></li>
-
-                    <li><a href="#">Careers</a></li>
-
-                    <li><a href="{{ route('website.contact') }}">Contact</a></li>
-
-                    <li><a href="#">Blog</a></li>
-
-                </ul>
-
-            </div>
-
-            <div class="col-lg-2">
-
-                <h5>
-
-                    Products
-
-                </h5>
-
-                <ul>
-
-                    <li><a href="#">Freight ERP</a></li>
-
-                    <li><a href="#">Transport</a></li>
-
-                    <li><a href="#">Billing</a></li>
-
-                </ul>
-
-            </div>
-
-            <div class="col-lg-2">
-
-                <h5>
-
-                    Support
-
-                </h5>
-
-                <ul>
-
-                    <li><a href="{{ route('website.documentation') }}">Documentation</a></li>
-
-                    <li><a href="#">Help Center</a></li>
-
-                    <li><a href="#">Privacy</a></li>
-
-                    <li><a href="#">Terms</a></li>
-
-                </ul>
-
-            </div>
-
-            <div class="col-lg-2">
-
-                <h5>
-
-                    Follow
-
-                </h5>
-
-                <div class="social-icons">
-
-                    <a href="#"><i class="bi bi-facebook"></i></a>
-
-                    <a href="#"><i class="bi bi-instagram"></i></a>
-
-                    <a href="#"><i class="bi bi-linkedin"></i></a>
-
-                    <a href="#"><i class="bi bi-twitter-x"></i></a>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <hr class="my-5">
-
-        <div class="text-center">
-
-            © 2026 Flikma. All Rights Reserved.
-
-        </div>
-
-    </div>
-
-</footer>
+@include('website.partials.footer')
 
 
 
