@@ -168,20 +168,20 @@
                                 </div>
                             </div>
                             <div class="row g-3 mt-1 mb-3">
-                                <!-- Job Follow-ups -->
+                                <!-- Job Status -->
                                 <div class="col-md-6">
                                     <div class="card shadow-sm border-0 p-3 h-100">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <h6 class="fw-semibold mb-0">Job Follow-ups</h6>
-                                            <i class="fa-solid fa-clipboard-list text-primary"></i>
+                                            <h6 class="fw-semibold mb-0">Job Status</h6>
+                                            <i class="fa-solid fa-truck-fast text-primary"></i>
                                         </div>
                                         <div class="d-flex justify-content-between mb-1">
-                                            <span>Today</span>
-                                            <span class="fw-bold text-primary">{{ $jobFollowupsToday }}</span>
+                                            <span>Active Jobs</span>
+                                            <span class="fw-bold text-primary">{{ $activeJobs }}</span>
                                         </div>
                                         <div class="d-flex justify-content-between">
-                                            <span>This Week</span>
-                                            <span class="fw-bold text-success">{{ $jobFollowupsThisWeek }}</span>
+                                            <span>Completed This Month</span>
+                                            <span class="fw-bold text-success">{{ $completedJobsThisMonth }}</span>
                                         </div>
                                     </div>
                                 </div>

@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers\Job;
 
-use App\Enums\CustomerInvoiceEnum;
 use App\Enums\JobEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
-use App\Models\Finance\CustomerInvoice\CustomerInvoice;
 use App\Models\Job\Job;
 use App\Models\Master\LogisticActivity;
 use Carbon\Carbon;
@@ -34,7 +32,7 @@ class JobOverviewController extends Controller
             'totalJobs' => $this->getTotalJobs($startDate, $endDate),
             'completedJobs' => $this->getCompletedJobs($startDate, $endDate),
             'pendingJobs' => $this->getPendingJobs(),
-            'avgJobValue' => $this->getAvgJobValue($startDate, $endDate),
+            'avgContainersPerJob' => $this->getAvgContainersPerJob($startDate, $endDate),
             'cancelledJobs' => $this->getCancelledJobs($startDate, $endDate),
             'customersCount' => $this->getCustomersCount($startDate, $endDate),
             'repeatRatio' => $this->getRepeatCustomerRatio($startDate, $endDate),
@@ -75,23 +73,18 @@ class JobOverviewController extends Controller
             ->count();
     }
 
-    /**
-     * jobs.grand_total is not reliably populated, so job value is derived
-     * from the approved customer invoices actually linked to each job.
-     */
-    private function getAvgJobValue($startDate, $endDate): float
+    private function getAvgContainersPerJob($startDate, $endDate): float
     {
-        $jobIds = Job::whereBetween('created_at', [$startDate, $endDate])->pluck('id');
-        $count = $jobIds->count();
+        $jobs = Job::whereBetween('created_at', [$startDate, $endDate])
+            ->withCount('containers')
+            ->get(['id']);
+
+        $count = $jobs->count();
         if ($count === 0) {
             return 0;
         }
 
-        $total = (float) CustomerInvoice::whereIn('job_id', $jobIds)
-            ->where('status', CustomerInvoiceEnum::APPROVED->value)
-            ->sum('base_grand_total');
-
-        return $total / $count;
+        return $jobs->sum('containers_count') / $count;
     }
 
     private function getCustomersCount($startDate, $endDate): int
@@ -204,35 +197,19 @@ class JobOverviewController extends Controller
     {
         $jobs = Job::whereBetween('created_at', [$startDate, $endDate])
             ->whereNotNull('customer_id')
+            ->withCount(['containers', 'packages'])
             ->get(['id', 'customer_id']);
 
         $jobsByCustomer = $jobs->groupBy('customer_id');
         $customers = Customer::whereIn('id', $jobsByCustomer->keys())->get()->keyBy('id');
 
-        $invoicesByJob = CustomerInvoice::whereIn('job_id', $jobs->pluck('id'))
-            ->where('status', CustomerInvoiceEnum::APPROVED->value)
-            ->get(['job_id', 'base_grand_total', 'paid_amount'])
-            ->groupBy('job_id');
-
-        return $jobsByCustomer->map(function ($customerJobs, $customerId) use ($customers, $invoicesByJob) {
-            $revenue = 0.0;
-            $outstanding = 0.0;
-
-            foreach ($customerJobs as $job) {
-                foreach ($invoicesByJob->get($job->id, collect()) as $inv) {
-                    $revenue += (float) $inv->base_grand_total;
-                    $outstanding += (float) $inv->base_grand_total - (float) ($inv->paid_amount ?? 0);
-                }
-            }
-
-            return [
-                'name' => $customers[$customerId]->name ?? "Customer #{$customerId}",
-                'jobs' => $customerJobs->count(),
-                'revenue' => $revenue,
-                'outstanding' => max(0, $outstanding),
-            ];
-        })
-        ->sortByDesc('revenue')
+        return $jobsByCustomer->map(fn($customerJobs, $customerId) => [
+            'name' => $customers[$customerId]->name ?? "Customer #{$customerId}",
+            'jobs' => $customerJobs->count(),
+            'containers' => (int) $customerJobs->sum('containers_count'),
+            'packages' => (int) $customerJobs->sum('packages_count'),
+        ])
+        ->sortByDesc('jobs')
         ->take(10)
         ->values()
         ->toArray();

@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers\Sales;
 
-use App\Enums\CollectionEnum;
 use App\Enums\CustomerInvoiceEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
-use App\Models\Finance\Collection\Collection;
 use App\Models\Finance\CustomerInvoice\CustomerInvoice;
 use App\Models\Finance\CustomerInvoice\CustomerInvoiceSub;
 use App\Models\Finance\SupplierInvoice\SupplierInvoice;
@@ -35,7 +33,8 @@ class SalesOverviewController extends Controller
 
         $data = [
             'sales' => $this->getTotalSales($startDate, $endDate),
-            'collected' => $this->getCollectedPayments($startDate, $endDate),
+            'pendingApproval' => $this->getPendingApprovalValue($startDate, $endDate),
+            'approvalRate' => $this->getApprovalRate($startDate, $endDate),
             'outstanding' => $this->getOutstandingAmount(),
             'invoices_avg' => $this->getAverageInvoiceValue($startDate, $endDate),
             'recurring_ratio' => $this->getRecurringRatio($startDate, $endDate),
@@ -61,11 +60,25 @@ class SalesOverviewController extends Controller
             ->sum('base_grand_total');
     }
 
-    private function getCollectedPayments($startDate, $endDate): float
+    private function getPendingApprovalValue($startDate, $endDate): float
     {
-        return (float) Collection::whereBetween('collection_date', [$startDate, $endDate])
-            ->where('status', CollectionEnum::APPROVED->value)
+        return (float) CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
+            ->whereIn('status', [CustomerInvoiceEnum::DRAFT->value, CustomerInvoiceEnum::SENT->value])
             ->sum('base_grand_total');
+    }
+
+    private function getApprovalRate($startDate, $endDate): float
+    {
+        $total = CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])->count();
+        if ($total === 0) {
+            return 0;
+        }
+
+        $approved = CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
+            ->where('status', CustomerInvoiceEnum::APPROVED->value)
+            ->count();
+
+        return $approved / $total;
     }
 
     private function getOutstandingAmount(): float
@@ -290,15 +303,9 @@ class SalesOverviewController extends Controller
         $lastCount = (int) CustomerInvoice::whereBetween('invoice_date', $lastMonth)
             ->where('status', CustomerInvoiceEnum::APPROVED->value)->count();
 
-        $currentCollected = (float) Collection::whereBetween('collection_date', $currentMonth)
-            ->where('status', CollectionEnum::APPROVED->value)->sum('base_grand_total');
-
-        $lastCollected = (float) Collection::whereBetween('collection_date', $lastMonth)
-            ->where('status', CollectionEnum::APPROVED->value)->sum('base_grand_total');
-
         return [
-            'current' => ['sales' => $currentSales, 'invoices' => $currentCount, 'collected' => $currentCollected],
-            'previous' => ['sales' => $lastSales, 'invoices' => $lastCount, 'collected' => $lastCollected],
+            'current' => ['sales' => $currentSales, 'invoices' => $currentCount],
+            'previous' => ['sales' => $lastSales, 'invoices' => $lastCount],
         ];
     }
 }

@@ -44,8 +44,8 @@ class DashboardController extends Controller
             'atdThisWeek' => $this->getAtdThisWeek(),
 
             // Job Follow-ups
-            'jobFollowupsToday' => $this->getJobFollowupsToday(),
-            'jobFollowupsThisWeek' => $this->getJobFollowupsThisWeek(),
+            'activeJobs' => $this->getActiveJobs(),
+            'completedJobsThisMonth' => $this->getCompletedJobsThisMonth(),
 
             // Payments
             'toCollect' => $this->getToCollect(),
@@ -172,15 +172,16 @@ class DashboardController extends Controller
         return Job::whereBetween('atd', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])->count();
     }
 
-    private function getJobFollowupsToday()
+    private function getActiveJobs()
     {
-        return Job::where('status', JobEnum::PENDING->value)->whereDate('updated_at', Carbon::today())->count();
+        return Job::where('status', JobEnum::PENDING->value)->count();
     }
 
-    private function getJobFollowupsThisWeek()
+    private function getCompletedJobsThisMonth()
     {
-        return Job::where('status', JobEnum::PENDING->value)
-            ->whereBetween('updated_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+        return Job::where('status', JobEnum::COMPLETED->value)
+            ->whereMonth('created_at', Carbon::now()->month)
+            ->whereYear('created_at', Carbon::now()->year)
             ->count();
     }
 
