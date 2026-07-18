@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Job;
 use App\Enums\JobEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
+use App\Models\Finance\CustomerInvoice\CustomerInvoice;
 use App\Models\Job\Job;
 use App\Models\Master\LogisticActivity;
 use Carbon\Carbon;
@@ -32,13 +33,17 @@ class JobOverviewController extends Controller
             'totalJobs' => $this->getTotalJobs($startDate, $endDate),
             'completedJobs' => $this->getCompletedJobs($startDate, $endDate),
             'pendingJobs' => $this->getPendingJobs(),
-            'avgContainersPerJob' => $this->getAvgContainersPerJob($startDate, $endDate),
+            'invoicedJobs' => $this->getInvoicedJobsCount($startDate, $endDate),
             'cancelledJobs' => $this->getCancelledJobs($startDate, $endDate),
             'customersCount' => $this->getCustomersCount($startDate, $endDate),
+            'fromQuotations' => $this->getJobsFromQuotationsCount($startDate, $endDate),
             'repeatRatio' => $this->getRepeatCustomerRatio($startDate, $endDate),
+            'avgContainersPerJob' => $this->getAvgContainersPerJob($startDate, $endDate),
             'jobsTrend' => $this->getJobsTrend($startDate, $endDate, $range),
+            'jobSource' => $this->getJobSourceBreakdown($startDate, $endDate),
             'serviceTypes' => $this->getJobsByServiceType($startDate, $endDate),
             'shipmentModes' => $this->getJobsByShipmentMode($startDate, $endDate),
+            'invoicingCoverage' => $this->getInvoicingCoverage($startDate, $endDate),
             'handledBy' => $this->getHandledByPerformance($startDate, $endDate),
             'customers' => $this->getTopCustomers($startDate, $endDate),
             'routes' => $this->getTopRoutes($startDate, $endDate),
@@ -71,6 +76,54 @@ class JobOverviewController extends Controller
         return (int) Job::whereBetween('created_at', [$startDate, $endDate])
             ->where('status', JobEnum::CANCELLED->value)
             ->count();
+    }
+
+    /**
+     * Jobs that have at least one customer invoice raised against them —
+     * links Job to the Customer Invoice module.
+     */
+    private function getInvoicedJobsCount($startDate, $endDate): int
+    {
+        $jobIds = Job::whereBetween('created_at', [$startDate, $endDate])->pluck('id');
+
+        return (int) CustomerInvoice::whereIn('job_id', $jobIds)
+            ->distinct('job_id')
+            ->count('job_id');
+    }
+
+    /**
+     * Jobs created directly from an accepted Quotation — links Job to the
+     * Sales (Enquiry/Quotation) pipeline.
+     */
+    private function getJobsFromQuotationsCount($startDate, $endDate): int
+    {
+        return (int) Job::whereBetween('created_at', [$startDate, $endDate])
+            ->whereNotNull('quotation_id')
+            ->count();
+    }
+
+    private function getJobSourceBreakdown($startDate, $endDate): array
+    {
+        $total = Job::whereBetween('created_at', [$startDate, $endDate])->count();
+        $fromQuotation = $this->getJobsFromQuotationsCount($startDate, $endDate);
+        $direct = max(0, $total - $fromQuotation);
+
+        return [
+            ['label' => 'From Quotation', 'value' => $fromQuotation],
+            ['label' => 'Direct', 'value' => $direct],
+        ];
+    }
+
+    private function getInvoicingCoverage($startDate, $endDate): array
+    {
+        $total = Job::whereBetween('created_at', [$startDate, $endDate])->count();
+        $invoiced = $this->getInvoicedJobsCount($startDate, $endDate);
+        $notInvoiced = max(0, $total - $invoiced);
+
+        return [
+            ['label' => 'Invoiced', 'value' => $invoiced],
+            ['label' => 'Not Yet Invoiced', 'value' => $notInvoiced],
+        ];
     }
 
     private function getAvgContainersPerJob($startDate, $endDate): float
