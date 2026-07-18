@@ -3,11 +3,15 @@
 namespace App\Models\Master;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\CompanyScopeTrait;
+use App\Traits\CompanyOrGlobalScopeTrait;
 
 class Department extends Model
 {
-    use CompanyScopeTrait;
+    // The 8 seeded default departments (Finance & Accounts, Sales &
+    // Marketing, HR, ...) have company_id = NULL, meant as shared defaults
+    // every company sees — same pattern as Account/Description/Unit. The
+    // strict CompanyScopeTrait hid every one of them from every company.
+    use CompanyOrGlobalScopeTrait;
 
     protected $fillable = ['name', 'code', 'company_id', 'is_active'];
 

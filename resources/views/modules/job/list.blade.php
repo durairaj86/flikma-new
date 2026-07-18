@@ -65,7 +65,7 @@
                             </div>
 
 
-                            <div class="col-md-2 form-filter pol-pod-select">
+                            <div class="col-md-3 form-filter pol-pod-select">
                                 <label class="form-label fw-medium">
                                     POL <small class="text-muted">(Port of Loading)</small>
                                 </label>
@@ -94,7 +94,7 @@
                             </div>
 
 
-                            <div class="col-md-2 pol-pod-select">
+                            <div class="col-md-3 pol-pod-select">
                                 <label class="form-label fw-medium">
                                     POD <small class="text-muted">(Port of Discharge)</small>
                                 </label>

@@ -81,7 +81,7 @@ DEPARTMENT = {
                     title: 'Add Department',
                     url: GLOBAL_FN.buildUrl('masters/department/create'),
                     content: null,
-                    size: 'xl',
+                    size: 'md',
                     callBack: null
                 });
             })
