@@ -12,6 +12,15 @@
     </div>
 </div>
 
+<script>
+    // Account options for dynamically-added "Additional Transactions" rows.
+    // This modal's HTML is injected via jQuery.html(), which does not go
+    // through @stack('scripts'), so payment.js reads this global directly
+    // instead of cloning options from a server-rendered row (which doesn't
+    // exist yet on a brand-new payment).
+    window.PAYMENT_SUB_ACCOUNTS = @json($subAccounts->map(fn($a) => ['id' => $a->id, 'name' => $a->name])->values());
+</script>
+
 <div class="container-fluid align-items-center px-0" id="modal-buttons" data-buttons="cancel,save"
      data-button-save="Save Payment">
 

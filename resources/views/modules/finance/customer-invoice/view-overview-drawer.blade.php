@@ -47,13 +47,20 @@
         padding: 4px 10px;
         font-size: 13.5px;
     }
+    .invoice-no-heading {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 1rem;
+    }
 </style>
+
+<div class="invoice-no-heading">#{{ $customerInvoice->row_no }}</div>
 
 <div class="section">
     <h6>Customer &amp; Invoice Information</h6>
     <div class="info-grid">
         <div><strong>Customer:</strong><span>{{ $customerInvoice->customer->name ?? '-' }}</span></div>
-        <div><strong>Invoice No:</strong><span>#{{ $customerInvoice->row_no }}</span></div>
         <div><strong>Email:</strong><span>{{ $customerInvoice->customer->email ?? '-' }}</span></div>
         <div><strong>Invoice Date:</strong><span>{{ $customerInvoice->invoice_date }}</span></div>
         <div><strong>Phone:</strong><span>{{ $customerInvoice->customer->phone ?? '-' }}</span></div>
@@ -110,6 +117,35 @@
 
 <div class="section">
     <h6>Totals</h6>
+    @php
+        $grand = (float) $customerInvoice->grand_total;
+        $paid = (float) ($customerInvoice->paid_amount ?? 0);
+        $isFullyPaid = $grand > 0 && $paid >= $grand;
+        $isPartiallyPaid = $paid > 0 && $paid < $grand;
+    @endphp
+    <div class="row g-3 text-center mb-3">
+        <div class="col-4">
+            <div class="small text-muted text-uppercase">Grand Total</div>
+            <div class="fw-bold fs-5 text-primary">{{ amountFormat($grand) }}</div>
+        </div>
+        <div class="col-4">
+            <div class="small text-muted text-uppercase">Paid</div>
+            <div class="fw-bold fs-5 text-success">{{ amountFormat($paid) }}</div>
+        </div>
+        <div class="col-4">
+            <div class="small text-muted text-uppercase">Balance</div>
+            <div class="fw-bold fs-5 {{ $balance > 0 ? 'text-danger' : 'text-success' }}">{{ amountFormat($balance) }}</div>
+        </div>
+    </div>
+    <div class="text-center mb-3">
+        @if($isFullyPaid)
+            <span class="badge bg-success-subtle text-success px-3 py-2">Fully Paid</span>
+        @elseif($isPartiallyPaid)
+            <span class="badge bg-warning-subtle text-warning px-3 py-2">Partially Paid</span>
+        @else
+            <span class="badge bg-danger-subtle text-danger px-3 py-2">Unpaid</span>
+        @endif
+    </div>
     <table class="total-table ms-auto" style="min-width:320px;">
         <tr>
             <td><strong>Subtotal</strong></td>
@@ -127,19 +163,57 @@
         @endif
         <tr>
             <td><strong>Grand Total</strong></td>
-            <td class="text-end">{{ amountFormat($customerInvoice->grand_total) }} {{ $customerInvoice->currency }}</td>
+            <td class="text-end text-primary fw-bold">{{ amountFormat($grand) }} {{ $customerInvoice->currency }}</td>
         </tr>
         <tr>
             <td><strong>Paid Amount</strong></td>
-            <td class="text-end">{{ amountFormat($customerInvoice->paid_amount ?? 0) }} {{ $customerInvoice->currency }}</td>
+            <td class="text-end text-success fw-bold">{{ amountFormat($paid) }} {{ $customerInvoice->currency }}</td>
         </tr>
         <tr class="table-secondary">
             <td><strong>Balance</strong></td>
-            <td class="text-end fw-bold">
-                {{ amountFormat(($customerInvoice->grand_total ?? 0) - ($customerInvoice->paid_amount ?? 0)) }} {{ $customerInvoice->currency }}
+            <td class="text-end fw-bold {{ $balance > 0 ? 'text-danger' : 'text-success' }}">
+                {{ amountFormat($balance) }} {{ $customerInvoice->currency }}
             </td>
         </tr>
     </table>
+</div>
+
+<div class="section">
+    <h6>Transactions</h6>
+    <div class="table-responsive">
+        <table class="table table-sm table-bordered align-middle">
+            <thead class="table-light">
+            <tr>
+                <th>Type</th>
+                <th>Reference</th>
+                <th>Date</th>
+                <th class="text-end">Amount</th>
+                <th>Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            @forelse($transactions as $tx)
+                <tr>
+                    <td><span class="badge bg-{{ $tx['type_color'] }}-subtle text-{{ $tx['type_color'] }}-emphasis">{{ $tx['type'] }}</span></td>
+                    <td>
+                        @if($tx['url'])
+                            <a href="{{ $tx['url'] }}" target="_blank">{{ $tx['reference'] }}</a>
+                        @else
+                            {{ $tx['reference'] }}
+                        @endif
+                    </td>
+                    <td>{{ $tx['date'] }}</td>
+                    <td class="text-end">{{ amountFormat($tx['amount']) }}</td>
+                    <td><span class="badge bg-{{ $tx['status_color'] }}-subtle text-{{ $tx['status_color'] }}-emphasis">{{ $tx['status_label'] }}</span></td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">No collections or credit notes recorded against this invoice yet.</td>
+                </tr>
+            @endforelse
+            </tbody>
+        </table>
+    </div>
 </div>
 
 @if($customerInvoice->terms)

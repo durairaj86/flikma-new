@@ -325,6 +325,13 @@ PAYMENT = {
         },
 
         getAccountOptions() {
+            // Preferred: the account list passed down from the controller, so
+            // this works even when the table starts with zero rows (a brand-new
+            // payment has no server-rendered row to clone options from).
+            if (Array.isArray(window.PAYMENT_SUB_ACCOUNTS) && window.PAYMENT_SUB_ACCOUNTS.length) {
+                return window.PAYMENT_SUB_ACCOUNTS.map(a => `<option value="${a.id}">${a.name}</option>`).join('');
+            }
+            // Fallback: clone options from an existing row.
             let options = '';
             $('#additional-transactions-table select.account-select:first option').each(function() {
                 options += `<option value="${$(this).val()}">${$(this).text()}</option>`;

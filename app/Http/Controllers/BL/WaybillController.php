@@ -387,9 +387,10 @@ class WaybillController extends Controller
      */
     public function overview($id)
     {
-        // In a real implementation, you would fetch the waybill by ID
-        // For now, we'll just return a simple view
-        return view('modules.bl.waybill.view-overview');
+        $waybill = Waybill::with(['waybillSubs', 'customer', 'job'])->findOrFail($id);
+        $descriptions = \App\Models\Master\Description::descriptions()->pluck('description', 'id')->toArray();
+
+        return view('modules.bl.waybill.view-overview', compact('waybill', 'descriptions'));
     }
 
     /**
@@ -397,8 +398,11 @@ class WaybillController extends Controller
      */
     public function print($id)
     {
-        // In a real implementation, you would fetch the waybill by ID
-        // For now, we'll just return a simple view
-        return view('modules.bl.waybill.print');
+        $waybill = Waybill::with(['waybillSubs', 'customer', 'job'])->findOrFail($id);
+        $descriptions = \App\Models\Master\Description::descriptions()->pluck('description', 'id')->toArray();
+        $company = authUserCompany();
+        $qrImage = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(110)->generate($waybill->row_no ?? (string) $waybill->id);
+
+        return view('modules.bl.waybill.print', compact('waybill', 'descriptions', 'company', 'qrImage'));
     }
 }

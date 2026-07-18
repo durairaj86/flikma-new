@@ -766,7 +766,59 @@ class CustomerInvoiceController extends Controller
     {
         $customerInvoice = CustomerInvoice::with('customerInvoiceSubs', 'customer', 'job')->findOrFail($id);
         $descriptions = Description::descriptions()->pluck('description', 'id')->toArray();
-        return view('modules.finance.customer-invoice.view-overview-drawer', compact('customerInvoice', 'descriptions'));
+        $balance = (float) $customerInvoice->grand_total - (float) ($customerInvoice->paid_amount ?? 0);
+        $transactions = $this->invoiceTransactions($id);
+
+        return view('modules.finance.customer-invoice.view-overview-drawer', compact('customerInvoice', 'descriptions', 'balance', 'transactions'));
+    }
+
+    /**
+     * Collections and credit notes recorded against this invoice, merged into
+     * one chronological list so the invoice view can show both transaction
+     * types side by side instead of just collections.
+     */
+    private function invoiceTransactions($id): \Illuminate\Support\Collection
+    {
+        $collectionStatusLabels = [1 => ['Draft', 'secondary'], 2 => ['Approved', 'success'], 3 => ['Cancelled', 'danger']];
+        $creditNoteStatusLabels = [1 => ['Draft', 'secondary'], 2 => ['Approved', 'success'], 3 => ['Cancelled', 'danger']];
+
+        $collectionInvoices = \App\Models\Finance\Collection\CollectionInvoice::where('customer_invoice_id', $id)
+            ->with('collection:id,row_no,collection_date,account,currency,status')
+            ->get();
+
+        $creditNotes = \App\Models\Finance\Adjustment\CreditNote::where('invoice_id', $id)->get();
+
+        $transactions = collect();
+
+        foreach ($collectionInvoices as $ci) {
+            $label = $collectionStatusLabels[$ci->collection->status ?? 0] ?? ['Unknown', 'secondary'];
+            $transactions->push([
+                'type' => 'Collection',
+                'type_color' => 'primary',
+                'reference' => $ci->collection->row_no ?? '—',
+                'url' => $ci->collection_id ? url('transaction/collections/' . $ci->collection_id) : null,
+                'date' => $ci->collection->collection_date ?? null,
+                'amount' => $ci->amount,
+                'status_label' => $label[0],
+                'status_color' => $label[1],
+            ]);
+        }
+
+        foreach ($creditNotes as $cn) {
+            $label = $creditNoteStatusLabels[$cn->status] ?? ['Unknown', 'secondary'];
+            $transactions->push([
+                'type' => 'Credit Note',
+                'type_color' => 'info',
+                'reference' => $cn->row_no ?? '—',
+                'url' => url('adjustment/credit-note/' . $cn->id . '/create'),
+                'date' => $cn->posted_at ?? $cn->created_at,
+                'amount' => $cn->grand_total,
+                'status_label' => $label[0],
+                'status_color' => $label[1],
+            ]);
+        }
+
+        return $transactions->sortByDesc(fn($t) => $t['date'])->values();
     }
 
     /**

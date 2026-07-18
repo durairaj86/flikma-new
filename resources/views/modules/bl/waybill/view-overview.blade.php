@@ -2,7 +2,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="fw-bold mb-0">Waybill Overview</h4>
         <div>
-            <button class="btn btn-sm btn-outline-primary me-2" onclick="WAYBILL.printPreview({{ request()->route('id') }})">
+            <button class="btn btn-sm btn-outline-primary me-2" onclick="WAYBILL.printPreview({{ $waybill->id }})">
                 <i class="bi bi-printer"></i> Print
             </button>
         </div>
@@ -14,29 +14,33 @@
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="text-muted small d-block">Waybill No</label>
-                        <div class="fw-semibold">WB-2023-001</div>
+                        <div class="fw-semibold">{{ $waybill->row_no }}</div>
                     </div>
                     <div class="mb-3">
                         <label class="text-muted small d-block">Customer</label>
-                        <div class="fw-semibold">Sample Customer</div>
+                        <div class="fw-semibold">{{ $waybill->customer->name_en ?? '-' }}</div>
                     </div>
                     <div class="mb-3">
                         <label class="text-muted small d-block">Job No</label>
-                        <div class="fw-semibold">JOB-2023-001</div>
+                        <div class="fw-semibold">{{ $waybill->job->row_no ?? '-' }}</div>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="text-muted small d-block">Waybill Date</label>
-                        <div class="fw-semibold">{{ date('d-m-Y') }}</div>
+                        <div class="fw-semibold">{{ $waybill->waybill_date }}</div>
                     </div>
                     <div class="mb-3">
                         <label class="text-muted small d-block">Delivery Date</label>
-                        <div class="fw-semibold">{{ date('d-m-Y', strtotime('+3 days')) }}</div>
+                        <div class="fw-semibold">{{ $waybill->delivery_date }}</div>
                     </div>
                     <div class="mb-3">
                         <label class="text-muted small d-block">Status</label>
-                        <span class="badge bg-warning-subtle text-warning">Pending</span>
+                        @php
+                            $statusColors = ['pending' => 'warning', 'in_transit' => 'info', 'delivered' => 'success'];
+                            $statusColor = $statusColors[$waybill->status] ?? 'secondary';
+                        @endphp
+                        <span class="badge bg-{{ $statusColor }}-subtle text-{{ $statusColor }}">{{ ucfirst(str_replace('_', ' ', $waybill->status ?? '-')) }}</span>
                     </div>
                 </div>
             </div>
@@ -52,17 +56,17 @@
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="text-muted small d-block">Delivery Address</label>
-                        <div>123 Main Street, City, Country, 12345</div>
+                        <div>{{ $waybill->delivery_address ?? '-' }}</div>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="text-muted small d-block">Contact Person</label>
-                        <div>John Doe</div>
+                        <div>{{ $waybill->contact_person ?? '-' }}</div>
                     </div>
                     <div class="mb-3">
                         <label class="text-muted small d-block">Contact Phone</label>
-                        <div>+1234567890</div>
+                        <div>{{ $waybill->contact_phone ?? '-' }}</div>
                     </div>
                 </div>
             </div>
@@ -78,19 +82,19 @@
                 <div class="col-md-4">
                     <div class="mb-3">
                         <label class="text-muted small d-block">Shipment Type</label>
-                        <div>Parcel</div>
+                        <div class="text-capitalize">{{ $waybill->shipment_type ?? '-' }}</div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="mb-3">
                         <label class="text-muted small d-block">Service Type</label>
-                        <div>Express</div>
+                        <div class="text-capitalize">{{ str_replace('_', ' ', $waybill->service_type ?? '-') }}</div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="mb-3">
                         <label class="text-muted small d-block">Payment Method</label>
-                        <div>Prepaid</div>
+                        <div class="text-capitalize">{{ str_replace('_', ' ', $waybill->payment_method ?? '-') }}</div>
                     </div>
                 </div>
             </div>
@@ -115,22 +119,26 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>Sample Item</td>
-                            <td>Sample comment</td>
-                            <td class="text-end">2</td>
-                            <td class="text-end">5.0</td>
-                            <td class="text-end">30 x 20 x 10</td>
-                            <td class="text-center"><i class="bi bi-check-circle-fill text-success"></i></td>
-                        </tr>
-                        <tr>
-                            <td>Another Item</td>
-                            <td>Another comment</td>
-                            <td class="text-end">1</td>
-                            <td class="text-end">3.5</td>
-                            <td class="text-end">25 x 15 x 8</td>
-                            <td class="text-center"><i class="bi bi-x-circle-fill text-danger"></i></td>
-                        </tr>
+                        @forelse($waybill->waybillSubs as $sub)
+                            <tr>
+                                <td>{{ $descriptions[$sub->description_id] ?? '-' }}</td>
+                                <td>{{ $sub->comment ?? '-' }}</td>
+                                <td class="text-end">{{ $sub->quantity }}</td>
+                                <td class="text-end">{{ number_format($sub->weight ?? 0, 1) }}</td>
+                                <td class="text-end">{{ number_format($sub->length ?? 0, 0) }} x {{ number_format($sub->width ?? 0, 0) }} x {{ number_format($sub->height ?? 0, 0) }}</td>
+                                <td class="text-center">
+                                    @if($sub->fragile)
+                                        <i class="bi bi-check-circle-fill text-success"></i>
+                                    @else
+                                        <i class="bi bi-x-circle-fill text-danger"></i>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">No items on this waybill.</td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
@@ -142,7 +150,7 @@
             <h5 class="mb-0 fw-semibold">Special Instructions</h5>
         </div>
         <div class="card-body">
-            <p>Handle with care. Deliver during business hours only.</p>
+            <p class="mb-0">{{ $waybill->special_instructions ?: 'No special instructions.' }}</p>
         </div>
     </div>
 </div>
