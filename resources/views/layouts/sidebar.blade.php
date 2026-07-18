@@ -159,6 +159,11 @@
                                 <p>Jobs</p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="/operation/job-overview" class="nav-link {{ $submenu == 'job-overview' ? 'active' : '' }}">
+                                <p>Job Overview</p>
+                            </a>
+                        </li>
                         {{--<li class="nav-item">
                             <a href="/operations/tracking"
                                class="nav-link {{ $submenu == 'tracking' ? 'active' : '' }}">
@@ -298,6 +303,12 @@
                             <a href="/transaction/collections"
                                class="nav-link {{ $submenu == 'collections' ? 'active' : '' }}">
                                 <p>Collections</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/transaction/overview"
+                               class="nav-link {{ $submenu == 'overview' ? 'active' : '' }}">
+                                <p>Transactions Overview</p>
                             </a>
                         </li>
                         {{--<li class="nav-item">

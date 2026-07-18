@@ -4,6 +4,7 @@ use App\Http\Controllers\Job\JobController;
 use Illuminate\Support\Facades\Route;
 
 Route::namespace('operations')->prefix('operation')->group(function () {
+    Route::get('/job-overview', [\App\Http\Controllers\Job\JobOverviewController::class, 'index'])->name('operation.job-overview');
     Route::view('/jobs', 'modules.job.list')->name('jobs');
     Route::post('/job/data', [\App\Http\Controllers\Job\JobController::class, 'fetchAllRows'])->name('jobs.data');
     Route::get('/job/create', [\App\Http\Controllers\Job\JobController::class, 'modal']);

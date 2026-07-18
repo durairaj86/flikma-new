@@ -104,6 +104,7 @@ Route::middleware(['auth', 'module.permission'])->group(function () {
     include 'finance/opening_balance.php';
     include 'transaction/payment.php';
     include 'transaction/collection.php';
+    include 'transaction/overview.php';
     include 'settings.php';
     include 'masters.php';
     include 'reports.php';
