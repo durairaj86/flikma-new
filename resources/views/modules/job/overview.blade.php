@@ -21,19 +21,6 @@
                 --job_shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
             }
             body { background: var(--job_bg); }
-            .job-kpi-card {
-                background: var(--job_card_bg);
-                border-radius: var(--job_radius);
-                box-shadow: var(--job_shadow);
-                padding: 1.25rem;
-                transition: box-shadow .2s;
-                border: 1px solid rgba(0,0,0,0.04);
-            }
-            .job-kpi-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-            .job-kpi-card .kpi-label { font-size: .8rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: #64748b; }
-            .job-kpi-card .kpi-value { font-size: 1.65rem; font-weight: 700; color: #0f172a; line-height: 1.2; margin-top: .25rem; }
-            .job-kpi-card .kpi-sub { font-size: .78rem; color: #94a3b8; margin-top: .2rem; }
-            .job-icon-circle { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
             .job-card {
                 background: var(--job_card_bg);
                 border-radius: var(--job_radius);
@@ -51,6 +38,19 @@
             .badge-job { background: rgba(11,106,160,0.1); color: #0b6aa0; font-weight: 600; font-size: .7rem; padding: .25em .7em; border-radius: 20px; }
             .trend-up { color: #16a34a; }
             .trend-down { color: #dc2626; }
+
+            /* Sidebar summary list (distinct from the card-grid KPI style) */
+            .job-summary-list .item {
+                display: flex; align-items: center; justify-content: space-between;
+                padding: .7rem 0; border-bottom: 1px dashed #e2e8f0;
+            }
+            .job-summary-list .item:last-child { border-bottom: 0; }
+            .job-summary-list .item .label { font-size: .82rem; color: #64748b; display: flex; align-items: center; gap: .5rem; }
+            .job-summary-list .item .value { font-size: 1.05rem; font-weight: 700; color: #0f172a; }
+            .job-summary-list .item .icon-dot {
+                width: 30px; height: 30px; border-radius: 8px;
+                display: flex; align-items: center; justify-content: center; font-size: .8rem; flex-shrink: 0;
+            }
         </style>
 
         <div class="container-fluid px-lg-5">
@@ -73,170 +73,132 @@
                 </div>
             </div>
 
-            {{-- KPI Cards --}}
-            <div class="row g-3 mb-4">
-                <div class="col-lg-3 col-md-6">
-                    <div class="job-kpi-card d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="kpi-label">Total Jobs</div>
-                            <div class="kpi-value" id="kpiTotalJobs">0</div>
-                            <div class="kpi-sub">Created this period</div>
+            <div class="row g-3">
+                {{-- LEFT: Sidebar summary --}}
+                <div class="col-lg-4">
+                    <div class="job-card mb-3">
+                        <div class="job-card-header">
+                            <h6><i class="bi bi-clipboard-data me-2" style="color:#0b6aa0;"></i>Job Summary</h6>
+                            <span class="badge-job">{{ $range === 'this_year' ? 'This Year' : ($range === 'last_month' ? 'Last Month' : 'This Month') }}</span>
                         </div>
-                        <div class="job-icon-circle" style="background:rgba(11,106,160,0.1);color:#0b6aa0;">
-                            <i class="bi bi-briefcase"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="job-kpi-card d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="kpi-label">Completed</div>
-                            <div class="kpi-value" id="kpiCompletedJobs">0</div>
-                            <div class="kpi-sub">Finished this period</div>
-                        </div>
-                        <div class="job-icon-circle" style="background:rgba(22,163,74,0.1);color:#16a34a;">
-                            <i class="bi bi-check-circle"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="job-kpi-card d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="kpi-label">Pending</div>
-                            <div class="kpi-value" id="kpiPendingJobs" style="color:#dc2626;">0</div>
-                            <div class="kpi-sub">Currently in progress</div>
-                        </div>
-                        <div class="job-icon-circle" style="background:rgba(220,38,38,0.1);color:#dc2626;">
-                            <i class="bi bi-hourglass-split"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="job-kpi-card d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="kpi-label">Avg Job Value</div>
-                            <div class="kpi-value" id="kpiAvgJobValue">SAR 0</div>
-                            <div class="kpi-sub">Via linked invoices</div>
-                        </div>
-                        <div class="job-icon-circle" style="background:rgba(91,87,174,0.1);color:#5b57ae;">
-                            <i class="bi bi-bar-chart-line"></i>
+                        <div class="job-card-body job-summary-list">
+                            <div class="item">
+                                <span class="label"><span class="icon-dot" style="background:rgba(11,106,160,0.1);color:#0b6aa0;"><i class="bi bi-briefcase"></i></span> Total Jobs</span>
+                                <span class="value" id="kpiTotalJobs">0</span>
+                            </div>
+                            <div class="item">
+                                <span class="label"><span class="icon-dot" style="background:rgba(22,163,74,0.1);color:#16a34a;"><i class="bi bi-check-circle"></i></span> Completed</span>
+                                <span class="value" id="kpiCompletedJobs">0</span>
+                            </div>
+                            <div class="item">
+                                <span class="label"><span class="icon-dot" style="background:rgba(245,158,11,0.12);color:#f59e0b;"><i class="bi bi-hourglass-split"></i></span> Pending</span>
+                                <span class="value" id="kpiPendingJobs">0</span>
+                            </div>
+                            <div class="item">
+                                <span class="label"><span class="icon-dot" style="background:rgba(220,38,38,0.1);color:#dc2626;"><i class="bi bi-x-circle"></i></span> Cancelled</span>
+                                <span class="value" id="kpiCancelledJobs">0</span>
+                            </div>
+                            <div class="item">
+                                <span class="label"><span class="icon-dot" style="background:rgba(91,87,174,0.1);color:#5b57ae;"><i class="bi bi-people"></i></span> Customers</span>
+                                <span class="value" id="kpiCustomerCount">0</span>
+                            </div>
+                            <div class="item">
+                                <span class="label"><span class="icon-dot" style="background:rgba(11,106,160,0.1);color:#0b6aa0;"><i class="bi bi-arrow-repeat"></i></span> Repeat Customers</span>
+                                <span class="value" id="kpiRepeat">0%</span>
+                            </div>
+                            <div class="item">
+                                <span class="label"><span class="icon-dot" style="background:rgba(22,163,74,0.1);color:#16a34a;"><i class="bi bi-box-seam"></i></span> Avg Containers / Job</span>
+                                <span class="value" id="kpiAvgContainers">0</span>
+                            </div>
+                            <div class="item">
+                                <span class="label"><span class="icon-dot" style="background:rgba(245,158,11,0.12);color:#f59e0b;"><i class="bi bi-graph-up-arrow"></i></span> vs Last Month</span>
+                                <span class="value" id="kpiJobsChange" style="font-size:.9rem;">0%</span>
+                            </div>
+                            <div class="item">
+                                <span class="label"><span class="icon-dot" style="background:rgba(91,87,174,0.1);color:#5b57ae;"><i class="bi bi-speedometer2"></i></span> Completion Rate</span>
+                                <span class="value" id="kpiCompletionRate" style="font-size:.9rem;">0%</span>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            {{-- Secondary KPIs --}}
-            <div class="row g-3 mb-4">
-                <div class="col-lg-2 col-md-4 col-6">
-                    <div class="job-kpi-card text-center py-2">
-                        <div class="kpi-label">Cancelled</div>
-                        <div class="kpi-value" id="kpiCancelledJobs" style="font-size:1.3rem;">0</div>
+                    <div class="job-card">
+                        <div class="job-card-header">
+                            <h6><i class="bi bi-list-check me-2" style="color:#0b6aa0;"></i>Job Status Breakdown</h6>
+                        </div>
+                        <div class="job-card-body p-0">
+                            <table class="table job-table mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Status</th>
+                                        <th class="text-end">Count</th>
+                                        <th class="text-end">%</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableJobStatuses"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-                <div class="col-lg-2 col-md-4 col-6">
-                    <div class="job-kpi-card text-center py-2">
-                        <div class="kpi-label">Customers</div>
-                        <div class="kpi-value" id="kpiCustomerCount" style="font-size:1.3rem;">0</div>
-                    </div>
-                </div>
-                <div class="col-lg-2 col-md-4 col-6">
-                    <div class="job-kpi-card text-center py-2">
-                        <div class="kpi-label">Repeat</div>
-                        <div class="kpi-value" id="kpiRepeat" style="font-size:1.3rem;">0%</div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6 col-6">
-                    <div class="job-kpi-card text-center py-2">
-                        <div class="kpi-label">vs Last Month (Jobs)</div>
-                        <div class="kpi-value" id="kpiJobsChange" style="font-size:1.1rem;">0%</div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6 col-6">
-                    <div class="job-kpi-card text-center py-2">
-                        <div class="kpi-label">Completion Rate</div>
-                        <div class="kpi-value" id="kpiCompletionRate" style="font-size:1.1rem;">0%</div>
-                    </div>
-                </div>
-            </div>
 
-            {{-- Charts Row --}}
-            <div class="row g-3 mb-4">
-                <div class="col-xl-7">
-                    <div class="job-card h-100">
+                {{-- RIGHT: Trend + breakdowns + tables, stacked --}}
+                <div class="col-lg-8">
+                    <div class="job-card mb-3">
                         <div class="job-card-header">
                             <h6><i class="bi bi-graph-up me-2" style="color:#0b6aa0;"></i>Jobs Trend</h6>
                             <span class="badge-job">{{ $range === 'this_year' ? 'Monthly' : 'Weekly' }}</span>
                         </div>
                         <div class="job-card-body">
-                            <canvas id="chartJobsTrend" height="180"></canvas>
+                            <canvas id="chartJobsTrend" height="110"></canvas>
                         </div>
                     </div>
-                </div>
-                <div class="col-xl-5">
-                    <div class="job-card h-100">
-                        <div class="job-card-header">
-                            <h6><i class="bi bi-pie-chart me-2" style="color:#5b57ae;"></i>Jobs by Service Type</h6>
-                            <span class="badge-job">Top 6</span>
-                        </div>
-                        <div class="job-card-body">
-                            <canvas id="chartServiceType" height="180"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            {{-- Second Charts Row --}}
-            <div class="row g-3 mb-4">
-                <div class="col-lg-4">
-                    <div class="job-card h-100">
-                        <div class="job-card-header">
-                            <h6><i class="bi bi-truck me-2" style="color:#16a34a;"></i>Jobs by Shipment Mode</h6>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <div class="job-card h-100">
+                                <div class="job-card-header">
+                                    <h6><i class="bi bi-pie-chart me-2" style="color:#5b57ae;"></i>By Service Type</h6>
+                                </div>
+                                <div class="job-card-body">
+                                    <canvas id="chartServiceType" height="170"></canvas>
+                                </div>
+                            </div>
                         </div>
-                        <div class="job-card-body">
-                            <canvas id="chartShipmentMode" height="170"></canvas>
+                        <div class="col-md-6">
+                            <div class="job-card h-100">
+                                <div class="job-card-header">
+                                    <h6><i class="bi bi-truck me-2" style="color:#16a34a;"></i>By Shipment Mode</h6>
+                                </div>
+                                <div class="job-card-body">
+                                    <canvas id="chartShipmentMode" height="170"></canvas>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="job-card h-100">
+
+                    <div class="job-card mb-3">
                         <div class="job-card-header">
                             <h6><i class="bi bi-people me-2" style="color:#0b6aa0;"></i>Handled By</h6>
                         </div>
                         <div class="job-card-body">
-                            <canvas id="chartHandledBy" height="170"></canvas>
+                            <canvas id="chartHandledBy" height="130"></canvas>
                         </div>
                     </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="job-card h-100">
-                        <div class="job-card-header">
-                            <h6><i class="bi bi-check-circle me-2" style="color:#5b57ae;"></i>Job Status</h6>
-                        </div>
-                        <div class="job-card-body">
-                            <canvas id="chartStatus" height="170"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            {{-- Tables Row --}}
-            <div class="row g-3 mb-4">
-                <div class="col-lg-7">
-                    <div class="job-card">
+                    <div class="job-card mb-3">
                         <div class="job-card-header">
-                            <h6><i class="bi bi-trophy me-2" style="color:#f59e0b;"></i>Top 10 Customers by Job Count</h6>
-                            <span class="badge-job">Jobs / Revenue / Outstanding</span>
+                            <h6><i class="bi bi-trophy me-2" style="color:#f59e0b;"></i>Top Customers by Job Count</h6>
+                            <span class="badge-job">Jobs / Containers / Packages</span>
                         </div>
                         <div class="job-card-body p-0">
-                            <div style="max-height:380px;overflow:auto;">
+                            <div style="max-height:300px;overflow:auto;">
                                 <table class="table job-table mb-0">
                                     <thead class="table-light">
                                         <tr>
                                             <th>#</th>
                                             <th>Customer</th>
                                             <th class="text-end">Jobs</th>
-                                            <th class="text-end">Revenue (SAR)</th>
-                                            <th class="text-end">Outstanding</th>
+                                            <th class="text-end">Containers</th>
+                                            <th class="text-end">Packages</th>
                                         </tr>
                                     </thead>
                                     <tbody id="tableCustomers"></tbody>
@@ -244,15 +206,14 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-lg-5">
+
                     <div class="job-card">
                         <div class="job-card-header">
                             <h6><i class="bi bi-signpost-split me-2" style="color:#0b6aa0;"></i>Top Routes</h6>
                             <span class="badge-job">POL &rarr; POD</span>
                         </div>
                         <div class="job-card-body p-0">
-                            <div style="max-height:380px;overflow:auto;">
+                            <div style="max-height:300px;overflow:auto;">
                                 <table class="table job-table mb-0">
                                     <thead class="table-light">
                                         <tr>
@@ -269,29 +230,6 @@
                 </div>
             </div>
 
-            {{-- Job Status Summary --}}
-            <div class="row g-3 mb-4">
-                <div class="col-12">
-                    <div class="job-card">
-                        <div class="job-card-header">
-                            <h6><i class="bi bi-list-check me-2" style="color:#0b6aa0;"></i>Job Status Breakdown</h6>
-                        </div>
-                        <div class="job-card-body p-0">
-                            <table class="table job-table mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Status</th>
-                                        <th class="text-end">Count</th>
-                                        <th class="text-end">% of Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tableJobStatuses"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
         </div>
     </div>
 
@@ -300,22 +238,19 @@
     const DATA = @json($data);
 
     function fmt(n) { return new Intl.NumberFormat('en-IN').format(Math.round(n)); }
-    function fmtCurrency(n) { return 'SAR ' + fmt(n); }
     function pct(n) { return (n * 100).toFixed(1) + '%'; }
 
     function render() {
         const d = DATA;
 
-        // Primary KPIs
+        // Summary list
         document.getElementById('kpiTotalJobs').innerText = fmt(d.totalJobs);
         document.getElementById('kpiCompletedJobs').innerText = fmt(d.completedJobs);
         document.getElementById('kpiPendingJobs').innerText = fmt(d.pendingJobs);
-        document.getElementById('kpiAvgJobValue').innerText = fmtCurrency(d.avgJobValue);
-
-        // Secondary KPIs
         document.getElementById('kpiCancelledJobs').innerText = fmt(d.cancelledJobs);
         document.getElementById('kpiCustomerCount').innerText = fmt(d.customersCount);
         document.getElementById('kpiRepeat').innerText = pct(d.repeatRatio);
+        document.getElementById('kpiAvgContainers').innerText = (d.avgContainersPerJob || 0).toFixed(1);
 
         // Monthly comparison
         const mc = d.monthlyComparison || {};
@@ -323,7 +258,7 @@
         const jobsChange = prevJobs > 0 ? ((d.totalJobs - prevJobs) / prevJobs) * 100 : 0;
         const chgEl = document.getElementById('kpiJobsChange');
         chgEl.innerText = (jobsChange >= 0 ? '+' : '') + jobsChange.toFixed(1) + '%';
-        chgEl.className = 'kpi-value' + (jobsChange >= 0 ? ' trend-up' : ' trend-down');
+        chgEl.className = 'value' + (jobsChange >= 0 ? ' trend-up' : ' trend-down');
 
         // Completion rate
         const compRate = d.totalJobs > 0 ? (d.completedJobs / d.totalJobs) * 100 : 0;
@@ -335,8 +270,8 @@
                 <td>${i + 1}</td>
                 <td class="fw-medium">${c.name}</td>
                 <td class="text-end">${c.jobs}</td>
-                <td class="text-end fw-semibold">${fmtCurrency(c.revenue)}</td>
-                <td class="text-end ${c.outstanding > 0 ? 'text-danger' : ''}">${fmtCurrency(c.outstanding)}</td>
+                <td class="text-end">${c.containers}</td>
+                <td class="text-end">${c.packages}</td>
             </tr>`;
         }).join('');
         document.getElementById('tableCustomers').innerHTML = custHtml || '<tr><td colspan="5" class="text-center text-muted py-3">No data</td></tr>';
@@ -457,30 +392,6 @@
                 scales: {
                     x: { grid: { color: 'rgba(0,0,0,0.05)' }, beginAtZero: true, ticks: { stepSize: 1 } },
                     y: { grid: { display: false } }
-                },
-                maintainAspectRatio: false
-            }
-        });
-
-        // Job Status bar
-        new Chart(document.getElementById('chartStatus').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: statuses.map(s => s.label),
-                datasets: [{
-                    label: 'Count',
-                    data: statuses.map(s => s.count),
-                    backgroundColor: statuses.map(s =>
-                        s.status === 'completed' ? '#16a34a' : s.status === 'pending' ? '#f59e0b' : s.status === 'cancelled' ? '#dc2626' : '#94a3b8'
-                    ),
-                    borderRadius: 4
-                }]
-            },
-            options: {
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { grid: { display: false } },
-                    y: { grid: { color: 'rgba(0,0,0,0.05)' }, beginAtZero: true, ticks: { stepSize: 1 } }
                 },
                 maintainAspectRatio: false
             }

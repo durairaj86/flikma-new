@@ -97,9 +97,9 @@
                 <div class="col-lg-3 col-md-6">
                     <div class="sales-kpi-card d-flex align-items-center justify-content-between">
                         <div>
-                            <div class="kpi-label">Collected</div>
-                            <div class="kpi-value" id="kpiCollected">SAR 0</div>
-                            <div class="kpi-sub">Payments received</div>
+                            <div class="kpi-label">Pending Approval</div>
+                            <div class="kpi-value" id="kpiPendingApproval">SAR 0</div>
+                            <div class="kpi-sub">Draft &amp; sent invoices</div>
                         </div>
                         <div class="sales-icon-circle" style="background:rgba(22,163,74,0.1);color:#16a34a;">
                             <i class="bi bi-wallet2"></i>
@@ -160,8 +160,8 @@
                 </div>
                 <div class="col-lg-3 col-md-6 col-6">
                     <div class="sales-kpi-card text-center py-2">
-                        <div class="kpi-label">Collection Rate</div>
-                        <div class="kpi-value" id="kpiCollectionRate" style="font-size:1.1rem;">0%</div>
+                        <div class="kpi-label">Approval Rate</div>
+                        <div class="kpi-value" id="kpiApprovalRate" style="font-size:1.1rem;">0%</div>
                     </div>
                 </div>
             </div>
@@ -317,7 +317,7 @@
 
         // Primary KPIs
         document.getElementById('kpiSales').innerText = fmtCurrency(d.sales);
-        document.getElementById('kpiCollected').innerText = fmtCurrency(d.collected);
+        document.getElementById('kpiPendingApproval').innerText = fmtCurrency(d.pendingApproval);
         document.getElementById('kpiOutstanding').innerText = fmtCurrency(d.outstanding);
         document.getElementById('kpiAvgInvoice').innerText = fmtCurrency(d.invoices_avg);
 
@@ -334,9 +334,8 @@
         chgEl.innerText = (salesChange >= 0 ? '+' : '') + salesChange.toFixed(1) + '%';
         chgEl.className = 'kpi-value' + (salesChange >= 0 ? ' trend-up' : ' trend-down');
 
-        // Collection rate
-        const collRate = d.sales > 0 ? (d.collected / d.sales) * 100 : 0;
-        document.getElementById('kpiCollectionRate').innerText = collRate.toFixed(1) + '%';
+        // Approval rate
+        document.getElementById('kpiApprovalRate').innerText = pct(d.approvalRate);
 
         // Top customers table
         const totalRev = d.sales;
