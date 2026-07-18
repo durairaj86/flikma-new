@@ -46,6 +46,13 @@
             color: #1f375f;
         }
 
+        .logo-box img {
+            width: 250px;
+            height: 100px;
+            object-fit: contain;
+            object-position: left center;
+        }
+
         .address-box {
             text-align: right;
             font-size: 8pt;
