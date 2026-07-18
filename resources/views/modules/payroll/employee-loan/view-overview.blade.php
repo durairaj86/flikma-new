@@ -148,7 +148,7 @@
         </div>
         <div class="slip-header d-flex justify-content-between align-items-center">
             <div>
-                <img src="{{ asset('img/logo.png') }}" alt="Logo" style="max-height: 50px;">
+                <img src="{{ companyLogo() }}" alt="Logo" style="max-height: 50px;">
             </div>
             <div class="text-center">
                 <div class="document-title">EMPLOYEE LOAN DETAILS</div>

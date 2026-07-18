@@ -411,7 +411,7 @@
 
 
 
-                <footer class="small text-center mt-3 mb-0">© <span id="y"></span> Your Company — All rights reserved.</footer>
+                <footer class="small text-center mt-3 mb-0">© <span id="y"></span> {{ companyName() }} — All rights reserved.</footer>
     </div>
 
         <!-- Scripts -->

@@ -119,14 +119,14 @@
 
         <div class="slip-header d-flex justify-content-between align-items-center">
             <div>
-                <img src="{{ asset('img/logo.png') }}" alt="Logo" style="max-height: 50px;">
+                <img src="{{ companyLogo() }}" alt="Logo" style="max-height: 50px;">
             </div>
             <div class="text-center">
                 <div class="title">Payslip</div>
                 <div class="fw-bold">{{ date('F Y', mktime(0, 0, 0, $monthlySalary->month, 10)) }}</div>
             </div>
             <div class="text-end" style="font-size: 12px;">
-                <div class="fw-bold">{{ config('app.name') }}</div>
+                <div class="fw-bold">{{ companyName() }}</div>
                 <div>{{ $monthlySalary->row_no ?? 'REF: MS-'.str_pad($monthlySalary->id, 5, '0', STR_PAD_LEFT) }}</div>
             </div>
         </div>
