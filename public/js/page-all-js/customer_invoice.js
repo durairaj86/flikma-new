@@ -245,7 +245,13 @@ CUSTOMER_INVOICE = {
 
             invoice: (row) => `<div class="cell-primary">${row.invoice_date}</div><div class="cell-secondary">Due ${row.due_at}</div>`,
 
-            aging: (row) => `<span class="badge ${row.due_days.class} border border-opacity-10 px-2 py-1" style="font-size: 0.65rem;">${row.due_days.label}</span>`,
+            aging: (row) => {
+                const badge = `<span class="badge ${row.due_days.class} border border-opacity-10 px-2 py-1" style="font-size: 0.65rem;">${row.due_days.label}</span>`;
+                // Settlement rate only makes sense for approved invoices — draft/cancelled
+                // invoices have no meaningful collection progress to show.
+                if (row.status !== 3) return badge;
+                return badge + '<div class="mt-1 d-flex justify-content-end">' + CUSTOMER_INVOICE.list.templates.settlementRate(row) + '</div>';
+            },
 
             // due_status from the API is a hardcoded stub (always "unpaid"),
             // so paid/unpaid is computed here from the real totals instead.
@@ -254,6 +260,19 @@ CUSTOMER_INVOICE = {
                 const paid = parseFloat(row.paid_amount) || 0;
                 const isPaid = grand > 0 && paid >= grand;
                 return `<div class="cell-primary">${row.balance}</div><div class="cell-secondary ${isPaid ? 'text-success' : 'text-danger'}">${isPaid ? 'Paid' : 'Unpaid'}</div>`;
+            },
+
+            settlementRate: (row) => {
+                const grand = parseFloat(String(row.grand_total).replace(/,/g, '')) || 0;
+                const paid = parseFloat(row.paid_amount) || 0;
+                const rate = grand > 0 ? Math.min(100, (paid / grand) * 100) : 0;
+                const color = rate >= 100 ? '#16a34a' : rate > 0 ? '#f59e0b' : '#dc2626';
+                return `<div class="d-flex align-items-center gap-2">
+                            <div class="progress" style="height:5px;width:50px;">
+                                <div class="progress-bar" role="progressbar" style="width:${rate.toFixed(0)}%;background:${color};"></div>
+                            </div>
+                            <small class="fw-semibold" style="min-width:30px;color:${color};font-size:0.65rem;">${rate.toFixed(0)}%</small>
+                        </div>`;
             },
         },
         extraActions(row) {

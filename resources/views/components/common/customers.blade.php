@@ -35,7 +35,7 @@
     @else
         {{-- Empty option first so the browser never auto-selects a real
              customer (a bare single-select silently filters every list). --}}
-        <option value=""></option>
+        <option value="">--Select--</option>
     @endunless
 
     @foreach(($customers ?? \App\Models\Customer\Customer::confirmedCustomers()) as $customerData)

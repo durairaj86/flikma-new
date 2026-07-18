@@ -69,6 +69,47 @@ class CustomerInvoiceController extends Controller
         return view('modules.finance.customer-invoice.list', compact('job_id', 'job_no'));
     }
 
+    /**
+     * Applies the Status / Payment Status / Overdue filters shared by the
+     * rows, statusCounts, and salesSummary queries below.
+     */
+    private function applyExtraFilters($query, array $filter)
+    {
+        // "all" is the sentinel value for the "All Status"/"All Payment" dropdown
+        // option, meaning no filter should be applied — not a literal status to match.
+        $statusFilter = array_filter((array) ($filter['filter-status'] ?? []), fn($v) => $v !== 'all' && $v !== '');
+        $paymentStatusFilter = array_filter((array) ($filter['filter-payment-status'] ?? []), fn($v) => $v !== 'all' && $v !== '');
+
+        return $query
+            ->when(!empty($statusFilter), function ($q) use ($statusFilter) {
+                $q->whereIn('customer_invoices.status', $statusFilter);
+            })
+            ->when(!empty($paymentStatusFilter), function ($q) use ($paymentStatusFilter) {
+                $statuses = $paymentStatusFilter;
+                $q->where(function ($group) use ($statuses) {
+                    foreach ($statuses as $status) {
+                        $group->orWhere(function ($sub) use ($status) {
+                            if ($status === 'paid') {
+                                $sub->where('grand_total', '>', 0)->whereColumn('paid_amount', '>=', 'grand_total');
+                            } elseif ($status === 'partial') {
+                                $sub->where('paid_amount', '>', 0)->whereColumn('paid_amount', '<', 'grand_total');
+                            } elseif ($status === 'unpaid') {
+                                $sub->where(function ($u) {
+                                    $u->whereNull('paid_amount')->orWhere('paid_amount', '<=', 0);
+                                });
+                            }
+                        });
+                    }
+                });
+            })
+            ->when(($filter['filter-overdue'] ?? 'all') === 'overdue', function ($q) {
+                $q->where('due_at', '<', now())->whereColumn('paid_amount', '<', 'grand_total');
+            })
+            ->when(($filter['filter-overdue'] ?? 'all') === 'non_due', function ($q) {
+                $q->where('due_at', '>=', now())->whereColumn('paid_amount', '<', 'grand_total');
+            });
+    }
+
     public function fetchAllRows(Request $request, $job_id): \Illuminate\Http\JsonResponse
     {
         if ($job_id != 'list') {
@@ -132,6 +173,7 @@ class CustomerInvoiceController extends Controller
             ->when(isset($filter['customers']) && !empty($filter['customers']), function ($query) use ($filter) {
                 $query->whereIn('customer_id', decodeIds($filter['customers']));
             })
+            ->tap(fn($query) => $this->applyExtraFilters($query, $filter))
             ->orderBy('customer_invoices.id', 'desc');
 
         // ✅ Get counts per status
@@ -167,6 +209,7 @@ class CustomerInvoiceController extends Controller
                         });
                 });
             })
+            ->tap(fn($query) => $this->applyExtraFilters($query, $filter))
             ->groupBy('status')
             ->pluck('total', 'status')
             ->toArray();
@@ -216,6 +259,7 @@ class CustomerInvoiceController extends Controller
                         });
                 });
             })
+            ->tap(fn($query) => $this->applyExtraFilters($query, $filter))
             ->first();
 
         // ✅ Normalize counts for all statuses

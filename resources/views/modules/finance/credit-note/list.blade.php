@@ -163,7 +163,7 @@
                 <form id="list-filter" method="post" novalidate="novalidate">
                     @csrf
                     <div class="row g-3 align-items-end">
-                        <div class="col-md-2">
+                        {{--<div class="col-md-2">
                             <label class="form-label fw-medium small">Date Range</label>
                             <select class="form-select form-select-sm" id="presetDateRange">
                                 <option value="">Custom</option>
@@ -176,7 +176,7 @@
                                 <option value="thisYear">This Year</option>
                                 <option value="lastYear">Last Year</option>
                             </select>
-                        </div>
+                        </div>--}}
                         <div class="col-md-3">
                             <label class="form-label fw-medium small">From Date</label>
                             <input type="date" class="form-control form-control-sm from-date" id="filter-from-date" name="filter-from-date"

@@ -54,7 +54,7 @@
                          style="position: absolute; top: 100%; right: 0; width: 20rem; z-index: 1000; box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);">
                         <!-- Date range -->
                         <div class="mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
+                            {{--<div class="d-flex justify-content-between align-items-center mb-1">
                                 <span class="fw-medium">Date range</span>
                                 <button class="btn btn-link btn-sm p-0" onclick="resetField('date')">Reset</button>
                             </div>
@@ -71,7 +71,7 @@
                                 <option value="lastQuarter">Last Quarter</option>
                                 <option value="thisYear">This Year</option>
                                 <option value="lastYear">Last Year</option>
-                            </select>
+                            </select>--}}
 
                             <div class="d-flex gap-2">
                                 <input type="date" class="form-control datepicker" id="fromDate">

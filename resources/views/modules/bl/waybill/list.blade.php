@@ -17,7 +17,7 @@
                     <!-- Date Range Section -->
                     <div class="bg-light rounded p-3 mb-4">
                         <div class="row g-3 align-items-end">
-                            <div class="col-md-2">
+                            {{--<div class="col-md-2">
                                 <label class="form-label fw-medium">Date Range</label>
                                 <select class="tom-select avoid-filter" id="presetDateRange">
                                     <option value="">Custom</option>
@@ -30,7 +30,7 @@
                                     <option value="thisYear">This Year</option>
                                     <option value="lastYear">Last Year</option>
                                 </select>
-                            </div>
+                            </div>--}}
 
                             <div class="col-md-4 form-filter">
                                 <label class="form-label fw-medium">Waybill Date</label>

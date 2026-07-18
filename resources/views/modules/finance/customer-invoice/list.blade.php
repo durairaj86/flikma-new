@@ -27,7 +27,7 @@
                     <div class="bg-light rounded p-3 mb-4">
                         <div class="row g-3 align-items-end">
 
-                            <div class="col-md-2">
+                            {{--<div class="col-md-2">
                                 <label class="form-label fw-medium">Date Range</label>
                                 <select class="tom-select avoid-filter" id="presetDateRange">
                                     <option value="">Custom</option>
@@ -40,9 +40,9 @@
                                     <option value="thisYear">This Year</option>
                                     <option value="lastYear">Last Year</option>
                                 </select>
-                            </div>
+                            </div>--}}
 
-                            <div class="col-md-4 form-filter">
+                            <div class="col-md-3 form-filter">
                                 <label class="form-label fw-medium">Invoice Date</label>
                                 <div class="d-flex input-group-filter gap-2">
                                     <input type="date" class="form-control datepicker from-date default-filter" id="filter-from-date" name="filter-from-date"
@@ -54,7 +54,36 @@
 
                             <div class="col-md-3 form-filter">
                                 <label class="form-label fw-medium">Customer</label>
-                                <x-common.customers multiple></x-common.customers>
+                                <x-common.customers multiple="true"></x-common.customers>
+                            </div>
+
+                            <div class="col-md-2 form-filter">
+                                <label class="form-label fw-medium">Status</label>
+                                <select class="tom-select avoid-filter" name="filter-status" id="filter-status" size="3" placeholder="All Status">
+                                    <option value="all" selected>All Status</option>
+                                    <option value="1">Draft</option>
+                                    <option value="3">Approved</option>
+                                    <option value="5">Cancelled</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-2 form-filter">
+                                <label class="form-label fw-medium">Payment Status</label>
+                                <select class="tom-select avoid-filter" name="filter-payment-status" id="filter-payment-status" size="3" placeholder="All Payments">
+                                    <option value="all" selected>All Payment</option>
+                                    <option value="paid">Paid</option>
+                                    <option value="partial">Partially Paid</option>
+                                    <option value="unpaid">Unpaid</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-2 form-filter">
+                                <label class="form-label fw-medium">Invoice Type</label>
+                                <select class="tom-select avoid-filter" name="filter-overdue" id="filter-overdue">
+                                    <option value="all" selected>All Invoices</option>
+                                    <option value="overdue">Overdue Invoices</option>
+                                    <option value="non_due">Non-Due Invoices</option>
+                                </select>
                             </div>
 
                         </div>
