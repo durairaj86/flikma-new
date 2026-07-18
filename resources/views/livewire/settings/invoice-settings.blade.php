@@ -13,11 +13,7 @@
                         <div class="border border-dark h-100 border-h-100-relative">
                             <div class="header-top border-bottom border-dark p-2">
                                 <div class="logo-box">
-                                    @if($company->logo_path)
-                                        <img src="{{ asset($company->logo_path) }}" alt="Company Logo">
-                                    @else
-                                        COMPANY LOGO
-                                    @endif
+                                    <img src="{{ companyLogo() }}" alt="Company Logo">
                                 </div>
                                 <div class="address-box">
                                     <h6 class="mb-0 pb-0 fw-bold">{{ $company->name }}</h6>

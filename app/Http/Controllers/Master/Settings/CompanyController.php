@@ -100,17 +100,19 @@ class CompanyController extends Controller
                 $logoPath = $file->storeAs($relativeStoragePath, $finalName, 'public');
 
                 // Delete the old logo if it exists
-                if ($company->logo_path) {
+                if ($company->logo) {
                     // If the path already has 'storage/' prefix, remove it for deletion
-                    $oldPath = $company->logo_path;
+                    $oldPath = $company->logo;
                     if (strpos($oldPath, 'storage/') === 0) {
                         $oldPath = substr($oldPath, 8); // Remove 'storage/' prefix
                     }
                     \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
                 }
 
-                // Store the path without 'storage/' prefix
-                $company->logo_path = $logoPath;
+                // Store the path without 'storage/' prefix — `logo` is the real
+                // column on companies; `logo_path` doesn't exist and made every
+                // save() throw "Unknown column" once a logo was uploaded.
+                $company->logo = $logoPath;
             }
 
 

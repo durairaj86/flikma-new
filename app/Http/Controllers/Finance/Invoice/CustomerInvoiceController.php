@@ -635,7 +635,7 @@ class CustomerInvoiceController extends Controller
         // being actively collected against — a draft has no finance entries
         // yet, so there is nothing to record a payment against.
         if ($customer->status === CustomerInvoiceEnum::APPROVED->value) {
-            $contextMenu->push([
+            /*$contextMenu->push([
                 'label' => __('Record Payment'),
                 'code' => '01CSRP',
                 'id' => 'row_record_payment',
@@ -644,7 +644,7 @@ class CustomerInvoiceController extends Controller
                 'type' => 'item',
                 'icon' => 'payment',
                 'separator' => 'before',
-            ]);
+            ]);*/
             $contextMenu->push([
                 'label' => __('Payment History'),
                 'code' => '01CSPH',
