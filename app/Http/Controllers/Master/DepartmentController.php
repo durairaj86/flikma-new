@@ -14,7 +14,10 @@ class DepartmentController extends Controller
 {
     public function fetchAllRows()
     {
-        $rows = Department::withCount('users')->select('id', 'name', 'code', 'is_active', 'company_id', 'created_at');
+        // select() must come before withCount() — select() replaces the
+        // whole select list, so calling it after withCount() silently wipes
+        // out the users_count subquery column it had queued.
+        $rows = Department::select('id', 'name', 'code', 'is_active', 'company_id', 'created_at')->withCount('users');
         return DataTables::eloquent($rows)
             ->addIndexColumn()
             ->setRowAttr([

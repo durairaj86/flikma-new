@@ -1217,7 +1217,7 @@ let webModal = {
 
                     // Arrow key navigation
                     let index = 0;
-                    const keyHandler = function (e) {
+                    /*const keyHandler = function (e) {
                         if (e.key === 'ArrowRight') {
                             e.preventDefault();
                             index = (index + 1) % buttons.length;
@@ -1227,14 +1227,14 @@ let webModal = {
                             index = (index - 1 + buttons.length) % buttons.length;
                             $(buttons[index]).focus();
                         }
-                    };
+                    };*/
 
-                    $(document).on('keydown.jconfirm', keyHandler);
+                    //$(document).on('keydown.jconfirm', keyHandler);
 
                     // Remove handler on close
-                    $modal.on('hidden.bs.modal', () => {
+                    /*$modal.on('hidden.bs.modal', () => {
                         $(document).off('keydown.jconfirm', keyHandler);
-                    });
+                    });*/
                 },
             });
         }
@@ -1250,7 +1250,7 @@ let webModal = {
                 const lastEl = focusable[focusable.length - 1];
                 const currentIndex = focusable.indexOf(document.activeElement);
 
-                if (e.key === 'ArrowRight') {
+                /*if (e.key === 'ArrowRight') {
                     e.preventDefault();
                     if (currentIndex === -1 || currentIndex === focusable.length - 1) {
                         firstEl.focus(); // wrap to first
@@ -1264,7 +1264,7 @@ let webModal = {
                     } else {
                         focusable[currentIndex - 1].focus();
                     }
-                } else if (e.key === 'Tab') {
+                } else*/ if (e.key === 'Tab') {
                     if (e.shiftKey) { // Shift+Tab
                         if (document.activeElement === firstEl) {
                             e.preventDefault();
@@ -2835,7 +2835,7 @@ const INPUT = {
             const allowNegative = el.classList.contains('negative');
             INPUT.decimalDigits = el.dataset.decimal ?? INPUT.decimalDigits;
 
-            if (["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab", "Home", "End"].includes(key)) return;
+            //if (["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab", "Home", "End"].includes(key)) return;
 
             if (allowNegative && key === '-' && el.selectionStart === 0 && !value.includes('-')) return;
 
