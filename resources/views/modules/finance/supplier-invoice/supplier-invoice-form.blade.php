@@ -1,4 +1,4 @@
-{{--<div class="g-3 align-items-center <!--bg-white--> border-bottom py-3 px-4 small" style="background:#eee;">
+<div class="g-3 align-items-center <!--bg-white--> border-bottom py-3 px-4 small" style="background:#eee;">
     <div class="d-flex justify-content-between align-items-center flex-wrap">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-4">
             <div class="module-info">
@@ -7,8 +7,8 @@
         </div>
         <div id="show-buttons"></div>
     </div>
-</div>--}}
-<div class="g-3 align-items-center border-bottom py-3 px-4 small" style="background:#eee;display:none">
+</div>
+{{--<div class="g-3 align-items-center border-bottom py-3 px-4 small" style="background:#eee;display:none">
     <div class="d-flex justify-content-between align-items-center flex-wrap">
         <div class="module-info">
             <span class="fw-semibold fs-5">{{ $supplier->row_no ?? 'New Supplier Invoice' }}</span>
@@ -23,7 +23,7 @@
         </div>
         <div id="show-buttons"></div>
     </div>
-</div>
+</div>--}}
 <div class="container-fluid align-items-center px-0 mb-4" id="modal-buttons" data-buttons="cancel,save"
      data-button-save="Save Invoice">
     <form id="moduleForm" novalidate action="{{ request()->url() }}">
