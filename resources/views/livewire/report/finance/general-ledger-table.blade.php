@@ -30,12 +30,6 @@
 @if(count($activeCustomers) > 0)
 <div class="row g-3 p-3 border-bottom">
     <div class="col-lg col-md-4">
-        <div class="gl-stat-card gl-stat-neutral">
-            <div class="gl-stat-label">Customers</div>
-            <div class="gl-stat-value">{{ count($activeCustomers) }}</div>
-        </div>
-    </div>
-    <div class="col-lg col-md-4">
         <div class="gl-stat-card gl-stat-debit">
             <div class="gl-stat-label">Total Debit (DR)</div>
             <div class="gl-stat-value tabular-nums">{{ number_format($grandTotalDebit, 2) }}</div>
@@ -60,10 +54,8 @@
 @endif
 
 @if(count($activeCustomers) > 0)
-    @php $custIdx = 0; @endphp
     @foreach($activeCustomers as $customerId => $customerData)
         @php
-            $custIdx++;
             $opening = (float)($customerData['opening_balance'] ?? 0);
             $closing = (float)($customerData['closing_balance'] ?? 0);
             $totalDr = (float)($customerData['total_debit']    ?? 0);
@@ -71,28 +63,8 @@
             $txns    = $customerData['transactions'] ?? [];
         @endphp
 
-        {{-- Customer block: header bar + table --}}
+        {{-- Customer block: table --}}
         <div class="gl-account-block {{ !$loop->last ? 'border-bottom' : '' }}" style="border-bottom: 4px solid #f1f5f9;">
-
-            {{-- Customer header (card-header style, dark) --}}
-            <div class="gl-acc-header">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="gl-acc-num">{{ $custIdx }}</div>
-                    <div>
-                        <div class="gl-acc-code">{{ $customerData['customer_code'] ?? $customerId }}</div>
-                        <div class="gl-acc-name">{{ $customerData['customer_name'] }}</div>
-                    </div>
-                </div>
-                <div class="d-flex align-items-center gap-2">
-                    <div class="gl-acc-closing {{ $closing >= 0 ? 'gl-closing-dr' : 'gl-closing-cr' }}">
-                        <span class="gl-closing-label">Closing Balance</span>
-                        <span class="gl-closing-val tabular-nums">
-                            {{ number_format(abs($closing), 2) }}
-                            <small>{{ $closing >= 0 ? 'DR' : 'CR' }}</small>
-                        </span>
-                    </div>
-                </div>
-            </div>
 
             {{-- Transactions table --}}
             <div class="table-responsive">
@@ -195,7 +167,7 @@
         <tfoot>
         <tr class="gl-grand-total">
             <td class="ps-4 gl-gt-label" style="width:55%">
-                <i class="bi bi-calculator me-2"></i>Grand Total — All Customers
+                <i class="bi bi-calculator me-2"></i>Grand Total
             </td>
             <td class="text-end tabular-nums gl-gt-dr" style="width:15%">{{ number_format($grandTotalDebit, 2) }}</td>
             <td class="text-end tabular-nums gl-gt-cr" style="width:15%">{{ number_format($grandTotalCredit, 2) }}</td>
@@ -230,24 +202,16 @@
             <td class="text-end">
                 <div class="stmt-title">GENERAL LEDGER</div>
                 <div class="stmt-sub">Period: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
+                @if(count($activeCustomers) > 0)
+                    @php $printCustomer = reset($activeCustomers); @endphp
+                    <div class="stmt-sub">Customer: {{ $printCustomer['customer_code'] }} — {{ $printCustomer['customer_name'] }}</div>
+                @endif
                 <div class="stmt-sub">Generated: {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; Currency: SAR</div>
             </td>
         </tr>
     </table>
 
     @forelse($activeCustomers as $id => $cust)
-        <table class="stmt-meta stmt-box">
-            <tr>
-                <td>
-                    <div class="stmt-strong">{{ $cust['customer_code'] }} — {{ $cust['customer_name'] }}</div>
-                    <div class="stmt-sub">Opening Balance: {{ number_format($cust['opening_balance'], 2) }}</div>
-                </td>
-                <td class="text-end">
-                    <div class="stmt-sub">Closing Balance</div>
-                    <div class="stmt-strong">{{ number_format($cust['closing_balance'], 2) }}</div>
-                </td>
-            </tr>
-        </table>
         <table class="stmt-table">
             <thead>
             <tr>
@@ -261,7 +225,11 @@
             </tr>
             </thead>
             <tbody>
-            @forelse($cust['transactions'] as $txn)
+            <tr class="stmt-strong">
+                <td colspan="6">Opening Balance</td>
+                <td class="text-end">{{ number_format($cust['opening_balance'], 2) }}</td>
+            </tr>
+            @foreach($cust['transactions'] as $txn)
                 <tr>
                     <td>{{ $txn['date'] }}</td>
                     <td>{{ $txn['voucher_no'] }}</td>
@@ -271,9 +239,7 @@
                     <td class="text-end">{{ $txn['credit'] > 0 ? number_format($txn['credit'], 2) : '' }}</td>
                     <td class="text-end">{{ number_format($txn['balance'], 2) }}</td>
                 </tr>
-            @empty
-                <tr><td colspan="7" class="text-center">No transactions in this period.</td></tr>
-            @endforelse
+            @endforeach
             </tbody>
             <tfoot>
             <tr class="stmt-strong">
@@ -291,9 +257,10 @@
     <table class="stmt-table">
         <tfoot>
         <tr class="stmt-strong">
-            <td>Grand Total</td>
+            <td colspan="4">Grand Total</td>
             <td class="text-end">{{ number_format($grandTotalDebit, 2) }}</td>
             <td class="text-end">{{ number_format($grandTotalCredit, 2) }}</td>
+            <td class="text-end">{{ number_format(abs($netBalance), 2) }} {{ $netBalance >= 0 ? 'DR' : 'CR' }}</td>
         </tr>
         </tfoot>
     </table>
@@ -341,38 +308,6 @@
 
 /* Account block */
 .gl-account-block { background: #fff; }
-
-/* Account header */
-.gl-acc-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: .8rem 1.5rem;
-    background: #1e293b;
-    gap: 1rem; flex-wrap: wrap;
-}
-.gl-acc-num {
-    display: flex; align-items: center; justify-content: center;
-    width: 26px; height: 26px; border-radius: 6px;
-    background: #4f46e5; color: #fff;
-    font-size: .68rem; font-weight: 800; flex-shrink: 0;
-}
-.gl-acc-code { font-family: ui-monospace, monospace; font-size: .7rem; color: #94a3b8; margin-bottom: .1rem; }
-.gl-acc-name { font-size: .88rem; font-weight: 700; color: #f1f5f9; }
-
-.gl-acc-type-badge {
-    padding: .2rem .65rem; border-radius: 20px;
-    background: #334155; color: #94a3b8;
-    font-size: .63rem; font-weight: 700;
-    text-transform: uppercase; letter-spacing: .05em;
-}
-.gl-acc-closing {
-    display: flex; flex-direction: column; align-items: flex-end;
-    padding: .3rem .75rem; border-radius: 8px;
-}
-.gl-closing-dr { background: rgba(29,78,216,.2); border: 1px solid rgba(29,78,216,.4); }
-.gl-closing-cr { background: rgba(21,128,61,.2); border: 1px solid rgba(21,128,61,.4); }
-.gl-closing-label { font-size: .6rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #94a3b8; }
-.gl-closing-val { font-size: .82rem; font-weight: 800; color: #e2e8f0; }
-.gl-closing-val small { font-size: .62rem; margin-left: .2rem; opacity: .7; }
 
 /* Table head */
 .gl-table-head { background: #f8fafc; }

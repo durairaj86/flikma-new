@@ -29,7 +29,7 @@
         </div>
 
         {{-- Filters --}}
-        <div class="card border-0 shadow-sm mb-4 d-print-none">
+        <div class="card border-0 shadow-sm mb-4 d-print-none" id="list-filter">
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
                     <div class="col-lg-2 col-md-4">
@@ -49,9 +49,11 @@
                                value="{{ $endDate }}" />
                     </div>
                     <div class="col-lg-3 col-md-4">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Customer</label>
-                        <select class="form-select bg-light border-0 py-2 no-ts" wire:model.live="customerId">
-                            <option value="all">All Customers</option>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Customer <sup class="text-danger">*</sup></label>
+                        <select class="tom-select bg-light border-0 py-2 no-ts" wire:model="customerId" required data-live-search="true">
+                            @if(count($customers) === 0)
+                                <option value="">No customers found</option>
+                            @endif
                             @foreach($customers as $customer)
                                 <option value="{{ $customer['id'] }}">
                                     {{ $customer['row_no'] }} — {{ $customer['name_en'] }}
@@ -69,7 +71,7 @@
                     <div class="col-lg-2 col-md-6 d-flex align-items-end">
                         <div class="d-flex gap-2 w-100">
                             <button type="button" class="btn btn-gl fw-bold py-2 flex-grow-1 shadow-sm"
-                                    wire:click="updatedStartDate('{{ $startDate }}')"
+                                    onclick="glApplyFilter()"
                                     wire:loading.attr="disabled">
                                 <i class="bi bi-filter-left me-2"></i>
                                 <span wire:loading.remove>Generate</span>
@@ -87,11 +89,9 @@
                 <i class="bi bi-calendar3 me-1"></i>
                 Period: <strong class="text-dark">{{ \Carbon\Carbon::parse($startDate)->format('d M Y') }}</strong>
                 — <strong class="text-dark">{{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</strong>
-                @if($customerId !== 'all')
-                    @php $selectedCustomer = collect($customers)->firstWhere('id', $customerId); @endphp
-                    @if($selectedCustomer)
-                        &nbsp;·&nbsp; Customer: <strong class="text-dark">{{ $selectedCustomer['name_en'] }}</strong>
-                    @endif
+                @php $selectedCustomer = collect($customers)->firstWhere('id', $customerId); @endphp
+                @if($selectedCustomer)
+                    &nbsp;·&nbsp; Customer: <strong class="text-dark">{{ $selectedCustomer['name_en'] }}</strong>
                 @endif
             </div>
             <div class="small text-muted">
@@ -110,7 +110,7 @@
                 </span>
             </div>
             <div>
-                <livewire:report.finance.general-ledger-table />
+                <livewire:report.finance.general-ledger-table :customerId="$customerId" />
             </div>
         </div>
 
@@ -157,9 +157,33 @@
             }
 
             initFlatpickr();
+            // Livewire.hook('commit', ...)'s succeed callback fires before
+            // the DOM morph for this commit is actually applied — re-running
+            // initFlatpickr() there re-initializes the still-old (correctly
+            // formatted) input, which the morph then immediately overwrites
+            // back to the server-rendered raw value, visibly flipping the
+            // date field's format after every commit. requestAnimationFrame
+            // defers until the next frame, after that synchronous morph
+            // pass has actually finished (see the customer-statement.blade
+            // tomselect fix for the same root cause).
             Livewire.hook('commit', function (ref) {
-                ref.succeed(function () { queueMicrotask(initFlatpickr); });
+                ref.succeed(function () {
+                    requestAnimationFrame(initFlatpickr);
+                });
             });
+
+            // Generate: push whatever is in the pickers, then run the filter
+            // in one request. Livewire disallows calling lifecycle hooks
+            // like updatedStartDate() directly via wire:click, so this
+            // explicit $wire.set + applyFilter() call is the safe way to
+            // force a manual refresh (same pattern as customer-statement).
+            window.glApplyFilter = function () {
+                var s = document.getElementById('gl-start-date');
+                var e = document.getElementById('gl-end-date');
+                if (s && s.value) $wire.set('startDate', s.value, false);
+                if (e && e.value) $wire.set('endDate', e.value, false);
+                $wire.call('applyFilter');
+            };
         })();
     </script>
     @endscript

@@ -12,7 +12,7 @@ class GeneralLedger extends Component
     public $startDate;
     public $endDate;
     public $search = '';
-    public $customerId = 'all';
+    public $customerId = '';
     public $customers = [];
 
     public function mount()
@@ -22,6 +22,13 @@ class GeneralLedger extends Component
         $this->endDate = now()->endOfMonth()->format('Y-m-d');
 
         $this->loadCustomers();
+
+        // A customer is always required — with a large customer base,
+        // querying every customer's ledger at once is too expensive, so
+        // there is no "all customers" option. Default to the first one.
+        if (count($this->customers) > 0) {
+            $this->customerId = (string) $this->customers[0]['id'];
+        }
     }
 
     public function loadCustomers()
@@ -49,6 +56,16 @@ class GeneralLedger extends Component
         ]);
     }
 
+    public function applyFilter()
+    {
+        // Triggers re-render with current filter values — called from the
+        // Generate button. Livewire forbids calling lifecycle hooks like
+        // updatedStartDate() directly via wire:click, so this plain action
+        // method is the safe way to force a manual refresh (matches the
+        // same pattern used by customer-statement.blade.php's Generate
+        // button).
+    }
+
     public function updatedSearch($value)
     {
         $this->dispatch('searchChanged', $value);
@@ -72,14 +89,16 @@ class GeneralLedger extends Component
         $data = $child->getGeneralLedgerData();
 
         $rows = [];
+        $customerLine = null;
         foreach ($data['customers'] as $cust) {
             if (abs($cust['opening_balance'] ?? 0) < 0.001 && count($cust['transactions'] ?? []) === 0 && abs($cust['closing_balance'] ?? 0) < 0.001) {
                 continue;
             }
-            $rows[] = ['', $cust['customer_code'] . ' — ' . $cust['customer_name'], '', 'Opening Balance', null, null, (float) $cust['opening_balance']];
+            $customerLine = $cust['customer_code'] . ' — ' . $cust['customer_name'];
+            $rows[] = ['', '', '', 'Opening Balance', null, null, (float) $cust['opening_balance']];
             foreach ($cust['transactions'] as $txn) {
                 $rows[] = [
-                    $txn['date'], '', $txn['voucher_no'], $txn['description'],
+                    $txn['date'], $txn['voucher_no'], $txn['account_code'], $txn['description'],
                     $txn['debit'] > 0 ? (float) $txn['debit'] : null,
                     $txn['credit'] > 0 ? (float) $txn['credit'] : null,
                     (float) $txn['balance'],
@@ -88,15 +107,20 @@ class GeneralLedger extends Component
             $rows[] = ['', '', '', 'Closing Balance', (float) $cust['total_debit'], (float) $cust['total_credit'], (float) $cust['closing_balance']];
         }
 
-        $columns = ['Date', 'Customer', 'Voucher No', 'Description', 'Debit', 'Credit', 'Balance'];
+        $columns = ['Date', 'Voucher No', 'Account', 'Description', 'Debit', 'Credit', 'Balance'];
         $totalsRow = ['', '', '', 'GRAND TOTAL', (float) $data['grand_total_debit'], (float) $data['grand_total_credit'], (float) $data['net_balance']];
+
+        $lines = [
+            'Period: ' . \Carbon\Carbon::parse($this->startDate)->format('d M Y') . ' — ' . \Carbon\Carbon::parse($this->endDate)->format('d M Y'),
+        ];
+        if ($customerLine) {
+            $lines[] = 'Customer: ' . $customerLine;
+        }
+        $lines[] = 'Generated on: ' . now()->format('d-m-Y H:i');
 
         $meta = [
             'title' => 'GENERAL LEDGER',
-            'lines' => [
-                'Period: ' . \Carbon\Carbon::parse($this->startDate)->format('d M Y') . ' — ' . \Carbon\Carbon::parse($this->endDate)->format('d M Y'),
-                'Generated on: ' . now()->format('d-m-Y H:i'),
-            ],
+            'lines' => $lines,
             'numeric_from' => 5,
         ];
 

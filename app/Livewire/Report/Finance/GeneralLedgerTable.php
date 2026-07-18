@@ -11,7 +11,7 @@ class GeneralLedgerTable extends Component
 {
     public $startDate;
     public $endDate;
-    public $customerId = 'all';
+    public $customerId = '';
     public $search = '';
 
     protected $listeners = [
@@ -20,12 +20,13 @@ class GeneralLedgerTable extends Component
         'searchChanged' => 'updateSearch'
     ];
 
-    public function mount()
+    public function mount($customerId = '')
     {
         // Default to current month
         $this->startDate = now()->startOfMonth()->format('Y-m-d');
         $this->endDate = now()->endOfMonth()->format('Y-m-d');
 
+        $this->customerId = $customerId;
     }
 
     public function updateDateRange($dateRange)
@@ -46,13 +47,20 @@ class GeneralLedgerTable extends Component
 
     public function getGeneralLedgerData()
     {
-        // Get customers to include in the report
-        $customers = Customer::where('company_id', companyId());
-
-        // Filter by specific customer if selected
-        if ($this->customerId !== 'all') {
-            $customers = $customers->where('id', $this->customerId);
+        // A customer is always required — with a large customer base,
+        // pulling every customer's ledger at once is too expensive, so
+        // there is no "all customers" mode to fall back to here.
+        if (empty($this->customerId)) {
+            return [
+                'customers' => [],
+                'grand_total_debit' => 0,
+                'grand_total_credit' => 0,
+                'net_balance' => 0
+            ];
         }
+
+        $customers = Customer::where('company_id', companyId())
+            ->where('id', $this->customerId);
 
         // Apply search if provided
         if (!empty($this->search)) {
