@@ -252,6 +252,13 @@ SUPPLIER_INVOICE = {
             },
 
             aging: (row) => {
+                const grand = parseFloat(String(row.grand_total).replace(/,/g, '')) || 0;
+                const paid = parseFloat(row.paid_amount) || 0;
+                // Overdue/due-days aging is meaningless once an invoice is fully
+                // settled — show a plain "Paid" indicator instead.
+                if (grand > 0 && paid >= grand) {
+                    return `<div class="badge bg-success-subtle text-success border border-opacity-10 px-3 py-2" style="font-size: 0.65rem;">PAID</div>`;
+                }
                 // Prefer server-provided aging (parity with customer list)
                 if (row.due_days && row.due_days.label) {
                     const cls = row.due_days.class || 'bg-secondary-subtle text-muted';

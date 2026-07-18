@@ -58,16 +58,6 @@
                             </div>
 
                             <div class="col-md-2 form-filter">
-                                <label class="form-label fw-medium">Status</label>
-                                <select class="tom-select avoid-filter" name="filter-status" id="filter-status" size="3" placeholder="All Status">
-                                    <option value="all" selected>All Status</option>
-                                    <option value="1">Draft</option>
-                                    <option value="3">Approved</option>
-                                    <option value="5">Cancelled</option>
-                                </select>
-                            </div>
-
-                            <div class="col-md-2 form-filter">
                                 <label class="form-label fw-medium">Payment Status</label>
                                 <select class="tom-select avoid-filter" name="filter-payment-status" id="filter-payment-status" size="3" placeholder="All Payments">
                                     <option value="all" selected>All Payments</option>
@@ -98,14 +88,14 @@
                 </form>
             </div>
         </div>
-        <div class="d-flex justify-content-between align-items-start py-3">
+        <div class="d-flex justify-content-between align-items-start py-2">
             @if(isset($job_no))
                 <h3 class="fw-bold text-muted bg-info-subtle rounded p-3">
                     {{ $job_no }}
                 </h3>
             @endif
             <div class="align-items-center flex-shrink-0">
-                {{--<div class="gap-4">
+                <div class="gap-4">
                     <ul class="nav status-tabs align-items-center border-bottom" id="listTabs" role="tablist"
                         aria-label="Navigation 13">
                         <li class="nav-item me-2">
@@ -135,7 +125,7 @@
                         </li>
 
                     </ul>
-                </div>--}}
+                </div>
             </div>
             <div class="d-flex justify-content-between pt-3">
                 <div class="position-relative">

@@ -246,6 +246,13 @@ CUSTOMER_INVOICE = {
             invoice: (row) => `<div class="cell-primary">${row.invoice_date}</div><div class="cell-secondary">Due ${row.due_at}</div>`,
 
             aging: (row) => {
+                const grand = parseFloat(String(row.grand_total).replace(/,/g, '')) || 0;
+                const paid = parseFloat(row.paid_amount) || 0;
+                // Overdue/due-days aging is meaningless once an invoice is fully
+                // settled — show a plain "Paid" indicator instead.
+                if (grand > 0 && paid >= grand) {
+                    return `<span class="badge bg-success-subtle text-success border border-opacity-10 px-2 py-1" style="font-size: 0.65rem;">PAID</span>`;
+                }
                 const badge = `<span class="badge ${row.due_days.class} border border-opacity-10 px-2 py-1" style="font-size: 0.65rem;">${row.due_days.label}</span>`;
                 // Settlement rate only makes sense for approved invoices — draft/cancelled
                 // invoices have no meaningful collection progress to show.

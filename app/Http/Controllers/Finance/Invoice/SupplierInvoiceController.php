@@ -69,15 +69,14 @@ class SupplierInvoiceController extends Controller
         }
         $filter = $request->filterData ?? [];
 
-        // "all" is the sentinel value for the "All Status"/"All Payment" dropdown
-        // option, meaning no filter should be applied — not a literal status to match.
-        $statusFilter = array_filter((array) ($filter['filter-status'] ?? []), fn($v) => $v !== 'all' && $v !== '');
+        // "all" is the sentinel value for the "All Payment" dropdown option,
+        // meaning no filter should be applied — not a literal status to match.
         $paymentStatusFilter = array_filter((array) ($filter['filter-payment-status'] ?? []), fn($v) => $v !== 'all' && $v !== '');
 
         // Shared filters so the tab counts and summary cards always match
         // the visible list (company scoping is applied globally on the
         // SupplierInvoice model).
-        $applyFilters = function ($query) use ($filter, $job_id, $statusFilter, $paymentStatusFilter) {
+        $applyFilters = function ($query) use ($filter, $job_id, $paymentStatusFilter) {
             $query->when($job_id != 'list', function ($query) use ($job_id) {
                 $query->where('job_id', $job_id);
             })
@@ -92,9 +91,6 @@ class SupplierInvoiceController extends Controller
             )
             ->when(isset($filter['suppliers']) && !empty($filter['suppliers']), function ($query) use ($filter) {
                 $query->whereIn('supplier_id', decodeIds($filter['suppliers']));
-            })
-            ->when(!empty($statusFilter), function ($query) use ($statusFilter) {
-                $query->whereIn('supplier_invoices.status', $statusFilter);
             })
             ->when(!empty($paymentStatusFilter), function ($query) use ($paymentStatusFilter) {
                 $query->where(function ($group) use ($paymentStatusFilter) {
