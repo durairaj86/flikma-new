@@ -1,0 +1,25 @@
+<svg width="1060" height="190" viewBox="0 0 1060 190" xmlns="http://www.w3.org/2000/svg">
+<rect width="1060" height="190" fill="#f8fbff"/>
+<rect x="40.0" y="40.0" width="200" height="110" rx="16" fill="#ffffff" stroke="#0d6efd" stroke-width="2.5"/>
+<circle cx="66.0" cy="66.0" r="16" fill="#0d6efd"/>
+<text x="66.0" y="71.0" font-family="Manrope, Arial, sans-serif" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+<text x="140.0" y="101.0" font-family="Manrope, Arial, sans-serif" font-size="14.5" font-weight="600" fill="#0b1736" text-anchor="middle">Enquiry Received</text>
+<rect x="300.0" y="40.0" width="200" height="110" rx="16" fill="#ffffff" stroke="#0d6efd" stroke-width="2.5"/>
+<circle cx="326.0" cy="66.0" r="16" fill="#0d6efd"/>
+<text x="326.0" y="71.0" font-family="Manrope, Arial, sans-serif" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+<text x="400.0" y="101.0" font-family="Manrope, Arial, sans-serif" font-size="14.5" font-weight="600" fill="#0b1736" text-anchor="middle">Create Quotation</text>
+<rect x="560.0" y="40.0" width="200" height="110" rx="16" fill="#ffffff" stroke="#0d6efd" stroke-width="2.5"/>
+<circle cx="586.0" cy="66.0" r="16" fill="#0d6efd"/>
+<text x="586.0" y="71.0" font-family="Manrope, Arial, sans-serif" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
+<text x="660.0" y="101.0" font-family="Manrope, Arial, sans-serif" font-size="14.5" font-weight="600" fill="#0b1736" text-anchor="middle">Customer Approves</text>
+<rect x="820.0" y="40.0" width="200" height="110" rx="16" fill="#ffffff" stroke="#0d6efd" stroke-width="2.5"/>
+<circle cx="846.0" cy="66.0" r="16" fill="#0d6efd"/>
+<text x="846.0" y="71.0" font-family="Manrope, Arial, sans-serif" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">4</text>
+<text x="920.0" y="101.0" font-family="Manrope, Arial, sans-serif" font-size="14.5" font-weight="600" fill="#0b1736" text-anchor="middle">Convert to Job</text>
+<line x1="240.0" y1="95.0" x2="288.0" y2="95.0" stroke="#0b1736" stroke-width="2.5"/>
+<path d="M 288.0 88.0 L 300.0 95.0 L 288.0 102.0 Z" fill="#0b1736"/>
+<line x1="500.0" y1="95.0" x2="548.0" y2="95.0" stroke="#0b1736" stroke-width="2.5"/>
+<path d="M 548.0 88.0 L 560.0 95.0 L 548.0 102.0 Z" fill="#0b1736"/>
+<line x1="760.0" y1="95.0" x2="808.0" y2="95.0" stroke="#0b1736" stroke-width="2.5"/>
+<path d="M 808.0 88.0 L 820.0 95.0 L 808.0 102.0 Z" fill="#0b1736"/>
+</svg>

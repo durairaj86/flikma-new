@@ -1,0 +1,21 @@
+<svg width="642" height="124" viewBox="0 0 642 124" xmlns="http://www.w3.org/2000/svg">
+<rect width="642" height="124" fill="#ffffff"/>
+<rect x="20.0" y="20.0" width="170" height="84" rx="12" fill="#ffffff" stroke="#cfe1ff" stroke-width="2"/>
+<circle cx="40.0" cy="40.0" r="12" fill="#0d6efd"/>
+<text x="40.0" y="44.5" font-family="Manrope, Arial, sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+<text x="105.0" y="70.0" font-family="Manrope, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#0b1736" text-anchor="middle">Add Bank Account</text>
+<rect x="236.0" y="20.0" width="170" height="84" rx="12" fill="#ffffff" stroke="#cfe1ff" stroke-width="2"/>
+<circle cx="256.0" cy="40.0" r="12" fill="#0d6efd"/>
+<text x="256.0" y="44.5" font-family="Manrope, Arial, sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+<text x="321.0" y="62.0" font-family="Manrope, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#0b1736" text-anchor="middle">Appears as Payment</text>
+<text x="321.0" y="78.0" font-family="Manrope, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#0b1736" text-anchor="middle">Source</text>
+<rect x="452.0" y="20.0" width="170" height="84" rx="12" fill="#ffffff" stroke="#cfe1ff" stroke-width="2"/>
+<circle cx="472.0" cy="40.0" r="12" fill="#0d6efd"/>
+<text x="472.0" y="44.5" font-family="Manrope, Arial, sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
+<text x="537.0" y="62.0" font-family="Manrope, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#0b1736" text-anchor="middle">Used on Payments &amp;</text>
+<text x="537.0" y="78.0" font-family="Manrope, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#0b1736" text-anchor="middle">Collections</text>
+<line x1="190.0" y1="62.0" x2="226.0" y2="62.0" stroke="#0b1736" stroke-width="2"/>
+<path d="M 226.0 56.0 L 236.0 62.0 L 226.0 68.0 Z" fill="#0b1736"/>
+<line x1="406.0" y1="62.0" x2="442.0" y2="62.0" stroke="#0b1736" stroke-width="2"/>
+<path d="M 442.0 56.0 L 452.0 62.0 L 442.0 68.0 Z" fill="#0b1736"/>
+</svg>
