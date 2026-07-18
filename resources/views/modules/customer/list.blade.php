@@ -118,6 +118,7 @@
                             <th>Currency</th>
                             <th>VAT #</th>
                             <th>Credit Limit</th>
+                            <th>Due</th>
                             <th>Salesperson</th>
                             <th>Joined</th>
                             <th class="text-center pe-4">Actions</th>

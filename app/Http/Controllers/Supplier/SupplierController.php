@@ -104,6 +104,18 @@ class SupplierController extends Controller
     }
     public function fetchAllRows(Request $request): \Illuminate\Http\JsonResponse
     {
+        // Outstanding balance across this supplier's approved, unsettled invoices,
+        // plus how many of those are overdue — shown as the "Due" column. Uses a
+        // raw subquery (not the SupplierInvoice model), so company scoping is
+        // applied explicitly here instead of relying on the model's global scope.
+        $dueInvoiceQuery = function ($query) {
+            $query->from('supplier_invoices')
+                ->whereColumn('supplier_invoices.supplier_id', 'suppliers.id')
+                ->where('status', \App\Enums\SupplierInvoiceEnum::APPROVED->value)
+                ->whereColumn('paid_amount', '<', 'grand_total')
+                ->where('company_id', companyId());
+        };
+
         $rows = Supplier::select(
             'id',
             'name_en',
@@ -121,6 +133,14 @@ class SupplierController extends Controller
             'created_at',
             'company_id'
         )
+            ->selectSub(function ($query) use ($dueInvoiceQuery) {
+                $dueInvoiceQuery($query);
+                $query->selectRaw('COALESCE(SUM(grand_total - paid_amount), 0)');
+            }, 'due_amount')
+            ->selectSub(function ($query) use ($dueInvoiceQuery) {
+                $dueInvoiceQuery($query);
+                $query->where('due_at', '<', now())->selectRaw('COUNT(*)');
+            }, 'overdue_count')
             ->where('status', SupplierStatusEnum::fromName($request->tab))
             ->orderBy('name_en');
 

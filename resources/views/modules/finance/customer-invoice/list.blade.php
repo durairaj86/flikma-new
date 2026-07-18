@@ -54,7 +54,7 @@
 
                             <div class="col-md-3 form-filter">
                                 <label class="form-label fw-medium">Customer</label>
-                                <x-common.customers multiple="true"></x-common.customers>
+                                <x-common.customers multiple="true" :value="request()->query('customer') ? [(int) request()->query('customer')] : null"></x-common.customers>
                             </div>
 
                             <div class="col-md-2 form-filter">
@@ -452,3 +452,18 @@
         font-size: 0.65rem;
     }
 </style>
+
+@if(request()->query('customer'))
+    <script>
+        // Deep-linked from a customer's "Find invoices" action — reveal the
+        // Advanced Filters panel so it's obvious the list is already filtered.
+        document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(function () {
+                var panel = document.getElementById('filterPanel');
+                if (panel && panel.classList.contains('d-none')) {
+                    document.getElementById('filter-box')?.click();
+                }
+            }, 300);
+        });
+    </script>
+@endif

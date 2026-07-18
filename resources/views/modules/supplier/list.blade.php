@@ -72,6 +72,7 @@
                         <th>Currency</th>
                         <th>VAT #</th>
                         <th>Credit</th>
+                        <th>Due</th>
                         <th>Joined</th>
                         <th></th>
                     </tr>

@@ -78,6 +78,19 @@ CUSTOMER = {
                             }
                         },
                         {
+                            data: 'due_amount', render: function (data, type, row) {
+                                const due = parseFloat(row.due_amount) || 0;
+                                const overdueCount = parseInt(row.overdue_count) || 0;
+                                if (due <= 0) {
+                                    return '<div class="text-muted">0.00</div>';
+                                }
+                                const badge = overdueCount > 0
+                                    ? '<span class="badge bg-danger-subtle text-danger border border-opacity-10 px-2 py-1" style="font-size:0.65rem;">' + overdueCount + ' Overdue</span>'
+                                    : '<span class="badge bg-success-subtle text-success border border-opacity-10 px-2 py-1" style="font-size:0.65rem;">On Time</span>';
+                                return '<div class="fw-bold">' + amountFormat(due) + '</div><div class="mt-1">' + badge + '</div>';
+                            }
+                        },
+                        {
                             data: 'salesperson.name', render: function (data, type, row) {
                                 return '<div class="d-flex align-items-center">' + data ? data : '' + '</div>';
                             }
@@ -131,6 +144,8 @@ CUSTOMER = {
             CUSTOMER.list.actions.statusChange(row);
             CUSTOMER.list.actions.view(row);
             CUSTOMER.list.actions.email(row);
+            CUSTOMER.list.actions.statement(row);
+            CUSTOMER.list.actions.search(row);
         },
         actions: {
             statusChange(row) {
@@ -168,6 +183,16 @@ CUSTOMER = {
                 $('#row_email').off().on('click', function () {
                     let drawer = new bootstrap.Offcanvas(document.getElementById('sendEmailDrawer'));
                     drawer.show();
+                });
+            },
+            statement(row) {
+                $('#row_statement').off().on('click', function () {
+                    window.location.href = GLOBAL_FN.buildUrl('customer/statement', {customer: row.attr('data-id')});
+                });
+            },
+            search(row) {
+                $('#row_search').off().on('click', function () {
+                    window.location.href = GLOBAL_FN.buildUrl('invoice/customer', {customer: row.attr('data-id')});
                 });
             }
         }

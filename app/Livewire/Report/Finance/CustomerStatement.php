@@ -24,7 +24,12 @@ class CustomerStatement extends Component
 
         $this->loadCustomers();
 
-        if (count($this->customers) > 0 && !$this->customerId) {
+        // Deep-linked from a customer's "Statement" action — preselect that
+        // customer instead of defaulting to the first one in the list.
+        $requestedCustomerId = request()->query('customer');
+        if ($requestedCustomerId && collect($this->customers)->contains('id', (int) $requestedCustomerId)) {
+            $this->customerId = (string) $requestedCustomerId;
+        } elseif (count($this->customers) > 0 && !$this->customerId) {
             $this->customerId = (string)$this->customers[0]['id'];
         }
     }

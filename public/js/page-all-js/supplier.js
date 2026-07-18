@@ -79,6 +79,19 @@ SUPPLIER = {
                                    '<div class="x-small text-danger">' + (row.credit_days ? row.credit_days + ' Days' : '') + '</div>';
                         }
                     },
+                    {
+                        data: 'due_amount', render: function (data, type, row) {
+                            const due = parseFloat(row.due_amount) || 0;
+                            const overdueCount = parseInt(row.overdue_count) || 0;
+                            if (due <= 0) {
+                                return '<div class="text-muted">0.00</div>';
+                            }
+                            const badge = overdueCount > 0
+                                ? '<span class="badge bg-danger-subtle text-danger border border-opacity-10 px-2 py-1" style="font-size:0.65rem;">' + overdueCount + ' Overdue</span>'
+                                : '<span class="badge bg-success-subtle text-success border border-opacity-10 px-2 py-1" style="font-size:0.65rem;">On Time</span>';
+                            return '<div class="fw-bold">' + amountFormat(due) + '</div><div class="mt-1">' + badge + '</div>';
+                        }
+                    },
                     {data: 'created_at', name: 'created_at', class: 'small text-muted'},
                     // Actions column
                     GLOBAL_FN.dataTable.optionButton()

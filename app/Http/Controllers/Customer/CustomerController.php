@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use Yajra\DataTables\Facades\DataTables;
@@ -110,6 +109,20 @@ class CustomerController extends Controller
 
     public function fetchAllRows(Request $request): \Illuminate\Http\JsonResponse
     {
+        // Outstanding balance across this customer's approved, unsettled invoices,
+        // plus how many of those are overdue — shown as the "Due" column. Uses a
+        // raw subquery (not the CustomerInvoice model), so company scoping and the
+        // soft-delete filter are applied explicitly here instead of relying on the
+        // model's global scopes.
+        $dueInvoiceQuery = function ($query) {
+            $query->from('customer_invoices')
+                ->whereColumn('customer_invoices.customer_id', 'customers.id')
+                ->where('status', \App\Enums\CustomerInvoiceEnum::APPROVED->value)
+                ->whereColumn('paid_amount', '<', 'grand_total')
+                ->whereNull('deleted_at')
+                ->where('company_id', companyId());
+        };
+
         $rows = Customer::select(
             'id',
             'row_no',
@@ -129,6 +142,14 @@ class CustomerController extends Controller
             'created_at',
             'company_id'
         )->with('salesperson:id,name')
+            ->selectSub(function ($query) use ($dueInvoiceQuery) {
+                $dueInvoiceQuery($query);
+                $query->selectRaw('COALESCE(SUM(grand_total - paid_amount), 0)');
+            }, 'due_amount')
+            ->selectSub(function ($query) use ($dueInvoiceQuery) {
+                $dueInvoiceQuery($query);
+                $query->where('due_at', '<', now())->selectRaw('COUNT(*)');
+            }, 'overdue_count')
             ->where('status', CustomerStatusEnum::fromName($request->tab))->orderBy('name_en');
 
         // Get counts per status in one query
@@ -471,7 +492,7 @@ class CustomerController extends Controller
         ]);
         if ($customer->status === CustomerStatusEnum::fromName('confirmed') || $customer->status === CustomerStatusEnum::fromName('blocked')) {
             $contextMenu->push([
-                'label' => __('Statement for ' . Str::limit($customer->name_en, 15, '...')),
+                'label' => __('Statement'),
                 'code' => '01INLI',
                 'id' => 'row_statement',
                 'data-id' => $customer->id,
@@ -480,7 +501,7 @@ class CustomerController extends Controller
                 'separator' => 'before',
             ]);
             $contextMenu->push([
-                'label' => __('Find invoices from ' . Str::limit($customer->name_en, 15, '...')),
+                'label' => __('Invoices'),
                 'code' => '01INLI',
                 'id' => 'row_search',
                 'data-id' => $customer->id,
