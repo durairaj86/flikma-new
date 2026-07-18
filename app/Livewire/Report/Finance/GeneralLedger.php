@@ -3,7 +3,7 @@
 namespace App\Livewire\Report\Finance;
 
 use App\Exports\ReportTableExport;
-use App\Models\Finance\Account\Account;
+use App\Models\Customer\Customer;
 use Livewire\Component;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -12,8 +12,8 @@ class GeneralLedger extends Component
     public $startDate;
     public $endDate;
     public $search = '';
-    public $accountId = 'all';
-    public $accounts = [];
+    public $customerId = 'all';
+    public $customers = [];
 
     public function mount()
     {
@@ -21,15 +21,14 @@ class GeneralLedger extends Component
         $this->startDate = now()->startOfMonth()->format('Y-m-d');
         $this->endDate = now()->endOfMonth()->format('Y-m-d');
 
-        // Load accounts for dropdown
-        $this->loadAccounts();
+        $this->loadCustomers();
     }
 
-    public function loadAccounts()
+    public function loadCustomers()
     {
-        $this->accounts = Account::where('is_active', 1)
-            ->orderBy('code')
-            ->select('id', 'code', 'name', 'type')
+        $this->customers = Customer::where('company_id', companyId())
+            ->orderBy('name_en')
+            ->select('id', 'row_no', 'name_en')
             ->get()
             ->toArray();
     }
@@ -55,9 +54,9 @@ class GeneralLedger extends Component
         $this->dispatch('searchChanged', $value);
     }
 
-    public function updatedAccountId($value)
+    public function updatedCustomerId($value)
     {
-        $this->dispatch('accountChanged', $this->accountId);
+        $this->dispatch('customerChanged', $this->customerId);
     }
 
     public function exportExcel()
@@ -68,17 +67,17 @@ class GeneralLedger extends Component
         $child = new GeneralLedgerTable();
         $child->startDate = $this->startDate;
         $child->endDate = $this->endDate;
-        $child->accountId = $this->accountId;
+        $child->customerId = $this->customerId;
         $child->search = $this->search;
         $data = $child->getGeneralLedgerData();
 
         $rows = [];
-        foreach ($data['accounts'] as $acc) {
-            if (abs($acc['opening_balance'] ?? 0) < 0.001 && count($acc['transactions'] ?? []) === 0 && abs($acc['closing_balance'] ?? 0) < 0.001) {
+        foreach ($data['customers'] as $cust) {
+            if (abs($cust['opening_balance'] ?? 0) < 0.001 && count($cust['transactions'] ?? []) === 0 && abs($cust['closing_balance'] ?? 0) < 0.001) {
                 continue;
             }
-            $rows[] = ['', $acc['account_code'] . ' — ' . $acc['account_name'], '', 'Opening Balance', null, null, (float) $acc['opening_balance']];
-            foreach ($acc['transactions'] as $txn) {
+            $rows[] = ['', $cust['customer_code'] . ' — ' . $cust['customer_name'], '', 'Opening Balance', null, null, (float) $cust['opening_balance']];
+            foreach ($cust['transactions'] as $txn) {
                 $rows[] = [
                     $txn['date'], '', $txn['voucher_no'], $txn['description'],
                     $txn['debit'] > 0 ? (float) $txn['debit'] : null,
@@ -86,10 +85,10 @@ class GeneralLedger extends Component
                     (float) $txn['balance'],
                 ];
             }
-            $rows[] = ['', '', '', 'Closing Balance', (float) $acc['total_debit'], (float) $acc['total_credit'], (float) $acc['closing_balance']];
+            $rows[] = ['', '', '', 'Closing Balance', (float) $cust['total_debit'], (float) $cust['total_credit'], (float) $cust['closing_balance']];
         }
 
-        $columns = ['Date', 'Account', 'Voucher No', 'Description', 'Debit', 'Credit', 'Balance'];
+        $columns = ['Date', 'Customer', 'Voucher No', 'Description', 'Debit', 'Credit', 'Balance'];
         $totalsRow = ['', '', '', 'GRAND TOTAL', (float) $data['grand_total_debit'], (float) $data['grand_total_credit'], (float) $data['net_balance']];
 
         $meta = [

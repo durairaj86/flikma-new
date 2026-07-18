@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Report\Finance;
 
-use App\Models\Finance\Account\Account;
+use App\Models\Customer\Customer;
 use App\Models\Finance\FinanceSub;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -11,12 +11,12 @@ class GeneralLedgerTable extends Component
 {
     public $startDate;
     public $endDate;
-    public $accountId = 'all';
+    public $customerId = 'all';
     public $search = '';
 
     protected $listeners = [
         'dateRangeChanged' => 'updateDateRange',
-        'accountChanged' => 'updateAccount',
+        'customerChanged' => 'updateCustomer',
         'searchChanged' => 'updateSearch'
     ];
 
@@ -34,9 +34,9 @@ class GeneralLedgerTable extends Component
         $this->endDate = $dateRange['endDate'];
     }
 
-    public function updateAccount($accountId)
+    public function updateCustomer($customerId)
     {
-        $this->accountId = $accountId;
+        $this->customerId = $customerId;
     }
 
     public function updateSearch($search)
@@ -46,27 +46,27 @@ class GeneralLedgerTable extends Component
 
     public function getGeneralLedgerData()
     {
-        // Get accounts to include in the report
-        $accounts = Account::where('is_active', 1);
+        // Get customers to include in the report
+        $customers = Customer::where('company_id', companyId());
 
-        // Filter by specific account if selected
-        if ($this->accountId !== 'all') {
-            $accounts = $accounts->where('id', $this->accountId);
+        // Filter by specific customer if selected
+        if ($this->customerId !== 'all') {
+            $customers = $customers->where('id', $this->customerId);
         }
 
         // Apply search if provided
         if (!empty($this->search)) {
-            $accounts = $accounts->where(function ($query) {
-                $query->where('name', 'like', '%' . $this->search . '%')
-                    ->orWhere('code', 'like', '%' . $this->search . '%');
+            $customers = $customers->where(function ($query) {
+                $query->where('name_en', 'like', '%' . $this->search . '%')
+                    ->orWhere('row_no', 'like', '%' . $this->search . '%');
             });
         }
 
-        $accounts = $accounts->orderBy('code')->get();
+        $customers = $customers->orderBy('name_en')->get();
 
-        if ($accounts->isEmpty()) {
+        if ($customers->isEmpty()) {
             return [
-                'accounts' => [],
+                'customers' => [],
                 'grand_total_debit' => 0,
                 'grand_total_credit' => 0,
                 'net_balance' => 0
@@ -78,14 +78,20 @@ class GeneralLedgerTable extends Component
         $grandTotalCredit = 0;
         $netBalance = 0;
 
-        foreach ($accounts as $account) {
+        foreach ($customers as $customer) {
             // Get opening balance (transactions before start date)
-            $openingBalance = $this->getOpeningBalance($account->code, $this->startDate);
+            $openingBalance = $this->getOpeningBalance($customer->id, $this->startDate);
 
-            // Get transactions for this account within date range
-            $transactions = $this->getAccountTransactions($account->code, $this->startDate, $this->endDate);
+            // Get every ledger line for this customer within the date range,
+            // across every account it touched (AR, Revenue, Tax, ...) — a
+            // flat customer sub-ledger, not grouped by account.
+            $transactions = $this->getCustomerTransactions($customer->id, $this->startDate, $this->endDate);
 
-            // Calculate running balance and totals
+            // Calculate running balance and totals. Customers are always
+            // debtors from the company's perspective: a debit (e.g. an
+            // invoice) increases what they owe, a credit (e.g. a payment)
+            // decreases it — regardless of which underlying account each
+            // line posted to.
             $runningBalance = $openingBalance;
             $totalDebit = 0;
             $totalCredit = 0;
@@ -95,21 +101,16 @@ class GeneralLedgerTable extends Component
                 $debit = $transaction->debit ?? 0;
                 $credit = $transaction->credit ?? 0;
 
-                // Update running balance based on account type
-                if (in_array($account->type, ['Asset', 'Expense'])) {
-                    // For assets and expenses: debit increases, credit decreases
-                    $runningBalance += $debit - $credit;
-                } else {
-                    // For liabilities, equity, and revenue: credit increases, debit decreases
-                    $runningBalance += $credit - $debit;
-                }
+                $runningBalance += $debit - $credit;
 
                 $formattedTransactions[] = [
                     'date'         => $transaction->reference_date,
                     'voucher_no'   => $transaction->voucher_no,
                     'voucher_type' => $transaction->voucher_type,
                     'reference_no' => $transaction->reference_no,
-                    'description'  => $transaction->description, // field on finance_sub
+                    'description'  => $transaction->description,
+                    'account_code' => $transaction->account->code ?? '',
+                    'account_name' => $transaction->account->name ?? '',
                     'debit'        => $debit,
                     'credit'       => $credit,
                     'balance'      => $runningBalance,
@@ -119,18 +120,11 @@ class GeneralLedgerTable extends Component
                 $totalCredit += $credit;
             }
 
-            // Calculate closing balance
-            $closingBalance = $openingBalance;
-            if (in_array($account->type, ['Asset', 'Expense'])) {
-                $closingBalance += $totalDebit - $totalCredit;
-            } else {
-                $closingBalance += $totalCredit - $totalDebit;
-            }
+            $closingBalance = $openingBalance + $totalDebit - $totalCredit;
 
-            $generalLedgerData[$account->id] = [
-                'account_code' => $account->code,
-                'account_name' => $account->name,
-                'account_type' => $account->type,
+            $generalLedgerData[$customer->id] = [
+                'customer_code' => $customer->row_no,
+                'customer_name' => $customer->name_en,
                 'opening_balance' => $openingBalance,
                 'transactions' => $formattedTransactions,
                 'total_debit' => $totalDebit,
@@ -140,40 +134,20 @@ class GeneralLedgerTable extends Component
 
             $grandTotalDebit += $totalDebit;
             $grandTotalCredit += $totalCredit;
-            // Add to net balance based on account type
-            // For assets and expenses, a positive balance increases net balance
-            // For liabilities, equity, and revenue, a positive balance decreases net balance
-            if (in_array($account->type, ['Asset', 'Expense'])) {
-                $netBalance += $closingBalance;
-            } else {
-                // For liability, equity, and revenue accounts, we need to reverse the sign
-                // because a positive balance in these accounts is a credit (negative in accounting equation)
-                $netBalance -= $closingBalance;
-            }
+            $netBalance += $closingBalance;
         }
 
         return [
-            'accounts' => $generalLedgerData,
+            'customers' => $generalLedgerData,
             'grand_total_debit' => $grandTotalDebit,
             'grand_total_credit' => $grandTotalCredit,
             'net_balance' => $netBalance
         ];
     }
 
-    private function getOpeningBalance($accountCode, $startDate)
+    private function getOpeningBalance($customerId, $startDate)
     {
-        // Get account details to determine balance calculation
-        $account = Account::where('code', $accountCode)->first();
-
-        if (!$account) {
-            return 0; // Account not found
-        }
-
-        $accountType = $account->type;
-        $accountId = $account->id;
-
-        // Get sum of debits and credits before start date (approved entries only)
-        $financeSub = FinanceSub::where('account_id', $accountId)
+        $financeSub = FinanceSub::where('customer_id', $customerId)
             ->where('reference_date', '<', $startDate)
             ->whereHas('finance', function ($query) {
                 $query->where('is_approved', 1);
@@ -187,30 +161,17 @@ class GeneralLedgerTable extends Component
         $debit = $financeSub->total_debit ?? 0;
         $credit = $financeSub->total_credit ?? 0;
 
-        // Calculate opening balance based on account type
-        if (in_array($accountType, ['Asset', 'Expense'])) {
-            // For assets and expenses: balance = debit - credit
-            return $debit - $credit;
-        } else {
-            // For liabilities, equity, and revenue: balance = credit - debit
-            return $credit - $debit;
-        }
+        return $debit - $credit;
     }
 
-    private function getAccountTransactions($accountCode, $startDate, $endDate)
+    private function getCustomerTransactions($customerId, $startDate, $endDate)
     {
-        // Get account ID from code
-        $accountId = Account::where('code', $accountCode)->value('id');
-
-        if (!$accountId) {
-            return collect(); // Return empty collection if account not found
-        }
-
-        return FinanceSub::where('account_id', $accountId)
+        return FinanceSub::where('customer_id', $customerId)
             ->whereBetween('reference_date', [$startDate, $endDate])
             ->whereHas('finance', function ($query) {
                 $query->where('is_approved', 1);
             })
+            ->with('account:id,code,name')
             ->orderBy('reference_date')
             ->orderBy('id')
             ->get();

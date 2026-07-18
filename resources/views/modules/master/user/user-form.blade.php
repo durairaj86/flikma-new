@@ -66,8 +66,8 @@
                                 <label class="form-label">Status</label>
                                 <select name="status" class="tom-select" required>
                                     <option value="">Select</option>
-                                    <option value="1" @selected($user->status)>Active</option>
-                                    <option value="0" @selected(!$user->status)>Inactive</option>
+                                    <option value="active" @selected($user->status == 'active' || !$user->exists)>Active</option>
+                                    <option value="inactive" @selected($user->exists && $user->status != 'active')>Inactive</option>
                                 </select>
                             </div>
                             <div class="col-4 form-group">

@@ -8,7 +8,7 @@
         <div class="row align-items-center mb-4 d-print-none">
             <div class="col-md-6">
                 <h1 class="h3 fw-bold mb-1" style="color:#0f172a;">General Ledger</h1>
-                <p class="text-muted small mb-0">Complete transaction history per account with running balance</p>
+                <p class="text-muted small mb-0">Complete transaction history per customer with running balance</p>
             </div>
             <div class="col-md-6 text-md-end mt-3 mt-md-0">
                 <div class="btn-group shadow-sm">
@@ -49,12 +49,12 @@
                                value="{{ $endDate }}" />
                     </div>
                     <div class="col-lg-3 col-md-4">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Account</label>
-                        <select class="form-select bg-light border-0 py-2 no-ts" wire:model.live="accountId">
-                            <option value="all">All Accounts</option>
-                            @foreach($accounts as $account)
-                                <option value="{{ $account['code'] }}">
-                                    {{ $account['code'] }} — {{ $account['name'] }}
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Customer</label>
+                        <select class="form-select bg-light border-0 py-2 no-ts" wire:model.live="customerId">
+                            <option value="all">All Customers</option>
+                            @foreach($customers as $customer)
+                                <option value="{{ $customer['id'] }}">
+                                    {{ $customer['row_no'] }} — {{ $customer['name_en'] }}
                                 </option>
                             @endforeach
                         </select>
@@ -87,8 +87,11 @@
                 <i class="bi bi-calendar3 me-1"></i>
                 Period: <strong class="text-dark">{{ \Carbon\Carbon::parse($startDate)->format('d M Y') }}</strong>
                 — <strong class="text-dark">{{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</strong>
-                @if($accountId !== 'all')
-                    &nbsp;·&nbsp; Account: <strong class="text-dark">{{ $accountId }}</strong>
+                @if($customerId !== 'all')
+                    @php $selectedCustomer = collect($customers)->firstWhere('id', $customerId); @endphp
+                    @if($selectedCustomer)
+                        &nbsp;·&nbsp; Customer: <strong class="text-dark">{{ $selectedCustomer['name_en'] }}</strong>
+                    @endif
                 @endif
             </div>
             <div class="small text-muted">
@@ -100,7 +103,7 @@
         <div class="card border-0 shadow-sm overflow-hidden">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center d-print-none">
                 <h6 class="mb-0 fw-bold">
-                    <i class="bi bi-journal-text me-2 text-gl"></i>Account Transaction Ledger
+                    <i class="bi bi-journal-text me-2 text-gl"></i>Customer Transaction Ledger
                 </h6>
                 <span class="badge bg-gl-subtle text-gl border border-gl-subtle px-3 py-2">
                     <i class="bi bi-currency-exchange me-1"></i>Currency: SAR

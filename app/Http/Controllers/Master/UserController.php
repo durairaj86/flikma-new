@@ -98,6 +98,7 @@ class UserController extends Controller
             $user = User::findOrFail($request->input('data-id'));
         } else {
             $user = new User();
+            $user->company_id = companyId();
         }
 
         $user->name = $request->input('name');
@@ -121,7 +122,6 @@ class UserController extends Controller
         $user->country = $request->input('country');
         $user->alternate_email = $request->input('alt_email');
         $user->remark = $request->input('remark');
-        $this->setBaseColumns($user);
         $user->save();
 
         return response()->json([

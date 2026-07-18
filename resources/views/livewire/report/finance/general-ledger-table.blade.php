@@ -1,17 +1,17 @@
 <div>
 @php
-    $allAccounts      = $generalLedgerData['accounts']          ?? [];
+    $allCustomers     = $generalLedgerData['customers']          ?? [];
     $grandTotalDebit  = $generalLedgerData['grand_total_debit']  ?? 0;
     $grandTotalCredit = $generalLedgerData['grand_total_credit'] ?? 0;
     $netBalance       = $generalLedgerData['net_balance']        ?? 0;
 
-    // Filter to accounts with activity
-    $activeAccounts = [];
-    foreach ($allAccounts as $code => $data) {
+    // Filter to customers with activity
+    $activeCustomers = [];
+    foreach ($allCustomers as $id => $data) {
         if (abs($data['opening_balance'] ?? 0) > 0.001
             || count($data['transactions'] ?? []) > 0
             || abs($data['closing_balance'] ?? 0) > 0.001) {
-            $activeAccounts[$code] = $data;
+            $activeCustomers[$id] = $data;
         }
     }
 
@@ -27,12 +27,12 @@
 
 <div class="d-print-none">
 {{-- Summary cards — same as provisional report --}}
-@if(count($activeAccounts) > 0)
+@if(count($activeCustomers) > 0)
 <div class="row g-3 p-3 border-bottom">
     <div class="col-lg col-md-4">
         <div class="gl-stat-card gl-stat-neutral">
-            <div class="gl-stat-label">Accounts</div>
-            <div class="gl-stat-value">{{ count($activeAccounts) }}</div>
+            <div class="gl-stat-label">Customers</div>
+            <div class="gl-stat-value">{{ count($activeCustomers) }}</div>
         </div>
     </div>
     <div class="col-lg col-md-4">
@@ -59,32 +59,31 @@
 </div>
 @endif
 
-@if(count($activeAccounts) > 0)
-    @php $accIdx = 0; @endphp
-    @foreach($activeAccounts as $accountCode => $accountData)
+@if(count($activeCustomers) > 0)
+    @php $custIdx = 0; @endphp
+    @foreach($activeCustomers as $customerId => $customerData)
         @php
-            $accIdx++;
-            $opening = (float)($accountData['opening_balance'] ?? 0);
-            $closing = (float)($accountData['closing_balance'] ?? 0);
-            $totalDr = (float)($accountData['total_debit']    ?? 0);
-            $totalCr = (float)($accountData['total_credit']   ?? 0);
-            $txns    = $accountData['transactions'] ?? [];
+            $custIdx++;
+            $opening = (float)($customerData['opening_balance'] ?? 0);
+            $closing = (float)($customerData['closing_balance'] ?? 0);
+            $totalDr = (float)($customerData['total_debit']    ?? 0);
+            $totalCr = (float)($customerData['total_credit']   ?? 0);
+            $txns    = $customerData['transactions'] ?? [];
         @endphp
 
-        {{-- Account block: header bar + table --}}
+        {{-- Customer block: header bar + table --}}
         <div class="gl-account-block {{ !$loop->last ? 'border-bottom' : '' }}" style="border-bottom: 4px solid #f1f5f9;">
 
-            {{-- Account header (card-header style, dark) --}}
+            {{-- Customer header (card-header style, dark) --}}
             <div class="gl-acc-header">
                 <div class="d-flex align-items-center gap-3">
-                    <div class="gl-acc-num">{{ $accIdx }}</div>
+                    <div class="gl-acc-num">{{ $custIdx }}</div>
                     <div>
-                        <div class="gl-acc-code">{{ $accountData['account_code'] ?? $accountCode }}</div>
-                        <div class="gl-acc-name">{{ $accountData['account_name'] }}</div>
+                        <div class="gl-acc-code">{{ $customerData['customer_code'] ?? $customerId }}</div>
+                        <div class="gl-acc-name">{{ $customerData['customer_name'] }}</div>
                     </div>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <span class="gl-acc-type-badge">{{ $accountData['account_type'] }}</span>
                     <div class="gl-acc-closing {{ $closing >= 0 ? 'gl-closing-dr' : 'gl-closing-cr' }}">
                         <span class="gl-closing-label">Closing Balance</span>
                         <span class="gl-closing-val tabular-nums">
@@ -103,7 +102,7 @@
                     <th class="ps-4 border-0 gl-th-date">Date</th>
                     <th class="border-0 gl-th-voucher">Voucher No</th>
                     <th class="border-0 gl-th-vtype">Type</th>
-                    <th class="border-0 gl-th-ref">Reference</th>
+                    <th class="border-0 gl-th-ref">Account</th>
                     <th class="border-0">Description</th>
                     <th class="text-end border-0 gl-th-num">
                         <span class="d-block gl-th-sub">Debit</span>DR
@@ -150,7 +149,7 @@
                             <td>
                                 <span class="gl-vtype-badge {{ $vtCls }}">{{ $vt ?: '—' }}</span>
                             </td>
-                            <td class="gl-ref">{{ $txn['reference_no'] ?? '—' }}</td>
+                            <td class="gl-ref">{{ $txn['account_code'] ?? '—' }}</td>
                             <td class="gl-desc">{{ $txn['description'] ?? '—' }}</td>
                             <td class="text-end tabular-nums {{ $dr > 0 ? 'gl-dr-val' : 'gl-zero' }}">
                                 {{ $dr > 0 ? number_format($dr, 2) : '—' }}
@@ -172,11 +171,11 @@
                     @endforelse
                 </tbody>
 
-                {{-- Account subtotal footer --}}
+                {{-- Customer subtotal footer --}}
                 <tfoot>
                 <tr class="gl-acc-total">
                     <td colspan="5" class="ps-4 gl-acc-total-label">
-                        <i class="bi bi-sigma me-1"></i>Account Total
+                        <i class="bi bi-sigma me-1"></i>Customer Total
                     </td>
                     <td class="text-end tabular-nums gl-acc-total-dr">{{ number_format($totalDr, 2) }}</td>
                     <td class="text-end tabular-nums gl-acc-total-cr">{{ number_format($totalCr, 2) }}</td>
@@ -196,7 +195,7 @@
         <tfoot>
         <tr class="gl-grand-total">
             <td class="ps-4 gl-gt-label" style="width:55%">
-                <i class="bi bi-calculator me-2"></i>Grand Total — All Accounts
+                <i class="bi bi-calculator me-2"></i>Grand Total — All Customers
             </td>
             <td class="text-end tabular-nums gl-gt-dr" style="width:15%">{{ number_format($grandTotalDebit, 2) }}</td>
             <td class="text-end tabular-nums gl-gt-cr" style="width:15%">{{ number_format($grandTotalCredit, 2) }}</td>
@@ -214,7 +213,7 @@
             <i class="bi bi-journals h2 text-muted"></i>
         </div>
         <div class="small fw-semibold mb-1">No Ledger Data Found</div>
-        <div class="x-small">Select a different date range or account to view transactions.</div>
+        <div class="x-small">Select a different date range or customer to view transactions.</div>
     </div>
 @endif
 </div>
@@ -236,16 +235,16 @@
         </tr>
     </table>
 
-    @forelse($activeAccounts as $code => $acc)
+    @forelse($activeCustomers as $id => $cust)
         <table class="stmt-meta stmt-box">
             <tr>
                 <td>
-                    <div class="stmt-strong">{{ $acc['account_code'] }} — {{ $acc['account_name'] }}</div>
-                    <div class="stmt-sub">Opening Balance: {{ number_format($acc['opening_balance'], 2) }}</div>
+                    <div class="stmt-strong">{{ $cust['customer_code'] }} — {{ $cust['customer_name'] }}</div>
+                    <div class="stmt-sub">Opening Balance: {{ number_format($cust['opening_balance'], 2) }}</div>
                 </td>
                 <td class="text-end">
                     <div class="stmt-sub">Closing Balance</div>
-                    <div class="stmt-strong">{{ number_format($acc['closing_balance'], 2) }}</div>
+                    <div class="stmt-strong">{{ number_format($cust['closing_balance'], 2) }}</div>
                 </td>
             </tr>
         </table>
@@ -254,6 +253,7 @@
             <tr>
                 <th>Date</th>
                 <th>Voucher No</th>
+                <th>Account</th>
                 <th>Description</th>
                 <th class="text-end">Debit</th>
                 <th class="text-end">Credit</th>
@@ -261,25 +261,26 @@
             </tr>
             </thead>
             <tbody>
-            @forelse($acc['transactions'] as $txn)
+            @forelse($cust['transactions'] as $txn)
                 <tr>
                     <td>{{ $txn['date'] }}</td>
                     <td>{{ $txn['voucher_no'] }}</td>
+                    <td>{{ $txn['account_code'] }}</td>
                     <td>{{ $txn['description'] }}</td>
                     <td class="text-end">{{ $txn['debit'] > 0 ? number_format($txn['debit'], 2) : '' }}</td>
                     <td class="text-end">{{ $txn['credit'] > 0 ? number_format($txn['credit'], 2) : '' }}</td>
                     <td class="text-end">{{ number_format($txn['balance'], 2) }}</td>
                 </tr>
             @empty
-                <tr><td colspan="6" class="text-center">No transactions in this period.</td></tr>
+                <tr><td colspan="7" class="text-center">No transactions in this period.</td></tr>
             @endforelse
             </tbody>
             <tfoot>
             <tr class="stmt-strong">
-                <td colspan="3">Total</td>
-                <td class="text-end">{{ number_format($acc['total_debit'], 2) }}</td>
-                <td class="text-end">{{ number_format($acc['total_credit'], 2) }}</td>
-                <td class="text-end">{{ number_format($acc['closing_balance'], 2) }}</td>
+                <td colspan="4">Total</td>
+                <td class="text-end">{{ number_format($cust['total_debit'], 2) }}</td>
+                <td class="text-end">{{ number_format($cust['total_credit'], 2) }}</td>
+                <td class="text-end">{{ number_format($cust['closing_balance'], 2) }}</td>
             </tr>
             </tfoot>
         </table>

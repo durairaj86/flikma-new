@@ -334,6 +334,30 @@
 
             initFlatpickr();
 
+            // Livewire's wire:model.live morph replaces the <select> markup
+            // on every commit (customer change, Generate, Reset), which
+            // destroys TomSelect's injected wrapper and reverts it to a
+            // plain unstyled select. `Livewire.hook('commit', ...)`'s
+            // succeed callback fires too early — before the DOM morph is
+            // actually applied — so re-initializing there is a no-op; the
+            // morph runs afterward and destroys it anyway. `morph.updated`
+            // fires per-element once the patch for that element is really
+            // applied, so re-init there instead, scoped to #list-filter.
+            Livewire.hook('morph.updated', function (data) {
+                if (data.el && data.el.id === 'list-filter') {
+                    // Deferred to the next frame: morphdom patches this
+                    // element's descendants (including the <select> itself)
+                    // synchronously AFTER this hook fires for the container,
+                    // so re-initializing immediately here would run before
+                    // the <select> is actually replaced and get clobbered a
+                    // moment later. requestAnimationFrame runs after that
+                    // whole synchronous patch pass completes.
+                    requestAnimationFrame(function () {
+                        initTomSelectForm($('#list-filter'));
+                    });
+                }
+            });
+
             // Generate: push whatever is in the pickers, then run the filter in one request.
             window.csApplyFilter = function () {
                 var s = document.getElementById('cs-start-date');
