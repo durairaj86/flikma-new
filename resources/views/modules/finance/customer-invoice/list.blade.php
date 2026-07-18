@@ -70,7 +70,7 @@
                             <div class="col-md-2 form-filter">
                                 <label class="form-label fw-medium">Payment Status</label>
                                 <select class="tom-select avoid-filter" name="filter-payment-status" id="filter-payment-status" size="3" placeholder="All Payments">
-                                    <option value="all" selected>All Payment</option>
+                                    <option value="all" selected>All Payments</option>
                                     <option value="paid">Paid</option>
                                     <option value="partial">Partially Paid</option>
                                     <option value="unpaid">Unpaid</option>

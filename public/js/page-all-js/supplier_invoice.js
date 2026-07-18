@@ -235,12 +235,30 @@ SUPPLIER_INVOICE = {
             },
 
             invoice: (row) => `<div class="cell-primary">${row.invoice_date ?? ''}</div><div class="cell-secondary">Due ${row.due_at ?? ''}</div>`,
+
+            // Settlement rate only makes sense for approved invoices — draft/cancelled
+            // invoices have no meaningful payment progress to show.
+            settlementRate: (row) => {
+                const grand = parseFloat(String(row.grand_total).replace(/,/g, '')) || 0;
+                const paid = parseFloat(row.paid_amount) || 0;
+                const rate = grand > 0 ? Math.min(100, (paid / grand) * 100) : 0;
+                const color = rate >= 100 ? '#16a34a' : rate > 0 ? '#f59e0b' : '#dc2626';
+                return `<div class="d-flex align-items-center gap-2">
+                            <div class="progress" style="height:5px;width:50px;">
+                                <div class="progress-bar" role="progressbar" style="width:${rate.toFixed(0)}%;background:${color};"></div>
+                            </div>
+                            <small class="fw-semibold" style="min-width:30px;color:${color};font-size:0.65rem;">${rate.toFixed(0)}%</small>
+                        </div>`;
+            },
+
             aging: (row) => {
                 // Prefer server-provided aging (parity with customer list)
                 if (row.due_days && row.due_days.label) {
                     const cls = row.due_days.class || 'bg-secondary-subtle text-muted';
                     const label = row.due_days.label;
-                    return `<div class="badge ${cls} border border-opacity-10 px-3 py-2" style="font-size: 0.65rem;">${label}</div>`;
+                    const badge = `<div class="badge ${cls} border border-opacity-10 px-3 py-2" style="font-size: 0.65rem;">${label}</div>`;
+                    if (row.status !== 3) return badge;
+                    return badge + '<div class="mt-1 d-flex justify-content-end">' + SUPPLIER_INVOICE.list.templates.settlementRate(row) + '</div>';
                 }
                 // Fallback to client-side computation
                 const rawDue = row.due_at;

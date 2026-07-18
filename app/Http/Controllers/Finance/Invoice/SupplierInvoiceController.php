@@ -69,10 +69,15 @@ class SupplierInvoiceController extends Controller
         }
         $filter = $request->filterData ?? [];
 
+        // "all" is the sentinel value for the "All Status"/"All Payment" dropdown
+        // option, meaning no filter should be applied — not a literal status to match.
+        $statusFilter = array_filter((array) ($filter['filter-status'] ?? []), fn($v) => $v !== 'all' && $v !== '');
+        $paymentStatusFilter = array_filter((array) ($filter['filter-payment-status'] ?? []), fn($v) => $v !== 'all' && $v !== '');
+
         // Shared filters so the tab counts and summary cards always match
         // the visible list (company scoping is applied globally on the
         // SupplierInvoice model).
-        $applyFilters = function ($query) use ($filter, $job_id) {
+        $applyFilters = function ($query) use ($filter, $job_id, $statusFilter, $paymentStatusFilter) {
             $query->when($job_id != 'list', function ($query) use ($job_id) {
                 $query->where('job_id', $job_id);
             })
@@ -87,6 +92,32 @@ class SupplierInvoiceController extends Controller
             )
             ->when(isset($filter['suppliers']) && !empty($filter['suppliers']), function ($query) use ($filter) {
                 $query->whereIn('supplier_id', decodeIds($filter['suppliers']));
+            })
+            ->when(!empty($statusFilter), function ($query) use ($statusFilter) {
+                $query->whereIn('supplier_invoices.status', $statusFilter);
+            })
+            ->when(!empty($paymentStatusFilter), function ($query) use ($paymentStatusFilter) {
+                $query->where(function ($group) use ($paymentStatusFilter) {
+                    foreach ($paymentStatusFilter as $status) {
+                        $group->orWhere(function ($sub) use ($status) {
+                            if ($status === 'paid') {
+                                $sub->where('grand_total', '>', 0)->whereColumn('paid_amount', '>=', 'grand_total');
+                            } elseif ($status === 'partial') {
+                                $sub->where('paid_amount', '>', 0)->whereColumn('paid_amount', '<', 'grand_total');
+                            } elseif ($status === 'unpaid') {
+                                $sub->where(function ($u) {
+                                    $u->whereNull('paid_amount')->orWhere('paid_amount', '<=', 0);
+                                });
+                            }
+                        });
+                    }
+                });
+            })
+            ->when(($filter['filter-overdue'] ?? 'all') === 'overdue', function ($query) {
+                $query->where('due_at', '<', now())->whereColumn('paid_amount', '<', 'grand_total');
+            })
+            ->when(($filter['filter-overdue'] ?? 'all') === 'non_due', function ($query) {
+                $query->where('due_at', '>=', now())->whereColumn('paid_amount', '<', 'grand_total');
             });
         };
 

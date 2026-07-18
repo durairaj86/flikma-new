@@ -42,7 +42,7 @@
                                 </select>
                             </div>--}}
 
-                            <div class="col-md-4 form-filter">
+                            <div class="col-md-3 form-filter">
                                 <label class="form-label fw-medium">Invoice Date</label>
                                 <div class="d-flex input-group-filter gap-2">
                                     <input type="date" class="form-control datepicker from-date default-filter" id="filter-from-date" name="filter-from-date"
@@ -57,6 +57,35 @@
                                 <x-common.suppliers multiple></x-common.suppliers>
                             </div>
 
+                            <div class="col-md-2 form-filter">
+                                <label class="form-label fw-medium">Status</label>
+                                <select class="tom-select avoid-filter" name="filter-status" id="filter-status" size="3" placeholder="All Status">
+                                    <option value="all" selected>All Status</option>
+                                    <option value="1">Draft</option>
+                                    <option value="3">Approved</option>
+                                    <option value="5">Cancelled</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-2 form-filter">
+                                <label class="form-label fw-medium">Payment Status</label>
+                                <select class="tom-select avoid-filter" name="filter-payment-status" id="filter-payment-status" size="3" placeholder="All Payments">
+                                    <option value="all" selected>All Payments</option>
+                                    <option value="paid">Paid</option>
+                                    <option value="partial">Partially Paid</option>
+                                    <option value="unpaid">Unpaid</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-2 form-filter">
+                                <label class="form-label fw-medium">Invoice Type</label>
+                                <select class="tom-select avoid-filter" name="filter-overdue" id="filter-overdue">
+                                    <option value="all" selected>All Invoices</option>
+                                    <option value="overdue">Overdue Invoices</option>
+                                    <option value="non_due">Non-Due Invoices</option>
+                                </select>
+                            </div>
+
                         </div>
                     </div>
 
@@ -69,14 +98,14 @@
                 </form>
             </div>
         </div>
-        <div class="d-flex justify-content-between align-items-start">
+        <div class="d-flex justify-content-between align-items-start py-3">
             @if(isset($job_no))
                 <h3 class="fw-bold text-muted bg-info-subtle rounded p-3">
                     {{ $job_no }}
                 </h3>
             @endif
             <div class="align-items-center flex-shrink-0">
-                <div class="gap-4">
+                {{--<div class="gap-4">
                     <ul class="nav status-tabs align-items-center border-bottom" id="listTabs" role="tablist"
                         aria-label="Navigation 13">
                         <li class="nav-item me-2">
@@ -106,7 +135,7 @@
                         </li>
 
                     </ul>
-                </div>
+                </div>--}}
             </div>
             <div class="d-flex justify-content-between pt-3">
                 <div class="position-relative">
