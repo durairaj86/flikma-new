@@ -41,7 +41,7 @@
         </div>
 
         <div class="d-flex align-items-center gap-2">
-            <div class="dropdown d-none d-md-block">
+            {{--<div class="dropdown d-none d-md-block">
                 <button class="btn btn-light border-0 rounded-circle p-2" type="button" data-bs-toggle="dropdown">
                     <i class="bi bi-grid-3x3-gap fs-5"></i>
                 </button>
@@ -56,7 +56,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>--}}
 
             <a href="#" class="btn btn-light border-0 rounded-circle p-2 position-relative" id="activity-feed">
                 <i class="bi bi-bell fs-5 text-secondary"></i>

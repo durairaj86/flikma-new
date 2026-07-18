@@ -7,7 +7,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
 use App\Models\Finance\CustomerInvoice\CustomerInvoice;
 use App\Models\Job\Job;
-use App\Models\Master\LogisticActivity;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -41,8 +40,8 @@ class JobOverviewController extends Controller
             'avgContainersPerJob' => $this->getAvgContainersPerJob($startDate, $endDate),
             'jobsTrend' => $this->getJobsTrend($startDate, $endDate, $range),
             'jobSource' => $this->getJobSourceBreakdown($startDate, $endDate),
-            'serviceTypes' => $this->getJobsByServiceType($startDate, $endDate),
-            'shipmentModes' => $this->getJobsByShipmentMode($startDate, $endDate),
+            'completionRateTrend' => $this->getCompletionRateTrend($startDate, $endDate, $range),
+            'topCarriers' => $this->getTopCarriers($startDate, $endDate),
             'invoicingCoverage' => $this->getInvoicingCoverage($startDate, $endDate),
             'handledBy' => $this->getHandledByPerformance($startDate, $endDate),
             'customers' => $this->getTopCustomers($startDate, $endDate),
@@ -200,35 +199,64 @@ class JobOverviewController extends Controller
         return $trend;
     }
 
-    private function getJobsByServiceType($startDate, $endDate): array
+    /**
+     * % of jobs completed per period — a quality/throughput trend distinct
+     * from the raw volume shown in the Jobs Trend chart.
+     */
+    private function getCompletionRateTrend($startDate, $endDate, $range): array
     {
-        $activities = LogisticActivity::activities()->keyBy('id');
+        $trend = [];
 
-        return Job::whereBetween('created_at', [$startDate, $endDate])
-            ->whereNotNull('activity_id')
-            ->select('activity_id', DB::raw('COUNT(*) as value'))
-            ->groupBy('activity_id')
-            ->orderBy('value', 'desc')
-            ->take(6)
-            ->get()
-            ->map(fn($r) => [
-                'label' => $activities[$r->activity_id]->name ?? "Activity #{$r->activity_id}",
-                'value' => (int) $r->value,
-            ])
-            ->toArray();
+        if ($range === 'this_year') {
+            for ($i = 1; $i <= 12; $i++) {
+                $monthStart = Carbon::create(Carbon::now()->year, $i, 1)->startOfMonth();
+                $monthEnd = Carbon::create(Carbon::now()->year, $i, 1)->endOfMonth();
+
+                $total = Job::whereBetween('created_at', [$monthStart, $monthEnd])->count();
+                $completed = Job::whereBetween('created_at', [$monthStart, $monthEnd])
+                    ->where('status', JobEnum::COMPLETED->value)->count();
+
+                $trend[] = $total > 0 ? round(($completed / $total) * 100, 1) : 0;
+
+                if ($monthStart->month === Carbon::now()->month) {
+                    break;
+                }
+            }
+        } else {
+            $currentDate = clone $startDate;
+            $weekNumber = 1;
+
+            while ($currentDate->lte($endDate)) {
+                $weekStart = clone $currentDate;
+                $weekEnd = (clone $currentDate)->addDays(6)->min($endDate);
+
+                $total = Job::whereBetween('created_at', [$weekStart, $weekEnd])->count();
+                $completed = Job::whereBetween('created_at', [$weekStart, $weekEnd])
+                    ->where('status', JobEnum::COMPLETED->value)->count();
+
+                $trend[] = $total > 0 ? round(($completed / $total) * 100, 1) : 0;
+
+                $currentDate->addDays(7);
+                $weekNumber++;
+
+                if ($weekNumber > 5) break;
+            }
+        }
+
+        return $trend;
     }
 
-    private function getJobsByShipmentMode($startDate, $endDate): array
+    private function getTopCarriers($startDate, $endDate): array
     {
         return Job::whereBetween('created_at', [$startDate, $endDate])
-            ->whereNotNull('shipment_mode')
-            ->where('shipment_mode', '!=', '')
-            ->select('shipment_mode as label', DB::raw('COUNT(*) as value'))
-            ->groupBy('shipment_mode')
+            ->whereNotNull('carrier')
+            ->where('carrier', '!=', '')
+            ->select('carrier as label', DB::raw('COUNT(*) as value'))
+            ->groupBy('carrier')
             ->orderBy('value', 'desc')
             ->take(6)
             ->get()
-            ->map(fn($r) => ['label' => ucfirst($r->label), 'value' => (int) $r->value])
+            ->map(fn($r) => ['label' => $r->label, 'value' => (int) $r->value])
             ->toArray();
     }
 

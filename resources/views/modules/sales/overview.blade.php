@@ -417,36 +417,45 @@
             }
         });
 
-        // Category pie
+        // Sales by Service Type — vertical bar
         new Chart(document.getElementById('chartCategory').getContext('2d'), {
-            type: 'doughnut',
+            type: 'bar',
             data: {
                 labels: (d.categories || []).map(c => c.label),
                 datasets: [{
                     data: (d.categories || []).map(c => c.value),
                     backgroundColor: colorPalette.slice(0, Math.max((d.categories || []).length, 1)),
-                    borderWidth: 0
+                    borderRadius: 4
                 }]
             },
             options: {
-                plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 8, font: { size: 11 } } } },
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { size: 9 } } },
+                    y: { grid: { color: 'rgba(0,0,0,0.05)' }, beginAtZero: true, ticks: { callback: v => 'SAR ' + fmt(v) } }
+                },
                 maintainAspectRatio: false
             }
         });
 
-        // Region doughnut
+        // Sales by Region — horizontal bar
         new Chart(document.getElementById('chartRegion').getContext('2d'), {
-            type: 'doughnut',
+            type: 'bar',
             data: {
                 labels: (d.regions || []).map(r => r.label),
                 datasets: [{
                     data: (d.regions || []).map(r => r.value),
                     backgroundColor: colorPalette.slice(0, Math.max((d.regions || []).length, 1)),
-                    borderWidth: 0
+                    borderRadius: 4
                 }]
             },
             options: {
-                plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 8, font: { size: 11 } } } },
+                indexAxis: 'y',
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: 'rgba(0,0,0,0.05)' }, beginAtZero: true, ticks: { callback: v => 'SAR ' + fmt(v) } },
+                    y: { grid: { display: false } }
+                },
                 maintainAspectRatio: false
             }
         });

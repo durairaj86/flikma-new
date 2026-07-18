@@ -3,12 +3,16 @@
 namespace App\Http\Controllers\Transaction;
 
 use App\Enums\CollectionEnum;
+use App\Enums\CustomerInvoiceEnum;
 use App\Enums\PaymentEnum;
+use App\Enums\SupplierInvoiceEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
 use App\Models\Finance\Account\Account;
 use App\Models\Finance\Collection\Collection;
+use App\Models\Finance\CustomerInvoice\CustomerInvoice;
 use App\Models\Finance\Payment\Payment;
+use App\Models\Finance\SupplierInvoice\SupplierInvoice;
 use App\Models\Supplier\Supplier;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -50,6 +54,7 @@ class TransactionOverviewController extends Controller
             'collectionStatuses' => $this->getCollectionStatusBreakdown($startDate, $endDate),
             'topSuppliers' => $this->getTopSuppliersByPayment($startDate, $endDate),
             'topCustomers' => $this->getTopCustomersByCollection($startDate, $endDate),
+            'settlementSummary' => $this->getSettlementSummary(),
             'monthlyComparison' => $this->getMonthlyComparison(),
         ];
 
@@ -274,6 +279,36 @@ class TransactionOverviewController extends Controller
             'collections' => (int) $r->collection_count,
             'total' => (float) $r->total,
         ])->toArray();
+    }
+
+    /**
+     * Reconciles Payments/Collections against the Customer/Supplier Invoice
+     * modules they settle — an all-time snapshot, not bound to the date range.
+     */
+    private function getSettlementSummary(): array
+    {
+        $ciApproved = (float) CustomerInvoice::where('status', CustomerInvoiceEnum::APPROVED->value)->sum('base_grand_total');
+        $ciCollected = (float) CustomerInvoice::where('status', CustomerInvoiceEnum::APPROVED->value)->sum('paid_amount');
+
+        $siApproved = (float) SupplierInvoice::where('status', SupplierInvoiceEnum::APPROVED->value)->sum('base_grand_total');
+        $siPaid = (float) SupplierInvoice::where('status', SupplierInvoiceEnum::APPROVED->value)->sum('paid_amount');
+
+        return [
+            [
+                'type' => 'Customer Invoices',
+                'approved' => $ciApproved,
+                'settled' => $ciCollected,
+                'outstanding' => max(0, $ciApproved - $ciCollected),
+                'rate' => $ciApproved > 0 ? $ciCollected / $ciApproved : 0,
+            ],
+            [
+                'type' => 'Supplier Invoices',
+                'approved' => $siApproved,
+                'settled' => $siPaid,
+                'outstanding' => max(0, $siApproved - $siPaid),
+                'rate' => $siApproved > 0 ? $siPaid / $siApproved : 0,
+            ],
+        ];
     }
 
     private function getMonthlyComparison(): array

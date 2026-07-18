@@ -196,20 +196,20 @@
                 <div class="col-lg-3 col-md-6">
                     <div class="job-card h-100">
                         <div class="job-card-header">
-                            <h6><i class="bi bi-pie-chart me-2" style="color:#5b57ae;"></i>Service Type</h6>
+                            <h6><i class="bi bi-graph-up-arrow me-2" style="color:#16a34a;"></i>Completion Rate</h6>
                         </div>
                         <div class="job-card-body">
-                            <canvas id="chartServiceType" height="170"></canvas>
+                            <canvas id="chartCompletionRate" height="170"></canvas>
                         </div>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6">
                     <div class="job-card h-100">
                         <div class="job-card-header">
-                            <h6><i class="bi bi-truck me-2" style="color:#16a34a;"></i>Shipment Mode</h6>
+                            <h6><i class="bi bi-truck me-2" style="color:#16a34a;"></i>Top Carriers</h6>
                         </div>
                         <div class="job-card-body">
-                            <canvas id="chartShipmentMode" height="170"></canvas>
+                            <canvas id="chartTopCarriers" height="170"></canvas>
                         </div>
                     </div>
                 </div>
@@ -379,7 +379,9 @@
         document.getElementById('tableJobStatuses').innerHTML = statusHtml || '<tr><td colspan="3" class="text-center text-muted py-3">No data</td></tr>';
 
         // --- Charts ---
-        const colorPalette = ['#0b6aa0','#5b57ae','#16a34a','#f59e0b','#dc2626','#8b5cf6','#06b6d4','#f97316'];
+        const colorPalette = ['#0b6aa0','#8b5cf6','#f59e0b','#06b6d4','#dc2626','#f97316'];
+        const carrierColors = ['#f97316','#0ea5e9','#a855f7','#22c55e','#eab308','#ef4444'];
+        const handledByColors = ['#8b5cf6','#06b6d4','#f97316','#ec4899','#10b981','#eab308'];
 
         // Jobs Trend
         const ctxTrend = document.getElementById('chartJobsTrend').getContext('2d');
@@ -419,64 +421,92 @@
             }
         });
 
-        // Job Source doughnut (linked to Sales pipeline)
+        // Job Source (linked to Sales pipeline) — horizontal bar
         new Chart(document.getElementById('chartJobSource').getContext('2d'), {
-            type: 'doughnut',
+            type: 'bar',
             data: {
                 labels: (d.jobSource || []).map(c => c.label),
                 datasets: [{
                     data: (d.jobSource || []).map(c => c.value),
-                    backgroundColor: ['#5b57ae', '#cbd5e1'],
-                    borderWidth: 0
+                    backgroundColor: ['#5b57ae', '#94a3b8'],
+                    borderRadius: 4
                 }]
             },
             options: {
-                plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 8, font: { size: 11 } } } },
+                indexAxis: 'y',
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: 'rgba(0,0,0,0.05)' }, beginAtZero: true, ticks: { stepSize: 1 } },
+                    y: { grid: { display: false } }
+                },
                 maintainAspectRatio: false
             }
         });
 
-        // Service type doughnut
-        new Chart(document.getElementById('chartServiceType').getContext('2d'), {
-            type: 'doughnut',
+        // Completion Rate trend — green line (contrasts with the blue Jobs Trend line)
+        const ctxCompletion = document.getElementById('chartCompletionRate').getContext('2d');
+        new Chart(ctxCompletion, {
+            type: 'line',
             data: {
-                labels: (d.serviceTypes || []).map(c => c.label),
+                labels: trendLabels,
                 datasets: [{
-                    data: (d.serviceTypes || []).map(c => c.value),
-                    backgroundColor: colorPalette.slice(0, Math.max((d.serviceTypes || []).length, 1)),
-                    borderWidth: 0
+                    label: 'Completion Rate',
+                    data: d.completionRateTrend || [],
+                    borderColor: '#16a34a',
+                    backgroundColor: (() => {
+                        const g = ctxCompletion.createLinearGradient(0, 0, 0, 200);
+                        g.addColorStop(0, 'rgba(22,163,74,0.15)');
+                        g.addColorStop(1, 'rgba(22,163,74,0)');
+                        return g;
+                    })(),
+                    fill: true,
+                    tension: 0.35,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#16a34a',
+                    pointBorderWidth: 2,
+                    borderWidth: 2.5
                 }]
             },
             options: {
-                plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 6, font: { size: 10 } } } },
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { size: 9 } } },
+                    y: { grid: { color: 'rgba(0,0,0,0.05)' }, beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } }
+                },
                 maintainAspectRatio: false
             }
         });
 
-        // Shipment mode doughnut
-        new Chart(document.getElementById('chartShipmentMode').getContext('2d'), {
-            type: 'doughnut',
+        // Top Carriers — vertical bar (linked to shipment/carrier data, contrasts with the horizontal bars around it)
+        new Chart(document.getElementById('chartTopCarriers').getContext('2d'), {
+            type: 'bar',
             data: {
-                labels: (d.shipmentModes || []).map(r => r.label),
+                labels: (d.topCarriers || []).map(r => r.label),
                 datasets: [{
-                    data: (d.shipmentModes || []).map(r => r.value),
-                    backgroundColor: colorPalette.slice(0, Math.max((d.shipmentModes || []).length, 1)),
-                    borderWidth: 0
+                    data: (d.topCarriers || []).map(r => r.value),
+                    backgroundColor: carrierColors.slice(0, Math.max((d.topCarriers || []).length, 1)),
+                    borderRadius: 4
                 }]
             },
             options: {
-                plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 6, font: { size: 10 } } } },
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { size: 9 } } },
+                    y: { grid: { color: 'rgba(0,0,0,0.05)' }, beginAtZero: true, ticks: { stepSize: 1 } }
+                },
                 maintainAspectRatio: false
             }
         });
 
-        // Invoicing coverage doughnut (linked to Customer Invoice module)
+        // Invoicing coverage (linked to Customer Invoice module) — doughnut
+        const invCov = d.invoicingCoverage || [];
         new Chart(document.getElementById('chartInvoicingCoverage').getContext('2d'), {
             type: 'doughnut',
             data: {
-                labels: (d.invoicingCoverage || []).map(c => c.label),
+                labels: invCov.map(c => c.label),
                 datasets: [{
-                    data: (d.invoicingCoverage || []).map(c => c.value),
+                    data: invCov.map(c => c.value),
                     backgroundColor: ['#0b6aa0', '#cbd5e1'],
                     borderWidth: 0
                 }]
@@ -494,7 +524,7 @@
                 labels: (d.handledBy || []).map(s => s.name),
                 datasets: [{
                     data: (d.handledBy || []).map(s => s.value),
-                    backgroundColor: '#f59e0b',
+                    backgroundColor: handledByColors.slice(0, Math.max((d.handledBy || []).length, 1)),
                     borderRadius: 4
                 }]
             },
