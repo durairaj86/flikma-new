@@ -62,10 +62,10 @@
     </div>
 
     @if($balance > 0)
-        <div class="d-grid mt-3">
+        {{--<div class="d-grid mt-3">
             <button type="button" class="btn btn-primary" onclick="CUSTOMER_INVOICE.recordPayment('{{ $customerInvoice->id }}')">
                 <i class="bi bi-cash-coin me-1"></i> Record Payment
             </button>
-        </div>
+        </div>--}}
     @endif
 </div>

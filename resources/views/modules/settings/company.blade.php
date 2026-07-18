@@ -33,9 +33,9 @@
                                                     <input type="file" id="logoInput" name="logoInput" class="d-none"
                                                            accept="image/png, image/jpeg">
                                                     <img id="logoPreview"
-                                                         src="{{ $company->logo_path ? asset('storage/'.$company->logo_path) : '' }}"
+                                                         src="{{ $company->logo ? asset('storage/'.$company->logo) : '' }}"
                                                          alt="Logo Preview"
-                                                         class="img-fluid mb-2 rounded @if(!$company->logo_path) d-none @endif">
+                                                         class="img-fluid mb-2 rounded @if(!$company->logo) d-none @endif">
                                                     <div class="upload-text">
                                                         <i class="bi bi-cloud-arrow-up text-primary fs-4"></i>
                                                         <p class="mb-0 small text-muted">Upload Logo</p>
