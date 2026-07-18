@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Sales;
 
+use App\Enums\CollectionEnum;
+use App\Enums\CustomerInvoiceEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
 use App\Models\Finance\Collection\Collection;
@@ -55,22 +57,22 @@ class SalesOverviewController extends Controller
     private function getTotalSales($startDate, $endDate): float
     {
         return (float) CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
-            ->where('status', 'approved')
+            ->where('status', CustomerInvoiceEnum::APPROVED->value)
             ->sum('base_grand_total');
     }
 
     private function getCollectedPayments($startDate, $endDate): float
     {
         return (float) Collection::whereBetween('collection_date', [$startDate, $endDate])
-            ->where('status', 'approved')
+            ->where('status', CollectionEnum::APPROVED->value)
             ->sum('base_grand_total');
     }
 
     private function getOutstandingAmount(): float
     {
-        $total = (float) CustomerInvoice::where('status', 'approved')
+        $total = (float) CustomerInvoice::where('status', CustomerInvoiceEnum::APPROVED->value)
             ->sum('base_grand_total');
-        $paid = (float) CustomerInvoice::where('status', 'approved')
+        $paid = (float) CustomerInvoice::where('status', CustomerInvoiceEnum::APPROVED->value)
             ->sum('paid_amount');
         return max(0, $total - $paid);
     }
@@ -78,11 +80,11 @@ class SalesOverviewController extends Controller
     private function getAverageInvoiceValue($startDate, $endDate): float
     {
         $count = CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
-            ->where('status', 'approved')
+            ->where('status', CustomerInvoiceEnum::APPROVED->value)
             ->count();
 
         $total = CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
-            ->where('status', 'approved')
+            ->where('status', CustomerInvoiceEnum::APPROVED->value)
             ->sum('base_grand_total');
 
         return $count > 0 ? $total / $count : 0;
@@ -91,12 +93,12 @@ class SalesOverviewController extends Controller
     private function getRecurringRatio($startDate, $endDate): float
     {
         $totalCustomers = (int) CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
-            ->where('status', 'approved')
+            ->where('status', CustomerInvoiceEnum::APPROVED->value)
             ->distinct('customer_id')
             ->count('customer_id');
 
         $recurring = (int) CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
-            ->where('status', 'approved')
+            ->where('status', CustomerInvoiceEnum::APPROVED->value)
             ->select('customer_id', DB::raw('COUNT(*) as invoice_count'))
             ->groupBy('customer_id')
             ->having('invoice_count', '>', 1)
@@ -108,14 +110,14 @@ class SalesOverviewController extends Controller
     private function getInvoicesCount($startDate, $endDate): int
     {
         return (int) CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
-            ->where('status', 'approved')
+            ->where('status', CustomerInvoiceEnum::APPROVED->value)
             ->count();
     }
 
     private function getCustomersCount($startDate, $endDate): int
     {
         return (int) CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
-            ->where('status', 'approved')
+            ->where('status', CustomerInvoiceEnum::APPROVED->value)
             ->distinct('customer_id')
             ->count('customer_id');
     }
@@ -130,7 +132,7 @@ class SalesOverviewController extends Controller
                 $monthEnd = Carbon::create(Carbon::now()->year, $i, 1)->endOfMonth();
 
                 $sales = (float) CustomerInvoice::whereBetween('invoice_date', [$monthStart, $monthEnd])
-                    ->where('status', 'approved')
+                    ->where('status', CustomerInvoiceEnum::APPROVED->value)
                     ->sum('base_grand_total');
 
                 $trend[] = $sales;
@@ -148,7 +150,7 @@ class SalesOverviewController extends Controller
                 $weekEnd = (clone $currentDate)->addDays(6)->min($endDate);
 
                 $sales = (float) CustomerInvoice::whereBetween('invoice_date', [$weekStart, $weekEnd])
-                    ->where('status', 'approved')
+                    ->where('status', CustomerInvoiceEnum::APPROVED->value)
                     ->sum('base_grand_total');
 
                 $trend[] = $sales;
@@ -165,7 +167,7 @@ class SalesOverviewController extends Controller
     private function getSalesByServiceType($startDate, $endDate): array
     {
         return CustomerInvoiceSub::whereHas('customerInvoice', fn($q) =>
-            $q->whereBetween('invoice_date', [$startDate, $endDate])->where('customer_invoices.status', 'approved')
+            $q->whereBetween('invoice_date', [$startDate, $endDate])->where('customer_invoices.status', CustomerInvoiceEnum::APPROVED->value)
         )
         ->join('descriptions', 'customer_invoice_subs.description_id', '=', 'descriptions.id')
         ->select('descriptions.category as label', DB::raw('SUM(customer_invoice_subs.line_total) as value'))
@@ -181,7 +183,7 @@ class SalesOverviewController extends Controller
     private function getSalesByRegion($startDate, $endDate): array
     {
         return CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
-            ->where('customer_invoices.status', 'approved')
+            ->where('customer_invoices.status', CustomerInvoiceEnum::APPROVED->value)
             ->whereNotNull('customer_invoices.customer_id')
             ->join('customers', 'customer_invoices.customer_id', '=', 'customers.id')
             ->select('customers.city_en as label', DB::raw('SUM(customer_invoices.base_grand_total) as value'))
@@ -197,7 +199,7 @@ class SalesOverviewController extends Controller
     private function getSalespeoplePerformance($startDate, $endDate): array
     {
         return CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
-            ->where('customer_invoices.status', 'approved')
+            ->where('customer_invoices.status', CustomerInvoiceEnum::APPROVED->value)
             ->whereNotNull('customer_invoices.created_by')
             ->join('users', 'customer_invoices.created_by', '=', 'users.id')
             ->select('users.name', DB::raw('SUM(customer_invoices.base_grand_total) as value'))
@@ -212,7 +214,7 @@ class SalesOverviewController extends Controller
     private function getTopCustomers($startDate, $endDate): array
     {
         $rows = CustomerInvoice::whereBetween('invoice_date', [$startDate, $endDate])
-            ->where('customer_invoices.status', 'approved')
+            ->where('customer_invoices.status', CustomerInvoiceEnum::APPROVED->value)
             ->select('customer_id',
                 DB::raw('COUNT(*) as invoice_count'),
                 DB::raw('SUM(base_grand_total) as revenue'),
@@ -236,7 +238,7 @@ class SalesOverviewController extends Controller
     private function getTopItems($startDate, $endDate): array
     {
         $items = CustomerInvoiceSub::whereHas('customerInvoice', fn($q) =>
-            $q->whereBetween('invoice_date', [$startDate, $endDate])->where('customer_invoices.status', 'approved')
+            $q->whereBetween('invoice_date', [$startDate, $endDate])->where('customer_invoices.status', CustomerInvoiceEnum::APPROVED->value)
         )
         ->select('description_id',
             DB::raw('SUM(quantity) as qty'),
@@ -263,7 +265,8 @@ class SalesOverviewController extends Controller
             ->groupBy('customer_invoices.status')
             ->get()
             ->map(fn($r) => [
-                'status' => $r->status,
+                'status' => CustomerInvoiceEnum::tryFrom($r->status)?->name ? strtolower(CustomerInvoiceEnum::tryFrom($r->status)->name) : (string) $r->status,
+                'label' => CustomerInvoiceEnum::tryFrom($r->status)?->label() ?? (string) $r->status,
                 'count' => (int) $r->count,
                 'total' => (float) $r->total,
             ])
@@ -276,22 +279,22 @@ class SalesOverviewController extends Controller
         $lastMonth = [Carbon::now()->subMonth()->startOfMonth(), Carbon::now()->subMonth()->endOfMonth()];
 
         $currentSales = (float) CustomerInvoice::whereBetween('invoice_date', $currentMonth)
-            ->where('status', 'approved')->sum('base_grand_total');
+            ->where('status', CustomerInvoiceEnum::APPROVED->value)->sum('base_grand_total');
 
         $lastSales = (float) CustomerInvoice::whereBetween('invoice_date', $lastMonth)
-            ->where('status', 'approved')->sum('base_grand_total');
+            ->where('status', CustomerInvoiceEnum::APPROVED->value)->sum('base_grand_total');
 
         $currentCount = (int) CustomerInvoice::whereBetween('invoice_date', $currentMonth)
-            ->where('status', 'approved')->count();
+            ->where('status', CustomerInvoiceEnum::APPROVED->value)->count();
 
         $lastCount = (int) CustomerInvoice::whereBetween('invoice_date', $lastMonth)
-            ->where('status', 'approved')->count();
+            ->where('status', CustomerInvoiceEnum::APPROVED->value)->count();
 
         $currentCollected = (float) Collection::whereBetween('collection_date', $currentMonth)
-            ->where('status', 'approved')->sum('base_grand_total');
+            ->where('status', CollectionEnum::APPROVED->value)->sum('base_grand_total');
 
         $lastCollected = (float) Collection::whereBetween('collection_date', $lastMonth)
-            ->where('status', 'approved')->sum('base_grand_total');
+            ->where('status', CollectionEnum::APPROVED->value)->sum('base_grand_total');
 
         return [
             'current' => ['sales' => $currentSales, 'invoices' => $currentCount, 'collected' => $currentCollected],

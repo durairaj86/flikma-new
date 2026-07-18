@@ -367,9 +367,9 @@
         // Invoice status table
         const statuses = d.invoiceStatuses || [];
         const statusHtml = statuses.map(s => {
-            const badgeClass = s.status === 'approved' ? 'bg-success' : s.status === 'draft' ? 'bg-secondary' : s.status === 'cancelled' ? 'bg-danger' : 'bg-warning';
+            const badgeClass = s.status === 'approved' ? 'bg-success' : s.status === 'draft' ? 'bg-secondary' : s.status === 'cancelled' ? 'bg-danger' : s.status === 'rejected' ? 'bg-danger' : s.status === 'converted' ? 'bg-info' : 'bg-warning';
             return `<tr>
-                <td><span class="badge ${badgeClass}">${s.status}</span></td>
+                <td><span class="badge ${badgeClass}">${s.label}</span></td>
                 <td class="text-end">${s.count}</td>
                 <td class="text-end fw-semibold">${fmtCurrency(s.total)}</td>
             </tr>`;
@@ -478,12 +478,12 @@
         new Chart(document.getElementById('chartStatus').getContext('2d'), {
             type: 'bar',
             data: {
-                labels: statuses.map(s => s.status.charAt(0).toUpperCase() + s.status.slice(1)),
+                labels: statuses.map(s => s.label),
                 datasets: [{
                     label: 'Count',
                     data: statuses.map(s => s.count),
                     backgroundColor: statuses.map(s =>
-                        s.status === 'approved' ? '#16a34a' : s.status === 'draft' ? '#94a3b8' : s.status === 'cancelled' ? '#dc2626' : '#f59e0b'
+                        s.status === 'approved' ? '#16a34a' : s.status === 'draft' ? '#94a3b8' : s.status === 'cancelled' ? '#dc2626' : s.status === 'rejected' ? '#dc2626' : s.status === 'converted' ? '#0dcaf0' : '#f59e0b'
                     ),
                     borderRadius: 4
                 }]
