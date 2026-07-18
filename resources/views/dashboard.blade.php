@@ -71,7 +71,7 @@
                                             </div>
                                             <div>
                                                 <div class="stat-label">Total Sales</div>
-                                                <div class="stat-value">₹ {{ number_format($totalSales, 0) }}</div>
+                                                <div class="stat-value">{{ number_format($totalSales, 0) }}</div>
                                                 <div class="muted-sm {{ $salesGrowth >= 0 ? 'text-success' : 'text-danger' }}">
                                                     <i class="fa fa-arrow-{{ $salesGrowth >= 0 ? 'up' : 'down' }}"></i> {{ abs($salesGrowth) }}%
                                                 </div>
