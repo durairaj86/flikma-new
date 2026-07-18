@@ -8,7 +8,7 @@
         <div id="show-buttons"></div>
     </div>
 </div>--}}
-<div class="g-3 align-items-center border-bottom py-3 px-4 small" style="background:#eee;">
+<div class="g-3 align-items-center border-bottom py-3 px-4 small" style="background:#eee;display:none">
     <div class="d-flex justify-content-between align-items-center flex-wrap">
         <div class="module-info">
             <span class="fw-semibold fs-5">{{ $supplier->row_no ?? 'New Supplier Invoice' }}</span>

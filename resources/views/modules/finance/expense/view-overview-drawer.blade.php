@@ -8,7 +8,7 @@
         background: #f7f7f9;
         padding: 8px 10px;
         border-radius: 4px;
-        border-left: 4px solid #0d6efd;
+        /*border-left: 4px solid #0d6efd;*/
         margin-bottom: 1rem;
     }
     table.table {
