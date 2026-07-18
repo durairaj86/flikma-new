@@ -114,6 +114,15 @@
                                 </div>
                             </div>
 
+                            <div class="col-md-2 form-filter">
+                                <label class="form-label fw-medium">Job Number</label>
+                                <select id="filter-job" name="filter-job"
+                                        class="tom-select-search"
+                                        data-placeholder="Search Job Number">
+                                    <option value=""></option>
+                                </select>
+                            </div>
+
                         </div>
                     </div>
 

@@ -12,6 +12,7 @@ PROFORMA_INVOICE = {
             PROFORMA_INVOICE.filter.filterBox();
             PROFORMA_INVOICE.filter.shipmentMode();
             PROFORMA_INVOICE.filter.polPodLoad();
+            PROFORMA_INVOICE.filter.jobLoad();
         },
         filterBox: function () {
             $('#apply-filter').off().on({
@@ -60,6 +61,52 @@ PROFORMA_INVOICE = {
         polPodLoad(preLoad = null) {
             initTomSelectSearch('#filter-pol', 'sea', 100, preLoad);
             initTomSelectSearch('#filter-pod', 'sea', 100, preLoad);
+        },
+        // Same search-as-you-type UX as POL/POD, but the submitted filter
+        // value must be the plain job number text (not POL's "code - name"
+        // combined value), since the backend matches it against job_no with
+        // a LIKE, not against a port code/name pair.
+        jobLoad() {
+            const selector = '#filter-job';
+            const el = document.querySelector(selector);
+            if (!el) return;
+            if (el.tomselect) el.tomselect.destroy();
+
+            new TomSelect(selector, {
+                valueField: 'name',
+                labelField: 'name',
+                searchField: 'name',
+                create: false,
+                placeholder: $(selector).data('placeholder') ?? '',
+                maxOptions: 50,
+                openOnFocus: false,
+                maxItems: 1,
+                allowEmptyOption: true,
+                preload: false,
+                hideSelected: false,
+                plugins: ['dropdown_input'],
+                load: function (query, callback) {
+                    if (!query.length) return callback();
+                    fetch(`/dropdown/search?query=${encodeURIComponent(query)}&db=job`)
+                        .then(res => res.json())
+                        .then(json => {
+                            const data = (Array.isArray(json) ? json : [])
+                                .filter(item => item && item.id !== null && item.id !== undefined)
+                                .map(item => ({id: String(item.id), name: item.name, code: item.code}));
+                            callback(data);
+                        })
+                        .catch(() => callback());
+                },
+                render: {
+                    option: function (data, escape) {
+                        const subtext = data.code ? `<div class="ts-subtext">${escape(data.code)}</div>` : '';
+                        return `<div class="option" data-selectable data-value="${escape(data.id)}">${escape(data.name)}${subtext}</div>`;
+                    },
+                    item: function (data, escape) {
+                        return `<div class="item">${escape(data.name)}</div>`;
+                    }
+                },
+            });
         }
     },
     printPreview(printId) {

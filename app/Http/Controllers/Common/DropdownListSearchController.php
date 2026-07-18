@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Common;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
+use App\Models\Job\Job;
 use App\Models\Master\TransportDirectory\Airport;
 use App\Models\Master\TransportDirectory\CarrierLines;
 use App\Models\Master\TransportDirectory\Port;
@@ -64,6 +65,28 @@ class DropdownListSearchController extends Controller
             return collect(['No Data Found']);
         }
         return $carrier;
+    }
+
+    public function job($search)
+    {
+        $jobs = Job::when($search, function ($q) use ($search) {
+            $q->where('row_no', 'LIKE', "%{$search}%");
+        })
+            ->with('customer:id,name_en')
+            ->select('id', 'row_no', 'customer_id')
+            ->orderByDesc('id')
+            ->limit(50)
+            ->get()
+            ->map(fn ($job) => [
+                'id' => $job->id,
+                'name' => $job->row_no,
+                'code' => $job->customer?->name_en,
+            ]);
+
+        if ($jobs->count() == 0) {
+            return collect(['No Data Found']);
+        }
+        return $jobs;
     }
 
     public function customerList()

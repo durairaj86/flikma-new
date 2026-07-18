@@ -82,6 +82,9 @@ class ProformaInvoiceController extends Controller
             })
             ->when(isset($filter['filter-pod']) && !empty($filter['filter-pod']), function ($query) use ($filter) {
                 $query->where('pod', 'like', "%{$filter['filter-pod']}%");
+            })
+            ->when(isset($filter['filter-job']) && !empty($filter['filter-job']), function ($query) use ($filter) {
+                $query->where('job_no', 'like', "%{$filter['filter-job']}%");
             });
         };
 

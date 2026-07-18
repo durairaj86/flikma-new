@@ -146,7 +146,7 @@
                 </div>
             </div>
             <div class="">
-                <table class="table align-middle dataTable" id="dataTable">
+                <table class="table align-middle dataTable" id="dataTable" data-modal-size="md">
                     <thead class="table-light bg-white">
                     <tr>
                         <th>#</th>
