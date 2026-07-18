@@ -118,7 +118,7 @@
                                             </div>
                                             <div>
                                                 <div class="stat-label">Profit</div>
-                                                <div class="stat-value">₹ {{ number_format($profit, 0) }}</div>
+                                                <div class="stat-value">{{ number_format($profit, 0) }}</div>
                                                 <div class="muted-sm {{ $profitMargin > 0 ? 'text-success' : 'text-danger' }}">
                                                     Margin {{ $profitMargin }}%
                                                 </div>
@@ -258,7 +258,7 @@
                                                     <td>{{ $transaction->invoice_number ?? $transaction->row_no }}</td>
                                                     <td>{{ $transaction->customer->name ?? 'N/A' }}</td>
                                                     <td>{{ $transaction->invoice_date }}</td>
-                                                    <td class="text-end">₹ {{ number_format($transaction->grand_total, 0) }}</td>
+                                                    <td class="text-end">{{ number_format($transaction->grand_total, 0) }}</td>
                                                     <td>
                                                         @if($transaction->status == 'approved')
                                                             <span class="badge bg-success">Paid</span>
@@ -294,7 +294,7 @@
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div>
                                         <h6>Outstanding</h6>
-                                        <div class="big">₹ {{ number_format($outstanding, 0) }}</div>
+                                        <div class="big">{{ number_format($outstanding, 0) }}</div>
                                         <div class="muted-sm mt-1">Total amount outstanding</div>
                                     </div>
                                     <div class="text-end">
@@ -307,17 +307,17 @@
 
                                 <hr class="my-2" />
                                 <div>
-                                    <div class="d-flex justify-content-between small mb-1"><div>Due <small class="text-muted">0-30d</small></div><div>₹ {{ number_format($outstanding30d, 0) }}</div></div>
+                                    <div class="d-flex justify-content-between small mb-1"><div>Due <small class="text-muted">0-30d</small></div><div>{{ number_format($outstanding30d, 0) }}</div></div>
                                     <div class="progress mb-2" style="height:8px;">
                                         <div class="progress-bar bg-warning" style="width:{{ $outstanding > 0 ? ($outstanding30d / $outstanding) * 100 : 0 }}%"></div>
                                     </div>
 
-                                    <div class="d-flex justify-content-between small mb-1"><div>Due <small class="text-muted">31-60d</small></div><div>₹ {{ number_format($outstanding60d, 0) }}</div></div>
+                                    <div class="d-flex justify-content-between small mb-1"><div>Due <small class="text-muted">31-60d</small></div><div>{{ number_format($outstanding60d, 0) }}</div></div>
                                     <div class="progress mb-2" style="height:8px;">
                                         <div class="progress-bar bg-danger" style="width:{{ $outstanding > 0 ? ($outstanding60d / $outstanding) * 100 : 0 }}%"></div>
                                     </div>
 
-                                    <div class="d-flex justify-content-between small mb-1"><div>Due <small class="text-muted">60+d</small></div><div>₹ {{ number_format($outstanding60Plus, 0) }}</div></div>
+                                    <div class="d-flex justify-content-between small mb-1"><div>Due <small class="text-muted">60+d</small></div><div>{{ number_format($outstanding60Plus, 0) }}</div></div>
                                     <div class="progress mb-0" style="height:8px;">
                                         <div class="progress-bar bg-secondary" style="width:{{ $outstanding > 0 ? ($outstanding60Plus / $outstanding) * 100 : 0 }}%"></div>
                                     </div>
@@ -330,7 +330,7 @@
                                     <div>
                                         <h6>Awaiting Approval</h6>
                                         <div class="big">{{ $awaitingApproval->count() }} Invoices</div>
-                                        <div class="muted-sm mt-1">Total ₹ {{ number_format($awaitingApprovalTotal, 0) }}</div>
+                                        <div class="muted-sm mt-1">Total {{ number_format($awaitingApprovalTotal, 0) }}</div>
                                     </div>
                                     <div>
                                         <a href="{{ route('invoices.customer') }}" class="btn btn-sm btn-outline-primary"><i class="fa fa-check"></i> Review</a>
@@ -344,7 +344,7 @@
                                         <div class="list-group-item px-0">
                                             <div class="d-flex justify-content-between">
                                                 <div>{{ $invoice->invoice_number ?? $invoice->row_no }}</div>
-                                                <div class="text-end">₹ {{ number_format($invoice->grand_total, 0) }}
+                                                <div class="text-end">{{ number_format($invoice->grand_total, 0) }}
                                                     <span class="text-muted d-block">{{ $invoice->customer->name ?? 'N/A' }}</span>
                                                 </div>
                                             </div>
@@ -382,7 +382,7 @@
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <h6>Revenue Summary</h6>
-                                        <div class="big">₹ {{ number_format($currentMonthSales, 0) }}</div>
+                                        <div class="big">{{ number_format($currentMonthSales, 0) }}</div>
                                         <div class="muted-sm mt-1">Net revenue (MTD)</div>
                                     </div>
                                     <div style="width:120px;">
@@ -393,11 +393,11 @@
                                 <hr class="my-2" />
                                 <div class="d-flex justify-content-between small">
                                     <div>Collected</div>
-                                    <div class="text-success">₹ {{ number_format($currentMonthCollected, 0) }}</div>
+                                    <div class="text-success">{{ number_format($currentMonthCollected, 0) }}</div>
                                 </div>
                                 <div class="d-flex justify-content-between small">
                                     <div>Pending</div>
-                                    <div class="text-danger">₹ {{ number_format($currentMonthPending, 0) }}</div>
+                                    <div class="text-danger">{{ number_format($currentMonthPending, 0) }}</div>
                                 </div>
                             </div>
 
