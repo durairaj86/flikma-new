@@ -120,9 +120,9 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>{{ $company->name ?? 'Company Name' }}</h1>
-            <p>{{ $company->address ?? 'Company Address' }}</p>
-            <p>Phone: {{ $company->phone ?? 'Company Phone' }} | Email: {{ $company->email ?? 'Company Email' }}</p>
+            <h1>{{ companyName() }}</h1>
+            <p>{{ companyAddress() }}</p>
+            <p>Phone: {{ companyPhone() }} | Email: {{ companyEmail() }}</p>
             <h2>COLLECTION VOUCHER</h2>
         </div>
 

@@ -3,18 +3,6 @@
 <x-app-layout>
 
     <style>
-        /* Page background & wrapper */
-        .wrapper { min-height: 100vh; }
-
-        /* Sidebar look (light, minimal) */
-        .main-sidebar { width: 240px; background: #ffffff; border-right: 1px solid rgba(0,0,0,0.04); }
-        .brand-link { height: 56px; border-bottom: 1px solid rgba(0,0,0,0.04); }
-        .nav-sidebar .nav-link { color: #495057; }
-        .nav-sidebar .nav-link.active { background: rgba(13,110,253,0.06); color: #0d6efd; border-left: 3px solid #0d6efd; }
-
-        /* Content area spacing */
-        .content-wrapper { /*margin-left: 240px;*/ padding: 20px; }
-
         /* Cards */
         .card { border-radius: 10px; box-shadow: 0 6px 18px rgba(20,20,50,0.04); border: 0; }
         .card-header { background: transparent; border-bottom: 1px solid rgba(0,0,0,0.04); padding: .9rem 1rem; }
@@ -49,31 +37,7 @@
         footer.small { color:#8a8f98; margin-top:12px; }
     </style>
 
-    <div class="hold-transition">
-
-        <div class="wrapper d-flex">
-            <!-- Sidebar -->
-            <aside class="main-sidebar sidebar-light-primary elevation-2 position-fixed h-100 d-none">
-                <a href="#" class="brand-link d-flex align-items-center p-3">
-                    <img src="https://cdn.jsdelivr.net/npm/admin-lte@4.6.6/dist/img/AdminLTELogo.png" alt="logo" class="brand-image img-circle me-2" style="width:34px;height:34px;opacity:.9;">
-                    <span class="brand-text fw-semibold">AdminLTE Lite</span>
-                </a>
-
-                <div class="sidebar pt-2">
-                    <nav class="mt-3">
-                        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview">
-                            <li class="nav-item"><a href="#" class="nav-link active"><i class="nav-icon fa fa-home"></i><p>Dashboard</p></a></li>
-                            <li class="nav-item"><a href="#" class="nav-link"><i class="nav-icon fa fa-file-invoice"></i><p>Invoices</p></a></li>
-                            <li class="nav-item"><a href="#" class="nav-link"><i class="nav-icon fa fa-people-group"></i><p>Customers</p></a></li>
-                            <li class="nav-item"><a href="#" class="nav-link"><i class="nav-icon fa fa-chart-simple"></i><p>Reports</p></a></li>
-                            <li class="nav-item"><a href="#" class="nav-link"><i class="nav-icon fa fa-gear"></i><p>Settings</p></a></li>
-                        </ul>
-                    </nav>
-                </div>
-            </aside>
-
-            <!-- Content -->
-            <div class="content-wrapper flex-grow-1">
+    <div class="p-3">
                 <!-- Top row: Title & timeframe -->
                 <div class="container-fluid mb-3 d-none">
                     <div class="row align-items-center">
@@ -203,7 +167,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="row g-3 mt-1">
+                            <div class="row g-3 mt-1 mb-3">
                                 <!-- Job Follow-ups -->
                                 <div class="col-md-6">
                                     <div class="card shadow-sm border-0 p-3 h-100">
@@ -246,7 +210,7 @@
                                 <div class="col-md-7">
                                     <div class="card">
                                         <div class="card-header d-flex justify-content-between align-items-center">
-                                            <h6 class="mb-0">Sales Overview</h6>
+                                            <h6 class="mb-0">Revenue vs Expenses</h6>
                                             <div class="text-muted small">Monthly</div>
                                         </div>
                                         <div class="card-body" style="min-height:220px;">
@@ -270,9 +234,9 @@
 
                             <!-- Bottom: Recent transactions (wide) -->
                             <div class="card">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h6 class="mb-0">Recent Transactions</h6>
-                                    <div><a href="#" class="btn btn-sm btn-outline-secondary">View All</a></div>
+                                <div class="card-header d-flex flex-row justify-content-between align-items-center w-100">
+                                    <h6 class="mb-0 me-2">Recent Transactions</h6>
+                                    <a href="{{ route('invoices.customer') }}" class="btn btn-sm btn-outline-secondary ms-auto flex-shrink-0">View All</a>
                                 </div>
                                 <div class="card-body p-0">
                                     <div class="table-responsive">
@@ -369,7 +333,7 @@
                                         <div class="muted-sm mt-1">Total ₹ {{ number_format($awaitingApprovalTotal, 0) }}</div>
                                     </div>
                                     <div>
-                                        <button class="btn btn-sm btn-outline-primary"><i class="fa fa-check"></i> Review</button>
+                                        <a href="{{ route('invoices.customer') }}" class="btn btn-sm btn-outline-primary"><i class="fa fa-check"></i> Review</a>
                                     </div>
                                 </div>
 
@@ -428,12 +392,12 @@
 
                                 <hr class="my-2" />
                                 <div class="d-flex justify-content-between small">
-                                    <div>Online</div>
-                                    <div>₹ {{ number_format($onlineRevenue, 0) }}</div>
+                                    <div>Collected</div>
+                                    <div class="text-success">₹ {{ number_format($currentMonthCollected, 0) }}</div>
                                 </div>
                                 <div class="d-flex justify-content-between small">
-                                    <div>Offline</div>
-                                    <div>₹ {{ number_format($offlineRevenue, 0) }}</div>
+                                    <div>Pending</div>
+                                    <div class="text-danger">₹ {{ number_format($currentMonthPending, 0) }}</div>
                                 </div>
                             </div>
 
@@ -448,38 +412,37 @@
 
 
                 <footer class="small text-center mt-3 mb-0">© <span id="y"></span> Your Company — All rights reserved.</footer>
-            </div> <!-- /.content-wrapper -->
-        </div> <!-- /.wrapper -->
+    </div>
 
         <!-- Scripts -->
-        <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/admin-lte@4.6.6/dist/js/adminlte.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
         <script>
             // footer year
             document.getElementById('y').innerText = new Date().getFullYear();
 
-            // Main Sales chart (bar stacked-like)
+            // Revenue vs Expenses chart (monthly bars, in thousands)
             var monthlyLabels = @json($monthlyLabels);
-            var onlineSales = @json($onlineSales);
-            var offlineSales = @json($offlineSales);
+            var monthlyRevenue = @json($monthlyRevenue);
+            var monthlyExpenses = @json($monthlyExpenses);
 
             new Chart(document.getElementById('salesMainChart'), {
                 type: 'bar',
                 data: {
                     labels: monthlyLabels,
                     datasets: [
-                        { label: 'Online', data: onlineSales, backgroundColor: 'rgba(13,110,253,0.9)', borderRadius: 6 },
-                        { label: 'Offline', data: offlineSales, backgroundColor: 'rgba(25,135,84,0.85)', borderRadius: 6 }
+                        { label: 'Revenue', data: monthlyRevenue, backgroundColor: 'rgba(13,110,253,0.9)', borderRadius: 6 },
+                        { label: 'Expenses', data: monthlyExpenses, backgroundColor: 'rgba(220,53,69,0.85)', borderRadius: 6 }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { position: 'top' } },
-                    scales: { y: { beginAtZero: true } }
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ₹${ctx.parsed.y.toLocaleString()}K` } }
+                    },
+                    scales: { y: { beginAtZero: true, ticks: { callback: (v) => '₹' + v + 'K' } } }
                 }
             });
 

@@ -41,6 +41,43 @@ function companyId()
     return false;
 }
 
+function companyName()
+{
+    $company = authUserCompany();
+    return $company->name ?? config('app.name');
+}
+
+function companyAddress()
+{
+    $company = authUserCompany();
+    if (!$company) {
+        return '';
+    }
+    return collect([$company->address, $company->city, $company->country])
+        ->filter()
+        ->implode(', ');
+}
+
+function companyEmail()
+{
+    $company = authUserCompany();
+    return $company->email ?? '';
+}
+
+function companyPhone()
+{
+    $company = authUserCompany();
+    return $company->phone ?? '';
+}
+
+function companyLogo()
+{
+    $company = authUserCompany();
+    return ($company && $company->logo)
+        ? asset('storage/' . $company->logo)
+        : asset('img/logo.png');
+}
+
 function encodeId($id)
 {
     if (is_string($id) || is_numeric($id)) {

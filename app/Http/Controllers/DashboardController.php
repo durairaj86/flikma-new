@@ -2,8 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\CollectionEnum;
+use App\Enums\CustomerInvoiceEnum;
+use App\Enums\JobEnum;
+use App\Enums\SupplierInvoiceEnum;
 use App\Models\Job\Job;
 use App\Models\Customer\Customer;
+use App\Models\Finance\Collection\Collection;
 use App\Models\Finance\CustomerInvoice\CustomerInvoice;
 use App\Models\Finance\SupplierInvoice\SupplierInvoice;
 use Carbon\Carbon;
@@ -62,16 +67,16 @@ class DashboardController extends Controller
 
             // Chart data
             'monthlyLabels' => $this->getMonthlyLabels(),
-            'onlineSales' => $this->getOnlineSales(),
-            'offlineSales' => $this->getOfflineSales(),
+            'monthlyRevenue' => $this->getMonthlyRevenue(),
+            'monthlyExpenses' => $this->getMonthlyExpenses(),
             'weeklyLabels' => $this->getWeeklyLabels(),
             'weeklyRevenueData' => $this->getWeeklyRevenueData(),
             'materialPercent' => $this->getMaterialPercent(),
             'labourPercent' => $this->getLabourPercent(),
             'transportPercent' => $this->getTransportPercent(),
             'dailyRevenueData' => $this->getDailyRevenueData(),
-            'onlineRevenue' => $this->getOnlineRevenue(),
-            'offlineRevenue' => $this->getOfflineRevenue(),
+            'currentMonthCollected' => $this->getCurrentMonthCollected(),
+            'currentMonthPending' => $this->getCurrentMonthPending(),
             'currentMonthSales' => $this->getCurrentMonthSales(),
         ];
 
@@ -80,13 +85,13 @@ class DashboardController extends Controller
 
     private function getTotalSales()
     {
-        return CustomerInvoice::where('status', 'approved')
+        return CustomerInvoice::where('status', CustomerInvoiceEnum::APPROVED->value)
             ->sum('grand_total');
     }
 
     private function getSalesGrowth()
     {
-        $previousMonthSales = CustomerInvoice::where('status', 'approved')
+        $previousMonthSales = CustomerInvoice::where('status', CustomerInvoiceEnum::APPROVED->value)
             ->whereMonth('invoice_date', Carbon::now()->subMonth()->month)
             ->sum('grand_total');
         $currentMonthSales = $this->getCurrentMonthSales();
@@ -98,7 +103,7 @@ class DashboardController extends Controller
 
     private function getCurrentMonthSales()
     {
-        return CustomerInvoice::where('status', 'approved')
+        return CustomerInvoice::where('status', CustomerInvoiceEnum::APPROVED->value)
             ->whereMonth('invoice_date', Carbon::now()->month)
             ->sum('grand_total');
     }
@@ -110,7 +115,7 @@ class DashboardController extends Controller
 
     private function getDueInvoices()
     {
-        return CustomerInvoice::where('status', 'approved')
+        return CustomerInvoice::where('status', CustomerInvoiceEnum::APPROVED->value)
             ->where('due_at', '<', Carbon::now())
             ->where('due_at', '>', Carbon::now()->subDays(30))
             ->count();
@@ -128,12 +133,12 @@ class DashboardController extends Controller
 
     private function getTotalRevenue()
     {
-        return CustomerInvoice::where('status', 'approved')->sum('grand_total');
+        return CustomerInvoice::where('status', CustomerInvoiceEnum::APPROVED->value)->sum('grand_total');
     }
 
     private function getTotalExpenses()
     {
-        return SupplierInvoice::where('status', 'approved')->sum('grand_total');
+        return SupplierInvoice::where('status', SupplierInvoiceEnum::APPROVED->value)->sum('grand_total');
     }
 
     private function getProfit()
@@ -169,61 +174,61 @@ class DashboardController extends Controller
 
     private function getJobFollowupsToday()
     {
-        return Job::where('status', 'active')->whereDate('updated_at', Carbon::today())->count();
+        return Job::where('status', JobEnum::PENDING->value)->whereDate('updated_at', Carbon::today())->count();
     }
 
     private function getJobFollowupsThisWeek()
     {
-        return Job::where('status', 'active')
+        return Job::where('status', JobEnum::PENDING->value)
             ->whereBetween('updated_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
             ->count();
     }
 
     private function getToCollect()
     {
-        return CustomerInvoice::where('status', 'approved')
+        return CustomerInvoice::where('status', CustomerInvoiceEnum::APPROVED->value)
             ->where('due_at', '<', Carbon::now()->addDays(7))
             ->sum('grand_total');
     }
 
     private function getToPay()
     {
-        return SupplierInvoice::where('status', 'approved')
+        return SupplierInvoice::where('status', SupplierInvoiceEnum::APPROVED->value)
             ->where('due_at', '<', Carbon::now()->addDays(7))
             ->sum('grand_total');
     }
 
     private function getOutstanding()
     {
-        return CustomerInvoice::where('status', 'approved')
+        return CustomerInvoice::where('status', CustomerInvoiceEnum::APPROVED->value)
             ->where('due_at', '<', Carbon::now())
             ->sum('grand_total');
     }
 
     private function getOutstanding30d()
     {
-        return CustomerInvoice::where('status', 'approved')
+        return CustomerInvoice::where('status', CustomerInvoiceEnum::APPROVED->value)
             ->whereBetween('due_at', [Carbon::now()->subDays(30), Carbon::now()])
             ->sum('grand_total');
     }
 
     private function getOutstanding60d()
     {
-        return CustomerInvoice::where('status', 'approved')
+        return CustomerInvoice::where('status', CustomerInvoiceEnum::APPROVED->value)
             ->whereBetween('due_at', [Carbon::now()->subDays(60), Carbon::now()->subDays(31)])
             ->sum('grand_total');
     }
 
     private function getOutstanding60Plus()
     {
-        return CustomerInvoice::where('status', 'approved')
+        return CustomerInvoice::where('status', CustomerInvoiceEnum::APPROVED->value)
             ->where('due_at', '<', Carbon::now()->subDays(60))
             ->sum('grand_total');
     }
 
     private function getOutstandingChange()
     {
-        $previousMonthOutstanding = CustomerInvoice::where('status', 'approved')
+        $previousMonthOutstanding = CustomerInvoice::where('status', CustomerInvoiceEnum::APPROVED->value)
             ->where('due_at', '<', Carbon::now()->subMonth())
             ->sum('grand_total');
 
@@ -234,7 +239,7 @@ class DashboardController extends Controller
 
     private function getAwaitingApproval()
     {
-        return CustomerInvoice::where('status', 'draft')->get();
+        return CustomerInvoice::where('status', CustomerInvoiceEnum::DRAFT->value)->get();
     }
 
     private function getAwaitingApprovalTotal()
@@ -260,32 +265,30 @@ class DashboardController extends Controller
         return array_reverse($labels);
     }
 
-    private function getOnlineSales()
+    private function getMonthlyRevenue()
     {
-        $sales = [];
+        $revenue = [];
         for ($i = 0; $i < 10; $i++) {
             $month = Carbon::now()->subMonths($i);
-            $sales[] = CustomerInvoice::where('status', 'approved')
+            $revenue[] = CustomerInvoice::where('status', CustomerInvoiceEnum::APPROVED->value)
                 ->whereMonth('invoice_date', $month->month)
                 ->whereYear('invoice_date', $month->year)
-                /*->where('payment_method', 'online')*/
                 ->sum('grand_total') / 1000; // Convert to thousands
         }
-        return array_reverse($sales);
+        return array_reverse($revenue);
     }
 
-    private function getOfflineSales()
+    private function getMonthlyExpenses()
     {
-        $sales = [];
+        $expenses = [];
         for ($i = 0; $i < 10; $i++) {
             $month = Carbon::now()->subMonths($i);
-            $sales[] = CustomerInvoice::where('status', 'approved')
+            $expenses[] = SupplierInvoice::where('status', SupplierInvoiceEnum::APPROVED->value)
                 ->whereMonth('invoice_date', $month->month)
                 ->whereYear('invoice_date', $month->year)
-                /*->where('payment_method', 'offline')*/
                 ->sum('grand_total') / 1000; // Convert to thousands
         }
-        return array_reverse($sales);
+        return array_reverse($expenses);
     }
 
     private function getWeeklyLabels()
@@ -304,7 +307,7 @@ class DashboardController extends Controller
                 $endDate = Carbon::now()->endOfMonth();
             }
 
-            $data[] = CustomerInvoice::where('status', 'approved')
+            $data[] = CustomerInvoice::where('status', CustomerInvoiceEnum::APPROVED->value)
                 ->whereBetween('invoice_date', [$startDate, $endDate])
                 ->sum('grand_total') / 1000; // Convert to thousands
         }
@@ -313,7 +316,7 @@ class DashboardController extends Controller
 
     private function getMaterialCost()
     {
-        return SupplierInvoice::where('status', 'approved')
+        return SupplierInvoice::where('status', SupplierInvoiceEnum::APPROVED->value)
             ->whereMonth('invoice_date', Carbon::now()->month)
             /*->where('category', 'material')*/
             ->sum('grand_total');
@@ -321,7 +324,7 @@ class DashboardController extends Controller
 
     private function getLabourCost()
     {
-        return SupplierInvoice::where('status', 'approved')
+        return SupplierInvoice::where('status', SupplierInvoiceEnum::APPROVED->value)
             ->whereMonth('invoice_date', Carbon::now()->month)
             /*->where('category', 'labour')*/
             ->sum('grand_total');
@@ -329,7 +332,7 @@ class DashboardController extends Controller
 
     private function getTransportCost()
     {
-        return SupplierInvoice::where('status', 'approved')
+        return SupplierInvoice::where('status', SupplierInvoiceEnum::APPROVED->value)
             ->whereMonth('invoice_date', Carbon::now()->month)
             /*->where('category', 'transport')*/
             ->sum('grand_total');
@@ -363,26 +366,23 @@ class DashboardController extends Controller
         $data = [];
         for ($i = 0; $i < 7; $i++) {
             $date = Carbon::now()->subDays($i);
-            $data[] = CustomerInvoice::where('status', 'approved')
+            $data[] = CustomerInvoice::where('status', CustomerInvoiceEnum::APPROVED->value)
                 ->whereDate('invoice_date', $date)
                 ->sum('grand_total') / 1000; // Convert to thousands
         }
         return array_reverse($data);
     }
 
-    private function getOnlineRevenue()
+    private function getCurrentMonthCollected()
     {
-        return CustomerInvoice::where('status', 'approved')
-            ->whereMonth('invoice_date', Carbon::now()->month)
-            /*->where('payment_method', 'online')*/
+        return (float) Collection::where('status', CollectionEnum::APPROVED->value)
+            ->whereMonth('collection_date', Carbon::now()->month)
+            ->whereYear('collection_date', Carbon::now()->year)
             ->sum('grand_total');
     }
 
-    private function getOfflineRevenue()
+    private function getCurrentMonthPending()
     {
-        return CustomerInvoice::where('status', 'approved')
-            ->whereMonth('invoice_date', Carbon::now()->month)
-            /*->where('payment_method', 'offline')*/
-            ->sum('grand_total');
+        return max(0, $this->getCurrentMonthSales() - $this->getCurrentMonthCollected());
     }
 }

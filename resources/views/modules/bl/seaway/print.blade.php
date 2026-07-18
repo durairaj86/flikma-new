@@ -101,11 +101,11 @@
 </head>
 <body>
     <div class="header">
-        <img src="{{ asset('images/logo.png') }}" alt="Company Logo" class="logo">
-        <div class="company-name">{{ config('app.name') }}</div>
+        <img src="{{ companyLogo() }}" alt="Company Logo" class="logo">
+        <div class="company-name">{{ companyName() }}</div>
         <div class="company-address">
-            123 Shipping Lane, Port City, Country<br>
-            Tel: +123 456 7890 | Email: info@example.com
+            {{ companyAddress() }}<br>
+            Tel: {{ companyPhone() }} | Email: {{ companyEmail() }}
         </div>
     </div>
 

@@ -125,11 +125,11 @@
     <!-- Company Header -->
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div class="company-info">
-            <img src="{{ asset('images/company_logo.png') }}" alt="Company Logo" style="max-height: 60px; margin-bottom: 6px;">
-            <h5>{{ 'Your Company Name' }}</h5>
+            <img src="{{ companyLogo() }}" alt="Company Logo" style="max-height: 60px; margin-bottom: 6px;">
+            <h5>{{ companyName() }}</h5>
             <small>
-                {{ '123 Business Street, City, Country' }}<br>
-                {{ 'info@company.com' }} | {{ '+91-9876543210' }}
+                {{ companyAddress() }}<br>
+                {{ companyEmail() }} | {{ companyPhone() }}
             </small>
         </div>
         <div class="invoice-meta text-end">

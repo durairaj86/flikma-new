@@ -75,9 +75,9 @@
     </div>
 
     <div class="company-info">
-        <h2>Your Company Name</h2>
-        <p>123 Business Street, City, Country</p>
-        <p>Phone: +123 456 7890 | Email: info@yourcompany.com</p>
+        <h2>{{ companyName() }}</h2>
+        <p>{{ companyAddress() }}</p>
+        <p>Phone: {{ companyPhone() }} | Email: {{ companyEmail() }}</p>
     </div>
 
     <div class="expense-details">

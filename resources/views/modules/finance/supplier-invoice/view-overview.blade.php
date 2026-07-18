@@ -22,13 +22,13 @@
         <!-- Company Header: Logo Left, Company Info Right -->
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div class="company-logo">
-                <img src="{{ asset('img/logo.png') }}" alt="Company Logo" style="max-height: 65px;">
+                <img src="{{ companyLogo() }}" alt="Company Logo" style="max-height: 65px;">
             </div>
             <div class="company-info text-end">
-                <h5>{{ 'Flikma Networks Ltd.' }}</h5>
+                <h5>{{ companyName() }}</h5>
                 <small>
-                    {{ '123 Business Street, City, Country' }}<br>
-                    {{ 'info@company.com' }} | {{ '+91-9876543210' }}
+                    {{ companyAddress() }}<br>
+                    {{ companyEmail() }} | {{ companyPhone() }}
                 </small>
             </div>
         </div>
@@ -224,8 +224,8 @@
         <!-- Footer -->
         <footer class="mt-5 pt-3 border-top text-center text-muted small">
             <div class="d-flex justify-content-between">
-                <div>Email: info@company.com</div>
-                <div>Phone: +91-9876543210</div>
+                <div>Email: {{ companyEmail() }}</div>
+                <div>Phone: {{ companyPhone() }}</div>
             </div>
         </footer>
 

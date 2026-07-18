@@ -23,12 +23,11 @@
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-start mb-4 border-bottom pb-3">
             <div class="d-flex align-items-center">
-                <img src="{{ asset('img/logo.png') }}" alt="Company Logo" style="height:70px;">
+                <img src="{{ companyLogo() }}" alt="Company Logo" style="height:70px;">
                 <div class="ms-3">
-                    <h5 class="mb-1 fw-bold text-dark">Flikma Networks Ltd.</h5>
+                    <h5 class="mb-1 fw-bold text-dark">{{ companyName() }}</h5>
                     <small class="text-muted">
-                        123 Business Street, DAMMAM<br>
-                        Saudi Arabia - 600001
+                        {{ companyAddress() }}
                     </small>
                 </div>
             </div>
@@ -200,8 +199,8 @@
         <!-- Footer -->
         <footer class="mt-5 pt-3 border-top text-center text-muted small">
             <div class="d-flex justify-content-between">
-                <div>Email: info@company.com</div>
-                <div>Phone: +91-9876543210</div>
+                <div>Email: {{ companyEmail() }}</div>
+                <div>Phone: {{ companyPhone() }}</div>
             </div>
         </footer>
     </div>

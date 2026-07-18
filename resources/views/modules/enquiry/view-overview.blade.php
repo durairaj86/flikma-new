@@ -99,13 +99,13 @@
         <!-- Company Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div class="company-logo">
-                <img src="{{ asset('img/logo.png') }}" alt="Company Logo" style="max-height: 60px;">
+                <img src="{{ companyLogo() }}" alt="Company Logo" style="max-height: 60px;">
             </div>
             <div class="company-info text-end">
-                <h5 class="mb-1">{{ 'Your Company Name' }}</h5>
+                <h5 class="mb-1">{{ companyName() }}</h5>
                 <small>
-                    {{ '123 Business Street, City, Country' }}<br>
-                    {{ 'info@company.com' }} | {{ '+91-9876543210' }}
+                    {{ companyAddress() }}<br>
+                    {{ companyEmail() }} | {{ companyPhone() }}
                 </small>
             </div>
         </div>
@@ -233,7 +233,7 @@
 
         <!-- Footer -->
         <footer class="text-center text-muted">
-            <div>Email: info@company.com | Phone: +91-9876543210</div>
+            <div>Email: {{ companyEmail() }} | Phone: {{ companyPhone() }}</div>
         </footer>
 
     </div>

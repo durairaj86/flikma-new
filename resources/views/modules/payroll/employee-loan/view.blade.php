@@ -140,7 +140,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="company-name">{{ config('app.name', 'Company Name') }}</div>
+            <div class="company-name">{{ companyName() }}</div>
             <div class="document-title">EMPLOYEE LOAN DETAILS</div>
             <div>{{ $employeeLoan->row_no ?? 'EL-00000' }}</div>
         </div>

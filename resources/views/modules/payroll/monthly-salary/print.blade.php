@@ -112,7 +112,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="company-name">{{ config('app.name', 'Company Name') }}</div>
+            <div class="company-name">{{ companyName() }}</div>
             <div class="document-title">SALARY SLIP</div>
             <div>{{ $monthlySalary->row_no ?? 'MS-00000' }}</div>
         </div>
