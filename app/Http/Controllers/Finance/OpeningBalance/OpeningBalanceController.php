@@ -116,11 +116,27 @@ class OpeningBalanceController extends Controller
             return back()->withErrors(['balances' => 'Enter at least one amount before saving.'])->withInput();
         }
 
+        $totalDebit  = $rows->sum(fn($r) => (float)($r['debit'] ?? 0));
+        $totalCredit = $rows->sum(fn($r) => (float)($r['credit'] ?? 0));
+
+        // A one-sided (or otherwise unbalanced) opening balance voucher
+        // corrupts the trial balance permanently, since nothing else in the
+        // system ever revisits it — reject it here rather than silently
+        // saving broken books.
+        if (round($totalDebit - $totalCredit, 2) !== 0.0) {
+            return back()->withErrors([
+                'balances' => sprintf(
+                    'Opening balance entries must balance — total debit (%s) does not equal total credit (%s). Add a contra entry (e.g. to Owner Capital / Retained Earnings) for the difference of %s.',
+                    number_format($totalDebit, 2),
+                    number_format($totalCredit, 2),
+                    number_format(abs($totalDebit - $totalCredit), 2)
+                ),
+            ])->withInput();
+        }
+
         DB::beginTransaction();
         try {
             $voucherNo   = 'OB-' . date('YmdHis');
-            $totalDebit  = $rows->sum(fn($r) => (float)($r['debit'] ?? 0));
-            $totalCredit = $rows->sum(fn($r) => (float)($r['credit'] ?? 0));
 
             $finance = Finance::create([
                 'voucher_no'        => $voucherNo,
@@ -225,6 +241,25 @@ class OpeningBalanceController extends Controller
 
         $debit  = (float)($request->debit  ?? 0);
         $credit = (float)($request->credit ?? 0);
+
+        // Check the whole voucher balances after this row's change, not just
+        // this row in isolation — same reasoning as the store() guard above.
+        if ($sub->finance_id) {
+            $otherRowsDebit  = FinanceSub::where('finance_id', $sub->finance_id)->where('id', '!=', $sub->id)->sum('debit');
+            $otherRowsCredit = FinanceSub::where('finance_id', $sub->finance_id)->where('id', '!=', $sub->id)->sum('credit');
+            $newTotalDebit   = $otherRowsDebit + $debit;
+            $newTotalCredit  = $otherRowsCredit + $credit;
+
+            if (round($newTotalDebit - $newTotalCredit, 2) !== 0.0) {
+                return back()->withErrors([
+                    'balances' => sprintf(
+                        'This change would leave the opening balance voucher unbalanced — total debit (%s) would not equal total credit (%s).',
+                        number_format($newTotalDebit, 2),
+                        number_format($newTotalCredit, 2)
+                    ),
+                ])->withInput();
+            }
+        }
 
         DB::beginTransaction();
         try {

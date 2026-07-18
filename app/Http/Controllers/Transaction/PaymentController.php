@@ -46,8 +46,10 @@ class PaymentController extends Controller
         // Filter for the actual selectable accounts for Paid Through
         $paidThroughAccounts = Account::whereIn('parent_id', [3, 4])->where('is_grouped', 0)->orderBy('name')->get();
 
-        // Get all accounts for additional transactions
-        $subAccounts = Account::where('is_grouped', 0)->orderBy('name')->get();
+        // Get all accounts for additional transactions — excluding system-managed
+        // equity accounts (Owner Capital, Retained Earnings, Current Year
+        // Profit/Loss) that shouldn't be posted to manually.
+        $subAccounts = Account::where('is_grouped', 0)->where('type', '!=', 'Equity')->orderBy('name')->get();
         // Initialize empty supplier invoices collection for new payment
         $supplierInvoices = collect();
         $selectedInvoice = [];
@@ -69,8 +71,10 @@ class PaymentController extends Controller
         // Filter for the actual selectable accounts for Paid Through
         $paidThroughAccounts = Account::whereIn('parent_id', [3, 4])->where('is_grouped', 0)->orderBy('name')->get();
 
-        // Get all accounts for additional transactions
-        $subAccounts = Account::where('is_grouped', 0)->orderBy('name')->get(); // All accounts for additional transactions
+        // Get all accounts for additional transactions — excluding system-managed
+        // equity accounts (Owner Capital, Retained Earnings, Current Year
+        // Profit/Loss) that shouldn't be posted to manually.
+        $subAccounts = Account::where('is_grouped', 0)->where('type', '!=', 'Equity')->orderBy('name')->get(); // All accounts for additional transactions
 
         // Get the IDs of invoices already included in this payment
         $selectedInvoiceIds = $payment->paymentInvoices->pluck('supplier_invoice_id')->toArray();
@@ -204,7 +208,24 @@ class PaymentController extends Controller
                 $taxTotal += $taxProportion;
             }
 
-            $grandTotal = $subTotal + $taxTotal + $bankCharges + $otherCharges;
+            // Additional transactions each post their own single-sided debit
+            // or credit line (see createFinanceEntries below) — their other
+            // side comes out of the same Bank/Cash account this payment
+            // credits, so grand_total (what's credited to Bank/Cash) must
+            // include their net effect or the posting goes out of balance.
+            $additionalTransactionsNet = 0;
+            if ($request->has('additional_transaction_accounts') && is_array($request->input('additional_transaction_accounts'))) {
+                foreach ($request->input('additional_transaction_accounts') as $index => $accountId) {
+                    $amount = $request->input('additional_transaction_amounts')[$index] ?? null;
+                    if (empty($accountId) || empty($amount)) {
+                        continue;
+                    }
+                    $isDebit = ($request->input('additional_transaction_types')[$index] ?? null) === 'debit';
+                    $additionalTransactionsNet += $isDebit ? (float) $amount : -(float) $amount;
+                }
+            }
+
+            $grandTotal = $subTotal + $taxTotal + $bankCharges + $otherCharges + $additionalTransactionsNet;
 
             // Update payment fields
             $payment->supplier_id = $validated['supplier'];

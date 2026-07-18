@@ -161,6 +161,11 @@ class ExpenseController extends Controller
 
         $grandTotal = $subTotal + $taxTotal;
 
+        // Expenses no longer expose a Currency field — they're always posted
+        // in the company's base currency (SAR), at a 1:1 rate.
+        $currency = $request->input('currency', 'SAR');
+        $currencyRate = (float) $request->input('currency_rate', 1) ?: 1;
+
         DB::beginTransaction();
         try {
             $expenseData = [
@@ -180,10 +185,11 @@ class ExpenseController extends Controller
                 'is_billable' => $request->input('is_billable', 0),
                 'status' => ExpenseEnum::PENDING->value,
                 //'created_by' => $id ? Expense::find($id)->created_by : Auth::id(),
-                'currency' => $request->input('currency'),
-                'currency_rate' => $request->input('currency_rate'),
-                'base_sub_total' => $request->input('currency_rate') * $subTotal,
-                'grand_total' => $request->input('currency_rate') * $taxTotal,
+                'currency' => $currency,
+                'currency_rate' => $currencyRate,
+                'base_sub_total' => $currencyRate * $subTotal,
+                'base_tax_total' => $currencyRate * $taxTotal,
+                'grand_total' => $grandTotal,
             ];
 
             if ($id) {
@@ -236,7 +242,6 @@ class ExpenseController extends Controller
                     'line_total' => $lineTotal,
                     'tax_percent' => $taxRate,
                     'tax_code' => $request->tax[$index] ?? null,
-                    'tax_amount' => $lineTax,
                     'total' => $lineTotal,
                     'total_with_tax' => $netAmount,
                 ]);
@@ -518,6 +523,23 @@ class ExpenseController extends Controller
             // Delete any existing finance entries for this expense
             $this->deleteExpenseFinanceEntries($expense->id);
 
+            // Get expense subs
+            $expenseSubs = $expense->expenseSubs;
+
+            // Compute the posting amounts directly from the line items rather
+            // than trusting the Expense header's stored totals, so the credit
+            // side is guaranteed to match the debit side by construction —
+            // this is what previously went out of balance (the header
+            // grand_total dropped the subtotal and Input VAT was never posted).
+            // Note: ExpenseSub has no `tax_amount` column (it's silently
+            // dropped on create() since it isn't in $fillable), so tax must
+            // be derived from total_with_tax - total instead.
+            $lineDebitTotal = $expenseSubs->sum('total');
+            $taxTotal = $expenseSubs->sum('total_with_tax') - $lineDebitTotal;
+            $creditTotal = $lineDebitTotal + $taxTotal;
+            $exchangeRate = $expense->currency_rate ?? 1;
+            $baseCreditTotal = $creditTotal * $exchangeRate;
+
             // Create a new finance entry
             $finance = new Finance();
             $finance->voucher_no = $expense->row_no;
@@ -528,12 +550,12 @@ class ExpenseController extends Controller
             $finance->customer_id = $expense->customer_id;
             $finance->narration = 'Expense: ' . $expense->row_no;
             $finance->currency = $expense->currency ?? 'SAR';
-            $finance->exchange_rate = $expense->currency_rate ?? 1;
-            $finance->total_debit = $expense->grand_total ?? 0;
-            $finance->total_credit = $expense->grand_total ?? 0;
+            $finance->exchange_rate = $exchangeRate;
+            $finance->total_debit = $creditTotal;
+            $finance->total_credit = $creditTotal;
             $finance->base_currency = 'SAR'; // Assuming SAR is the base currency
-            $finance->base_total_debit = $expense->base_grand_total ?? 0;
-            $finance->base_total_credit = $expense->base_grand_total ?? 0;
+            $finance->base_total_debit = $baseCreditTotal;
+            $finance->base_total_credit = $baseCreditTotal;
             $finance->job_id = $expense->job_id;
             $finance->job_no = $expense->job_no ?? '';
             $finance->is_approved = 1; // Approved
@@ -543,9 +565,6 @@ class ExpenseController extends Controller
             $finance->company_id = $expense->company_id;
             $finance->user_id = Auth::id();
             $finance->save();
-
-            // Get expense subs
-            $expenseSubs = $expense->expenseSubs;
 
             // Create finance sub entries
             $financeSubs = [];
@@ -558,16 +577,20 @@ class ExpenseController extends Controller
                 'reference_no' => $finance->reference_no,
                 'supplier_id' => $expense->vendor_id,
                 'customer_id' => $expense->customer_id,
-                'account_id' => $expense->payment_mode == 'bank' ? 4 : 3, // 4 for Bank, 3 for Cash
+                // payment_mode stores the specific bank/cash sub-account id the
+                // user picked (e.g. Petty Cash, Visa/Mastercard Undeposited) —
+                // account ids 3/4 are group/header accounts and can't be posted
+                // to directly, so crediting them was a separate bug.
+                'account_id' => $expense->payment_mode,
                 'reference_date' => formDate($expense->posted_at),
                 'description' => 'Payment for Expense ' . $expense->row_no,
                 'debit' => 0,
-                'credit' => $expense->grand_total,
+                'credit' => $creditTotal,
                 'currency' => $expense->currency ?? 'SAR',
                 'base_debit' => 0,
-                'base_credit' => $expense->base_grand_total ?? $expense->grand_total,
+                'base_credit' => $baseCreditTotal,
                 'base_currency' => 'SAR',
-                'exchange_rate' => $expense->currency_rate ?? 1,
+                'exchange_rate' => $exchangeRate,
                 'job_id' => $expense->job_id ?? null,
                 'job_no' => $expense->job_no ?? '',
                 'cost_center_id' => null,
@@ -581,7 +604,8 @@ class ExpenseController extends Controller
                 'updated_at' => now(),
             ];
 
-            // Debit entries for each expense sub
+            // Debit entries for each expense sub (excl. VAT — the tax portion
+            // is posted separately below to Input VAT, not to the expense account)
             foreach ($expenseSubs as $expenseSub) {
                 $financeSubs[] = [
                     'finance_id' => $finance->id,
@@ -596,10 +620,10 @@ class ExpenseController extends Controller
                     'debit' => $expenseSub->total,
                     'credit' => 0,
                     'currency' => $expense->currency ?? 'SAR',
-                    'base_debit' => $expenseSub->total * ($expense->currency_rate ?? 1),
+                    'base_debit' => $expenseSub->total * $exchangeRate,
                     'base_credit' => 0,
                     'base_currency' => 'SAR',
-                    'exchange_rate' => $expense->currency_rate ?? 1,
+                    'exchange_rate' => $exchangeRate,
                     'job_id' => $expense->job_id ?? null,
                     'job_no' => $expense->job_no ?? '',
                     'cost_center_id' => null,
@@ -607,6 +631,40 @@ class ExpenseController extends Controller
                     'is_auto_generated' => 1,
                     'linked_id' => $expenseSub->id,
                     'linked_type' => ExpenseSub::class,
+                    'user_id' => Auth::id(),
+                    'company_id' => $expense->company_id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+
+            // Input VAT debit line for the combined tax portion (previously
+            // never posted at all, which was the other half of the imbalance).
+            if ($taxTotal > 0) {
+                $financeSubs[] = [
+                    'finance_id' => $finance->id,
+                    'voucher_no' => $finance->voucher_no,
+                    'voucher_type' => $finance->voucher_type,
+                    'reference_no' => $finance->reference_no,
+                    'supplier_id' => $expense->vendor_id,
+                    'customer_id' => $expense->customer_id,
+                    'account_id' => 7, // Input VAT
+                    'reference_date' => formDate($expense->posted_at),
+                    'description' => 'Input VAT',
+                    'debit' => $taxTotal,
+                    'credit' => 0,
+                    'currency' => $expense->currency ?? 'SAR',
+                    'base_debit' => $taxTotal * $exchangeRate,
+                    'base_credit' => 0,
+                    'base_currency' => 'SAR',
+                    'exchange_rate' => $exchangeRate,
+                    'job_id' => $expense->job_id ?? null,
+                    'job_no' => $expense->job_no ?? '',
+                    'cost_center_id' => null,
+                    'is_tax_line' => 1,
+                    'is_auto_generated' => 1,
+                    'linked_id' => $expense->id,
+                    'linked_type' => Expense::class,
                     'user_id' => Auth::id(),
                     'company_id' => $expense->company_id,
                     'created_at' => now(),

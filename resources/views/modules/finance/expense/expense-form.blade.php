@@ -44,13 +44,6 @@
                                value="{{ $expense->posted_at }}" required>
                     </div>
 
-                    <!-- Currency -->
-                    <div class="col-md-4">
-                        <label class="form-label">Currency *</label>
-                        <x-common.currencies-exchange :value="$expense->currency" width="auto"
-                                                      :exchangeRate="$expense->currency_rate"/>
-                    </div>
-
                     <!-- Payment Status -->
                     {{--<div class="col-md-4">
                         <label class="form-label">Payment Status</label>
