@@ -73,6 +73,8 @@
                                     <th class="text-center">Create</th>
                                     <th class="text-center">Edit</th>
                                     <th class="text-center">Delete</th>
+                                    <th class="text-center">Approve</th>
+                                    <th class="text-center">Confirm</th>
                                     <th class="text-center">All</th>
                                 </tr>
                                 </thead>
@@ -80,7 +82,7 @@
                                 @foreach($rights as $moduleKey => $right)
                                     <tr data-module-row="{{ $moduleKey }}">
                                         <td>{{ $right['label'] }}</td>
-                                        @foreach(['view','create','edit','delete'] as $action)
+                                        @foreach(['view','create','edit','delete','approve','confirm'] as $action)
                                             <td class="text-center">
                                                 <input type="checkbox" class="form-check-input right-checkbox"
                                                        name="rights[{{ $moduleKey }}][{{ $action }}]" value="1"

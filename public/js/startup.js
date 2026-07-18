@@ -255,7 +255,7 @@ let GLOBAL_FN = {
         load() {
             loadJs('list.dataTable', '', {}, MODULE);
         },
-        optionButton(show = true) {
+        optionButton(show = true, alwaysShow = false) {
 
             return {
                 data: null,
@@ -263,7 +263,7 @@ let GLOBAL_FN = {
                 searchable: false,
                 className: 'text-center',
                 render: function (data, type, row) {
-                    if (row.company_id && show) {
+                    if (alwaysShow || (row.company_id && show)) {
                         return `<div class="dropdown">
         <a class="btn btn-outline-secondary btn-sm rounded-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-three-dots-vertical"></i>

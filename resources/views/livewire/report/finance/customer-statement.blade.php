@@ -33,12 +33,12 @@
             </div>
         </div>
 
-        <div class="card border-0 shadow-sm mb-4 d-print-none">
+        <div class="card border-0 shadow-sm mb-4 d-print-none" id="list-filter">
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
                     <div class="col-lg-4">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">Customer</label>
-                        <select class="form-select bg-light border-0 py-2 no-ts" wire:model.live="customerId">
+                        <select class="tom-select bg-light border-0 no-ts" wire:model.live="customerId" data-live-search="true">
                             <option value="">Select a customer...</option>
                             @foreach($customers as $customer)
                                 <option value="{{ $customer['id'] }}" wire:key="cust-opt-{{ $customer['id'] }}">{{ $customer['name_en'] }}</option>

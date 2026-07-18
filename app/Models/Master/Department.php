@@ -26,6 +26,8 @@ class Department extends Model
                 'can_create' => true,
                 'can_edit' => true,
                 'can_delete' => true,
+                'can_approve' => true,
+                'can_confirm' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
             ], array_keys(config('modules')));

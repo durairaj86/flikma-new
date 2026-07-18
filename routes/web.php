@@ -38,6 +38,7 @@ Route::middleware(['auth', 'module.permission'])->group(function () {
 
     Route::get('customer/{id}/overview', [\App\Http\Controllers\Customer\CustomerController::class, 'overview']);
     Route::get('customer/{id}/address', [\App\Http\Controllers\Customer\CustomerController::class, 'getAddress']);
+    Route::post('customer/document/{id}/delete', [\App\Http\Controllers\Customer\CustomerController::class, 'deleteDocument']);
     /*Route::get('customer/{id}/invoices', [\App\Http\Controllers\Customer\CustomerController::class, 'invoices']);
     Route::get('customer/{id}/transactions', [\App\Http\Controllers\Customer\CustomerController::class, 'transactions']);*/
 

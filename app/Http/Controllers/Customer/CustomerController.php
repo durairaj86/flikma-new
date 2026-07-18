@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Customer;
 use App\Enums\CustomerStatusEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
+use App\Models\Documents\Documents;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -246,7 +248,7 @@ class CustomerController extends Controller
 
     public function edit($id)
     {
-        $customer = Customer::findOrFail($id);
+        $customer = Customer::with('documents')->findOrFail($id);
         return view('modules.customer.customer-form', compact('customer'));
     }
 
@@ -348,10 +350,52 @@ class CustomerController extends Controller
         $customer->salesperson_id = $validated['salesperson_id'] ?? null;
         $customer->save();
 
+        $this->saveDocuments($customer, $request);
+
         return response()->json([
             'status' => 'success',
             'message' => 'Customer created successfully',
             'customer_id' => $customer->id,
+        ]);
+    }
+
+    private function saveDocuments(Customer $customer, Request $request): void
+    {
+        $titles = (array) $request->input('document_title', []);
+        $files = (array) $request->file('document_file', []);
+
+        foreach ($files as $index => $file) {
+            if (!$file || !$file->isValid()) {
+                continue;
+            }
+
+            $path = $file->storeAs(
+                'documents/' . $customer->company_id . '/customer/' . $customer->id,
+                pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) . '_' . uniqid() . '.' . $file->getClientOriginalExtension(),
+                'public'
+            );
+
+            $customer->documents()->create([
+                'title' => $titles[$index] ?? $file->getClientOriginalName(),
+                'file_path' => $path,
+                'file_name' => $file->getClientOriginalName(),
+                'posted_date' => now(),
+                'user_id' => Auth::id(),
+                'company_id' => $customer->company_id,
+            ]);
+        }
+    }
+
+    public function deleteDocument($id)
+    {
+        $document = Documents::where('documentable_type', Customer::class)->findOrFail($id);
+
+        Storage::disk('public')->delete($document->file_path);
+        $document->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Document deleted successfully',
         ]);
     }
 

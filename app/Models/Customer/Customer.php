@@ -3,10 +3,12 @@
 namespace App\Models\Customer;
 
 use App\Enums\CustomerStatusEnum;
+use App\Models\Documents\Documents;
 use App\Models\Master\Salesperson\Salesperson;
 use App\Traits\Log\LogHistoryTrait;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use App\Traits\CompanyScopeTrait;
@@ -62,6 +64,11 @@ class Customer extends Model
     public function salesperson(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(Salesperson::class, 'id', 'salesperson_id');
+    }
+
+    public function documents(): MorphMany
+    {
+        return $this->morphMany(Documents::class, 'documentable');
     }
 
     protected function name(): Attribute

@@ -432,6 +432,56 @@ CUSTOMER = {
             mandatoryFields.forEach(fieldId => {
                 toggleField(fieldId, isRegisteredCheck);
             });
+
+            CUSTOMER.form.documents.addRow();
+            CUSTOMER.form.documents.removeRow();
+            CUSTOMER.form.documents.removeExisting();
+        },
+        documents: {
+            addRow() {
+                $('#documentTable').off('click', '.add-document-row').on('click', '.add-document-row', function () {
+                    let $tbody = $(this).closest('tbody');
+                    let $newRow = $tbody.find('tr:first').clone();
+
+                    // Clear values in cloned row (file inputs included)
+                    $newRow.find('input').val('');
+
+                    $tbody.append($newRow);
+                });
+            },
+            removeRow() {
+                $('#documentTable').off('click', '.remove-row').on('click', '.remove-row', function () {
+                    let $tbody = $(this).closest('tbody');
+                    const $tr = $(this).closest('tr');
+                    if ($tbody.find('tr').length > 1) {
+                        $tr.remove();
+                    } else {
+                        $tr.find('input').val('');
+                    }
+                });
+            },
+            removeExisting() {
+                $('#existingDocumentList').off('click', '.remove-existing-document').on('click', '.remove-existing-document', function () {
+                    if (!confirm('Delete this document?')) {
+                        return;
+                    }
+
+                    const $li = $(this).closest('li');
+                    const documentId = $(this).attr('data-id');
+
+                    $.ajax({
+                        url: GLOBAL_FN.buildUrl('customer/document/' + documentId + '/delete'),
+                        type: 'POST',
+                        success: function () {
+                            $li.remove();
+                        },
+                        error: function (xhr) {
+                            let message = (xhr.responseJSON && xhr.responseJSON.message) || 'Could not delete this document.';
+                            alert(message);
+                        }
+                    });
+                });
+            }
         },
         quick: {
             open() {

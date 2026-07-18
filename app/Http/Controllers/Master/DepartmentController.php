@@ -88,17 +88,24 @@ class DepartmentController extends Controller
     private function saveRights(Department $department, array $rights): void
     {
         DB::transaction(function () use ($department, $rights) {
+            // Always scope the saved rows to the acting company (not
+            // $department->company_id, which is NULL for the shared
+            // default departments) — otherwise every company editing a
+            // shared department's rights would collide on the same row.
+            $companyId = companyId();
+
             foreach (array_keys(appModules()) as $module) {
                 $moduleRights = $rights[$module] ?? [];
 
                 DepartmentModulePermission::updateOrCreate(
-                    ['department_id' => $department->id, 'module' => $module],
+                    ['department_id' => $department->id, 'module' => $module, 'company_id' => $companyId],
                     [
-                        'company_id' => $department->company_id,
                         'can_view' => !empty($moduleRights['view']),
                         'can_create' => !empty($moduleRights['create']),
                         'can_edit' => !empty($moduleRights['edit']),
                         'can_delete' => !empty($moduleRights['delete']),
+                        'can_approve' => !empty($moduleRights['approve']),
+                        'can_confirm' => !empty($moduleRights['confirm']),
                     ]
                 );
             }
@@ -118,6 +125,8 @@ class DepartmentController extends Controller
                 'create' => $permission?->can_create ?? true,
                 'edit' => $permission?->can_edit ?? true,
                 'delete' => $permission?->can_delete ?? true,
+                'approve' => $permission?->can_approve ?? true,
+                'confirm' => $permission?->can_confirm ?? true,
             ];
         }
 
@@ -135,6 +144,8 @@ class DepartmentController extends Controller
                 'create' => true,
                 'edit' => true,
                 'delete' => true,
+                'approve' => true,
+                'confirm' => true,
             ];
         }
 

@@ -40,7 +40,7 @@ DEPARTMENT = {
                     {data: 'users_count'},
                     {data: 'created_at'},
                     {data: 'is_active'},
-                    GLOBAL_FN.dataTable.optionButton()
+                    GLOBAL_FN.dataTable.optionButton(true, true)
                 ],
                 language: {
                     search: ""
