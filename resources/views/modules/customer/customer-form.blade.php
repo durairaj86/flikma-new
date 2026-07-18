@@ -296,78 +296,78 @@
                         </div>
                     </div>
 
-                </div>
+                    <!-- Tab 6: Documents -->
+                    <div class="tab-pane" id="tab-documents">
+                        <div class="model-form-tab-div">
+                            <div class="model-form-sub-title">
+                                <h5>Documents</h5>
+                            </div>
 
-                <!-- Tab 6: Documents -->
-                <div class="tab-pane" id="tab-documents">
-                    <div class="model-form-tab-div">
-                        <div class="model-form-sub-title">
-                            <h5>Documents</h5>
-                        </div>
+                            @if($customer->id && $customer->documents->count())
+                                <ul class="list-group mb-3" id="existingDocumentList">
+                                    @foreach($customer->documents as $doc)
+                                        <li class="list-group-item d-flex justify-content-between align-items-center"
+                                            data-document-id="{{ $doc->id }}">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-file-earmark-text text-primary fs-5 me-2"></i>
+                                                <div>
+                                                    <div class="fw-semibold">{{ $doc->title }}</div>
+                                                    <small class="text-muted">{{ $doc->file_name }}</small>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex align-items-center gap-3">
+                                                <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank"
+                                                   class="text-success" title="View">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <a href="{{ asset('storage/' . $doc->file_path) }}"
+                                                   download="{{ $doc->file_name }}"
+                                                   class="text-primary" title="Download">
+                                                    <i class="bi bi-download"></i>
+                                                </a>
+                                                <span class="text-danger cursor-pointer remove-existing-document"
+                                                      data-id="{{ $doc->id }}" title="Delete">
+                                                    <i class="bi bi-trash"></i>
+                                                </span>
+                                            </div>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @endif
 
-                        @if($customer->id && $customer->documents->count())
-                            <ul class="list-group mb-3" id="existingDocumentList">
-                                @foreach($customer->documents as $doc)
-                                    <li class="list-group-item d-flex justify-content-between align-items-center"
-                                        data-document-id="{{ $doc->id }}">
-                                        <div class="d-flex align-items-center">
-                                            <i class="bi bi-file-earmark-text text-primary fs-5 me-2"></i>
-                                            <div>
-                                                <div class="fw-semibold">{{ $doc->title }}</div>
-                                                <small class="text-muted">{{ $doc->file_name }}</small>
+                            <table class="table align-middle mb-0" id="documentTable">
+                                <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>File</th>
+                                    <th width="5%"></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>
+                                        <input type="text" name="document_title[]" class="form-control"
+                                               placeholder="e.g. Trade License">
+                                    </td>
+                                    <td>
+                                        <input type="file" name="document_file[]" class="form-control">
+                                    </td>
+                                    <td class="align-content-center">
+                                        <div class="d-flex justify-content-between gap-3 action-icons">
+                                            <div class="add-document-row">
+                                                <i class="bi bi-plus-circle text-muted"></i>
+                                            </div>
+                                            <div class="remove-row">
+                                                <i class="bi bi-trash text-danger"></i>
                                             </div>
                                         </div>
-                                        <div class="d-flex align-items-center gap-3">
-                                            <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank"
-                                               class="text-success" title="View">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-                                            <a href="{{ asset('storage/' . $doc->file_path) }}"
-                                               download="{{ $doc->file_name }}"
-                                               class="text-primary" title="Download">
-                                                <i class="bi bi-download"></i>
-                                            </a>
-                                            <span class="text-danger cursor-pointer remove-existing-document"
-                                                  data-id="{{ $doc->id }}" title="Delete">
-                                                <i class="bi bi-trash"></i>
-                                            </span>
-                                        </div>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        @endif
-
-                        <table class="table align-middle mb-0" id="documentTable">
-                            <thead>
-                            <tr>
-                                <th>Title</th>
-                                <th>File</th>
-                                <th width="5%"></th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr>
-                                <td>
-                                    <input type="text" name="document_title[]" class="form-control"
-                                           placeholder="e.g. Trade License">
-                                </td>
-                                <td>
-                                    <input type="file" name="document_file[]" class="form-control">
-                                </td>
-                                <td class="align-content-center">
-                                    <div class="d-flex justify-content-between gap-3 action-icons">
-                                        <div class="add-document-row">
-                                            <i class="bi bi-plus-circle text-muted"></i>
-                                        </div>
-                                        <div class="remove-row">
-                                            <i class="bi bi-trash text-danger"></i>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
+
                 </div>
 
             </form>
