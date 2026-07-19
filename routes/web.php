@@ -8,16 +8,10 @@ use Codesmiths\LaravelOcrSpace\OcrSpaceOptions;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
-dd(request()->getHost());
-Route::get('/', function () {
 
-    if (request()->getHost() === 'app.flikma.com') {
-        return redirect('/login');
-    }
-
-    return redirect()->route('website.home');
-});
-include 'website.php';
+if (request()->getHost() == 'flikma.com') {
+    include 'website.php';
+}
 
 Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -95,8 +89,8 @@ Route::middleware(['auth', 'module.permission'])->group(function () {
     Route::get('currency/rate/{base}/{target}', [\App\Http\Controllers\CurrencyExchangeController::class, 'getExchangeRate']);
 
     // Column Settings (per-user, per-page column configuration)
-    Route::get('column-settings/{page}',    [\App\Http\Controllers\ColumnSettingsController::class, 'index']);
-    Route::post('column-settings/{page}',   [\App\Http\Controllers\ColumnSettingsController::class, 'save']);
+    Route::get('column-settings/{page}', [\App\Http\Controllers\ColumnSettingsController::class, 'index']);
+    Route::post('column-settings/{page}', [\App\Http\Controllers\ColumnSettingsController::class, 'save']);
     Route::delete('column-settings/{page}', [\App\Http\Controllers\ColumnSettingsController::class, 'reset']);
 
     //Route::view('/sales/quotations', 'modules.quotation.list')->name('quotations');
@@ -154,8 +148,6 @@ Route::get('logout', function () {
     //session()->forget('company_id');
     return redirect('/login');
 });
-
-
 
 
 Route::get('/test-ocr', [OcrController::class, 'index']);
