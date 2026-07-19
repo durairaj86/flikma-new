@@ -73,13 +73,13 @@ Navbar
             <div class="d-flex gap-3">
                 @auth
                     <a href="https://app.flikma.com/dashboard"
-                       class="btn btn-primary rounded-pill px-4">
+                       class="btn btn-primary rounded-pill px-4 py-2">
                         My Account
                     </a>
 
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
-                        <button class="btn btn-outline-danger rounded-pill px-4">
+                        <button class="btn btn-outline-danger rounded-pill px-4 py-2">
                             Logout
                         </button>
                     </form>
