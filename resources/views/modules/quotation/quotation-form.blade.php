@@ -527,7 +527,7 @@
                 </div>
 
                 <!-- Charges Tab -->
-                <div class="tab-pane mt-3" id="charges" role="tabpanel">
+                <div class="tab-pane mt-4" id="charges" role="tabpanel">
                     <div class="table-responsive">
                         <table class="table table-bordered table-sm align-middle" id="chargesTable">
                             <thead class="table-light">
@@ -629,11 +629,18 @@
                                         <input type="text" name="chg_remarks[]" class="form-control form-control-sm"
                                                value="{{ $charge->remarks ?? '' }}" autocomplete="off">
                                     </td>
-                                    <td class="text-center">
-                                        <button type="button" class="btn btn-outline-primary btn-sm chg-clone-row"
-                                                title="Clone"><i class="bi bi-copy"></i></button>
-                                        <button type="button" class="btn btn-outline-danger btn-sm chg-remove-row"
-                                                title="Delete"><i class="bi bi-trash"></i></button>
+                                    <td class="align-content-center">
+                                        <div class="d-flex justify-content-between gap-2 action-icons">
+                                            <div class="chg-add-row" title="Add">
+                                                <i class="bi bi-plus-circle text-muted"></i>
+                                            </div>
+                                            <div class="chg-clone-row" title="Clone">
+                                                <i class="bi bi-copy text-muted"></i>
+                                            </div>
+                                            <div class="chg-remove-row" title="Delete">
+                                                <i class="bi bi-trash text-danger"></i>
+                                            </div>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -648,10 +655,6 @@
                             </tfoot>
                         </table>
                     </div>
-
-                    <button type="button" id="addChargeRow" class="btn btn-sm btn-primary mt-2">
-                        <i class="bi bi-plus-circle me-1"></i>Add Charge
-                    </button>
                 </div>
 
                 <!-- Other Info Tab -->

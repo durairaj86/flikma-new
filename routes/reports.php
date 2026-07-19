@@ -13,6 +13,7 @@ Route::get('/reports/supplier-statement', \App\Livewire\Report\Finance\SupplierS
 Route::get('/reports/supplier-aging', \App\Livewire\Report\Finance\SupplierAging::class);
 Route::get('/reports/supplier-aging-all', \App\Livewire\Report\Finance\SupplierAgingAll::class);
 Route::get('/reports/general-ledger', \App\Livewire\Report\Finance\GeneralLedger::class);
+Route::get('/reports/supplier-ledger', \App\Livewire\Report\Finance\SupplierLedger::class);
 
 // Tax Reports
 Route::get('/reports/tax-summary', \App\Livewire\Report\Finance\TaxSummary::class);
@@ -28,6 +29,7 @@ Route::get('/reports/provisional-report', \App\Livewire\Report\Job\ProvisionalRe
 // Operation Reports
 Route::get('/reports/customer-activity-report', \App\Livewire\Report\Operation\CustomerActivityReport::class);
 Route::get('/reports/customer-balance-summary', \App\Livewire\Report\Operation\CustomerBalanceSummary::class);
+Route::get('/reports/supplier-balance-summary', \App\Livewire\Report\Operation\SupplierBalanceSummary::class);
 
 // Sale Reports
 Route::get('/reports/sale-report', \App\Livewire\Report\Sale\SaleReport::class);

@@ -90,7 +90,30 @@
                                 <code class="text-primary small fw-bold">{{ $selectedCustomer->code }}</code>
                             </div>
 
-                            <div class="space-y-3 py-3 border-top border-bottom border-light">
+                            @if($selectedCustomer->email || $selectedCustomer->phone || $selectedCustomer->address !== 'N/A')
+                                <div class="mb-3 pb-3 border-bottom border-light">
+                                    @if($selectedCustomer->email)
+                                        <div class="d-flex align-items-center gap-2 small text-muted mb-1">
+                                            <i class="bi bi-envelope text-primary"></i>
+                                            <span>{{ $selectedCustomer->email }}</span>
+                                        </div>
+                                    @endif
+                                    @if($selectedCustomer->phone)
+                                        <div class="d-flex align-items-center gap-2 small text-muted mb-1">
+                                            <i class="bi bi-telephone text-primary"></i>
+                                            <span>{{ $selectedCustomer->phone }}</span>
+                                        </div>
+                                    @endif
+                                    @if($selectedCustomer->address !== 'N/A')
+                                        <div class="d-flex align-items-center gap-2 small text-muted">
+                                            <i class="bi bi-geo-alt text-primary"></i>
+                                            <span>{{ $selectedCustomer->address }}</span>
+                                        </div>
+                                    @endif
+                                </div>
+                            @endif
+
+                            <div class="space-y-3 py-3 border-bottom border-light">
                                 <div class="d-flex justify-content-between">
                                     <span class="small text-muted">Opening:</span>
                                     <span class="small fw-bold text-dark">{{ number_format($openingBalance, 2) }}</span>
@@ -108,7 +131,7 @@
                             <div class="mt-4 text-center">
                                 <label class="small text-uppercase text-muted d-block mb-1 fw-bold">Current Balance</label>
                                 <h3 class="fw-bold text-primary mb-0 tabular-nums">
-                                    <small class="h6">SAR</small> {{ number_format($closingBalance, 2) }}
+                                    <small class="h6">{{ $company->base_currency ?? 'SAR' }}</small> {{ number_format($closingBalance, 2) }}
                                 </h3>
                             </div>
                         </div>
@@ -123,7 +146,7 @@
                                 <span class="badge bg-light text-dark border px-3 py-2">
                                     Period: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} &mdash; {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
                                 </span>
-                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">Currency: SAR</span>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">Currency: {{ $company->base_currency ?? 'SAR' }}</span>
                             </div>
                         </div>
                         <div class="table-responsive">
@@ -133,6 +156,7 @@
                                     <th class="ps-4 border-0">Date</th>
                                     <th class="border-0">Reference</th>
                                     <th class="border-0">Description</th>
+                                    <th class="border-0">FCY Amount</th>
                                     <th class="text-end border-0">Debit</th>
                                     <th class="text-end border-0">Credit</th>
                                     <th class="text-end pe-4 border-0">Balance</th>
@@ -141,6 +165,7 @@
                                 <tbody class="border-top-0">
                                 <tr class="bg-light-blue fw-bold">
                                     <td class="ps-4 py-3" colspan="3">Balance Brought Forward</td>
+                                    <td class="text-end"></td>
                                     <td class="text-end"></td>
                                     <td class="text-end"></td>
                                     <td class="text-end pe-4 tabular-nums">{{ number_format($openingBalance, 2) }}</td>
@@ -156,19 +181,28 @@
                                             <span class="x-small text-muted uppercase">{{ $txn->type }}</span>
                                         </td>
                                         <td class="small">{{ $txn->description }}</td>
+                                        <td class="small">
+                                            @if($txn->fcy_amount !== null)
+                                                <span class="fw-medium d-block">{{ $txn->currency }} {{ number_format($txn->fcy_amount, 2) }}</span>
+                                                <span class="x-small text-muted">{{ $company->base_currency ?? 'SAR' }} {{ number_format($txn->currency_rate, 4) }}</span>
+                                            @else
+                                                <span class="text-muted">—</span>
+                                            @endif
+                                        </td>
                                         <td class="text-end tabular-nums">{{ (float)$txn->debit > 0 ? number_format((float)$txn->debit, 2) : '—' }}</td>
                                         <td class="text-end tabular-nums text-danger">{{ (float)$txn->credit > 0 ? number_format((float)$txn->credit, 2) : '—' }}</td>
                                         <td class="text-end pe-4 fw-bold tabular-nums">{{ number_format($running, 2) }}</td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="text-center py-4 text-muted small italic">No transactions found for the selected period.</td>
+                                        <td colspan="7" class="text-center py-4 text-muted small italic">No transactions found for the selected period.</td>
                                     </tr>
                                 @endforelse
                                 </tbody>
                                 <tfoot class="bg-light border-top-2">
                                 <tr class="fw-bold">
                                     <td colspan="3" class="ps-4 py-3">Closing Totals</td>
+                                    <td class="text-end"></td>
                                     <td class="text-end tabular-nums text-dark">{{ number_format($totalDebit, 2) }}</td>
                                     <td class="text-end tabular-nums text-danger">{{ number_format($totalCredit, 2) }}</td>
                                     <td class="text-end pe-4 text-primary fs-5 tabular-nums">{{ number_format($closingBalance, 2) }}</td>
@@ -211,7 +245,7 @@
                             <div class="stmt-title">STATEMENT OF ACCOUNT</div>
                             <div class="stmt-sub">Period: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} to {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
                             <div class="stmt-sub">Generated: {{ now()->format('d M Y H:i') }}</div>
-                            <div class="stmt-sub">Currency: SAR</div>
+                            <div class="stmt-sub">Currency: {{ $company->base_currency ?? 'SAR' }}</div>
                         </td>
                     </tr>
                 </table>
@@ -243,17 +277,18 @@
                 <table class="stmt-table">
                     <thead>
                     <tr>
-                        <th style="width: 12%;">Date</th>
-                        <th style="width: 15%;">Reference</th>
+                        <th style="width: 10%;">Date</th>
+                        <th style="width: 12%;">Reference</th>
                         <th>Description</th>
-                        <th class="text-end" style="width: 13%;">Debit</th>
-                        <th class="text-end" style="width: 13%;">Credit</th>
-                        <th class="text-end" style="width: 14%;">Balance</th>
+                        <th style="width: 13%;">FCY Amount</th>
+                        <th class="text-end" style="width: 12%;">Debit</th>
+                        <th class="text-end" style="width: 12%;">Credit</th>
+                        <th class="text-end" style="width: 13%;">Balance</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr class="stmt-strong">
-                        <td colspan="5">Balance Brought Forward</td>
+                        <td colspan="6">Balance Brought Forward</td>
                         <td class="text-end">{{ number_format($openingBalance, 2) }}</td>
                     </tr>
                     @php $printRunning = $openingBalance; @endphp
@@ -263,19 +298,26 @@
                             <td>{{ $txn->display_date }}</td>
                             <td>{{ $txn->reference }}</td>
                             <td>{{ $txn->description }}</td>
+                            <td>
+                                @if($txn->fcy_amount !== null)
+                                    {{ $txn->currency }} {{ number_format($txn->fcy_amount, 2) }}<br>
+                                    <span style="font-size:10px;color:#666;">{{ $company->base_currency ?? 'SAR' }} {{ number_format($txn->currency_rate, 4) }}</span>
+                                @endif
+                            </td>
                             <td class="text-end">{{ (float)$txn->debit > 0 ? number_format((float)$txn->debit, 2) : '' }}</td>
                             <td class="text-end">{{ (float)$txn->credit > 0 ? number_format((float)$txn->credit, 2) : '' }}</td>
                             <td class="text-end">{{ number_format($printRunning, 2) }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center">No transactions found for the selected period.</td>
+                            <td colspan="7" class="text-center">No transactions found for the selected period.</td>
                         </tr>
                     @endforelse
                     </tbody>
                     <tfoot>
                     <tr class="stmt-strong">
                         <td colspan="3">Closing Totals</td>
+                        <td class="text-end"></td>
                         <td class="text-end">{{ number_format($totalDebit, 2) }}</td>
                         <td class="text-end">{{ number_format($totalCredit, 2) }}</td>
                         <td class="text-end">{{ number_format($closingBalance, 2) }}</td>

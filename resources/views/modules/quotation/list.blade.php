@@ -276,9 +276,15 @@
                 </div>
             </div>
 
-            <!-- Table with scroll -->
-            <div class="flex-grow-1 overflow-auto" id="tableWrapper">
-                <table class="table align-middle dataTable" id="dataTable" data-modal-size="md">
+            <!-- Table with scroll. min-height guarantees the wrapper always has
+                 room for a fully-expanded row action dropdown (the menu is a DOM
+                 descendant of this overflow:auto container, so it gets visually
+                 clipped at the wrapper's bottom edge whenever there are too few
+                 rows to naturally fill that height — CSS doesn't allow scrollable
+                 overflow-x with unclipped overflow-y on the same box, so a min-height
+                 floor is the fix, not an overflow-y tweak). -->
+            <div class="flex-grow-1 overflow-auto" style="min-height:320px;" id="tableWrapper">
+                <table class="table align-middle dataTable" id="dataTable" data-model-size="md">
                     <thead class="table-light sticky-top">
                     <tr>
                         {{-- Built dynamically by quotation.js from column settings --}}

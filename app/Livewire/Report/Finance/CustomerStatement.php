@@ -130,6 +130,7 @@ class CustomerStatement extends Component
             'total_debit'   => $data['totalDebit'],
             'total_credit'  => $data['totalCredit'],
             'closing'       => $data['closingBalance'],
+            'base_currency' => optional(authUserCompany())->base_currency ?: 'SAR',
         ];
 
         $filename = 'CustomerStatement-' . $data['selectedCustomer']->code
@@ -166,17 +167,22 @@ class CustomerStatement extends Component
                 ];
 
                 $companyId = auth()->user()->company_id ?? 1;
+                $baseCurrency = optional(authUserCompany())->base_currency ?: 'SAR';
 
-                // Opening balance: everything before startDate
+                // Opening balance: everything before startDate. Uses
+                // base_grand_total (company-currency amount), not
+                // grand_total (the invoice's own currency) — a foreign
+                // currency invoice would otherwise silently corrupt the
+                // running balance by mixing currencies together.
                 $openingInvoices    = \App\Models\Finance\CustomerInvoice\CustomerInvoice::where('customer_id', $this->customerId)
                     ->where('company_id', $companyId)
                     ->where('invoice_date', '<', $this->startDate)
-                    ->sum('grand_total');
+                    ->sum('base_grand_total');
 
                 $openingCollections = \App\Models\Finance\Collection\Collection::where('customer_id', $this->customerId)
                     ->where('company_id', $companyId)
                     ->where('collection_date', '<', $this->startDate)
-                    ->sum('grand_total');
+                    ->sum('base_grand_total');
 
                 $openingBalance = (float)$openingInvoices - (float)$openingCollections;
 
@@ -194,30 +200,38 @@ class CustomerStatement extends Component
                     ->orderBy('collection_date')
                     ->get();
 
-                $totalDebit  = (float)$invoices->sum('grand_total');
-                $totalCredit = (float)$collections->sum('grand_total');
+                $totalDebit  = (float)$invoices->sum('base_grand_total');
+                $totalCredit = (float)$collections->sum('base_grand_total');
 
                 foreach ($invoices as $inv) {
+                    $isForeign = $inv->currency && $inv->currency !== $baseCurrency;
                     $transactions[] = (object)[
-                        'date'         => $inv->getRawOriginal('invoice_date') ?? $inv->invoice_date,
-                        'display_date' => \Carbon\Carbon::parse($inv->invoice_date)->format('d M Y'),
-                        'type'         => 'invoice',
-                        'reference'    => $inv->row_no ?? $inv->invoice_no,
-                        'description'  => 'Customer Invoice',
-                        'debit'        => (float)($inv->grand_total ?? 0),
-                        'credit'       => 0,
+                        'date'          => $inv->getRawOriginal('invoice_date') ?? $inv->invoice_date,
+                        'display_date'  => \Carbon\Carbon::parse($inv->invoice_date)->format('d M Y'),
+                        'type'          => 'invoice',
+                        'reference'     => $inv->row_no ?? $inv->invoice_no,
+                        'description'   => 'Customer Invoice',
+                        'debit'         => (float)($inv->base_grand_total ?? $inv->grand_total ?? 0),
+                        'credit'        => 0,
+                        'currency'      => $inv->currency,
+                        'fcy_amount'    => $isForeign ? (float)($inv->grand_total ?? 0) : null,
+                        'currency_rate' => $isForeign ? (float)($inv->currency_rate ?? 0) : null,
                     ];
                 }
 
                 foreach ($collections as $col) {
+                    $isForeign = $col->currency && $col->currency !== $baseCurrency;
                     $transactions[] = (object)[
-                        'date'         => $col->getRawOriginal('collection_date') ?? $col->collection_date,
-                        'display_date' => \Carbon\Carbon::parse($col->collection_date)->format('d M Y'),
-                        'type'         => 'payment',
-                        'reference'    => $col->row_no ?? $col->reference_no ?? 'COL-' . $col->id,
-                        'description'  => 'Payment Received',
-                        'debit'        => 0,
-                        'credit'       => (float)($col->grand_total ?? 0),
+                        'date'          => $col->getRawOriginal('collection_date') ?? $col->collection_date,
+                        'display_date'  => \Carbon\Carbon::parse($col->collection_date)->format('d M Y'),
+                        'type'          => 'payment',
+                        'reference'     => $col->row_no ?? $col->reference_no ?? 'COL-' . $col->id,
+                        'description'   => 'Payment Received',
+                        'debit'         => 0,
+                        'credit'        => (float)($col->base_grand_total ?? $col->grand_total ?? 0),
+                        'currency'      => $col->currency,
+                        'fcy_amount'    => $isForeign ? (float)($col->grand_total ?? 0) : null,
+                        'currency_rate' => $isForeign ? (float)($col->currency_rate ?? 0) : null,
                     ];
                 }
 

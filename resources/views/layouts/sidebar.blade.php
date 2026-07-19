@@ -50,15 +50,15 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="/reports/customer-activity-report"
-                               class="nav-link {{ $submenu == 'customer-activity-report' ? 'active' : '' }}">
-                                <p>Customer Activity Report</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
                             <a href="/reports/customer-balance-summary"
                                class="nav-link {{ $submenu == 'customer-balance-summary' ? 'active' : '' }}">
                                 <p>Customer Balance Summary</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/reports/customer-activity-report"
+                               class="nav-link {{ $submenu == 'customer-activity-report' ? 'active' : '' }}">
+                                <p>Customer Activity Report</p>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -86,7 +86,7 @@
 
                 <!-- Suppliers / Agents -->
                 @php
-                    $supplierReportSlugs = ['supplier-statement', 'supplier-aging', 'supplier-aging-all'];
+                    $supplierReportSlugs = ['supplier-statement', 'supplier-balance-summary', 'supplier-aging', 'supplier-aging-all'];
                     $suppliersOpen = $menu == 'suppliers'
                         || ($menu == 'reports' && in_array($submenu, $supplierReportSlugs));
                 @endphp
@@ -109,6 +109,12 @@
                             <a href="/reports/supplier-statement"
                                class="nav-link {{ $submenu == 'supplier-statement' ? 'active' : '' }}">
                                 <p>Supplier Statement</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/reports/supplier-balance-summary"
+                               class="nav-link {{ $submenu == 'supplier-balance-summary' ? 'active' : '' }}">
+                                <p>Supplier Balance Summary</p>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -472,6 +478,12 @@
                                     <a href="/reports/general-ledger"
                                        class="nav-link {{ $submenu == 'general-ledger' ? 'active' : '' }}">
                                         <p>Customer Ledger</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/reports/supplier-ledger"
+                                       class="nav-link {{ $submenu == 'supplier-ledger' ? 'active' : '' }}">
+                                        <p>Supplier Ledger</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">

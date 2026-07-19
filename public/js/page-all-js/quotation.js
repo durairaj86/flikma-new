@@ -766,10 +766,26 @@ QUOTATION = {
             statusChange(row) {
                 $('#row_pending,#row_accepted,#row_rejected,#row_convert_to_job').off().on('click', function () {
                     let fd = new FormData();
+                    // Quotation's CONVERTED status code happens to collide
+                    // with Customer's REJECTED code in the shared confirm
+                    // dialog (both are 5) — pass an explicit message per
+                    // action so the right one always shows regardless of
+                    // the raw status value.
+                    let confirmMessage = null;
+                    if (this.id === 'row_convert_to_job') {
+                        confirmMessage = 'Are you sure you want to convert this quotation to a job?';
+                    } else if (this.id === 'row_accepted') {
+                        confirmMessage = 'Are you sure you want to mark this quotation as Accepted?';
+                    } else if (this.id === 'row_pending') {
+                        confirmMessage = 'Are you sure you want to move this quotation back to Pending?';
+                    } else if (this.id === 'row_rejected') {
+                        confirmMessage = 'Are you sure you want to cancel this quotation?';
+                    }
                     changeCustomerStatus(GLOBAL_FN.buildUrl('sales/quotation/' + row.attr('data-id') + '/status/' + $(this).attr('data-value')), {
                         method: 'POST',
                         data: fd,
-                        callBack: 'datatable'
+                        callBack: 'datatable',
+                        confirmMessage: confirmMessage
                     }, $(this).attr('data-value'));
                 })
             },
@@ -1033,6 +1049,17 @@ QUOTATION = {
                     calcRow($row);
                 });
 
+                /* Add new empty row at the end (matches the Container/
+                   Package tabs' "+" icon: always clones the first row with
+                   values cleared, appended last, regardless of which row's
+                   icon was clicked) */
+                $row.find('.chg-add-row').off('click.chg').on('click.chg', function () {
+                    let $first = $tbody.find('.charge-row:first');
+                    let $newRow = cloneRow($first, true);
+                    $tbody.append($newRow);
+                    renumberRows();
+                });
+
                 /* Clone this row */
                 $row.find('.chg-clone-row').off('click.chg').on('click.chg', function () {
                     let $clone = cloneRow($row, false);
@@ -1065,14 +1092,6 @@ QUOTATION = {
             /* initial totals */
             $tbody.find('.charge-row').each(function () {
                 calcRow($(this));
-            });
-
-            /* Add new empty row */
-            $('#addChargeRow').off('click.chg').on('click.chg', function () {
-                let $first = $tbody.find('.charge-row:first');
-                let $newRow = cloneRow($first, true);
-                $tbody.append($newRow);
-                renumberRows();
             });
         }
     },

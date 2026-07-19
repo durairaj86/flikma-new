@@ -26,18 +26,23 @@ class CustomerStatementReportExport implements FromCollection, WithHeadings, Wit
     public function collection()
     {
         $running = (float)($this->summary['opening'] ?? 0);
+        $baseCurrency = $this->summary['base_currency'] ?? 'SAR';
 
         $rows = collect([[
-            '', 'Balance Brought Forward', '', '', '', '', number_format($running, 2, '.', ''),
+            '', 'Balance Brought Forward', '', '', '', '', '', number_format($running, 2, '.', ''),
         ]]);
 
         foreach ($this->transactions as $txn) {
             $running += (float)$txn->debit - (float)$txn->credit;
+            $fcy = ($txn->fcy_amount ?? null) !== null
+                ? $txn->currency . ' ' . number_format($txn->fcy_amount, 2, '.', '') . ' (' . $baseCurrency . ' ' . number_format($txn->currency_rate, 4, '.', '') . ')'
+                : '';
             $rows->push([
                 $txn->display_date,
                 $txn->reference,
                 strtoupper($txn->type),
                 $txn->description,
+                $fcy,
                 (float)$txn->debit ?: '',
                 (float)$txn->credit ?: '',
                 $running,
@@ -45,7 +50,7 @@ class CustomerStatementReportExport implements FromCollection, WithHeadings, Wit
         }
 
         $rows->push([
-            '', '', '', 'CLOSING TOTALS',
+            '', '', '', 'CLOSING TOTALS', '',
             (float)($this->summary['total_debit'] ?? 0),
             (float)($this->summary['total_credit'] ?? 0),
             (float)($this->summary['closing'] ?? 0),
@@ -67,7 +72,7 @@ class CustomerStatementReportExport implements FromCollection, WithHeadings, Wit
             ['Customer Name:', $this->summary['name'], '', 'Opening Balance:', (float)($this->summary['opening'] ?? 0)],
             ['Customer Code:', $this->summary['customer_code'], '', 'Closing Balance:', (float)($this->summary['closing'] ?? 0)],
             [],
-            ['Date', 'Reference', 'Type', 'Description', 'Debit', 'Credit', 'Balance'],
+            ['Date', 'Reference', 'Type', 'Description', 'FCY Amount', 'Debit', 'Credit', 'Balance'],
         ];
     }
 
@@ -92,8 +97,8 @@ class CustomerStatementReportExport implements FromCollection, WithHeadings, Wit
                 $sheet = $event->sheet->getDelegate();
                 $highestRow = $sheet->getHighestRow();
 
-                $sheet->mergeCells('A1:G1');
-                $sheet->mergeCells('A2:G2');
+                $sheet->mergeCells('A1:H1');
+                $sheet->mergeCells('A2:H2');
                 $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 $sheet->getStyle('A2')->getFont()->setBold(true);
@@ -101,18 +106,18 @@ class CustomerStatementReportExport implements FromCollection, WithHeadings, Wit
                 $sheet->getStyle('A5:A6')->getFont()->setBold(true);
                 $sheet->getStyle('D5:D6')->getFont()->setBold(true);
 
-                foreach (range('A', 'G') as $col) {
+                foreach (range('A', 'H') as $col) {
                     $sheet->getColumnDimension($col)->setAutoSize(true);
                 }
 
                 // Opening balance row and closing totals row
-                $sheet->getStyle('A9:G9')->getFont()->setBold(true);
-                $footerRange = "A$highestRow:G$highestRow";
+                $sheet->getStyle('A9:H9')->getFont()->setBold(true);
+                $footerRange = "A$highestRow:H$highestRow";
                 $sheet->getStyle($footerRange)->getFont()->setBold(true);
                 $sheet->getStyle($footerRange)->getFill()
                     ->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('E9ECEF');
 
-                $sheet->getStyle("E9:G$highestRow")
+                $sheet->getStyle("F9:H$highestRow")
                     ->getNumberFormat()
                     ->setFormatCode('#,##0.00');
             },

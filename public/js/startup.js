@@ -427,7 +427,16 @@ function changeCustomerStatus(url, settings, newStatus, clickElement = null) {
     let message = "Are you sure you want to change status?";
     let requireReason = false;
 
-    if (newStatus === '2') {
+    // This function is shared across modules whose status codes are
+    // completely unrelated to each other (e.g. Quotation's CONVERTED = 5
+    // collides with Customer's REJECTED = 5) — a caller with its own
+    // wording for this specific action should pass it explicitly via
+    // settings.confirmMessage rather than relying on the newStatus
+    // guesses below, which only actually apply to Customer status changes.
+    if (settings && settings.confirmMessage) {
+        message = settings.confirmMessage;
+        requireReason = !!settings.requireReason;
+    } else if (newStatus === '2') {
         message = "Are you sure you want to convert this customer to Confirmed?";
     } else if (newStatus === '5') {
         message = "Why do you want to reject this customer?";
