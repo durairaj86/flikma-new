@@ -8,7 +8,13 @@ use Codesmiths\LaravelOcrSpace\OcrSpaceOptions;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
+Route::get('/', function () {
+    if (request()->getHost() === 'app.flikma.com') {
+        return redirect('/login');
+    }
 
+    return redirect()->route('website.home');
+});
 include 'website.php';
 
 Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
