@@ -149,7 +149,6 @@ Route::get('logout', function () {
     return redirect('/login');
 });
 
-
 Route::get('/test-ocr', [OcrController::class, 'index']);
 Route::post('/test-ocr/upload', [OcrController::class, 'upload'])->name('test-ocr.upload');
 
