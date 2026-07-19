@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
+    dd(request()->getHost());
     if (request()->getHost() === 'app.flikma.com') {
         return redirect('/login');
     }
