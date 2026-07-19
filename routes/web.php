@@ -8,8 +8,9 @@ use Codesmiths\LaravelOcrSpace\OcrSpaceOptions;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
+dd(request()->getHost());
 Route::get('/', function () {
-    dd(request()->getHost());
+
     if (request()->getHost() === 'app.flikma.com') {
         return redirect('/login');
     }
