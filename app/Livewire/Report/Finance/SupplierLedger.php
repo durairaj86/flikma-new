@@ -30,7 +30,6 @@ class SupplierLedger extends Component
             $this->supplierId = (string) $this->suppliers[0]['id'];
         }
     }
-
     public function loadSuppliers()
     {
         $this->suppliers = Supplier::where('company_id', companyId())
