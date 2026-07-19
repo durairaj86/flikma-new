@@ -14,8 +14,3 @@ Route::name('website.')->group(function () {
     Route::get('/contact', [ContactController::class, 'show'])->name('contact');
     Route::post('/contact', [ContactController::class, 'store'])->name('contact.submit');
 });
-
-// MUST be the last route
-Route::fallback(function () {
-    return redirect()->away('https://app.flikma.com/login');
-});
