@@ -122,6 +122,14 @@
                     </div>
                 </div>
             </div>
+            <div class="col-lg col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body p-3 text-center">
+                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">Overall Overdue Balance</div>
+                        <div class="h5 fw-bold text-danger mb-0 tabular-nums">{{ number_format($totals['overdue'], 2) }}</div>
+                    </div>
+                </div>
+            </div>
         </div>
         @endif
 
@@ -144,7 +152,8 @@
                         <th class="text-end border-0">Opening Balance</th>
                         <th class="text-end border-0">Invoiced</th>
                         <th class="text-end border-0">Received</th>
-                        <th class="text-end pe-4 border-0">Closing Balance</th>
+                        <th class="text-end border-0">Closing Balance</th>
+                        <th class="text-end pe-4 border-0">Overall Overdue Balance</th>
                     </tr>
                     </thead>
                     <tbody class="border-top-0">
@@ -163,13 +172,16 @@
                             <td class="text-end tabular-nums text-success">
                                 {{ $row['received'] > 0 ? number_format($row['received'], 2) : '—' }}
                             </td>
-                            <td class="text-end pe-4 tabular-nums fw-bold {{ $row['closing'] >= 0 ? 'text-dark' : 'text-danger' }}">
+                            <td class="text-end tabular-nums fw-bold {{ $row['closing'] >= 0 ? 'text-dark' : 'text-danger' }}">
                                 {{ number_format($row['closing'], 2) }}
+                            </td>
+                            <td class="text-end pe-4 tabular-nums fw-bold {{ $row['overdue'] > 0 ? 'text-danger' : 'text-muted' }}">
+                                {{ $row['overdue'] > 0 ? number_format($row['overdue'], 2) : '—' }}
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center py-5 text-muted">
+                            <td colspan="6" class="text-center py-5 text-muted">
                                 <div class="bg-light rounded-circle p-4 d-inline-block mb-3">
                                     <i class="bi bi-wallet2 h2 text-muted"></i>
                                 </div>
@@ -185,7 +197,8 @@
                         <td class="text-end tabular-nums">{{ number_format($totals['opening'], 2) }}</td>
                         <td class="text-end tabular-nums text-primary">{{ number_format($totals['invoiced'], 2) }}</td>
                         <td class="text-end tabular-nums text-success">{{ number_format($totals['received'], 2) }}</td>
-                        <td class="text-end pe-4 tabular-nums {{ $totals['closing'] >= 0 ? 'text-dark' : 'text-danger' }}">{{ number_format($totals['closing'], 2) }}</td>
+                        <td class="text-end tabular-nums {{ $totals['closing'] >= 0 ? 'text-dark' : 'text-danger' }}">{{ number_format($totals['closing'], 2) }}</td>
+                        <td class="text-end pe-4 tabular-nums text-danger">{{ number_format($totals['overdue'], 2) }}</td>
                     </tr>
                     </tfoot>
                     @endif
@@ -218,6 +231,7 @@
                     <th class="text-end">Invoiced</th>
                     <th class="text-end">Received</th>
                     <th class="text-end">Closing Balance</th>
+                    <th class="text-end">Overall Overdue Balance</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -228,9 +242,10 @@
                         <td class="text-end">{{ number_format($row['invoiced'], 2) }}</td>
                         <td class="text-end">{{ number_format($row['received'], 2) }}</td>
                         <td class="text-end">{{ number_format($row['closing'], 2) }}</td>
+                        <td class="text-end">{{ $row['overdue'] > 0 ? number_format($row['overdue'], 2) : '—' }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="text-center">No customer balances found for the selected period.</td></tr>
+                    <tr><td colspan="6" class="text-center">No customer balances found for the selected period.</td></tr>
                 @endforelse
                 </tbody>
                 <tfoot>
@@ -240,6 +255,7 @@
                     <td class="text-end">{{ number_format($totals['invoiced'], 2) }}</td>
                     <td class="text-end">{{ number_format($totals['received'], 2) }}</td>
                     <td class="text-end">{{ number_format($totals['closing'], 2) }}</td>
+                    <td class="text-end">{{ number_format($totals['overdue'], 2) }}</td>
                 </tr>
                 </tfoot>
             </table>

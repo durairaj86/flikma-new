@@ -63,6 +63,7 @@ class CustomerBalanceSummary extends Component
             'invoiced' => 0.0,
             'received' => 0.0,
             'closing' => 0.0,
+            'overdue' => 0.0,
         ];
 
         foreach ($customers as $customer) {
@@ -99,18 +100,31 @@ class CustomerBalanceSummary extends Component
                 continue;
             }
 
+            // Overall overdue balance: current outstanding amount on every
+            // invoice past its due date, regardless of the period filter —
+            // this is a live exposure figure, not scoped to startDate/endDate.
+            $overdue = (float) CustomerInvoice::where('customer_id', $customer->id)
+                ->where('company_id', $companyId)
+                ->whereNotNull('due_date')
+                ->where('due_date', '<', now())
+                ->whereRaw('base_grand_total - base_paid_amount > 0.01')
+                ->selectRaw('SUM(base_grand_total - base_paid_amount) as total')
+                ->value('total') ?? 0.0;
+
             $rows[] = [
                 'customer' => $customer,
                 'opening'  => $opening,
                 'invoiced' => $invoiced,
                 'received' => $received,
                 'closing'  => $closing,
+                'overdue'  => $overdue,
             ];
 
             $totals['opening']  += $opening;
             $totals['invoiced'] += $invoiced;
             $totals['received'] += $received;
             $totals['closing']  += $closing;
+            $totals['overdue']  += $overdue;
         }
 
         return [$rows, $totals];
@@ -120,19 +134,21 @@ class CustomerBalanceSummary extends Component
     {
         [$rows, $totals] = $this->getReportData();
 
-        $columns = ['Customer', 'Code', 'Opening Balance', 'Invoiced', 'Received', 'Closing Balance'];
+        $columns = ['Customer', 'Code', 'Opening Balance', 'Invoiced', 'Received', 'Closing Balance', 'Overall Overdue Balance'];
 
         $exportRows = [];
         foreach ($rows as $row) {
             $exportRows[] = [
                 $row['customer']->name_en, $row['customer']->row_no,
                 (float) $row['opening'], (float) $row['invoiced'], (float) $row['received'], (float) $row['closing'],
+                (float) $row['overdue'],
             ];
         }
 
         $totalsRow = [
             '', 'TOTAL',
             (float) $totals['opening'], (float) $totals['invoiced'], (float) $totals['received'], (float) $totals['closing'],
+            (float) $totals['overdue'],
         ];
 
         $meta = [
