@@ -11,11 +11,6 @@ use Illuminate\Support\Facades\Route;
 
 include 'website.php';
 
-if (request()->getHost() === 'flikma.com' || request()->getHost() === 'www.flikma.com') {
-    Route::redirect('/login', 'https://app.flikma.com/login');
-    Route::redirect('/register', 'https://app.flikma.com/register');
-}
-
 Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/welcome', function () {

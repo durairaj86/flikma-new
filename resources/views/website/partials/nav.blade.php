@@ -71,19 +71,29 @@ Navbar
 
 
             <div class="d-flex gap-3">
+                @auth
+                    <a href="https://app.flikma.com/dashboard"
+                       class="btn btn-primary rounded-pill px-4">
+                        My Account
+                    </a>
 
-                <a href="https://app.flikma.com/login" class="btn btn-outline-dark rounded-pill px-4">
+                    <form action="{{ route('logout') }}" method="POST">
+                        @csrf
+                        <button class="btn btn-outline-danger rounded-pill px-4">
+                            Logout
+                        </button>
+                    </form>
+                @else
+                    <a href="https://app.flikma.com/login"
+                       class="btn btn-outline-dark rounded-pill px-4">
+                        Login
+                    </a>
 
-                    Login
-
-                </a>
-
-                <a href="https://app.flikma.com/register" class="btn btn-primary rounded-pill px-4">
-
-                    Register
-
-                </a>
-
+                    <a href="https://app.flikma.com/register"
+                       class="btn btn-primary rounded-pill px-4">
+                        Register
+                    </a>
+                @endauth
             </div>
 
         </div>
