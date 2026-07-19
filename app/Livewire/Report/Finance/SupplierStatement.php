@@ -80,18 +80,23 @@ class SupplierStatement extends Component
             return;
         }
 
-        $columns = ['Date', 'Voucher No', 'Type', 'Description', 'Invoiced', 'Paid', 'Balance'];
+        $baseCurrency = optional(authUserCompany())->base_currency ?: 'SAR';
+        $columns = ['Date', 'Voucher No', 'Type', 'Description', 'FCY Amount', 'Invoiced', 'Paid', 'Balance'];
 
         $rows = [[
-            '', 'Balance Brought Forward', '', '', '', '', (float)$data['openingBalance'],
+            '', 'Balance Brought Forward', '', '', '', '', '', (float)$data['openingBalance'],
         ]];
 
         foreach ($data['transactions'] as $txn) {
+            $fcy = $txn->fcy_amount !== null
+                ? $txn->currency . ' ' . number_format($txn->fcy_amount, 2, '.', '') . ' (' . $baseCurrency . ' ' . number_format($txn->exchange_rate, 4, '.', '') . ')'
+                : '';
             $rows[] = [
                 Carbon::parse($txn->reference_date)->format('d M Y'),
                 $txn->voucher_no,
                 $this->voucherTypeLabel($txn->voucher_type),
                 $txn->description,
+                $fcy,
                 $txn->voucher_type === 'SI' ? (float)$txn->base_credit : '',
                 $txn->voucher_type === 'PV' ? (float)$txn->base_debit : '',
                 (float)$txn->balance,
@@ -99,7 +104,7 @@ class SupplierStatement extends Component
         }
 
         $totalsRow = [
-            '', '', '', 'CLOSING TOTALS',
+            '', '', '', 'CLOSING TOTALS', '',
             (float)$data['invoicedAmount'],
             (float)$data['paidAmount'],
             (float)$data['closingBalance'],
@@ -113,7 +118,7 @@ class SupplierStatement extends Component
                     . ' to ' . Carbon::parse($this->endDate)->format('d M Y'),
                 'Generated on: ' . now()->format('d-m-Y H:i'),
             ],
-            'numeric_from' => 5,
+            'numeric_from' => 6,
         ];
 
         $filename = 'SupplierStatement-' . $data['supplier']->row_no
@@ -189,6 +194,8 @@ class SupplierStatement extends Component
                 'f.narration as description',
                 'f.currency',
                 'f.exchange_rate',
+                'f.total_credit',                      // FCY: invoice/payment amount in its own currency
+                'f.total_debit',
                 'f.base_total_credit as base_credit',  // SI: AP credited (invoice)
                 'f.base_total_debit  as base_debit'    // PV: AP debited  (payment)
             )
@@ -196,9 +203,11 @@ class SupplierStatement extends Component
             ->orderBy('f.id')
             ->get();
 
+        $baseCurrency = optional(authUserCompany())->base_currency ?: 'SAR';
+
         // Running balance (supplier AP perspective: credit increases, debit decreases)
         $runningBalance = $openingBalance;
-        $transactions = $transactions->map(function ($txn) use (&$runningBalance) {
+        $transactions = $transactions->map(function ($txn) use (&$runningBalance, $baseCurrency) {
             if ($txn->voucher_type === 'SI') {
                 // Invoice: we owe more to supplier → balance goes up
                 $runningBalance += (float) $txn->base_credit;
@@ -209,6 +218,15 @@ class SupplierStatement extends Component
                 $runningBalance += (float) $txn->base_credit - (float) $txn->base_debit;
             }
             $txn->balance = $runningBalance;
+
+            // FCY Amount column — only shown when the transaction's own
+            // currency differs from the company's base currency.
+            $isForeign = $txn->currency && $txn->currency !== $baseCurrency;
+            $fcyAmount = $txn->voucher_type === 'SI' ? (float) $txn->total_credit
+                : ($txn->voucher_type === 'PV' ? (float) $txn->total_debit
+                    : (float) $txn->total_credit - (float) $txn->total_debit);
+            $txn->fcy_amount = $isForeign ? $fcyAmount : null;
+
             return $txn;
         });
 

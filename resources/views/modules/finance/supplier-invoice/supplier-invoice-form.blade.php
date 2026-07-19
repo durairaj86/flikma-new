@@ -265,9 +265,27 @@
                             <td></td>
                         </tr>
                         <tr>
-                            <td colspan="6" class="text-end">Grand Total</td>
-                            <td class="text-end fw-bold" id="grandNet">
-                                {{ number_format($supplier->grand_total, decimals()) }}
+                            @php
+                                $baseCurrency = optional(authUserCompany())->base_currency ?? 'SAR';
+                                $isForeignCurrency = ($supplier->currency ?? null) && $supplier->currency !== $baseCurrency;
+                            @endphp
+                            <td colspan="6" class="text-end">
+                                Grand Total
+                                <div class="grand-total-fx {{ $isForeignCurrency ? '' : 'd-none' }}">
+                                    <small class="text-muted d-block mt-1">
+                                        &asymp; <span id="sarRate">{{ number_format($supplier->currency_rate ?? 1, 4) }}</span>
+                                        {{ $baseCurrency }}/<span id="fxCurrencyCode">{{ $supplier->currency ?? '' }}</span>
+                                    </small>
+                                </div>
+                            </td>
+                            <td class="text-end">
+                                <div class="d-flex flex-column align-items-end">
+                                    <div class="fw-bold" id="grandNet">{{ number_format($supplier->grand_total, decimals()) }}</div>
+                                    <small class="text-muted grand-total-fx {{ $isForeignCurrency ? '' : 'd-none' }}">
+                                        <span id="sarEquivalent">{{ number_format(($supplier->grand_total ?? 0) * ($supplier->currency_rate ?? 1), decimals()) }}</span>
+                                        {{ $baseCurrency }}
+                                    </small>
+                                </div>
                             </td>
                             <td></td>
                         </tr>

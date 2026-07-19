@@ -144,7 +144,7 @@
                             <h6 class="mb-0 fw-bold"><i class="bi bi-journal-text me-2 text-primary"></i>Transaction Ledger</h6>
                             <div class="d-flex align-items-center gap-2">
                                 <span class="badge bg-light text-dark border px-3 py-2">
-                                    Period: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} &mdash; {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
+                                    Period: {{ \Carbon\Carbon::parse($startDate)->format('d-m-Y') }} &mdash; {{ \Carbon\Carbon::parse($endDate)->format('d-m-Y') }}
                                 </span>
                                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">Currency: {{ $company->base_currency ?? 'SAR' }}</span>
                             </div>
@@ -175,7 +175,12 @@
                                 @forelse($transactions as $txn)
                                     @php $running += (float)$txn->debit - (float)$txn->credit; @endphp
                                     <tr wire:key="txn-{{ $loop->index }}">
-                                        <td class="ps-4 small text-muted">{{ $txn->display_date }}</td>
+                                        <td class="ps-4 small text-muted">
+                                            {{ $txn->display_date }}
+                                            @if(($txn->days_overdue ?? 0) > 0)
+                                                <span class="d-block text-danger x-small fw-bold">Overdue {{ $txn->days_overdue }} {{ Str::plural('day', $txn->days_overdue) }}</span>
+                                            @endif
+                                        </td>
                                         <td>
                                             <span class="fw-medium d-block">{{ $txn->reference }}</span>
                                             <span class="x-small text-muted uppercase">{{ $txn->type }}</span>
@@ -243,8 +248,8 @@
                         </td>
                         <td class="text-end">
                             <div class="stmt-title">STATEMENT OF ACCOUNT</div>
-                            <div class="stmt-sub">Period: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} to {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
-                            <div class="stmt-sub">Generated: {{ now()->format('d M Y H:i') }}</div>
+                            <div class="stmt-sub">Period: {{ \Carbon\Carbon::parse($startDate)->format('d-m-Y') }} to {{ \Carbon\Carbon::parse($endDate)->format('d-m-Y') }}</div>
+                            <div class="stmt-sub">Generated: {{ now()->format('d-m-Y H:i') }}</div>
                             <div class="stmt-sub">Currency: {{ $company->base_currency ?? 'SAR' }}</div>
                         </td>
                     </tr>
@@ -295,7 +300,12 @@
                     @forelse($transactions as $txn)
                         @php $printRunning += (float)$txn->debit - (float)$txn->credit; @endphp
                         <tr>
-                            <td>{{ $txn->display_date }}</td>
+                            <td>
+                                {{ $txn->display_date }}
+                                @if(($txn->days_overdue ?? 0) > 0)
+                                    <br><span style="color:#dc3545;font-size:10px;font-weight:bold;">O.Due {{ $txn->days_overdue }} {{ Str::plural('day', $txn->days_overdue) }}</span>
+                                @endif
+                            </td>
                             <td>{{ $txn->reference }}</td>
                             <td>{{ $txn->description }}</td>
                             <td>

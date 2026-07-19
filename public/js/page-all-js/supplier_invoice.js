@@ -122,7 +122,7 @@ SUPPLIER_INVOICE = {
                 },
                 columnDefs: [
                     {targets: [0], searchable: false},
-                    {targets: [0, 1, 2, 3, 4, 5, 6, 7, 8], orderable: false},
+                    {targets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], orderable: false},
                 ],
                 columns: [
                     {
@@ -133,6 +133,9 @@ SUPPLIER_INVOICE = {
                     },
                     {
                         data: 'supplier.name_en', render: (data, type, row) => templates.supplier(row)
+                    },
+                    {
+                        data: 'fcy_amount', render: (data) => data
                     },
                     {
                         data: 'sub_total', class: 'text-end', render: function (data, type, row) {

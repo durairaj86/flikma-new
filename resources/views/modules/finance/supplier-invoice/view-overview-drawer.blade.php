@@ -120,8 +120,19 @@
             <td class="text-end">{{ amountFormat($supplierInvoice->tax_total) }}</td>
         </tr>
         <tr>
-            <td><strong>Grand Total</strong></td>
-            <td class="text-end">{{ amountFormat($supplierInvoice->grand_total) }} {{ $supplierInvoice->currency }}</td>
+            <td>
+                <strong>Grand Total</strong>
+                @if(strtoupper($supplierInvoice->currency) !== 'SAR')
+                    <div style="font-size:12px;color:#666;margin-top:2px;">{{ amountFormat($supplierInvoice->currency_rate) }} SAR</div>
+                @endif
+            </td>
+            <td class="text-end">
+                {{ amountFormat($supplierInvoice->grand_total) }} {{ $supplierInvoice->currency }}
+                @if(strtoupper($supplierInvoice->currency) !== 'SAR')
+                    @php $converted = $supplierInvoice->grand_total * $supplierInvoice->currency_rate; @endphp
+                    <div style="font-size:12px;color:#666;margin-top:2px;">{{ amountFormat($converted) }} SAR</div>
+                @endif
+            </td>
         </tr>
         <tr>
             <td><strong>Paid Amount</strong></td>

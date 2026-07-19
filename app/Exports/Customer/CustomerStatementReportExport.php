@@ -8,6 +8,7 @@ use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\RichText\RichText;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
@@ -37,8 +38,12 @@ class CustomerStatementReportExport implements FromCollection, WithHeadings, Wit
             $fcy = ($txn->fcy_amount ?? null) !== null
                 ? $txn->currency . ' ' . number_format($txn->fcy_amount, 2, '.', '') . ' (' . $baseCurrency . ' ' . number_format($txn->currency_rate, 4, '.', '') . ')'
                 : '';
+            $date = $txn->display_date;
+            if (($txn->days_overdue ?? 0) > 0) {
+                $date .= "\nOverdue " . $txn->days_overdue . ' ' . ($txn->days_overdue == 1 ? 'day' : 'days');
+            }
             $rows->push([
-                $txn->display_date,
+                $date,
                 $txn->reference,
                 strtoupper($txn->type),
                 $txn->description,
@@ -61,8 +66,8 @@ class CustomerStatementReportExport implements FromCollection, WithHeadings, Wit
 
     public function headings(): array
     {
-        $period = Carbon::parse($this->summary['start_date'])->format('d M Y')
-            . ' to ' . Carbon::parse($this->summary['end_date'])->format('d M Y');
+        $period = Carbon::parse($this->summary['start_date'])->format('d-m-Y')
+            . ' to ' . Carbon::parse($this->summary['end_date'])->format('d-m-Y');
 
         return [
             ['CUSTOMER STATEMENT'],
@@ -108,6 +113,30 @@ class CustomerStatementReportExport implements FromCollection, WithHeadings, Wit
 
                 foreach (range('A', 'H') as $col) {
                     $sheet->getColumnDimension($col)->setAutoSize(true);
+                }
+
+                // Date column may carry a second "Overdue N days" line —
+                // wrap so it renders as two lines instead of one long string,
+                // and color just that line red (rich text — a plain cell
+                // style would color the date too).
+                $sheet->getStyle("A9:A$highestRow")->getAlignment()->setWrapText(true);
+
+                for ($row = 9; $row <= $highestRow; $row++) {
+                    $cell = $sheet->getCell("A$row");
+                    $value = $cell->getValue();
+
+                    if (is_string($value) && str_contains($value, "\nOverdue")) {
+                        [$datePart, $overduePart] = explode("\n", $value, 2);
+
+                        $richText = new RichText();
+                        $richText->createText($datePart . "\n");
+
+                        $overdueRun = $richText->createTextRun($overduePart);
+                        $overdueRun->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FFDC3545'));
+                        $overdueRun->getFont()->setBold(true);
+
+                        $cell->setValue($richText);
+                    }
                 }
 
                 // Opening balance row and closing totals row

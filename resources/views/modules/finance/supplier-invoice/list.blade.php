@@ -233,6 +233,7 @@
                         <th>Invoice #</th>
                         <th>Job</th>
                         <th>Supplier</th>
+                        <th>FCY Amount</th>
                         <th class="text-end">Excl. VAT</th>
                         <th class="text-end">Tax</th>
                         <th class="text-end">Balance Due</th>

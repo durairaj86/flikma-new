@@ -383,6 +383,18 @@ CALCULATION = {
             CALCULATION.rowTotal($row);
             CALCULATION.finalTotals();
         });
+
+        // Currency changes affect whether the base-currency equivalent line
+        // under Grand Total should show at all, and #currency-rate changes
+        // (typed manually, or filled in by CURRENCY.currencyRate()'s AJAX
+        // lookup) affect its value — both need finalTotals() re-run.
+        // #currency-rate has no listener of its own reacting to .val() being
+        // set programmatically, so CURRENCY.currencyRate() below explicitly
+        // triggers 'input' after filling it in.
+        $(document).off('change.calcCurrency', '#currency-code')
+            .on('change.calcCurrency', '#currency-code', () => CALCULATION.finalTotals());
+        $(document).off('input.calcCurrency', '#currency-rate')
+            .on('input.calcCurrency', '#currency-rate', () => CALCULATION.finalTotals());
     },
     rowTotal($row) {
         let qty = parseFloat($row.find('.quantity').val()) || 0;
@@ -415,10 +427,24 @@ CALCULATION = {
         $('#totalTax').text(totalTax.toFixed(2));
         $('#grandNet').text(grandTotal.toFixed(2));
 
-        // SAR equivalent if exists
+        // Base-currency equivalent line under Grand Total — only relevant
+        // once a currency other than the company's own is picked. Reads
+        // #currency-rate live rather than trusting the cached exchangeRate
+        // (set once at page load), so it stays correct as the user changes
+        // currency mid-form and CURRENCY.currencyRate()'s AJAX lookup fills
+        // in the new rate.
         if ($('#sarRate').length) {
-            let sarValue = grandTotal * this.exchangeRate;
-            $('#sarEquivalent').text(sarValue.toFixed(2));
+            let selectedCurrency = $('#currency-code').val();
+            let isForeign = selectedCurrency && selectedCurrency !== baseCurrency;
+            let rate = parseFloat($('#currency-rate').val()) || this.exchangeRate;
+
+            $('#sarRate, #sarEquivalent').closest('.grand-total-fx').toggleClass('d-none', !isForeign);
+
+            if (isForeign) {
+                $('#sarRate').text(rate.toFixed(4));
+                $('#sarEquivalent').text((grandTotal * rate).toFixed(2));
+                $('#fxCurrencyCode').text(selectedCurrency);
+            }
         }
     }
 }
@@ -2572,7 +2598,7 @@ CURRENCY = {
                 type: 'GET',
                 data: {currency: currency},
                 success: function (response) {
-                    $('#currency-rate').val(response.conversion_rate);
+                    $('#currency-rate').val(response.conversion_rate).trigger('input');
                 },
                 error: function () {
                     alert('Failed to fetch exchange rate');

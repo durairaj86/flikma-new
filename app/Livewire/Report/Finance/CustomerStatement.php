@@ -205,9 +205,21 @@ class CustomerStatement extends Component
 
                 foreach ($invoices as $inv) {
                     $isForeign = $inv->currency && $inv->currency !== $baseCurrency;
+
+                    // Overdue = past due date with an outstanding balance —
+                    // a fully-paid invoice past its due date isn't overdue.
+                    $daysOverdue = 0;
+                    $outstanding = (float)($inv->base_grand_total ?? 0) - (float)($inv->base_paid_amount ?? 0);
+                    if ($inv->due_date && $outstanding > 0.01) {
+                        $dueDate = \Carbon\Carbon::parse($inv->due_date)->startOfDay();
+                        if ($dueDate->lessThan(now()->startOfDay())) {
+                            $daysOverdue = $dueDate->diffInDays(now()->startOfDay());
+                        }
+                    }
+
                     $transactions[] = (object)[
                         'date'          => $inv->getRawOriginal('invoice_date') ?? $inv->invoice_date,
-                        'display_date'  => \Carbon\Carbon::parse($inv->invoice_date)->format('d M Y'),
+                        'display_date'  => \Carbon\Carbon::parse($inv->invoice_date)->format('d-m-Y'),
                         'type'          => 'invoice',
                         'reference'     => $inv->row_no ?? $inv->invoice_no,
                         'description'   => 'Customer Invoice',
@@ -216,6 +228,7 @@ class CustomerStatement extends Component
                         'currency'      => $inv->currency,
                         'fcy_amount'    => $isForeign ? (float)($inv->grand_total ?? 0) : null,
                         'currency_rate' => $isForeign ? (float)($inv->currency_rate ?? 0) : null,
+                        'days_overdue'  => $daysOverdue,
                     ];
                 }
 
@@ -223,7 +236,7 @@ class CustomerStatement extends Component
                     $isForeign = $col->currency && $col->currency !== $baseCurrency;
                     $transactions[] = (object)[
                         'date'          => $col->getRawOriginal('collection_date') ?? $col->collection_date,
-                        'display_date'  => \Carbon\Carbon::parse($col->collection_date)->format('d M Y'),
+                        'display_date'  => \Carbon\Carbon::parse($col->collection_date)->format('d-m-Y'),
                         'type'          => 'payment',
                         'reference'     => $col->row_no ?? $col->reference_no ?? 'COL-' . $col->id,
                         'description'   => 'Payment Received',
@@ -232,6 +245,7 @@ class CustomerStatement extends Component
                         'currency'      => $col->currency,
                         'fcy_amount'    => $isForeign ? (float)($col->grand_total ?? 0) : null,
                         'currency_rate' => $isForeign ? (float)($col->currency_rate ?? 0) : null,
+                        'days_overdue'  => 0, // payments have no due date of their own
                     ];
                 }
 

@@ -176,10 +176,23 @@ class SupplierInvoiceController extends Controller
 
         $decimals = decimals();
         $activity = LogisticActivity::activities();
+        $baseCurrency = optional(authUserCompany())->base_currency ?: 'SAR';
         // ✅ Return formatted DataTable
         return DataTables::eloquent($rows)
             ->addIndexColumn()
             ->addColumn('job_activity', fn($model) => $model->job ? ($activity->where('id', $model->job->activity_id)->pluck('name')->first() ?? '-') : '-')
+            // FCY Amount — only shown for invoices not already in the
+            // company's own currency; SAR (or whatever the base is) rows
+            // have nothing extra to show since Excl.VAT/Tax/Balance are
+            // already in that currency.
+            ->addColumn('fcy_amount', function ($model) use ($baseCurrency, $decimals) {
+                if (!$model->currency || strtoupper($model->currency) === strtoupper($baseCurrency)) {
+                    return '<span class="text-muted">—</span>';
+                }
+
+                return '<div class="cell-primary">' . strtoupper($model->currency) . ' ' . number_format($model->grand_total, $decimals) . '</div>'
+                    . '<div class="cell-secondary">' . $baseCurrency . ' ' . number_format($model->currency_rate, 4) . '</div>';
+            })
             ->setRowAttr([
                 'data-id' => fn($model) => $model->id,
                 'data-name' => fn($model) => 'Supplier #' . htmlspecialchars($model->invoice_no, ENT_QUOTES, 'UTF-8'),
@@ -217,6 +230,7 @@ class SupplierInvoiceController extends Controller
                 return number_format($balance, $decimals);
             })
             /*->editColumn('created_at', fn($model) => \Carbon\Carbon::parse($model->created_at)->format('d-m-Y'))*/
+            ->rawColumns(['fcy_amount'])
             ->with([
                 'statusCounts' => $allCounts,
                 'salesSummary' => $salesSummary,
