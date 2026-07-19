@@ -72,15 +72,15 @@ Navbar
 
             <div class="d-flex gap-3">
 
-                <a href="{{ url('/login') }}" class="btn btn-outline-dark rounded-pill px-4">
+                <a href="https://app.flikma.com/login" class="btn btn-outline-dark rounded-pill px-4">
 
                     Login
 
                 </a>
 
-                <a href="{{ route('website.contact') }}" class="btn btn-primary rounded-pill px-4">
+                <a href="https://app.flikma.com/register" class="btn btn-primary rounded-pill px-4">
 
-                    Book Demo
+                    Register
 
                 </a>
 
