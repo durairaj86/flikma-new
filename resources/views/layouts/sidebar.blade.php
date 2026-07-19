@@ -83,7 +83,6 @@
                         </li>
                     </ul>
                 </li>
-
                 <!-- Suppliers / Agents -->
                 @php
                     $supplierReportSlugs = ['supplier-statement', 'supplier-balance-summary', 'supplier-aging', 'supplier-aging-all'];
