@@ -147,10 +147,7 @@ Route::get('logout', function () {
     return redirect('/login');
 });
 
-Route::get('/', function () {
-    //session()->forget('company_id');
-    return redirect('/login');
-});
+
 
 
 Route::get('/test-ocr', [OcrController::class, 'index']);
