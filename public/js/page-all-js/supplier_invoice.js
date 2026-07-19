@@ -230,9 +230,14 @@ SUPPLIER_INVOICE = {
 
             // due_status isn't provided by this endpoint, so paid/unpaid is
             // computed here from the real totals (same as customer invoice).
+            // The Paid/Unpaid tag only makes sense once an invoice is
+            // Approved — a Draft/Cancelled invoice isn't payable yet.
             balance: (row) => {
                 const grand = parseFloat(String(row.grand_total).replace(/,/g, '')) || 0;
                 const paid = parseFloat(row.paid_amount) || 0;
+                if (row.status !== 3) {
+                    return `<div class="cell-primary">${amountFormat(grand - paid)}</div>`;
+                }
                 const isPaid = grand > 0 && paid >= grand;
                 return `<div class="cell-primary">${amountFormat(grand - paid)}</div><div class="cell-secondary ${isPaid ? 'text-success' : 'text-danger'}">${isPaid ? 'Paid' : 'Unpaid'}</div>`;
             },
@@ -255,6 +260,11 @@ SUPPLIER_INVOICE = {
             },
 
             aging: (row) => {
+                // Aging (overdue/due-days) only applies once an invoice is
+                // Approved — a Draft/Cancelled invoice isn't payable yet.
+                if (row.status !== 3) {
+                    return '<span class="text-muted">—</span>';
+                }
                 const grand = parseFloat(String(row.grand_total).replace(/,/g, '')) || 0;
                 const paid = parseFloat(row.paid_amount) || 0;
                 // Overdue/due-days aging is meaningless once an invoice is fully

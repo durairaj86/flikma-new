@@ -162,14 +162,17 @@ class SupplierInvoiceController extends Controller
 
         // Summary card totals (Draft/Approved), same shape as the customer
         // invoice list so the same card + JS pattern can be reused.
+        // Use base_* (company-currency) columns, not the invoice's own
+        // currency columns — mixing a USD invoice's grand_total with a SAR
+        // invoice's grand_total would sum unlike currencies together.
         $salesSummary = SupplierInvoice::select([
-            DB::raw('SUM(grand_total) as overall_sales'),
-            DB::raw('SUM(CASE WHEN status = 1 THEN grand_total ELSE 0 END) as total_draft_grand'),
-            DB::raw('SUM(CASE WHEN status = 1 THEN sub_total ELSE 0 END) as total_draft_sub'),
-            DB::raw('SUM(CASE WHEN status = 1 THEN tax_total ELSE 0 END) as total_draft_tax'),
-            DB::raw('SUM(CASE WHEN status = 3 THEN grand_total ELSE 0 END) as total_approved_grand'),
-            DB::raw('SUM(CASE WHEN status = 3 THEN sub_total ELSE 0 END) as total_approved_sub'),
-            DB::raw('SUM(CASE WHEN status = 3 THEN tax_total ELSE 0 END) as total_approved_tax'),
+            DB::raw('SUM(base_grand_total) as overall_sales'),
+            DB::raw('SUM(CASE WHEN status = 1 THEN base_grand_total ELSE 0 END) as total_draft_grand'),
+            DB::raw('SUM(CASE WHEN status = 1 THEN base_sub_total ELSE 0 END) as total_draft_sub'),
+            DB::raw('SUM(CASE WHEN status = 1 THEN base_tax_total ELSE 0 END) as total_draft_tax'),
+            DB::raw('SUM(CASE WHEN status = 3 THEN base_grand_total ELSE 0 END) as total_approved_grand'),
+            DB::raw('SUM(CASE WHEN status = 3 THEN base_sub_total ELSE 0 END) as total_approved_sub'),
+            DB::raw('SUM(CASE WHEN status = 3 THEN base_tax_total ELSE 0 END) as total_approved_tax'),
         ])
             ->tap($applyFilters)
             ->first();

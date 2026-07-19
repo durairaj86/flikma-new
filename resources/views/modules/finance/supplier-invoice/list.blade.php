@@ -169,8 +169,8 @@
                 </div>
 
                 <div class="col-12 col-lg-4">
-                    <div class="rounded-3 bg-success-subtle px-4 py-3 h-100">
-                        <h6 class="text-uppercase text-success-emphasis fw-semibold small mb-3" style="letter-spacing:.03em;">Approved Invoices</h6>
+                    <div class="rounded-3 bg-si-approved px-4 py-3 h-100">
+                        <h6 class="text-uppercase text-si-approved fw-semibold small mb-3" style="letter-spacing:.03em;">Approved Invoices</h6>
                         <div class="row g-2 text-center">
                             <div class="col-4">
                                 <div id="total_approved_sub" class="fs-4 fw-bold mb-0">0.00</div>
@@ -189,8 +189,8 @@
                 </div>
 
                 <div class="col-12 col-lg-4">
-                    <div class="rounded-3 bg-warning-subtle px-4 py-3 h-100">
-                        <h6 class="text-uppercase text-warning-emphasis fw-semibold small mb-3" style="letter-spacing:.03em;">Draft Invoices</h6>
+                    <div class="rounded-3 bg-si-draft px-4 py-3 h-100">
+                        <h6 class="text-uppercase text-si-draft fw-semibold small mb-3" style="letter-spacing:.03em;">Draft Invoices</h6>
                         <div class="row g-2 text-center">
                             <div class="col-4">
                                 <div id="total_draft_sub" class="fs-4 fw-bold mb-0">0.00</div>
@@ -291,6 +291,13 @@
 
 
 <style>
+    /* Supplier Invoice = money going out — amber tones instead of the
+       green/yellow used on Customer Invoice's summary cards. */
+    .bg-si-approved { background-color: #fef3c7; }
+    .text-si-approved { color: #92400e; }
+    .bg-si-draft { background-color: #ffedd5; }
+    .text-si-draft { color: #9a3412; }
+
     /* Clean flat table — no floating row cards, just a thin divider
        between rows, matching a standard finance-app list. */
     #dataTable {
