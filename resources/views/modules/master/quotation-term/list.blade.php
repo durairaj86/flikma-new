@@ -1,7 +1,7 @@
 @section('js','quotation_term')
 @section('page-title','Quotation Terms')
 <x-app-layout>
-    <main class="gmail-content bg-white d-flex">
+    <main class="gmail-content bg-white d-flex" id="content-wrapper">
         @include('includes.master-navigation')
         <section class="flex-grow-1 px-4 d-flex flex-column">
             @include('includes.master-header')

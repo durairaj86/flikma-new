@@ -124,7 +124,7 @@ CUSTOMER_INVOICE = {
                 },
                 columnDefs: [
                     {targets: [0], searchable: false},
-                    {targets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], orderable: false},
+                    {targets: [0, 1, 2, 3, 4, 5, 6, 7, 8], orderable: false},
                 ],
                 columns: [
                     {
@@ -135,9 +135,6 @@ CUSTOMER_INVOICE = {
                     },
                     {
                         data: 'customer_name', render: (data, type, row) => templates.customer(row)
-                    },
-                    {
-                        data: 'customer_name', render: (data, type, row) => templates.polPod(row)
                     },
                     {
                         data: 'sub_total', class: 'text-end', render: function (data, type, row) {
@@ -231,17 +228,6 @@ CUSTOMER_INVOICE = {
             job: (row) => `<div class="cell-primary">${row.job_no ?? '—'}</div><div class="cell-secondary">${row.job_activity ?? ''}</div>`,
 
             customer: (row) => `<div class="cell-primary">${row.customer?.name_en ?? ''}</div><div class="cell-secondary">${row.customer?.row_no ?? ''}</div>`,
-
-            polPod: (row) => {
-                // Not every customer invoice is tied to a job (e.g. those
-                // created directly, not from a job), so row.job can be null.
-                if (!row.job || (!row.job.pol_code && !row.job.pod_code)) return '<span class="cell-secondary">—</span>';
-                return `<div class="cell-primary d-flex align-items-center gap-1">
-                            <span>${row.job.pol_code ?? ''}</span>
-                            <i class="bi ${row.job.shipment_mode == 'air' ? 'bi-airplane' : 'bi-truck'} text-primary" style="font-size: 0.7rem;"></i>
-                            <span>${row.job.pod_code ?? ''}</span>
-                        </div><div class="cell-secondary">${row.job.carrier ?? ''}</div>`;
-            },
 
             invoice: (row) => `<div class="cell-primary">${row.invoice_date}</div><div class="cell-secondary">Due ${row.due_at}</div>`,
 

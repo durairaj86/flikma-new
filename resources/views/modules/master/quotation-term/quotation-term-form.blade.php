@@ -12,7 +12,7 @@
         </div>
     </div>
     <div class="row">
-        <form id="quotationTermForm" novalidate action="{{ request()->url() }}">
+        <form id="moduleForm" novalidate action="{{ request()->url() }}">
             @csrf
             <input type="hidden" name="data-id" value="{{ $quotationTerm->id ?? '' }}">
 

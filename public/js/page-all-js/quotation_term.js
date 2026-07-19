@@ -136,7 +136,10 @@ QUOTATION_TERM = {
                     toolbar: [
                         [{header: [2, 3, 4, false]}],
                         ['bold', 'italic'],
-                        [{align: []}],
+                        // Individual align buttons (not a single dropdown) so
+                        // left/center/right/justify are all one click away.
+                        [{align: ''}, {align: 'center'}, {align: 'right'}, {align: 'justify'}],
+                        [{list: 'ordered'}, {list: 'bullet'}],
                     ],
                 },
             });

@@ -242,7 +242,6 @@
                         <th>Invoice #</th>
                         <th>Job</th>
                         <th>Customer</th>
-                        <th>Route</th>
                         <th class="text-end">Excl. VAT</th>
                         <th class="text-end">Tax</th>
                         <th class="text-end">Balance Due</th>
