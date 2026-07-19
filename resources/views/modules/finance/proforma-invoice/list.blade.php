@@ -226,8 +226,8 @@
                 </div>
 
                 <div class="col-12 col-lg-4">
-                    <div class="rounded-3 bg-success-subtle px-4 py-3 h-100">
-                        <h6 class="text-uppercase text-success-emphasis fw-semibold small mb-3" style="letter-spacing:.03em;">Approved Invoices</h6>
+                    <div class="rounded-3 bg-pf-approved px-4 py-3 h-100">
+                        <h6 class="text-uppercase text-pf-approved fw-semibold small mb-3" style="letter-spacing:.03em;">Approved Invoices</h6>
                         <div class="row g-2 text-center">
                             <div class="col-4">
                                 <div id="total_approved_sub" class="fs-4 fw-bold mb-0">0.00</div>
@@ -246,8 +246,8 @@
                 </div>
 
                 <div class="col-12 col-lg-4">
-                    <div class="rounded-3 bg-warning-subtle px-4 py-3 h-100">
-                        <h6 class="text-uppercase text-warning-emphasis fw-semibold small mb-3" style="letter-spacing:.03em;">Draft Invoices</h6>
+                    <div class="rounded-3 bg-pf-draft px-4 py-3 h-100">
+                        <h6 class="text-uppercase text-pf-draft fw-semibold small mb-3" style="letter-spacing:.03em;">Draft Invoices</h6>
                         <div class="row g-2 text-center">
                             <div class="col-4">
                                 <div id="total_draft_sub" class="fs-4 fw-bold mb-0">0.00</div>
@@ -305,6 +305,14 @@
     @include('modules.email.send-email')
     @include('modules.finance.proforma-invoice.proforma-invoice-view')
     <style>
+        /* Proforma Invoice is a preliminary quote, not a final invoice —
+           indigo/violet tones keep it visually distinct from Customer
+           Invoice's green/yellow and Supplier Invoice's amber/orange. */
+        .bg-pf-approved { background-color: #ede9fe; }
+        .text-pf-approved { color: #5b21b6; }
+        .bg-pf-draft { background-color: #e0e7ff; }
+        .text-pf-draft { color: #3730a3; }
+
         /* Clean flat table — no floating row cards, just a thin divider
            between rows, matching a standard finance-app list. */
         #dataTable {
