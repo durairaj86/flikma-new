@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="@yield('meta_description', 'Flikma is smart logistics software for freight forwarders, 3PLs and logistics companies — manage every shipment, document and customer with speed, accuracy and complete visibility.')">
-    <title>@yield('title', 'Flikma — Smart Logistics Software')</title>
+    <meta name="description" content="@yield('meta_description', 'Flikma is smart logistics software for freight forwarders, 3PLs and logistics companies in Saudi Arabia, Bahrain and Dubai — manage every shipment, document and customer with speed, accuracy and complete visibility.')">
+    <meta name="keywords" content="@yield('meta_keywords', 'logistics software Saudi Arabia, freight forwarding software Bahrain, logistics ERP Dubai, ZATCA e-invoicing software, freight management software GCC')">
+    <title>@yield('title', 'Flikma — Smart Logistics Software for Saudi Arabia, Bahrain & Dubai')</title>
 
     <link rel="icon" href="{{ asset('img/logo1.png') }}">
 

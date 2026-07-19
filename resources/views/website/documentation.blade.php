@@ -5,9 +5,10 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Flikma documentation — how every module works, from customers and quotations to invoices, payroll and reports.">
+    <meta name="description" content="Flikma documentation — how every module works, from customers and quotations to invoices, payroll and reports, for logistics companies in Saudi Arabia, Bahrain and Dubai.">
+    <meta name="keywords" content="logistics ERP documentation, freight forwarding software guide Saudi Arabia, ZATCA invoicing setup, logistics software help Bahrain, logistics ERP manual Dubai">
 
-    <title>Documentation - Flikma Logistics ERP</title>
+    <title>Documentation - Flikma Logistics ERP for Saudi Arabia, Bahrain & Dubai</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
 

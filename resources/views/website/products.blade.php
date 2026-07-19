@@ -1,7 +1,8 @@
 @extends('website.layout')
 
-@section('title', 'Products — Flikma Logistics ERP')
-@section('meta_description', 'Flikma products: Operations, Finance, Compliance and Payroll modules that work together as one platform or independently.')
+@section('title', 'Products — Flikma Logistics ERP for Saudi Arabia, Bahrain & Dubai')
+@section('meta_description', 'Flikma products: Operations, Finance, Compliance and Payroll modules for logistics companies in Saudi Arabia, Bahrain and Dubai — work together as one platform or independently.')
+@section('meta_keywords', 'logistics ERP modules Saudi Arabia, freight operations software Bahrain, finance module logistics Dubai, ZATCA compliance software, payroll software logistics GCC')
 
 @section('content')
 

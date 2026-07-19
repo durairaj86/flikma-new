@@ -5,8 +5,10 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Flikma is cloud logistics and freight forwarding ERP software built for Saudi Arabia, Bahrain and Dubai/UAE — manage jobs, invoicing, ZATCA Phase 2 e-invoicing, Bill of Lading and payroll from one platform.">
+    <meta name="keywords" content="logistics software Saudi Arabia, freight forwarding software KSA, ZATCA e-invoicing software, logistics ERP Bahrain, freight management software Dubai, logistics software UAE, freight forwarder software GCC, Bill of Lading software Saudi Arabia">
 
-    <title>Flikma - Logistics ERP</title>
+    <title>Flikma - Logistics & Freight Forwarding ERP Software for Saudi Arabia, Bahrain & Dubai</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -160,6 +162,38 @@ Saudi ZATCA Ready
                                     <span>
 
 Multi Company
+
+</span>
+
+                                </div>
+
+                            </div>
+
+                            <div class="col-6">
+
+                                <div class="feature">
+
+                                    <i class="bi bi-check-circle-fill"></i>
+
+                                    <span>
+
+AI-Powered
+
+</span>
+
+                                </div>
+
+                            </div>
+
+                            <div class="col-6">
+
+                                <div class="feature">
+
+                                    <i class="bi bi-check-circle-fill"></i>
+
+                                    <span>
+
+ZATCA Phase 2 Integration
 
 </span>
 
@@ -679,6 +713,37 @@ Solutions
                     </ul>
 
                     <a href="{{ route('website.documentation') }}#payroll" class="read-more">
+                        Learn More
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+
+                <div class="solution-card h-100">
+
+                    <div class="icon" style="background:#7c3aed;">
+                        <i class="bi bi-robot"></i>
+                    </div>
+
+                    <h4>AI-Powered Automation</h4>
+
+                    <p>
+                        AI-integrated software reads uploaded supplier invoices
+                        and pulls out the invoice number, dates and line items
+                        automatically &mdash; no manual data entry needed.
+                    </p>
+
+                    <ul>
+                        <li>AI document scanning (OCR)</li>
+                        <li>Auto-filled invoice line items</li>
+                        <li>Fewer manual entry errors</li>
+                    </ul>
+
+                    <a href="{{ route('website.documentation') }}#finances" class="read-more">
                         Learn More
                         <i class="bi bi-arrow-right"></i>
                     </a>

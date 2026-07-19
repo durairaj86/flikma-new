@@ -5,9 +5,10 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Why freight forwarders and logistics companies choose Flikma over spreadsheets and generic accounting software.">
+    <meta name="description" content="Why freight forwarders and logistics companies in Saudi Arabia, Bahrain and Dubai choose Flikma over spreadsheets and generic accounting software.">
+    <meta name="keywords" content="logistics ERP Saudi Arabia, why choose logistics software, freight forwarding software Bahrain, logistics software Dubai, ZATCA compliant ERP, logistics ERP GCC">
 
-    <title>Why Flikma - Flikma Logistics ERP</title>
+    <title>Why Flikma - Trusted Logistics ERP in Saudi Arabia, Bahrain & Dubai</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
 

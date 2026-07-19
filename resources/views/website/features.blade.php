@@ -5,9 +5,10 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Every Flikma feature — sales pipeline, job management, invoicing, accounting, reporting, payroll and ZATCA compliance built for freight forwarders.">
+    <meta name="description" content="Every Flikma feature — sales pipeline, job management, invoicing, accounting, reporting, payroll and ZATCA compliance — built for freight forwarders in Saudi Arabia, Bahrain and Dubai.">
+    <meta name="keywords" content="logistics software features Saudi Arabia, freight forwarding ERP Bahrain, ZATCA e-invoicing features, logistics software Dubai, freight management features UAE, job management software KSA">
 
-    <title>Features - Flikma Logistics ERP</title>
+    <title>Features - Flikma Logistics ERP for Saudi Arabia, Bahrain & Dubai</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
 

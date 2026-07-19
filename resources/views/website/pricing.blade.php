@@ -5,9 +5,10 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Simple, transparent Flikma pricing for freight forwarders of every size — Starter, Modern and Deluxe plans.">
+    <meta name="description" content="Simple, transparent Flikma pricing for freight forwarders of every size in Saudi Arabia, Bahrain and Dubai — Starter, Modern and Deluxe plans.">
+    <meta name="keywords" content="logistics software pricing Saudi Arabia, freight forwarding ERP cost, logistics software price Bahrain, logistics ERP subscription Dubai, ZATCA invoicing software pricing">
 
-    <title>Pricing - Flikma Logistics ERP</title>
+    <title>Pricing - Flikma Logistics ERP for Saudi Arabia, Bahrain & Dubai</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
 

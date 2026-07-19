@@ -1,7 +1,8 @@
 @extends('website.layout')
 
-@section('title', 'Services — Flikma Logistics ERP')
-@section('meta_description', 'Flikma services: implementation, data migration, training, custom development and ongoing support for freight forwarders and logistics companies.')
+@section('title', 'Services — Flikma Logistics ERP for Saudi Arabia, Bahrain & Dubai')
+@section('meta_description', 'Flikma services: implementation, data migration, training, custom development and ongoing support for freight forwarders and logistics companies in Saudi Arabia, Bahrain and Dubai.')
+@section('meta_keywords', 'logistics software implementation Saudi Arabia, freight forwarding ERP support Bahrain, logistics software training Dubai, ZATCA e-invoicing setup, logistics ERP data migration')
 
 @section('content')
 

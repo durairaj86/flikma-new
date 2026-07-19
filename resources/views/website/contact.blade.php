@@ -5,9 +5,10 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Request a Flikma demo or get in touch with our team — logistics ERP for freight forwarders and 3PLs.">
+    <meta name="description" content="Request a Flikma demo or get in touch with our team — logistics ERP for freight forwarders and 3PLs in Saudi Arabia, Bahrain and Dubai.">
+    <meta name="keywords" content="contact logistics software Saudi Arabia, request demo freight forwarding ERP, logistics software Bahrain contact, logistics ERP Dubai demo">
 
-    <title>Contact Us - Flikma Logistics ERP</title>
+    <title>Contact Us - Flikma Logistics ERP for Saudi Arabia, Bahrain & Dubai</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
 
