@@ -61,7 +61,7 @@
 
                     <div class="col-12 form-group">
                         <label class="form-label required">Terms &amp; Conditions Text <sup class="text-danger">*</sup></label>
-                        <div id="terms-editor" style="background:#fff;"></div>
+                        <div id="terms-editor" style="background:#fff;height:250px;"></div>
                         {{-- Quill has no underlying form input of its own — this hidden
                              textarea is what actually gets submitted; kept in sync with
                              the editor's HTML on every edit (see quotation_term.js). --}}
