@@ -1,5 +1,5 @@
 @section('js', 'general_ledger')
-@section('page-title', 'General Ledger')
+@section('page-title', 'Customer Ledger')
 
 <div class="gl-wrapper min-vh-100 bg-light py-4">
     <div class="container-fluid px-lg-5">
@@ -7,7 +7,7 @@
         {{-- Page Header --}}
         <div class="row align-items-center mb-4 d-print-none">
             <div class="col-md-6">
-                <h1 class="h3 fw-bold mb-1" style="color:#0f172a;">General Ledger</h1>
+                <h1 class="h3 fw-bold mb-1" style="color:#0f172a;">Customer Ledger</h1>
                 <p class="text-muted small mb-0">Complete transaction history per customer with running balance</p>
             </div>
             <div class="col-md-6 text-md-end mt-3 mt-md-0">
@@ -50,12 +50,14 @@
                     </div>
                     <div class="col-lg-3 col-md-4">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">Customer <sup class="text-danger">*</sup></label>
-                        <select class="tom-select bg-light border-0 py-2 no-ts" wire:model="customerId" required data-live-search="true">
+                        <select class="tom-select bg-light border-0 no-ts" wire:model="customerId" required data-live-search="true">
                             @if(count($customers) === 0)
                                 <option value="">No customers found</option>
+                            @else
+                                <option value="">--Select Customer--</option>
                             @endif
                             @foreach($customers as $customer)
-                                <option value="{{ $customer['id'] }}">
+                                <option value="{{ $customer['id'] }}" @selected($customerId == $customer['id'])>
                                     {{ $customer['row_no'] }} — {{ $customer['name_en'] }}
                                 </option>
                             @endforeach
@@ -165,10 +167,15 @@
             // date field's format after every commit. requestAnimationFrame
             // defers until the next frame, after that synchronous morph
             // pass has actually finished (see the customer-statement.blade
-            // tomselect fix for the same root cause).
+            // tomselect fix for the same root cause). The Customer
+            // tom-select gets destroyed by the same morph, so it needs the
+            // same re-init treatment.
             Livewire.hook('commit', function (ref) {
                 ref.succeed(function () {
-                    requestAnimationFrame(initFlatpickr);
+                    requestAnimationFrame(function () {
+                        initFlatpickr();
+                        initTomSelectForm($('#list-filter'));
+                    });
                 });
             });
 

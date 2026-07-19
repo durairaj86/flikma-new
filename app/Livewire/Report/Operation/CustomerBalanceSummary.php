@@ -14,12 +14,23 @@ class CustomerBalanceSummary extends Component
 {
     public $startDate;
     public $endDate;
-    public $search = '';
+    public $customerId = '';
+    public $customers = [];
 
     public function mount()
     {
         $this->startDate = now()->startOfMonth()->format('Y-m-d');
         $this->endDate   = now()->endOfMonth()->format('Y-m-d');
+        $this->loadCustomers();
+    }
+
+    public function loadCustomers()
+    {
+        $this->customers = Customer::where('company_id', auth()->user()->company_id ?? 1)
+            ->orderBy('name_en')
+            ->select('id', 'row_no', 'name_en')
+            ->get()
+            ->toArray();
     }
 
     public function applyFilter()
@@ -29,9 +40,9 @@ class CustomerBalanceSummary extends Component
 
     public function resetFilter()
     {
-        $this->startDate = now()->startOfMonth()->format('Y-m-d');
-        $this->endDate   = now()->endOfMonth()->format('Y-m-d');
-        $this->search    = '';
+        $this->startDate  = now()->startOfMonth()->format('Y-m-d');
+        $this->endDate    = now()->endOfMonth()->format('Y-m-d');
+        $this->customerId = '';
     }
 
     protected function getReportData(): array
@@ -40,11 +51,8 @@ class CustomerBalanceSummary extends Component
 
         $customers = Customer::where('company_id', $companyId);
 
-        if (!empty($this->search)) {
-            $customers->where(function ($q) {
-                $q->where('name_en', 'like', '%' . $this->search . '%')
-                  ->orWhere('name_ar', 'like', '%' . $this->search . '%');
-            });
+        if (!empty($this->customerId)) {
+            $customers->where('id', $this->customerId);
         }
 
         $customers = $customers->orderBy('name_en')->get();

@@ -141,7 +141,7 @@
 
             initFlatpickr();
             Livewire.hook('commit', function (ref) {
-                ref.succeed(function () { queueMicrotask(initFlatpickr); });
+                ref.succeed(function () { requestAnimationFrame(initFlatpickr); });
             });
         })();
     </script>

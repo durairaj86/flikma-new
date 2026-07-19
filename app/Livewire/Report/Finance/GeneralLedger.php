@@ -119,12 +119,12 @@ class GeneralLedger extends Component
         $lines[] = 'Generated on: ' . now()->format('d-m-Y H:i');
 
         $meta = [
-            'title' => 'GENERAL LEDGER',
+            'title' => 'CUSTOMER LEDGER',
             'lines' => $lines,
             'numeric_from' => 5,
         ];
 
-        $filename = 'GeneralLedger-' . $this->startDate . '-' . $this->endDate . '.xlsx';
+        $filename = 'CustomerLedger-' . $this->startDate . '-' . $this->endDate . '.xlsx';
 
         return Excel::download(new ReportTableExport($rows, $totalsRow, $columns, $meta), $filename);
     }

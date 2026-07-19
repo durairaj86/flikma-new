@@ -197,7 +197,7 @@
 
             Livewire.hook('commit', function (ref) {
                 ref.succeed(function () {
-                    queueMicrotask(initFlatpickr);
+                    requestAnimationFrame(initFlatpickr);
                 });
             });
         })();

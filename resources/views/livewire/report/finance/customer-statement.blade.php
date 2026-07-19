@@ -38,7 +38,7 @@
                 <div class="row g-3 align-items-end">
                     <div class="col-lg-4">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">Customer</label>
-                        <select class="tom-select bg-light border-0 no-ts" wire:model.live="customerId" data-live-search="true">
+                        <select class="tom-select bg-light border-0 no-ts" wire:model="customerId" data-live-search="true">
                             <option value="">Select a customer...</option>
                             @foreach($customers as $customer)
                                 <option value="{{ $customer['id'] }}" wire:key="cust-opt-{{ $customer['id'] }}">{{ $customer['name_en'] }}</option>

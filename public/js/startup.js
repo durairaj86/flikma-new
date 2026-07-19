@@ -1758,7 +1758,18 @@ webDataTable = {
                         size: modalSize || 'xl',
                         scroll: true,
                         callBack: null,
-                        minHeight: minHeight || null
+                        // `|| null` used to turn a genuinely-missing
+                        // data-min-height attribute (undefined) into an
+                        // explicit null. openGlobalModal() merges options
+                        // over its defaults with $.extend, which only
+                        // skips keys whose value is undefined — an
+                        // explicit null was overwriting the default
+                        // `min-height:75vh` with nothing, so every
+                        // module's Edit modal (unlike New, which never
+                        // coerced the missing attribute) lost its minimum
+                        // height and just shrank to fit whichever tab's
+                        // content was shortest.
+                        minHeight: minHeight
                     });
 
 

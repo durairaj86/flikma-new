@@ -49,10 +49,15 @@
                                value="{{ $endDate }}" />
                     </div>
                     <div class="col-lg-4 col-md-4">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Search</label>
-                        <input type="text" class="form-control bg-light border-0 py-2"
-                               wire:model.debounce.400ms="search"
-                               placeholder="Customer name..." />
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Customer</label>
+                        <select class="form-select bg-light border-0 py-2 no-ts" wire:model="customerId">
+                            <option value="">All Customers</option>
+                            @foreach($customers as $customer)
+                                <option value="{{ $customer['id'] }}" @selected($customerId == $customer['id'])>
+                                    {{ $customer['row_no'] }} — {{ $customer['name_en'] }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="col-lg-4 col-md-4">
                         <div class="d-flex gap-2">
@@ -330,9 +335,18 @@
 
             initFlatpickr();
 
+            // ref.succeed()'s callback fires before the DOM morph for this
+            // commit is actually applied — re-running initFlatpickr() there
+            // re-initializes the still-old (correctly formatted) input,
+            // which the morph then immediately overwrites back to the
+            // server-rendered raw value, visibly flipping the date field's
+            // format after every Generate click. requestAnimationFrame
+            // defers until the next frame, after that synchronous morph
+            // pass has actually finished (see general-ledger.blade.php /
+            // customer-statement.blade.php for the same root cause).
             Livewire.hook('commit', function (ref) {
                 ref.succeed(function () {
-                    queueMicrotask(initFlatpickr);
+                    requestAnimationFrame(initFlatpickr);
                 });
             });
         })();

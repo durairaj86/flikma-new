@@ -41,7 +41,7 @@
                             ['url' => '/reports/trial-balance', 'name' => 'Trial Balance', 'desc' => 'Mathematical verification of ledger balances.'],
                             ['url' => '/reports/balance-sheet', 'name' => 'Balance Sheet', 'desc' => 'Snapshot of company assets, liabilities, and equity.'],
                             ['url' => '/reports/profit-and-loss', 'name' => 'Profit & Loss', 'desc' => 'Revenue and expense summary for a specific period.'],
-                            ['url' => '/reports/general-ledger', 'name' => 'General Ledger', 'desc' => 'Complete record of all financial transactions.'],
+                            ['url' => '/reports/general-ledger', 'name' => 'Customer Ledger', 'desc' => 'Complete transaction history per customer with running balance.'],
                         ]
                     ],
                     [

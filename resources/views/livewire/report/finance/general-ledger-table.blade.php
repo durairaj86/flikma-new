@@ -192,7 +192,7 @@
 
 {{-- Bank-statement style layout: used for Print and PDF export only --}}
 <div id="gl-print" class="stmt-print d-none d-print-block"
-     data-pdf-filename="GeneralLedger-{{ $startDate ?? '' }}-{{ $endDate ?? '' }}.pdf">
+     data-pdf-filename="CustomerLedger-{{ $startDate ?? '' }}-{{ $endDate ?? '' }}.pdf">
 
     <table class="stmt-meta">
         <tr>
@@ -200,7 +200,7 @@
                 <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
             </td>
             <td class="text-end">
-                <div class="stmt-title">GENERAL LEDGER</div>
+                <div class="stmt-title">CUSTOMER LEDGER</div>
                 <div class="stmt-sub">Period: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
                 @if(count($activeCustomers) > 0)
                     @php $printCustomer = reset($activeCustomers); @endphp
@@ -279,7 +279,7 @@
 @include('includes.report-print-css', ['orientation' => 'landscape'])
 
 <style>
-/* ── General Ledger table — provisional report design system ── */
+/* ── Customer Ledger table — provisional report design system ── */
 .x-small { font-size: .7rem; }
 .tabular-nums { font-variant-numeric: tabular-nums; }
 

@@ -49,10 +49,15 @@
                                value="{{ $endDate }}" />
                     </div>
                     <div class="col-lg-4 col-md-4">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Search</label>
-                        <input type="text" class="form-control bg-light border-0 py-2"
-                               wire:model.debounce.400ms="search"
-                               placeholder="Customer name..." />
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Customer</label>
+                        <select class="form-select bg-light border-0 py-2 no-ts" wire:model="customerId">
+                            <option value="">All Customers</option>
+                            @foreach($customers as $customer)
+                                <option value="{{ $customer['id'] }}" @selected($customerId == $customer['id'])>
+                                    {{ $customer['row_no'] }} — {{ $customer['name_en'] }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="col-lg-4 col-md-4">
                         <div class="d-flex gap-2">
