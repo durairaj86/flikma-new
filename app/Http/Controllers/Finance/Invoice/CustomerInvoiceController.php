@@ -349,6 +349,7 @@ class CustomerInvoiceController extends Controller
             'tax.*' => 'nullable|string',
         ]);
 
+        $this->assertPeriodOpen($validated['invoice_date'], 'invoice_date');
 
         //$userId = Auth::id();
         $companyId = companyId();

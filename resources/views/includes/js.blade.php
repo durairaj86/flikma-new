@@ -31,6 +31,7 @@
 <script type="text/javascript" src="{{ asset('js/jquery-confirm.js') }}"></script>
 <script src="{{ asset('js/bootstrap-select.js') }}"></script>
 <script src="{{ asset('js/flatpickr/flatpickr.js') }}"></script>
+<script src="{{ asset('js/quill/quill.js') }}"></script>
 
 <script src="{{ asset('js/html2pdf/html2pdf.js') }}"></script>
 

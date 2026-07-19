@@ -880,6 +880,42 @@ QUOTATION = {
             });
             GLOBAL_FN.activity.activityChange();
             QUOTATION.form.polPodLoad();
+            QUOTATION.form.termsAutoFill();
+        },
+        // Prefills Terms & Conditions from the Quotation Terms master
+        // (activity-specific term if one exists, else the general term)
+        // whenever Activity changes. Only overwrites the textarea when it's
+        // still empty or still holds the last value *we* auto-filled — never
+        // clobbers text the user actually typed.
+        //
+        // Bound via delegation on the form (not directly on #activity-id):
+        // GLOBAL_FN.activity.activityChange() reinitializes the shipment-mode
+        // TomSelects (loadJs('form.shipmentMode', true)) whenever the
+        // selected activity's shipment type changes, which replaces
+        // #activity-id's TomSelect instance and silently detaches any
+        // listener bound directly to the old element. Delegation survives
+        // that because it re-resolves the selector against the live DOM at
+        // event time instead of holding a reference to the old node.
+        termsAutoFill() {
+            let lastAutoFilled = null;
+
+            $('#moduleForm').off('change.termsAutoFill', '#activity-id')
+                .on('change.termsAutoFill', '#activity-id', function () {
+                let activityId = $(this).val();
+                if (!activityId) return;
+
+                $.get(GLOBAL_FN.buildUrl('masters/quotation-term/for-activity/' + activityId), function (res) {
+                    let terms = res && res.terms ? res.terms : null;
+                    if (!terms) return;
+
+                    let $terms = $('#terms');
+                    let current = $terms.val();
+                    if (!current || current === lastAutoFilled) {
+                        $terms.val(terms);
+                        lastAutoFilled = terms;
+                    }
+                });
+            });
         },
         customerProspectToggle() {
             $('#customer').on('change', function () {

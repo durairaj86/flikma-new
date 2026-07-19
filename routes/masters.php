@@ -26,6 +26,36 @@ Route::get('/masters/package/code/{id}/create', [\App\Http\Controllers\Master\Pa
 Route::post('/masters/package/code/{id}/create', [\App\Http\Controllers\Master\PackageCodeController::class, 'store']);
 Route::get('masters/package/codes/{id}/actions', [\App\Http\Controllers\Master\PackageCodeController::class, 'actions']);
 
+Route::view('/masters/quotation-terms', 'modules.master.quotation-term.list')->name('quotation-terms');
+Route::post('/masters/quotation-term/data', [\App\Http\Controllers\Master\QuotationTermController::class, 'fetchAllRows'])->name('quotation-term.data');
+Route::get('/masters/quotation-term/create', [\App\Http\Controllers\Master\QuotationTermController::class, 'modal']);
+Route::post('/masters/quotation-term/create', [\App\Http\Controllers\Master\QuotationTermController::class, 'store']);
+Route::get('/masters/quotation-term/{id}/create', [\App\Http\Controllers\Master\QuotationTermController::class, 'edit']);
+Route::post('/masters/quotation-term/{id}/create', [\App\Http\Controllers\Master\QuotationTermController::class, 'store']);
+Route::get('/masters/quotation-term/{id}/actions', [\App\Http\Controllers\Master\QuotationTermController::class, 'actions']);
+Route::delete('/masters/quotation-term/{id}', [\App\Http\Controllers\Master\QuotationTermController::class, 'destroy']);
+Route::get('/masters/quotation-term/for-activity/{activityId}', [\App\Http\Controllers\Master\QuotationTermController::class, 'forActivity']);
+
+Route::view('/masters/hs-tariffs', 'modules.master.hs-tariff.list')->name('hs-tariffs');
+Route::post('/masters/hs-tariff/data', [\App\Http\Controllers\Master\HsTariffController::class, 'fetchAllRows'])->name('hs-tariff.data');
+Route::get('/masters/hs-tariff/create', [\App\Http\Controllers\Master\HsTariffController::class, 'modal']);
+Route::post('/masters/hs-tariff/create', [\App\Http\Controllers\Master\HsTariffController::class, 'store']);
+Route::get('/masters/hs-tariff/{id}/create', [\App\Http\Controllers\Master\HsTariffController::class, 'edit']);
+Route::post('/masters/hs-tariff/{id}/create', [\App\Http\Controllers\Master\HsTariffController::class, 'store']);
+Route::get('/masters/hs-tariff/{id}/actions', [\App\Http\Controllers\Master\HsTariffController::class, 'actions']);
+Route::delete('/masters/hs-tariff/{id}', [\App\Http\Controllers\Master\HsTariffController::class, 'destroy']);
+
+Route::view('/masters/period-closing', 'modules.master.period-closing.list')->name('period-closing');
+Route::post('/masters/period-closing/data', [\App\Http\Controllers\Master\PeriodClosingController::class, 'fetchAllRows'])->name('period-closing.data');
+Route::get('/masters/period-closing/create', [\App\Http\Controllers\Master\PeriodClosingController::class, 'modal']);
+Route::post('/masters/period-closing/create', [\App\Http\Controllers\Master\PeriodClosingController::class, 'store']);
+Route::get('/masters/period-closing/{id}/create', [\App\Http\Controllers\Master\PeriodClosingController::class, 'edit']);
+Route::post('/masters/period-closing/{id}/create', [\App\Http\Controllers\Master\PeriodClosingController::class, 'store']);
+Route::get('/masters/period-closing/{id}/actions', [\App\Http\Controllers\Master\PeriodClosingController::class, 'actions']);
+Route::post('/masters/period-closing/{id}/close', [\App\Http\Controllers\Master\PeriodClosingController::class, 'close']);
+Route::post('/masters/period-closing/{id}/reopen', [\App\Http\Controllers\Master\PeriodClosingController::class, 'reopen']);
+Route::delete('/masters/period-closing/{id}', [\App\Http\Controllers\Master\PeriodClosingController::class, 'destroy']);
+
 Route::view('/masters/container/types', 'modules.master.container-type.list')->name('container-types');
 Route::post('/masters/container/type/data', [\App\Http\Controllers\Master\ContainerTypeController::class, 'fetchAllRows'])->name('container-type.data');
 

@@ -23,7 +23,7 @@
             <!-- Table Section -->
             <div class="card flex-grow-1 shadow-sm border-0">
                 <div class="table-responsive" style="max-height: calc(100vh - 180px);">
-                    <table class="table align-middle mb-0" id="dataTable">
+                    <table class="table align-middle mb-0" id="dataTable" data-model-size="md">
                         <thead class="table-light sticky-top bg-white">
                         <tr>
                             <th>#</th>

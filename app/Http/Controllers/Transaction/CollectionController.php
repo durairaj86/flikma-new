@@ -146,6 +146,8 @@ class CollectionController extends Controller
             'invoice_amounts.*' => 'numeric|min:0',
         ]);
 
+        $this->assertPeriodOpen($validated['collection_date'], 'collection_date');
+
         DB::beginTransaction();
         try {
             // Create or update collection

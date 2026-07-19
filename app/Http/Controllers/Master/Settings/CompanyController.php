@@ -51,6 +51,7 @@ class CompanyController extends Controller
             'city_ar' => 'required|string|max:100',
             'pincode' => 'nullable|string|max:10',
             'state' => 'nullable|string|max:100',
+            'timezone' => 'nullable|string|max:100',
 
             // Business Type & Registration
             // The 'multiple' selects need array validation, though the request might send null if nothing is selected.
@@ -149,11 +150,12 @@ class CompanyController extends Controller
         $company->name_ar = $request->input('business_name_ar');
         $company->phone = $request->input('companyPhone');
         $company->email = $request->input('companyEmail');
-        $company->address_1 = $request->input('address_en');
-        $company->address_1_ar = $request->input('address_ar');
+        $company->address = $request->input('address_en');
+        $company->address_ar = $request->input('address_ar');
         $company->city = $request->input('city_en');
         $company->city_ar = $request->input('city_ar');
         $company->postal_code = $request->input('pincode');
+        $company->timezone = $request->input('timezone');
         $company->city_sub_division = $request->input('city_sub_division');
         $company->business_type = $request->input('businessType');
         $company->industry_type = $request->input('industryType');
@@ -161,7 +163,7 @@ class CompanyController extends Controller
         if ($company->vat_status != 1) {
             $company->vat_status = $request->input('vat_status');
             $company->cr_number = $request->input('crNumber');
-            $company->tax_number = $request->input('vatNumber');
+            $company->vat_number = $request->input('vatNumber');
         }
         $company->invoice_terms = $request->input('terms');
 

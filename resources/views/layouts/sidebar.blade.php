@@ -505,6 +505,12 @@
                                 </li>
                             </ul>
                         </li>
+                        <li class="nav-item">
+                            <a href="/reports/waybill-report"
+                               class="nav-link {{ $submenu == 'waybill-report' ? 'active' : '' }}">
+                                <p>Waybill Report</p>
+                            </a>
+                        </li>
                     </ul>
                 </li>
 
@@ -561,7 +567,7 @@
 
                         <!-- Reference Data (Submenu with children) -->
                         <!-- Logistics Data -->
-                        <li class="nav-item {{ in_array($segment2,['services','package','container','incoterms','currencies']) ? 'menu-open' : '' }}">
+                        <li class="nav-item {{ in_array($segment2,['services','package','container','incoterms','currencies','quotation-terms','hs-tariffs','period-closing']) ? 'menu-open' : '' }}">
                             <a href="#" class="nav-link">
                                 <p>Predefined Data <i class="nav-arrow bi bi-chevron-right"></i></p>
                             </a>
@@ -588,6 +594,24 @@
                                     <a href="/masters/incoterms"
                                        class="nav-link {{ $submenu=='incoterms' ? 'active':'' }}">
                                         <p>Incoterms</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/masters/quotation-terms"
+                                       class="nav-link {{ $submenu=='quotation-terms' ? 'active':'' }}">
+                                        <p>Quotation Terms</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/masters/hs-tariffs"
+                                       class="nav-link {{ $submenu=='hs-tariffs' ? 'active':'' }}">
+                                        <p>HS Tariff</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/masters/period-closing"
+                                       class="nav-link {{ $submenu=='period-closing' ? 'active':'' }}">
+                                        <p>Period Closing</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">

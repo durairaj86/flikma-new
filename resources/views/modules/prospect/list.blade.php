@@ -135,7 +135,7 @@
             </div>
 
             <!-- Table with scroll -->
-            <div class="flex-grow-1 overflow-auto">
+            <div class="flex-grow-1 overflow-auto" style="min-height:320px;">
                 <table class="table align-middle dataTable" id="dataTable" data-title="Prospect">
                     <thead class="table-light sticky-top bg-white">
                     <tr>

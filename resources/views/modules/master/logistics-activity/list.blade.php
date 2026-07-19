@@ -22,7 +22,7 @@
 
             <!-- Table Section -->
             <div class="flex-grow-1">
-                <table class="table align-middle mb-0" id="dataTable">
+                <table class="table align-middle mb-0" id="dataTable" data-model-size="md">
                     <thead class="table-light sticky-top bg-white">
                     <tr>
                         <th>#</th>

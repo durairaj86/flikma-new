@@ -662,7 +662,7 @@
                     <div class="row">
                         <div class="col-12 g-3">
                             <label class="form-label">Terms & Conditions</label>
-                            <textarea class="form-control h-100" rows="3" name="terms" autocomplete="off"
+                            <textarea class="form-control h-100" id="terms" rows="3" name="terms" autocomplete="off"
                                       maxlength="500">{{ $quotation->terms ?? (isset($enquiryData->id) ? "This quotation was created from Enquiry " . $quotation->row_no . (isset($enquiryData->prospect) && $quotation->prospect_id ? "\nProspect Customer: " . $quotation->prospect->name . " (" . $quotation->prospect->row_no . ")" : "") : "") }}</textarea>
                         </div>
                     </div>

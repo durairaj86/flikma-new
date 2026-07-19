@@ -136,6 +136,8 @@ class PaymentController extends Controller
             'additional_transaction_types.*' => 'in:debit,credit',
         ]);
 
+        $this->assertPeriodOpen($validated['payment_date'], 'payment_date');
+
         DB::beginTransaction();
         try {
             // Create or update payment

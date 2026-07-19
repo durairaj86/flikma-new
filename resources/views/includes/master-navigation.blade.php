@@ -29,6 +29,30 @@
                 </a>
             </li>
 
+            <!-- Quotation Terms -->
+            <li class="nav-item" data-url="/masters/quotation-terms">
+                <a href="{{ asset('/masters/quotation-terms') }}"
+                   class="nav-link d-flex align-items-center py-2 {{ $page1 == 'quotation-terms' ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-file-earmark-text text-secondary me-2"></i> Quotation Terms
+                </a>
+            </li>
+
+            <!-- HS Tariff -->
+            <li class="nav-item" data-url="/masters/hs-tariffs">
+                <a href="{{ asset('/masters/hs-tariffs') }}"
+                   class="nav-link d-flex align-items-center py-2 {{ $page1 == 'hs-tariffs' ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-receipt text-secondary me-2"></i> HS Tariff
+                </a>
+            </li>
+
+            <!-- Period Closing -->
+            <li class="nav-item" data-url="/masters/period-closing">
+                <a href="{{ asset('/masters/period-closing') }}"
+                   class="nav-link d-flex align-items-center py-2 {{ $page1 == 'period-closing' ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-lock text-secondary me-2"></i> Period Closing
+                </a>
+            </li>
+
             <!-- Transport Directory -->
             <li class="nav-item">
                 <button class="nav-link d-flex align-items-center py-2 w-100 border-0 bg-transparent text-dark"

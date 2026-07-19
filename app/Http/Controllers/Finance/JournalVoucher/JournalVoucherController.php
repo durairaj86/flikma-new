@@ -79,6 +79,8 @@ class JournalVoucherController extends Controller
             'tax_amounts.*' => 'nullable|numeric|min:0',
         ]);
 
+        $this->assertPeriodOpen($validated['voucher_date'], 'voucher_date');
+
         DB::beginTransaction();
         try {
             // Create or update journal voucher

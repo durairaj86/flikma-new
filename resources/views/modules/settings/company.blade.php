@@ -98,7 +98,7 @@
                                                         class="text-danger">*</span></label>
                                                 <textarea class="form-control h-50" id="address_en" required
                                                           name="address_en" rows="4"
-                                                          placeholder="Street, Building name, etc.">{{ $company->address_1 }}</textarea>
+                                                          placeholder="Street, Building name, etc.">{{ $company->address }}</textarea>
                                             </div>
 
                                             <div class="col-6 pb-0 mb-0 text-end">
@@ -107,7 +107,7 @@
                                                         class="text-danger">*</span></label>
                                                 <textarea class="form-control h-50 text-end" id="address_ar" required
                                                           name="address_ar" rows="4"
-                                                          placeholder="Street, Building name, etc.">{{ $company->address_1_ar }}</textarea>
+                                                          placeholder="Street, Building name, etc.">{{ $company->address_ar }}</textarea>
                                             </div>
 
                                             <div class="col-md-6 pt-0 mt-0">
@@ -135,6 +135,16 @@
                                                         class="text-danger">*</span></label>
                                                 <input type="text" class="form-control" id="pincode" name="pincode"
                                                        required value="{{ $company->postal_code }}">
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label for="timezone" class="form-label">Time Zone</label>
+                                                <select class="tom-select" id="timezone" name="timezone"
+                                                        data-live-search="true">
+                                                    @foreach(\DateTimeZone::listIdentifiers() as $tz)
+                                                        <option value="{{ $tz }}" @selected($company->timezone === $tz)>{{ $tz }}</option>
+                                                    @endforeach
+                                                </select>
                                             </div>
                                         </div>
                                     </div>
@@ -173,7 +183,7 @@
                                                     <div class="col-md-6">
                                                         <label class="form-label fw-medium">VAT Number (TRN)</label>
                                                         <input type="text" class="form-control" disabled
-                                                               value="{{ $company->tax_number }}">
+                                                               value="{{ $company->vat_number }}">
                                                     </div>
 
                                                     <div class="col-md-6">
@@ -200,7 +210,7 @@
                                                         <label class="form-label fw-medium">VAT Number (TRN)</label>
                                                         <input type="text" class="form-control" id="vatNumber"
                                                                name="vatNumber" placeholder="300XXXXXXXXXXX"
-                                                               value="{{ $company->tax_number }}">
+                                                               value="{{ $company->vat_number }}">
                                                     </div>
 
                                                     <div class="col-md-6">

@@ -378,6 +378,7 @@ CUSTOMER_INVOICE = {
             CUSTOMER_INVOICE.form.addRow();
             CUSTOMER_INVOICE.form.removeRow();
             CUSTOMER_INVOICE.form.customer.change();
+            CUSTOMER_INVOICE.form.customer.invoiceDateChange();
             CALCULATION.load();
             CALCULATION.finalTotals();
         },
@@ -419,26 +420,47 @@ CUSTOMER_INVOICE = {
             })
         },
         customer: {
+            // Recomputes Due Date = Invoice Date + (selected customer's credit
+            // days). Shared by both the customer-selection handler (job pick
+            // fills #customer, which fires this) and the invoice-date handler
+            // below (so editing the invoice date after a customer is already
+            // selected keeps the due date in sync instead of leaving it stale).
+            recalcDueDate() {
+                const selectedOption = $('#customer').find('option:selected');
+                let creditDays = parseInt(selectedOption.data('credit-days'), 10) || 0;
+                const invoiceInput = document.getElementById('invoice_date');
+
+                if (invoiceInput && invoiceInput._flatpickr) {
+                    const invoiceDate = invoiceInput._flatpickr.selectedDates[0];
+                    if (invoiceDate) {
+                        let dueDate = new Date(invoiceDate);
+                        dueDate.setDate(dueDate.getDate() + creditDays);
+
+                        const dueDateInput = document.getElementById('due_date');
+                        if (dueDateInput && dueDateInput._flatpickr) {
+                            dueDateInput._flatpickr.setDate(dueDate);
+                        }
+                    }
+                }
+            },
+            invoiceDateChange() {
+                // #invoice_date is initialized by the generic datepicker()
+                // (public/js/startup.js), whose onChange is a shared no-op —
+                // flatpickr still fires a native 'change' on the original
+                // input for compatibility, so listen there instead of
+                // touching the shared initializer.
+                $('#invoice_date').off('change.dueDate').on('change.dueDate', function () {
+                    if ($('#customer').find('option:selected').val()) {
+                        CUSTOMER_INVOICE.form.customer.recalcDueDate();
+                    }
+                });
+            },
             change() {
                 $('#customer').change(function () {
                     const selectedOption = $(this).find('option:selected');
 
                     // --- 1. HANDLE DUE DATE CALCULATION ---
-                    let creditDays = parseInt(selectedOption.data('credit-days'), 10) || 0;
-                    const invoiceInput = document.getElementById('invoice_date');
-
-                    if (invoiceInput && invoiceInput._flatpickr) {
-                        const invoiceDate = invoiceInput._flatpickr.selectedDates[0];
-                        if (invoiceDate) {
-                            let dueDate = new Date(invoiceDate);
-                            dueDate.setDate(dueDate.getDate() + creditDays);
-
-                            const dueDateInput = document.getElementById('due_date');
-                            if (dueDateInput && dueDateInput._flatpickr) {
-                                dueDateInput._flatpickr.setDate(dueDate);
-                            }
-                        }
-                    }
+                    CUSTOMER_INVOICE.form.customer.recalcDueDate();
 
                     // --- 2. HANDLE CURRENCY UPDATE & DISABLE ---
                     // --- 2. HANDLE CURRENCY UPDATE & DISABLE ---

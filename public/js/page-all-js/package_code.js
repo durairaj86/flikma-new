@@ -81,7 +81,7 @@ PACKAGE_CODE = {
                     title: 'Add Package Code',
                     url: GLOBAL_FN.buildUrl('masters/package/code/create'),
                     content: null,
-                    size: 'lg',
+                    size: 'md',
                     callBack: null
                 });
             })

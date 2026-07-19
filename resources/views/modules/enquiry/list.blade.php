@@ -179,8 +179,12 @@
                 <button class="btn btn-primary rounded-pill px-4" id="new">New Enquiry</button>
             </div>
         </div>
-        <!-- Table Section -->
-        <div class="shadow bdr-r-10 py-3 flex-grow-1" style="overflow: hidden;">
+        <!-- Table Section. min-height guarantees room for a fully-expanded row
+             action dropdown even with very few rows — overflow:hidden here
+             clips the menu (a DOM descendant of this card) at its bottom edge
+             once the menu's rendered height exceeds the card's natural
+             content height. See quotation/list.blade.php for the same fix. -->
+        <div class="shadow bdr-r-10 py-3 flex-grow-1" style="overflow: hidden;min-height:320px;">
             <!-- Search & New -->
             <div class="d-flex justify-content-between px-3 flex-shrink-0">
                 {{--<div id="searchLabels" class="mb-3 d-flex flex-wrap gap-2"></div>--}}

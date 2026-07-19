@@ -70,6 +70,7 @@
 
     <link href="{{ asset('css/tom-select/tom-select.bootstrap5.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/flatpickr/flatpickr.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/quill/quill.snow.css') }}">
 
     {{-- Alpine is bundled with Livewire v3 (@livewireScripts) — do not load it separately --}}
 

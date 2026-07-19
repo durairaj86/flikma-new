@@ -265,6 +265,7 @@ class CreditNoteController extends Controller
             'tax.*' => 'nullable|string',
         ]);
 
+        $this->assertPeriodOpen($validated['credit_note_date'], 'credit_note_date');
 
         //$userId = Auth::id();
         $companyId = companyId();

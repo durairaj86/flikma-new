@@ -261,6 +261,7 @@ class SupplierInvoiceController extends Controller
             'unit_id.*' => 'required|numeric',
         ]);
 
+        $this->assertPeriodOpen($validated['invoice_date'], 'invoice_date');
 
         //$userId = Auth::id();
         $companyId = companyId();

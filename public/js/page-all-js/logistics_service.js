@@ -91,7 +91,7 @@ LOGISTICS_SERVICE = {
                     title: 'Add Service',
                     url: GLOBAL_FN.buildUrl('masters/services/create'),
                     content: null,
-                    size: 'lg',
+                    size: 'md',
                     callBack: null
                 });
             })

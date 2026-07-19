@@ -53,8 +53,8 @@
             </div>
             <div class="shadow bdr-r-10 py-3 flex-grow-1">
                 <!-- Table with scroll -->
-                <div class="flex-grow-1 overflow-auto">
-                    <table class="table align-middle dataTable" id="dataTable">
+                <div class="flex-grow-1 overflow-auto" style="min-height:320px;">
+                    <table class="table align-middle dataTable" id="dataTable" data-model-size="md">
                         <thead class="table-light sticky-top bg-white">
                         <tr>
                             <th style="width: 10px">#</th>

@@ -119,7 +119,7 @@ BANK = {
                     title: 'Add Bank',
                     url: GLOBAL_FN.buildUrl('masters/bank/create'),
                     content: null,
-                    size: 'lg',
+                    size: 'md',
                     callBack: null
                 });
             })
