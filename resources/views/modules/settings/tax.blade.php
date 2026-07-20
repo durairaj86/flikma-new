@@ -1,7 +1,7 @@
 @section('js','user')
 @section('page-title','Users')
 <x-app-layout>
-    <main class="gmail-content bg-white d-flex">
+    <main class="gmail-content bg-white d-flex flex-column">
         @include('includes.settings-navigation')
         <section class="flex-grow-1 px-4 d-flex flex-column">
             @include('includes.master-header')

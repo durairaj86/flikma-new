@@ -2,12 +2,10 @@
 @section('page-title','Zatca Integration')
 
 <x-app-layout>
-    <main class="gmail-content bg-white d-flex">
+    <main class="gmail-content bg-white d-flex flex-column">
         @include('includes.settings-navigation')
 
         <section class="flex-grow-1 px-4 d-flex flex-column">
-            @include('includes.master-header')
-
             <div class="container-fluid py-4">
 
                 {{-- Header and Context --}}
@@ -58,123 +56,142 @@
                         </div>
                     </div>
                 @else
-                    {{-- *** ORIGINAL SECTION: STAGES 1 & 2 (Only visible if NOT in PRODUCTION_MODE) *** --}}
-                    <div class="row g-5">
+                    {{-- *** STAGE 1: SIMULATION MODE — development/internal use only, hidden from customers *** --}}
+                    @if(blank($zatcaConfig->status) || $zatcaConfig->status == \App\Enums\Zatca::SIMULATION_MODE)
+                        <div class="d-none" id="simulation-card-wrapper">
+                            <div class="card h-100 border-start border-5 border-warning shadow-lg" id="simulation-card">
+                                <div class="card-body p-4 p-md-5">
+                                    <span class="badge bg-warning text-dark mb-3 fs-6">STAGE 1: SIMULATION</span>
+                                    <h4 class="card-title fw-bold text-warning-emphasis mb-3 me-3">Compliance Certification</h4>
 
-                        {{-- STAGE 1: SIMULATION MODE --}}
-                        @if(blank($zatcaConfig->status) || $zatcaConfig->status == \App\Enums\Zatca::SIMULATION_MODE)
-                            <div class="col-lg-6">
-                                <div class="card h-100 border-start border-5 border-warning shadow-lg" id="simulation-card">
-                                    <div class="card-body p-4 p-md-5">
-                                        <span class="badge bg-warning text-dark mb-3 fs-6">STAGE 1: SIMULATION</span>
-                                        <h4 class="card-title fw-bold text-warning-emphasis mb-3 me-3">Compliance Certification</h4>
+                                    <p class="small text-muted mb-4">
+                                        This phase validates your system's technical compatibility with ZATCA's standards. Successful validation generates the **Compliance CSID**.
+                                    </p>
 
-                                        <p class="small text-muted mb-4">
-                                            This phase validates your system's technical compatibility with ZATCA's standards. Successful validation generates the **Compliance CSID**.
-                                        </p>
-
-                                        {{-- DYNAMIC CONTENT: OTP Form OR Success Message --}}
-                                        @if($zatcaConfig->status != \App\Enums\Zatca::SIMULATION_MODE)
-                                            {{-- Case 1: Display OTP Form (Awaiting validation) --}}
-                                            <div id="simulation-otp-form-container">
-                                                <form id="simulation-form" class="mb-4">
-                                                    <div class="mb-3">
-                                                        <label for="simulation_otp" class="form-label fw-medium">Simulation Phase OTP <span class="text-danger">*</span></label>
-                                                        <small class="text-muted d-block mb-1">
-                                                            Paste the unique 6-digit OTP obtained from the ZATCA E-invoicing Portal.
-                                                        </small>
-                                                        <input class="form-control form-control-lg"
-                                                               id="simulation_otp"
-                                                               name="simulation_otp"
-                                                               placeholder="e.g., 123456"
-                                                               minlength="6" maxlength="6"
-                                                               type="text"
-                                                               required>
-                                                    </div>
-                                                    <div class="d-grid">
-                                                        <button id="submit-simulation-validate"
-                                                                type="button"
-                                                                class="btn btn-warning text-dark fw-bold">
-                                                            <i class="bi bi-gear me-2"></i> Validate Simulation CSID
-                                                        </button>
-                                                    </div>
-                                                </form>
-
-                                                <div class="mt-4 pt-3 border-top">
-                                                    <h6 class="fw-bold text-success pb-2">STATUS: Ready for Production Activation</h6>
-                                                    <ul class="list-unstyled small mb-0">
-                                                        <li><i class="bi bi-check-circle-fill text-success me-2"></i> The Compliance CSID has been successfully issued and registered.</li>
-                                                        <li><i class="bi bi-check-circle-fill text-warning me-2"></i> You may now proceed to Stage 2.</li>
-                                                    </ul>
+                                    {{-- DYNAMIC CONTENT: OTP Form OR Success Message --}}
+                                    @if($zatcaConfig->status != \App\Enums\Zatca::SIMULATION_MODE)
+                                        {{-- Case 1: Display OTP Form (Awaiting validation) --}}
+                                        <div id="simulation-otp-form-container">
+                                            <form id="simulation-form" class="mb-4">
+                                                <div class="mb-3">
+                                                    <label for="simulation_otp" class="form-label fw-medium">Simulation Phase OTP <span class="text-danger">*</span></label>
+                                                    <small class="text-muted d-block mb-1">
+                                                        Paste the unique 6-digit OTP obtained from the ZATCA E-invoicing Portal.
+                                                    </small>
+                                                    <input class="form-control form-control-lg"
+                                                           id="simulation_otp"
+                                                           name="simulation_otp"
+                                                           placeholder="e.g., 123456"
+                                                           minlength="6" maxlength="6"
+                                                           type="text"
+                                                           required>
                                                 </div>
+                                                <div class="d-grid">
+                                                    <button id="submit-simulation-validate"
+                                                            type="button"
+                                                            class="btn btn-warning text-dark fw-bold">
+                                                        <i class="bi bi-gear me-2"></i> Validate Simulation CSID
+                                                    </button>
+                                                </div>
+                                            </form>
+
+                                            <div class="mt-4 pt-3 border-top">
+                                                <h6 class="fw-bold text-success pb-2">STATUS: Ready for Production Activation</h6>
+                                                <ul class="list-unstyled small mb-0">
+                                                    <li><i class="bi bi-check-circle-fill text-success me-2"></i> The Compliance CSID has been successfully issued and registered.</li>
+                                                    <li><i class="bi bi-check-circle-fill text-warning me-2"></i> You may now proceed to Stage 2.</li>
+                                                </ul>
                                             </div>
-                                        @else
-                                            {{-- Case 2: Display Success Message (Already validated) --}}
-                                            <div id="simulation-success-message-container" class="text-center p-4 rounded bg-success-subtle">
-                                                <i class="bi bi-check-circle-fill display-4 text-success mb-3"></i>
-                                                <h5 class="fw-bold text-success">STAGE 1: ACTIVATED</h5>
-                                                <p class="small text-success mb-0">
-                                                    The Compliance CSID has been successfully issued and registered. **You may now proceed to Stage 2: Production Activation.**
-                                                </p>
-                                            </div>
-                                        @endif
-                                    </div>
+                                        </div>
+                                    @else
+                                        {{-- Case 2: Display Success Message (Already validated) --}}
+                                        <div id="simulation-success-message-container" class="text-center p-4 rounded bg-success-subtle">
+                                            <i class="bi bi-check-circle-fill display-4 text-success mb-3"></i>
+                                            <h5 class="fw-bold text-success">STAGE 1: ACTIVATED</h5>
+                                            <p class="small text-success mb-0">
+                                                The Compliance CSID has been successfully issued and registered. **You may now proceed to Stage 2: Production Activation.**
+                                            </p>
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
-                        @endif
+                        </div>
+                    @endif
 
+                    {{-- *** PRODUCTION ACTIVATION — customer-facing *** --}}
+                    @if($zatcaConfig->status == \App\Enums\Zatca::SIMULATION_MODE || blank($zatcaConfig->status))
+                        <div class="row justify-content-center">
+                            <div class="col-lg-10">
+                                <div class="card border-0 shadow-lg overflow-hidden">
+                                    <div class="row g-0">
 
-                        {{-- STAGE 2: PRODUCTION MODE --}}
-                        @if($zatcaConfig->status == \App\Enums\Zatca::SIMULATION_MODE || blank($zatcaConfig->status))
-                            <div class="col-lg-6">
-                                <div class="card h-100 border-start border-5 border-success shadow-lg"
-                                     @if($zatcaConfig->status != \App\Enums\Zatca::SIMULATION_MODE) disabled @endif >
-                                    <div class="card-body p-4 p-md-5">
-                                        <span class="badge bg-success mb-3 fs-6">STAGE 2: PRODUCTION</span>
-                                        <h4 class="card-title fw-bold text-success-emphasis mb-3 me-3">Live System Activation</h4>
+                                        {{-- Left: explanation panel --}}
+                                        <div class="col-md-5 bg-success-subtle p-4 p-md-5">
+                                            <span class="badge bg-success mb-3 fs-6">
+                                                <i class="bi bi-shield-check me-1"></i> E-Invoicing Activation
+                                            </span>
+                                            <h3 class="fw-bolder text-success-emphasis mb-3">Activate Live E-Invoicing</h3>
+                                            <p class="text-muted mb-4">
+                                                Complete this one-time step to connect your account to ZATCA and start issuing compliant electronic invoices.
+                                            </p>
 
-                                        <p class="small text-muted mb-4">
-                                            This is the final step. It requires a **new, unique OTP** from the ZATCA portal and grants your system the **Production CSID**, allowing you to submit live e-invoices.
-                                        </p>
-
-                                        {{-- Production OTP Form --}}
-                                        <form id="production-form" class="mb-4">
-                                            <div class="mb-3">
-                                                <label for="core_otp" class="form-label fw-medium">Production Phase OTP <span class="text-danger">*</span></label>
-                                                <small class="text-danger d-block mb-1 fw-bold">
-                                                    **ATTENTION:** Use a NEW OTP. Do not reuse the Simulation OTP.
-                                                </small>
-                                                <input class="form-control form-control-lg"
-                                                       id="core_otp"
-                                                       name="core_otp"
-                                                       placeholder="e.g., 654321"
-                                                       minlength="6" maxlength="6"
-                                                       type="text"
-                                                       required>
-                                            </div>
-
-                                            <div class="d-grid">
-                                                <button id="submit-core-validate"
-                                                        type="button"
-                                                        class="btn btn-success btn-lg fw-bold">
-                                                    <i class="bi bi-rocket-takeoff me-2"></i> Activate Production E-Invoicing
-                                                </button>
-                                            </div>
-                                        </form>
-
-                                        {{-- Production Advisory --}}
-                                        <div class="mt-4 pt-3 border-top">
-                                            <h6 class="fw-bold text-primary pb-2">Pre-requisite Checklist</h6>
-                                            <ul class="list-unstyled small mb-0">
-                                                <li><i class="bi bi-check-circle-fill text-success me-2"></i> Successfully completed Stage 1 (Simulation).</li>
-                                                <li><i class="bi bi-check-circle-fill text-warning me-2"></i> Obtained a fresh, unique OTP for Production.</li>
+                                            <h6 class="fw-bold text-success-emphasis pb-2">What you'll need</h6>
+                                            <ul class="list-unstyled small mb-4">
+                                                <li class="d-flex mb-2">
+                                                    <i class="bi bi-1-circle-fill text-success me-2 mt-1"></i>
+                                                    <span>A One-Time Password (OTP) issued from the ZATCA E-Invoicing Portal.</span>
+                                                </li>
+                                                <li class="d-flex mb-2">
+                                                    <i class="bi bi-2-circle-fill text-success me-2 mt-1"></i>
+                                                    <span>Just a few minutes — activation completes as soon as the OTP is verified.</span>
+                                                </li>
                                             </ul>
+
+                                            <div class="alert alert-warning border-0 small mb-0">
+                                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                                The OTP is single-use and expires quickly. Request it from the ZATCA portal right before entering it here.
+                                            </div>
+                                        </div>
+
+                                        {{-- Right: OTP form --}}
+                                        <div class="col-md-7 p-4 p-md-5">
+                                            <h5 class="fw-bold text-dark mb-4">Enter Your Activation OTP</h5>
+
+                                            <form id="production-form" class="mb-4">
+                                                <div class="mb-4">
+                                                    <label for="core_otp" class="form-label fw-medium">ZATCA OTP <span class="text-danger">*</span></label>
+                                                    <input class="form-control form-control-lg"
+                                                           id="core_otp"
+                                                           name="core_otp"
+                                                           placeholder="e.g., 654321"
+                                                           minlength="6" maxlength="6"
+                                                           type="text"
+                                                           required>
+                                                    <small class="text-muted d-block mt-1">Enter the 6-digit code exactly as shown on the ZATCA portal.</small>
+                                                </div>
+
+                                                <div class="d-grid">
+                                                    <button id="submit-core-validate"
+                                                            type="button"
+                                                            class="btn btn-success btn-lg fw-bold">
+                                                        <i class="bi bi-rocket-takeoff me-2"></i> Activate Live E-Invoicing
+                                                    </button>
+                                                </div>
+                                            </form>
+
+                                            <div class="pt-3 border-top">
+                                                <h6 class="fw-bold text-primary pb-2">Before you activate</h6>
+                                                <ul class="list-unstyled small mb-0">
+                                                    <li class="mb-1"><i class="bi bi-check-circle-fill text-success me-2"></i> Your company details, VAT number, and CR number are up to date under Settings.</li>
+                                                    <li class="mb-1"><i class="bi bi-check-circle-fill text-success me-2"></i> You have a valid, unused OTP from the ZATCA portal.</li>
+                                                </ul>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        @endif
-                    </div>
+                        </div>
+                    @endif
                 @endif
                 {{-- *** END ORIGINAL SECTION *** --}}
             </div>

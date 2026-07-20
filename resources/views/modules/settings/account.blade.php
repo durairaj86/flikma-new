@@ -2,22 +2,15 @@
 @section('js', 'user')
 
 <x-app-layout>
-    <main class="gmail-content bg-light d-flex">
+    <main class="gmail-content bg-light d-flex flex-column">
         {{-- Navigation Menu (Sidebar) --}}
         @include('includes.settings-navigation')
 
-        <section class="flex-grow-1 px-4 d-flex flex-column">
-            @include('includes.master-header')
+        <section class="flex-grow-1 d-flex flex-column">
+            <div class="account-setup-page py-5 border-top flex-grow-1">
+                <div class="container" style="max-width: 1000px;">
 
-            <div class="content-wrapper flex-grow-1">
-                <section class="content py-5">
-                    <div class="container-fluid">
-
-                        <div class="row g-4">
-
-                            {{-- Profile Settings Column (Full Width) --}}
-                            <div class="col-md-12">
-                                <div class="rounded-3">
+                    <div class="rounded-3">
 
                                     {{-- FORM START: Ensure enctype="multipart/form-data" for file uploads --}}
                                     {{-- You need a valid action URL and method for Laravel here --}}
@@ -136,13 +129,10 @@
                                             </button>
                                         </div>
 
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-
+                    </form>
                     </div>
-                </section>
+
+                </div>
             </div>
 
             {{-- ------------------------------------------------ --}}

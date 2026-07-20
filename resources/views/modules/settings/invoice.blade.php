@@ -1,11 +1,9 @@
 @section('page-title','Invoice Settings')
 <x-app-layout>
-    <main class="gmail-content bg-white d-flex">
+    <main class="gmail-content bg-white d-flex flex-column">
         @include('includes.settings-navigation')
         <section class="flex-grow-1 d-flex flex-column">
-            <div class="px-4">
-                @include('includes.master-header')
-            </div>
+
             <div class="col-lg-12">
                 <div class="<!--card border-0 shadow-lg--> rounded-4">
                     <div class="card-body p-0">

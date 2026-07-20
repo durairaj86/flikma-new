@@ -1,12 +1,9 @@
 @section('js','company')
 @section('page-title','Manage Business')
 <x-app-layout>
-    <main class="gmail-content bg-white d-flex">
+    <main class="gmail-content bg-white d-flex flex-column">
         @include('includes.settings-navigation')
         <section class="flex-grow-1 d-flex flex-column">
-            <div class="px-4">
-                @include('includes.master-header')
-            </div>
             <div class="company-setup-page py-5 border-top">
                 <div class="container " style="max-width: 1000px;">
                     {{--<h2 class="fw-bolder mb-1 text-primary">Business Profile Setup</h2>
