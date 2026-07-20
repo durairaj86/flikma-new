@@ -2461,6 +2461,24 @@ function initTomSelectSearch(selector, dbName = 'sea', maxLength = 100, preLoad 
             isMultiple ? 'remove_button' : null
         ].filter(Boolean),
 
+        onInitialize() {
+            // Same is-invalid sync as initTomSelectForm() — without this,
+            // form-validation.js correctly marks the hidden native <select>
+            // as invalid, but that never reaches the visible TomSelect
+            // control, so required pol/pod fields never show a red border.
+            const el = this.input;
+            const $el = $(el);
+
+            if ($el.hasClass('is-invalid')) {
+                this.wrapper.classList.add('is-invalid');
+            }
+
+            const observer = new MutationObserver(() => {
+                this.wrapper.classList.toggle('is-invalid', $el.hasClass('is-invalid'));
+            });
+            observer.observe(el, {attributes: true});
+        },
+
         onType: function (str) {
             if (str.length > maxLength) {
                 this.clear();
