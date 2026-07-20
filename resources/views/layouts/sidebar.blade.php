@@ -1,10 +1,14 @@
 <aside class="app-sidebar bg-body-secondary" data-bs-theme="dark">
     <!-- Sidebar Brand -->
-    <div class="sidebar-brand">
-        <a class="navbar-brand d-flex align-items-center me-4" href="{{ route('dashboard') }}">
+    <div class="sidebar-brand d-flex align-items-center justify-content-between">
+        <a class="navbar-brand d-flex align-items-center me-2" href="{{ route('dashboard') }}">
             <i class="bi bi-lightning-charge-fill text-primary fs-4 me-2"></i>
-            <span class="fw-bold tracking-tight text-white text-start">Flikma</span>
+            <span class="fw-bold tracking-tight text-white text-start sidebar-brand-text">Flikma</span>
         </a>
+        <button type="button" id="sidebarToggleBtn" class="sidebar-toggle-btn btn btn-sm border-0 p-1"
+                title="Collapse menu" aria-label="Toggle sidebar menu">
+            <i class="bi bi-chevron-double-left"></i>
+        </button>
     </div>
 
     <!-- Sidebar Wrapper -->
@@ -650,3 +654,129 @@
         </nav>
     </div>
 </aside>
+
+<style>
+    #sidebar-container {
+        position: relative;
+        transition: width 0.25s ease;
+    }
+
+    /* Collapsed rail: shrink the container AND the inner aside (which otherwise
+       keeps AdminLTE's fixed 250px min/max-width and just gets clipped). */
+    #sidebar-container.sidebar-collapsed {
+        width: 70px;
+        overflow: visible; /* let the hover flyout below spill past the 70px rail */
+    }
+
+    #sidebar-container.sidebar-collapsed .app-sidebar {
+        width: 70px;
+        min-width: 70px !important;
+        max-width: 70px !important;
+        overflow: hidden;
+        transition: width 0.2s ease, min-width 0.2s ease, max-width 0.2s ease;
+    }
+
+    #sidebar-container.sidebar-collapsed .sidebar-brand {
+        justify-content: center;
+    }
+
+    #sidebar-container.sidebar-collapsed .sidebar-brand-text,
+    #sidebar-container.sidebar-collapsed .sidebar-menu .nav-link p,
+    #sidebar-container.sidebar-collapsed .nav-arrow {
+        display: none;
+    }
+
+    #sidebar-container.sidebar-collapsed .navbar-brand {
+        margin-right: 0 !important;
+    }
+
+    #sidebar-container.sidebar-collapsed .nav-treeview {
+        display: none !important;
+    }
+
+    #sidebar-container.sidebar-collapsed .sidebar-menu .nav-link {
+        justify-content: center;
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    /* Hover-to-preview: mousing over the collapsed rail flies the full menu
+       out on top of the page content, without pushing/reflowing it. */
+    #sidebar-container.sidebar-collapsed:hover .app-sidebar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 250px;
+        min-width: 250px !important;
+        max-width: 250px !important;
+        height: 100%;
+        overflow-y: auto;
+        z-index: 1051;
+        box-shadow: 4px 0 16px rgba(0, 0, 0, 0.25);
+    }
+
+    #sidebar-container.sidebar-collapsed:hover .sidebar-brand {
+        justify-content: space-between;
+    }
+
+    #sidebar-container.sidebar-collapsed:hover .sidebar-brand-text,
+    #sidebar-container.sidebar-collapsed:hover .sidebar-menu .nav-link p,
+    #sidebar-container.sidebar-collapsed:hover .nav-arrow {
+        display: inline-block;
+    }
+
+    #sidebar-container.sidebar-collapsed:hover .navbar-brand {
+        margin-right: 0.5rem !important;
+    }
+
+    #sidebar-container.sidebar-collapsed:hover .sidebar-menu .nav-link {
+        justify-content: flex-start;
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    #sidebar-container.sidebar-collapsed:hover .sidebar-menu .menu-open > .nav-treeview {
+        display: block !important;
+    }
+
+    .sidebar-toggle-btn {
+        color: #fff;
+        opacity: 0.75;
+        transition: transform 0.25s ease, opacity 0.15s ease;
+        flex-shrink: 0;
+    }
+
+    .sidebar-toggle-btn:hover {
+        opacity: 1;
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    #sidebar-container.sidebar-collapsed .sidebar-toggle-btn {
+        transform: rotate(180deg);
+    }
+</style>
+
+<script>
+    (function () {
+        var sidebarContainer = document.getElementById('sidebar-container');
+        var toggleBtn = document.getElementById('sidebarToggleBtn');
+        if (!sidebarContainer || !toggleBtn) {
+            return;
+        }
+
+        var STORAGE_KEY = 'flikma-sidebar-collapsed';
+
+        function applyState(collapsed) {
+            sidebarContainer.classList.toggle('sidebar-collapsed', collapsed);
+            toggleBtn.setAttribute('title', collapsed ? 'Expand menu' : 'Collapse menu');
+        }
+
+        applyState(localStorage.getItem(STORAGE_KEY) === '1');
+
+        toggleBtn.addEventListener('click', function () {
+            var collapsed = !sidebarContainer.classList.contains('sidebar-collapsed');
+            applyState(collapsed);
+            localStorage.setItem(STORAGE_KEY, collapsed ? '1' : '0');
+        });
+    })();
+</script>
