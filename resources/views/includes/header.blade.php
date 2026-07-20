@@ -63,7 +63,7 @@
                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" style="font-size: 0.65rem;">3</span>
             </a>
 
-            <div class="dropdown ms-2">
+            <div class="dropdown ms-2 user-account-menu">
                 <button class="btn btn-white border-0 d-flex align-items-center p-1 rounded-pill hover-shadow" type="button" data-bs-toggle="dropdown">
                     @php $userName = $user->name ?? 'Guest'; @endphp
                     @if($user->profile_photo_path ?? null)
@@ -78,10 +78,10 @@
                     </span>
                     <i class="bi bi-chevron-down small text-muted"></i>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" style="min-width: 240px; max-width: 90vw;">
                     <li class="px-3 py-2 border-bottom">
                         <div class="small text-muted">Signed in as:</div>
-                        <div class="fw-bold text-dark truncate-email">{{ $user->email ?? 'Guest' }}</div>
+                        <div class="fw-bold text-dark truncate-email" title="{{ $user->email ?? 'Guest' }}">{{ $user->email ?? 'Guest' }}</div>
                     </li>
                     <li><a class="dropdown-item py-2" href="{{ url('settings/account') }}"><i class="bi bi-person me-2"></i> My Profile</a></li>
                     <li><hr class="dropdown-divider"></li>
@@ -91,3 +91,42 @@
         </div>
     </div>
 </header>
+
+<style>
+    /* The email under "Signed in as" was overflowing the dropdown box
+       (a long, unspaced string doesn't wrap by default) instead of
+       staying inside it — wrap it instead of letting it spill/get clipped. */
+    .truncate-email {
+        overflow-wrap: break-word;
+        word-break: break-word;
+        white-space: normal;
+    }
+
+    /* public/css/manual.css has a legacy "open dropdowns on hover" rule
+       (.navbar .dropdown:hover .dropdown-menu) meant for an old nav.
+       It forces this menu visible via CSS only, without Bootstrap's JS
+       ever running Popper to position it — so on hover it renders
+       unpositioned and appears cut off at the edge of the screen.
+       Clicking works fine because Bootstrap's JS + Popper position it
+       correctly. Opt this menu out of the hover trick so it only opens
+       on click (higher specificity than manual.css's rule wins here). */
+    @media (min-width: 992px) {
+        .navbar .dropdown.user-account-menu .dropdown-menu {
+            display: none;
+            visibility: visible;
+            opacity: 1;
+            transform: none;
+        }
+
+        .navbar .dropdown.user-account-menu:hover .dropdown-menu {
+            display: none;
+            visibility: visible;
+            opacity: 1;
+            transform: none;
+        }
+
+        .navbar .dropdown.user-account-menu .dropdown-menu.show {
+            display: block;
+        }
+    }
+</style>
