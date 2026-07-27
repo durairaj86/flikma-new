@@ -66,6 +66,39 @@
                         {{ $job_no }}
                     </h3>
                 @endif
+
+                <div class="gap-4">
+                    <ul class="nav align-items-center" id="listTabs" role="tablist" aria-label="Navigation 13">
+                        <li class="nav-item me-2">
+                            <button class="nav-link px-3 py-2 d-flex align-items-center active justify-content-between status-btn"
+                                    data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="all">
+                                <span><i class="bi bi-collection me-1"></i> All -</span>
+                                <span class="status-count ms-2" id="allCount">0</span>
+                            </button>
+                        </li>
+                        <li class="nav-item me-2">
+                            <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
+                                    data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="pending">
+                                <span><i class="bi bi-clock me-1"></i> Pending -</span>
+                                <span class="status-count ms-2" id="pendingCount">0</span>
+                            </button>
+                        </li>
+                        <li class="nav-item me-2">
+                            <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
+                                    data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="in_transit">
+                                <span><i class="bi bi-truck me-1"></i> In Transit -</span>
+                                <span class="status-count ms-2" id="in_transitCount">0</span>
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
+                                    data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="delivered">
+                                <span><i class="bi bi-check-circle me-1"></i> Delivered -</span>
+                                <span class="status-count ms-2" id="deliveredCount">0</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
             </div>
             <div class="d-flex justify-content-between">
                 <div class="position-relative">

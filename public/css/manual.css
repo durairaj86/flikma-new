@@ -1132,21 +1132,24 @@ div.dataTables_wrapper div.dt-row div.col-sm-12, div.dataTables_wrapper div.data
     color: #fff;
 }
 
-/* Blue — Sent */
-#listTabs .status-btn[id="sent"] {
+/* Blue — Sent / In Transit */
+#listTabs .status-btn[id="sent"],
+#listTabs .status-btn[id="in_transit"] {
     background: #e7f1ff;
     color: #0a58ca;
 }
-#listTabs .status-btn[id="sent"].active {
+#listTabs .status-btn[id="sent"].active,
+#listTabs .status-btn[id="in_transit"].active {
     background: #0d6efd;
     color: #fff;
 }
 
-/* Green — Accepted / Approved / Confirmed / Completed */
+/* Green — Accepted / Approved / Confirmed / Completed / Delivered */
 #listTabs .status-btn[id="accepted"], #basicListTabs .status-btn[data-tab="accepted"],
 #listTabs .status-btn[id="approved"], #basicListTabs .status-btn[data-tab="approved"],
 #listTabs .status-btn[id="confirmed"],
 #listTabs .status-btn[id="completed"],
+#listTabs .status-btn[id="delivered"],
 #listTabs .status-btn[id="user"],
 #listTabs .status-btn[id="employee"] {
     background: #e6f9ef;
@@ -1156,6 +1159,7 @@ div.dataTables_wrapper div.dt-row div.col-sm-12, div.dataTables_wrapper div.data
 #listTabs .status-btn[id="approved"].active, #basicListTabs .status-btn[data-tab="approved"].active,
 #listTabs .status-btn[id="confirmed"].active,
 #listTabs .status-btn[id="completed"].active,
+#listTabs .status-btn[id="delivered"].active,
 #listTabs .status-btn[id="user"].active,
 #listTabs .status-btn[id="employee"].active {
     background: #198754;

@@ -253,7 +253,40 @@ class WaybillController extends Controller
             });
         }
 
-        $allCounts = [];
+        // Tabs mirror the statuses reachable via actions(): Pending →
+        // In Transit → Delivered. "All" (or no tab) applies no status filter.
+        $tab = strtolower((string) $request->tab);
+        if ($tab !== '' && $tab !== 'all') {
+            $query->where('waybills.status', $tab);
+        }
+
+        // Counts for each tab, reusing the same non-tab filters above so
+        // every tab's badge reflects the current date/customer/search filters.
+        $countQuery = Waybill::query()
+            ->leftJoin('customers', 'waybills.customer_id', '=', 'customers.id')
+            ->where('waybills.company_id', companyId())
+            ->where('waybills.deleted_at', null);
+        if ($fromDate && $toDate) {
+            $countQuery->where('waybills.waybill_date', '>=', formDate($fromDate))
+                ->where('waybills.waybill_date', '<=', formDate($toDate));
+        }
+        if (!empty($customers)) {
+            $countQuery->whereIn('customers.name_en', (array)$customers);
+        }
+        if ($customSearch) {
+            $countQuery->where(function ($q) use ($customSearch) {
+                $q->where('waybills.row_no', 'like', '%' . $customSearch . '%')
+                    ->orWhere('customers.name_en', 'like', '%' . $customSearch . '%')
+                    ->orWhere('waybills.delivery_address', 'like', '%' . $customSearch . '%');
+            });
+        }
+
+        $allCounts = [
+            'all' => (clone $countQuery)->count(),
+            'pending' => (clone $countQuery)->where('waybills.status', 'pending')->count(),
+            'in_transit' => (clone $countQuery)->where('waybills.status', 'in_transit')->count(),
+            'delivered' => (clone $countQuery)->where('waybills.status', 'delivered')->count(),
+        ];
 
         return DataTables::eloquent($query)
             ->addIndexColumn()

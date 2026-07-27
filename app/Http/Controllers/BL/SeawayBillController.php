@@ -288,7 +288,39 @@ class SeawayBillController extends Controller
             });
         }
 
-        $allCounts = [];
+        // Tabs mirror the statuses reachable via actions(): Pending →
+        // In Transit → Delivered. "All" (or no tab) applies no status filter.
+        $tab = strtolower((string) $request->tab);
+        if ($tab !== '' && $tab !== 'all') {
+            $query->where('seaway_bills.status', $tab);
+        }
+
+        // Counts for each tab, reusing the same non-tab filters above so
+        // every tab's badge reflects the current date/customer/search filters.
+        $countQuery = SeawayBill::query()
+            ->leftJoin('jobs', 'seaway_bills.job_id', '=', 'jobs.id')
+            ->leftJoin('customers', 'jobs.customer_id', '=', 'customers.id');
+        if ($fromDate && $toDate) {
+            $countQuery->where('seaway_bills.seaway_bill_date', '>=', formDate($fromDate))
+                ->where('seaway_bills.seaway_bill_date', '<=', formDate($toDate));
+        }
+        if (!empty($customers)) {
+            $countQuery->whereIn('customers.name_en', (array)$customers);
+        }
+        if ($customSearch) {
+            $countQuery->where(function ($q) use ($customSearch) {
+                $q->where('seaway_bills.row_no', 'like', '%' . $customSearch . '%')
+                    ->orWhere('customers.name_en', 'like', '%' . $customSearch . '%')
+                    ->orWhere('seaway_bills.delivery_address', 'like', '%' . $customSearch . '%');
+            });
+        }
+
+        $allCounts = [
+            'all' => (clone $countQuery)->count(),
+            'pending' => (clone $countQuery)->where('seaway_bills.status', 'pending')->count(),
+            'in_transit' => (clone $countQuery)->where('seaway_bills.status', 'in_transit')->count(),
+            'delivered' => (clone $countQuery)->where('seaway_bills.status', 'delivered')->count(),
+        ];
 
         return DataTables::eloquent($query)
             ->addIndexColumn()
