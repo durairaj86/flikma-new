@@ -109,7 +109,7 @@
                 @endif
 
                 <div class="gap-4">
-                    <ul class="nav status-tabs align-items-center border-bottom" id="listTabs" role="tablist"
+                    <ul class="nav align-items-center" id="listTabs" role="tablist"
                         aria-label="Navigation 13">
                         <li class="nav-item me-2">
                             <button
@@ -179,6 +179,44 @@
                 </button>
             </div>
         </div>
+
+        <style>
+            /* Color-coded pill tabs, keyed by tab id — scoped to this page's
+               #listTabs so the shared underline-style .status-tabs look
+               elsewhere in the app is untouched. */
+            #listTabs .status-btn {
+                border-radius: 999px;
+                padding: 6px 16px;
+                transition: background-color .15s ease, color .15s ease;
+            }
+            #listTabs .status-btn:hover::after,
+            #listTabs .status-btn.active::after {
+                display: none;
+            }
+            #listTabs #all { background: #eef0ff; color: #4338ca; }
+            #listTabs #draft { background: #f1f3f5; color: #495057; }
+            #listTabs #approved { background: #e6f9ef; color: #157347; }
+            #listTabs #overdue { background: #fdecea; color: #b02a37; }
+            #listTabs #creditnote { background: #fff4e5; color: #b45309; }
+            #listTabs #cancelled { background: #f1f3f5; color: #6c757d; }
+
+            {{-- Each #id.active rule needs the same 2-ID specificity as its
+                 own base #listTabs #id rule above (color:#fff alone, or the
+                 shared .status-btn.active, both lose to that on specificity
+                 — which is why "All" showed just its count with invisible
+                 same-on-same text: indigo-on-indigo). --}}
+            #listTabs #all.active { background: #4338ca; color: #fff; }
+            #listTabs #draft.active { background: #6c757d; color: #fff; }
+            #listTabs #approved.active { background: #198754; color: #fff; }
+            #listTabs #overdue.active { background: #dc3545; color: #fff; }
+            #listTabs #creditnote.active { background: #fd7e14; color: #fff; }
+            #listTabs #cancelled.active { background: #495057; color: #fff; }
+
+            #listTabs .status-btn.active .status-count {
+                background: rgba(255,255,255,.25);
+                color: #fff;
+            }
+        </style>
 
 
         <div class="shadow bdr-r-10 py-3 flex-grow-1">
