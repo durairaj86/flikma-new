@@ -71,7 +71,7 @@ class CustomerInvoiceController extends Controller
 
     /**
      * Applies the Status / Payment Status / Overdue filters shared by the
-     * rows, statusCounts, and salesSummary queries below.
+     * rows and tab-count queries below.
      */
     private function applyExtraFilters($query, array $filter)
     {
@@ -110,6 +110,27 @@ class CustomerInvoiceController extends Controller
             });
     }
 
+    /**
+     * Applies the active list tab (All / Draft / Approved / Overdue Invoice /
+     * Credit Note / Cancelled). Unlike status, "Overdue Invoice" and "Credit
+     * Note" aren't CustomerInvoiceEnum values — overdue is a payment-based
+     * condition, and credit notes are a separate related table.
+     */
+    private function applyTabFilter($query, ?string $tab)
+    {
+        $tab = strtolower((string) $tab);
+
+        return match ($tab) {
+            '', 'all' => $query,
+            'overdue' => $query->where('due_at', '<', now())->whereColumn('paid_amount', '<', 'grand_total'),
+            'creditnote' => $query->whereExists(function ($sub) {
+                $sub->selectRaw(1)->from('credit_notes')
+                    ->whereColumn('credit_notes.invoice_id', 'customer_invoices.id');
+            }),
+            default => $query->where('customer_invoices.status', CustomerInvoiceEnum::fromName($tab)),
+        };
+    }
+
     public function fetchAllRows(Request $request, $job_id): \Illuminate\Http\JsonResponse
     {
         if ($job_id != 'list') {
@@ -139,9 +160,7 @@ class CustomerInvoiceController extends Controller
         )
             ->with(['customer:id,name_en,name_ar,row_no'])
             ->with(['job:id,shipment_mode,pol,pod,activity_id,carrier,shipment_mode'])// eager load customer
-            ->when($request->tab, function ($q) use ($request) {
-                $q->where('customer_invoices.status', CustomerInvoiceEnum::fromName($request->tab));
-            })
+            ->tap(fn($query) => $this->applyTabFilter($query, $request->tab))
             ->when($job_id != 'list', function ($query) use ($job_id) {
                 $query->where('job_id', $job_id);
             })
@@ -176,98 +195,56 @@ class CustomerInvoiceController extends Controller
             ->tap(fn($query) => $this->applyExtraFilters($query, $filter))
             ->orderBy('customer_invoices.id', 'desc');
 
-        // ✅ Get counts per status
-        $statusCounts = CustomerInvoice::select('status', DB::raw('COUNT(*) as total'))
-            ->when($job_id != 'list', function ($query) use ($job_id) {
-                $query->where('job_id', $job_id);
-            })
-            ->when(isset($filter['filter-from-date'], $filter['filter-to-date']),
-                function ($query) use ($filter) {
+        // ✅ Counts for the All / Draft / Approved / Overdue Invoice / Credit
+        // Note / Cancelled tabs — each reuses the same shared (non-tab)
+        // filters so every tab's count reflects the current date/customer/
+        // search filters, matching what its own tab click would return.
+        $baseCountQuery = function () use ($job_id, $filter, $request) {
+            return CustomerInvoice::query()
+                ->when($job_id != 'list', function ($query) use ($job_id) {
+                    $query->where('job_id', $job_id);
+                })
+                ->when(isset($filter['filter-from-date'], $filter['filter-to-date']),
+                    function ($query) use ($filter) {
+                        $from = Carbon::parse($filter['filter-from-date'])->startOfDay();
+                        $to = Carbon::parse($filter['filter-to-date'])->addDay()->startOfDay();
 
-                    $from = Carbon::parse($filter['filter-from-date'])->startOfDay();
-                    $to = Carbon::parse($filter['filter-to-date'])->addDay()->startOfDay();
+                        $query->where('invoice_date', '>=', $from)
+                            ->where('invoice_date', '<', $to);
+                    }
+                )
+                ->when(isset($filter['customers']) && !empty($filter['customers']), function ($query) use ($filter) {
+                    $query->whereIn('customer_id', decodeIds($filter['customers']));
+                })
+                ->when(isset($request->filterData['customSearch']) && !empty($request->filterData['customSearch']), function ($query) use ($request) {
+                    $search = $request->filterData['customSearch'];
+                    $query->where(function ($q) use ($search) {
+                        $q->where('row_no', 'like', "%{$search}%")
+                            ->orWhere('job_no', 'like', "%{$search}%")
+                            ->orWhereHas('customer', function ($q) use ($search) {
+                                $q->where('name_en', 'like', "%{$search}%")
+                                    ->orWhere('name_ar', 'like', "%{$search}%");
+                            })
+                            ->orWhereHas('job', function ($q) use ($search) {
+                                $q->where('pol', 'like', "%{$search}%")
+                                    ->orWhere('pod', 'like', "%{$search}%");
+                            });
+                    });
+                })
+                ->tap(fn($query) => $this->applyExtraFilters($query, $filter));
+        };
 
-                    $query->where('invoice_date', '>=', $from)
-                        ->where('invoice_date', '<', $to);
-                }
-            )
-            ->when(isset($filter['customers']) && !empty($filter['customers']), function ($query) use ($filter) {
-                $query->whereIn('customer_id', decodeIds($filter['customers']));
-            })
-            ->when(isset($request->filterData['customSearch']) && !empty($request->filterData['customSearch']), function ($query) use ($request) {
-                $search = $request->filterData['customSearch'];
-                $query->where(function ($q) use ($search) {
-                    $q->where('row_no', 'like', "%{$search}%")
-                        ->orWhere('job_no', 'like', "%{$search}%")
-                        ->orWhereHas('customer', function ($q) use ($search) {
-                            $q->where('name_en', 'like', "%{$search}%")
-                                ->orWhere('name_ar', 'like', "%{$search}%");
-                        })
-                        ->orWhereHas('job', function ($q) use ($search) {
-                            $q->where('pol', 'like', "%{$search}%")
-                                ->orWhere('pod', 'like', "%{$search}%");
-                        });
-                });
-            })
-            ->tap(fn($query) => $this->applyExtraFilters($query, $filter))
-            ->groupBy('status')
-            ->pluck('total', 'status')
-            ->toArray();
-
-        $salesSummary = CustomerInvoice::select([
-            // Overall Totals (Approved + Draft)
-            DB::raw('SUM(grand_total) as overall_sales'),
-
-            // Draft Totals (status = 1)
-            DB::raw('SUM(CASE WHEN status = 1 THEN grand_total ELSE 0 END) as total_draft_grand'),
-            DB::raw('SUM(CASE WHEN status = 1 THEN sub_total ELSE 0 END) as total_draft_sub'),
-            DB::raw('SUM(CASE WHEN status = 1 THEN tax_total ELSE 0 END) as total_draft_tax'),
-
-            // Approved Totals (status = 3)
-            DB::raw('SUM(CASE WHEN status = 3 THEN grand_total ELSE 0 END) as total_approved_grand'),
-            DB::raw('SUM(CASE WHEN status = 3 THEN sub_total ELSE 0 END) as total_approved_sub'),
-            DB::raw('SUM(CASE WHEN status = 3 THEN tax_total ELSE 0 END) as total_approved_tax'),
-        ])
-            ->when($job_id != 'list', function ($query) use ($job_id) {
-                $query->where('job_id', $job_id);
-            })
-            ->when(isset($filter['filter-from-date'], $filter['filter-to-date']),
-                function ($query) use ($filter) {
-
-                    $from = Carbon::parse($filter['filter-from-date'])->startOfDay();
-                    $to = Carbon::parse($filter['filter-to-date'])->addDay()->startOfDay();
-
-                    $query->where('invoice_date', '>=', $from)
-                        ->where('invoice_date', '<', $to);
-                }
-            )
-            ->when(isset($filter['customers']) && !empty($filter['customers']), function ($query) use ($filter) {
-                $query->whereIn('customer_id', decodeIds($filter['customers']));
-            })
-            ->when(isset($request->filterData['customSearch']) && !empty($request->filterData['customSearch']), function ($query) use ($request) {
-                $search = $request->filterData['customSearch'];
-                $query->where(function ($q) use ($search) {
-                    $q->where('row_no', 'like', "%{$search}%")
-                        ->orWhere('job_no', 'like', "%{$search}%")
-                        ->orWhereHas('customer', function ($q) use ($search) {
-                            $q->where('name_en', 'like', "%{$search}%")
-                                ->orWhere('name_ar', 'like', "%{$search}%");
-                        })
-                        ->orWhereHas('job', function ($q) use ($search) {
-                            $q->where('pol', 'like', "%{$search}%")
-                                ->orWhere('pod', 'like', "%{$search}%");
-                        });
-                });
-            })
-            ->tap(fn($query) => $this->applyExtraFilters($query, $filter))
-            ->first();
-
-        // ✅ Normalize counts for all statuses
-        $allCounts = [];
-        foreach (CustomerInvoiceEnum::cases() as $status) {
-            $allCounts[$status->name] = $statusCounts[$status->value] ?? 0;
-        }
-        $allCounts['all'] = array_sum($allCounts);
+        $allCounts = [
+            'all' => $baseCountQuery()->count(),
+            'draft' => $baseCountQuery()->where('status', CustomerInvoiceEnum::DRAFT->value)->count(),
+            'approved' => $baseCountQuery()->where('status', CustomerInvoiceEnum::APPROVED->value)->count(),
+            'overdue' => $baseCountQuery()->where('due_at', '<', now())->whereColumn('paid_amount', '<', 'grand_total')->count(),
+            'creditnote' => $baseCountQuery()->whereExists(function ($sub) {
+                $sub->selectRaw(1)->from('credit_notes')
+                    ->whereColumn('credit_notes.invoice_id', 'customer_invoices.id');
+            })->count(),
+            'cancelled' => $baseCountQuery()->where('status', CustomerInvoiceEnum::CANCELLED->value)->count(),
+        ];
         $decimals = decimals();
         $activity = LogisticActivity::activities();
         // ✅ Return formatted DataTable
@@ -315,7 +292,6 @@ class CustomerInvoiceController extends Controller
             /*->editColumn('created_at', fn($model) => \Carbon\Carbon::parse($model->created_at)->format('d-m-Y'))*/
             ->with([
                 'statusCounts' => $allCounts,
-                'salesSummary' => $salesSummary,
             ])
             ->toJson();
     }

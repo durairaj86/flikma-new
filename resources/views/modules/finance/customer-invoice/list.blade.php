@@ -108,14 +108,23 @@
                     </h3>
                 @endif
 
-                {{--<div class="gap-4">
+                <div class="gap-4">
                     <ul class="nav status-tabs align-items-center border-bottom" id="listTabs" role="tablist"
                         aria-label="Navigation 13">
                         <li class="nav-item me-2">
                             <button
                                 class="nav-link px-3 py-2 d-flex align-items-center active justify-content-between status-btn"
+                                data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="all">
+                                <span><i class="bi bi-collection me-1"></i> All -</span>
+                                <span class="status-count ms-2" id="allCount">0</span>
+                            </button>
+                        </li>
+
+                        <li class="nav-item me-2">
+                            <button
+                                class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="draft">
-                                <span><i class="bi bi-clock text-warning me-1"></i> Draft -</span>
+                                <span><i class="bi bi-clock text-secondary me-1"></i> Draft -</span>
                                 <span class="status-count ms-2" id="draftCount">0</span>
                             </button>
                         </li>
@@ -129,6 +138,24 @@
                             </button>
                         </li>
 
+                        <li class="nav-item me-2">
+                            <button
+                                class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
+                                data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="overdue">
+                                <span><i class="bi bi-exclamation-triangle text-danger me-1"></i> Overdue Invoice -</span>
+                                <span class="status-count ms-2" id="overdueCount">0</span>
+                            </button>
+                        </li>
+
+                        <li class="nav-item me-2">
+                            <button
+                                class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
+                                data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="creditnote">
+                                <span><i class="bi bi-receipt-cutoff text-warning me-1"></i> Credit Note -</span>
+                                <span class="status-count ms-2" id="creditnoteCount">0</span>
+                            </button>
+                        </li>
+
                         <li class="nav-item">
                             <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                     data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="cancelled">
@@ -138,7 +165,7 @@
                         </li>
 
                     </ul>
-                </div>--}}
+                </div>
             </div>
             <div class="d-flex justify-content-between">
                 <div class="position-relative">
@@ -154,71 +181,6 @@
         </div>
 
 
-        <div class="container-fluid pb-3">
-            <div class="row g-3">
-
-                <div class="col-12 col-lg-4">
-                    <div class="rounded-3 bg-body-tertiary px-4 py-3 h-100">
-                        <h6 class="text-uppercase text-muted fw-semibold small mb-3" style="letter-spacing:.03em;">Summary</h6>
-                        <div class="row g-2 text-center">
-                            <div class="col-4">
-                                <div id="allCount" class="fs-4 fw-bold mb-0">0</div>
-                                <small class="text-muted">Total Invoices</small>
-                            </div>
-                            <div class="col-4">
-                                <div id="approvedCount" class="fs-4 fw-bold mb-0">0</div>
-                                <small class="text-muted">Approved</small>
-                            </div>
-                            <div class="col-4">
-                                <div id="draftCount" class="fs-4 fw-bold mb-0">0</div>
-                                <small class="text-muted">Draft</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-12 col-lg-4">
-                    <div class="rounded-3 bg-success-subtle px-4 py-3 h-100">
-                        <h6 class="text-uppercase text-success-emphasis fw-semibold small mb-3" style="letter-spacing:.03em;">Approved Invoices</h6>
-                        <div class="row g-2 text-center">
-                            <div class="col-4">
-                                <div id="total_approved_sub" class="fs-4 fw-bold mb-0">0.00</div>
-                                <small class="text-muted">Total Amount</small>
-                            </div>
-                            <div class="col-4">
-                                <div id="total_approved_tax" class="fs-4 fw-bold mb-0">0.00</div>
-                                <small class="text-muted">Total Tax</small>
-                            </div>
-                            <div class="col-4">
-                                <div id="total_approved_grand" class="fs-4 fw-bold mb-0">0.00</div>
-                                <small class="text-muted">Net Sales</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-12 col-lg-4">
-                    <div class="rounded-3 bg-warning-subtle px-4 py-3 h-100">
-                        <h6 class="text-uppercase text-warning-emphasis fw-semibold small mb-3" style="letter-spacing:.03em;">Draft Invoices</h6>
-                        <div class="row g-2 text-center">
-                            <div class="col-4">
-                                <div id="total_draft_sub" class="fs-4 fw-bold mb-0">0.00</div>
-                                <small class="text-muted">Total Amount</small>
-                            </div>
-                            <div class="col-4">
-                                <div id="total_draft_tax" class="fs-4 fw-bold mb-0">0.00</div>
-                                <small class="text-muted">Total Tax</small>
-                            </div>
-                            <div class="col-4">
-                                <div id="total_draft_grand" class="fs-4 fw-bold mb-0">0.00</div>
-                                <small class="text-muted">Net Sales</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
         <div class="shadow bdr-r-10 py-3 flex-grow-1">
             <div class="d-flex justify-content-between px-3 flex-shrink-0">
                 {{--<div id="searchLabels" class="mb-3 d-flex flex-wrap gap-2"></div>--}}
