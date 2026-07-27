@@ -135,7 +135,7 @@
                 </form>
             </div>
         </div>
-        <div class="d-flex justify-content-between align-items-start">
+        <div class="d-flex justify-content-between align-items-start py-3">
             @if(isset($job_no))
                 <h3 class="fw-bold text-muted bg-info-subtle rounded p-3">
                     {{ $job_no }}
@@ -143,7 +143,7 @@
             @endif
             <div class="align-items-center flex-shrink-0">
                 <div class="gap-4">
-                    <ul class="nav status-tabs align-items-center border-bottom" id="listTabs" role="tablist"
+                    <ul class="nav align-items-center" id="listTabs" role="tablist"
                         aria-label="Navigation 13">
                         <li class="nav-item me-2">
                             <button
@@ -191,7 +191,7 @@
                     </ul>
                 </div>
             </div>
-            <div class="d-flex justify-content-between pt-3">
+            <div class="d-flex justify-content-between">
                 <div class="position-relative">
                     <!-- Compact Filter button -->
                     <button class="btn btn-outline-primary btn-round me-2" id="filter-box"><i class="bi bi-funnel"></i>

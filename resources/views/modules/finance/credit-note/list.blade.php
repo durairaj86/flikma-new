@@ -210,10 +210,10 @@
             </div>
 
             {{-- Status Tabs --}}
-            <div class="d-flex justify-content-between align-items-start mb-3">
+            <div class="d-flex justify-content-between align-items-start py-3">
                 <div class="align-items-center flex-shrink-0">
                     <div class="gap-4">
-                        <ul class="nav status-tabs align-items-center border-bottom mb-0" id="listTabs" role="tablist">
+                        <ul class="nav align-items-center" id="listTabs" role="tablist">
                             <li class="nav-item me-2">
                                 <button class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn active"
                                         data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="all">

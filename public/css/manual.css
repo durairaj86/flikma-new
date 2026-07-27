@@ -1049,6 +1049,155 @@ div.dataTables_wrapper div.dt-row div.col-sm-12, div.dataTables_wrapper div.data
     font-size: 0.8rem;
 }
 
+/* ==========================================================================
+   Color-coded status-tab pills — applies to every module's LIST status
+   tabs (Quotation, Enquiry, Job, Customer/Supplier Invoice, Credit Note,
+   Customer, Supplier, Prospect, etc.), keyed by the tab button's id or
+   data-tab value so it covers both markup patterns used across the app
+   without needing per-page overrides.
+
+   Scoped to #listTabs / #basicListTabs specifically — NOT the shared
+   .status-tabs class, which is also reused by unrelated in-form section
+   tabs (id="modalTabs" in *-form.blade.php, e.g. quotation-form's
+   General/Cargo/Documents tabs). Those don't carry the id/data-tab values
+   this block keys off, so scoping to .status-tabs would leave them with
+   the pill shape + no color + no active indicator (their ::after
+   underline got suppressed with nothing to replace it) — the borderless,
+   textless-looking tabs this was meant to fix.
+
+   Each shade is applied by both attribute forms — [id="x"] for pages using
+   Bootstrap tabs (data-bs-toggle="tab" id="x"), [data-tab="x"] for pages
+   with their own click handler (e.g. quotation/list-basic.blade.php).
+
+   NOTE: each *.active rule intentionally repeats color explicitly (not a
+   single shared ".status-btn.active{color:#fff}") — that shared rule has
+   *lower* CSS specificity than the base per-id/per-tab color rule below it,
+   so it silently loses and the active tab's text stays the same color as
+   its background (invisible). Matching specificity on each active rule
+   avoids that.
+   ========================================================================== */
+#listTabs, #basicListTabs {
+    border-bottom: 0 !important;
+}
+
+#listTabs .status-btn, #basicListTabs .status-btn {
+    border-radius: 999px;
+    padding: 6px 16px;
+    transition: background-color .15s ease, color .15s ease;
+}
+
+#listTabs .status-btn:hover::after, #basicListTabs .status-btn:hover::after,
+#listTabs .status-btn.active::after, #basicListTabs .status-btn.active::after {
+    display: none;
+}
+
+#listTabs .status-btn.active .status-count, #basicListTabs .status-btn.active .status-count {
+    background: rgba(255, 255, 255, .25);
+    color: #fff;
+}
+
+/* Indigo — "All" */
+#listTabs .status-btn[id="all"], #basicListTabs .status-btn[data-tab="all"],
+#listTabs .status-btn[id="allUsers"] {
+    background: #eef0ff;
+    color: #4338ca;
+}
+#listTabs .status-btn[id="all"].active, #basicListTabs .status-btn[data-tab="all"].active,
+#listTabs .status-btn[id="allUsers"].active {
+    background: #4338ca;
+    color: #fff;
+}
+
+/* Gray — awaiting action (Pending / Draft) */
+#listTabs .status-btn[id="pending"], #basicListTabs .status-btn[data-tab="pending"],
+#listTabs .status-btn[id="draft"], #basicListTabs .status-btn[data-tab="draft"] {
+    background: #f1f3f5;
+    color: #495057;
+}
+#listTabs .status-btn[id="pending"].active, #basicListTabs .status-btn[data-tab="pending"].active,
+#listTabs .status-btn[id="draft"].active, #basicListTabs .status-btn[data-tab="draft"].active {
+    background: #6c757d;
+    color: #fff;
+}
+
+/* Darker gray — closed / removed (Cancelled / Trashed) */
+#listTabs .status-btn[id="cancelled"], #basicListTabs .status-btn[data-tab="cancelled"],
+#listTabs .status-btn[id="trashed"] {
+    background: #f1f3f5;
+    color: #6c757d;
+}
+#listTabs .status-btn[id="cancelled"].active, #basicListTabs .status-btn[data-tab="cancelled"].active,
+#listTabs .status-btn[id="trashed"].active {
+    background: #495057;
+    color: #fff;
+}
+
+/* Blue — Sent */
+#listTabs .status-btn[id="sent"] {
+    background: #e7f1ff;
+    color: #0a58ca;
+}
+#listTabs .status-btn[id="sent"].active {
+    background: #0d6efd;
+    color: #fff;
+}
+
+/* Green — Accepted / Approved / Confirmed / Completed */
+#listTabs .status-btn[id="accepted"], #basicListTabs .status-btn[data-tab="accepted"],
+#listTabs .status-btn[id="approved"], #basicListTabs .status-btn[data-tab="approved"],
+#listTabs .status-btn[id="confirmed"],
+#listTabs .status-btn[id="completed"],
+#listTabs .status-btn[id="user"],
+#listTabs .status-btn[id="employee"] {
+    background: #e6f9ef;
+    color: #157347;
+}
+#listTabs .status-btn[id="accepted"].active, #basicListTabs .status-btn[data-tab="accepted"].active,
+#listTabs .status-btn[id="approved"].active, #basicListTabs .status-btn[data-tab="approved"].active,
+#listTabs .status-btn[id="confirmed"].active,
+#listTabs .status-btn[id="completed"].active,
+#listTabs .status-btn[id="user"].active,
+#listTabs .status-btn[id="employee"].active {
+    background: #198754;
+    color: #fff;
+}
+
+/* Teal — Converted */
+#listTabs .status-btn[id="converted"], #basicListTabs .status-btn[data-tab="converted"] {
+    background: #e0f7fa;
+    color: #0c7c8c;
+}
+#listTabs .status-btn[id="converted"].active, #basicListTabs .status-btn[data-tab="converted"].active {
+    background: #0c8599;
+    color: #fff;
+}
+
+/* Orange — Credit Note */
+#listTabs .status-btn[id="creditnote"] {
+    background: #fff4e5;
+    color: #b45309;
+}
+#listTabs .status-btn[id="creditnote"].active {
+    background: #fd7e14;
+    color: #fff;
+}
+
+/* Red — Overdue / Rejected / Blocked / Terminated */
+#listTabs .status-btn[id="overdue"],
+#listTabs .status-btn[id="rejected"],
+#listTabs .status-btn[id="blocked"],
+#listTabs .status-btn[id="terminated"] {
+    background: #fdecea;
+    color: #b02a37;
+}
+#listTabs .status-btn[id="overdue"].active,
+#listTabs .status-btn[id="rejected"].active,
+#listTabs .status-btn[id="blocked"].active,
+#listTabs .status-btn[id="terminated"].active {
+    background: #dc3545;
+    color: #fff;
+}
+
 .table {
     border-radius: 10px;
 }

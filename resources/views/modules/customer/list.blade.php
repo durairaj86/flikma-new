@@ -4,10 +4,10 @@
     <!-- Main Content -->
     <main class="gmail-content bg-white px-3">
         <!-- Tabs -->
-        <div class="d-flex justify-content-between align-items-start">
-            <div class="align-items-center flex-shrink-0 pb-3">
+        <div class="d-flex justify-content-between align-items-start py-3">
+            <div class="align-items-center flex-shrink-0">
                 <div class="gap-4">
-                    <ul class="nav status-tabs align-items-center border-bottom mb-0" id="listTabs" role="tablist"
+                    <ul class="nav align-items-center" id="listTabs" role="tablist"
                         aria-label="Navigation 13">
                         <li class="nav-item me-2">
                             <button
@@ -42,7 +42,7 @@
                     </ul>
                 </div>
             </div>
-            <div class="d-flex justify-content-between pt-3">
+            <div class="d-flex justify-content-between">
                 <div>
                     <button class="btn btn-primary rounded-pill px-4" id="new">New Customer</button>
                     <button class="btn btn-outline-primary rounded-pill px-4 ms-2" id="import">Import</button>

@@ -5,9 +5,9 @@
         @include('includes.master-navigation')
         <section class="flex-grow-1 px-4 d-flex flex-column">
             @include('includes.master-header')
-            <div class="align-items-center flex-shrink-0">
+            <div class="align-items-center flex-shrink-0 py-3">
                 <div class="gap-4">
-                    <ul class="nav status-tabs align-items-center border-bottom m-0" id="listTabs" role="tablist"
+                    <ul class="nav align-items-center" id="listTabs" role="tablist"
                         aria-label="Navigation 13">
                         <li class="nav-item me-2">
                             <button
