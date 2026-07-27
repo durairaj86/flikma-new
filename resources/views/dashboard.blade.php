@@ -131,39 +131,39 @@
                             </div>
 
                             <div class="row g-3">
-                                <!-- ETA -->
-                                <div class="col-md-3">
-                                    <div class="card text-center shadow-sm border-0 p-3">
-                                        <i class="fa-solid fa-ship text-primary fs-3 mb-2"></i>
-                                        <h6 class="fw-normal mb-1">ETA Today</h6>
-                                        <h4 class="fw-bold text-primary mb-0">{{ $etaToday }}</h4>
+                                <!-- ETA / ETD -->
+                                <div class="col-md-6">
+                                    <div class="card shadow-sm border-0 p-3">
+                                        <div class="row g-0 text-center">
+                                            <div class="col-6 border-end">
+                                                <i class="fa-solid fa-ship text-primary fs-3 mb-2"></i>
+                                                <h6 class="fw-normal mb-1">ETA Today</h6>
+                                                <h4 class="fw-bold text-primary mb-0">{{ $etaToday }}</h4>
+                                            </div>
+                                            <div class="col-6">
+                                                <i class="fa-solid fa-plane-departure text-success fs-3 mb-2"></i>
+                                                <h6 class="fw-normal mb-1">ETD Tomorrow</h6>
+                                                <h4 class="fw-bold text-success mb-0">{{ $etdTomorrow }}</h4>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <!-- ETD -->
-                                <div class="col-md-3">
-                                    <div class="card text-center shadow-sm border-0 p-3">
-                                        <i class="fa-solid fa-plane-departure text-success fs-3 mb-2"></i>
-                                        <h6 class="fw-normal mb-1">ETD Tomorrow</h6>
-                                        <h4 class="fw-bold text-success mb-0">{{ $etdTomorrow }}</h4>
-                                    </div>
-                                </div>
-
-                                <!-- ATA -->
-                                <div class="col-md-3">
-                                    <div class="card text-center shadow-sm border-0 p-3">
-                                        <i class="fa-solid fa-truck text-info fs-3 mb-2"></i>
-                                        <h6 class="fw-normal mb-1">ATA This Week</h6>
-                                        <h4 class="fw-bold text-info mb-0">{{ $ataThisWeek }}</h4>
-                                    </div>
-                                </div>
-
-                                <!-- ATD -->
-                                <div class="col-md-3">
-                                    <div class="card text-center shadow-sm border-0 p-3">
-                                        <i class="fa-solid fa-plane-arrival text-danger fs-3 mb-2"></i>
-                                        <h6 class="fw-normal mb-1">ATD This Week</h6>
-                                        <h4 class="fw-bold text-danger mb-0">{{ $atdThisWeek }}</h4>
+                                <!-- ATA / ATD -->
+                                <div class="col-md-6">
+                                    <div class="card shadow-sm border-0 p-3">
+                                        <div class="row g-0 text-center">
+                                            <div class="col-6 border-end">
+                                                <i class="fa-solid fa-truck text-info fs-3 mb-2"></i>
+                                                <h6 class="fw-normal mb-1">ATA This Week</h6>
+                                                <h4 class="fw-bold text-info mb-0">{{ $ataThisWeek }}</h4>
+                                            </div>
+                                            <div class="col-6">
+                                                <i class="fa-solid fa-plane-arrival text-danger fs-3 mb-2"></i>
+                                                <h6 class="fw-normal mb-1">ATD This Week</h6>
+                                                <h4 class="fw-bold text-danger mb-0">{{ $atdThisWeek }}</h4>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

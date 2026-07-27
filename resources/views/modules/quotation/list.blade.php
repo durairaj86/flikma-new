@@ -226,7 +226,7 @@
                 <button class="btn btn-outline-secondary btn-round" id="filter-box">
                     <i class="bi bi-funnel"></i> Filter
                 </button>
-                <button class="btn btn-outline-secondary btn-round" id="columnSettingsBtn" title="Column Settings">
+                <button class="btn btn-outline-secondary btn-round d-none" id="columnSettingsBtn" title="Column Settings">
                     <i class="bi bi-columns-gap"></i> Columns
                 </button>
                 <button class="btn btn-primary rounded-pill px-4" id="new">New Quotation</button>
@@ -439,7 +439,7 @@
         </div>
     </div>
     <!-- Column Settings Modal -->
-    <div class="modal fade" id="columnSettingsModal" tabindex="-1" aria-labelledby="columnSettingsModalLabel" aria-hidden="true">
+    <div class="modal fade d-none" id="columnSettingsModal" tabindex="-1" aria-labelledby="columnSettingsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
 

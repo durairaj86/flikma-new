@@ -76,6 +76,7 @@ class EnquiryController extends Controller
         $enquiryData = [
             'shipment_mode' => LogisticActivity::activities($request->activity_id)->pluck('mode')->first(),
             'shipment_category' => $request->shipment_category,
+            'services' => $request->services,
             'pickup_date' => $request->pickup_date,
             'expiry_date' => $request->expiry_date,
             'weight' => $request->weight,
@@ -219,6 +220,11 @@ class EnquiryController extends Controller
             'expiry_date',
             'created_at',
             'company_id',
+            // Correlated subquery (not a join) — enquiries and quotations
+            // share many unqualified column names above (customer_id, pol,
+            // pod, status, activity_id, ...), so a leftJoin here would make
+            // those ambiguous.
+            DB::raw('(SELECT quotations.row_no FROM quotations WHERE quotations.enquiry_id = enquiries.id ORDER BY quotations.id DESC LIMIT 1) AS linked_quotation_no'),
         )->with(['customer:id,name_en,name_ar,email,phone,row_no', 'prospect:id,name,email,phone,row_no', 'activity:id,name'])
             ->where('status', EnquiryEnum::fromName($request->tab))
             ->tap($applyFilters)
@@ -477,6 +483,7 @@ class EnquiryController extends Controller
                 'row_no' => $enquiry->prospect->row_no,
             ] : null,
             'activity_id' => $enquiry->activity_id,
+            'services' => $enquiry->services,
             'shipment_mode' => $enquiry->shipment_mode,
             'shipment_category' => $enquiry->shipment_category,
             'incoterm' => $enquiry->incoterm,

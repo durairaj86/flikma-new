@@ -19,7 +19,10 @@ Route::namespace('sales')->prefix('sales')->group(function () {
     Route::get('/enquiry/{id}/print', [EnquiryController::class, 'print']);
     Route::get('/enquiry/{id}/get-data', [EnquiryController::class, 'getEnquiryData']);
 
-    Route::view('/quotations', 'modules.quotation.list')->name('quotations');
+    // Temporarily serving the static/basic list (dynamic column-settings
+    // version kept at modules.quotation.list — swap back by changing this
+    // one view name when the dynamic list is wanted again).
+    Route::view('/quotations', 'modules.quotation.list-basic')->name('quotations');
     Route::post('/quotation/data', [\App\Http\Controllers\Quotation\QuotationController::class, 'fetchAllRows'])->name('quotations.data');
     Route::get('/quotation/create', [\App\Http\Controllers\Quotation\QuotationController::class, 'modal']);
     Route::get('/quotation/create/from-enquiry/{enquiry_id}', [\App\Http\Controllers\Quotation\QuotationController::class, 'createFromEnquiry']);

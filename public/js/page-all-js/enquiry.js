@@ -153,8 +153,12 @@ ENQUIRY = {
                     /*{data: 'DT_RowIndex', class: 'text-center hide-tooltip fav-index'},*/
                     {
                         data: 'row_no', class: 'hide-tooltip fav-index',
-                        render: function (data) {
-                            return `<span class="fw-semibold text-primary enquiry-no-link" style="cursor:pointer;">${data ?? ''}</span>`;
+                        render: function (data, type, row) {
+                            let html = `<span class="fw-semibold text-primary enquiry-no-link" style="cursor:pointer;">${data ?? ''}</span>`;
+                            if (row.linked_quotation_no) {
+                                html += `<small class="d-block text-muted lh-sm">Quote: ${row.linked_quotation_no}</small>`;
+                            }
+                            return html;
                         }
                     },
                     {

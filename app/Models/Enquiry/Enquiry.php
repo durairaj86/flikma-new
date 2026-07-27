@@ -20,6 +20,10 @@ class Enquiry extends Model
 
     protected $guarded = []; // allow all fields
 
+    protected $casts = [
+        'services' => 'array',
+    ];
+
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);

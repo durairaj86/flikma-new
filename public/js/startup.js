@@ -2222,7 +2222,7 @@ function initTomSelectForm(form = null, destroy = false, individualId = null) {
     if (individualId) {
         form = $(individualId);
     } else {
-        form = form ? form.find('select.tom-select') : $('#moduleForm').find('select.tom-select');
+        form = form ? form.find('select.tom-select') : $('#moduleForm').find('select.tom-select,select.tom-select-search');
     }
 
     form.each(function () {

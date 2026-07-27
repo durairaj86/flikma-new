@@ -31,6 +31,8 @@ class ModuleDefaultColumns
         $fields = [
             // ── General ───────────────────────────────────────────────────────
             ['key' => 'row_no',            'label' => 'Quote No',           'category' => 'General', 'min_width' => 140, 'fixed' => true],
+            ['key' => 'linked_enquiry_no', 'label' => 'Enquiry No',         'category' => 'General', 'min_width' => 140],
+            ['key' => 'linked_job_no',     'label' => 'Job No',             'category' => 'General', 'min_width' => 140],
             ['key' => 'client_name',       'label' => 'Client',             'category' => 'General', 'min_width' => 200],
             ['key' => 'posted_at',         'label' => 'Date',               'category' => 'General', 'min_width' => 100, 'orderable' => true],
             ['key' => 'valid_until',       'label' => 'Valid To',           'category' => 'General', 'min_width' => 90,  'orderable' => true],
@@ -65,7 +67,10 @@ class ModuleDefaultColumns
         ];
 
         $columns = [
-            ['key' => 'row_no',         'label' => 'Quote No',    'type' => 'parent', 'children' => []],
+            ['key' => 'row_no',         'label' => 'Quote No',    'type' => 'parent', 'children' => [
+                ['key' => 'linked_enquiry_no', 'label' => 'Enquiry No'],
+                ['key' => 'linked_job_no', 'label' => 'Job No'],
+            ]],
             ['key' => 'client_name',    'label' => 'Client',      'type' => 'parent', 'children' => []],
             ['key' => 'posted_at',      'label' => 'Date',        'type' => 'parent', 'children' => [
                 ['key' => 'valid_until', 'label' => 'Valid To'],
@@ -92,6 +97,7 @@ class ModuleDefaultColumns
         $fields = [
             // ── General ───────────────────────────────────────────────────────
             ['key' => 'row_no',           'label' => 'Job No',           'category' => 'General',   'min_width' => 130, 'fixed' => true],
+            ['key' => 'linked_quotation_no', 'label' => 'Quote No',      'category' => 'General',   'min_width' => 140],
             ['key' => 'customer_name',    'label' => 'Customer',         'category' => 'General',   'min_width' => 180],
             ['key' => 'status',           'label' => 'Status',           'category' => 'General',   'min_width' => 90],
             ['key' => 'services',         'label' => 'Services',         'category' => 'General',   'min_width' => 140],
@@ -146,6 +152,7 @@ class ModuleDefaultColumns
         $columns = [
             ['key' => 'row_no',        'label' => 'Job No',     'type' => 'parent', 'children' => [
                 ['key' => 'services', 'label' => 'Services'],
+                ['key' => 'linked_quotation_no', 'label' => 'Quote No'],
             ]],
             ['key' => 'customer_name', 'label' => 'Customer',   'type' => 'parent', 'children' => []],
             ['key' => 'pol',           'label' => 'Origin',     'type' => 'parent', 'children' => [

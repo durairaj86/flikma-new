@@ -107,6 +107,8 @@ QUOTATION = {
         _fallback: {
             fields: [
                 {key: 'row_no', label: 'Quote No', category: 'General', min_width: 140, fixed: true},
+                {key: 'linked_enquiry_no', label: 'Enquiry No', category: 'General', min_width: 140},
+                {key: 'linked_job_no', label: 'Job No', category: 'General', min_width: 140},
                 {key: 'client_name', label: 'Client', category: 'General', min_width: 200},
                 {key: 'posted_at', label: 'Date', category: 'General', min_width: 100, orderable: true},
                 {key: 'valid_until', label: 'Valid To', category: 'General', min_width: 90, orderable: true},
@@ -119,7 +121,7 @@ QUOTATION = {
                 {key: 'carrier', label: 'Carrier', category: 'Cargo', min_width: 140},
             ],
             columns: [
-                {key: 'row_no', label: 'Quote No', type: 'parent', children: []},
+                {key: 'row_no', label: 'Quote No', type: 'parent', children: [{key: 'linked_enquiry_no', label: 'Enquiry No'}, {key: 'linked_job_no', label: 'Job No'}]},
                 {key: 'client_name', label: 'Client', type: 'parent', children: []},
                 {key: 'posted_at', label: 'Date', type: 'parent', children: [{key: 'valid_until', label: 'Valid To'}]},
                 {key: 'status', label: 'Status', type: 'parent', children: []},

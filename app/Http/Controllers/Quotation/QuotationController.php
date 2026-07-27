@@ -11,6 +11,8 @@ use App\Models\Customer\Customer;
 use App\Models\Job\Job;
 use App\Models\Master\Description;
 use App\Models\Master\LogisticActivity;
+use App\Models\Master\TransportDirectory\Airport;
+use App\Models\Master\TransportDirectory\Port;
 use App\Models\Prospect\Prospect;
 use App\Models\Quotation\Quotation;
 use Illuminate\Http\Request;
@@ -43,6 +45,7 @@ class QuotationController extends Controller
             $quotation->prospect_id = $enquiry->prospect_id ?? null;
             $quotation->salesperson_id = $enquiry->salesperson_id ?? null;
             $quotation->activity_id = $enquiry->activity_id ?? null;
+            $quotation->services = $enquiry->services ?? null;
             $quotation->origin = $enquiry->origin ?? null;
             $quotation->destination = $enquiry->destination ?? null;
             $quotation->pol = $enquiry->pol ?? null;
@@ -110,39 +113,39 @@ class QuotationController extends Controller
             'enquiry_id' => 'nullable|integer|exists:enquiries,id',
 
             // Containers (array) — same field set as Job's Container tab
-            'container_size.*'   => 'nullable|string|max:50',
-            'container_type.*'   => 'nullable|string',
-            'container_no.*'     => 'nullable|string|max:50',
-            'seal_no.*'          => 'nullable|string|max:50',
-            'gross.*'            => 'nullable|numeric|min:0',
-            'net.*'              => 'nullable|numeric|min:0',
-            'vol.*'              => 'nullable|numeric|min:0',
-            'haz.*'              => 'nullable|in:0,1',
-            'container_qty.*'    => 'nullable|numeric|min:0',
-            'container_uom.*'    => 'nullable|string|max:10',
+            'container_size.*' => 'nullable|string|max:50',
+            'container_type.*' => 'nullable|string',
+            'container_no.*' => 'nullable|string|max:50',
+            'seal_no.*' => 'nullable|string|max:50',
+            'gross.*' => 'nullable|numeric|min:0',
+            'net.*' => 'nullable|numeric|min:0',
+            'vol.*' => 'nullable|numeric|min:0',
+            'haz.*' => 'nullable|in:0,1',
+            'container_qty.*' => 'nullable|numeric|min:0',
+            'container_uom.*' => 'nullable|string|max:10',
             'container_remark.*' => 'nullable|string|max:255',
 
             // Packages (array) — same field set as Job's Package tab
-            'package_type.*'      => 'nullable|string|max:50',
+            'package_type.*' => 'nullable|string|max:50',
             'description_goods.*' => 'nullable|string|max:255',
-            'quantity.*'           => 'nullable|numeric|min:0',
-            'length.*'             => 'nullable|numeric|min:0',
-            'width.*'              => 'nullable|numeric|min:0',
-            'height.*'             => 'nullable|numeric|min:0',
-            'package_weight.*'     => 'nullable|numeric|min:0',
-            'package_volume.*'     => 'nullable|numeric|min:0',
-            'total_weight.*'       => 'nullable|numeric|min:0',
-            'chargeable_weight.*'  => 'nullable|numeric|min:0',
+            'quantity.*' => 'nullable|numeric|min:0',
+            'length.*' => 'nullable|numeric|min:0',
+            'width.*' => 'nullable|numeric|min:0',
+            'height.*' => 'nullable|numeric|min:0',
+            'package_weight.*' => 'nullable|numeric|min:0',
+            'package_volume.*' => 'nullable|numeric|min:0',
+            'total_weight.*' => 'nullable|numeric|min:0',
+            'chargeable_weight.*' => 'nullable|numeric|min:0',
 
             // Charges (array) — all nullable; charge tab is optional
-            'chg_description.*'  => 'nullable|string|max:255',
-            'chg_unit.*'         => 'nullable|string|max:100',
-            'chg_qty.*'          => 'nullable|integer|min:1|max:99999',
-            'chg_currency.*'     => 'nullable|string|max:10',
-            'chg_ex_rate.*'      => 'nullable|numeric|min:0|max:99999.999999',
-            'chg_amt_qty.*'      => 'nullable|numeric|min:0|max:999999999.99',
-            'chg_tax_group.*'    => 'nullable|string|max:50',
-            'chg_remarks.*'      => 'nullable|string|max:500',
+            'chg_description.*' => 'nullable|string|max:255',
+            'chg_unit.*' => 'nullable|string|max:100',
+            'chg_qty.*' => 'nullable|integer|min:1|max:99999',
+            'chg_currency.*' => 'nullable|string|max:10',
+            'chg_ex_rate.*' => 'nullable|numeric|min:0|max:99999.999999',
+            'chg_amt_qty.*' => 'nullable|numeric|min:0|max:999999999.99',
+            'chg_tax_group.*' => 'nullable|string|max:50',
+            'chg_remarks.*' => 'nullable|string|max:500',
         ]);
 
         if (isset($request['data-id']) and filled($request['data-id'])) {
@@ -200,18 +203,18 @@ class QuotationController extends Controller
             foreach ($request->container_size as $index => $size) {
                 if (!$size) continue;
                 $containers[] = [
-                    'quotation_id'    => $quotation->id,
-                    'container_size'  => $size,
-                    'container_number'=> $request->container_no[$index] ?? null,
-                    'seal_number'     => $request->seal_no[$index] ?? null,
-                    'gross_weight'    => $request->gross[$index] ?? null,
-                    'net_weight'      => $request->net[$index] ?? null,
-                    'volume'          => $request->vol[$index] ?? null,
-                    'hazardous'       => $request->haz[$index] ?? 0,
-                    'qty'             => $request->container_qty[$index] ?? null,
-                    'uom'             => $request->container_uom[$index] ?? null,
-                    'remarks'         => $request->container_remark[$index] ?? null,
-                    'container_type'  => $request->container_type[$index] ?? 'dry',
+                    'quotation_id' => $quotation->id,
+                    'container_size' => $size,
+                    'container_number' => $request->container_no[$index] ?? null,
+                    'seal_number' => $request->seal_no[$index] ?? null,
+                    'gross_weight' => $request->gross[$index] ?? null,
+                    'net_weight' => $request->net[$index] ?? null,
+                    'volume' => $request->vol[$index] ?? null,
+                    'hazardous' => $request->haz[$index] ?? 0,
+                    'qty' => $request->container_qty[$index] ?? null,
+                    'uom' => $request->container_uom[$index] ?? null,
+                    'remarks' => $request->container_remark[$index] ?? null,
+                    'container_type' => $request->container_type[$index] ?? 'dry',
                 ];
             }
             DB::table('quotation_containers')->where('quotation_id', $quotation->id)->delete();
@@ -226,17 +229,17 @@ class QuotationController extends Controller
             foreach ($request->package_type as $index => $package_type) {
                 if (!$package_type && !$request->description_goods[$index]) continue;
                 $packages[] = [
-                    'quotation_id'      => $quotation->id,
-                    'package_type'      => $package_type,
+                    'quotation_id' => $quotation->id,
+                    'package_type' => $package_type,
                     'description_goods' => $request->description_goods[$index] ?? null,
-                    'quantity'          => $request->quantity[$index] ?? null,
-                    'length'            => $request->length[$index] ?? null,
-                    'width'             => $request->width[$index] ?? null,
-                    'height'            => $request->height[$index] ?? null,
-                    'package_weight'    => $request->package_weight[$index] ?? null,
-                    'total_weight'      => $request->total_weight[$index] ?? null,
+                    'quantity' => $request->quantity[$index] ?? null,
+                    'length' => $request->length[$index] ?? null,
+                    'width' => $request->width[$index] ?? null,
+                    'height' => $request->height[$index] ?? null,
+                    'package_weight' => $request->package_weight[$index] ?? null,
+                    'total_weight' => $request->total_weight[$index] ?? null,
                     'chargeable_weight' => $request->chargeable_weight[$index] ?? null,
-                    'volume'            => $request->package_volume[$index] ?? null,
+                    'volume' => $request->package_volume[$index] ?? null,
                 ];
             }
             DB::table('quotation_packages')->where('quotation_id', $quotation->id)->delete();
@@ -250,25 +253,25 @@ class QuotationController extends Controller
         if (!empty(array_filter($descriptions))) {
             $charges = [];
             foreach ($descriptions as $index => $desc) {
-                $qty    = (int)   ($request->chg_qty[$index]     ?? 1);
-                $exRate = (float) ($request->chg_ex_rate[$index] ?? 1);
-                $amtQty = (float) ($request->chg_amt_qty[$index] ?? 0);
-                $fcy    = $amtQty ? round($qty * $amtQty, 2)          : null;
-                $local  = $fcy    ? round($fcy * $exRate, 2)          : null;
+                $qty = (int)($request->chg_qty[$index] ?? 1);
+                $exRate = (float)($request->chg_ex_rate[$index] ?? 1);
+                $amtQty = (float)($request->chg_amt_qty[$index] ?? 0);
+                $fcy = $amtQty ? round($qty * $amtQty, 2) : null;
+                $local = $fcy ? round($fcy * $exRate, 2) : null;
                 $charges[] = [
-                    'quotation_id'       => $quotation->id,
-                    'line_no'            => $index + 1,
+                    'quotation_id' => $quotation->id,
+                    'line_no' => $index + 1,
                     'charge_description' => $desc,
-                    'unit'               => $request->chg_unit[$index]     ?? null,
-                    'qty'                => $qty,
-                    'currency'           => $request->chg_currency[$index] ?? 'SAR',
-                    'ex_rate'            => $exRate,
-                    'amount_per_qty'     => $amtQty ?: null,
-                    'fcy_amount'         => $fcy,
-                    'local_amount'       => $local,
-                    'tax_group_code'     => $request->chg_tax_group[$index] ?? null,
-                    'remarks'            => $request->chg_remarks[$index]   ?? null,
-                    'sort_order'         => $index,
+                    'unit' => $request->chg_unit[$index] ?? null,
+                    'qty' => $qty,
+                    'currency' => $request->chg_currency[$index] ?? 'SAR',
+                    'ex_rate' => $exRate,
+                    'amount_per_qty' => $amtQty ?: null,
+                    'fcy_amount' => $fcy,
+                    'local_amount' => $local,
+                    'tax_group_code' => $request->chg_tax_group[$index] ?? null,
+                    'remarks' => $request->chg_remarks[$index] ?? null,
+                    'sort_order' => $index,
                 ];
             }
             DB::table('quotation_charges')->where('quotation_id', $quotation->id)->delete();
@@ -295,23 +298,23 @@ class QuotationController extends Controller
                     // date strings — comparing against a datetime would drop
                     // rows that fall exactly on the from-date.
                     $from = Carbon::parse($filter['filter-from-date'])->toDateString();
-                    $to   = Carbon::parse($filter['filter-to-date'])->addDay()->toDateString();
+                    $to = Carbon::parse($filter['filter-to-date'])->addDay()->toDateString();
                     $query->where('quotations.posted_at', '>=', $from)
-                          ->where('quotations.posted_at', '<',  $to);
+                        ->where('quotations.posted_at', '<', $to);
                 }
             )
-            ->when(isset($filter['customers']) && !empty($filter['customers']), function ($query) use ($filter) {
-                $query->whereIn('quotations.customer_id', decodeIds($filter['customers']));
-            })
-            ->when(isset($filter['filter-pol']) && !empty($filter['filter-pol']), function ($query) use ($filter) {
-                $query->where('quotations.pol', 'like', "%{$filter['filter-pol']}%");
-            })
-            ->when(isset($filter['filter-pod']) && !empty($filter['filter-pod']), function ($query) use ($filter) {
-                $query->where('quotations.pod', 'like', "%{$filter['filter-pod']}%");
-            })
-            ->when(isset($filter['activity_id']) && !empty($filter['activity_id']), function ($query) use ($filter) {
-                $query->where('quotations.activity_id', $filter['activity_id']);
-            });
+                ->when(isset($filter['customers']) && !empty($filter['customers']), function ($query) use ($filter) {
+                    $query->whereIn('quotations.customer_id', decodeIds($filter['customers']));
+                })
+                ->when(isset($filter['filter-pol']) && !empty($filter['filter-pol']), function ($query) use ($filter) {
+                    $query->where('quotations.pol', 'like', "%{$filter['filter-pol']}%");
+                })
+                ->when(isset($filter['filter-pod']) && !empty($filter['filter-pod']), function ($query) use ($filter) {
+                    $query->where('quotations.pod', 'like', "%{$filter['filter-pod']}%");
+                })
+                ->when(isset($filter['activity_id']) && !empty($filter['activity_id']), function ($query) use ($filter) {
+                    $query->where('quotations.activity_id', $filter['activity_id']);
+                });
         };
 
         $rows = Quotation::select(
@@ -343,14 +346,18 @@ class QuotationController extends Controller
             DB::raw('COALESCE(customers.name_en, prospects.name) AS client_name'),
             DB::raw('logistic_activities.name AS activity_name'),
             DB::raw('sales_persons.name AS salesperson_name'),
+            DB::raw('jobs.row_no AS linked_job_no'),
+            DB::raw('source_enquiries.row_no AS linked_enquiry_no'),
         )
-        ->leftJoin('customers', 'customers.id', '=', 'quotations.customer_id')
-        ->leftJoin('prospects', 'prospects.id', '=', 'quotations.prospect_id')
-        ->leftJoin('logistic_activities', 'logistic_activities.id', '=', 'quotations.activity_id')
-        ->leftJoin('sales_persons', 'sales_persons.id', '=', 'quotations.salesperson_id')
-        ->where('quotations.status', QuotationEnum::fromName($request->tab))
-        ->tap($applyFilters)
-        ->orderByDesc('quotations.id');
+            ->leftJoin('customers', 'customers.id', '=', 'quotations.customer_id')
+            ->leftJoin('prospects', 'prospects.id', '=', 'quotations.prospect_id')
+            ->leftJoin('logistic_activities', 'logistic_activities.id', '=', 'quotations.activity_id')
+            ->leftJoin('sales_persons', 'sales_persons.id', '=', 'quotations.salesperson_id')
+            ->leftJoin('jobs', 'jobs.id', '=', 'quotations.job_id')
+            ->leftJoin('enquiries as source_enquiries', 'source_enquiries.id', '=', 'quotations.enquiry_id')
+            ->where('quotations.status', QuotationEnum::fromName($request->tab))
+            ->tap($applyFilters)
+            ->orderByDesc('quotations.id');
 
         // Counts per status using the same filters as the list
         $statusCounts = Quotation::select('quotations.status', DB::raw('COUNT(*) as total'))
@@ -368,10 +375,10 @@ class QuotationController extends Controller
         return DataTables::eloquent($rows)
             ->addIndexColumn()
             ->setRowAttr([
-                'data-id'   => fn($model) => $model->id,
+                'data-id' => fn($model) => $model->id,
                 'data-name' => fn($model) => $model->row_no,
-                'class'     => 'row-item',
-                'id'        => fn($model) => 'quotation-' . strtolower($model->row_no ?? $model->id),
+                'class' => 'row-item',
+                'id' => fn($model) => 'quotation-' . strtolower($model->row_no ?? $model->id),
             ])
             ->editColumn('services', fn($model) => getSelectedServices($model->services, true))
             ->rawColumns(['services'])
@@ -449,6 +456,18 @@ class QuotationController extends Controller
                     $prospectData->customer = 1;
                     $prospectData->save();
                     $job->customer_id = $customer->id;
+                } elseif (in_array($field, ['pol', 'pod'])) {
+                    // Quotation (and Enquiry, which it's often copied from) stores
+                    // pol/pod as a raw port id, but Job::pol_name/pol_code expect
+                    // the "CODE-Name" format the job form saves. Resolve the id to
+                    // that format here instead of copying the raw id across.
+                    $value = $quotation->$field;
+                    if ($value !== null && $value !== '' && is_numeric($value)) {
+                        $portModel = strtolower($quotation->shipment_mode ?? '') === 'air' ? Airport::class : Port::class;
+                        $port = $portModel::find($value);
+                        $value = $port ? $port->code . '-' . $port->name : $value;
+                    }
+                    $job->$field = $value;
                 } else {
                     $job->$field = $quotation->$field;
                 }
@@ -515,9 +534,28 @@ class QuotationController extends Controller
             'created_at'
         )->findOrFail($id);
         $contextMenu = collect([]);
-        $edit = $delete = [];
+        $edit = $delete = $cancelled = [];
         if ($quotation->status === QuotationEnum::PENDING->value) {
             $contextMenu->push([
+                'label' => __('Accepted'),
+                'code' => '01CSBK',
+                'id' => 'row_accepted',
+                'data-id' => $quotation->id,
+                'data-value' => QuotationEnum::ACCEPTED->value,
+                'type' => 'item',
+                'icon' => 'convert',
+            ]);
+            $cancelled = [
+                'label' => __('Cancelled'),
+                'code' => '01CSRJ',
+                'id' => 'row_rejected',
+                'class' => 'row_rejected',
+                'data-id' => $quotation->id,
+                'data-value' => QuotationEnum::CANCELLED->value,
+                'type' => 'item',
+                'icon' => 'rejected'
+            ];
+            /*$contextMenu->push([
                 'label' => __('Move to'),
                 'type' => 'submenu',
                 'separator' => 'after',
@@ -541,9 +579,9 @@ class QuotationController extends Controller
                         'icon' => 'rejected'
                     ]
                 ]
-            ]);
+            ]);*/
         } elseif ($quotation->status === QuotationEnum::fromName('accepted')) {
-            $contextMenu->push([
+            /*$contextMenu->push([
                 'label' => __('Move to'),
                 'type' => 'submenu',
                 'separator' => 'after',
@@ -568,6 +606,16 @@ class QuotationController extends Controller
                         'icon' => 'rejected'
                     ]
                 ]
+            ]);*/
+            $contextMenu->push([
+                'label' => __('Move to Pending'),
+                'code' => '01CSRJ',
+                'id' => 'row_pending',
+                'class' => 'row_pending',
+                'data-id' => $quotation->id,
+                'data-value' => QuotationEnum::PENDING->value,
+                'type' => 'item',
+                'icon' => 'pending',
             ]);
             $contextMenu->push([
                 'label' => __('Convert To Job'),
@@ -590,6 +638,7 @@ class QuotationController extends Controller
                 'type' => 'item',
                 'icon' => 'edit'
             ];
+
             $contextMenu->push([
                 'label' => __('Send Email'),
                 'code' => '01CSEM',
@@ -627,7 +676,7 @@ class QuotationController extends Controller
                 'label' => __('Actions'),
                 'type' => 'submenu',
                 'icon' => 'action',
-                'items' => [$edit]
+                'items' => [$edit,$cancelled]
             ]);
         }
         return response()->json($contextMenu->values());

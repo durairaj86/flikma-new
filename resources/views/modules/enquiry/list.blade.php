@@ -203,7 +203,8 @@
 
             <!-- Table with scroll -->
             <div class="flex-grow-1">
-                <table class="table align-middle dataTable" id="dataTable">
+                <table class="table align-middle dataTable" id="dataTable"
+                       data-title="Enquiry" data-model-size="md" data-min-height="650px">
                     <thead class="table-light sticky-top bg-white" style="z-index: 10;">
                     <tr>
                         <th>#</th>

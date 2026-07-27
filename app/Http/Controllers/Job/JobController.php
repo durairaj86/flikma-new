@@ -492,6 +492,10 @@ class JobController extends Controller
             'declaration_no',
             'jobs.company_id as company_id',
             'jobs.status as status',
+            // Correlated subquery (not a join) — jobs and quotations share many
+            // unqualified column names above (pol, pod, customer_id, ...), so a
+            // leftJoin here would make those ambiguous.
+            DB::raw('(SELECT quotations.row_no FROM quotations WHERE quotations.id = jobs.quotation_id) AS linked_quotation_no'),
         )->with('customer:id,name_en,name_ar,email,phone', 'invoices', 'clearance:id,job_id,clearance_status,clearance_date')
             ->where('jobs.status', JobEnum::fromName($request->tab))
             ->tap($applyFilters)

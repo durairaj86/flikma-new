@@ -22,6 +22,7 @@ JOB = {
         _fallback: {
             fields: [
                 {key: 'row_no', label: 'Job No', category: 'General', min_width: 130, fixed: true},
+                {key: 'linked_quotation_no', label: 'Quote No', category: 'General', min_width: 140},
                 {key: 'customer_name', label: 'Customer', category: 'General', min_width: 180},
                 {key: 'status', label: 'Status', category: 'General', min_width: 90},
                 {key: 'services', label: 'Services', category: 'General', min_width: 140},
@@ -36,7 +37,7 @@ JOB = {
                 {key: 'eta', label: 'ETA', category: 'Vessel', min_width: 100, orderable: true},
             ],
             columns: [
-                {key: 'row_no', label: 'Job No', type: 'parent', children: [{key: 'services', label: 'Services'}]},
+                {key: 'row_no', label: 'Job No', type: 'parent', children: [{key: 'services', label: 'Services'}, {key: 'linked_quotation_no', label: 'Quote No'}]},
                 {key: 'customer_name', label: 'Customer', type: 'parent', children: []},
                 {key: 'pol', label: 'Origin', type: 'parent', children: [{key: 'pod', label: 'Destination'}]},
                 {key: 'carrier', label: 'Carrier', type: 'parent', children: [{key: 'etd', label: 'ETD'}, {key: 'eta', label: 'ETA'}]},

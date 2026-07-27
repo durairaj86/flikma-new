@@ -183,6 +183,10 @@
                                         @endif
                                     </select>
                                 </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Select Services</label>
+                                    <x-common.service :value="$enquiry->services"/>
+                                </div>
                                 {{--<div class="col-md-4">
                                     <label for="weight" class="form-label">Weight (kg)</label>
                                     <input type="number" name="weight" id="weight" step="0.01"
