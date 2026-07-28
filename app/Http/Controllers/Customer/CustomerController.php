@@ -6,6 +6,7 @@ use App\Enums\CustomerStatusEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
 use App\Models\Documents\Documents;
+use App\Models\Finance\FinanceSub;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -317,6 +318,18 @@ class CustomerController extends Controller
 
         if (isset($request['data-id']) and filled($request['data-id'])) {
             $customer = Customer::findOrFail($request->input('data-id'));
+
+            // Once a finance entry references this customer, its currency is
+            // locked — changing it after the fact would leave already-posted
+            // invoices/collections in a currency that no longer matches the
+            // customer record, silently corrupting statements and reports.
+            if ($customer->currency !== $validated['currency']
+                && FinanceSub::where('customer_id', $customer->id)->exists()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'This customer\'s currency cannot be changed because financial transactions already exist for them.',
+                ], 422);
+            }
         } else {
             $customer = new Customer();
             $customer->unique_row_no = sprintf("%03d", (Customer::max('unique_row_no') ?? 0) + 1);

@@ -310,7 +310,7 @@ class CustomerInvoiceController extends Controller
 
         $validated = $request->validate([
             'job_id' => 'required|exists:jobs,id',
-            'customer' => 'required|exists:customers,id',
+            'customer' => ['required', Rule::exists('customers', 'id')->where('company_id', companyId())],
             'invoice_date' => 'required|date',
             'due_date' => 'required|date',
             'currency_rate' => 'required',

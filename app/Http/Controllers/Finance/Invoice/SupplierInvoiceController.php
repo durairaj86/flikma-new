@@ -255,7 +255,7 @@ class SupplierInvoiceController extends Controller
 
         $validated = $request->validate([
             'job_id' => 'required|exists:jobs,id',
-            'supplier' => 'required|exists:suppliers,id',
+            'supplier' => ['required', Rule::exists('suppliers', 'id')->where('company_id', companyId())],
             'invoice_date' => 'required|date',
             'invoice_number' => [
                 'required',
