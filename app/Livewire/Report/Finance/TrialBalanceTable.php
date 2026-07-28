@@ -66,8 +66,8 @@ class TrialBalanceTable extends Component
                     $query->where('is_approved', 1);
                 })
                 ->select(
-                    DB::raw('SUM(debit) as total_debit'),
-                    DB::raw('SUM(credit) as total_credit')
+                    DB::raw('SUM(base_debit) as total_debit'),
+                    DB::raw('SUM(base_credit) as total_credit')
                 )
                 ->first();
 
@@ -81,8 +81,8 @@ class TrialBalanceTable extends Component
                     $query->where('is_approved', 1);
                 })
                 ->select(
-                    DB::raw('SUM(debit) as total_debit'),
-                    DB::raw('SUM(credit) as total_credit')
+                    DB::raw('SUM(base_debit) as total_debit'),
+                    DB::raw('SUM(base_credit) as total_credit')
                 )
                 ->first();
 

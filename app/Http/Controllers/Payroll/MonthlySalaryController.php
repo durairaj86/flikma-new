@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Payroll;
 
 use App\Http\Controllers\Controller;
+use App\Models\Finance\Finance;
+use App\Models\Finance\FinanceSub;
 use App\Models\Payroll\BasicSalary;
 use App\Models\Payroll\MonthlySalary;
 use App\Models\User;
@@ -10,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\Facades\DataTables;
 
 class MonthlySalaryController extends Controller
@@ -356,17 +359,149 @@ class MonthlySalaryController extends Controller
     public function updateStatus($id, $status): \Illuminate\Http\JsonResponse
     {
         $monthlySalary = MonthlySalary::findOrFail($id);
-        $monthlySalary->status = $status;
-        $monthlySalary->save();
+        $previousStatus = $monthlySalary->status;
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Monthly salary status updated successfully!',
-            'data' => [
-                'id' => $monthlySalary->id,
-                'status' => $monthlySalary->status,
-            ],
-        ]);
+        DB::beginTransaction();
+        try {
+            $monthlySalary->status = $status;
+            $monthlySalary->save();
+
+            if ($status === 'paid') {
+                $this->createMonthlySalaryFinanceEntries($monthlySalary);
+            }
+
+            if ($previousStatus === 'paid' && $status !== 'paid') {
+                $this->deleteMonthlySalaryFinanceEntries($monthlySalary->id);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Monthly salary status updated successfully!',
+                'data' => [
+                    'id' => $monthlySalary->id,
+                    'status' => $monthlySalary->status,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error updating monthly salary status: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Create finance entries for a monthly salary marked as paid.
+     * Debit Staff Salaries (expense), Credit Employee Payables (liability).
+     */
+    private function createMonthlySalaryFinanceEntries(MonthlySalary $monthlySalary)
+    {
+        try {
+            $this->deleteMonthlySalaryFinanceEntries($monthlySalary->id);
+
+            $amount = $monthlySalary->total_salary;
+            $referenceDate = $monthlySalary->payment_date ?? now();
+
+            $finance = new Finance();
+            $finance->voucher_no = $monthlySalary->row_no ?? ('MS-' . str_pad($monthlySalary->id, 5, '0', STR_PAD_LEFT));
+            $finance->voucher_type = 'PV'; // Payroll Voucher
+            $finance->reference_no = $finance->voucher_no;
+            $finance->reference_date = $referenceDate;
+            $finance->narration = 'Monthly Salary: ' . $finance->voucher_no;
+            $finance->currency = 'SAR';
+            $finance->exchange_rate = 1;
+            $finance->total_debit = $amount;
+            $finance->total_credit = $amount;
+            $finance->base_currency = 'SAR';
+            $finance->base_total_debit = $amount;
+            $finance->base_total_credit = $amount;
+            $finance->is_approved = 1;
+            $finance->posted_at = now();
+            $finance->linked_id = $monthlySalary->id;
+            $finance->linked_type = MonthlySalary::class;
+            $finance->company_id = $monthlySalary->company_id;
+            $finance->user_id = Auth::id();
+            $finance->save();
+
+            $financeSubs = [
+                [
+                    'finance_id' => $finance->id,
+                    'voucher_no' => $finance->voucher_no,
+                    'voucher_type' => $finance->voucher_type,
+                    'reference_no' => $finance->reference_no,
+                    'account_id' => 48, // Staff Salaries (Expense)
+                    'reference_date' => formDate($referenceDate),
+                    'description' => 'Salary expense for ' . ($monthlySalary->employee?->name ?? $monthlySalary->employee_id) . ' - ' . $monthlySalary->month . '/' . $monthlySalary->year,
+                    'debit' => $amount,
+                    'credit' => 0,
+                    'currency' => 'SAR',
+                    'base_debit' => $amount,
+                    'base_credit' => 0,
+                    'base_currency' => 'SAR',
+                    'exchange_rate' => 1,
+                    'is_tax_line' => 0,
+                    'is_auto_generated' => 1,
+                    'linked_id' => $monthlySalary->id,
+                    'linked_type' => MonthlySalary::class,
+                    'user_id' => Auth::id(),
+                    'company_id' => $monthlySalary->company_id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+                [
+                    'finance_id' => $finance->id,
+                    'voucher_no' => $finance->voucher_no,
+                    'voucher_type' => $finance->voucher_type,
+                    'reference_no' => $finance->reference_no,
+                    'account_id' => 21, // Employee Payables (Liability)
+                    'reference_date' => formDate($referenceDate),
+                    'description' => 'Salary payable for ' . ($monthlySalary->employee?->name ?? $monthlySalary->employee_id) . ' - ' . $monthlySalary->month . '/' . $monthlySalary->year,
+                    'debit' => 0,
+                    'credit' => $amount,
+                    'currency' => 'SAR',
+                    'base_debit' => 0,
+                    'base_credit' => $amount,
+                    'base_currency' => 'SAR',
+                    'exchange_rate' => 1,
+                    'is_tax_line' => 0,
+                    'is_auto_generated' => 1,
+                    'linked_id' => $monthlySalary->id,
+                    'linked_type' => MonthlySalary::class,
+                    'user_id' => Auth::id(),
+                    'company_id' => $monthlySalary->company_id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+            ];
+
+            FinanceSub::insert($financeSubs);
+        } catch (\Exception $e) {
+            Log::error('Error creating finance entries for monthly salary: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Delete finance entries for a monthly salary.
+     */
+    private function deleteMonthlySalaryFinanceEntries($monthlySalaryId)
+    {
+        try {
+            $financeEntries = Finance::where('linked_id', $monthlySalaryId)
+                ->where('linked_type', MonthlySalary::class)
+                ->get();
+
+            foreach ($financeEntries as $finance) {
+                FinanceSub::where('finance_id', $finance->id)->delete();
+                $finance->delete();
+            }
+        } catch (\Exception $e) {
+            Log::error('Error deleting finance entries for monthly salary: ' . $e->getMessage());
+            throw $e;
+        }
     }
 
     /**

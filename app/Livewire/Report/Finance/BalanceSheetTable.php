@@ -75,8 +75,8 @@ class BalanceSheetTable extends Component
                     $query->where('is_approved', 1);
                 })
                 ->select(
-                    DB::raw('SUM(debit) as total_debit'),
-                    DB::raw('SUM(credit) as total_credit')
+                    DB::raw('SUM(base_debit) as total_debit'),
+                    DB::raw('SUM(base_credit) as total_credit')
                 )
                 ->first();
 
@@ -138,7 +138,7 @@ class BalanceSheetTable extends Component
                 ->whereHas('finance', function ($query) {
                     $query->where('is_approved', 1);
                 })
-                ->selectRaw('SUM(credit) as total_credit, SUM(debit) as total_debit')
+                ->selectRaw('SUM(base_credit) as total_credit, SUM(base_debit) as total_debit')
                 ->first();
             $totalIncome = ($incomeData->total_credit ?? 0) - ($incomeData->total_debit ?? 0);
         }
@@ -150,7 +150,7 @@ class BalanceSheetTable extends Component
                 ->whereHas('finance', function ($query) {
                     $query->where('is_approved', 1);
                 })
-                ->selectRaw('SUM(debit) as total_debit, SUM(credit) as total_credit')
+                ->selectRaw('SUM(base_debit) as total_debit, SUM(base_credit) as total_credit')
                 ->first();
             $totalExpenses = ($expenseData->total_debit ?? 0) - ($expenseData->total_credit ?? 0);
         }

@@ -116,7 +116,7 @@ class ProfitAndLoss extends Component
             $financeSub = FinanceSub::where('account_id', $account->id)
                 ->whereBetween('reference_date', [$this->startDate, $this->endDate])
                 ->whereHas('finance', fn($q) => $q->where('is_approved', 1))
-                ->select(DB::raw('SUM(debit) as total_debit'), DB::raw('SUM(credit) as total_credit'))
+                ->select(DB::raw('SUM(base_debit) as total_debit'), DB::raw('SUM(base_credit) as total_credit'))
                 ->first();
 
             $debit  = $financeSub->total_debit ?? 0;

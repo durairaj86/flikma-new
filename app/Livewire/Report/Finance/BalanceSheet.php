@@ -117,7 +117,7 @@ class BalanceSheet extends Component
             $financeSub = FinanceSub::where('account_id', $account->id)
                 ->where('reference_date', '<=', $this->endDate)
                 ->whereHas('finance', fn($q) => $q->where('is_approved', 1))
-                ->select(DB::raw('SUM(debit) as total_debit'), DB::raw('SUM(credit) as total_credit'))
+                ->select(DB::raw('SUM(base_debit) as total_debit'), DB::raw('SUM(base_credit) as total_credit'))
                 ->first();
 
             $debit  = $financeSub->total_debit ?? 0;
@@ -141,7 +141,7 @@ class BalanceSheet extends Component
             $d = FinanceSub::whereIn('account_id', $incomeIds)
                 ->where('reference_date', '<=', $this->endDate)
                 ->whereHas('finance', fn($q) => $q->where('is_approved', 1))
-                ->selectRaw('SUM(credit) as total_credit, SUM(debit) as total_debit')
+                ->selectRaw('SUM(base_credit) as total_credit, SUM(base_debit) as total_debit')
                 ->first();
             $totalIncome = ($d->total_credit ?? 0) - ($d->total_debit ?? 0);
         }
@@ -151,7 +151,7 @@ class BalanceSheet extends Component
             $d = FinanceSub::whereIn('account_id', $expenseIds)
                 ->where('reference_date', '<=', $this->endDate)
                 ->whereHas('finance', fn($q) => $q->where('is_approved', 1))
-                ->selectRaw('SUM(debit) as total_debit, SUM(credit) as total_credit')
+                ->selectRaw('SUM(base_debit) as total_debit, SUM(base_credit) as total_credit')
                 ->first();
             $totalExpenses = ($d->total_debit ?? 0) - ($d->total_credit ?? 0);
         }

@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Payroll;
 
 use App\Http\Controllers\Controller;
+use App\Models\Finance\Finance;
+use App\Models\Finance\FinanceSub;
 use App\Models\Payroll\EmployeeLoan;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\Facades\DataTables;
 
 class EmployeeLoanController extends Controller
@@ -260,17 +263,155 @@ class EmployeeLoanController extends Controller
     public function updateStatus($id, $status): \Illuminate\Http\JsonResponse
     {
         $employeeLoan = EmployeeLoan::findOrFail($id);
-        $employeeLoan->status = $status;
-        $employeeLoan->save();
+        $previousStatus = $employeeLoan->status;
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Loan status updated successfully!',
-            'data' => [
-                'id' => $employeeLoan->id,
-                'status' => $employeeLoan->status,
-            ],
-        ]);
+        DB::beginTransaction();
+        try {
+            $employeeLoan->status = $status;
+            $employeeLoan->save();
+
+            if ($status === 'approved') {
+                $this->createEmployeeLoanFinanceEntries($employeeLoan);
+            }
+
+            if ($previousStatus === 'approved' && $status !== 'approved') {
+                $this->deleteEmployeeLoanFinanceEntries($employeeLoan->id);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Loan status updated successfully!',
+                'data' => [
+                    'id' => $employeeLoan->id,
+                    'status' => $employeeLoan->status,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error updating loan status: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Create finance entries for an employee loan marked as approved (disbursed).
+     * Debit Employee Loans Receivable (asset), Credit the disbursing bank/cash account.
+     */
+    private function createEmployeeLoanFinanceEntries(EmployeeLoan $employeeLoan)
+    {
+        try {
+            $this->deleteEmployeeLoanFinanceEntries($employeeLoan->id);
+
+            $amount = $employeeLoan->loan_amount;
+            $referenceDate = $employeeLoan->loan_date ?? now();
+            // payment_method is an enum (bank_transfer/cash/check), not a
+            // user-picked account id like Expense's payment_mode — map it to
+            // the matching bank/cash leaf account (57=Petty Cash, 58=Visa/
+            // Mastercard Undeposited, the only two disbursement accounts that
+            // exist in the live chart of accounts).
+            $creditAccountId = $employeeLoan->payment_method === 'cash' ? 57 : 58;
+
+            $finance = new Finance();
+            $finance->voucher_no = $employeeLoan->row_no;
+            $finance->voucher_type = 'PV'; // Payroll Voucher
+            $finance->reference_no = $finance->voucher_no;
+            $finance->reference_date = $referenceDate;
+            $finance->narration = 'Employee Loan: ' . $finance->voucher_no;
+            $finance->currency = 'SAR';
+            $finance->exchange_rate = 1;
+            $finance->total_debit = $amount;
+            $finance->total_credit = $amount;
+            $finance->base_currency = 'SAR';
+            $finance->base_total_debit = $amount;
+            $finance->base_total_credit = $amount;
+            $finance->is_approved = 1;
+            $finance->posted_at = now();
+            $finance->linked_id = $employeeLoan->id;
+            $finance->linked_type = EmployeeLoan::class;
+            $finance->company_id = $employeeLoan->company_id;
+            $finance->user_id = Auth::id();
+            $finance->save();
+
+            $financeSubs = [
+                [
+                    'finance_id' => $finance->id,
+                    'voucher_no' => $finance->voucher_no,
+                    'voucher_type' => $finance->voucher_type,
+                    'reference_no' => $finance->reference_no,
+                    'account_id' => 72, // Employee Loans Receivable (Asset)
+                    'reference_date' => formDate($referenceDate),
+                    'description' => 'Loan disbursed to ' . ($employeeLoan->employee?->name ?? $employeeLoan->employee_id) . ' - ' . $employeeLoan->row_no,
+                    'debit' => $amount,
+                    'credit' => 0,
+                    'currency' => 'SAR',
+                    'base_debit' => $amount,
+                    'base_credit' => 0,
+                    'base_currency' => 'SAR',
+                    'exchange_rate' => 1,
+                    'is_tax_line' => 0,
+                    'is_auto_generated' => 1,
+                    'linked_id' => $employeeLoan->id,
+                    'linked_type' => EmployeeLoan::class,
+                    'user_id' => Auth::id(),
+                    'company_id' => $employeeLoan->company_id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+                [
+                    'finance_id' => $finance->id,
+                    'voucher_no' => $finance->voucher_no,
+                    'voucher_type' => $finance->voucher_type,
+                    'reference_no' => $finance->reference_no,
+                    'account_id' => $creditAccountId,
+                    'reference_date' => formDate($referenceDate),
+                    'description' => 'Loan disbursement payout - ' . $employeeLoan->row_no,
+                    'debit' => 0,
+                    'credit' => $amount,
+                    'currency' => 'SAR',
+                    'base_debit' => 0,
+                    'base_credit' => $amount,
+                    'base_currency' => 'SAR',
+                    'exchange_rate' => 1,
+                    'is_tax_line' => 0,
+                    'is_auto_generated' => 1,
+                    'linked_id' => $employeeLoan->id,
+                    'linked_type' => EmployeeLoan::class,
+                    'user_id' => Auth::id(),
+                    'company_id' => $employeeLoan->company_id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+            ];
+
+            FinanceSub::insert($financeSubs);
+        } catch (\Exception $e) {
+            Log::error('Error creating finance entries for employee loan: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Delete finance entries for an employee loan.
+     */
+    private function deleteEmployeeLoanFinanceEntries($employeeLoanId)
+    {
+        try {
+            $financeEntries = Finance::where('linked_id', $employeeLoanId)
+                ->where('linked_type', EmployeeLoan::class)
+                ->get();
+
+            foreach ($financeEntries as $finance) {
+                FinanceSub::where('finance_id', $finance->id)->delete();
+                $finance->delete();
+            }
+        } catch (\Exception $e) {
+            Log::error('Error deleting finance entries for employee loan: ' . $e->getMessage());
+            throw $e;
+        }
     }
 
     /**

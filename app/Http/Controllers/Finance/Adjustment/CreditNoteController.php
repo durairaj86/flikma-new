@@ -322,8 +322,8 @@ class CreditNoteController extends Controller
         $creditNote->grand_total = $grandTotal;
         $creditNote->status = 1;
 
-        /*DB::beginTransaction();
-        try {*/
+        DB::beginTransaction();
+        try {
 
         $creditNote->save();
         if ($request->hasFile('attachments') && count($request->file('attachments'))) {
@@ -408,10 +408,13 @@ class CreditNoteController extends Controller
             'credit_note_id' => $creditNote->id,
         ]);
 
-        /*} catch (\Exception $e) {
+        } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Error saving customer Invoice: ' . $e->getMessage());
-        }*/
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error saving credit note: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function actions($id)
