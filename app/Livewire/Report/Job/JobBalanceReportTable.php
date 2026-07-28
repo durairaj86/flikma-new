@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Report\Job;
 
+use App\Models\Finance\Adjustment\CreditNote;
 use App\Models\Finance\CustomerInvoice\CustomerInvoice;
 use App\Models\Finance\SupplierInvoice\SupplierInvoice;
 use App\Models\Job\Job;
@@ -90,10 +91,15 @@ class JobBalanceReportTable extends Component
             // Get supplier invoices (expenses) for this job
             $supplierInvoices = SupplierInvoice::where('job_id', $job->id)->get();
 
-            // customer_invoices/supplier_invoices have no "total_amount"
-            // column — the real total is grand_total.
-            $income = $customerInvoices->sum('grand_total') ?? 0;
-            $expense = $supplierInvoices->sum('grand_total') ?? 0;
+            // Credit notes reduce recognised income — omitting them
+            // overstates the job's income by whatever was later credited back.
+            $creditNotes = CreditNote::where('job_id', $job->id)->get();
+
+            // base_grand_total (company-currency-normalized), not grand_total
+            // (the invoice's own currency) — a foreign-currency invoice would
+            // otherwise silently corrupt the job's income/expense totals.
+            $income = ($customerInvoices->sum('base_grand_total') ?? 0) - ($creditNotes->sum('base_grand_total') ?? 0);
+            $expense = $supplierInvoices->sum('base_grand_total') ?? 0;
 
             // Calculate profit
             $profit = $income - $expense;

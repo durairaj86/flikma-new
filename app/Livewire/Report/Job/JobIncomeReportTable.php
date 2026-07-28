@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Report\Job;
 
+use App\Models\Finance\Adjustment\CreditNote;
 use App\Models\Finance\CustomerInvoice\CustomerInvoice;
 use App\Models\Finance\CustomerInvoice\CustomerInvoiceSub;
 use App\Models\Job\Job;
@@ -91,6 +92,12 @@ class JobIncomeReportTable extends Component
                 continue;
             }
 
+            // Credit notes reduce recognised income — omitting them
+            // overstates income by whatever was later credited back.
+            // Credited invoices are approved by the time a credit note
+            // exists against them, so this comes out of approvedIncome.
+            $creditedAmount = CreditNote::where('job_id', $job->id)->sum('base_grand_total');
+
             $invoiceDetails = [];
             $jobTotalIncome = 0;
             $approvedIncome = 0;
@@ -100,9 +107,11 @@ class JobIncomeReportTable extends Component
                 $invoiceTotal = 0;
 
                 foreach ($invoice->customerInvoiceSubs as $sub) {
-                    // customer_invoice_subs has no "amount" column — the
-                    // tax-inclusive line total is total_with_tax.
-                    $amount = $sub->total_with_tax ?? 0;
+                    // base_total_with_tax (company-currency-normalized), not
+                    // total_with_tax (the invoice's own currency) — a
+                    // foreign-currency invoice would otherwise silently
+                    // corrupt this job's income totals.
+                    $amount = $sub->base_total_with_tax ?? 0;
                     $invoiceTotal += $amount;
 
                     $invoiceDetails[] = [
@@ -127,6 +136,9 @@ class JobIncomeReportTable extends Component
                     $draftIncome += $invoiceTotal;
                 }
             }
+
+            $jobTotalIncome -= $creditedAmount;
+            $approvedIncome -= $creditedAmount;
 
             // Add to total income
             $totalIncome += $jobTotalIncome;

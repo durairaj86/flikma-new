@@ -312,14 +312,22 @@ class CreditNoteController extends Controller
         $creditNote->customer_id = $validated['customer'] ?? null;
         $creditNote->posted_at = formDate($validated['credit_note_date']);
         $creditNote->reason = $validated['reason'];
-        //$customer->currency = $validated['currency'];
-        //$customer->currency_rate = $validated['currency_rate'];
+
+        // A credit note only ever makes sense in the currency of the invoice
+        // it's crediting — it must never be entered independently, or the AR
+        // reversal posts at the wrong rate against a foreign-currency
+        // invoice. Always derive it from the linked invoice, never the form.
+        $linkedInvoice = CustomerInvoice::find($creditNote->invoice_id);
+        $creditNote->currency = $linkedInvoice->currency ?? 'SAR';
+        $creditNote->currency_rate = $linkedInvoice->currency_rate ?? 1;
+
         $creditNote->terms = $validated['terms'] ?? null;
         $creditNote->base_sub_total = $creditNote->currency_rate * $subTotal;
         $creditNote->base_tax_total = $creditNote->currency_rate * $taxTotal;
         $creditNote->sub_total = $subTotal;
         $creditNote->tax_total = $taxTotal;
         $creditNote->grand_total = $grandTotal;
+        $creditNote->base_grand_total = $creditNote->base_sub_total + $creditNote->base_tax_total;
         $creditNote->status = 1;
 
         DB::beginTransaction();

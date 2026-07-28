@@ -68,7 +68,7 @@ class TaxSummaryTable extends Component
         // --- Input VAT ---
         $inputData = (clone $baseQuery)
             ->where('account_id', $inputVatAccountId)
-            ->selectRaw('SUM(debit) as total_debit, SUM(credit) as total_credit')
+            ->selectRaw('SUM(base_debit) as total_debit, SUM(base_credit) as total_credit')
             ->first();
 
         $totalInputTax = ($inputData->total_debit ?? 0) - ($inputData->total_credit ?? 0);
@@ -76,7 +76,7 @@ class TaxSummaryTable extends Component
         // --- Output VAT ---
         $outputData = (clone $baseQuery)
             ->where('account_id', $outputVatAccountId)
-            ->selectRaw('SUM(credit) as total_credit, SUM(debit) as total_debit')
+            ->selectRaw('SUM(base_credit) as total_credit, SUM(base_debit) as total_debit')
             ->first();
 
         $totalOutputTax = ($outputData->total_credit ?? 0) - ($outputData->total_debit ?? 0);

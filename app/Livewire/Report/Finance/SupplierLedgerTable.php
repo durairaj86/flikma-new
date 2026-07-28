@@ -107,8 +107,12 @@ class SupplierLedgerTable extends Component
 
             $formattedTransactions = [];
             foreach ($transactions as $transaction) {
-                $debit = $transaction->debit ?? 0;
-                $credit = $transaction->credit ?? 0;
+                // base_debit/base_credit (company-currency-normalized), not
+                // debit/credit (the transaction's own currency) — otherwise a
+                // foreign-currency invoice silently corrupts the running
+                // balance by mixing currencies together.
+                $debit = $transaction->base_debit ?? 0;
+                $credit = $transaction->base_credit ?? 0;
 
                 $runningBalance += $debit - $credit;
 
@@ -162,8 +166,8 @@ class SupplierLedgerTable extends Component
                 $query->where('is_approved', 1);
             })
             ->select(
-                DB::raw('SUM(debit) as total_debit'),
-                DB::raw('SUM(credit) as total_credit')
+                DB::raw('SUM(base_debit) as total_debit'),
+                DB::raw('SUM(base_credit) as total_credit')
             )
             ->first();
 

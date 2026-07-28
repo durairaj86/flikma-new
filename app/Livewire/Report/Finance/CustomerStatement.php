@@ -184,7 +184,15 @@ class CustomerStatement extends Component
                     ->where('collection_date', '<', $this->startDate)
                     ->sum('base_grand_total');
 
-                $openingBalance = (float)$openingInvoices - (float)$openingCollections;
+                // Credit notes reduce AR exactly like a collection does — a
+                // statement that omits them overstates what the customer
+                // still owes by the full credited amount.
+                $openingCreditNotes = \App\Models\Finance\Adjustment\CreditNote::where('customer_id', $this->customerId)
+                    ->where('company_id', $companyId)
+                    ->where('posted_at', '<', $this->startDate)
+                    ->sum('base_grand_total');
+
+                $openingBalance = (float)$openingInvoices - (float)$openingCollections - (float)$openingCreditNotes;
 
                 // Period invoices (debit)
                 $invoices = \App\Models\Finance\CustomerInvoice\CustomerInvoice::where('customer_id', $this->customerId)
@@ -200,8 +208,15 @@ class CustomerStatement extends Component
                     ->orderBy('collection_date')
                     ->get();
 
+                // Period credit notes (credit)
+                $creditNotes = \App\Models\Finance\Adjustment\CreditNote::where('customer_id', $this->customerId)
+                    ->where('company_id', $companyId)
+                    ->whereBetween('posted_at', [$this->startDate, $this->endDate])
+                    ->orderBy('posted_at')
+                    ->get();
+
                 $totalDebit  = (float)$invoices->sum('base_grand_total');
-                $totalCredit = (float)$collections->sum('base_grand_total');
+                $totalCredit = (float)$collections->sum('base_grand_total') + (float)$creditNotes->sum('base_grand_total');
 
                 foreach ($invoices as $inv) {
                     $isForeign = $inv->currency && $inv->currency !== $baseCurrency;
@@ -246,6 +261,23 @@ class CustomerStatement extends Component
                         'fcy_amount'    => $isForeign ? (float)($col->grand_total ?? 0) : null,
                         'currency_rate' => $isForeign ? (float)($col->currency_rate ?? 0) : null,
                         'days_overdue'  => 0, // payments have no due date of their own
+                    ];
+                }
+
+                foreach ($creditNotes as $cn) {
+                    $isForeign = $cn->currency && $cn->currency !== $baseCurrency;
+                    $transactions[] = (object)[
+                        'date'          => $cn->getRawOriginal('posted_at') ?? $cn->posted_at,
+                        'display_date'  => \Carbon\Carbon::parse($cn->posted_at)->format('d-m-Y'),
+                        'type'          => 'credit_note',
+                        'reference'     => $cn->row_no,
+                        'description'   => 'Credit Note',
+                        'debit'         => 0,
+                        'credit'        => (float)($cn->base_grand_total ?? $cn->grand_total ?? 0),
+                        'currency'      => $cn->currency,
+                        'fcy_amount'    => $isForeign ? (float)($cn->grand_total ?? 0) : null,
+                        'currency_rate' => $isForeign ? (float)($cn->currency_rate ?? 0) : null,
+                        'days_overdue'  => 0,
                     ];
                 }
 

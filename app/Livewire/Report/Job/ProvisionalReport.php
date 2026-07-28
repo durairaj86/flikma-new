@@ -5,6 +5,7 @@ namespace App\Livewire\Report\Job;
 use Livewire\Component;
 use App\Exports\ReportTableExport;
 use App\Models\Job\Job;
+use App\Models\Finance\Adjustment\CreditNote;
 use App\Models\Finance\CustomerInvoice\CustomerInvoice;
 use App\Models\Finance\SupplierInvoice\SupplierInvoice;
 use App\Models\Finance\ProformaInvoice\ProformaInvoice;
@@ -84,10 +85,19 @@ class ProvisionalReport extends Component
             foreach ($jobs as $job) {
                 $activity = $job->shipment_mode ?: 'Unspecified';
 
-                $provisionalSales = (float) ProformaInvoice::where('job_id', $job->id)->where('company_id', $companyId)->sum('grand_total');
-                $actualSales      = (float) CustomerInvoice::where('job_id', $job->id)->where('company_id', $companyId)->sum('grand_total');
-                $provisionalCost  = (float) Expense::where('job_id', $job->id)->where('company_id', $companyId)->sum('grand_total');
-                $actualCost       = (float) SupplierInvoice::where('job_id', $job->id)->where('company_id', $companyId)->sum('grand_total');
+                // base_grand_total / base_sub_total+base_tax_total (company-
+                // currency-normalized), not grand_total (the document's own
+                // currency) — a foreign-currency document would otherwise
+                // silently corrupt these totals. ProformaInvoice/Expense have
+                // no base_grand_total column, so it's derived from their base
+                // sub/tax components instead.
+                $provisionalSales = (float) ProformaInvoice::where('job_id', $job->id)->where('company_id', $companyId)->selectRaw('SUM(base_sub_total + base_tax_total) as total')->value('total');
+                // Credit notes reduce recognised income — omitting them
+                // overstates actual sales by whatever was later credited back.
+                $actualSales      = (float) CustomerInvoice::where('job_id', $job->id)->where('company_id', $companyId)->sum('base_grand_total')
+                    - (float) CreditNote::where('job_id', $job->id)->where('company_id', $companyId)->sum('base_grand_total');
+                $provisionalCost  = (float) Expense::where('job_id', $job->id)->where('company_id', $companyId)->selectRaw('SUM(base_sub_total + base_tax_total) as total')->value('total');
+                $actualCost       = (float) SupplierInvoice::where('job_id', $job->id)->where('company_id', $companyId)->sum('base_grand_total');
 
                 if (!isset($groups[$activity])) {
                     $groups[$activity] = [
@@ -138,11 +148,15 @@ class ProvisionalReport extends Component
                 $customerInvoices  = CustomerInvoice::where('job_id', $job->id)->where('company_id', $companyId)->get();
                 $expenses          = Expense::where('job_id', $job->id)->where('company_id', $companyId)->get();
                 $supplierInvoices  = SupplierInvoice::where('job_id', $job->id)->where('company_id', $companyId)->get();
+                $creditNotes       = CreditNote::where('job_id', $job->id)->where('company_id', $companyId)->get();
 
-                $provisionalSales = (float) $proformaInvoices->sum('grand_total');
-                $actualSales      = (float) $customerInvoices->sum('grand_total');
-                $provisionalCost  = (float) $expenses->sum('grand_total');
-                $actualCost       = (float) $supplierInvoices->sum('grand_total');
+                // See currency note above — same base-currency substitution.
+                // Credit notes reduce recognised income — omitting them
+                // overstates actual sales by whatever was later credited back.
+                $provisionalSales = (float) $proformaInvoices->sum(fn($doc) => (float)$doc->base_sub_total + (float)$doc->base_tax_total);
+                $actualSales      = (float) $customerInvoices->sum('base_grand_total') - (float) $creditNotes->sum('base_grand_total');
+                $provisionalCost  = (float) $expenses->sum(fn($doc) => (float)$doc->base_sub_total + (float)$doc->base_tax_total);
+                $actualCost       = (float) $supplierInvoices->sum('base_grand_total');
 
                 $salesForCalc = $actualSales > 0 ? $actualSales : $provisionalSales;
                 $costForCalc  = $actualCost  > 0 ? $actualCost  : $provisionalCost;
@@ -156,16 +170,19 @@ class ProvisionalReport extends Component
                 // ProformaInvoice/Expense use posted_at.
                 $details = [];
                 foreach ($proformaInvoices as $doc) {
-                    $details[] = ['type' => 'Provisional Sale', 'row_no' => $doc->row_no, 'date' => $doc->posted_at, 'amount' => (float) $doc->grand_total];
+                    $details[] = ['type' => 'Provisional Sale', 'row_no' => $doc->row_no, 'date' => $doc->posted_at, 'amount' => (float) $doc->base_sub_total + (float) $doc->base_tax_total];
                 }
                 foreach ($customerInvoices as $doc) {
-                    $details[] = ['type' => 'Actual Sale', 'row_no' => $doc->row_no, 'date' => $doc->invoice_date, 'amount' => (float) $doc->grand_total];
+                    $details[] = ['type' => 'Actual Sale', 'row_no' => $doc->row_no, 'date' => $doc->invoice_date, 'amount' => (float) $doc->base_grand_total];
+                }
+                foreach ($creditNotes as $doc) {
+                    $details[] = ['type' => 'Credit Note', 'row_no' => $doc->row_no, 'date' => $doc->posted_at, 'amount' => -(float) $doc->base_grand_total];
                 }
                 foreach ($expenses as $doc) {
-                    $details[] = ['type' => 'Provisional Cost', 'row_no' => $doc->row_no, 'date' => $doc->posted_at, 'amount' => (float) $doc->grand_total];
+                    $details[] = ['type' => 'Provisional Cost', 'row_no' => $doc->row_no, 'date' => $doc->posted_at, 'amount' => (float) $doc->base_sub_total + (float) $doc->base_tax_total];
                 }
                 foreach ($supplierInvoices as $doc) {
-                    $details[] = ['type' => 'Actual Cost', 'row_no' => $doc->row_no, 'date' => $doc->invoice_date, 'amount' => (float) $doc->grand_total];
+                    $details[] = ['type' => 'Actual Cost', 'row_no' => $doc->row_no, 'date' => $doc->invoice_date, 'amount' => (float) $doc->base_grand_total];
                 }
 
                 $rows[] = [

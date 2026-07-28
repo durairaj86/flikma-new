@@ -3,6 +3,7 @@
 namespace App\Livewire\Report\Job;
 
 use App\Exports\ReportTableExport;
+use App\Models\Finance\Adjustment\CreditNote;
 use App\Models\Finance\CustomerInvoice\CustomerInvoice;
 use App\Models\Job\Job;
 use Livewire\Component;
@@ -139,10 +140,19 @@ class JobIncomeReport extends Component
 
         $invoices = CustomerInvoice::whereIn('job_id', $jobIds)->get();
 
+        // Credit notes reduce recognised income — omitting them overstates
+        // income by whatever was later credited back. Credited invoices are
+        // approved by the time a credit note exists against them, so this
+        // comes out of approvedIncome specifically, not draftIncome.
+        $creditedAmount = CreditNote::whereIn('job_id', $jobIds)->sum('base_grand_total');
+
+        // base_grand_total (company-currency-normalized), not grand_total
+        // (the invoice's own currency) — a foreign-currency invoice would
+        // otherwise silently corrupt these totals.
         $totalJobs  = $invoices->pluck('job_id')->unique()->count();
-        $totalIncome = $invoices->sum('grand_total');
-        $approvedIncome = $invoices->where('status', 3)->sum('grand_total');
-        $draftIncome    = $invoices->where('status', 1)->sum('grand_total');
+        $totalIncome = $invoices->sum('base_grand_total') - $creditedAmount;
+        $approvedIncome = $invoices->where('status', 3)->sum('base_grand_total') - $creditedAmount;
+        $draftIncome    = $invoices->where('status', 1)->sum('base_grand_total');
 
         $summary = [
             'total_jobs'      => $totalJobs,

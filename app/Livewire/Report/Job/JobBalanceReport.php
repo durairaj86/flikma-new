@@ -3,6 +3,7 @@
 namespace App\Livewire\Report\Job;
 
 use App\Exports\ReportTableExport;
+use App\Models\Finance\Adjustment\CreditNote;
 use App\Models\Finance\CustomerInvoice\CustomerInvoice;
 use App\Models\Finance\SupplierInvoice\SupplierInvoice;
 use App\Models\Job\Job;
@@ -142,8 +143,15 @@ class JobBalanceReport extends Component
         $totalJobs    = 0;
 
         foreach ($jobs as $job) {
-            $income  = (float) CustomerInvoice::where('job_id', $job->id)->where('company_id', $companyId)->sum('grand_total');
-            $expense = (float) SupplierInvoice::where('job_id', $job->id)->where('company_id', $companyId)->sum('grand_total');
+            // base_grand_total (company-currency-normalized), not grand_total
+            // (the invoice's own currency) — a foreign-currency invoice would
+            // otherwise silently corrupt the job's income/expense totals.
+            // Credit notes reduce recognised income the same way a discount
+            // would — omitting them overstates the job's income by whatever
+            // was later credited back.
+            $income  = (float) CustomerInvoice::where('job_id', $job->id)->where('company_id', $companyId)->sum('base_grand_total')
+                - (float) CreditNote::where('job_id', $job->id)->where('company_id', $companyId)->sum('base_grand_total');
+            $expense = (float) SupplierInvoice::where('job_id', $job->id)->where('company_id', $companyId)->sum('base_grand_total');
 
             if ($income > 0 || $expense > 0) {
                 $totalJobs++;
