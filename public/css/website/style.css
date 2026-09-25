@@ -5,7 +5,7 @@ Bootstrap 5
 
 :root{
 
-    --primary:#0d6efd;
+    --primary:#0d9488;
     --secondary:#0b1736;
     --dark:#1b1f28;
     --text:#5f6777;
@@ -64,7 +64,7 @@ ul{
 
     display:inline-block;
     padding:8px 18px;
-    background:#eef5ff;
+    background:#e6f5f3;
     color:var(--primary);
     border-radius:50px;
     font-size:13px;
@@ -178,7 +178,7 @@ Page Header (shared across all standalone pages)
 
     color:var(--primary);
     font-weight:800;
-    background:#eef5ff;
+    background:#e6f5f3;
 
 }
 
@@ -190,9 +190,20 @@ Page Header (shared across all standalone pages)
 
 .btn-primary{
 
+    background:var(--primary);
+    border-color:var(--primary);
     border-radius:50px;
     padding:14px 34px;
     font-weight:700;
+
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active{
+
+    background:#0f766e!important;
+    border-color:#0f766e!important;
 
 }
 
@@ -235,8 +246,8 @@ Page Header (shared across all standalone pages)
     gap:10px;
     padding:10px 22px;
     border-radius:50px;
-    background:#eef6ff;
-    color:#0d6efd;
+    background:#e6f5f3;
+    color:#0d9488;
     font-weight:700;
     margin-bottom:30px;
 
@@ -386,7 +397,7 @@ Page Header (shared across all standalone pages)
     display:flex;
     align-items:center;
     justify-content:center;
-    background:#0d6efd;
+    background:#0d9488;
     color:#fff;
     font-size:24px;
 
@@ -461,7 +472,7 @@ Page Header (shared across all standalone pages)
 .stat-box h2{
 
     font-size:32px;
-    color:#0d6efd;
+    color:#0d9488;
     font-weight:800;
 
 }
@@ -691,7 +702,7 @@ Solutions • Dashboard • Feature List
 
     border-radius:18px;
 
-    background:#eef5ff;
+    background:#e6f5f3;
 
     display:flex;
     align-items:center;
@@ -740,7 +751,7 @@ Solutions • Dashboard • Feature List
 
     border-radius:50%;
 
-    background:#eef6ff;
+    background:#e6f5f3;
 
     right:-80px;
     bottom:-80px;
@@ -800,7 +811,7 @@ Solutions • Dashboard • Feature List
     align-items:center;
     justify-content:center;
 
-    background:#0d6efd;
+    background:#0d9488;
 
     color:#fff;
 
@@ -1062,7 +1073,7 @@ Features Page
     width:48px;
     height:48px;
     border-radius:14px;
-    background:#eef5ff;
+    background:#e6f5f3;
     color:var(--primary);
     display:flex;
     align-items:center;
@@ -1242,9 +1253,9 @@ Why Flikma
     align-items:center;
     justify-content:center;
 
-    background:#eef5ff;
+    background:#e6f5f3;
 
-    color:#0d6efd;
+    color:#0d9488;
 
     font-size:42px;
 
@@ -1385,7 +1396,7 @@ Pricing Teaser
 .pricing-teaser-card.featured{
 
     border-color:var(--primary);
-    box-shadow:0 20px 50px rgba(13,110,253,.12);
+    box-shadow:0 20px 50px rgba(13,148,136,.12);
 
 }
 
@@ -1452,7 +1463,7 @@ CTA
 
 .cta-box{
 
-    background:linear-gradient(135deg,#0d6efd,#0055d4);
+    background:linear-gradient(135deg,#0d9488,#0f766e);
     color:#fff;
     text-align:center;
     border-radius:32px;
@@ -1643,7 +1654,7 @@ Footer
 
 .social-icons a:hover{
 
-    background:#0d6efd;
+    background:#0d9488;
     transform:translateY(-5px);
 
 }
@@ -1673,7 +1684,7 @@ Utilities
 
 .bg-primary-soft{
 
-    background:#eef5ff;
+    background:#e6f5f3;
 
 }
 
