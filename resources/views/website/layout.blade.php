@@ -6,7 +6,7 @@
 
     <title>@yield('title', 'Flikma — AI Logistics &amp; Freight Forwarding Software for Saudi Arabia')</title>
     <meta name="description" content="@yield('meta_description', 'Flikma is AI-powered logistics software for freight forwarders and 3PLs in Saudi Arabia, Bahrain and Dubai. Manage enquiries, jobs, bills of lading, expenses, ZATCA Phase 2 e-invoicing and scanned supplier documents in one cloud ERP.')">
-    <meta name="keywords" content="@yield('meta_keywords', 'logistics software Saudi Arabia, freight forwarding software Bahrain, logistics ERP Dubai, 3PL software GCC, ZATCA Phase 2 e-invoicing software, AI document scanning, OCR supplier invoices, freight management software')">
+    <meta name="keywords" content="@yield('meta_keywords', 'logistics software Saudi Arabia, freight forwarding software Bahrain, logistics ERP Dubai, e-invoicing Jordan JoFotara, 3PL software GCC, ZATCA Phase 2 e-invoicing software, AI document scanning, OCR supplier invoices, freight management software')">
     <link rel="canonical" href="{{ url()->current() }}">
 
     <meta property="og:type" content="website">

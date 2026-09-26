@@ -178,7 +178,7 @@
 
             <p class="anim-hero delay-2 mx-auto mb-5" style="font-size:1.08rem;line-height:1.75;color:var(--ink-muted);max-width:660px;">
                 Enquiries, jobs, bills of lading, invoices, collections and payroll &mdash; one cloud platform
-                for freight forwarders across Saudi Arabia, Bahrain and the UAE. AI reads your documents,
+                for freight forwarders across Saudi Arabia, Bahrain, the UAE and Jordan. AI reads your documents,
                 ZATCA clearance is automatic, and every number is live.
             </p>
 
@@ -192,7 +192,7 @@
                     <span class="trust-avatar">RS</span><span class="trust-avatar">AK</span>
                     <span class="trust-avatar">MA</span><span class="trust-avatar">FH</span>
                 </div>
-                <small class="text-ink-ghost">Trusted by freight forwarders across <strong class="text-dark">Saudi Arabia, Bahrain &amp; UAE</strong></small>
+                <small class="text-ink-ghost">Trusted by freight forwarders across <strong class="text-dark">Saudi Arabia, Bahrain, UAE &amp; Jordan</strong></small>
             </div>
         </div>
 
@@ -288,8 +288,8 @@
                     <div class="stat-label">Less time spent typing supplier bills</div>
                 </div>
                 <div class="col-6 col-lg-3">
-                    <div class="stat-val">3 <span>countries</span></div>
-                    <div class="stat-label">Saudi Arabia, Bahrain &amp; UAE</div>
+                    <div class="stat-val">4</div>
+                    <div class="stat-label">GCC Countries</div>
                 </div>
             </div>
         </div>

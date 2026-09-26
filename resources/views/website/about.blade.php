@@ -80,7 +80,7 @@
                     </p>
                     <p class="mb-0" style="color:var(--ink-muted);line-height:1.8;">
                         Today Flikma runs freight operations and finance for logistics companies in Saudi Arabia,
-                        Bahrain and the UAE. We are still deliberately a logistics product, and we are still
+                        Bahrain, the UAE and Jordan. We are still deliberately a logistics product, and we are still
                         allergic to features our customers do not need.
                     </p>
                 </div>
@@ -132,7 +132,7 @@
                             <div>
                                 <h5 class="feat-title mb-1" style="font-size:1.02rem;">Where we are now</h5>
                                 <p class="small mb-0" style="color:var(--ink-muted);line-height:1.7;">
-                                    Live across Saudi Arabia, Bahrain and the UAE &mdash; and still a logistics
+                                    Live across Saudi Arabia, Bahrain, the UAE and Jordan &mdash; and still a logistics
                                     product, still deliberately without a warehouse module.
                                 </p>
                             </div>

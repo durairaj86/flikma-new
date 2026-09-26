@@ -91,12 +91,140 @@
                         <div class="col-6"><div class="stat-chip"><div class="chip-value" style="color:var(--emerald-dim);">9</div><div class="chip-label">Core Modules</div></div></div>
                         <div class="col-6"><div class="stat-chip"><div class="chip-value" style="color:var(--blue);">100%</div><div class="chip-label">ZATCA Phase 2</div></div></div>
                         <div class="col-6"><div class="stat-chip"><div class="chip-value" style="color:var(--indigo);">AI</div><div class="chip-label">Docs &amp; Expenses</div></div></div>
-                        <div class="col-6"><div class="stat-chip"><div class="chip-value" style="color:var(--violet);">3</div><div class="chip-label">GCC Countries</div></div></div>
+                        <div class="col-6"><div class="stat-chip"><div class="chip-value" style="color:var(--violet);">4</div><div class="chip-label">GCC Countries</div></div></div>
                     </div>
                 </div>
             </div>
         </div>
     </header>
+
+    <!-- ════════════════ CONNECT WITH YOUR EXISTING SYSTEMS ════════════════ -->
+    <section id="integrations" class="fk-section">
+        <div class="container">
+
+            <div class="row justify-content-center text-center mb-5">
+                <div class="col-lg-8">
+                    <div class="section-label">GCC Government Integrations</div>
+                    <div class="sec-icon mx-auto my-3" style="background:var(--emerald-soft);color:var(--emerald-dim);">
+                        <i class="bi bi-diagram-3"></i>
+                    </div>
+                    <h2 class="mb-3" style="font-size:clamp(1.5rem,2.6vw,2rem);font-weight:800;line-height:1.15;">
+                        Connect with Your Existing Systems
+                    </h2>
+                    <p class="mb-0 mx-auto" style="color:var(--ink-muted);line-height:1.75;max-width:640px;">
+                        Flikma integrates with the government portals, ERPs, and business tools used across
+                        Saudi Arabia and the wider GCC. Nothing gets re-keyed, and nothing falls between
+                        two systems.
+                    </p>
+                </div>
+            </div>
+
+            <div class="row g-4">
+
+                {{-- ZATCA Fatoora --}}
+                <div class="col-lg-4">
+                    <div class="panel h-100 reveal">
+                        <div class="d-flex align-items-start gap-3 mb-3">
+                            <div class="feat-icon-box flex-shrink-0" style="background:var(--emerald);color:var(--ink);box-shadow:0 8px 18px rgba(0,201,123,.3);">
+                                <i class="bi bi-shield-lock-fill"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-1" style="font-size:1.05rem;">ZATCA Fatoora</h5>
+                                <div style="font-size:.72rem;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:var(--emerald-dim);">
+                                    Saudi Arabia &middot; E-invoicing
+                                </div>
+                            </div>
+                        </div>
+
+                        <p style="color:var(--ink-muted);line-height:1.75;font-size:.9rem;">
+                            Native e-invoicing against the Fatoora gateway. Invoices are built from the job,
+                            signed, stamped and submitted without leaving Flikma &mdash; and the clearance
+                            result is stored on the document for good.
+                        </p>
+
+                        <ul class="bullet-list mt-3 mb-0">
+                            <li><i class="bi bi-check-circle-fill"></i><span>Phase 2 onboarding: CSR, compliance CSID, test sweep, production CSID</span></li>
+                            <li><i class="bi bi-check-circle-fill"></i><span>UBL 2.1 XML with ECDSA/CAdES signing and XAdES signed properties</span></li>
+                            <li><i class="bi bi-check-circle-fill"></i><span>Mandatory buyer-side QR generated on every invoice</span></li>
+                            <li><i class="bi bi-check-circle-fill"></i><span>Real-time clearance and deferred reporting, with full submission history</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                {{-- Fasah --}}
+                <div class="col-lg-4">
+                    <div class="panel h-100 reveal">
+                        <div class="d-flex align-items-start gap-3 mb-3">
+                            <div class="feat-icon-box flex-shrink-0" style="background:var(--cyan);color:#fff;box-shadow:0 8px 18px rgba(6,182,212,.3);">
+                                <i class="bi bi-clipboard2-pulse"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-1" style="font-size:1.05rem;">Fasah</h5>
+                                <div style="font-size:.72rem;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:#0891b2;">
+                                    Saudi Arabia &middot; Food safety
+                                </div>
+                            </div>
+                        </div>
+
+                        <p style="color:var(--ink-muted);line-height:1.75;font-size:.9rem;">
+                            For forwarders moving food, health and pharmaceutical cargo. Shipment records,
+                            documents and handling records are pushed to Fasah from the job, so compliance
+                            evidence is produced as the shipment moves rather than reconstructed at audit.
+                        </p>
+
+                        <ul class="bullet-list mt-3 mb-0">
+                            <li><i class="bi bi-check-circle-fill"></i><span>Compliance records created from the shipment, not typed in a second system</span></li>
+                            <li><i class="bi bi-check-circle-fill"></i><span>Temperature and handling logs attached to the same job record</span></li>
+                            <li><i class="bi bi-check-circle-fill"></i><span>Document status tracked on the job so gaps surface before an inspection</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                {{-- JoFotara (Jordan) --}}
+                <div class="col-lg-4">
+                    <div class="panel h-100 reveal">
+                        <div class="d-flex align-items-start gap-3 mb-3">
+                            <div class="feat-icon-box flex-shrink-0" style="background:var(--blue);color:#fff;box-shadow:0 8px 18px rgba(58,107,255,.3);">
+                                <i class="bi bi-receipt-cutoff"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-1" style="font-size:1.05rem;">JoFotara</h5>
+                                <div style="font-size:.72rem;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:var(--blue);">
+                                    Jordan &middot; Tax e-invoicing
+                                </div>
+                            </div>
+                        </div>
+
+                        <p style="color:var(--ink-muted);line-height:1.75;font-size:.9rem;">
+                            Run a Jordanian entity from the same login as your Saudi operations. Invoices are
+                            built, signed and submitted against Jordan&rsquo;s tax e-invoicing platform without
+                            anyone re-keying them into a second system.
+                        </p>
+
+                        <ul class="bullet-list mt-3 mb-0">
+                            <li><i class="bi bi-check-circle-fill"></i><span>Jordanian invoices generated from the same job as the Saudi ones</span></li>
+                            <li><i class="bi bi-check-circle-fill"></i><span>Cross-border currency and customer records handled per entity</span></li>
+                            <li><i class="bi bi-check-circle-fill"></i><span>Consolidated reporting across your Saudi and Jordan operations</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row justify-content-center mt-4">
+                <div class="col-lg-8">
+                    <div class="d-flex align-items-start gap-3 p-4 rounded-4 reveal" style="background:var(--surface);border:1.5px solid var(--line);">
+                        <i class="bi bi-info-circle-fill flex-shrink-0 mt-1" style="color:var(--emerald-dim);"></i>
+                        <p class="mb-0" style="font-size:.86rem;color:var(--ink-muted);line-height:1.7;">
+                            Running an ERP, a bank portal or a custom system alongside Flikma? We publish a
+                            REST API and webhooks, and our team will map your existing feeds during
+                            implementation. <a href="{{ url('/contact') }}" class="fw-semibold text-emerald">Tell us what you run</a>
+                            and we will tell you honestly what connects today.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- ════════════════ CRM & PARTIES ════════════════ -->
     <section id="crm" class="fk-section bg-white">
@@ -494,103 +622,6 @@
         </div>
     </section>
 
-    <!-- ════════════════ CONNECT WITH YOUR EXISTING SYSTEMS ════════════════ -->
-    <section id="integrations" class="fk-section bg-white">
-        <div class="container">
-
-            <div class="row justify-content-center text-center mb-5">
-                <div class="col-lg-8">
-                    <div class="sec-icon mx-auto mb-3" style="background:var(--emerald-soft);color:var(--emerald-dim);">
-                        <i class="bi bi-diagram-3"></i>
-                    </div>
-                    <h2 class="mb-3" style="font-size:clamp(1.5rem,2.6vw,2rem);font-weight:800;line-height:1.15;">
-                        Connect with Your Existing Systems
-                    </h2>
-                    <p class="mb-0 mx-auto" style="color:var(--ink-muted);line-height:1.75;max-width:640px;">
-                        Flikma integrates with the government portals, ERPs, and business tools used across
-                        Saudi Arabia. Nothing gets re-keyed, and nothing falls between two systems.
-                    </p>
-                </div>
-            </div>
-
-            <div class="row g-4">
-
-                {{-- ZATCA Fatoora --}}
-                <div class="col-lg-6">
-                    <div class="panel h-100 reveal">
-                        <div class="d-flex align-items-start gap-3 mb-3">
-                            <div class="feat-icon-box flex-shrink-0" style="background:var(--emerald);color:var(--ink);box-shadow:0 8px 18px rgba(0,201,123,.3);">
-                                <i class="bi bi-shield-lock-fill"></i>
-                            </div>
-                            <div>
-                                <h5 class="fw-bold mb-1" style="font-size:1.05rem;">ZATCA Fatoora</h5>
-                                <div style="font-size:.72rem;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:var(--emerald-dim);">
-                                    E-invoicing &amp; clearance
-                                </div>
-                            </div>
-                        </div>
-
-                        <p style="color:var(--ink-muted);line-height:1.75;font-size:.9rem;">
-                            Native e-invoicing against the Fatoora gateway. Invoices are built from the job,
-                            signed, stamped and submitted without leaving Flikma &mdash; and the clearance
-                            result is stored on the document for good.
-                        </p>
-
-                        <ul class="bullet-list mt-3 mb-0">
-                            <li><i class="bi bi-check-circle-fill"></i><span>Phase 2 onboarding: CSR, compliance CSID, test sweep, production CSID</span></li>
-                            <li><i class="bi bi-check-circle-fill"></i><span>UBL 2.1 XML with ECDSA/CAdES signing and XAdES signed properties</span></li>
-                            <li><i class="bi bi-check-circle-fill"></i><span>Mandatory buyer-side QR generated on every invoice</span></li>
-                            <li><i class="bi bi-check-circle-fill"></i><span>Real-time clearance and deferred reporting, with full submission history</span></li>
-                        </ul>
-                    </div>
-                </div>
-
-                {{-- Fasah --}}
-                <div class="col-lg-6">
-                    <div class="panel h-100 reveal">
-                        <div class="d-flex align-items-start gap-3 mb-3">
-                            <div class="feat-icon-box flex-shrink-0" style="background:var(--cyan);color:#fff;box-shadow:0 8px 18px rgba(6,182,212,.3);">
-                                <i class="bi bi-clipboard2-pulse"></i>
-                            </div>
-                            <div>
-                                <h5 class="fw-bold mb-1" style="font-size:1.05rem;">Fasah</h5>
-                                <div style="font-size:.72rem;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:#0891b2;">
-                                    Food safety &amp; health compliance
-                                </div>
-                            </div>
-                        </div>
-
-                        <p style="color:var(--ink-muted);line-height:1.75;font-size:.9rem;">
-                            For forwarders moving food, health and pharmaceutical cargo. Shipment records,
-                            documents and handling records are pushed to Fasah from the job, so compliance
-                            evidence is produced as the shipment moves rather than reconstructed at audit.
-                        </p>
-
-                        <ul class="bullet-list mt-3 mb-0">
-                            <li><i class="bi bi-check-circle-fill"></i><span>Compliance records created from the shipment, not typed in a second system</span></li>
-                            <li><i class="bi bi-check-circle-fill"></i><span>Temperature and handling logs attached to the same job record</span></li>
-                            <li><i class="bi bi-check-circle-fill"></i><span>Document status tracked on the job so gaps surface before an inspection</span></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row justify-content-center mt-4">
-                <div class="col-lg-8">
-                    <div class="d-flex align-items-start gap-3 p-4 rounded-4 reveal" style="background:var(--surface);border:1.5px solid var(--line);">
-                        <i class="bi bi-info-circle-fill flex-shrink-0 mt-1" style="color:var(--emerald-dim);"></i>
-                        <p class="mb-0" style="font-size:.86rem;color:var(--ink-muted);line-height:1.7;">
-                            Running an ERP, a bank portal or a custom system alongside Flikma? We publish a
-                            REST API and webhooks, and our team will map your existing feeds during
-                            implementation. <a href="{{ url('/contact') }}" class="fw-semibold text-emerald">Tell us what you run</a>
-                            and we will tell you honestly what connects today.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- ════════════════ BUILT FOR FORWARDERS — FIT + CTA ════════════════ -->
     <section class="fk-section bg-white">
         <div class="container">
@@ -690,7 +721,7 @@
                         <div class="faq-answer" :class="open === 3 && 'open'">
                             <p>Yes. Growth and above support multiple companies and branches with separate VAT registrations,
                                separate ledgers and consolidated group reporting. This is common for groups operating in
-                               Saudi Arabia, Bahrain and the UAE simultaneously.</p>
+                               Saudi Arabia, Bahrain, the UAE and Jordan simultaneously.</p>
                         </div>
                     </div>
 

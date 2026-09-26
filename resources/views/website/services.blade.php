@@ -54,7 +54,7 @@
                     <div class="row g-3">
                         <div class="col-6"><div class="stat-chip"><div class="chip-value" style="color:var(--emerald-dim);">2&ndash;3</div><div class="chip-label">Weeks to go-live</div></div></div>
                         <div class="col-6"><div class="stat-chip"><div class="chip-value" style="color:var(--blue);">100%</div><div class="chip-label">On-site training</div></div></div>
-                        <div class="col-6"><div class="stat-chip"><div class="chip-value" style="color:var(--indigo);">3</div><div class="chip-label">GCC countries served</div></div></div>
+                        <div class="col-6"><div class="stat-chip"><div class="chip-value" style="color:var(--indigo);">4</div><div class="chip-label">GCC countries served</div></div></div>
                         <div class="col-6"><div class="stat-chip"><div class="chip-value" style="color:var(--violet);">24h</div><div class="chip-label">Support response</div></div></div>
                     </div>
                 </div>
