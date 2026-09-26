@@ -23,7 +23,7 @@
         .bullet-list strong { color: var(--ink); font-weight: 600; }
         /* Comparison of engagement models */
         .eng-card { border: 1.5px solid var(--line); border-radius: 18px; background: #fff; padding: 2rem 1.75rem; height: 100%; }
-        .eng-card.featured { background: var(--ink); border-color: var(--ink); }
+        .eng-card.featured { background: var(--ink-panel); border-color: var(--ink-panel); }
         .eng-card.featured h4, .eng-card.featured .price { color: #fff; }
         .eng-card.featured p, .eng-card.featured .bullet-list li { color: rgba(255,255,255,.55); }
         .eng-card.featured .bullet-list i { color: var(--emerald); }

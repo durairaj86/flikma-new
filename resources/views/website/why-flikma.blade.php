@@ -8,7 +8,7 @@
 
     <style>
         .vs-row { border: 1.5px solid var(--line); border-radius: 18px; overflow: hidden; background: #fff; }
-        .vs-head { display: grid; grid-template-columns: 1.4fr 1.1fr 1.1fr; background: var(--ink); color: #fff; font-size: .72rem; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; }
+        .vs-head { display: grid; grid-template-columns: 1.4fr 1.1fr 1.1fr; background: var(--ink-panel); color: #fff; font-size: .72rem; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; }
         .vs-head > div { padding: 1rem 1.25rem; }
         .vs-head .ours { color: var(--emerald); }
         .vs-body { display: grid; grid-template-columns: 1.4fr 1.1fr 1.1fr; border-top: 1px solid var(--line); font-size: .87rem; }
@@ -52,7 +52,7 @@
                     </div>
                 </div>
                 <div class="col-lg-5">
-                    <div class="rounded-4 p-4 reveal" style="background:var(--ink);">
+                    <div class="rounded-4 p-4 reveal" style="background:var(--ink-panel);">
                         <div class="section-label mb-3" style="color:var(--emerald);">The Short Version</div>
                         <p class="mb-4" style="color:rgba(255,255,255,.7);font-size:1rem;line-height:1.7;">
                             If your biggest cost is a person retyping documents, and your biggest risk is a

@@ -36,7 +36,7 @@
         .bullet-list strong { color: var(--ink); font-weight: 600; }
         /* Right-hand visual panel */
         .panel { border: 1.5px solid var(--line); border-radius: 18px; background: #fff; padding: 1.5rem; }
-        .panel-dark { border: none; border-radius: 18px; background: var(--ink); padding: 1.5rem; }
+        .panel-dark { border: none; border-radius: 18px; background: var(--ink-panel); padding: 1.5rem; }
         .row-item {
             display: flex; align-items: center; justify-content: space-between; gap: .75rem;
             padding: .6rem 0; border-bottom: 1px solid var(--grid-line); font-size: .8rem;
@@ -46,7 +46,7 @@
         .mini-stat .v { font-size: 1.3rem; font-weight: 800; line-height: 1.1; letter-spacing: -.03em; }
         .mini-stat .l { font-size: .7rem; color: var(--ink-ghost); }
         /* Code-ish accounting block, borrowed from the shared language */
-        .entry-box { font-family: 'Courier New', monospace; background: var(--ink); color: #94a3b8; padding: 1.1rem; border-radius: 12px; font-size: .78rem; line-height: 1.75; }
+        .entry-box { font-family: 'Courier New', monospace; background: var(--ink-panel); color: #94a3b8; padding: 1.1rem; border-radius: 12px; font-size: .78rem; line-height: 1.75; }
 
         /* Sticky bottom module bar */
         .module-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 900; background: rgba(255, 255, 255, .92); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border-top: 1px solid var(--line); }

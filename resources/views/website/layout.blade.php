@@ -75,6 +75,9 @@
             /* Core palette */
             --ink:          #0a0f1e;
             --ink-soft:     #1e2740;
+            /* Dark panel surfaces (footer, CTA bands, featured cards, table heads).
+               Kept separate from --ink so heading text stays near-black. */
+            --ink-panel:    #0b1736;
             --ink-muted:    #4a5578;
             --ink-ghost:    #8896b0;
             --surface:      #f5f7fc;
@@ -121,7 +124,7 @@
         ::selection { background: var(--emerald-glow); }
 
         /* ── Utilities ── */
-        .bg-ink          { background-color: var(--ink) !important; }
+        .bg-ink          { background-color: var(--ink-panel) !important; }
         .bg-surface      { background-color: var(--surface) !important; }
         .bg-emerald-soft { background-color: var(--emerald-soft) !important; }
         .text-ink-muted  { color: var(--ink-muted) !important; }
@@ -223,7 +226,7 @@
         .btn-hero-outline:hover { border-color: var(--emerald); color: var(--emerald-dim); }
 
         .btn-cta-main {
-            background: var(--ink); color: #fff; border: none;
+            background: var(--ink-panel); color: #fff; border: none;
             border-radius: 14px; padding: 1rem 2.25rem; font-weight: 600;
             transition: all .2s; display: inline-flex; align-items: center; gap: .5rem;
         }
@@ -287,7 +290,7 @@
         .section-head.text-center { margin-left: auto; margin-right: auto; }
 
         /* ── Dark CTA band (shared) ── */
-        .cta-banner { background: var(--ink); border-radius: 20px; }
+        .cta-banner { background: var(--ink-panel); border-radius: 20px; }
         .cta-banner h2 { color: #fff; font-weight: 800; }
         .cta-banner p { color: rgba(255, 255, 255, .55); }
 
@@ -378,11 +381,7 @@
 <nav class="navbar navbar-expand-lg bg-white border-bottom fixed-top py-0" style="height:68px;">
     <div class="container">
         <a class="navbar-brand" href="{{ url('/') }}">
-            <svg width="30" height="30" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <rect width="32" height="32" rx="9" fill="#00c97b"/>
-                <path d="M10 16h13M16.5 9.5 23 16l-6.5 6.5" stroke="#0a0f1e" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span class="flk-word">Flik<em>ma</em></span>
+            <img src="{{ asset('img/logos/Flikma_logo.svg') }}" alt="Flikma" width="130" class="d-block">
         </a>
 
         <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#flkNav" aria-controls="flkNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -438,7 +437,7 @@
 @yield('content')
 
 <!-- ════════ FOOTER ════════ -->
-<footer class="py-5 mt-5" style="background:var(--ink);color:#fff;">
+<footer class="py-5 mt-5" style="background:var(--ink-panel);color:#fff;">
     <div class="container pt-3">
         <div class="row g-4 pb-4" style="border-bottom:1px solid rgba(255,255,255,.07);">
             <div class="col-lg-4">

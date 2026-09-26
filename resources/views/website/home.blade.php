@@ -22,7 +22,7 @@
 
     <style>
         /* Page-scoped composition on top of the shared design system. */
-        #hero { padding: 128px 0 0; position: relative; overflow: hidden; background: #fff; }
+        #hero { padding: 50px 0 0; position: relative; overflow: hidden; background: #fff; }
         .hero-bg-grid {
             position: absolute; inset: 0; z-index: 0;
             background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
@@ -108,7 +108,7 @@
         .scan-field .v.ok { color: var(--emerald-dim); }
 
         /* Stats */
-        .stats-bar { background: var(--ink); }
+        .stats-bar { background: var(--ink-panel); }
         .stat-val { font-size: 2.1rem; font-weight: 800; color: #fff; line-height: 1.1; letter-spacing: -.03em; }
         .stat-val span { color: var(--emerald); }
         .stat-label { font-size: .8rem; color: rgba(255,255,255,.45); }
@@ -119,7 +119,7 @@
         .flow-step-item { display: flex; align-items: flex-start; gap: 1rem; position: relative; }
         .flow-step-item:not(:last-child)::after { content: ''; position: absolute; left: 12px; top: 30px; bottom: -16px; width: 1px; background: rgba(255,255,255,.1); }
         .flow-num { width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; background: var(--emerald); color: var(--ink); font-size: .65rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
-        .ledger-card { background: var(--ink); border-radius: 14px; padding: 1.25rem; }
+        .ledger-card { background: var(--ink-panel); border-radius: 14px; padding: 1.25rem; }
         .ledger-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: .5rem; padding: .45rem 0; border-bottom: 1px solid rgba(255,255,255,.05); font-size: .76rem; }
         .ledger-row:last-child { border-bottom: 0; }
         .ledger-row.head { color: rgba(255,255,255,.4); font-size: .66rem; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; border-bottom-color: rgba(255,255,255,.15); }
@@ -127,7 +127,7 @@
         /* Pricing teaser */
         .pricing-card { border: 1.5px solid var(--line); border-radius: 20px; background: #fff; padding: 2rem 1.75rem; height: 100%; transition: all .25s; }
         .pricing-card:hover { box-shadow: 0 20px 50px rgba(10,15,30,.07); transform: translateY(-4px); }
-        .pricing-card.featured { background: var(--ink); border-color: var(--ink); transform: scale(1.03); box-shadow: 0 28px 60px rgba(10,15,30,.22); }
+        .pricing-card.featured { background: var(--ink-panel); border-color: var(--ink-panel); transform: scale(1.03); box-shadow: 0 28px 60px rgba(10,15,30,.22); }
         .pricing-card.featured .plan-name, .pricing-card.featured .plan-price { color: #fff; }
         .pricing-card.featured .plan-desc, .pricing-card.featured .plan-feats li { color: rgba(255,255,255,.55); }
         .pricing-card.featured .plan-feats li i { color: var(--emerald); }
@@ -383,7 +383,7 @@
                             </div>
                         </div>
 
-                        <div class="p-4 rounded-4 reveal" style="background:var(--ink);">
+                        <div class="p-4 rounded-4 reveal" style="background:var(--ink-panel);">
                             <div class="d-flex align-items-center gap-3">
                                 <span class="float-dot"><i class="bi bi-shield-lock"></i></span>
                                 <p class="mb-0" style="font-size:.82rem;color:rgba(255,255,255,.6);line-height:1.6;">

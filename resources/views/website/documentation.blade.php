@@ -111,7 +111,7 @@
 
                     {{-- START HERE --}}
                     <section id="overview" class="mb-5">
-                        <div class="rounded-4 p-4 p-md-5 reveal" style="background:var(--ink);">
+                        <div class="rounded-4 p-4 p-md-5 reveal" style="background:var(--ink-panel);">
                             <div class="row g-4 align-items-center">
                                 <div class="col-lg-8">
                                     <div class="section-label mb-3" style="color:var(--emerald);">Start Here</div>

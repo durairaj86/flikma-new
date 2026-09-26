@@ -319,21 +319,21 @@
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="p-4 rounded-4 h-100" style="background:var(--ink);">
+                            <div class="p-4 rounded-4 h-100" style="background:var(--ink-panel);">
                                 <i class="bi bi-telephone" style="font-size:1.4rem;color:var(--emerald);"></i>
                                 <div class="fw-bold mt-3 mb-1" style="color:#fff;font-size:.9rem;">Call us</div>
                                 <a href="tel:+966595555343" class="d-block" style="font-size:.85rem;color:rgba(255,255,255,.6);" dir="ltr">+966 59 555 5343</a>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="p-4 rounded-4 h-100" style="background:var(--ink);">
+                            <div class="p-4 rounded-4 h-100" style="background:var(--ink-panel);">
                                 <i class="bi bi-envelope" style="font-size:1.4rem;color:var(--emerald);"></i>
                                 <div class="fw-bold mt-3 mb-1" style="color:#fff;font-size:.9rem;">Email us</div>
                                 <a href="mailto:support@flikma.com" class="d-block" style="font-size:.85rem;color:rgba(255,255,255,.6);">support@flikma.com</a>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="p-4 rounded-4 h-100" style="background:var(--ink);">
+                            <div class="p-4 rounded-4 h-100" style="background:var(--ink-panel);">
                                 <i class="bi bi-calendar-check" style="font-size:1.4rem;color:var(--emerald);"></i>
                                 <div class="fw-bold mt-3 mb-1" style="color:#fff;font-size:.9rem;">Book a demo</div>
                                 <a href="{{ url('/contact') }}" class="d-block" style="font-size:.85rem;color:rgba(255,255,255,.6);">See Flikma live &rarr;</a>

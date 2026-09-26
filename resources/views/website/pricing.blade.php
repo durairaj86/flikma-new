@@ -12,7 +12,7 @@
     <style>
         .plan-card { border: 1.5px solid var(--line); border-radius: 20px; background: #fff; padding: 2.25rem 1.85rem; height: 100%; transition: all .25s; display: flex; flex-direction: column; }
         .plan-card:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(10, 15, 30, .07); }
-        .plan-card.featured { background: var(--ink); border-color: var(--ink); box-shadow: 0 28px 60px rgba(10, 15, 30, .22); }
+        .plan-card.featured { background: var(--ink-panel); border-color: var(--ink-panel); box-shadow: 0 28px 60px rgba(10, 15, 30, .22); }
         .plan-card.featured .plan-name, .plan-card.featured .plan-price, .plan-card.featured h5 { color: #fff; }
         .plan-card.featured .plan-desc, .plan-card.featured .plan-feats li { color: rgba(255, 255, 255, .55); }
         .plan-card.featured .plan-feats i { color: var(--emerald); }
@@ -37,7 +37,7 @@
 
         /* Comparison table */
         .comp-table { border: 1.5px solid var(--line); border-radius: 16px; overflow: hidden; background: #fff; }
-        .comp-head { display: grid; grid-template-columns: 1.6fr repeat(4, 1fr); background: var(--ink); color: #fff; font-size: .72rem; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; }
+        .comp-head { display: grid; grid-template-columns: 1.6fr repeat(4, 1fr); background: var(--ink-panel); color: #fff; font-size: .72rem; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; }
         .comp-head > div { padding: 1rem .9rem; text-align: center; }
         .comp-head > div:first-child { text-align: left; }
         .comp-head .hl { color: var(--emerald); }
@@ -316,7 +316,7 @@
                 <div class="col-lg-7">
                     <div class="row g-3 reveal">
                         <div class="col-md-6">
-                            <div class="d-flex gap-3 p-3 h-100" style="background:var(--ink);border-radius:16px;">
+                            <div class="d-flex gap-3 p-3 h-100" style="background:var(--ink-panel);border-radius:16px;">
                                 <i class="bi bi-shield-check" style="font-size:1.5rem;color:var(--emerald);"></i>
                                 <div>
                                     <h6 class="fw-bold mb-1" style="color:#fff;font-size:.95rem;">Full ZATCA Phase 2</h6>
@@ -327,7 +327,7 @@
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="d-flex gap-3 p-3 h-100" style="background:var(--ink);border-radius:16px;">
+                            <div class="d-flex gap-3 p-3 h-100" style="background:var(--ink-panel);border-radius:16px;">
                                 <i class="bi bi-translate" style="font-size:1.5rem;color:var(--emerald);"></i>
                                 <div>
                                     <h6 class="fw-bold mb-1" style="color:#fff;font-size:.95rem;">Arabic &amp; English</h6>
@@ -338,7 +338,7 @@
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="d-flex gap-3 p-3 h-100" style="background:var(--ink);border-radius:16px;">
+                            <div class="d-flex gap-3 p-3 h-100" style="background:var(--ink-panel);border-radius:16px;">
                                 <i class="bi bi-arrow-repeat" style="font-size:1.5rem;color:var(--emerald);"></i>
                                 <div>
                                     <h6 class="fw-bold mb-1" style="color:#fff;font-size:.95rem;">Backups &amp; Updates</h6>
@@ -349,7 +349,7 @@
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="d-flex gap-3 p-3 h-100" style="background:var(--ink);border-radius:16px;">
+                            <div class="d-flex gap-3 p-3 h-100" style="background:var(--ink-panel);border-radius:16px;">
                                 <i class="bi bi-chat-square-text" style="font-size:1.5rem;color:var(--emerald);"></i>
                                 <div>
                                     <h6 class="fw-bold mb-1" style="color:#fff;font-size:.95rem;">Support</h6>

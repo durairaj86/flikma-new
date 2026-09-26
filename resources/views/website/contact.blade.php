@@ -90,7 +90,7 @@
                         </div>
                     </div>
 
-                    <div class="p-4 rounded-4 reveal" style="background:var(--ink);">
+                    <div class="p-4 rounded-4 reveal" style="background:var(--ink-panel);">
                         <h3 class="fw-bold mb-3" style="color:#fff;font-size:1.05rem;">What happens next</h3>
                         <ul class="bullet-list mb-0">
                             <li><i class="bi bi-1-circle-fill"></i><span>We read your message and match you with someone who knows freight forwarding &mdash; not a generic sales rep.</span></li>
