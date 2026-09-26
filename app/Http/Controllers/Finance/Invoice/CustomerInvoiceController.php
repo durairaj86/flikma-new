@@ -942,15 +942,33 @@ class CustomerInvoiceController extends Controller
 
         $themeTemplates = [
             'stylish' => 'modules.print.format-2.print',
-            'luxury' => 'modules.print.format-3.print',
             'advance-gst-tally' => 'modules.print.format-4.print',
-            'billbook' => 'modules.print.format-5.print',
+            'bilingual' => 'modules.print.format-6.print',
+            'fastfatoora' => 'modules.print.format-7.print',
+            'ai-fatoora' => 'modules.print.format-8.print',
+            'fastfatoora-classic' => 'modules.print.format-9.print',
         ];
+
+        // Each cloned theme ships its own brand colour. A company only overrides it
+        // by deliberately picking a different swatch; the untouched app default
+        // ($appDefaultColor) is treated as "no choice" so the clone stays faithful.
+        $appDefaultColor = '#0b6aa0';
+        $themeAccents = [
+            'bilingual' => '#2FA36B',
+            'fastfatoora' => '#15803d',
+            'ai-fatoora' => '#0f2a52',
+            'fastfatoora-classic' => '#111827',
+        ];
+        $chosen = $settings->primary_color ?: null;
+        $accentColor = ($chosen && strcasecmp($chosen, $appDefaultColor) !== 0)
+            ? $chosen
+            : ($themeAccents[$settings->theme] ?? $appDefaultColor);
+
         $template = $themeTemplates[$settings->theme] ?? $themeTemplates['stylish'];
 
         return [$template, compact(
             'customerInvoice', 'descriptions', 'bank', 'company', 'jobContainers', 'jobPackages',
-            'settings', 'customerBalance', 'extraJobFields', 'extraPartyFields'
+            'settings', 'customerBalance', 'extraJobFields', 'extraPartyFields', 'accentColor'
         )];
     }
 

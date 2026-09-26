@@ -8,8 +8,8 @@
             new Salla\ZATCA\Tags\Seller($company->name),
             new Salla\ZATCA\Tags\TaxNumber($company->tax_number),
             new Salla\ZATCA\Tags\InvoiceDate(formDate($customerInvoice->invoice_date) . "T" . \Illuminate\Support\Carbon::parse($customerInvoice->created_at, 'UTC')->format('H:i:s')) . 'Z',
-            new Salla\ZATCA\Tags\InvoiceTotalAmount(amountFormat(($customerInvoice->total_amount + $customerInvoice->total_tax_amount) / $currencyRate)),
-            new Salla\ZATCA\Tags\InvoiceTaxAmount(amountFormat($customerInvoice->total_tax_amount / $currencyRate)),
+            new Salla\ZATCA\Tags\InvoiceTotalAmount(amountFormat($customerInvoice->grand_total / $currencyRate)),
+            new Salla\ZATCA\Tags\InvoiceTaxAmount(amountFormat($customerInvoice->tax_total / $currencyRate)),
         ])->render();
     @endphp
     <img src="{{ $generatedString }}" width="200" height="auto" alt="QR Code"/>

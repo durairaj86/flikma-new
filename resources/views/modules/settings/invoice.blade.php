@@ -59,24 +59,96 @@
                                                 </div>
                                                 <div class="theme-name small fw-medium mt-2 text-primary">Stylish</div>
                                             </div>
+                                        <div class="theme-container" style="width: 140px;">
+                                            <div class="theme border p-2 rounded-3 text-center" data-theme="bilingual" style="cursor:pointer;">
+                                                <div class="image-container" style="height: 80px; display:flex; align-items:center; justify-content:center;">
+                                                    <svg viewBox="0 0 100 80" width="100%" height="100%" style="max-height:100%;">
+                                                        <rect x="4" y="4" width="92" height="72" fill="#fff" stroke="#2FA36B" stroke-width="1.5"/>
+                                                        <text x="50" y="14" font-size="6.5" font-weight="700" text-anchor="middle" fill="#2FA36B">فاتورة ضريبية</text>
+                                                        <text x="50" y="21" font-size="5" text-anchor="middle" fill="#2FA36B">TAX INVOICE</text>
+                                                        <rect x="66" y="8" width="26" height="12" rx="2" fill="#2FA36B"/>
+                                                        <line x1="4" y1="25" x2="96" y2="25" stroke="#2FA36B" stroke-width="1.5"/>
+                                                        <rect x="8" y="29" width="38" height="16" rx="2" fill="none" stroke="#2FA36B" stroke-width="0.75"/>
+                                                        <rect x="54" y="29" width="38" height="16" rx="2" fill="none" stroke="#2FA36B" stroke-width="0.75"/>
+                                                        <rect x="8" y="49" width="84" height="7" fill="#2FA36B"/>
+                                                        <line x1="8" y1="60" x2="92" y2="60" stroke="#e5e7eb" stroke-width="0.5"/>
+                                                        <line x1="8" y1="66" x2="92" y2="66" stroke="#e5e7eb" stroke-width="0.5"/>
+                                                        <rect x="8" y="70" width="84" height="4" fill="#2FA36B"/>
+                                                    </svg>
+                                                </div>
+                                                <div class="theme-name small fw-medium mt-2">Bilingual</div>
+                                            </div>
                                         </div>
 
                                         <div class="theme-container" style="width: 140px;">
-                                            <div class="theme border p-2 rounded-3 text-center" data-theme="luxury" style="cursor:pointer;">
+                                            <div class="theme border p-2 rounded-3 text-center" data-theme="fastfatoora" style="cursor:pointer;">
                                                 <div class="image-container" style="height: 80px; display:flex; align-items:center; justify-content:center;">
                                                     <svg viewBox="0 0 100 80" width="100%" height="100%" style="max-height:100%;">
-                                                        <rect x="4" y="4" width="92" height="72" rx="4" fill="#fff" stroke="#0b6aa0" stroke-width="1.5"/>
-                                                        <text x="50" y="18" font-size="8" font-family="Georgia, serif" font-weight="700" text-anchor="middle" fill="#0b6aa0">TAX INVOICE</text>
-                                                        <line x1="10" y1="24" x2="90" y2="24" stroke="#0b6aa0" stroke-width="1"/>
-                                                        <rect x="8" y="30" width="38" height="18" rx="2" fill="none" stroke="#ddd" stroke-width="0.5"/>
-                                                        <rect x="54" y="30" width="38" height="18" rx="2" fill="none" stroke="#ddd" stroke-width="0.5"/>
-                                                        <rect x="8" y="52" width="84" height="6" fill="#0b6aa0"/>
-                                                        <line x1="8" y1="62" x2="92" y2="62" stroke="#eee" stroke-width="0.5"/>
-                                                        <line x1="8" y1="68" x2="92" y2="68" stroke="#eee" stroke-width="0.5"/>
+                                                        <rect x="4" y="4" width="92" height="72" fill="#fff" stroke="#15803d" stroke-width="1.5"/>
+                                                        <text x="24" y="15" font-size="7" font-weight="700" text-anchor="middle" fill="#15803d">فاتورة ضريبية</text>
+                                                        <text x="24" y="22" font-size="5.5" text-anchor="middle" fill="#15803d">TAX INVOICE</text>
+                                                        <rect x="64" y="9" width="28" height="14" rx="2" fill="#15803d"/>
+                                                        <text x="78" y="18" font-size="5" font-weight="700" text-anchor="middle" fill="#fff">INV. NO.</text>
+                                                        <rect x="8" y="28" width="84" height="7" fill="#15803d"/>
+                                                        <line x1="8" y1="38" x2="92" y2="38" stroke="#e5e7eb" stroke-width="0.5"/>
+                                                        <line x1="8" y1="44" x2="92" y2="44" stroke="#e5e7eb" stroke-width="0.5"/>
+                                                        <rect x="52" y="50" width="40" height="14" rx="2" fill="none" stroke="#15803d" stroke-width="0.75"/>
+                                                        <rect x="72" y="52" width="14" height="10" fill="#111" opacity="0.85"/>
+                                                        <rect x="8" y="70" width="84" height="4" fill="#15803d"/>
                                                     </svg>
                                                 </div>
-                                                <div class="theme-name small fw-medium mt-2">Luxury</div>
+                                                <div class="theme-name small fw-medium mt-2">FastFatoora Style</div>
                                             </div>
+                                        </div>
+
+                                        <div class="theme-container" style="width: 140px;">
+                                            <div class="theme border p-2 rounded-3 text-center" data-theme="ai-fatoora" style="cursor:pointer;">
+                                                <div class="image-container" style="height: 80px; display:flex; align-items:center; justify-content:center;">
+                                                    <svg viewBox="0 0 100 80" width="100%" height="100%" style="max-height:100%;">
+                                                        <rect x="4" y="4" width="92" height="72" fill="#fff" stroke="#0f2a52" stroke-width="1.5"/>
+                                                        <rect x="4" y="4" width="56" height="18" fill="#0f2a52"/>
+                                                        <text x="32" y="12" font-size="4.5" fill="#fff" text-anchor="middle" opacity="0.85">TAX INVOICE فاتورة ضريبية</text>
+                                                        <text x="32" y="19" font-size="5.5" font-weight="700" fill="#fff" text-anchor="middle">COMPANY NAME</text>
+                                                        <rect x="66" y="6" width="28" height="16" fill="none" stroke="#0f2a52" stroke-width="0.75"/>
+                                                        <rect x="4" y="22" width="92" height="1.5" fill="#b8860b"/>
+                                                        <rect x="8" y="27" width="40" height="18" fill="none" stroke="#0f2a52" stroke-width="0.75"/>
+                                                        <rect x="8" y="27" width="40" height="2" fill="#0f2a52"/>
+                                                        <rect x="54" y="27" width="38" height="18" fill="none" stroke="#0f2a52" stroke-width="0.75"/>
+                                                        <rect x="54" y="27" width="38" height="2" fill="#0f2a52"/>
+                                                        <rect x="8" y="49" width="84" height="7" fill="#0f2a52"/>
+                                                        <line x1="8" y1="60" x2="92" y2="60" stroke="#e5e7eb" stroke-width="0.5"/>
+                                                        <line x1="8" y1="66" x2="92" y2="66" stroke="#e5e7eb" stroke-width="0.5"/>
+                                                        <line x1="4" y1="72" x2="96" y2="72" stroke="#0f2a52" stroke-width="1.5"/>
+                                                    </svg>
+                                                </div>
+                                                <div class="theme-name small fw-medium mt-2">AI Fatoora</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="theme-container" style="width: 140px;">
+                                            <div class="theme border p-2 rounded-3 text-center" data-theme="fastfatoora-classic" style="cursor:pointer;">
+                                                <div class="image-container" style="height: 80px; display:flex; align-items:center; justify-content:center;">
+                                                    <svg viewBox="0 0 100 80" width="100%" height="100%" style="max-height:100%;">
+                                                        <rect x="4" y="4" width="92" height="72" fill="#fff" stroke="#0d9488" stroke-width="1.5"/>
+                                                        <text x="8" y="14" font-size="7" font-weight="700" letter-spacing="0.5" fill="#0d9488">TAX INVOICE</text>
+                                                        <text x="8" y="20" font-size="4.5" fill="#9ca3af">فاتورة ضريبية</text>
+                                                        <rect x="8" y="23" width="84" height="2.5" fill="#0d9488"/>
+                                                        <line x1="8" y1="30" x2="48" y2="30" stroke="#e5e7eb" stroke-width="0.75"/>
+                                                        <line x1="54" y1="30" x2="92" y2="30" stroke="#e5e7eb" stroke-width="0.75"/>
+                                                        <line x1="8" y1="42" x2="92" y2="42" stroke="#0d9488" stroke-width="1.25"/>
+                                                        <line x1="8" y1="48" x2="92" y2="48" stroke="#f3f4f6" stroke-width="0.5"/>
+                                                        <line x1="8" y1="55" x2="92" y2="55" stroke="#f3f4f6" stroke-width="0.5"/>
+                                                        <line x1="52" y1="61" x2="92" y2="61" stroke="#0d9488" stroke-width="1.25"/>
+                                                        <line x1="8" y1="70" x2="92" y2="70" stroke="#e5e7eb" stroke-width="0.5"/>
+                                                        <rect x="8" y="73" width="84" height="2" fill="#0d9488"/>
+                                                    </svg>
+                                                </div>
+                                                <div class="theme-name small fw-medium mt-2">FastFatoora Classic Print</div>
+                                            </div>
+                                        </div>
+
+                                        </div>
+
                                         </div>
 
                                         <div class="theme-container" style="width: 140px;">
@@ -99,20 +171,6 @@
                                             </div>
                                         </div>
 
-                                        <div class="theme-container" style="width: 140px;">
-                                            <div class="theme border p-2 rounded-3 text-center" data-theme="billbook" style="cursor:pointer;">
-                                                <div class="image-container" style="height: 80px; display:flex; align-items:center; justify-content:center;">
-                                                    <svg viewBox="0 0 100 80" width="100%" height="100%" style="max-height:100%;">
-                                                        <rect x="4" y="4" width="92" height="72" rx="6" fill="#fff" stroke="#e5e7eb" stroke-width="1"/>
-                                                        <rect x="60" y="10" width="32" height="12" rx="3" fill="#0b6aa0"/>
-                                                        <text x="76" y="18.5" font-size="6" font-weight="700" text-anchor="middle" fill="#fff">INVOICE</text>
-                                                        <rect x="8" y="28" width="84" height="12" rx="3" fill="#f9fafb"/>
-                                                        <rect x="8" y="44" width="40" height="24" rx="3" fill="none" stroke="#e5e7eb" stroke-width="0.75"/>
-                                                        <rect x="52" y="44" width="40" height="24" rx="3" fill="none" stroke="#e5e7eb" stroke-width="0.75"/>
-                                                    </svg>
-                                                </div>
-                                                <div class="theme-name small fw-medium mt-2">Billbook</div>
-                                            </div>
                                         </div>
 
                                         <div class="theme-container" style="width: 140px;">
