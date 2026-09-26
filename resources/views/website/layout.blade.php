@@ -441,12 +441,9 @@
     <div class="container pt-3">
         <div class="row g-4 pb-4" style="border-bottom:1px solid rgba(255,255,255,.07);">
             <div class="col-lg-4">
-                <a class="d-inline-flex align-items-center gap-2 text-decoration-none mb-3" href="{{ url('/') }}">
-                    <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <rect width="32" height="32" rx="9" fill="#00c97b"/>
-                        <path d="M10 16h13M16.5 9.5 23 16l-6.5 6.5" stroke="#0a0f1e" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    <span style="font-weight:800;font-size:1.4rem;letter-spacing:-.4px;color:#fff;">Flik<em style="font-style:normal;color:var(--emerald);">ma</em></span>
+                <a class="d-inline-block text-decoration-none mb-3" href="{{ url('/') }}"
+                   style="background:#fff;border-radius:14px;padding:.6rem .95rem;line-height:0;box-shadow:0 6px 18px rgba(0,0,0,.18);">
+                    <img src="{{ asset('img/logos/Flikma_logo.svg') }}" alt="Flikma" width="130" class="d-block">
                 </a>
                 <p style="font-size:.85rem;color:rgba(255,255,255,.35);max-width:280px;line-height:1.65;">
                     AI-powered cloud ERP for freight forwarding and 3PL — with ZATCA Phase 2 e-invoicing, AI expense capture and document scanning built in. Aligned with Saudi Vision 2030.
@@ -467,6 +464,7 @@
                     <li class="mb-2"><a href="{{ url('/features') }}#ai" style="font-size:.85rem;color:rgba(255,255,255,.45);">AI Document Scanning</a></li>
                     <li class="mb-2"><a href="{{ url('/features') }}#expenses" style="font-size:.85rem;color:rgba(255,255,255,.45);">AI Expense Capture</a></li>
                     <li class="mb-2"><a href="{{ url('/features') }}#zatca" style="font-size:.85rem;color:rgba(255,255,255,.45);">ZATCA Phase 2</a></li>
+                    <li class="mb-2"><a href="{{ url('/features') }}#integrations" style="font-size:.85rem;color:rgba(255,255,255,.45);">Integrations</a></li>
                 </ul>
             </div>
 

@@ -48,6 +48,15 @@
         /* Code-ish accounting block, borrowed from the shared language */
         .entry-box { font-family: 'Courier New', monospace; background: var(--ink-panel); color: #94a3b8; padding: 1.1rem; border-radius: 12px; font-size: .78rem; line-height: 1.75; }
 
+        /* Affirmative fit chips — replaces the old "what Flikma is not" block */
+        .fit-chip {
+            display: flex; align-items: flex-start; gap: .5rem;
+            font-size: .85rem; color: var(--ink-muted); line-height: 1.5;
+            background: #fff; border: 1.5px solid var(--line);
+            border-radius: 12px; padding: .6rem .75rem; height: 100%;
+        }
+        .fit-chip i { color: var(--emerald-dim); font-size: .85rem; margin-top: 3px; flex-shrink: 0; }
+        .fit-chip strong { color: var(--ink); font-weight: 600; }
         /* Sticky bottom module bar */
         .module-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 900; background: rgba(255, 255, 255, .92); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border-top: 1px solid var(--line); }
         .module-bar .nav { flex-wrap: nowrap; overflow-x: auto; gap: .25rem; scrollbar-width: none; }
@@ -68,10 +77,9 @@
                     <div class="hero-pill mb-3"><i class="bi bi-grid-1x2-fill"></i> Platform Features</div>
                     <h1 class="mb-3">Nine modules. One thread through the shipment.</h1>
                     <p class="mb-4" style="max-width:560px;">
-                        Flikma is deliberately not a warehouse system and does not pretend to be one.
-                        It covers the entire freight forwarding operation &mdash; from the first customer enquiry
-                        to the ZATCA-cleared invoice and the collected riyal &mdash; with AI handling the paperwork
-                        in between.
+                        Flikma covers the entire freight forwarding operation &mdash; from the first customer
+                        enquiry to the ZATCA-cleared invoice and the collected riyal &mdash; with AI handling
+                        the paperwork in between.
                     </p>
                     <div class="d-flex flex-wrap gap-3">
                         <a href="{{ route('register') }}" class="btn-hero-primary">Start Free Trial <i class="bi bi-arrow-right"></i></a>
@@ -486,25 +494,142 @@
         </div>
     </section>
 
-    <!-- ════════════════ NOT INCLUDED — HONESTY BLOCK ════════════════ -->
-    <section class="fk-section bg-white">
+    <!-- ════════════════ CONNECT WITH YOUR EXISTING SYSTEMS ════════════════ -->
+    <section id="integrations" class="fk-section bg-white">
         <div class="container">
-            <div class="rounded-4 p-4 p-md-5 reveal" style="background:var(--surface);border:1.5px dashed var(--line-strong);">
-                <div class="row g-4 align-items-center">
-                    <div class="col-lg-8">
-                        <div class="section-label">Straight with you</div>
-                        <h3 class="mt-2 mb-3" style="font-size:1.5rem;font-weight:800;">What Flikma is not</h3>
-                        <p class="mb-0" style="color:var(--ink-muted);line-height:1.75;">
-                            Flikma has no warehouse module, no stock picking, no put-away, and no barcode
-                            receiving dock. If you need a distribution centre or a manufacturing warehouse,
-                            you want a WMS &mdash; and we will tell you so rather than sell you a bad fit.
-                            If you move freight across borders for a living, everything you actually need is here.
+
+            <div class="row justify-content-center text-center mb-5">
+                <div class="col-lg-8">
+                    <div class="sec-icon mx-auto mb-3" style="background:var(--emerald-soft);color:var(--emerald-dim);">
+                        <i class="bi bi-diagram-3"></i>
+                    </div>
+                    <h2 class="mb-3" style="font-size:clamp(1.5rem,2.6vw,2rem);font-weight:800;line-height:1.15;">
+                        Connect with Your Existing Systems
+                    </h2>
+                    <p class="mb-0 mx-auto" style="color:var(--ink-muted);line-height:1.75;max-width:640px;">
+                        Flikma integrates with the government portals, ERPs, and business tools used across
+                        Saudi Arabia. Nothing gets re-keyed, and nothing falls between two systems.
+                    </p>
+                </div>
+            </div>
+
+            <div class="row g-4">
+
+                {{-- ZATCA Fatoora --}}
+                <div class="col-lg-6">
+                    <div class="panel h-100 reveal">
+                        <div class="d-flex align-items-start gap-3 mb-3">
+                            <div class="feat-icon-box flex-shrink-0" style="background:var(--emerald);color:var(--ink);box-shadow:0 8px 18px rgba(0,201,123,.3);">
+                                <i class="bi bi-shield-lock-fill"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-1" style="font-size:1.05rem;">ZATCA Fatoora</h5>
+                                <div style="font-size:.72rem;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:var(--emerald-dim);">
+                                    E-invoicing &amp; clearance
+                                </div>
+                            </div>
+                        </div>
+
+                        <p style="color:var(--ink-muted);line-height:1.75;font-size:.9rem;">
+                            Native e-invoicing against the Fatoora gateway. Invoices are built from the job,
+                            signed, stamped and submitted without leaving Flikma &mdash; and the clearance
+                            result is stored on the document for good.
+                        </p>
+
+                        <ul class="bullet-list mt-3 mb-0">
+                            <li><i class="bi bi-check-circle-fill"></i><span>Phase 2 onboarding: CSR, compliance CSID, test sweep, production CSID</span></li>
+                            <li><i class="bi bi-check-circle-fill"></i><span>UBL 2.1 XML with ECDSA/CAdES signing and XAdES signed properties</span></li>
+                            <li><i class="bi bi-check-circle-fill"></i><span>Mandatory buyer-side QR generated on every invoice</span></li>
+                            <li><i class="bi bi-check-circle-fill"></i><span>Real-time clearance and deferred reporting, with full submission history</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                {{-- Fasah --}}
+                <div class="col-lg-6">
+                    <div class="panel h-100 reveal">
+                        <div class="d-flex align-items-start gap-3 mb-3">
+                            <div class="feat-icon-box flex-shrink-0" style="background:var(--cyan);color:#fff;box-shadow:0 8px 18px rgba(6,182,212,.3);">
+                                <i class="bi bi-clipboard2-pulse"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-1" style="font-size:1.05rem;">Fasah</h5>
+                                <div style="font-size:.72rem;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:#0891b2;">
+                                    Food safety &amp; health compliance
+                                </div>
+                            </div>
+                        </div>
+
+                        <p style="color:var(--ink-muted);line-height:1.75;font-size:.9rem;">
+                            For forwarders moving food, health and pharmaceutical cargo. Shipment records,
+                            documents and handling records are pushed to Fasah from the job, so compliance
+                            evidence is produced as the shipment moves rather than reconstructed at audit.
+                        </p>
+
+                        <ul class="bullet-list mt-3 mb-0">
+                            <li><i class="bi bi-check-circle-fill"></i><span>Compliance records created from the shipment, not typed in a second system</span></li>
+                            <li><i class="bi bi-check-circle-fill"></i><span>Temperature and handling logs attached to the same job record</span></li>
+                            <li><i class="bi bi-check-circle-fill"></i><span>Document status tracked on the job so gaps surface before an inspection</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row justify-content-center mt-4">
+                <div class="col-lg-8">
+                    <div class="d-flex align-items-start gap-3 p-4 rounded-4 reveal" style="background:var(--surface);border:1.5px solid var(--line);">
+                        <i class="bi bi-info-circle-fill flex-shrink-0 mt-1" style="color:var(--emerald-dim);"></i>
+                        <p class="mb-0" style="font-size:.86rem;color:var(--ink-muted);line-height:1.7;">
+                            Running an ERP, a bank portal or a custom system alongside Flikma? We publish a
+                            REST API and webhooks, and our team will map your existing feeds during
+                            implementation. <a href="{{ url('/contact') }}" class="fw-semibold text-emerald">Tell us what you run</a>
+                            and we will tell you honestly what connects today.
                         </p>
                     </div>
-                    <div class="col-lg-4">
-                        <a href="{{ url('/contact') }}" class="btn-cta-main w-100 justify-content-center">
-                            Talk to a logistics specialist <i class="bi bi-arrow-right"></i>
-                        </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════ BUILT FOR FORWARDERS — FIT + CTA ════════════════ -->
+    <section class="fk-section bg-white">
+        <div class="container">
+            <div class="rounded-4 p-4 p-md-5 reveal" style="background:var(--surface);border:1.5px solid var(--line);">
+                <div class="row g-5 align-items-center">
+                    <div class="col-lg-7">
+                        <div class="section-label">Who it&rsquo;s for</div>
+                        <h3 class="mt-2 mb-3" style="font-size:1.5rem;font-weight:800;">Built for freight forwarders and 3PLs</h3>
+                        <p class="mb-4" style="color:var(--ink-muted);line-height:1.75;">
+                            Flikma covers the whole job, from first enquiry to settled invoice &mdash; the work your
+                            team actually does, in one system instead of seven browser tabs. Here is what that
+                            looks like day to day.
+                        </p>
+                        <div class="row g-2">
+                            <div class="col-sm-6"><div class="fit-chip"><i class="bi bi-check-circle-fill"></i><span>Enquiries, quotes &amp; rate cards</span></div></div>
+                            <div class="col-sm-6"><div class="fit-chip"><i class="bi bi-check-circle-fill"></i><span>Sea, air and land jobs end to end</span></div></div>
+                            <div class="col-sm-6"><div class="fit-chip"><i class="bi bi-check-circle-fill"></i><span>Bills of lading, certificates &amp; customs paperwork</span></div></div>
+                            <div class="col-sm-6"><div class="fit-chip"><i class="bi bi-check-circle-fill"></i><span>Customer billing, receivables &amp; margin per job</span></div></div>
+                            <div class="col-sm-6"><div class="fit-chip"><i class="bi bi-check-circle-fill"></i><span>ZATCA-compliant e-invoicing on every invoice</span></div></div>
+                            <div class="col-sm-6"><div class="fit-chip"><i class="bi bi-check-circle-fill"></i><span>Payroll for your Saudi workforce</span></div></div>
+                            <div class="col-sm-6"><div class="fit-chip"><i class="bi bi-check-circle-fill"></i><span>AI that reads your documents and captures expenses</span></div></div>
+                            <div class="col-sm-6"><div class="fit-chip"><i class="bi bi-check-circle-fill"></i><span>Live margin, volume and activity reporting</span></div></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-5">
+                        <div class="text-center p-4 p-md-5 rounded-4 h-100 d-flex flex-column justify-content-center" style="background:#fff;border:1.5px solid var(--line);">
+                            <div class="mb-3"><i class="bi bi-headset" style="font-size:2.1rem;color:var(--emerald-dim);"></i></div>
+                            <h5 class="fw-bold mb-2" style="font-size:1.1rem;">See it against your own workflow</h5>
+                            <p class="mb-4" style="font-size:.86rem;color:var(--ink-muted);line-height:1.7;">
+                                A walkthrough with a logistics specialist, using a real forwarder&rsquo;s flow
+                                rather than a canned demo script.
+                            </p>
+                            <a href="{{ url('/contact') }}" class="btn-cta-main w-100 justify-content-center">
+                                Book a Demo <i class="bi bi-arrow-right"></i>
+                            </a>
+                            <p class="mb-0 mt-3" style="font-size:.75rem;color:var(--ink-ghost);">
+                                No obligation. Cancel any time.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -538,9 +663,9 @@
                             <i class="bi" :class="open === 1 ? 'bi-dash-circle text-emerald' : 'bi-plus-circle text-ink-ghost'"></i>
                         </button>
                         <div class="faq-answer" :class="open === 1 && 'open'">
-                            <p>No. Flikma is a logistics and freight forwarding ERP. It deliberately does not include
-                               warehouse management, stock picking or put-away. We are happy to integrate with the
-                               WMS you already use if you run one.</p>
+                            <p>Flikma is a logistics and freight forwarding ERP, covering the complete operation
+                               from enquiry through job execution, documents, billing and ZATCA-compliant invoicing.
+                               If you also run a warehouse, we integrate with the system you already have.</p>
                         </div>
                     </div>
 
