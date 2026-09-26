@@ -2,8 +2,9 @@
     <!-- Sidebar Brand -->
     <div class="sidebar-brand d-flex align-items-center justify-content-between">
         <a class="navbar-brand d-flex align-items-center me-2" href="{{ route('dashboard') }}">
-            <i class="bi bi-lightning-charge-fill text-primary fs-4 me-2"></i>
-            <span class="fw-bold tracking-tight text-white text-start sidebar-brand-text">Flikma</span>
+            <span class="sidebar-logo-chip d-inline-flex align-items-center justify-content-center flex-shrink-0">
+                <img src="{{ asset('img/logos/Flikma_logo.svg') }}" alt="Flikma" class="sidebar-logo-img">
+            </span>
         </a>
         <button type="button" id="sidebarToggleBtn" class="sidebar-toggle-btn btn btn-sm border-0 p-1"
                 title="Collapse menu" aria-label="Toggle sidebar menu">
@@ -676,8 +677,41 @@
         transition: width 0.2s ease, min-width 0.2s ease, max-width 0.2s ease;
     }
 
+    /* Brand logo — white chip so the blue/teal mark stays legible on the dark rail */
+    .sidebar-logo-chip {
+        background: #fff;
+        border-radius: 9px;
+        padding: 4px 7px;
+        line-height: 0;
+        margin-right: .5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, .22);
+    }
+    .sidebar-logo-img {
+        width: 92px;
+        height: auto;
+        display: block;
+    }
+
     #sidebar-container.sidebar-collapsed .sidebar-brand {
         justify-content: center;
+    }
+
+    /* Collapsed: shrink the chip to just the mark so it fits the 68px rail */
+    #sidebar-container.sidebar-collapsed .sidebar-logo-chip {
+        margin-right: 0;
+        padding: 4px 5px;
+    }
+    #sidebar-container.sidebar-collapsed .sidebar-logo-img {
+        width: 30px;
+    }
+
+    /* Hover-to-preview restores the full wordmark */
+    #sidebar-container.sidebar-collapsed:hover .sidebar-logo-chip {
+        margin-right: .5rem;
+        padding: 4px 7px;
+    }
+    #sidebar-container.sidebar-collapsed:hover .sidebar-logo-img {
+        width: 92px;
     }
 
     #sidebar-container.sidebar-collapsed .sidebar-brand-text,
