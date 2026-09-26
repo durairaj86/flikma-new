@@ -22,7 +22,7 @@
 
     <style>
         /* Page-scoped composition on top of the shared design system. */
-        #hero { min-height: 88vh; padding: 70px 0 60px; position: relative; overflow: hidden; background: #fff; }
+        #hero { padding: 128px 0 0; position: relative; overflow: hidden; background: #fff; }
         .hero-bg-grid {
             position: absolute; inset: 0; z-index: 0;
             background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
@@ -45,23 +45,51 @@
             letter-spacing: .8px; text-transform: uppercase; padding: .4rem .9rem; border-radius: 50px;
         }
 
-        /* Shipment board mockup */
-        .ship-mock { border-radius: 20px; box-shadow: 0 30px 70px rgba(10,15,30,.13); overflow: hidden; border: 1px solid var(--line); background: #fff; animation: floatY 6s ease-in-out infinite; }
-        .mock-topbar { background: var(--ink); padding: 1rem 1.5rem; }
-        .ship-row { display: grid; grid-template-columns: 1.5fr .9fr .8fr .9fr; gap: .5rem; align-items: center; padding: .7rem 1.5rem; border-bottom: 1px solid var(--grid-line); font-size: .76rem; }
-        .ship-row:last-of-type { border-bottom: 0; }
-        .ship-head { font-size: .64rem; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--ink-ghost); background: var(--surface); }
-        .ship-row .ref { font-weight: 700; font-size: .8rem; color: var(--ink); }
-        .ship-row .route { color: var(--ink-muted); font-size: .73rem; }
+        /* Full-bleed product shot */
+        .hero-shot { position: relative; z-index: 1; margin-top: 3.5rem; }
+        .hero-shot-inner { position: relative; width: min(1280px, 94vw); margin-inline: auto; }
+        .app-frame { background: #fff; border: 1px solid var(--line); border-radius: 20px 20px 0 0; box-shadow: 0 40px 90px rgba(10,15,30,.16); overflow: hidden; text-align: left; }
+        .app-chrome { display: flex; align-items: center; gap: .45rem; padding: .7rem 1rem; background: var(--surface); border-bottom: 1px solid var(--line); }
+        .app-chrome .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .app-url { margin-left: .8rem; font-size: .72rem; color: var(--ink-ghost); background: #fff; border: 1px solid var(--line); border-radius: 50px; padding: .2rem .8rem; }
+        .app-body { padding: 1.1rem; display: grid; gap: 1rem; }
+        .app-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: .8rem; }
+        .kpi { border: 1px solid var(--line); border-radius: 14px; padding: .85rem 1rem; background: #fff; }
+        .kpi-label { font-size: .66rem; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--ink-ghost); }
+        .kpi-val { font-size: 1.5rem; font-weight: 800; color: var(--ink); line-height: 1.2; margin: .2rem 0 .15rem; }
+        .kpi-val small { font-size: .8rem; font-weight: 700; color: var(--ink-ghost); }
+        .kpi-delta { font-size: .7rem; font-weight: 700; display: flex; align-items: center; gap: .3rem; }
+        .kpi-delta.up  { color: var(--emerald-dim); }
+        .kpi-delta.ok  { color: var(--ink-muted); }
+        .app-main { display: grid; grid-template-columns: 1.85fr 1fr; gap: 1rem; }
+        .app-table { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+        .app-row { display: grid; grid-template-columns: 1.6fr 1fr .9fr 1.1fr; gap: .6rem; align-items: center; padding: .62rem 1rem; border-bottom: 1px solid var(--grid-line); font-size: .78rem; }
+        .app-row:last-child { border-bottom: 0; }
+        .app-head { font-size: .64rem; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--ink-ghost); background: var(--surface); }
+        .app-row .ref { font-weight: 700; color: var(--ink); }
+        .app-row .client { color: var(--ink-ghost); font-size: .72rem; }
+        .app-row .lane { color: var(--ink-muted); font-size: .76rem; }
+        .status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: .45rem; }
+        .tone-ok   { background: var(--emerald); }
+        .tone-warn { background: var(--gold); }
+        .tone-info { background: var(--blue); }
+        .tone-doc  { background: var(--violet); }
+        .app-rail { display: grid; gap: .8rem; align-content: start; }
+        .rail-block { border: 1px solid var(--line); border-radius: 14px; padding: .9rem 1rem; background: var(--surface); }
+        .rail-title { font-size: .78rem; font-weight: 700; color: var(--ink); margin-bottom: .55rem; display: flex; align-items: center; gap: .45rem; }
+        .rail-title i { color: var(--emerald-dim); }
+        .rail-line { font-size: .74rem; color: var(--ink-muted); display: flex; align-items: center; gap: .4rem; }
+        .rail-line.muted { color: var(--ink-ghost); margin-top: .2rem; }
+        .rail-item { font-size: .74rem; color: var(--ink-muted); display: flex; align-items: center; gap: .4rem; margin-bottom: .35rem; }
+        .rail-tag { margin-left: auto; font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--emerald-dim); background: var(--emerald-soft); border-radius: 50px; padding: .1rem .45rem; }
+
+        .float-dot { width: 36px; height: 36px; border-radius: 10px; background: var(--emerald-glow); display: flex; align-items: center; justify-content: center; color: var(--emerald-dim); }
+
         .mode-chip { display: inline-flex; align-items: center; gap: .3rem; font-size: .66rem; font-weight: 700; padding: .2rem .5rem; border-radius: 50px; }
         .mode-air  { background: rgba(58,107,255,.1);  color: var(--blue); }
         .mode-sea  { background: rgba(6,182,212,.12);  color: #0891b2; }
         .mode-road { background: rgba(124,58,237,.1);  color: var(--violet); }
 
-        .float-badge { position: absolute; background: #fff; border-radius: 14px; padding: .7rem 1rem; box-shadow: 0 16px 40px rgba(10,15,30,.1); border: 1px solid var(--line); z-index: 2; }
-        .float-badge-1 { bottom: -18px; left: -26px; display: flex; align-items: center; gap: .6rem; }
-        .float-badge-2 { top: -18px; right: -18px; min-width: 150px; }
-        .float-dot { width: 36px; height: 36px; border-radius: 10px; background: var(--emerald-glow); display: flex; align-items: center; justify-content: center; color: var(--emerald-dim); }
         .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--emerald); display: inline-block; animation: pulse 1.5s ease-in-out infinite; }
 
         /* AI scan card */
@@ -113,11 +141,22 @@
         .plan-feats li { display: flex; align-items: flex-start; gap: .55rem; font-size: .85rem; color: var(--ink-muted); margin-bottom: .6rem; }
         .plan-feats i { color: var(--emerald-dim); font-size: .9rem; margin-top: 2px; }
 
+        @media (max-width: 1199.98px) {
+            .app-kpis { grid-template-columns: repeat(2, 1fr); }
+        }
         @media (max-width: 991.98px) {
-            .ship-row { grid-template-columns: 1.4fr .8fr .8fr; padding: .7rem 1rem; }
-            .ship-col-hide { display: none; }
-            .float-badge-1 { left: 0; bottom: -14px; }
-            .float-badge-2 { right: 0; top: -14px; }
+            #hero { padding-top: 100px; }
+            .hero-shot { margin-top: 2.5rem; }
+            .app-main { grid-template-columns: 1fr; }
+            .app-rail { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 575.98px) {
+            #hero { padding-top: 88px; }
+            .hero-title br { display: none; }
+            .app-kpis { grid-template-columns: 1fr; }
+            .app-rail { grid-template-columns: 1fr; }
+            .app-row { grid-template-columns: 1.5fr .9fr; row-gap: .3rem; }
+            .app-row > span:nth-child(3) { display: none; }
         }
     </style>
 
@@ -127,98 +166,107 @@
         <div class="hero-orb hero-orb-1"></div>
         <div class="hero-orb hero-orb-2"></div>
 
-        <div class="container position-relative" style="z-index:1;">
-            <div class="row align-items-center g-5">
-                <div class="col-lg-6">
-                    <div class="vision-badge mb-4 anim-hero">
-                        <i class="bi bi-stars"></i> ZATCA Phase 2 Ready &middot; Saudi Vision 2030
+        <div class="container position-relative text-center" style="z-index:1;">
+            <div class="vision-badge mb-4 anim-hero d-inline-flex">
+                <i class="bi bi-stars"></i> ZATCA Phase 2 Ready &middot; Saudi Vision 2030
+            </div>
+
+            <h1 class="hero-title mb-4 anim-hero delay-1">
+                Run your entire forwarding business<br>
+                on <span class="underline-gold">one screen</span>
+            </h1>
+
+            <p class="anim-hero delay-2 mx-auto mb-5" style="font-size:1.08rem;line-height:1.75;color:var(--ink-muted);max-width:660px;">
+                Enquiries, jobs, bills of lading, invoices, collections and payroll &mdash; one cloud platform
+                for freight forwarders across Saudi Arabia, Bahrain and the UAE. AI reads your documents,
+                ZATCA clearance is automatic, and every number is live.
+            </p>
+
+            <div class="d-flex flex-wrap justify-content-center gap-3 mb-4 anim-hero delay-3">
+                <a href="{{ route('register') }}" class="btn-hero-primary">Start Free Trial <i class="bi bi-arrow-right"></i></a>
+                <a href="{{ url('/contact') }}" class="btn-hero-outline">Book a Live Demo <i class="bi bi-calendar-check"></i></a>
+            </div>
+
+            <div class="d-flex flex-wrap align-items-center justify-content-center gap-3 anim-hero delay-4">
+                <div class="d-flex">
+                    <span class="trust-avatar">RS</span><span class="trust-avatar">AK</span>
+                    <span class="trust-avatar">MA</span><span class="trust-avatar">FH</span>
+                </div>
+                <small class="text-ink-ghost">Trusted by freight forwarders across <strong class="text-dark">Saudi Arabia, Bahrain &amp; UAE</strong></small>
+            </div>
+        </div>
+
+        <!-- Full-bleed product shot -->
+        <div class="hero-shot">
+            <div class="hero-shot-inner">
+                <div class="app-frame anim-hero delay-3">
+                    <div class="app-chrome">
+                        <span class="dot" style="background:#ff5f57;"></span>
+                        <span class="dot" style="background:#ffbd2e;"></span>
+                        <span class="dot" style="background:#28c840;"></span>
+                        <span class="app-url">app.flikma.com/operations</span>
                     </div>
 
-                    <h1 class="hero-title mb-4 anim-hero delay-1">
-                        <span class="text-emerald">AI Logistics ERP</span><br>
-                        for freight forwarders<br>
-                        in <span class="underline-gold">Saudi &amp; the GCC</span>
-                    </h1>
-
-                    <p class="anim-hero delay-2 mb-4" style="font-size:1.05rem;line-height:1.7;color:var(--ink-muted);max-width:490px;">
-                        Run enquiries, jobs, bills of lading, invoices and collections from one cloud platform.
-                        Flikma reads your documents with AI, captures expenses from a photo, and clears every
-                        invoice through ZATCA automatically.
-                    </p>
-
-                    <div class="d-flex flex-wrap gap-3 mb-4 anim-hero delay-3">
-                        <a href="{{ route('register') }}" class="btn-hero-primary">Start Free Trial <i class="bi bi-arrow-right"></i></a>
-                        <a href="{{ url('/contact') }}" class="btn-hero-outline">Book a Live Demo <i class="bi bi-calendar-check"></i></a>
-                    </div>
-
-                    <div class="d-flex flex-wrap align-items-center gap-3 anim-hero delay-4">
-                        <div class="d-flex">
-                            <span class="trust-avatar">RS</span><span class="trust-avatar">AK</span>
-                            <span class="trust-avatar">MA</span><span class="trust-avatar">FH</span>
+                    <div class="app-body">
+                        <div class="app-kpis">
+                            <div class="kpi">
+                                <div class="kpi-label">Live jobs</div>
+                                <div class="kpi-val">148</div>
+                                <div class="kpi-delta up"><i class="bi bi-arrow-up-short"></i> 12 today</div>
+                            </div>
+                            <div class="kpi">
+                                <div class="kpi-label">Invoiced this month</div>
+                                <div class="kpi-val">1.42M <small>SAR</small></div>
+                                <div class="kpi-delta up"><i class="bi bi-arrow-up-short"></i> 18.4%</div>
+                            </div>
+                            <div class="kpi">
+                                <div class="kpi-label">ZATCA cleared</div>
+                                <div class="kpi-val">99.9<small>%</small></div>
+                                <div class="kpi-delta ok"><span class="pulse-dot"></span> Live sync</div>
+                            </div>
+                            <div class="kpi">
+                                <div class="kpi-label">AI documents parsed</div>
+                                <div class="kpi-val">3,806</div>
+                                <div class="kpi-delta up"><i class="bi bi-stars"></i> Zero retyping</div>
+                            </div>
                         </div>
-                        <small class="text-ink-ghost">Trusted by freight forwarders across <strong class="text-dark">Saudi Arabia, Bahrain &amp; UAE</strong></small>
+
+                        <div class="app-main">
+                            <div class="app-table">
+                                <div class="app-row app-head">
+                                    <span>Reference</span><span>Lane</span><span>Mode</span><span>Status</span>
+                                </div>
+                                @foreach ([
+                                    ['JOB-2026-0418', 'Al Mouil Marine', 'JED &rarr; RUH', 'sea',  'Cleared',    'ok'],
+                                    ['JOB-2026-0421', 'NAC Cargo',       'DMM &rarr; BAH', 'air',  'In transit', 'warn'],
+                                    ['JOB-2026-0427', 'Al Sharq Logistics', 'RUH &rarr; DXB', 'road', 'Arriving', 'info'],
+                                    ['JOB-2026-0430', 'Gulf Sea Lines',  'JED &rarr; SHA', 'sea',  'Docs ready', 'doc'],
+                                ] as [$ref, $client, $lane, $mode, $status, $tone])
+                                    <div class="app-row">
+                                        <span><span class="ref">{{ $ref }}</span><br><span class="client">{{ $client }}</span></span>
+                                        <span class="lane">{{ $lane }}</span>
+                                        <span><span class="mode-chip mode-{{ $mode }}"><i class="bi bi-{{ $mode === 'sea' ? 'water' : ($mode === 'air' ? 'airplane' : 'truck') }}"></i> {{ ucfirst($mode) }}</span></span>
+                                        <span><span class="status-dot tone-{{ $tone }}"></span>{{ $status }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            <div class="app-rail">
+                                <div class="rail-block">
+                                    <div class="rail-title"><i class="bi bi-shield-lock"></i> ZATCA Phase 2</div>
+                                    <div class="rail-line"><span class="pulse-dot"></span> Clearance engine online</div>
+                                    <div class="rail-line muted">UBL 2.1 &middot; QR &middot; cryptographic stamp</div>
+                                </div>
+                                <div class="rail-block">
+                                    <div class="rail-title"><i class="bi bi-stars"></i> AI queue</div>
+                                    <div class="rail-item"><i class="bi bi-file-earmark-text"></i> BL-8821.pdf <span class="rail-tag">parsed</span></div>
+                                    <div class="rail-item"><i class="bi bi-receipt"></i> fuel-receipt.jpg <span class="rail-tag">coded</span></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-lg-6">
-                    <div class="position-relative px-4 pb-4 pt-3">
-                        <div class="float-badge float-badge-2">
-                            <div style="font-size:.68rem;color:var(--ink-ghost);margin-bottom:2px;">ZATCA Clearance</div>
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="pulse-dot"></span>
-                                <span class="fw-bold" style="font-size:.95rem;">Live Reporting</span>
-                            </div>
-                        </div>
-
-                        <div class="ship-mock">
-                            <div class="mock-topbar d-flex justify-content-between align-items-start">
-                                <div>
-                                    <div class="fw-bold" style="font-size:.8rem;color:#fff;">SHIPMENT CONTROL TOWER</div>
-                                    <div class="mt-1" style="font-size:.65rem;color:rgba(255,255,255,.35);">Riyadh Branch &middot; 14 live jobs &middot; Jul 2026</div>
-                                </div>
-                                <div class="text-end">
-                                    <span class="badge rounded-pill fw-bold" style="background:var(--emerald);color:var(--ink);font-size:.63rem;">ALL ON TRACK</span>
-                                </div>
-                            </div>
-
-                            <div class="ship-row ship-head">
-                                <span>Reference</span><span>Lane</span><span>Mode</span><span class="ship-col-hide">Status</span>
-                            </div>
-                            <div class="ship-row">
-                                <span><span class="ref">JOB-2026-0418</span><br><span class="route">Al Mouil Marine</span></span>
-                                <span class="route">JED &rarr; RUH</span>
-                                <span><span class="mode-chip mode-sea"><i class="bi bi-water"></i> Sea</span></span>
-                                <span class="ship-col-hide"><span class="mode-chip" style="background:var(--emerald-soft);color:var(--emerald-dim);"><i class="bi bi-check-circle"></i> Cleared</span></span>
-                            </div>
-                            <div class="ship-row">
-                                <span><span class="ref">JOB-2026-0421</span><br><span class="route">NAC Cargo</span></span>
-                                <span class="route">DMM &rarr; BAH</span>
-                                <span><span class="mode-chip mode-air"><i class="bi bi-airplane"></i> Air</span></span>
-                                <span class="ship-col-hide"><span class="mode-chip" style="background:rgba(244,185,66,.15);color:#b4801a;"><i class="bi bi-hourglass-split"></i> In transit</span></span>
-                            </div>
-                            <div class="ship-row">
-                                <span><span class="ref">JOB-2026-0427</span><br><span class="route">Al Sharq Logistics</span></span>
-                                <span class="route">RUH &rarr; DXB</span>
-                                <span><span class="mode-chip mode-road"><i class="bi bi-truck"></i> Road</span></span>
-                                <span class="ship-col-hide"><span class="mode-chip" style="background:rgba(58,107,255,.1);color:var(--blue);"><i class="bi bi-box-arrow-in-down"></i> Arriving</span></span>
-                            </div>
-                            <div class="ship-row">
-                                <span><span class="ref">JOB-2026-0430</span><br><span class="route">Gulf Sea Lines</span></span>
-                                <span class="route">JED &rarr; SHA</span>
-                                <span><span class="mode-chip mode-sea"><i class="bi bi-water"></i> Sea</span></span>
-                                <span class="ship-col-hide"><span class="mode-chip" style="background:rgba(124,58,237,.1);color:var(--violet);"><i class="bi bi-file-earmark-text"></i> Doc pending</span></span>
-                            </div>
-                        </div>
-
-                        <div class="float-badge float-badge-1">
-                            <div class="float-dot"><i class="bi bi-graph-up-arrow"></i></div>
-                            <div>
-                                <div class="fw-bold" style="font-size:.95rem;line-height:1.1;">−18 hrs</div>
-                                <div style="font-size:.7rem;color:var(--ink-ghost);">admin time per invoice</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </header>
