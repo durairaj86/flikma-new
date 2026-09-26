@@ -1,1175 +1,716 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('website.layout')
 
-<head>
+@section('title', 'Flikma — AI Logistics Software for Freight Forwarders | ZATCA Phase 2 Ready')
+@section('meta_description', 'Flikma is the AI logistics ERP for freight forwarders and 3PLs in Saudi Arabia. Run enquiries, jobs, bills of lading, AI-scanned expenses and ZATCA Phase 2 e-invoicing from one cloud platform. No warehouse module — pure logistics.')
+@section('meta_keywords', 'logistics software Saudi Arabia, freight forwarding software, 3PL ERP GCC, ZATCA Phase 2 e-invoicing, AI document scanning, AI expense capture, logistics software Bahrain, freight software Dubai')
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Flikma is cloud logistics and freight forwarding ERP software built for Saudi Arabia, Bahrain and Dubai/UAE — manage jobs, invoicing, ZATCA Phase 2 e-invoicing, Bill of Lading and payroll from one platform.">
-    <meta name="keywords" content="logistics software Saudi Arabia, freight forwarding software KSA, ZATCA e-invoicing software, logistics ERP Bahrain, freight management software Dubai, logistics software UAE, freight forwarder software GCC, Bill of Lading software Saudi Arabia">
+@section('content')
 
-    <title>Flikma - Logistics & Freight Forwarding ERP Software for Saudi Arabia, Bahrain & Dubai</title>
+    @php
+        // ── Section anchors shared with the navbar, footer and Features page ──
+        $modules = [
+            ['id' => 'operations', 'icon' => 'bi-globe-americas',      'accent' => 'var(--emerald)', 'tint' => 'var(--emerald-soft)',  'title' => 'Freight Operations',        'desc' => 'Enquiry to delivery — air, sea and road shipments tracked end to end with live milestones.'],
+            ['id' => 'bl',         'icon' => 'bi-file-earmark-text',    'accent' => 'var(--navy)',     'tint' => 'rgba(11,23,54,.07)',      'title' => 'Bills of Lading',           'desc' => 'Airway bills, sea waybills and road waybills printed to carrier specification.'],
+            ['id' => 'finance',    'icon' => 'bi-receipt',              'accent' => 'var(--blue)',     'tint' => 'rgba(58,107,255,.09)',    'title' => 'Billing & Finance',         'desc' => 'Proforma, customer and supplier invoicing, payments, collections and credit notes.'],
+            ['id' => 'ai',         'icon' => 'bi-stars',                'accent' => 'var(--indigo)',   'tint' => 'rgba(79,70,229,.09)',     'title' => 'AI Document Scanning',      'desc' => 'Scan any supplier invoice or bill of lading and let AI read the fields for you.'],
+            ['id' => 'expenses',   'icon' => 'bi-wallet2',              'accent' => 'var(--red)',      'tint' => 'rgba(239,68,68,.09)',     'title' => 'AI Expense Capture',        'desc' => 'Photograph a receipt on your phone — AI extracts the vendor, VAT and GL code.'],
+            ['id' => 'zatca',      'icon' => 'bi-shield-check',         'accent' => 'var(--emerald-dim)','tint' => 'var(--emerald-soft)',     'title' => 'ZATCA Phase 2',             'desc' => 'UBL 2.1 XML, ECDSA signing, QR stamping and real-time clearance out of the box.'],
+            ['id' => 'payroll',    'icon' => 'bi-people-fill',          'accent' => 'var(--violet)',   'tint' => 'rgba(124,58,237,.09)',    'title' => 'Payroll & Attendance',      'desc' => 'Salaries, WPS-ready exports, attendance and employee loans posted to the ledger.'],
+            ['id' => 'reports',    'icon' => 'bi-graph-up-arrow',       'accent' => 'var(--cyan)',     'tint' => 'rgba(6,182,212,.09)',     'title' => 'Reports & Analytics',       'desc' => 'Trial balance, aging, job profitability and tax reports — live, not month-end.'],
+        ];
+    @endphp
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Page-scoped composition on top of the shared design system. */
+        #hero { min-height: 88vh; padding: 70px 0 60px; position: relative; overflow: hidden; background: #fff; }
+        .hero-bg-grid {
+            position: absolute; inset: 0; z-index: 0;
+            background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 48px 48px;
+            mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 40%, transparent 100%);
+            -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 40%, transparent 100%);
+        }
+        .hero-orb { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; }
+        .hero-orb-1 { width: 560px; height: 560px; background: radial-gradient(circle, rgba(0,201,123,.14) 0%, transparent 70%); top: -100px; right: -140px; }
+        .hero-orb-2 { width: 400px; height: 400px; background: radial-gradient(circle, rgba(58,107,255,.08) 0%, transparent 70%); bottom: -60px; left: -100px; }
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+        .hero-title { font-size: clamp(2.3rem, 4.6vw, 3.6rem); font-weight: 800; line-height: 1.08; }
+        .underline-gold { position: relative; display: inline-block; }
+        .underline-gold::after { content: ''; position: absolute; left: 0; right: 0; bottom: 2px; height: 4px; background: var(--gold); border-radius: 2px; opacity: .75; }
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+        .vision-badge {
+            display: inline-flex; align-items: center; gap: .5rem;
+            background: var(--emerald-soft); border: 1px solid rgba(0,201,123,.3);
+            color: var(--emerald-dim); font-size: .72rem; font-weight: 700;
+            letter-spacing: .8px; text-transform: uppercase; padding: .4rem .9rem; border-radius: 50px;
+        }
 
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        /* Shipment board mockup */
+        .ship-mock { border-radius: 20px; box-shadow: 0 30px 70px rgba(10,15,30,.13); overflow: hidden; border: 1px solid var(--line); background: #fff; animation: floatY 6s ease-in-out infinite; }
+        .mock-topbar { background: var(--ink); padding: 1rem 1.5rem; }
+        .ship-row { display: grid; grid-template-columns: 1.5fr .9fr .8fr .9fr; gap: .5rem; align-items: center; padding: .7rem 1.5rem; border-bottom: 1px solid var(--grid-line); font-size: .76rem; }
+        .ship-row:last-of-type { border-bottom: 0; }
+        .ship-head { font-size: .64rem; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--ink-ghost); background: var(--surface); }
+        .ship-row .ref { font-weight: 700; font-size: .8rem; color: var(--ink); }
+        .ship-row .route { color: var(--ink-muted); font-size: .73rem; }
+        .mode-chip { display: inline-flex; align-items: center; gap: .3rem; font-size: .66rem; font-weight: 700; padding: .2rem .5rem; border-radius: 50px; }
+        .mode-air  { background: rgba(58,107,255,.1);  color: var(--blue); }
+        .mode-sea  { background: rgba(6,182,212,.12);  color: #0891b2; }
+        .mode-road { background: rgba(124,58,237,.1);  color: var(--violet); }
 
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+        .float-badge { position: absolute; background: #fff; border-radius: 14px; padding: .7rem 1rem; box-shadow: 0 16px 40px rgba(10,15,30,.1); border: 1px solid var(--line); z-index: 2; }
+        .float-badge-1 { bottom: -18px; left: -26px; display: flex; align-items: center; gap: .6rem; }
+        .float-badge-2 { top: -18px; right: -18px; min-width: 150px; }
+        .float-dot { width: 36px; height: 36px; border-radius: 10px; background: var(--emerald-glow); display: flex; align-items: center; justify-content: center; color: var(--emerald-dim); }
+        .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--emerald); display: inline-block; animation: pulse 1.5s ease-in-out infinite; }
 
-    <link href="css/website/style.css" rel="stylesheet">
+        /* AI scan card */
+        .ai-feat-card { border: 1.5px solid rgba(79,70,229,.2); border-radius: 18px; background: linear-gradient(155deg,#fbfaff 0%,#fff 55%); position: relative; overflow: hidden; }
+        .ai-feat-card::before { content: ''; position: absolute; top: -60px; right: -60px; width: 240px; height: 240px; background: radial-gradient(circle, rgba(79,70,229,.18) 0%, transparent 70%); pointer-events: none; }
+        .ai-pill { display: inline-flex; align-items: center; gap: .4rem; background: rgba(79,70,229,.1); border: 1px solid rgba(79,70,229,.25); color: var(--indigo); font-size: .68rem; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; padding: .3rem .8rem; border-radius: 50px; }
 
-    <link href="css/website/responsive.css" rel="stylesheet">
+        /* Scan overlay animation for the AI document card */
+        .scan-doc { position: relative; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 1.1rem; overflow: hidden; }
+        .scan-line { position: absolute; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--indigo), transparent); animation: scanSweep 2.4s ease-in-out infinite; }
+        @keyframes scanSweep { 0% { top: 4px; opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { top: calc(100% - 4px); opacity: 0; } }
+        .scan-field { display: flex; justify-content: space-between; gap: .5rem; padding: .38rem 0; border-bottom: 1px dashed var(--line); font-size: .74rem; }
+        .scan-field:last-of-type { border-bottom: 0; }
+        .scan-field .k { color: var(--ink-ghost); }
+        .scan-field .v { font-weight: 600; color: var(--ink); text-align: right; }
+        .scan-field .v.ok { color: var(--emerald-dim); }
 
+        /* Stats */
+        .stats-bar { background: var(--ink); }
+        .stat-val { font-size: 2.1rem; font-weight: 800; color: #fff; line-height: 1.1; letter-spacing: -.03em; }
+        .stat-val span { color: var(--emerald); }
+        .stat-label { font-size: .8rem; color: rgba(255,255,255,.45); }
 
+        /* Dark compliance section */
+        .dark-check li { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.15rem; color: rgba(255,255,255,.7); font-size: .92rem; line-height: 1.6; }
+        .dark-check i { color: var(--emerald); font-size: 1.05rem; margin-top: 3px; }
+        .flow-step-item { display: flex; align-items: flex-start; gap: 1rem; position: relative; }
+        .flow-step-item:not(:last-child)::after { content: ''; position: absolute; left: 12px; top: 30px; bottom: -16px; width: 1px; background: rgba(255,255,255,.1); }
+        .flow-num { width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; background: var(--emerald); color: var(--ink); font-size: .65rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+        .ledger-card { background: var(--ink); border-radius: 14px; padding: 1.25rem; }
+        .ledger-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: .5rem; padding: .45rem 0; border-bottom: 1px solid rgba(255,255,255,.05); font-size: .76rem; }
+        .ledger-row:last-child { border-bottom: 0; }
+        .ledger-row.head { color: rgba(255,255,255,.4); font-size: .66rem; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; border-bottom-color: rgba(255,255,255,.15); }
 
-</head>
+        /* Pricing teaser */
+        .pricing-card { border: 1.5px solid var(--line); border-radius: 20px; background: #fff; padding: 2rem 1.75rem; height: 100%; transition: all .25s; }
+        .pricing-card:hover { box-shadow: 0 20px 50px rgba(10,15,30,.07); transform: translateY(-4px); }
+        .pricing-card.featured { background: var(--ink); border-color: var(--ink); transform: scale(1.03); box-shadow: 0 28px 60px rgba(10,15,30,.22); }
+        .pricing-card.featured .plan-name, .pricing-card.featured .plan-price { color: #fff; }
+        .pricing-card.featured .plan-desc, .pricing-card.featured .plan-feats li { color: rgba(255,255,255,.55); }
+        .pricing-card.featured .plan-feats li i { color: var(--emerald); }
+        .popular-chip { display: inline-block; background: var(--emerald); color: var(--ink); font-size: .65rem; font-weight: 800; letter-spacing: .4px; text-transform: uppercase; padding: .3rem .8rem; border-radius: 50px; margin-bottom: .9rem; }
+        .plan-price { font-size: 2.4rem; font-weight: 800; letter-spacing: -.04em; line-height: 1; }
+        .plan-price small { font-size: .85rem; font-weight: 500; color: var(--ink-ghost); letter-spacing: 0; }
+        .pricing-card.featured .plan-price small { color: rgba(255,255,255,.4); }
+        .plan-name { font-size: 1.05rem; font-weight: 700; }
+        .plan-desc { font-size: .85rem; color: var(--ink-muted); }
+        .plan-feats { list-style: none; padding: 0; margin: 1.25rem 0 0; }
+        .plan-feats li { display: flex; align-items: flex-start; gap: .55rem; font-size: .85rem; color: var(--ink-muted); margin-bottom: .6rem; }
+        .plan-feats i { color: var(--emerald-dim); font-size: .9rem; margin-top: 2px; }
 
-<body>
+        @media (max-width: 991.98px) {
+            .ship-row { grid-template-columns: 1.4fr .8fr .8fr; padding: .7rem 1rem; }
+            .ship-col-hide { display: none; }
+            .float-badge-1 { left: 0; bottom: -14px; }
+            .float-badge-2 { right: 0; top: -14px; }
+        }
+    </style>
 
+    <!-- ════════════════ HERO ════════════════ -->
+    <header id="hero">
+        <div class="hero-bg-grid"></div>
+        <div class="hero-orb hero-orb-1"></div>
+        <div class="hero-orb hero-orb-2"></div>
 
-<!-- ==========================
-Navbar
-=========================== -->
+        <div class="container position-relative" style="z-index:1;">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6">
+                    <div class="vision-badge mb-4 anim-hero">
+                        <i class="bi bi-stars"></i> ZATCA Phase 2 Ready &middot; Saudi Vision 2030
+                    </div>
 
-@include('website.partials.nav')
-
-
-<!-- =====================
-Hero
-====================== -->
-
-<section class="hero-section">
-
-    <div class="container">
-
-        <div class="row align-items-center gy-5">
-
-            <div class="col-lg-6">
-
-                <div class="hero-content">
-
-
-<span class="hero-badge">
-
-Modern Cloud ERP
-
-</span>
-
-
-                    <h1>
-
-                        The Complete Logistics &
-                        Freight Management Platform
-
+                    <h1 class="hero-title mb-4 anim-hero delay-1">
+                        <span class="text-emerald">AI Logistics ERP</span><br>
+                        for freight forwarders<br>
+                        in <span class="underline-gold">Saudi &amp; the GCC</span>
                     </h1>
 
-                    <p>
-
-                        Manage Freight Forwarding,
-                        Transportation,
-                        Custom Clearance,
-                        Billing,
-                        Bill of Lading,
-                        Payroll
-                        and ZATCA e-Invoicing
-                        from one powerful system.
-
+                    <p class="anim-hero delay-2 mb-4" style="font-size:1.05rem;line-height:1.7;color:var(--ink-muted);max-width:490px;">
+                        Run enquiries, jobs, bills of lading, invoices and collections from one cloud platform.
+                        Flikma reads your documents with AI, captures expenses from a photo, and clears every
+                        invoice through ZATCA automatically.
                     </p>
 
-
-                    <div class="hero-buttons">
-
-                        <a href="{{ route('website.contact') }}"
-                           class="btn btn-primary btn-lg rounded-pill">
-
-                            Request Demo
-
-                        </a>
-
-                        <a href="#"
-                           class="btn btn-outline-dark btn-lg rounded-pill">
-
-                            Watch Video
-
-                        </a>
-
+                    <div class="d-flex flex-wrap gap-3 mb-4 anim-hero delay-3">
+                        <a href="{{ route('register') }}" class="btn-hero-primary">Start Free Trial <i class="bi bi-arrow-right"></i></a>
+                        <a href="{{ url('/contact') }}" class="btn-hero-outline">Book a Live Demo <i class="bi bi-calendar-check"></i></a>
                     </div>
 
-
-
-                    <div class="hero-features mt-5">
-
-                        <div class="row">
-
-                            <div class="col-6">
-
-                                <div class="feature">
-
-                                    <i class="bi bi-check-circle-fill"></i>
-
-                                    <span>
-
-Cloud Based
-
-</span>
-
-                                </div>
-
-                            </div>
-
-                            <div class="col-6">
-
-                                <div class="feature">
-
-                                    <i class="bi bi-check-circle-fill"></i>
-
-                                    <span>
-
-Mobile Friendly
-
-</span>
-
-                                </div>
-
-                            </div>
-
-                            <div class="col-6">
-
-                                <div class="feature">
-
-                                    <i class="bi bi-check-circle-fill"></i>
-
-                                    <span>
-
-Saudi ZATCA Ready
-
-</span>
-
-                                </div>
-
-                            </div>
-
-                            <div class="col-6">
-
-                                <div class="feature">
-
-                                    <i class="bi bi-check-circle-fill"></i>
-
-                                    <span>
-
-Multi Company
-
-</span>
-
-                                </div>
-
-                            </div>
-
-                            <div class="col-6">
-
-                                <div class="feature">
-
-                                    <i class="bi bi-check-circle-fill"></i>
-
-                                    <span>
-
-AI-Powered
-
-</span>
-
-                                </div>
-
-                            </div>
-
-                            <div class="col-6">
-
-                                <div class="feature">
-
-                                    <i class="bi bi-check-circle-fill"></i>
-
-                                    <span>
-
-ZATCA Phase 2 Integration
-
-</span>
-
-                                </div>
-
-                            </div>
-
+                    <div class="d-flex flex-wrap align-items-center gap-3 anim-hero delay-4">
+                        <div class="d-flex">
+                            <span class="trust-avatar">RS</span><span class="trust-avatar">AK</span>
+                            <span class="trust-avatar">MA</span><span class="trust-avatar">FH</span>
                         </div>
-
+                        <small class="text-ink-ghost">Trusted by freight forwarders across <strong class="text-dark">Saudi Arabia, Bahrain &amp; UAE</strong></small>
                     </div>
-
                 </div>
 
-            </div>
-
-
-
-
-            <div class="col-lg-6">
-
-                <div class="hero-images">
-
-
-
-                    <div class="hero-main-image">
-
-                        <img src="img/hero/dashboard.svg"
-                             class="img-fluid">
-
-                    </div>
-
-
-
-                    <div class="hero-image hero-img-one">
-
-                        <img src="img/hero/ship.svg"
-                             class="img-fluid">
-
-                    </div>
-
-
-
-                    <div class="hero-image hero-img-two">
-
-                        <img src="img/hero/truck.svg"
-                             class="img-fluid">
-
-                    </div>
-
-
-
-                    <div class="floating-card">
-
-                        <div class="icon">
-
-                            <i class="bi bi-patch-check-fill"></i>
-
+                <div class="col-lg-6">
+                    <div class="position-relative px-4 pb-4 pt-3">
+                        <div class="float-badge float-badge-2">
+                            <div style="font-size:.68rem;color:var(--ink-ghost);margin-bottom:2px;">ZATCA Clearance</div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="pulse-dot"></span>
+                                <span class="fw-bold" style="font-size:.95rem;">Live Reporting</span>
+                            </div>
                         </div>
 
-                        <div>
+                        <div class="ship-mock">
+                            <div class="mock-topbar d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="fw-bold" style="font-size:.8rem;color:#fff;">SHIPMENT CONTROL TOWER</div>
+                                    <div class="mt-1" style="font-size:.65rem;color:rgba(255,255,255,.35);">Riyadh Branch &middot; 14 live jobs &middot; Jul 2026</div>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge rounded-pill fw-bold" style="background:var(--emerald);color:var(--ink);font-size:.63rem;">ALL ON TRACK</span>
+                                </div>
+                            </div>
 
-                            <h5>
+                            <div class="ship-row ship-head">
+                                <span>Reference</span><span>Lane</span><span>Mode</span><span class="ship-col-hide">Status</span>
+                            </div>
+                            <div class="ship-row">
+                                <span><span class="ref">JOB-2026-0418</span><br><span class="route">Al Mouil Marine</span></span>
+                                <span class="route">JED &rarr; RUH</span>
+                                <span><span class="mode-chip mode-sea"><i class="bi bi-water"></i> Sea</span></span>
+                                <span class="ship-col-hide"><span class="mode-chip" style="background:var(--emerald-soft);color:var(--emerald-dim);"><i class="bi bi-check-circle"></i> Cleared</span></span>
+                            </div>
+                            <div class="ship-row">
+                                <span><span class="ref">JOB-2026-0421</span><br><span class="route">NAC Cargo</span></span>
+                                <span class="route">DMM &rarr; BAH</span>
+                                <span><span class="mode-chip mode-air"><i class="bi bi-airplane"></i> Air</span></span>
+                                <span class="ship-col-hide"><span class="mode-chip" style="background:rgba(244,185,66,.15);color:#b4801a;"><i class="bi bi-hourglass-split"></i> In transit</span></span>
+                            </div>
+                            <div class="ship-row">
+                                <span><span class="ref">JOB-2026-0427</span><br><span class="route">Al Sharq Logistics</span></span>
+                                <span class="route">RUH &rarr; DXB</span>
+                                <span><span class="mode-chip mode-road"><i class="bi bi-truck"></i> Road</span></span>
+                                <span class="ship-col-hide"><span class="mode-chip" style="background:rgba(58,107,255,.1);color:var(--blue);"><i class="bi bi-box-arrow-in-down"></i> Arriving</span></span>
+                            </div>
+                            <div class="ship-row">
+                                <span><span class="ref">JOB-2026-0430</span><br><span class="route">Gulf Sea Lines</span></span>
+                                <span class="route">JED &rarr; SHA</span>
+                                <span><span class="mode-chip mode-sea"><i class="bi bi-water"></i> Sea</span></span>
+                                <span class="ship-col-hide"><span class="mode-chip" style="background:rgba(124,58,237,.1);color:var(--violet);"><i class="bi bi-file-earmark-text"></i> Doc pending</span></span>
+                            </div>
+                        </div>
 
-                                ZATCA Phase 2 Ready
+                        <div class="float-badge float-badge-1">
+                            <div class="float-dot"><i class="bi bi-graph-up-arrow"></i></div>
+                            <div>
+                                <div class="fw-bold" style="font-size:.95rem;line-height:1.1;">−18 hrs</div>
+                                <div style="font-size:.7rem;color:var(--ink-ghost);">admin time per invoice</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
 
-                            </h5>
+    <!-- ════════════════ STATS ════════════════ -->
+    <section class="stats-bar">
+        <div class="container py-5">
+            <div class="row text-center g-4">
+                <div class="col-6 col-lg-3">
+                    <div class="stat-val"><span>99.9%</span></div>
+                    <div class="stat-label">ZATCA clearance success rate</div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="stat-val">6 <span>sec</span></div>
+                    <div class="stat-label">Average document scan &amp; field extraction</div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="stat-val">70<span>%</span></div>
+                    <div class="stat-label">Less time spent typing supplier bills</div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="stat-val">3 <span>countries</span></div>
+                    <div class="stat-label">Saudi Arabia, Bahrain &amp; UAE</div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-                            <p>
+    <!-- ════════════════ AI — THE DIFFERENTIATOR ════════════════ -->
+    <section class="fk-section bg-white">
+        <div class="container">
+            <div class="section-head text-center mb-5 reveal">
+                <div class="section-label">AI That Reads Your Paperwork</div>
+                <h2>Stop retyping documents. Flikma reads them.</h2>
+                <p>Forwarders live on paperwork. Supplier bills, customs entries, delivery orders and receipts pile up every single day.
+                   Flikma's AI reads them the moment they land and structures them straight into your books.</p>
+            </div>
 
-                                Electronic Invoice Integration
-
+            <div class="row g-4 align-items-stretch">
+                <div class="col-lg-7 reveal">
+                    <div class="ai-feat-card p-4 p-md-5 h-100">
+                        <div class="position-relative">
+                            <span class="ai-pill"><i class="bi bi-stars"></i> AI Document Scanning</span>
+                            <h3 class="mt-3 mb-3" style="font-size:1.6rem;font-weight:800;">Upload once. The form fills itself.</h3>
+                            <p class="mb-4" style="color:var(--ink-muted);font-size:.98rem;line-height:1.75;">
+                                Drop in a supplier invoice, airway bill, sea waybill or bill of lading. Flikma extracts the
+                                invoice number, dates, vendor, line items, totals and VAT number, then maps them onto the
+                                right GL accounts and the right logistics service codes.
                             </p>
 
+                            <div class="scan-doc">
+                                <div class="scan-line"></div>
+                                <div class="d-flex align-items-center gap-2 mb-3 pb-2" style="border-bottom:1px solid var(--line);">
+                                    <i class="bi bi-file-earmark-pdf" style="font-size:1.4rem;color:var(--red);"></i>
+                                    <div style="line-height:1.2;">
+                                        <div style="font-weight:700;font-size:.82rem;">AL-NOBA TRANSPORT CO. — INV-88214</div>
+                                        <div style="font-size:.68rem;color:var(--ink-ghost);">scanning.pdf &middot; 412 KB</div>
+                                    </div>
+                                    <span class="mode-chip ms-auto" style="background:rgba(79,70,229,.1);color:var(--indigo);"><i class="bi bi-stars"></i> AI</span>
+                                </div>
+                                <div class="scan-field"><span class="k">Invoice No.</span><span class="v ok">INV-88214 <i class="bi bi-check-circle-fill" style="color:var(--emerald);font-size:.7rem;"></i></span></div>
+                                <div class="scan-field"><span class="k">Invoice Date</span><span class="v ok">2026-07-14 <i class="bi bi-check-circle-fill" style="color:var(--emerald);font-size:.7rem;"></i></span></div>
+                                <div class="scan-field"><span class="k">Supplier VAT No.</span><span class="v ok">310022393500003</span></div>
+                                <div class="scan-field"><span class="k">Freight &amp; Handling</span><span class="v">8,400.00 SAR</span></div>
+                                <div class="scan-field"><span class="k">VAT 15%</span><span class="v">1,260.00 SAR</span></div>
+                                <div class="scan-field"><span class="k">Grand Total</span><span class="v ok">9,660.00 SAR</span></div>
+                                <div class="d-flex align-items-center gap-2 mt-3 pt-2" style="border-top:1px dashed var(--line);font-size:.72rem;color:var(--ink-ghost);">
+                                    <i class="bi bi-magic"></i> Matched to account <strong style="color:var(--ink);">Freight Expense &mdash; Sea Freight</strong>
+                                </div>
+                            </div>
                         </div>
-
                     </div>
-
-
                 </div>
 
-            </div>
+                <div class="col-lg-5">
+                    <div class="d-flex flex-column gap-4 h-100">
+                        <div class="feat-card p-4 reveal">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="feat-icon-box" style="background:rgba(239,68,68,.09);color:var(--red);"><i class="bi bi-receipt-cutoff"></i></div>
+                                <div>
+                                    <h5 class="feat-title mb-1">AI Expense Capture</h5>
+                                    <p class="mb-0 small" style="color:var(--ink-muted);line-height:1.65;">
+                                        Photograph a fuel receipt, a courier charge or a customs fee. AI reads the vendor,
+                                        the amount and the VAT, then posts it to the correct expense head with the
+                                        receipt attached. No timesheets of manual entry.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
 
+                        <div class="feat-card p-4 reveal">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="feat-icon-box" style="background:rgba(79,70,229,.09);color:var(--indigo);"><i class="bi bi-diagram-3"></i></div>
+                                <div>
+                                    <h5 class="feat-title mb-1">Reads more than invoices</h5>
+                                    <p class="mb-0 small" style="color:var(--ink-muted);line-height:1.65;">
+                                        Airway bills, sea waybills, bills of lading, customs declarations and packing lists
+                                        are all parsable — including multi-page tables and handwriting on delivery notes.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="feat-card p-4 reveal">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="feat-icon-box" style="background:var(--emerald-soft);color:var(--emerald-dim);"><i class="bi bi-boxes"></i></div>
+                                <div>
+                                    <h5 class="feat-title mb-1">Your master data, not a black box</h5>
+                                    <p class="mb-0 small" style="color:var(--ink-muted);line-height:1.65;">
+                                        Flikma suggests chart-of-accounts and logistics service codes from your own data,
+                                        so what it learns is reusable across every quotation, job and invoice.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-4 rounded-4 reveal" style="background:var(--ink);">
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="float-dot"><i class="bi bi-shield-lock"></i></span>
+                                <p class="mb-0" style="font-size:.82rem;color:rgba(255,255,255,.6);line-height:1.6;">
+                                    Documents are processed in an isolated queue and never used to train shared models.
+                                    Your freight data stays yours.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+    </section>
 
-    </div>
-
-</section>
-
-
-
-<!-- ZATCA Insight Section -->
-
-<section class="zatca-insight-section py-5">
-
-    <div class="container">
-
-        <div class="text-center mb-5">
-
-            <span class="section-tag">
-                ZATCA PHASE 2
-            </span>
-
-            <h2 class="section-title mt-3">
-                E-Invoicing Compliance Isn't Optional Anymore
-            </h2>
-
-            <p class="section-desc mx-auto">
-                Saudi Arabia's ZATCA e-invoicing regulation is being rolled out to businesses in waves.
-                Here's what every freight forwarder and logistics company should know before their
-                integration date arrives.
-            </p>
-
-        </div>
-
-        <div class="row g-4">
-
-            <div class="col-lg-3 col-md-6">
-
-                <div class="why-card">
-
-                    <i class="bi bi-calendar2-check"></i>
-
-                    <h5>Phased Rollout</h5>
-
-                    <p>
-                        ZATCA notifies each taxpayer group of its Phase 2 (Integration Phase)
-                        date at least six months in advance, so businesses can plan ahead.
-                    </p>
-
-                </div>
-
+    <!-- ════════════════ MODULES ════════════════ -->
+    <section class="fk-section" id="modules">
+        <div class="container">
+            <div class="section-head text-center mb-5 reveal">
+                <div class="section-label">One Platform</div>
+                <h2>Every module a freight forwarder actually needs</h2>
+                <p>No warehouse module, no stock picking, no bloat. Flikma is built end to end for the
+                   enquiry &rarr; quotation &rarr; shipment &rarr; invoice &rarr; collection lifecycle.</p>
             </div>
 
-            <div class="col-lg-3 col-md-6">
-
-                <div class="why-card">
-
-                    <i class="bi bi-link-45deg"></i>
-
-                    <h5>Direct System Integration</h5>
-
-                    <p>
-                        Invoicing systems must integrate with ZATCA's platform to generate
-                        compliant XML invoices carrying a QR code and digital signature.
-                    </p>
-
-                </div>
-
-            </div>
-
-            <div class="col-lg-3 col-md-6">
-
-                <div class="why-card">
-
-                    <i class="bi bi-clock-history"></i>
-
-                    <h5>Strict Reporting Windows</h5>
-
-                    <p>
-                        Simplified invoices must be reported within 24 hours of issuance, while
-                        standard tax invoices require clearance before reaching the buyer.
-                    </p>
-
-                </div>
-
-            </div>
-
-            <div class="col-lg-3 col-md-6">
-
-                <div class="why-card">
-
-                    <i class="bi bi-shield-exclamation"></i>
-
-                    <h5>Cost of Non-Compliance</h5>
-
-                    <p>
-                        Missing an integration wave or generating non-compliant invoices puts
-                        your VAT reporting — and your operations — at risk.
-                    </p>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <div class="text-center mt-5">
-
-            <p class="section-desc mx-auto mb-4">
-                Flikma generates ZATCA-compliant invoices automatically — XML, QR code, digital
-                signature and audit trail included — so your team stays focused on freight,
-                not paperwork.
-            </p>
-
-            <a href="{{ url('/register') }}" class="btn btn-primary rounded-pill px-4 py-3 fw-bold me-2">
-                Start Free Trial
-            </a>
-
-            <a href="{{ route('website.contact') }}" class="btn btn-outline-dark rounded-pill px-4 py-3 fw-bold">
-                Talk to Us About ZATCA
-            </a>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-
-<!-- Statistics Section Starts in index-p2.html -->
-<!-- =========================================
-Statistics
-========================================= -->
-
-<section class="workflow-section py-5">
-
-    <div class="container">
-
-        <div class="text-center mb-5">
-
-            <span class="section-tag">
-                HOW IT WORKS
-            </span>
-
-            <h2 class="section-title mt-3">
-                From Enquiry To Payment — One Connected Workflow
-            </h2>
-
-            <p class="section-desc mx-auto">
-                Every quotation, job, invoice and payment in Flikma is linked to the record before it,
-                so your team spends less time re-entering data and more time moving cargo.
-            </p>
-
-        </div>
-
-        <div class="row g-4">
-
-            <div class="col-lg col-md-6">
-
-                <div class="workflow-step">
-
-                    <div class="workflow-step-number">1</div>
-
-                    <h5>Enquiry & Quotation</h5>
-
-                    <p>Capture customer enquiries and convert them into itemized quotations in a few clicks.</p>
-
-                </div>
-
-            </div>
-
-            <div class="col-lg col-md-6">
-
-                <div class="workflow-step">
-
-                    <div class="workflow-step-number">2</div>
-
-                    <h5>Job Creation</h5>
-
-                    <p>Approved quotations become live jobs with costing, documents and status tracking.</p>
-
-                </div>
-
-            </div>
-
-            <div class="col-lg col-md-6">
-
-                <div class="workflow-step">
-
-                    <div class="workflow-step-number">3</div>
-
-                    <h5>Invoicing</h5>
-
-                    <p>Generate customer and supplier invoices directly from job data — no duplicate entry.</p>
-
-                </div>
-
-            </div>
-
-            <div class="col-lg col-md-6">
-
-                <div class="workflow-step">
-
-                    <div class="workflow-step-number">4</div>
-
-                    <h5>Payments & Collections</h5>
-
-                    <p>Record payments and collections against invoices, with automatic ledger posting.</p>
-
-                </div>
-
-            </div>
-
-            <div class="col-lg col-md-6">
-
-                <div class="workflow-step">
-
-                    <div class="workflow-step-number">5</div>
-
-                    <h5>Reports</h5>
-
-                    <p>Trial balance, ageing, job profitability and more — always in sync with your operational data.</p>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- =========================================
-Solutions
-========================================= -->
-
-<section class="solutions-section py-5">
-
-    <div class="container">
-
-        <div class="text-center mb-5">
-
-            <span class="section-tag">
-                OUR SOLUTIONS
-            </span>
-
-            <h2 class="section-title mt-3">
-                One Platform For Every Part Of Your Logistics Business
-            </h2>
-
-            <p class="section-desc">
-                From the first enquiry to the final report &mdash; six connected
-                modules, not six different tools.
-            </p>
-
-        </div>
-
-        <div class="row g-4">
-
-            <div class="col-lg-4 col-md-6">
-
-                <div class="solution-card h-100">
-
-                    <div class="icon">
-                        <i class="bi bi-cart"></i>
+            <div class="row g-4">
+                @foreach ($modules as $m)
+                    <div class="col-md-6 col-lg-3">
+                        <a href="{{ url('/features') }}#{{ $m['id'] }}" class="feat-card p-4 d-block h-100 reveal">
+                            <div class="feat-icon-box mb-3" style="background:{{ $m['tint'] }};color:{{ $m['accent'] }};">
+                                <i class="bi {{ $m['icon'] }}"></i>
+                            </div>
+                            <h6 class="feat-title mb-2">{{ $m['title'] }}</h6>
+                            <p class="mb-0 small" style="color:var(--ink-muted);line-height:1.6;">{{ $m['desc'] }}</p>
+                            <span class="d-inline-flex align-items-center gap-1 mt-3 small fw-semibold" style="color:{{ $m['accent'] }};font-size:.8rem;">
+                                Learn more <i class="bi bi-arrow-right" style="font-size:.75rem;"></i>
+                            </span>
+                        </a>
                     </div>
-
-                    <h4>Sales & Job Management</h4>
-
-                    <p>
-                        Capture enquiries, price them as quotations, and convert
-                        approved quotes straight into operational jobs &mdash;
-                        nothing gets re-typed between steps.
-                    </p>
-
-                    <ul>
-                        <li>Enquiry & Quotation builder</li>
-                        <li>One-click convert to Job</li>
-                        <li>Full cargo & shipment tracking</li>
-                    </ul>
-
-                    <a href="{{ route('website.documentation') }}#sales" class="read-more">
-                        Learn More
-                        <i class="bi bi-arrow-right"></i>
-                    </a>
-
-                </div>
-
+                @endforeach
             </div>
 
-            <div class="col-lg-4 col-md-6">
-
-                <div class="solution-card h-100">
-
-                    <div class="icon bg-success">
-                        <i class="bi bi-file-earmark-text"></i>
-                    </div>
-
-                    <h4>Bill of Lading</h4>
-
-                    <p>
-                        Generate Airway Bills, Seaway Bills and Waybills directly
-                        from a confirmed job, ready to print and share as proof
-                        of shipment.
-                    </p>
-
-                    <ul>
-                        <li>Airway, Seaway & Waybill documents</li>
-                        <li>Auto-filled from job data</li>
-                        <li>Print-ready customer layout</li>
-                    </ul>
-
-                    <a href="{{ route('website.documentation') }}#bl" class="read-more">
-                        Learn More
-                        <i class="bi bi-arrow-right"></i>
-                    </a>
-
-                </div>
-
-            </div>
-
-            <div class="col-lg-4 col-md-6">
-
-                <div class="solution-card h-100">
-
-                    <div class="icon bg-danger">
-                        <i class="bi bi-receipt"></i>
-                    </div>
-
-                    <h4>Invoicing & Billing</h4>
-
-                    <p>
-                        Raise proforma, customer and supplier invoices straight
-                        from job data, with credit notes and a full chart of
-                        accounts behind every transaction.
-                    </p>
-
-                    <ul>
-                        <li>Proforma, Customer & Supplier invoices</li>
-                        <li>Credit notes with full audit trail</li>
-                        <li>Automatic ledger posting</li>
-                    </ul>
-
-                    <a href="{{ route('website.documentation') }}#finances" class="read-more">
-                        Learn More
-                        <i class="bi bi-arrow-right"></i>
-                    </a>
-
-                </div>
-
-            </div>
-
-            <div class="col-lg-4 col-md-6">
-
-                <div class="solution-card h-100">
-
-                    <div class="icon bg-warning">
-                        <i class="bi bi-cash-coin"></i>
-                    </div>
-
-                    <h4>Payments & Collections</h4>
-
-                    <p>
-                        Settle supplier invoices and record customer receipts
-                        &mdash; in full or in part &mdash; with your bank and
-                        cash balances updated the moment you save.
-                    </p>
-
-                    <ul>
-                        <li>Full or partial payments</li>
-                        <li>Multi-invoice settlement in one go</li>
-                        <li>Bank & cash balances always current</li>
-                    </ul>
-
-                    <a href="{{ route('website.documentation') }}#transactions" class="read-more">
-                        Learn More
-                        <i class="bi bi-arrow-right"></i>
-                    </a>
-
-                </div>
-
-            </div>
-
-            <div class="col-lg-4 col-md-6">
-
-                <div class="solution-card h-100">
-
-                    <div class="icon bg-info">
-                        <i class="bi bi-file-earmark-check-fill"></i>
-                    </div>
-
-                    <h4>ZATCA Phase 2 Compliance</h4>
-
-                    <p>
-                        Every customer invoice is generated with the QR code,
-                        digital signature and XML data Saudi e-invoicing
-                        regulations require &mdash; built in automatically.
-                    </p>
-
-                    <ul>
-                        <li>XML generation & digital signature</li>
-                        <li>QR code on every invoice</li>
-                        <li>One-time branch registration</li>
-                    </ul>
-
-                    <a href="{{ route('website.documentation') }}#settings-zatca" class="read-more">
-                        Learn More
-                        <i class="bi bi-arrow-right"></i>
-                    </a>
-
-                </div>
-
-            </div>
-
-            <div class="col-lg-4 col-md-6">
-
-                <div class="solution-card h-100">
-
-                    <div class="icon bg-dark">
-                        <i class="bi bi-person-badge"></i>
-                    </div>
-
-                    <h4>Payroll</h4>
-
-                    <p>
-                        Track attendance, calculate monthly salaries, and manage
-                        employee loans, all from one connected payroll module.
-                    </p>
-
-                    <ul>
-                        <li>Daily attendance register</li>
-                        <li>Automated monthly salary run</li>
-                        <li>Employee loan & installment tracking</li>
-                    </ul>
-
-                    <a href="{{ route('website.documentation') }}#payroll" class="read-more">
-                        Learn More
-                        <i class="bi bi-arrow-right"></i>
-                    </a>
-
-                </div>
-
-            </div>
-
-            <div class="col-lg-4 col-md-6">
-
-                <div class="solution-card h-100">
-
-                    <div class="icon" style="background:#7c3aed;">
-                        <i class="bi bi-robot"></i>
-                    </div>
-
-                    <h4>AI-Powered Automation</h4>
-
-                    <p>
-                        AI-integrated software reads uploaded supplier invoices
-                        and pulls out the invoice number, dates and line items
-                        automatically &mdash; no manual data entry needed.
-                    </p>
-
-                    <ul>
-                        <li>AI document scanning (OCR)</li>
-                        <li>Auto-filled invoice line items</li>
-                        <li>Fewer manual entry errors</li>
-                    </ul>
-
-                    <a href="{{ route('website.documentation') }}#finances" class="read-more">
-                        Learn More
-                        <i class="bi bi-arrow-right"></i>
-                    </a>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-
-<!-- =========================================
-Dashboard Showcase
-========================================= -->
-
-<section class="dashboard-section py-5">
-
-    <div class="container">
-
-        <div class="row align-items-center">
-
-            <div class="col-lg-6">
-
-                <img src="img/dashboard/dashboard-main.svg"
-                     class="img-fluid rounded-4 shadow-lg">
-
-            </div>
-
-            <div class="col-lg-6">
-
-<span class="section-tag">
-
-POWERFUL ERP
-
-</span>
-
-                <h2 class="mt-3">
-
-                    See Your Whole Operation At A Glance
-
-                </h2>
-
-                <p>
-
-                    Jobs, invoices and finances in one unified dashboard &mdash; no switching between tools.
-
-                </p>
-
-                <div class="feature-list mt-5">
-
-                    <div class="feature-item">
-
-                        <i class="bi bi-check-circle-fill"></i>
-
-                        <div>
-
-                            <h5>Live Dashboard</h5>
-
-                            <p>Real-time KPIs and Analytics</p>
-
-                        </div>
-
-                    </div>
-
-                    <div class="feature-item">
-
-                        <i class="bi bi-check-circle-fill"></i>
-
-                        <div>
-
-                            <h5>Shipment Tracking</h5>
-
-                            <p>Track Every Shipment Instantly</p>
-
-                        </div>
-
-                    </div>
-
-                    <div class="feature-item">
-
-                        <i class="bi bi-check-circle-fill"></i>
-
-                        <div>
-
-                            <h5>Billing Automation</h5>
-
-                            <p>Create invoices in seconds.</p>
-
-                        </div>
-
-                    </div>
-
-                    <div class="feature-item">
-
-                        <i class="bi bi-check-circle-fill"></i>
-
-                        <div>
-
-                            <h5>Role-Based Access</h5>
-
-                            <p>Department rights control what each user can see and do.</p>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-<!-- ==========================================
-Compliance Section
-========================================== -->
-
-<section class="compliance-section py-5">
-
-    <div class="container">
-
-        <div class="row align-items-center">
-
-            <div class="col-lg-6">
-
-                <span class="section-tag">
-                    Compliance
-                </span>
-
-                <h2 class="section-title mt-3">
-                    Built for Saudi Arabia & International Logistics
-                </h2>
-
-                <p class="section-desc mt-4">
-                    Flikma supports ZATCA Phase 2 electronic invoicing,
-                    PDF/A-3 generation, QR Codes, XML validation,
-                    digital signatures and complete audit history.
-                </p>
-
-                <div class="row mt-5 g-3">
-
-                    <div class="col">
-                        <div class="workflow-step">
-                            <div class="workflow-step-number" style="width:44px;height:44px;font-size:16px;">1</div>
-                            <h5 style="font-size:13.5px;">Invoice Created</h5>
-                        </div>
-                    </div>
-
-                    <div class="col">
-                        <div class="workflow-step">
-                            <div class="workflow-step-number" style="width:44px;height:44px;font-size:16px;">2</div>
-                            <h5 style="font-size:13.5px;">XML Generated</h5>
-                        </div>
-                    </div>
-
-                    <div class="col">
-                        <div class="workflow-step">
-                            <div class="workflow-step-number" style="width:44px;height:44px;font-size:16px;">3</div>
-                            <h5 style="font-size:13.5px;">Digitally Signed</h5>
-                        </div>
-                    </div>
-
-                    <div class="col">
-                        <div class="workflow-step">
-                            <div class="workflow-step-number" style="width:44px;height:44px;font-size:16px;">4</div>
-                            <h5 style="font-size:13.5px;">QR Code Attached</h5>
-                        </div>
-                    </div>
-
-                    <div class="col">
-                        <div class="workflow-step">
-                            <div class="workflow-step-number" style="width:44px;height:44px;font-size:16px;">5</div>
-                            <h5 style="font-size:13.5px;">Submitted to ZATCA</h5>
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="row mt-4">
-
-                    <div class="col-md-6">
-
-                        <div class="compliance-item">
-
-                            <i class="bi bi-check-circle-fill"></i>
-
-                            PDF/A-3 Invoice
-
-                        </div>
-
-                    </div>
-
-                    <div class="col-md-6">
-
-                        <div class="compliance-item">
-
-                            <i class="bi bi-check-circle-fill"></i>
-
-                            XML Generation
-
-                        </div>
-
-                    </div>
-
-                    <div class="col-md-6">
-
-                        <div class="compliance-item">
-
-                            <i class="bi bi-check-circle-fill"></i>
-
-                            QR Code
-
-                        </div>
-
-                    </div>
-
-                    <div class="col-md-6">
-
-                        <div class="compliance-item">
-
-                            <i class="bi bi-check-circle-fill"></i>
-
-                            Digital Signature
-
-                        </div>
-
-                    </div>
-
-                    <div class="col-md-6">
-
-                        <div class="compliance-item">
-
-                            <i class="bi bi-check-circle-fill"></i>
-
-                            API Integration
-
-                        </div>
-
-                    </div>
-
-                    <div class="col-md-6">
-
-                        <div class="compliance-item">
-
-                            <i class="bi bi-check-circle-fill"></i>
-
-                            VAT Reports
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            <div class="col-lg-6 text-center">
-
-                <img src="img/compliance/zatca-dashboard.svg"
-                     class="img-fluid rounded-4 shadow-lg">
-
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- ==========================================
-Pricing Teaser
-========================================== -->
-
-<section class="pricing-teaser-section py-5 bg-light">
-
-    <div class="container">
-
-        <div class="text-center mb-5">
-
-            <span class="section-tag">Pricing</span>
-
-            <h2 class="section-title mt-3">
-                Simple Plans That Grow With You
-            </h2>
-
-            <p class="section-desc mx-auto">
-                No setup fees. No hidden charges. Cancel anytime.
-            </p>
-
-        </div>
-
-        <div class="row g-4 justify-content-center">
-
-            <div class="col-lg-4 col-md-6">
-                <div class="pricing-teaser-card">
-                    <div class="pricing-teaser-name">Starter</div>
-                    <div class="pricing-teaser-price">SAR 299<span>/month</span></div>
-                    <p>For small forwarders getting off spreadsheets.</p>
-                </div>
-            </div>
-
-            <div class="col-lg-4 col-md-6">
-                <div class="pricing-teaser-card featured">
-                    <span class="pricing-teaser-badge">Most Popular</span>
-                    <div class="pricing-teaser-name">Modern</div>
-                    <div class="pricing-teaser-price">SAR 699<span>/month</span></div>
-                    <p>For growing teams that need full financial control.</p>
-                </div>
-            </div>
-
-            <div class="col-lg-4 col-md-6">
-                <div class="pricing-teaser-card">
-                    <div class="pricing-teaser-name">Deluxe</div>
-                    <div class="pricing-teaser-price">Custom</div>
-                    <p>For multi-branch and multi-company operations.</p>
-                </div>
-            </div>
-
-        </div>
-
-        <div class="text-center mt-4">
-
-            <a href="{{ route('website.pricing') }}" class="btn btn-outline-dark rounded-pill px-4 py-3 fw-bold">
-                See Full Plan Comparison
-            </a>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-
-
-
-
-<!-- ==========================================
-CTA
-========================================== -->
-
-<section class="cta-section">
-
-    <div class="container">
-
-        <div class="cta-box">
-
-            <h2>
-
-                Get Started In Minutes
-
-            </h2>
-
-            <p>
-
-                Create your account, add your first customer, and send your first
-                ZATCA-ready invoice today.
-
-            </p>
-
-            <div class="cta-benefits">
-
-                <div class="cta-benefit">
-                    <i class="bi bi-check-circle-fill"></i>
-                    No credit card required
-                </div>
-
-                <div class="cta-benefit">
-                    <i class="bi bi-check-circle-fill"></i>
-                    Guided onboarding for your team
-                </div>
-
-                <div class="cta-benefit">
-                    <i class="bi bi-check-circle-fill"></i>
-                    ZATCA-ready from day one
-                </div>
-
-            </div>
-
-            <div class="mt-4 d-flex gap-3 justify-content-center flex-wrap">
-
-                <a href="{{ url('/register') }}"
-                   class="btn btn-light btn-lg rounded-pill">
-
-                    Create Your Free Account
-
+            <div class="text-center mt-5 reveal">
+                <a href="{{ url('/features') }}" class="btn-hero-outline">
+                    Explore all features <i class="bi bi-arrow-right"></i>
                 </a>
+            </div>
+        </div>
+    </section>
 
-                <a href="{{ route('website.contact') }}"
-                   class="btn btn-outline-light btn-lg rounded-pill">
+    <!-- ════════════════ WORKFLOW ════════════════ -->
+    <section class="fk-section bg-white">
+        <div class="container">
+            <div class="row g-5 align-items-center">
+                <div class="col-lg-6 reveal">
+                    <div class="section-label">The Freight Lifecycle</div>
+                    <h2 class="mt-2 mb-3" style="font-size:clamp(1.6rem,3vw,2.2rem);font-weight:800;line-height:1.15;">
+                        One thread from the first enquiry to the final riyal
+                    </h2>
+                    <p class="mb-4" style="color:var(--ink-muted);line-height:1.75;">
+                        Every module writes to the same ledger, so a shipment's cost, revenue and margin are
+                        visible while the job is still moving &mdash; not six weeks after it closed.
+                    </p>
 
-                    Book Free Demo
+                    <div class="ledger-card mb-4">
+                        <div class="ledger-row head"><span>Account</span><span>Debit</span><span>Credit</span></div>
+                        <div class="ledger-row"><span style="color:rgba(255,255,255,.75);">Accounts Receivable</span><span style="color:#fff;">24,600.00</span><span style="color:rgba(255,255,255,.3);">&mdash;</span></div>
+                        <div class="ledger-row"><span style="color:rgba(255,255,255,.75);">Freight Revenue &mdash; Air</span><span style="color:rgba(255,255,255,.3);">&mdash;</span><span style="color:#fff;">21,300.00</span></div>
+                        <div class="ledger-row"><span style="color:rgba(255,255,255,.75);">Carrier Payable</span><span style="color:#fff;">17,800.00</span><span style="color:rgba(255,255,255,.3);">&mdash;</span></div>
+                        <div class="ledger-row"><span style="color:rgba(255,255,255,.75);">VAT Output 15%</span><span style="color:rgba(255,255,255,.3);">&mdash;</span><span style="color:#fff;">3,300.00</span></div>
+                        <div class="ledger-row"><span style="font-weight:700;color:#fff;">ZATCA clearance</span><span colspan="2" style="color:var(--emerald);text-align:right;font-weight:700;">&#10003; Reported &middot; QR stamped</span></div>
+                    </div>
+                </div>
 
-                </a>
+                <div class="col-lg-6">
+                    <div class="bg-ink rounded-4 p-4 p-md-5 reveal">
+                        <div class="d-flex flex-column gap-4">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="mode-chip" style="background:var(--emerald);color:var(--ink);font-size:.64rem;">THE CHAIN</span>
+                            </div>
+                            <div class="flow-step-item">
+                                <span class="flow-num">1</span>
+                                <div>
+                                    <h6 class="fw-bold mb-1" style="color:#fff;">Enquiry &amp; Quotation</h6>
+                                    <p class="mb-0" style="font-size:.85rem;color:rgba(255,255,255,.5);line-height:1.6;">
+                                        Capture the request, build a multi-leg quotation with real carrier rates and win or lose it against a deadline.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flow-step-item">
+                                <span class="flow-num">2</span>
+                                <div>
+                                    <h6 class="fw-bold mb-1" style="color:#fff;">Job &amp; Bill of Lading</h6>
+                                    <p class="mb-0" style="font-size:.85rem;color:rgba(255,255,255,.5);line-height:1.6;">
+                                        Convert the won quote into a job, track every container, package and batch, and print the AWB, sea waybill or road waybill.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flow-step-item">
+                                <span class="flow-num">3</span>
+                                <div>
+                                    <h6 class="fw-bold mb-1" style="color:#fff;">Invoice &amp; ZATCA Clearance</h6>
+                                    <p class="mb-0" style="font-size:.85rem;color:rgba(255,255,255,.5);line-height:1.6;">
+                                        Issue a Phase 2 compliant tax or simplified invoice. Flikma signs the UBL 2.1 XML, stamps the QR and reports to ZATCA.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flow-step-item">
+                                <span class="flow-num">4</span>
+                                <div>
+                                    <h6 class="fw-bold mb-1" style="color:#fff;">Payment &amp; Collection</h6>
+                                    <p class="mb-0" style="font-size:.85rem;color:rgba(255,255,255,.5);line-height:1.6;">
+                                        Record receipts against invoices, chase the aging, and see the job's true margin the moment the money lands.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
+    <!-- ════════════════ ZATCA / COMPLIANCE ════════════════ -->
+    <section class="fk-section bg-ink">
+        <div class="container">
+            <div class="row g-5 align-items-center">
+                <div class="col-lg-6">
+                    <div class="section-label">Saudi Compliance</div>
+                    <h2 class="mt-2 mb-3" style="color:#fff;font-size:clamp(1.6rem,3vw,2.2rem);font-weight:800;line-height:1.15;">
+                        ZATCA Phase 2 is not an add-on. It is the backbone.
+                    </h2>
+                    <p class="mb-4" style="color:rgba(255,255,255,.55);line-height:1.75;">
+                        Most forwarders bolt e-invoicing onto an accounting package and fight it. In Flikma, compliance
+                        is wired through the customer, the invoice and the ledger &mdash; so the right document is
+                        produced automatically, every time.
+                    </p>
+
+                    <ul class="dark-check list-unstyled mb-0">
+                        <li><i class="bi bi-check-circle-fill"></i><span>Automatic B2B tax invoice vs. B2C simplified invoice, decided by the customer's VAT registration</span></li>
+                        <li><i class="bi bi-check-circle-fill"></i><span>ECDSA / CAdES cryptographic signing and XAdES signed properties built into the invoice pipeline</span></li>
+                        <li><i class="bi bi-check-circle-fill"></i><span>UBL 2.1 XML generation with mandatory QR code stamping for buyer-side validation</span></li>
+                        <li><i class="bi bi-check-circle-fill"></i><span>Real-time clearance for standard invoices; deferred reporting for simplified</span></li>
+                        <li><i class="bi bi-check-circle-fill"></i><span>Credit notes and debit notes reported through the same compliant pipeline</span></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="bg-white rounded-4 p-4 p-md-5 reveal">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div>
+                                <div class="fw-bold" style="font-size:.85rem;">Tax Invoice &middot; فاتورة ضريبية</div>
+                                <div class="mt-1" style="font-size:.68rem;color:var(--ink-ghost);">INV-2026-00841 &middot; Al Mouil Marine</div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge rounded-pill fw-bold" style="background:var(--emerald);color:var(--ink);font-size:.63rem;">PHASE 2</span>
+                                <div class="mt-1" style="font-size:.62rem;color:var(--ink-ghost);">UUID: 8f2c&hellip;a91b</div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-6">
+                                <div class="stat-chip h-100" style="padding:1rem;">
+                                    <div class="chip-value" style="color:var(--emerald-dim);font-size:1.35rem;"><i class="bi bi-check-circle-fill"></i></div>
+                                    <div class="chip-label" style="font-size:.72rem;">Clearance Status</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stat-chip h-100" style="padding:1rem;">
+                                    <div class="chip-value" style="color:var(--blue);font-size:1.35rem;">&lt; 2s</div>
+                                    <div class="chip-label" style="font-size:.72rem;">Gateway Response</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-column gap-2">
+                            <div class="d-flex justify-content-between py-2 border-bottom border-grid"><span class="small text-ink-ghost">Freight &mdash; Sea JED/RUH</span><span class="fw-semibold small">8,400.00 SAR</span></div>
+                            <div class="d-flex justify-content-between py-2 border-bottom border-grid"><span class="small text-ink-ghost">Customs &amp; clearance</span><span class="fw-semibold small">1,850.00 SAR</span></div>
+                            <div class="d-flex justify-content-between py-2 border-bottom border-grid"><span class="small text-ink-ghost">VAT 15%</span><span class="fw-semibold small">1,537.50 SAR</span></div>
+                            <div class="d-flex justify-content-between align-items-center mt-2 p-3 rounded-3 bg-surface">
+                                <span class="fw-bold small">Total Due</span>
+                                <span class="fw-bold fs-4" style="color:var(--emerald-dim);">11,787.50 SAR</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
+            <div class="text-center mt-5 reveal">
+                <a href="{{ url('/documentation') }}#zatca" class="btn-outline-light-fk">
+                    Read the ZATCA setup guide <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
         </div>
+    </section>
 
-    </div>
+    <!-- ════════════════ WHY FLIKMA (condensed) ════════════════ -->
+    <section class="fk-section" id="why-flikma">
+        <div class="container">
+            <div class="section-head text-center mb-5 reveal">
+                <div class="section-label">Why Forwarders Switch</div>
+                <h2>Built by people who ran freight, not by people who read about it</h2>
+                <p>The reference site we love gets praise for its accounting. Forwarders get praise for the paperwork,
+                   the jobs and the paperwork again. Flikma was built for that second thing.</p>
+            </div>
 
-</section>
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4 reveal">
+                    <div class="feat-card p-4 h-100">
+                        <div class="feat-icon-box mb-3" style="background:var(--emerald-soft);color:var(--emerald-dim);"><i class="bi bi-box-arrow-in-down-left"></i></div>
+                        <h5 class="feat-title mb-2">Enquiry to invoice, one system</h5>
+                        <p class="small mb-0" style="color:var(--ink-muted);line-height:1.7;">
+                            No re-keying between a quoting tool, a spreadsheet and an accounting package.
+                            The job file carries every charge, milestone and attachment forward automatically.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 reveal">
+                    <div class="feat-card p-4 h-100">
+                        <div class="feat-icon-box mb-3" style="background:rgba(79,70,229,.09);color:var(--indigo);"><i class="bi bi-cpu"></i></div>
+                        <h5 class="feat-title mb-2">AI that does the typing</h5>
+                        <p class="small mb-0" style="color:var(--ink-muted);line-height:1.7;">
+                            Document scanning and AI expense capture remove the single largest source of
+                            data-entry errors in a forwarding office &mdash; the human transcription of documents.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 reveal">
+                    <div class="feat-card p-4 h-100">
+                        <div class="feat-icon-box mb-3" style="background:rgba(58,107,255,.09);color:var(--blue);"><i class="bi bi-buildings"></i></div>
+                        <h5 class="feat-title mb-2">Multi-company, multi-branch</h5>
+                        <p class="small mb-0" style="color:var(--ink-muted);line-height:1.7;">
+                            Run a Riyadh entity, a Bahrain entity and a Dubai entity from one login with
+                            consolidated reporting, separate VAT registrations and clean intercompany handling.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 reveal">
+                    <div class="feat-card p-4 h-100">
+                        <div class="feat-icon-box mb-3" style="background:rgba(6,182,212,.09);color:var(--cyan);"><i class="bi bi-translate"></i></div>
+                        <h5 class="feat-title mb-2">Arabic and English, on paper</h5>
+                        <p class="small mb-0" style="color:var(--ink-muted);line-height:1.7;">
+                            Bilingual invoices, bills of lading and ZATCA QR payloads, because the customs
+                            counter and the customer both need the Arabic.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 reveal">
+                    <div class="feat-card p-4 h-100">
+                        <div class="feat-icon-box mb-3" style="background:rgba(124,58,237,.09);color:var(--violet);"><i class="bi bi-clock-history"></i></div>
+                        <h5 class="feat-title mb-2">Month-end in days, not weeks</h5>
+                        <p class="small mb-0" style="color:var(--ink-muted);line-height:1.7;">
+                            Live trial balance, aging and tax positions. When the month closes there is nothing
+                            left to reconstruct.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 reveal">
+                    <div class="feat-card p-4 h-100">
+                        <div class="feat-icon-box mb-3" style="background:rgba(244,185,66,.14);color:#b4801a;"><i class="bi bi-flag"></i></div>
+                        <h5 class="feat-title mb-2">Vision 2030 ready</h2>
+                        <p class="small mb-0" style="color:var(--ink-muted);line-height:1.7;">
+                            Digitised customs, electronic invoices and a growing logistics sector. Flikma is
+                            positioned for where the Kingdom's trade paperwork is heading.
+                        </p>
+                    </div>
+                </div>
+            </div>
 
+            <div class="text-center mt-5 reveal">
+                <a href="{{ url('/why-flikma') }}" class="btn-hero-outline">See the full comparison <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+    </section>
 
+    <!-- ════════════════ PRICING TEASER ════════════════ -->
+    <section class="fk-section bg-white" id="pricing">
+        <div class="container">
+            <div class="section-head text-center mb-5 reveal">
+                <div class="section-label">Pricing</div>
+                <h2>Priced per forwarder, not per employee</h2>
+                <p>Unlimited users on every plan. You pay for the operation you run, and the price includes
+                   ZATCA Phase 2 and the AI document scanning.</p>
+            </div>
 
-<!-- ==========================================
-Footer
-========================================== -->
+            <div class="row g-4 align-items-stretch">
+                <div class="col-md-6 col-lg-3 reveal">
+                    <div class="pricing-card d-flex flex-column">
+                        <div class="plan-name mb-1">Starter</div>
+                        <div class="plan-desc mb-3">For new forwarders getting off spreadsheets.</div>
+                        <div class="plan-price">0 <small>SAR / mo</small></div>
+                        <ul class="plan-feats">
+                            <li><i class="bi bi-check2"></i> 1 company, 2 users</li>
+                            <li><i class="bi bi-check2"></i> Enquiry, quotation &amp; jobs</li>
+                            <li><i class="bi bi-check2"></i> Invoicing &amp; collections</li>
+                            <li><i class="bi bi-check2"></i> 50 AI document scans / month</li>
+                        </ul>
+                        <a href="{{ route('register') }}" class="btn-ghost-light text-center mt-auto mt-4 w-100">Start Free</a>
+                    </div>
+                </div>
 
-@include('website.partials.footer')
+                <div class="col-md-6 col-lg-3 reveal">
+                    <div class="pricing-card d-flex flex-column">
+                        <div class="plan-name mb-1">Growth</div>
+                        <div class="plan-desc mb-3">For established offices with real volume.</div>
+                        <div class="plan-price">399 <small>SAR / mo</small></div>
+                        <ul class="plan-feats">
+                            <li><i class="bi bi-check2"></i> 3 companies, unlimited users</li>
+                            <li><i class="bi bi-check2"></i> Full B/L &amp; airway bill suite</li>
+                            <li><i class="bi bi-check2"></i> 500 AI scans / month</li>
+                            <li><i class="bi bi-check2"></i> Payroll &amp; attendance</li>
+                        </ul>
+                        <a href="{{ route('register') }}" class="btn-ghost-light text-center mt-auto mt-4 w-100">Start Free</a>
+                    </div>
+                </div>
 
+                <div class="col-md-6 col-lg-3 reveal">
+                    <div class="pricing-card featured d-flex flex-column">
+                        <span class="popular-chip">Most Popular</span>
+                        <div class="plan-name mb-1">Professional</div>
+                        <div class="plan-desc mb-3">For multi-branch and multi-entity groups.</div>
+                        <div class="plan-price">799 <small>SAR / mo</small></div>
+                        <ul class="plan-feats">
+                            <li><i class="bi bi-check2"></i> Unlimited companies &amp; users</li>
+                            <li><i class="bi bi-check2"></i> Unlimited AI document scans</li>
+                            <li><i class="bi bi-check2"></i> Full ZATCA + consolidated reporting</li>
+                            <li><i class="bi bi-check2"></i> API access &amp; priority support</li>
+                        </ul>
+                        <a href="{{ route('register') }}" class="btn-emerald text-center mt-auto mt-4 w-100">Start Free</a>
+                    </div>
+                </div>
 
+                <div class="col-md-6 col-lg-3 reveal">
+                    <div class="pricing-card d-flex flex-column">
+                        <div class="plan-name mb-1">Enterprise</div>
+                        <div class="plan-desc mb-3">For groups with bespoke integration needs.</div>
+                        <div class="plan-price" style="font-size:1.9rem;">Custom</div>
+                        <ul class="plan-feats">
+                            <li><i class="bi bi-check2"></i> Private cloud or on-premise</li>
+                            <li><i class="bi bi-check2"></i> Custom AI model tuning</li>
+                            <li><i class="bi bi-check2"></i> SSO, audit logs, SLA</li>
+                            <li><i class="bi bi-check2"></i> Named implementation lead</li>
+                        </ul>
+                        <a href="{{ url('/contact') }}" class="btn-ghost-light text-center mt-auto mt-4 w-100">Contact Sales</a>
+                    </div>
+                </div>
+            </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
+            <p class="text-center mt-4 mb-0 small text-ink-ghost reveal">
+                Prices in SAR, excluding VAT. Annual billing saves two months. <a href="{{ url('/pricing') }}" class="text-emerald fw-semibold">Compare every feature &rarr;</a>
+            </p>
+        </div>
+    </section>
 
-<script src="js/app.js"></script>
+    <!-- ════════════════ FINAL CTA ════════════════ -->
+    <section class="pb-5">
+        <div class="container">
+            <div class="cta-banner p-4 p-md-5 text-center reveal">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <h2 class="mb-3">Stop chasing paperwork.<br>Start moving freight.</h2>
+                        <p class="mb-4" style="font-size:1.02rem;">
+                            Get a live walkthrough of Flikma with your own lanes, your own carriers and your own
+                            ZATCA registration on the screen. Or start the free trial and explore it yourself today.
+                        </p>
+                        <div class="d-flex flex-wrap gap-3 justify-content-center">
+                            <a href="{{ route('register') }}" class="btn-hero-primary">Start Free Trial <i class="bi bi-arrow-right"></i></a>
+                            <a href="{{ url('/contact') }}" class="btn-outline-light-fk">Book a Live Demo</a>
+                        </div>
+                        <p class="mt-4 mb-0" style="font-size:.82rem;color:rgba(255,255,255,.35);">
+                            No credit card required &middot; Full ZATCA Phase 2 included &middot; Cancel anytime
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-</body>
-
-</html>
+@endsection

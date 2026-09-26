@@ -2,324 +2,559 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="@yield('meta_description', 'Flikma is smart logistics software for freight forwarders, 3PLs and logistics companies in Saudi Arabia, Bahrain and Dubai — manage every shipment, document and customer with speed, accuracy and complete visibility.')">
-    <meta name="keywords" content="@yield('meta_keywords', 'logistics software Saudi Arabia, freight forwarding software Bahrain, logistics ERP Dubai, ZATCA e-invoicing software, freight management software GCC')">
-    <title>@yield('title', 'Flikma — Smart Logistics Software for Saudi Arabia, Bahrain & Dubai')</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="icon" href="{{ asset('img/logo1.png') }}">
+    <title>@yield('title', 'Flikma — AI Logistics &amp; Freight Forwarding Software for Saudi Arabia')</title>
+    <meta name="description" content="@yield('meta_description', 'Flikma is AI-powered logistics software for freight forwarders and 3PLs in Saudi Arabia, Bahrain and Dubai. Manage enquiries, jobs, bills of lading, expenses, ZATCA Phase 2 e-invoicing and scanned supplier documents in one cloud ERP.')">
+    <meta name="keywords" content="@yield('meta_keywords', 'logistics software Saudi Arabia, freight forwarding software Bahrain, logistics ERP Dubai, 3PL software GCC, ZATCA Phase 2 e-invoicing software, AI document scanning, OCR supplier invoices, freight management software')">
+    <link rel="canonical" href="{{ url()->current() }}">
 
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800|plus-jakarta-sans:500,600,700,800&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:title" content="@yield('title', 'Flikma — AI Logistics &amp; Freight Forwarding Software for Saudi Arabia')">
+    <meta property="og:description" content="@yield('meta_description', 'AI-powered logistics software for freight forwarders and 3PLs in Saudi Arabia, Bahrain and Dubai.')">
+    <meta property="og:image" content="{{ url('/img/logo.png') }}">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <link rel="icon" href="{{ asset('img/logo.svg') }}" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="{{ asset('img/logo1.png') }}">
+
+    @if (request()->routeIs('website.home'))
+        <script type="application/ld+json">
+        {
+            "@@context": "https://schema.org",
+            "@@type": "Organization",
+            "name": "Flikma",
+            "url": "{{ url('/') }}",
+            "logo": "{{ url('/img/logo.png') }}",
+            "description": "AI-powered cloud ERP for freight forwarding, third-party logistics and ZATCA Phase 2 e-invoicing across the GCC.",
+            "address": {
+                "@@type": "PostalAddress",
+                "addressLocality": "Riyadh",
+                "addressCountry": "SA"
+            },
+            "areaServed": ["SA", "BH", "AE"],
+            "contactPoint": {
+                "@@type": "ContactPoint",
+                "telephone": "+966595555343",
+                "contactType": "sales"
+            }
+        }
+        </script>
+        <script type="application/ld+json">
+        {
+            "@@context": "https://schema.org",
+            "@@type": "SoftwareApplication",
+            "name": "Flikma",
+            "applicationCategory": "BusinessApplication",
+            "operatingSystem": "Web",
+            "description": "AI logistics and freight forwarding ERP with ZATCA Phase 2 e-invoicing, AI expense capture and document scanning.",
+            "offers": {
+                "@@type": "Offer",
+                "price": "0",
+                "priceCurrency": "SAR"
+            }
+        }
+        </script>
+    @endif
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
 
     <style>
+        /* ═══════════════════════════════════════════════════════════
+           FLIKMA DESIGN SYSTEM
+           Single source of truth — every page inherits these tokens.
+           ═══════════════════════════════════════════════════════════ */
         :root {
-            --fk-primary: #0e3b2e;
-            --fk-primary-dark: #092a20;
-            --fk-accent: #17a34a;
-            --fk-accent-dark: #128a3d;
-            --fk-mint: #eaf6ee;
-            --fk-mint-border: #cfe9d7;
-            --fk-ink: #10231c;
-            --fk-muted: #5b6b66;
-            --fk-border: #e6ece9;
+            --bs-body-font-family: 'DM Sans', sans-serif;
+
+            /* Core palette */
+            --ink:          #0a0f1e;
+            --ink-soft:     #1e2740;
+            --ink-muted:    #4a5578;
+            --ink-ghost:    #8896b0;
+            --surface:      #f5f7fc;
+            --line:         rgba(60, 80, 140, .08);
+            --line-strong:  rgba(60, 80, 140, .14);
+
+            /* Brand */
+            --emerald:      #00c97b;
+            --emerald-dim:  #00a863;
+            --emerald-soft: rgba(0, 201, 123, .10);
+            --emerald-glow: rgba(0, 201, 123, .18);
+
+            /* Semantic accents (one per module) */
+            --blue:   #3a6bff;
+            --cyan:   #06b6d4;
+            --violet: #7c3aed;
+            --indigo: #4f46e5;
+            --gold:   #f4b942;
+            --red:    #ef4444;
+            --navy:   #0b1736;
+
+            --grid-line: rgba(60, 80, 140, .07);
         }
 
-        * { box-sizing: border-box; }
         html { scroll-behavior: smooth; }
-
+        /* Alpine bindings: hide x-cloak elements until Alpine hydrates. */
+        [x-cloak] { display: none !important; }
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            color: var(--fk-ink);
-            background: #fff;
+            font-family: 'DM Sans', sans-serif;
+            color: var(--ink);
+            background: var(--surface);
             overflow-x: hidden;
+            /* The navbar is fixed at 68px — offset the whole document once here
+               instead of repeating margin-top on every page hero. */
+            padding-top: 68px;
         }
 
-        h1, h2, h3, h4, .fk-display {
-            font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            color: var(--fk-ink);
+        h1, h2, h3, h4, h5, h6, .font-display {
+            font-family: 'DM Sans', sans-serif;
+            color: var(--ink);
+            letter-spacing: -.02em;
         }
-
         a { text-decoration: none; }
+        ::selection { background: var(--emerald-glow); }
 
-        /* Navbar */
-        .fk-navbar {
-            background: #fff;
-            border-bottom: 1px solid var(--fk-border);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
+        /* ── Utilities ── */
+        .bg-ink          { background-color: var(--ink) !important; }
+        .bg-surface      { background-color: var(--surface) !important; }
+        .bg-emerald-soft { background-color: var(--emerald-soft) !important; }
+        .text-ink-muted  { color: var(--ink-muted) !important; }
+        .text-ink-ghost  { color: var(--ink-ghost) !important; }
+        .text-emerald    { color: var(--emerald) !important; }
+        .text-emerald-dim{ color: var(--emerald-dim) !important; }
+        .border-grid     { border-color: var(--grid-line) !important; }
+        .font-display    { font-family: 'DM Sans', sans-serif; }
+
+        .section-label {
+            font-size: .72rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--emerald);
         }
-        .fk-logo-mark {
-            width: 34px; height: 34px;
-            display: inline-flex; align-items: center; justify-content: center;
-        }
-        .fk-logo-word {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+
+        /* ── Navbar ── */
+        .navbar-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: .55rem;
             font-weight: 800;
             font-size: 1.3rem;
-            color: var(--fk-primary);
-            letter-spacing: -0.01em;
+            letter-spacing: -.4px;
+            color: var(--ink);
         }
-        .fk-navbar .nav-link {
-            font-weight: 600;
-            color: var(--fk-ink);
-            font-size: 0.92rem;
-            padding: 0.5rem 0.9rem;
+        .navbar-brand .flk-word { color: var(--ink); }
+        .navbar-brand .flk-word em { font-style: normal; color: var(--emerald); }
+        .navbar .nav-link {
+            font-size: .875rem;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: color .2s, background .2s;
         }
-        .fk-navbar .nav-link:hover,
-        .fk-navbar .nav-link.active { color: var(--fk-accent); }
-        .fk-navbar .dropdown-menu { border: 1px solid var(--fk-border); box-shadow: 0 12px 30px rgba(14,59,46,0.1); border-radius: 0.75rem; }
-        .fk-navbar .dropdown-item { font-weight: 500; font-size: 0.9rem; padding: 0.5rem 1rem; }
-        .fk-navbar .dropdown-item:hover { background: var(--fk-mint); color: var(--fk-primary); }
+        .navbar .nav-link:hover { color: var(--ink) !important; background: var(--surface); }
+        .navbar .dropdown-menu {
+            border: 1px solid var(--line);
+            box-shadow: 0 16px 40px rgba(10, 15, 30, .1);
+            border-radius: 14px;
+            padding: .5rem;
+        }
+        .navbar .dropdown-item {
+            font-size: .875rem;
+            font-weight: 500;
+            color: var(--ink-muted);
+            border-radius: 9px;
+            padding: .5rem .75rem;
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+        }
+        .navbar .dropdown-item i { font-size: 1rem; width: 1.15rem; text-align: center; flex-shrink: 0; }
+        .navbar .dropdown-item:hover { background: var(--surface); color: var(--ink); }
+        .navbar .dropdown-divider { border-color: var(--line); }
 
-        .fk-btn-primary {
-            background: var(--fk-primary);
-            border: 1.5px solid var(--fk-primary);
-            color: #fff !important;
-            font-weight: 600;
-            padding: 0.6rem 1.4rem;
-            border-radius: 0.5rem;
-            transition: all 0.15s ease;
-            display: inline-block;
-        }
-        .fk-btn-primary:hover { background: var(--fk-primary-dark); border-color: var(--fk-primary-dark); color: #fff; }
-
-        .fk-btn-outline {
-            background: #fff;
-            border: 1.5px solid var(--fk-border);
-            color: var(--fk-ink) !important;
-            font-weight: 600;
-            padding: 0.58rem 1.35rem;
-            border-radius: 0.5rem;
-            transition: all 0.15s ease;
-            display: inline-block;
-        }
-        .fk-btn-outline:hover { border-color: var(--fk-primary); color: var(--fk-primary) !important; }
-
-        .fk-btn-lang {
-            background: #fff;
-            border: 1.5px solid var(--fk-border);
-            color: var(--fk-ink) !important;
-            font-weight: 600;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            font-size: 0.85rem;
+        @media (max-width: 991.98px) {
+            .navbar-collapse {
+                background: #fff !important;
+                border-top: 1px solid #eef2f7;
+                box-shadow: 0 14px 30px rgba(10, 15, 30, .10);
+                padding: .75rem 1rem 1.25rem;
+                margin: 0 -12px;
+                border-radius: 0 0 14px 14px;
+            }
+            .navbar-collapse .nav-link { padding: .65rem 1rem !important; }
+            .navbar-collapse .dropdown-menu { border: 0; box-shadow: none; padding-left: .75rem; }
         }
 
-        .fk-eyebrow {
-            font-size: 0.72rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.09em;
-            color: var(--fk-accent);
+        /* ── Buttons ── */
+        .btn-emerald {
+            background: var(--emerald); color: #fff; border: none;
+            border-radius: 10px; padding: .55rem 1.15rem;
+            font-size: .875rem; font-weight: 600;
+            transition: all .2s; display: inline-block;
         }
+        .btn-emerald:hover { background: var(--emerald-dim); color: #fff; transform: translateY(-1px); }
 
-        .fk-section { padding: 4.5rem 0; }
-        @media (max-width: 767px) { .fk-section { padding: 3rem 0; } }
-
-        /* Scaled down from Bootstrap's oversized defaults for a tighter,
-           more professional B2B look (display-4 is 3.5rem out of the box). */
-        .display-4 { font-size: 2.5rem; }
-        .display-5 { font-size: 2.15rem; }
-        .display-6 { font-size: 1.65rem; }
-        h1 { font-size: 2rem; }
-        h2 { font-size: 1.6rem; }
-        h3 { font-size: 1.35rem; }
-        h4, h5 { font-size: 1.1rem; }
-        p, li { font-size: 0.95rem; }
-        .fs-4 { font-size: 1.15rem !important; }
-        .fs-5 { font-size: 1.05rem !important; }
-        @media (max-width: 767px) {
-            .display-4 { font-size: 1.85rem; }
-            .display-5 { font-size: 1.65rem; }
-            .display-6 { font-size: 1.4rem; }
+        .btn-ghost-light {
+            background: #fff; border: 1px solid var(--line-strong); color: var(--ink);
+            border-radius: 10px; padding: .53rem 1.1rem;
+            font-size: .875rem; font-weight: 600;
+            transition: all .2s; display: inline-block;
         }
+        .btn-ghost-light:hover { border-color: var(--emerald); color: var(--emerald-dim); }
 
-        .fk-card {
-            border: 1px solid var(--fk-border);
-            border-radius: 1rem;
-            background: #fff;
-            transition: all 0.2s ease;
+        .btn-hero-primary {
+            background: var(--emerald); color: #fff; border-radius: 12px; padding: .85rem 2rem;
+            font-weight: 600; box-shadow: 0 6px 20px var(--emerald-glow); transition: all .2s;
+            text-decoration: none; display: inline-flex; align-items: center; gap: .5rem;
         }
-        .fk-card:hover { box-shadow: 0 14px 34px rgba(14,59,46,0.08); transform: translateY(-3px); border-color: #d3e8d9; }
+        .btn-hero-primary:hover { background: var(--emerald-dim); color: #fff; transform: translateY(-2px); }
 
-        .fk-icon-box {
-            width: 48px; height: 48px;
-            border-radius: 0.75rem;
-            background: var(--fk-mint);
-            color: var(--fk-accent);
+        .btn-hero-outline {
+            background: transparent; border: 1.5px solid rgba(10, 15, 30, .15); color: var(--ink);
+            border-radius: 12px; padding: .85rem 1.75rem; font-weight: 500; text-decoration: none;
+            display: inline-flex; align-items: center; gap: .5rem; transition: all .2s;
+        }
+        .btn-hero-outline:hover { border-color: var(--emerald); color: var(--emerald-dim); }
+
+        .btn-cta-main {
+            background: var(--ink); color: #fff; border: none;
+            border-radius: 14px; padding: 1rem 2.25rem; font-weight: 600;
+            transition: all .2s; display: inline-flex; align-items: center; gap: .5rem;
+        }
+        .btn-cta-main:hover { background: #000; color: var(--emerald); transform: translateY(-2px); }
+
+        .btn-outline-light-fk {
+            background: transparent; border: 1.5px solid rgba(255, 255, 255, .25); color: #fff;
+            border-radius: 14px; padding: 1rem 2.25rem; font-weight: 500;
+            display: inline-flex; align-items: center; gap: .5rem; transition: all .2s;
+        }
+        .btn-outline-light-fk:hover { border-color: var(--emerald); color: var(--emerald); }
+
+        /* ── Cards ── */
+        .feat-card {
+            border: 1.5px solid var(--line); border-radius: 18px;
+            background: #fff; height: 100%; transition: all .25s;
+        }
+        .feat-card:hover { box-shadow: 0 20px 50px rgba(10, 15, 30, .07); transform: translateY(-4px); }
+        .feat-icon-box {
+            width: 48px; height: 48px; border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.3rem;
-            flex-shrink: 0;
+            font-size: 1.25rem; flex-shrink: 0;
+        }
+        .feat-title { font-weight: 700; letter-spacing: -.01em; }
+        .hover-lift { transition: transform .25s, box-shadow .25s; }
+        .hover-lift:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(10, 15, 30, .1) !important; }
+
+        .stat-chip {
+            border: 1.5px solid var(--line); border-radius: 14px; background: #fff;
+            padding: 1.25rem 1rem; text-align: center;
+        }
+        .stat-chip .chip-value { font-size: 1.8rem; font-weight: 800; line-height: 1.1; letter-spacing: -.03em; }
+        .stat-chip .chip-label { font-size: .78rem; color: var(--ink-ghost); }
+
+        .cross-link-card {
+            border: 1.5px solid var(--line); border-radius: 16px; background: #fff;
+            padding: 1.75rem; height: 100%; transition: all .25s;
+        }
+        .cross-link-card:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(10, 15, 30, .07); }
+
+        /* ── Page hero (shared by every subpage) ── */
+        .page-hero { background: #fff; border-bottom: 1px solid var(--line); padding: 76px 0 68px; }
+        .page-hero h1 {
+            font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; line-height: 1.08;
+        }
+        .page-hero p { font-size: 1.05rem; line-height: 1.7; color: var(--ink-muted); }
+        .hero-pill {
+            display: inline-flex; align-items: center; gap: .5rem;
+            background: var(--emerald-soft); border: 1px solid rgba(0, 201, 123, .3);
+            color: var(--emerald-dim); font-size: .72rem; font-weight: 700;
+            letter-spacing: .8px; text-transform: uppercase; padding: .4rem .9rem; border-radius: 50px;
         }
 
-        .text-fk-muted { color: var(--fk-muted) !important; }
-        .text-fk-accent { color: var(--fk-accent) !important; }
-        .fk-shadow-lg { box-shadow: 0 24px 60px rgba(14,59,46,0.14); }
+        /* ── Section rhythm ── */
+        .fk-section { padding: 76px 0; }
+        .section-head { max-width: 660px; }
+        .section-head h2 {
+            font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 800; line-height: 1.15; margin: .6rem 0 .75rem;
+        }
+        .section-head p { color: var(--ink-muted); font-size: 1.02rem; line-height: 1.7; }
+        .section-head.text-center { margin-left: auto; margin-right: auto; }
 
-        .fk-stats-bar { background: var(--fk-primary); color: #fff; }
-        .fk-stats-bar .fk-stat-num { font-weight: 800; font-size: 1.5rem; }
-        .fk-stats-bar .fk-stat-label { font-size: 0.8rem; color: rgba(255,255,255,0.7); }
+        /* ── Dark CTA band (shared) ── */
+        .cta-banner { background: var(--ink); border-radius: 20px; }
+        .cta-banner h2 { color: #fff; font-weight: 800; }
+        .cta-banner p { color: rgba(255, 255, 255, .55); }
 
-        .fk-cta-band {
-            background: linear-gradient(120deg, var(--fk-primary) 0%, var(--fk-primary-dark) 100%);
-            border-radius: 1.25rem;
+        /* ── FAQ accordion ── */
+        .faq-item { border: 1px solid rgba(60, 80, 140, .1); border-radius: 14px; background: #fff; overflow: hidden; }
+        .faq-item + .faq-item { margin-top: .75rem; }
+        .faq-q {
+            width: 100%; background: none; border: 0; text-align: left;
+            padding: 1.15rem 1.35rem; font-weight: 600; font-size: .95rem; color: var(--ink);
+            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+        }
+        .faq-answer { max-height: 0; overflow: hidden; transition: max-height .35s ease; }
+        .faq-answer.open { max-height: 400px; }
+        .faq-answer p { padding: 0 1.35rem 1.25rem; margin: 0; color: var(--ink-muted); font-size: .9rem; line-height: 1.7; }
+
+        /* ── Forms ── */
+        .form-ctrl {
+            width: 100%; background: var(--surface); border: 1.5px solid transparent;
+            border-radius: 10px; padding: .7rem .9rem; font-size: .9rem; color: var(--ink);
+            transition: all .2s;
+        }
+        .form-ctrl:focus {
+            outline: none; border-color: var(--emerald); background: #fff;
+            box-shadow: 0 0 0 4px var(--emerald-glow);
+        }
+        .form-label-fk { font-size: .8rem; font-weight: 600; color: var(--ink-soft); margin-bottom: .35rem; }
+
+        /* ── Trust avatars ── */
+        .trust-avatar {
+            width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff;
+            background: var(--surface); display: inline-flex; align-items: center; justify-content: center;
+            font-size: .65rem; font-weight: 700; color: var(--ink-soft); margin-left: -8px;
+        }
+        .trust-avatar:first-child { margin-left: 0; }
+
+        /* ── Sticky in-page nav (features / docs) ── */
+        .feature-nav { position: sticky; top: 90px; }
+        .feature-nav .nav-link {
+            font-size: .875rem; font-weight: 500; color: #64748b;
+            border-left: 2px solid #e2e8f0; padding: 10px 18px;
+            border-radius: 0; transition: all .2s;
+            display: flex; align-items: center; gap: .6rem;
+        }
+        .feature-nav .nav-link:hover { color: var(--emerald); background: rgba(0, 201, 123, .06); }
+        .feature-nav .nav-link.active {
+            color: var(--emerald); border-left-color: var(--emerald);
+            background: rgba(0, 201, 123, .07); font-weight: 600;
         }
 
-        .fk-footer { background: #081c15; color: #9db3ab; }
-        .fk-footer a { color: #c6d6cf; }
-        .fk-footer a:hover { color: #fff; }
-        .fk-footer h6 { color: #fff; font-weight: 700; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; }
-        .fk-footer .fk-logo-word { color: #fff; }
+        /* ── Meters / meters used on pricing + about ── */
+        .bar-track { background: #e2e8f0; border-radius: 50px; height: 6px; overflow: hidden; }
+        .bar-fill  { background: var(--emerald); border-radius: 50px; height: 100%; }
 
-        @media print { .fk-navbar, .fk-footer { display: none; } }
+        /* ── Animations ── */
+        @keyframes floatY { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes pulse  { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .4; transform: scale(.8); } }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+        .anim-hero { animation: fadeUp .65s ease both; }
+        .delay-1 { animation-delay: .1s; } .delay-2 { animation-delay: .2s; }
+        .delay-3 { animation-delay: .3s; } .delay-4 { animation-delay: .4s; }
+
+        .reveal { opacity: 0; transform: translateY(22px); transition: opacity .55s ease, transform .55s ease; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            .reveal { opacity: 1; transform: none; transition: none; }
+            .anim-hero, .float-badge, .pulse-dot { animation: none !important; }
+        }
     </style>
+
+    {{-- Reveal animations must never hide content when JavaScript is unavailable. --}}
+    <noscript>
+        <style>
+            .reveal { opacity: 1 !important; transform: none !important; }
+            [x-cloak] { display: revert !important; }
+            .no-js-hide { display: revert !important; }
+        </style>
+    </noscript>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     @yield('extra_head')
 </head>
 <body>
 
-    {{-- Navbar --}}
-    <nav class="fk-navbar navbar navbar-expand-lg py-2">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center gap-2" href="{{ route('website.home') }}">
-                <span class="fk-logo-mark">
-                    <svg width="30" height="30" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M4 26L14 16L4 6" stroke="#0e3b2e" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M15 26L25 16L15 6" stroke="#17a34a" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+<!-- ════════ NAVBAR ════════ -->
+<nav class="navbar navbar-expand-lg bg-white border-bottom fixed-top py-0" style="height:68px;">
+    <div class="container">
+        <a class="navbar-brand" href="{{ url('/') }}">
+            <svg width="30" height="30" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect width="32" height="32" rx="9" fill="#00c97b"/>
+                <path d="M10 16h13M16.5 9.5 23 16l-6.5 6.5" stroke="#0a0f1e" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="flk-word">Flik<em>ma</em></span>
+        </a>
+
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#flkNav" aria-controls="flkNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="flkNav">
+            <ul class="navbar-nav mx-auto gap-1">
+                <li class="nav-item">
+                    <a class="nav-link px-3 py-2 {{ request()->routeIs('website.home') ? 'fw-semibold text-emerald' : '' }}" href="{{ url('/') }}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-3 py-2 {{ request()->routeIs('website.features') ? 'fw-semibold text-emerald' : '' }}" href="{{ url('/features') }}">Features</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-3 py-2 {{ request()->routeIs('website.services') ? 'fw-semibold text-emerald' : '' }}" href="{{ url('/services') }}">Services</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle px-3 py-2 {{ request()->routeIs('website.why-flikma') ? 'fw-semibold text-emerald' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Why Flikma</a>
+                    <ul class="dropdown-menu shadow border-0">
+                        <li><a class="dropdown-item" href="{{ url('/why-flikma') }}#comparison"><i class="bi bi-columns-gap" style="color:var(--ink-ghost);"></i>Switching to Flikma</a></li>
+                        <li><a class="dropdown-item" href="{{ url('/why-flikma') }}#security"><i class="bi bi-shield-lock" style="color:var(--emerald);"></i>Security &amp; Data</a></li>
+                        <li><a class="dropdown-item" href="{{ url('/why-flikma') }}#results"><i class="bi bi-graph-up-arrow" style="color:var(--blue);"></i>Customer Results</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-3 py-2 {{ request()->routeIs('website.pricing') ? 'fw-semibold text-emerald' : '' }}" href="{{ url('/pricing') }}">Pricing</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle px-3 py-2 {{ request()->routeIs('website.about', 'website.contact', 'website.documentation', 'website.products') ? 'fw-semibold text-emerald' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Company</a>
+                    <ul class="dropdown-menu shadow border-0">
+                        <li><a class="dropdown-item" href="{{ url('/about') }}"><i class="bi bi-buildings" style="color:var(--ink-ghost);"></i>About Flikma</a></li>
+                        <li><a class="dropdown-item" href="{{ url('/documentation') }}"><i class="bi bi-journal-text" style="color:var(--blue);"></i>Documentation</a></li>
+                        <li><a class="dropdown-item" href="{{ url('/products') }}"><i class="bi bi-box-seam" style="color:var(--violet);"></i>Platform Modules</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url('/contact') }}"><i class="bi bi-chat-square-text" style="color:var(--emerald);"></i>Contact &amp; Demo</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+            <div class="d-flex gap-2 mt-3 mt-lg-0">
+                @auth
+                    <a href="{{ url('/dashboard') }}" class="btn-emerald">Go to My Account</a>
+                @else
+                    <a href="{{ route('login') }}" class="btn-ghost-light">Login</a>
+                    <a href="{{ route('register') }}" class="btn-emerald">Get Started Free</a>
+                @endauth
+            </div>
+        </div>
+    </div>
+</nav>
+
+@yield('content')
+
+<!-- ════════ FOOTER ════════ -->
+<footer class="py-5 mt-5" style="background:var(--ink);color:#fff;">
+    <div class="container pt-3">
+        <div class="row g-4 pb-4" style="border-bottom:1px solid rgba(255,255,255,.07);">
+            <div class="col-lg-4">
+                <a class="d-inline-flex align-items-center gap-2 text-decoration-none mb-3" href="{{ url('/') }}">
+                    <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <rect width="32" height="32" rx="9" fill="#00c97b"/>
+                        <path d="M10 16h13M16.5 9.5 23 16l-6.5 6.5" stroke="#0a0f1e" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                </span>
-                <span class="fk-logo-word">FLIKMA</span>
-            </a>
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#fkNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="fkNav">
-                <ul class="navbar-nav mx-auto">
-                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('website.home') ? 'active' : '' }}" href="{{ route('website.home') }}">Why Flikma</a></li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Solutions</a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('website.products') }}#operations">Operations</a></li>
-                            <li><a class="dropdown-item" href="{{ route('website.products') }}#finance">Finance</a></li>
-                            <li><a class="dropdown-item" href="{{ route('website.products') }}#compliance">Compliance</a></li>
-                            <li><a class="dropdown-item" href="{{ route('website.products') }}#payroll">Payroll</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('website.features') ? 'active' : '' }}" href="{{ route('website.features') }}">Features</a></li>
-                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('website.pricing') ? 'active' : '' }}" href="{{ route('website.pricing') }}">Pricing</a></li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Resources</a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#">Blog</a></li>
-                            <li><a class="dropdown-item" href="#">Help Center</a></li>
-                            <li><a class="dropdown-item" href="#">Case Studies</a></li>
-                            <li><a class="dropdown-item" href="#">Documentation</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Company</a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('website.services') }}">Services</a></li>
-                            <li><a class="dropdown-item" href="{{ route('website.home') }}#about">About Us</a></li>
-                            <li><a class="dropdown-item" href="{{ route('website.contact') }}">Contact</a></li>
-                        </ul>
-                    </li>
+                    <span style="font-weight:800;font-size:1.4rem;letter-spacing:-.4px;color:#fff;">Flik<em style="font-style:normal;color:var(--emerald);">ma</em></span>
+                </a>
+                <p style="font-size:.85rem;color:rgba(255,255,255,.35);max-width:280px;line-height:1.65;">
+                    AI-powered cloud ERP for freight forwarding and 3PL — with ZATCA Phase 2 e-invoicing, AI expense capture and document scanning built in. Aligned with Saudi Vision 2030.
+                </p>
+                <div class="d-flex gap-3 mt-3">
+                    <a href="#" aria-label="LinkedIn" style="color:rgba(255,255,255,.45);font-size:1.05rem;"><i class="bi bi-linkedin"></i></a>
+                    <a href="#" aria-label="X" style="color:rgba(255,255,255,.45);font-size:1.05rem;"><i class="bi bi-twitter-x"></i></a>
+                    <a href="#" aria-label="YouTube" style="color:rgba(255,255,255,.45);font-size:1.05rem;"><i class="bi bi-youtube"></i></a>
+                </div>
+            </div>
+
+            <div class="col-6 col-lg-2">
+                <div style="font-size:.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.3);">Platform</div>
+                <ul class="list-unstyled mt-3 mb-0">
+                    <li class="mb-2"><a href="{{ url('/features') }}#operations" style="font-size:.85rem;color:rgba(255,255,255,.45);">Freight Operations</a></li>
+                    <li class="mb-2"><a href="{{ url('/features') }}#bl" style="font-size:.85rem;color:rgba(255,255,255,.45);">Bills of Lading</a></li>
+                    <li class="mb-2"><a href="{{ url('/features') }}#finance" style="font-size:.85rem;color:rgba(255,255,255,.45);">Billing &amp; Finance</a></li>
+                    <li class="mb-2"><a href="{{ url('/features') }}#ai" style="font-size:.85rem;color:rgba(255,255,255,.45);">AI Document Scanning</a></li>
+                    <li class="mb-2"><a href="{{ url('/features') }}#expenses" style="font-size:.85rem;color:rgba(255,255,255,.45);">AI Expense Capture</a></li>
+                    <li class="mb-2"><a href="{{ url('/features') }}#zatca" style="font-size:.85rem;color:rgba(255,255,255,.45);">ZATCA Phase 2</a></li>
                 </ul>
-                <div class="d-flex align-items-center gap-2 mt-3 mt-lg-0">
-                    <a href="#" class="fk-btn-lang text-center">العربية</a>
-                    <a href="{{ route('website.contact') }}" class="fk-btn-primary text-center">Request Demo</a>
-                </div>
+            </div>
+
+            <div class="col-6 col-lg-2">
+                <div style="font-size:.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.3);">Company</div>
+                <ul class="list-unstyled mt-3 mb-0">
+                    <li class="mb-2"><a href="{{ url('/about') }}" style="font-size:.85rem;color:rgba(255,255,255,.45);">About Us</a></li>
+                    <li class="mb-2"><a href="{{ url('/why-flikma') }}" style="font-size:.85rem;color:rgba(255,255,255,.45);">Why Flikma</a></li>
+                    <li class="mb-2"><a href="{{ url('/services') }}" style="font-size:.85rem;color:rgba(255,255,255,.45);">Services</a></li>
+                    <li class="mb-2"><a href="{{ url('/pricing') }}" style="font-size:.85rem;color:rgba(255,255,255,.45);">Pricing</a></li>
+                    <li class="mb-2"><a href="{{ url('/contact') }}" style="font-size:.85rem;color:rgba(255,255,255,.45);">Contact</a></li>
+                </ul>
+            </div>
+
+            <div class="col-6 col-lg-2">
+                <div style="font-size:.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.3);">Resources</div>
+                <ul class="list-unstyled mt-3 mb-0">
+                    <li class="mb-2"><a href="{{ url('/documentation') }}" style="font-size:.85rem;color:rgba(255,255,255,.45);">Documentation</a></li>
+                    <li class="mb-2"><a href="{{ url('/documentation') }}#operations" style="font-size:.85rem;color:rgba(255,255,255,.45);">Getting Started</a></li>
+                    <li class="mb-2"><a href="{{ url('/documentation') }}#zatca" style="font-size:.85rem;color:rgba(255,255,255,.45);">ZATCA Guide</a></li>
+                    <li class="mb-2"><a href="{{ url('/documentation') }}#ai" style="font-size:.85rem;color:rgba(255,255,255,.45);">AI Scanning Guide</a></li>
+                    <li class="mb-2"><a href="https://zatca.gov.sa" target="_blank" rel="noopener" style="font-size:.85rem;color:rgba(255,255,255,.45);">ZATCA Portal <i class="bi bi-box-arrow-up-right" style="font-size:.7rem;"></i></a></li>
+                </ul>
+            </div>
+
+            <div class="col-lg-2">
+                <div style="font-size:.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.3);">Contact</div>
+                <ul class="list-unstyled mt-3 mb-0">
+                    <li class="mb-2 d-flex align-items-start gap-2"><i class="bi bi-telephone" style="color:var(--emerald);font-size:.85rem;margin-top:3px;"></i><a href="tel:+966595555343" style="font-size:.85rem;color:rgba(255,255,255,.45);" dir="ltr">+966 59 555 5343</a></li>
+                    <li class="mb-2 d-flex align-items-start gap-2"><i class="bi bi-envelope" style="color:var(--emerald);font-size:.85rem;margin-top:3px;"></i><a href="mailto:support@flikma.com" style="font-size:.85rem;color:rgba(255,255,255,.45);">support@flikma.com</a></li>
+                    <li class="mb-2 d-flex align-items-start gap-2"><i class="bi bi-geo-alt" style="color:var(--emerald);font-size:.85rem;margin-top:3px;"></i><span style="font-size:.85rem;color:rgba(255,255,255,.45);">Riyadh, Saudi Arabia</span></li>
+                </ul>
             </div>
         </div>
-    </nav>
 
-    @yield('content')
-
-    {{-- Footer --}}
-    <footer class="fk-footer pt-5 pb-4 mt-5">
-        <div class="container">
-            <div class="row g-4">
-                <div class="col-lg-4">
-                    <div class="d-flex align-items-center gap-2 mb-3">
-                        <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M4 26L14 16L4 6" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M15 26L25 16L15 6" stroke="#17a34a" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        <span class="fk-logo-word">FLIKMA</span>
-                    </div>
-                    <p class="small" style="max-width: 300px;">Smart logistics software to manage your shipments, customers, and operations with complete efficiency and visibility.</p>
-                    <div class="d-flex gap-3 mt-3">
-                        <a href="#"><i class="bi bi-linkedin fs-5"></i></a>
-                        <a href="#"><i class="bi bi-facebook fs-5"></i></a>
-                        <a href="#"><i class="bi bi-twitter-x fs-5"></i></a>
-                        <a href="#"><i class="bi bi-youtube fs-5"></i></a>
-                    </div>
-                </div>
-                <div class="col-6 col-lg-2">
-                    <h6>Solutions</h6>
-                    <ul class="list-unstyled small mt-3">
-                        <li class="mb-2"><a href="{{ route('website.products') }}">Freight Management</a></li>
-                        <li class="mb-2"><a href="{{ route('website.products') }}">Operations</a></li>
-                        <li class="mb-2"><a href="{{ route('website.products') }}">Billing &amp; Invoicing</a></li>
-                        <li class="mb-2"><a href="{{ route('website.products') }}">CRM</a></li>
-                    </ul>
-                </div>
-                <div class="col-6 col-lg-2">
-                    <h6>Platform</h6>
-                    <ul class="list-unstyled small mt-3">
-                        <li class="mb-2"><a href="{{ route('website.features') }}">Features</a></li>
-                        <li class="mb-2"><a href="#">Integrations</a></li>
-                        <li class="mb-2"><a href="#">Security</a></li>
-                        <li class="mb-2"><a href="#">Mobile App</a></li>
-                    </ul>
-                </div>
-                <div class="col-6 col-lg-2">
-                    <h6>Resources</h6>
-                    <ul class="list-unstyled small mt-3">
-                        <li class="mb-2"><a href="#">Blog</a></li>
-                        <li class="mb-2"><a href="#">Help Center</a></li>
-                        <li class="mb-2"><a href="#">Case Studies</a></li>
-                        <li class="mb-2"><a href="#">Documents</a></li>
-                    </ul>
-                </div>
-                <div class="col-6 col-lg-2">
-                    <h6>Company</h6>
-                    <ul class="list-unstyled small mt-3">
-                        <li class="mb-2"><a href="{{ route('website.home') }}#about">About Us</a></li>
-                        <li class="mb-2"><a href="#">Careers</a></li>
-                        <li class="mb-2"><a href="{{ route('website.services') }}">Partners</a></li>
-                        <li class="mb-2"><a href="{{ route('website.contact') }}">Contact Us</a></li>
-                    </ul>
-                </div>
-            </div>
-            <hr class="border-secondary opacity-25 my-4">
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <h6 class="mb-2">Contact Us</h6>
-                    <div class="small mb-1"><i class="bi bi-telephone me-2"></i>+966 595555343</div>
-                    <div class="small mb-1"><i class="bi bi-envelope me-2"></i>support@flikma.com</div>
-                    <div class="small"><i class="bi bi-geo-alt me-2"></i>Riyadh, Saudi Arabia</div>
-                </div>
-            </div>
-            <hr class="border-secondary opacity-25 my-4">
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center small">
-                <div>&copy; {{ date('Y') }} Flikma. All rights reserved.</div>
-                <div class="d-flex gap-3 mt-2 mt-md-0">
-                    <a href="#">Privacy Policy</a>
-                    <a href="#">Terms of Service</a>
-                    <a href="#">SLA</a>
-                </div>
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center pt-4 gap-2">
+            <span style="font-size:.8rem;color:rgba(255,255,255,.25);">&copy; {{ date('Y') }} Flikma. All rights reserved. Built for Saudi Vision 2030.</span>
+            <div class="d-flex gap-3">
+                <a href="{{ url('/about') }}" style="font-size:.8rem;color:rgba(255,255,255,.3);">About</a>
+                <a href="{{ url('/contact') }}" style="font-size:.8rem;color:rgba(255,255,255,.3);">Contact</a>
             </div>
         </div>
-    </footer>
+    </div>
+</footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    @yield('extra_scripts')
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    /* Scroll reveal — any .reveal element fades up once it enters the viewport. */
+    (function () {
+        var els = document.querySelectorAll('.reveal');
+        if (!els.length) return;
+        if (!('IntersectionObserver' in window)) {
+            els.forEach(function (el) { el.classList.add('visible'); });
+            return;
+        }
+        var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (!entry.isIntersecting) return;
+                var i = Array.prototype.indexOf.call(entry.target.parentNode.children, entry.target);
+                setTimeout(function () { entry.target.classList.add('visible'); }, Math.max(0, i) * 80);
+                io.unobserve(entry.target);
+            });
+        }, { threshold: 0.08 });
+        els.forEach(function (el) { io.observe(el); });
+    })();
+
+    /* Sticky sidebar scroll-spy for pages that declare data-spy-nav. */
+    (function () {
+        var nav = document.querySelector('[data-spy-nav]');
+        if (!nav) return;
+        var links = nav.querySelectorAll('.nav-link');
+        var sections = [].slice.call(document.querySelectorAll('section[id]'));
+        if (!links.length || !sections.length) return;
+        window.addEventListener('scroll', function () {
+            var y = window.scrollY;
+            var current = null;
+            sections.forEach(function (s) {
+                if (s.offsetTop - 140 <= y) current = s.id;
+            });
+            links.forEach(function (l) {
+                l.classList.toggle('active', l.getAttribute('href') === '#' + current);
+            });
+        }, { passive: true });
+    })();
+</script>
+
+@yield('extra_scripts')
 </body>
 </html>

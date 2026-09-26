@@ -1,393 +1,434 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('website.layout')
 
-<head>
+@section('title', 'Why Flikma — Built for Freight Forwarders, Not Adapted From Accounting')
+@section('meta_description', 'Why logistics companies switch to Flikma: purpose-built freight forwarding ERP with AI document scanning, AI expense capture, ZATCA Phase 2 and multi-entity support. See the comparison, the security model and the results.')
+@section('meta_keywords', 'freight forwarding ERP comparison, logistics software review, why switch logistics software, freight forwarding software Saudi Arabia, ZATCA compliant logistics software, AI logistics software')
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Why freight forwarders and logistics companies in Saudi Arabia, Bahrain and Dubai choose Flikma over spreadsheets and generic accounting software.">
-    <meta name="keywords" content="logistics ERP Saudi Arabia, why choose logistics software, freight forwarding software Bahrain, logistics software Dubai, ZATCA compliant ERP, logistics ERP GCC">
+@section('content')
 
-    <title>Why Flikma - Trusted Logistics ERP in Saudi Arabia, Bahrain & Dubai</title>
+    <style>
+        .vs-row { border: 1.5px solid var(--line); border-radius: 18px; overflow: hidden; background: #fff; }
+        .vs-head { display: grid; grid-template-columns: 1.4fr 1.1fr 1.1fr; background: var(--ink); color: #fff; font-size: .72rem; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; }
+        .vs-head > div { padding: 1rem 1.25rem; }
+        .vs-head .ours { color: var(--emerald); }
+        .vs-body { display: grid; grid-template-columns: 1.4fr 1.1fr 1.1fr; border-top: 1px solid var(--line); font-size: .87rem; }
+        .vs-body > div { padding: .95rem 1.25rem; color: var(--ink-muted); }
+        .vs-body .label { color: var(--ink); font-weight: 600; }
+        .vs-body .ours { background: rgba(0, 201, 123, .04); }
+        .vs-body .ours i { color: var(--emerald-dim); }
+        .vs-body .theirs i { color: var(--ink-ghost); }
+        @media (max-width: 767.98px) {
+            .vs-head, .vs-body { grid-template-columns: 1fr; }
+            .vs-head > div:not(:first-child) { display: none; }
+            .vs-body > div { border-top: 1px dashed var(--line); }
+            .vs-body > div:first-child { border-top: 0; }
+            .vs-body .ours::before, .vs-body .theirs::before { display: block; font-size: .64rem; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; margin-bottom: .2rem; }
+            .vs-body .ours::before { content: 'Flikma'; color: var(--emerald-dim); }
+            .vs-body .theirs::before { content: 'Typical alternative'; color: var(--ink-ghost); }
+        }
+        .bullet-list { list-style: none; padding: 0; margin: 0; }
+        .bullet-list li { display: flex; align-items: flex-start; gap: .7rem; font-size: .9rem; color: var(--ink-muted); line-height: 1.65; margin-bottom: .7rem; }
+        .bullet-list i { color: var(--emerald-dim); font-size: .95rem; margin-top: 4px; flex-shrink: 0; }
+        .bullet-list strong { color: var(--ink); font-weight: 600; }
+        .pillar { border: 1.5px solid var(--line); border-radius: 18px; background: #fff; padding: 2rem 1.75rem; height: 100%; transition: all .25s; }
+        .pillar:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(10, 15, 30, .07); }
+    </style>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- ════════════════ HERO ════════════════ -->
+    <header class="page-hero">
+        <div class="container">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-7">
+                    <div class="hero-pill mb-3"><i class="bi bi-stars"></i> Why Flikma</div>
+                    <h1 class="mb-3">Accounting software was never built for freight.</h1>
+                    <p class="mb-4" style="max-width:580px;">
+                        Most logistics companies run an accounting package with a logistics module bolted on, then
+                        spend their lives translating between the two. Flikma was built the other way around:
+                        the shipment is the centre, and the ledger simply follows it.
+                    </p>
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="{{ url('/contact') }}" class="btn-hero-primary">Book a Live Demo <i class="bi bi-arrow-right"></i></a>
+                        <a href="#comparison" class="btn-hero-outline">See the comparison</a>
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="rounded-4 p-4 reveal" style="background:var(--ink);">
+                        <div class="section-label mb-3" style="color:var(--emerald);">The Short Version</div>
+                        <p class="mb-4" style="color:rgba(255,255,255,.7);font-size:1rem;line-height:1.7;">
+                            If your biggest cost is a person retyping documents, and your biggest risk is a
+                            missed ZATCA deadline, you are using the wrong category of software.
+                        </p>
+                        <div class="d-flex flex-column gap-2">
+                            <div class="d-flex align-items-center gap-2" style="font-size:.85rem;color:rgba(255,255,255,.6);"><i class="bi bi-x-circle" style="color:var(--red);"></i> Documents retyped by hand</div>
+                            <div class="d-flex align-items-center gap-2" style="font-size:.85rem;color:rgba(255,255,255,.6);"><i class="bi bi-x-circle" style="color:var(--red);"></i> e-invoicing as a separate add-on</div>
+                            <div class="d-flex align-items-center gap-2" style="font-size:.85rem;color:rgba(255,255,255,.6);"><i class="bi bi-x-circle" style="color:var(--red);"></i> Warehouse features you never use</div>
+                            <div class="d-flex align-items-center gap-2 pt-2 mt-1" style="border-top:1px solid rgba(255,255,255,.1);font-size:.85rem;color:#fff;font-weight:600;"><i class="bi bi-check-circle-fill" style="color:var(--emerald);"></i> One platform, freight-first</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- ════════════════ FOUR PILLARS ════════════════ -->
+    <section class="fk-section">
+        <div class="container">
+            <div class="section-head text-center mb-5 reveal">
+                <div class="section-label">Our Four Beliefs</div>
+                <h2>What we think a logistics ERP should be</h2>
+            </div>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+            <div class="row g-4">
+                <div class="col-md-6 reveal">
+                    <div class="pillar">
+                        <div class="feat-icon-box mb-3" style="background:var(--emerald-soft);color:var(--emerald-dim);"><i class="bi bi-box-arrow-in-down-left"></i></div>
+                        <h4 class="feat-title mb-2" style="font-size:1.2rem;">The shipment is the source of truth</h4>
+                        <p class="small mb-0" style="color:var(--ink-muted);line-height:1.75;">
+                            Not the invoice. Not the spreadsheet. The job file is the record of what happened,
+                            and every document, charge and ledger entry hangs off it. When something does not
+                            add up, there is one place to look.
+                        </p>
+                    </div>
+                </div>
 
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                <div class="col-md-6 reveal">
+                    <div class="pillar">
+                        <div class="feat-icon-box mb-3" style="background:rgba(79,70,229,.09);color:var(--indigo);"><i class="bi bi-cpu"></i></div>
+                        <h4 class="feat-title mb-2" style="font-size:1.2rem;">Software should do the typing</h4>
+                        <p class="small mb-0" style="color:var(--ink-muted);line-height:1.75;">
+                            Humans should verify, not transcribe. Every document entering your business has
+                            been transcribed by someone, at some point, usually twice. AI removes that step
+                            entirely and leaves the human judgement where it is actually valuable.
+                        </p>
+                    </div>
+                </div>
 
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+                <div class="col-md-6 reveal">
+                    <div class="pillar">
+                        <div class="feat-icon-box mb-3" style="background:rgba(58,107,255,.09);color:var(--blue);"><i class="bi bi-patch-check"></i></div>
+                        <h4 class="feat-title mb-2" style="font-size:1.2rem;">Compliance is not a feature</h4>
+                        <p class="small mb-0" style="color:var(--ink-muted);line-height:1.75;">
+                            ZATCA Phase 2 is a legal obligation, not a competitive feature to be upsold. It is
+                            in the base product, on the free plan, because a Saudi company should never have to
+                            ask whether compliance is switched on.
+                        </p>
+                    </div>
+                </div>
 
-    <link href="{{ asset('css/website/style.css') }}" rel="stylesheet">
+                <div class="col-md-6 reveal">
+                    <div class="pillar">
+                        <div class="feat-icon-box mb-3" style="background:rgba(6,182,212,.09);color:var(--cyan);"><i class="bi bi-bullseye"></i></div>
+                        <h4 class="feat-title mb-2" style="font-size:1.2rem;">Do not sell what you do not need</h4>
+                        <p class="small mb-0" style="color:var(--ink-muted);line-height:1.75;">
+                            Flikma has no warehouse module, because most of our customers do not run one and
+                            paying for put-away logic you never touch is a tax on your business. We would
+                            rather be a precise fit than a bloated one.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <link href="{{ asset('css/website/responsive.css') }}" rel="stylesheet">
+    <!-- ════════════════ COMPARISON ════════════════ -->
+    <section id="comparison" class="fk-section bg-white">
+        <div class="container">
+            <div class="section-head text-center mb-5 reveal">
+                <div class="section-label">Comparison</div>
+                <h2>Flikma vs. a typical accounting-plus-logistics setup</h2>
+                <p>The categories below are the ones logistics teams tell us matter most. If your current system
+                   handles these well, keep it &mdash; genuinely.</p>
+            </div>
 
-</head>
+            <div class="vs-row reveal">
+                <div class="vs-head">
+                    <div>Capability</div>
+                    <div class="ours">Flikma</div>
+                    <div>Typical alternative</div>
+                </div>
 
-<body>
+                <div class="vs-body">
+                    <div class="label">Enquiry to quotation to job</div>
+                    <div class="ours"><i class="bi bi-check-circle-fill"></i> One continuous record</div>
+                    <div class="theirs"><i class="bi bi-dash-circle"></i> Split across tools</div>
+                </div>
+                <div class="vs-body">
+                    <div class="label">Supplier invoice data entry</div>
+                    <div class="ours"><i class="bi bi-check-circle-fill"></i> AI extracts and pre-fills</div>
+                    <div class="theirs"><i class="bi bi-x-circle"></i> Manual retyping</div>
+                </div>
+                <div class="vs-body">
+                    <div class="label">Receipt and expense capture</div>
+                    <div class="ours"><i class="bi bi-check-circle-fill"></i> Photograph &rarr; posted</div>
+                    <div class="theirs"><i class="bi bi-x-circle"></i> Manual, after the fact</div>
+                </div>
+                <div class="vs-body">
+                    <div class="label">ZATCA Phase 2 e-invoicing</div>
+                    <div class="ours"><i class="bi bi-check-circle-fill"></i> Included on all plans</div>
+                    <div class="theirs"><i class="bi bi-dash-circle"></i> Often a paid module</div>
+                </div>
+                <div class="vs-body">
+                    <div class="label">Invoice type selection</div>
+                    <div class="ours"><i class="bi bi-check-circle-fill"></i> Automatic from customer</div>
+                    <div class="theirs"><i class="bi bi-dash-circle"></i> Manual selection, error-prone</div>
+                </div>
+                <div class="vs-body">
+                    <div class="label">Job profitability visibility</div>
+                    <div class="ours"><i class="bi bi-check-circle-fill"></i> Live, per leg</div>
+                    <div class="theirs"><i class="bi bi-dash-circle"></i> Only after month-end</div>
+                </div>
+                <div class="vs-body">
+                    <div class="label">Airway bill &amp; sea waybill printing</div>
+                    <div class="ours"><i class="bi bi-check-circle-fill"></i> Native, multiple formats</div>
+                    <div class="theirs"><i class="bi bi-dash-circle"></i> Third-party tool or Word</div>
+                </div>
+                <div class="vs-body">
+                    <div class="label">Multi-entity across the GCC</div>
+                    <div class="ours"><i class="bi bi-check-circle-fill"></i> Built in, consolidated</div>
+                    <div class="theirs"><i class="bi bi-dash-circle"></i> Separate databases or add-ons</div>
+                </div>
+                <div class="vs-body">
+                    <div class="label">Arabic and English documents</div>
+                    <div class="ours"><i class="bi bi-check-circle-fill"></i> Bilingual throughout</div>
+                    <div class="theirs"><i class="bi bi-dash-circle"></i> Often English only</div>
+                </div>
+                <div class="vs-body">
+                    <div class="label">Warehouse &amp; stock control</div>
+                    <div class="ours"><i class="bi bi-dash-circle"></i> Deliberately not included</div>
+                    <div class="theirs"><i class="bi bi-check-circle-fill"></i> Often bundled, often unused</div>
+                </div>
+                <div class="vs-body">
+                    <div class="label">Typical time to first cleared invoice</div>
+                    <div class="ours"><i class="bi bi-check-circle-fill"></i> 2&ndash;3 weeks</div>
+                    <div class="theirs"><i class="bi bi-dash-circle"></i> 2&ndash;6 months</div>
+                </div>
+            </div>
 
+            <p class="text-center mt-3 mb-0 small text-ink-ghost reveal">
+                The "typical alternative" column reflects the feedback of forwarders who came to us from other systems.
+                Your mileage will vary &mdash; that is what the
+                <a href="{{ url('/contact') }}" class="text-emerald fw-semibold">demo</a> is for.
+            </p>
+        </div>
+    </section>
 
-<!-- ==========================
-Navbar
-=========================== -->
+    <!-- ════════════════ RESULTS ════════════════ -->
+    <section id="results" class="fk-section">
+        <div class="container">
+            <div class="section-head text-center mb-5 reveal">
+                <div class="section-label">Customer Results</div>
+                <h2>What changes in the first ninety days</h2>
+                <p>Aggregate figures reported by customers after their first full quarter on Flikma.
+                   Individual results vary by volume and process.</p>
+            </div>
 
-@include('website.partials.nav')
+            <div class="row g-3 mb-5">
+                <div class="col-6 col-lg-3 reveal">
+                    <div class="stat-chip h-100">
+                        <div class="chip-value" style="color:var(--emerald-dim);">70%</div>
+                        <div class="chip-label">Less time on supplier bill entry</div>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3 reveal">
+                    <div class="stat-chip h-100">
+                        <div class="chip-value" style="color:var(--blue);">18 hrs</div>
+                        <div class="chip-label">Saved per invoice on admin</div>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3 reveal">
+                    <div class="stat-chip h-100">
+                        <div class="chip-value" style="color:var(--indigo);">100%</div>
+                        <div class="chip-label">ZATCA clearance first time</div>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3 reveal">
+                    <div class="stat-chip h-100">
+                        <div class="chip-value" style="color:var(--violet);">3 wks</div>
+                        <div class="chip-label">Average time to go-live</div>
+                    </div>
+                </div>
+            </div>
 
+            <div class="row g-4">
+                <div class="col-lg-4 reveal">
+                    <div class="feat-card p-4 h-100" style="padding:2rem 1.75rem;">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <span class="trust-avatar" style="margin-left:0;">RK</span>
+                            <div style="line-height:1.2;">
+                                <div style="font-weight:700;font-size:.85rem;">Operations Manager</div>
+                                <div style="font-size:.72rem;color:var(--ink-ghost);">Freight forwarder, Riyadh</div>
+                            </div>
+                        </div>
+                        <i class="bi bi-quote" style="font-size:1.6rem;color:var(--emerald);opacity:.4;"></i>
+                        <p class="small mb-0" style="color:var(--ink-muted);line-height:1.8;">
+                            "The scan feature paid for itself in the first month. Our admin used to spend two
+                            full days a week typing carrier invoices. Now she reviews them."
+                        </p>
+                    </div>
+                </div>
 
-<!-- =====================
-Page Header
-====================== -->
+                <div class="col-lg-4 reveal">
+                    <div class="feat-card p-4 h-100" style="padding:2rem 1.75rem;">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <span class="trust-avatar" style="margin-left:0;">AM</span>
+                            <div style="line-height:1.2;">
+                                <div style="font-weight:700;font-size:.85rem;">Finance Director</div>
+                                <div style="font-size:.72rem;color:var(--ink-ghost);">Logistics group, Bahrain</div>
+                            </div>
+                        </div>
+                        <i class="bi bi-quote" style="font-size:1.6rem;color:var(--emerald);opacity:.4;"></i>
+                        <p class="small mb-0" style="color:var(--ink-muted);line-height:1.8;">
+                            "Month-end used to take nine days. The last close took two, and I did not have to
+                            rebuild a single spreadsheet to get there."
+                        </p>
+                    </div>
+                </div>
 
-<section class="page-header">
+                <div class="col-lg-4 reveal">
+                    <div class="feat-card p-4 h-100" style="padding:2rem 1.75rem;">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <span class="trust-avatar" style="margin-left:0;">SD</span>
+                            <div style="line-height:1.2;">
+                                <div style="font-weight:700;font-size:.85rem;">Managing Director</div>
+                                <div style="font-size:.72rem;color:var(--ink-ghost);">Freight forwarder, Dubai</div>
+                            </div>
+                        </div>
+                        <i class="bi bi-quote" style="font-size:1.6rem;color:var(--emerald);opacity:.4;"></i>
+                        <p class="small mb-0" style="color:var(--ink-muted);line-height:1.8;">
+                            "I can see the margin on a job while it is still moving, not when it is finished.
+                            That one change has altered how we price."
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <div class="container text-center">
+    <!-- ════════════════ SECURITY ════════════════ -->
+    <section id="security" class="fk-section bg-ink">
+        <div class="container">
+            <div class="row g-5 align-items-center">
+                <div class="col-lg-6">
+                    <div class="section-label">Security &amp; Data</div>
+                    <h2 class="mt-2 mb-3" style="color:#fff;font-size:clamp(1.6rem,3vw,2.2rem);font-weight:800;line-height:1.15;">
+                        Your freight data is commercially sensitive. We treat it that way.
+                    </h2>
+                    <p class="mb-4" style="color:rgba(255,255,255,.55);line-height:1.75;">
+                        A forwarder's data reveals your customers, your carriers, your rates and your margins.
+                        Losing it, or leaking it, is an existential event. These are the controls we run.
+                    </p>
+                    <ul class="dark-check list-unstyled mb-0">
+                        <li><i class="bi bi-shield-lock-fill"></i><span><strong style="color:#fff;">Tenant isolation</strong> &mdash; every company gets a scoped data layer; one tenant can never read another's records</span></li>
+                        <li><i class="bi bi-shield-lock-fill"></i><span><strong style="color:#fff;">Role-based permissions</strong> at module level, enforced server-side on every request</span></li>
+                        <li><i class="bi bi-shield-lock-fill"></i><span><strong style="color:#fff;">Full activity logging</strong> &mdash; every change is attributable and time-stamped</span></li>
+                        <li><i class="bi bi-shield-lock-fill"></i><span><strong style="color:#fff;">Two-factor authentication</strong> and optional SSO on Enterprise</span></li>
+                        <li><i class="bi bi-shield-lock-fill"></i><span><strong style="color:#fff;">Document isolation</strong> &mdash; scanned files processed in a separate queue, never used to train shared models</span></li>
+                        <li><i class="bi bi-shield-lock-fill"></i><span><strong style="color:#fff;">Backups and recovery</strong> with monitored uptime and restore testing</span></li>
+                    </ul>
+                </div>
 
-        <span class="section-tag">Why Flikma</span>
+                <div class="col-lg-6">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="h-100 p-4 rounded-4" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);">
+                                <i class="bi bi-building-lock" style="font-size:1.6rem;color:var(--emerald);"></i>
+                                <h6 class="fw-bold mt-3 mb-1" style="color:#fff;font-size:.95rem;">Private Cloud</h6>
+                                <p class="mb-0" style="font-size:.78rem;color:rgba(255,255,255,.45);line-height:1.6;">Dedicated tenancy in a Saudi-region data centre.</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="h-100 p-4 rounded-4" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);">
+                                <i class="bi bi-hdd-network" style="font-size:1.6rem;color:var(--emerald);"></i>
+                                <h6 class="fw-bold mt-3 mb-1" style="color:#fff;font-size:.95rem;">On-Premise</h6>
+                                <p class="mb-0" style="font-size:.78rem;color:rgba(255,255,255,.45);line-height:1.6;">Available on Enterprise for regulated customers.</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="h-100 p-4 rounded-4" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);">
+                                <i class="bi bi-journal-check" style="font-size:1.6rem;color:var(--emerald);"></i>
+                                <h6 class="fw-bold mt-3 mb-1" style="color:#fff;font-size:.95rem;">Audit Logs</h6>
+                                <p class="mb-0" style="font-size:.78rem;color:rgba(255,255,255,.45);line-height:1.6;">Exportable history for internal and external audit.</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="h-100 p-4 rounded-4" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);">
+                                <i class="bi bi-key" style="font-size:1.6rem;color:var(--emerald);"></i>
+                                <h6 class="fw-bold mt-3 mb-1" style="color:#fff;font-size:.95rem;">SSO &amp; 2FA</h6>
+                                <p class="mb-0" style="font-size:.78rem;color:rgba(255,255,255,.45);line-height:1.6;">SAML single sign-on and mandatory 2FA on Enterprise.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-        <h1 class="mt-3">
+    <!-- ════════════════ SWITCHING ════════════════ -->
+    <section class="fk-section bg-white">
+        <div class="container">
+            <div class="row g-5 align-items-center">
+                <div class="col-lg-6">
+                    <div class="section-label">Switching</div>
+                    <h2 class="mt-2 mb-3" style="font-size:clamp(1.6rem,3vw,2.2rem);font-weight:800;line-height:1.15;">
+                        Moving is less painful than you think
+                    </h2>
+                    <p class="mb-4" style="color:var(--ink-muted);line-height:1.75;">
+                        The scariest part of changing freight software is not the software &mdash; it is the fear of
+                        losing a decade of job history and outstanding customer balances. That is the part we
+                        take off you.
+                    </p>
+                    <ul class="bullet-list mb-4">
+                        <li><i class="bi bi-check-circle-fill"></i><span><strong>Run both systems in parallel</strong> for your first month &mdash; nothing is switched off on day one</span></li>
+                        <li><i class="bi bi-check-circle-fill"></i><span><strong>Open jobs migrate, not just masters</strong> &mdash; in-transit shipments keep their history</span></li>
+                        <li><i class="bi bi-check-circle-fill"></i><span><strong>Aging carries over exactly</strong> &mdash; every open receivable and payable with its original invoice date</span></li>
+                        <li><i class="bi bi-check-circle-fill"></i><span><strong>Trial balance reconciled</strong> before we declare the migration done</span></li>
+                        <li><i class="bi bi-check-circle-fill"></i><span><strong>ZATCA onboarding runs in parallel</strong>, so your first month of compliant invoicing starts clean</span></li>
+                    </ul>
+                    <a href="{{ url('/services') }}" class="btn-hero-outline">Read about our process <i class="bi bi-arrow-right"></i></a>
+                </div>
+                <div class="col-lg-6">
+                    <div class="panel reveal" style="border:1.5px solid var(--line);border-radius:18px;background:var(--surface);padding:2rem;">
+                        <div class="row text-center g-3">
+                            <div class="col-4">
+                                <div style="font-size:1.9rem;font-weight:800;color:var(--emerald-dim);">2&ndash;3</div>
+                                <div style="font-size:.76rem;color:var(--ink-ghost);">Weeks to live</div>
+                            </div>
+                            <div class="col-4">
+                                <div style="font-size:1.9rem;font-weight:800;color:var(--blue);">1</div>
+                                <div style="font-size:.76rem;color:var(--ink-ghost);">Month in parallel</div>
+                            </div>
+                            <div class="col-4">
+                                <div style="font-size:1.9rem;font-weight:800;color:var(--indigo);">0</div>
+                                <div style="font-size:.76rem;color:var(--ink-ghost);">Data lost</div>
+                            </div>
+                        </div>
+                        <div class="text-center mt-4 pt-3" style="border-top:1px solid var(--line);">
+                            <p class="mb-0 small" style="color:var(--ink-muted);line-height:1.7;">
+                                Most forwarders tell us the migration was the least stressful part of the project.
+                                The nervous part before it is completely normal.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-            Purpose-Built For Freight Forwarders,<br>Not Generic Accounting Software
-
-        </h1>
-
-        <p class="page-header-desc mx-auto">
-
-            Flikma was designed around how freight and logistics businesses actually
-            operate — not retrofitted from a generic accounting package.
-
-        </p>
-
-    </div>
-
-</section>
-
-
-<!-- =====================
-Intro
-====================== -->
-
-<section class="why-section">
-
-    <div class="container">
-
-        <div class="row g-5">
-
-            <div class="col-lg-6">
-
-                <span class="section-tag">
-                    ONE CONNECTED SYSTEM
-                </span>
-
-                <h2 class="section-title mt-3">
-                    Everything From Enquiry To ZATCA-Compliant Invoice, In One Place
-                </h2>
-
-                <p class="section-desc mt-4">
-                    Most freight forwarders run their business across three disconnected
-                    tools: a spreadsheet for quotations and job costing, a generic
-                    accounting package for invoices, and a separate process (or a
-                    costly add-on) to stay ZATCA-compliant. Flikma replaces all three
-                    with a single system built specifically around how logistics
-                    businesses work.
+    <!-- ════════════════ CTA ════════════════ -->
+    <section class="pb-5">
+        <div class="container">
+            <div class="cta-banner p-4 p-md-5 text-center reveal">
+                <h2 class="mb-3">Convince us you need something else</h2>
+                <p class="mb-4" style="font-size:1.02rem;">
+                    Bring your hardest workflow to the demo. If Flikma cannot do it, we will tell you
+                    &mdash; and point you at something that can.
                 </p>
-
-                <div class="row mt-4">
-
-                    <div class="col-md-6">
-                        <div class="compliance-item">
-                            <i class="bi bi-check-circle-fill"></i>
-                            Built for Freight & Transportation
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="compliance-item">
-                            <i class="bi bi-check-circle-fill"></i>
-                            ZATCA Phase 2 Included
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="compliance-item">
-                            <i class="bi bi-check-circle-fill"></i>
-                            Multi-Company Ready
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="compliance-item">
-                            <i class="bi bi-check-circle-fill"></i>
-                            Full Audit Trail
-                        </div>
-                    </div>
-
+                <div class="d-flex flex-wrap gap-3 justify-content-center">
+                    <a href="{{ url('/contact') }}" class="btn-hero-primary">Book a Live Demo <i class="bi bi-arrow-right"></i></a>
+                    <a href="{{ url('/features') }}" class="btn-outline-light-fk">Explore the Modules</a>
                 </div>
-
-                <div class="mt-5">
-
-                    <a href="{{ url('/register') }}" class="btn btn-primary btn-lg rounded-pill">
-                        Create Your Free Account
-                    </a>
-
-                </div>
-
             </div>
-
-            <div class="col-lg-6">
-
-                <div class="why-image-frame">
-                    <img src="{{ asset('img/why/why-flikma.svg') }}"
-                         class="img-fluid rounded-4">
-                </div>
-
-            </div>
-
         </div>
+    </section>
 
-    </div>
-
-</section>
-
-
-<!-- =====================
-Quick Highlights
-====================== -->
-
-<section class="why-section bg-light">
-
-    <div class="container">
-
-        <div class="text-center mb-5">
-
-            <span class="section-tag">AT A GLANCE</span>
-
-            <h2 class="section-title mt-3">
-                Everything You Need In One Platform
-            </h2>
-
-        </div>
-
-        <div class="row g-4">
-
-            <div class="col-lg-3 col-md-6">
-                <div class="why-card">
-                    <i class="bi bi-cloud-fill"></i>
-                    <h5>Cloud Based</h5>
-                    <p>Access anywhere.</p>
-                </div>
-            </div>
-
-            <div class="col-lg-3 col-md-6">
-                <div class="why-card">
-                    <i class="bi bi-shield-check"></i>
-                    <h5>Secure</h5>
-                    <p>Enterprise grade security.</p>
-                </div>
-            </div>
-
-            <div class="col-lg-3 col-md-6">
-                <div class="why-card">
-                    <i class="bi bi-phone"></i>
-                    <h5>Responsive</h5>
-                    <p>Works on every device.</p>
-                </div>
-            </div>
-
-            <div class="col-lg-3 col-md-6">
-                <div class="why-card">
-                    <i class="bi bi-lightning-charge-fill"></i>
-                    <h5>Fast</h5>
-                    <p>High performance ERP.</p>
-                </div>
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- =====================
-Who It's For
-====================== -->
-
-<section class="why-section">
-
-    <div class="container">
-
-        <div class="text-center mb-5">
-
-            <span class="section-tag">WHO IT'S FOR</span>
-
-            <h2 class="section-title mt-3">
-                Built For Teams That Move Freight, Not Paperwork
-            </h2>
-
-            <p class="section-desc mx-auto">
-                Flikma fits businesses of different sizes and structures, as long as
-                the work is the same: quote it, ship it, bill it, get paid.
-            </p>
-
-        </div>
-
-        <div class="row g-4">
-
-            <div class="col-lg-4">
-                <div class="why-card h-100">
-                    <i class="bi bi-airplane-fill"></i>
-                    <h5>Freight Forwarders</h5>
-                    <p>
-                        Run air, sea and land shipments through one enquiry-to-invoice
-                        pipeline instead of a spreadsheet per shipment.
-                    </p>
-                </div>
-            </div>
-
-            <div class="col-lg-4">
-                <div class="why-card h-100">
-                    <i class="bi bi-buildings"></i>
-                    <h5>Multi-Branch Groups</h5>
-                    <p>
-                        Keep every branch or company on the same chart of accounts,
-                        with department-level rights controlling who sees what.
-                    </p>
-                </div>
-            </div>
-
-            <div class="col-lg-4">
-                <div class="why-card h-100">
-                    <i class="bi bi-receipt-cutoff"></i>
-                    <h5>Growing Operations Teams</h5>
-                    <p>
-                        As headcount grows, bring new hires in under a department
-                        with exactly the access their role needs &mdash; nothing more.
-                    </p>
-                </div>
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- =====================
-Before / After
-====================== -->
-
-<section class="why-section bg-light">
-
-    <div class="container">
-
-        <div class="text-center mb-5">
-
-            <span class="section-tag">WHAT CHANGES</span>
-
-            <h2 class="section-title mt-3">
-                From Scattered Spreadsheets To One Live Dashboard
-            </h2>
-
-            <p class="section-desc mx-auto">
-                A single connected workflow removes the re-typing and reconciliation
-                that spreadsheets and disconnected tools force on your team.
-            </p>
-
-        </div>
-
-        <div class="row g-5">
-
-            <div class="col-lg-6">
-
-                <div class="why-image-frame">
-                    <img src="{{ asset('img/dashboard/dashboard-main.svg') }}"
-                         class="img-fluid rounded-4">
-                </div>
-
-            </div>
-
-            <div class="col-lg-6 d-flex flex-column gap-4">
-
-                <div class="compare-card compare-without">
-                    <div class="compare-card-label">
-                        <i class="bi bi-x-circle-fill"></i> Without Flikma
-                    </div>
-                    <ul class="compare-card-list">
-                        <li>Quotations, job costs and invoices live in separate files that have to be manually kept in sync.</li>
-                        <li>ZATCA e-invoicing compliance means a separate tool, a manual export step, or a costly add-on.</li>
-                    </ul>
-                </div>
-
-                <div class="compare-card compare-with">
-                    <div class="compare-card-label">
-                        <i class="bi bi-check-circle-fill"></i> With Flikma
-                    </div>
-                    <ul class="compare-card-list">
-                        <li>An approved quotation becomes a job, and a job becomes an invoice &mdash; automatically, with nothing re-typed.</li>
-                        <li>Every customer invoice is generated ZATCA Phase 2 ready &mdash; XML, QR code and digital signature included.</li>
-                    </ul>
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- ==========================================
-CTA
-========================================== -->
-
-<section class="cta-section">
-
-    <div class="container">
-
-        <div class="cta-box">
-
-            <h2>
-
-                Ready To Move Off Spreadsheets?
-
-            </h2>
-
-            <p>
-
-                Create your free account and see your first quotation to invoice in minutes.
-
-            </p>
-
-            <a href="{{ url('/register') }}"
-               class="btn btn-light btn-lg rounded-pill">
-
-                Create Your Free Account
-
-            </a>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- ==========================================
-Footer
-========================================== -->
-
-@include('website.partials.footer')
-
-
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
-
-<script src="{{ asset('js/app.js') }}"></script>
-
-</body>
-
-</html>
+@endsection
