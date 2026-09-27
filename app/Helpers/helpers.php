@@ -443,3 +443,30 @@ function actionJson()
 {
     return ['user_id' => Auth::id(), 'at' => now()->format('Y-m-d H:i:s')];
 }
+
+/**
+ * Token counts are stored in whole tokens but displayed in the "k" style used by
+ * the AI Usage page (1,000 tokens reads as 10.00). Mirrors the reference build.
+ */
+function formatAiTokens($rawTokens): string
+{
+    return number_format(((float) $rawTokens) / 100, 2);
+}
+
+/**
+ * The plan a company is actually on. Falls back to the catalogue default so a
+ * company that has never chosen a plan still renders a label.
+ */
+function currentPlanFor($company = null): \App\Models\Billing\Plan
+{
+    $company = $company ?: \App\Models\Master\Company::currentFresh();
+    $default = config('billing.default_package_id');
+
+    return \App\Models\Billing\Plan::find($company?->package_id ?: $default)
+        ?: \App\Models\Billing\Plan::find($default);
+}
+
+function planLabelFor($company = null, string $fallback = 'Free'): string
+{
+    return currentPlanFor($company)?->label ?: $fallback;
+}

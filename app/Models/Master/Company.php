@@ -12,8 +12,31 @@ class Company extends Model
     protected $table = 'companies';
     protected $casts = [
         'business_type' => 'array',
+        'is_in_trial' => 'boolean',
+        'trial_ends_at' => 'date',
+        'subscription_expiry_date' => 'date',
+        'ai_tokens_used' => 'integer',
+        'ai_token_limit' => 'integer',
     ];
     protected static string $cache = 'company:';
+
+    /**
+     * True once the paid period has elapsed. Mirrors the reference's
+     * $company->subscription_expired accessor.
+     */
+    public function getSubscriptionExpiredAttribute(): bool
+    {
+        return $this->subscription_expiry_date !== null
+            && $this->subscription_expiry_date->isPast();
+    }
+
+    /** Always-current company row. Billing must never read the forever-cached copy. */
+    public static function currentFresh(): ?self
+    {
+        $id = companyId();
+
+        return $id ? static::find($id) : null;
+    }
 
     public static function companies($companyId = null)
     {

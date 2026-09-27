@@ -68,6 +68,10 @@
     <!-- SweetAlert2 JS -->
     <script src="{{ asset('js/sweetalert2/sweetalert2.js')}}"></script>
 
+    <!-- Alpine.js — required by the x-data/x-show bindings in the shell (mobile
+         sidebar toggle) and by the Billing page's plan picker. -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
     <link href="{{ asset('css/tom-select/tom-select.bootstrap5.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/flatpickr/flatpickr.min.css') }}">
 
@@ -97,8 +101,11 @@
             height: 100%;
             overflow-y: auto;
             flex-shrink: 0;
-            border-right: 1px solid #dee2e6;
-            background-color: rgba(52, 58, 64);
+            /* Bound to the sidebar theme (presets defined in
+               layouts/sidebar.blade.php) so the column below a short menu
+               matches the menu instead of staying hardcoded dark gray. */
+            border-right: 1px solid var(--sb-border, #dee2e6);
+            background-color: var(--sb-bg, #f8f9fa);
         }
 
         .main-content {
@@ -148,6 +155,13 @@
             }
         }
     </style>
+    <script>
+        // Applied before the sidebar paints so a saved theme never flashes the
+        // default dark gray first. The color rules for each preset live in
+        // layouts/sidebar.blade.php.
+        document.documentElement.setAttribute('data-sidebar-theme',
+            localStorage.getItem('flikma-sidebar-theme') || 'gray');
+    </script>
     @include('includes.js')
 </head>
 <body data-module="@yield('js')">

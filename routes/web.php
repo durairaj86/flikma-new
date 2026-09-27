@@ -112,6 +112,15 @@ Route::middleware(['auth', 'module.permission'])->group(function () {
     include 'reports.php';
     include 'payroll.php';
 
+    // Billing & AI usage. Deliberately absent from config/modules.php, so the
+    // module.permission middleware leaves these paths unrestricted and every
+    // authenticated user can reach their own subscription and usage data.
+    Route::prefix('billing')->name('billing.')->group(function () {
+        Route::get('', [\App\Http\Controllers\Billing\SubscriptionController::class, 'index'])->name('index');
+        Route::post('contact/{package}', [\App\Http\Controllers\Billing\SubscriptionController::class, 'contact'])->name('contact');
+        Route::get('ai-usage', [\App\Http\Controllers\AiUsageController::class, 'index'])->name('ai-usage');
+    });
+
 });
 
 Route::view('/developer/quote', 'developer.quote');
