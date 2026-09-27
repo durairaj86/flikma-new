@@ -7,7 +7,7 @@
 @endphp
 
     <!-- LEFT SIDEBAR -->
-<aside class="border-end d-flex flex-column justify-content-between"
+<aside class="border-end d-flex flex-column justify-content-between flex-shrink-0"
        style="width: 240px; background-color: #f8f9fa; height: 100vh; position: sticky; top: 0;">
     <div class="pt-3 px-3">
         <a href="{{ url('/dashboard') }}" id="back-to-dashboard"

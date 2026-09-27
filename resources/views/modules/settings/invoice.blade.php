@@ -4,8 +4,8 @@
         @include('includes.settings-navigation')
         <section class="flex-grow-1 d-flex flex-column">
 
-            <div class="col-lg-12">
-                <div class="<!--card border-0 shadow-lg--> rounded-4">
+            <div class="container-fluid py-4">
+                <div class="rounded-4">
                     <div class="card-body p-0">
                         <div class="row">
                             <!-- Left side - Preview -->
