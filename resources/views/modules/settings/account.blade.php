@@ -2,7 +2,7 @@
 @section('js', 'user')
 
 <x-app-layout>
-    <main class="gmail-content bg-light d-flex flex-column">
+    <main class="gmail-content bg-light d-flex ">
         {{-- Navigation Menu (Sidebar) --}}
         @include('includes.settings-navigation')
 

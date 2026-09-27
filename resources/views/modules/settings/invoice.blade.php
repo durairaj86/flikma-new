@@ -1,6 +1,6 @@
 @section('page-title','Invoice Settings')
 <x-app-layout>
-    <main class="gmail-content bg-white d-flex flex-column">
+    <main class="gmail-content bg-white d-flex ">
         @include('includes.settings-navigation')
         <section class="flex-grow-1 d-flex flex-column">
 

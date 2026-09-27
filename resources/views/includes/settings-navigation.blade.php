@@ -6,87 +6,110 @@
     $page3 = $segments[3] ?? '';
 @endphp
 
-    <!-- TOP SETTINGS NAVIGATION -->
-<header class="border-bottom" style="background-color: #f8f9fa; position: sticky; top: 0; z-index: 20;">
-    <div class="px-4 pt-3 pb-2 d-flex align-items-center flex-wrap gap-3">
-        <h5 class="fw-semibold mb-0 text-secondary me-3">Settings</h5>
+    <!-- LEFT SIDEBAR -->
+<aside class="border-end d-flex flex-column justify-content-between"
+       style="width: 240px; background-color: #f8f9fa; height: 100vh; position: sticky; top: 0;">
+    <div class="pt-3 px-3">
+        <a href="{{ url('/dashboard') }}" id="back-to-dashboard"
+           class="d-flex align-items-center text-decoration-none text-secondary fw-medium py-2 mb-3">
+            <i class="bi bi-arrow-left me-2"></i> Back to Dashboard
+        </a>
 
-        <ul class="nav fw-medium flex-grow-1" id="master-navigation">
+        <h5 class="fw-semibold mb-3 text-secondary">Settings</h5>
+
+        <ul class="nav flex-column fw-medium" id="settings-navigation">
+            <!-- Account -->
             <li class="nav-item" data-url="/settings/account">
                 <a href="{{ url('/settings/account') }}"
-                   class="nav-link d-flex align-items-center py-2 px-3 {{ request()->is('settings/account*') ? 'active' : 'text-dark' }}">
+                   class="nav-link d-flex align-items-center py-2 {{ request()->is('settings/account*') ? 'active' : 'text-dark' }}">
                     <i class="bi bi-person-circle text-secondary me-2"></i> Account
                 </a>
             </li>
 
+            <!-- Manage Business -->
             <li class="nav-item" data-url="/settings/company">
                 <a href="{{ url('/settings/company') }}"
-                   class="nav-link d-flex align-items-center py-2 px-3 {{ request()->is('settings/company*') ? 'active' : 'text-dark' }}">
-                    <i class="bi bi-person-circle text-secondary me-2"></i> Manage Business
+                   class="nav-link d-flex align-items-center py-2 {{ request()->is('settings/company*') ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-building text-secondary me-2"></i> Manage Business
                 </a>
             </li>
 
+            <!-- Invoice Settings -->
             <li class="nav-item" data-url="/settings/invoice">
                 <a href="{{ url('/settings/invoice') }}"
-                   class="nav-link d-flex align-items-center py-2 px-3 {{ request()->is('settings/invoice*') ? 'active' : 'text-dark' }}">
-                    <i class="bi bi-person-circle text-secondary me-2"></i> Invoice Settings
+                   class="nav-link d-flex align-items-center py-2 {{ request()->is('settings/invoice*') ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-receipt text-secondary me-2"></i> Invoice Settings
                 </a>
             </li>
 
             {{--<li class="nav-item" data-url="/settings/tax">
                 <a href="{{ url('/settings/tax') }}"
-                   class="nav-link d-flex align-items-center py-2 px-3 {{ request()->is('settings/tax*') ? 'active' : 'text-dark' }}">
-                    <i class="bi bi-person-circle text-secondary me-2"></i> Tax Settings
+                   class="nav-link d-flex align-items-center py-2 {{ request()->is('settings/tax*') ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-percent text-secondary me-2"></i> Tax Settings
                 </a>
             </li>--}}
 
+            <!-- Zatca Integration -->
             <li class="nav-item" data-url="/settings/zatca/register">
                 <a href="{{ url('/settings/zatca/register') }}"
-                   class="nav-link d-flex align-items-center py-2 px-3 {{ request()->is('settings/zatca*') ? 'active' : 'text-dark' }}">
-                    <i class="bi bi-person-circle text-secondary me-2"></i> Zatca Integration
+                   class="nav-link d-flex align-items-center py-2 {{ request()->is('settings/zatca*') ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-upc-scan text-secondary me-2"></i> Zatca Integration
                 </a>
             </li>
         </ul>
     </div>
-</header>
+</aside>
 <style>
-    /* Top nav link base */
-    #master-navigation {
+    /* Back to dashboard */
+    #back-to-dashboard {
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: .75rem;
+        margin-bottom: 1rem !important;
+    }
+    #back-to-dashboard:hover { color: #0d6efd !important; }
+
+    /* Sidebar link base */
+    #settings-navigation li {
         list-style: none;
+        padding: 0.1rem 0;
     }
 
-    #master-navigation li {
-        list-style: none;
+    #settings-navigation ul li {
+        padding: 0.3rem 0;
     }
 
-    #master-navigation .nav-link {
+    #settings-navigation .nav-link {
         color: #333;
         border-radius: 6px;
         transition: all 0.25s ease;
-        white-space: nowrap;
     }
 
     /* Hover effect */
-    #master-navigation .nav-link:hover {
+    #settings-navigation .nav-link:hover {
         background-color: #eef3f8;
         color: #0d6efd;
     }
 
     /* Active state */
-    #master-navigation .nav-link.active {
+    #settings-navigation .nav-link.active {
         background-color: #e7f1ff !important;
         color: #0d6efd !important;
         font-weight: 600;
-        border-bottom: 2px solid #0d6efd;
     }
 
     /* Active icon */
-    #master-navigation .nav-link.active i {
+    #settings-navigation .nav-link.active i {
         color: #0d6efd !important;
     }
 
+    /* Submenu active indicator */
+    #settings-navigation .collapse .nav-link.active {
+        border-left: 3px solid #0d6efd;
+        padding-left: 0.75rem;
+    }
+
     /* Parent button hover */
-    #master-navigation button.nav-link:hover {
+    #settings-navigation button.nav-link:hover {
         background-color: #eef3f8;
     }
 </style>

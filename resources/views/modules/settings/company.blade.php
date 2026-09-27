@@ -1,7 +1,7 @@
 @section('js','company')
 @section('page-title','Manage Business')
 <x-app-layout>
-    <main class="gmail-content bg-white d-flex flex-column">
+    <main class="gmail-content bg-white d-flex ">
         @include('includes.settings-navigation')
         <section class="flex-grow-1 d-flex flex-column">
             <div class="company-setup-page py-5 border-top">
