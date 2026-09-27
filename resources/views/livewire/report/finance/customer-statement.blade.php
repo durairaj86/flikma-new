@@ -1,5 +1,6 @@
 @section('js', 'customer_statement')
 @section('page-title', 'Customer Statement')
+@section('page-subtitle', 'Manage and track account transaction history')
 
 <div class="statement-wrapper min-vh-100 bg-light py-4">
     <div class="container-fluid px-lg-5">
@@ -10,33 +11,11 @@
             </div>
         @endif
 
-        <div class="row align-items-center mb-4 d-print-none">
-            <div class="col-md-6">
-                <h1 class="h3 fw-bold text-slate-900 mb-1">Customer Statement</h1>
-                <p class="text-muted small mb-0">Manage and track account transaction history</p>
-            </div>
-            <div class="col-md-6 text-md-end mt-3 mt-md-0">
-                <div class="btn-group shadow-sm">
-                    <button class="btn btn-white border border-end-0" onclick="window.print()">
-                        <i class="bi bi-printer me-2"></i>Print
-                    </button>
-                    <div class="btn-group">
-                        <button class="btn btn-white border dropdown-toggle" data-bs-toggle="dropdown">
-                            <i class="bi bi-download me-2"></i>Export
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                            <li><a class="dropdown-item py-2" href="#" onclick="csExportPdf(event)"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
-                            <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <div class="card border-0 shadow-sm mb-4 d-print-none" id="list-filter">
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
-                    <div class="col-lg-4">
+                    <div class="col-lg-4 col-xl-2 col-xxl-3">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">Customer</label>
                         <select class="tom-select bg-light border-0 no-ts" wire:model="customerId" data-live-search="true">
                             <option value="">Select a customer...</option>
@@ -63,13 +42,31 @@
                                    value="{{ $endDate }}" />
                         </div>
                     </div>
-                    <div class="col-lg-4 col-md-4">
-                        <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-primary fw-bold py-2 flex-grow-1 shadow-sm" onclick="csApplyFilter()" wire:loading.attr="disabled">
+                    <div class="col-lg-12 col-xl-6 col-xxl-5">
+                        <div class="d-flex flex-wrap gap-2 justify-content-end">
+                            <button type="button" class="btn btn-primary fw-bold py-2 shadow-sm" onclick="csApplyFilter()" wire:loading.attr="disabled">
                                 <i class="bi bi-filter-left me-2"></i>
                                 <span wire:loading.remove>Generate</span>
                                 <span wire:loading><span class="spinner-border spinner-border-sm me-1"></span>Loading...</span>
                             </button>
+
+                            {{-- Print/Export sit beside Generate rather than in the shell header,
+                                 because wire:click only binds inside the Livewire root. --}}
+                            <div class="btn-group shadow-sm">
+                                <button class="btn btn-white border border-end-0" onclick="window.print()" title="Print">
+                                    <i class="bi bi-printer me-2"></i>Print
+                                </button>
+                                <div class="btn-group">
+                                    <button class="btn btn-white border dropdown-toggle" data-bs-toggle="dropdown">
+                                        <i class="bi bi-download me-2"></i>Export
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
+                                        <li><a class="dropdown-item py-2" href="#" onclick="csExportPdf(event)"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
+                                        <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
                             <button type="button" class="btn btn-outline-secondary border-0 bg-light py-2 px-3" wire:click="resetFilter">
                                 <i class="bi bi-arrow-counterclockwise"></i>
                             </button>

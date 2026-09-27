@@ -1,38 +1,16 @@
 @section('js', 'trial_balance')
 @section('page-title', 'Trial Balance')
+@section('page-subtitle', 'Double-entry verification — total debits must equal total credits')
 
 <div class="tb-wrapper min-vh-100 bg-light py-4">
     <div class="container-fluid px-lg-5">
 
         {{-- Page Header --}}
-        <div class="row align-items-center mb-4 d-print-none">
-            <div class="col-md-6">
-                <h1 class="h3 fw-bold mb-1" style="color:#0f172a;">Trial Balance</h1>
-                <p class="text-muted small mb-0">Double-entry verification — total debits must equal total credits</p>
-            </div>
-            <div class="col-md-6 text-md-end mt-3 mt-md-0">
-                <div class="btn-group shadow-sm">
-                    <button class="btn btn-white border border-end-0" onclick="window.print()">
-                        <i class="bi bi-printer me-2"></i>Print
-                    </button>
-                    <div class="btn-group">
-                        <button class="btn btn-white border dropdown-toggle" data-bs-toggle="dropdown">
-                            <i class="bi bi-download me-2"></i>Export
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                            <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'tb-print')"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
-                            <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- Filters --}}
+                {{-- Filters --}}
         <div class="card border-0 shadow-sm mb-4 d-print-none">
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
-                    <div class="col-lg-2 col-md-4">
+<div class="col-lg-4 col-md-4 col-xl-2">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">From Date</label>
                         <input type="hidden" id="tb-start-hidden" wire:model.live="startDate" value="{{ $startDate }}" />
                         <input type="text" id="tb-start-date"
@@ -40,7 +18,7 @@
                                placeholder="dd-mm-yyyy"
                                value="{{ $startDate }}" />
                     </div>
-                    <div class="col-lg-2 col-md-4">
+<div class="col-lg-4 col-md-4 col-xl-2">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">To Date</label>
                         <input type="hidden" id="tb-end-hidden" wire:model.live="endDate" value="{{ $endDate }}" />
                         <input type="text" id="tb-end-date"
@@ -48,25 +26,38 @@
                                placeholder="dd-mm-yyyy"
                                value="{{ $endDate }}" />
                     </div>
-                    <div class="col-lg-4 col-md-6">
+<div class="col-lg-4 col-md-4 col-xl-2 col-xxl-3">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">Search Accounts</label>
                         <input type="text"
                                class="form-control bg-light border-0 py-2"
                                placeholder="Account name or code…"
                                wire:model.live.debounce.300ms="search" />
                     </div>
-                    <div class="col-lg-4 col-md-2 d-flex align-items-end">
-                        <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-tb fw-bold py-2 px-4 shadow-sm"
-                                    wire:click="updatedStartDate('{{ $startDate }}')"
-                                    wire:loading.attr="disabled">
-                                <i class="bi bi-filter-left me-2"></i>
-                                <span wire:loading.remove>Generate</span>
-                                <span wire:loading><span class="spinner-border spinner-border-sm me-1"></span>Loading…</span>
+<div class="col-lg-12 col-xl-6 col-xxl-5">
+    <div class="d-flex flex-wrap gap-2 justify-content-end align-items-center">
+        <button type="button" class="btn btn-tb fw-bold py-2 px-4 shadow-sm"
+                                            wire:click="updatedStartDate('{{ $startDate }}')"
+                                            wire:loading.attr="disabled">
+                                        <i class="bi bi-filter-left me-2"></i>
+                                        <span wire:loading.remove>Generate</span>
+                                        <span wire:loading><span class="spinner-border spinner-border-sm me-1"></span>Loading…</span>
+                                    </button>
+        <div class="btn-group shadow-sm">
+                            <button class="btn btn-white border border-end-0" onclick="window.print()">
+                                <i class="bi bi-printer me-2"></i>Print
                             </button>
+                            <div class="btn-group">
+                                <button class="btn btn-white border dropdown-toggle" data-bs-toggle="dropdown">
+                                    <i class="bi bi-download me-2"></i>Export
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
+                                    <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'tb-print')"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
+                                    <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
+                                </ul>
+                            </div>
                         </div>
-                    </div>
-                </div>
+    </div>
+</div></div>
             </div>
         </div>
 

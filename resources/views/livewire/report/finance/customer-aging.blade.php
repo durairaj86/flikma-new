@@ -1,5 +1,6 @@
 @section('js', 'customer_aging')
 @section('page-title', 'Customer Aging Report')
+@section('page-subtitle', 'Track outstanding receivables by aging period')
 
 <div class="aging-wrapper min-vh-100 bg-light py-4">
     <div class="container-fluid px-lg-5">
@@ -13,34 +14,11 @@
         @endphp
 
         {{-- Header --}}
-        <div class="row align-items-center mb-4 d-print-none">
-            <div class="col-md-6">
-                <h1 class="h3 fw-bold text-slate-900 mb-1">Customer Aging Report</h1>
-                <p class="text-muted small mb-0">Track outstanding receivables by aging period</p>
-            </div>
-            <div class="col-md-6 text-md-end mt-3 mt-md-0">
-                <div class="btn-group shadow-sm">
-                    <button class="btn btn-white border border-end-0" onclick="window.print()">
-                        <i class="bi bi-printer me-2"></i>Print
-                    </button>
-                    <div class="btn-group">
-                        <button class="btn btn-white border dropdown-toggle" data-bs-toggle="dropdown">
-                            <i class="bi bi-download me-2"></i>Export
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                            <li><a class="dropdown-item py-2" href="#" onclick="caExportPdf(event)"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
-                            <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- Filter Bar --}}
+                {{-- Filter Bar --}}
         <div class="card border-0 shadow-sm mb-4 d-print-none">
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
-                    <div class="col-lg-3">
+                    <div class="col-lg-3 col-xxl-2">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">Customer</label>
                         <select class="form-select bg-light border-0 py-2 no-ts" wire:model.live="customerId">
                             <option value="">Select a customer...</option>
@@ -49,7 +27,7 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-lg-2 col-md-4">
+                    <div class="col-lg-2 col-md-4 col-xxl-2">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">As of Date</label>
                         <div wire:ignore>
                             <input type="text" id="ca-as-of-date"
@@ -57,7 +35,7 @@
                                    placeholder="dd-mm-yyyy" value="{{ $asOfDate }}" />
                         </div>
                     </div>
-                    <div class="col-lg-2 col-md-4">
+                    <div class="col-lg-2 col-md-4 col-xxl-2">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">Interval (Days)</label>
                         <select class="form-select bg-light border-0 py-2 no-ts" wire:model.live="agingInterval">
                             @foreach(\App\Livewire\Report\Finance\CustomerAging::AGING_INTERVALS as $days)
@@ -65,7 +43,7 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-lg-2 col-md-4">
+                    <div class="col-lg-2 col-md-4 col-xxl-2">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">Columns</label>
                         <select class="form-select bg-light border-0 py-2 no-ts" wire:model.live="agingColumns">
                             @foreach(\App\Livewire\Report\Finance\CustomerAging::AGING_COLUMN_CHOICES as $n)
@@ -73,7 +51,7 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-lg-3">
+                    <div class="col-lg-3 col-xxl-2">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">Search Invoice</label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-0 text-muted"><i class="bi bi-search"></i></span>
@@ -81,8 +59,25 @@
                                    placeholder="Invoice no..." wire:model.live.debounce.300ms="search" />
                         </div>
                     </div>
-                </div>
-            </div>
+            <div class="col-lg-12 col-xxl-2">
+                        <div class="d-flex flex-wrap gap-2 justify-content-end">
+                            <div class="btn-group shadow-sm">
+                                <button class="btn btn-white border border-end-0" onclick="window.print()">
+                                <i class="bi bi-printer me-2"></i>Print
+                                </button>
+                                <div class="btn-group">
+                                <button class="btn btn-white border dropdown-toggle" data-bs-toggle="dropdown">
+                                <i class="bi bi-download me-2"></i>Export
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
+                                <li><a class="dropdown-item py-2" href="#" onclick="caExportPdf(event)"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
+                                <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
+                                </ul>
+                                </div>
+                                </div>
+                        </div>
+                    </div>
+</div>
         </div>
 
         @if($customer)

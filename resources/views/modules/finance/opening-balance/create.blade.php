@@ -1,13 +1,10 @@
 @section('page-title','New Opening Balance')
+@section('page-subtitle', 'Add customer, supplier, and GL account opening balances')
 <x-app-layout>
     <main class="gmail-content bg-white px-3 pb-5">
 
-        {{-- Page header --}}
-        <div class="d-flex justify-content-between align-items-center py-3 border-bottom mb-3">
-            <div>
-                <h5 class="fw-bold mb-0">New Opening Balance Entry</h5>
-                <small class="text-muted">Add customer, supplier, and GL account opening balances</small>
-            </div>
+        {{-- Page actions --}}
+        <div class="d-flex justify-content-end align-items-center py-3 border-bottom mb-3">
             <a href="{{ route('finance.opening-balance') }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
                 <i class="bi bi-arrow-left me-1"></i> Back to List
             </a>

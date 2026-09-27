@@ -1,5 +1,5 @@
 @section('page-title','Transactions Overview')
-@section('page-sub-title','Payments & collections cash flow dashboard')
+@section('page-subtitle', 'Real-time payments & collections dashboard')
 @section('print-footer')
 <script>
     window.printFooter = {
@@ -57,12 +57,8 @@
         <div class="container-fluid px-lg-5">
 
             {{-- Header --}}
-            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
-                <div>
-                    <h4 class="fw-bold mb-0" style="color:#0f172a;">Transactions Overview</h4>
-                    <p class="text-muted mb-0 small">Real-time payments &amp; collections dashboard</p>
-                </div>
-                <div class="d-flex align-items-center gap-2 mt-2 mt-sm-0">
+            <div class="d-flex flex-wrap justify-content-end align-items-center mb-3">
+                <div class="d-flex align-items-center gap-2">
                     <select id="dateRange" class="form-select form-select-sm" style="width:auto;min-width:140px;">
                         <option value="this_month" {{ $range==='this_month' ? 'selected' : '' }}>This Month</option>
                         <option value="last_month" {{ $range==='last_month' ? 'selected' : '' }}>Last Month</option>

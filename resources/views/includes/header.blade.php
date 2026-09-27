@@ -28,13 +28,20 @@
                     elseif($segment1 == 'bl'){ $breadcrumb = 'bl'; $page1 = $segment2; }
                 @endphp
 
-                <nav aria-label="breadcrumb" class="mb-0 d-none d-sm-block">
-                    @if(isset($breadcrumb))
-                        @include('includes.breadcrumb.'.$breadcrumb, ['page1'=>$page1??'','page2'=>$page2 ?? '','page3'=>$page3 ?? ''])
-                    @endif
-                </nav>
+                @if(!isset($breadcrumb) || $breadcrumb !== 'reports')
+                    <nav aria-label="breadcrumb" class="mb-0 d-none d-sm-block">
+                        @if(isset($breadcrumb))
+                            @include('includes.breadcrumb.'.$breadcrumb, ['page1'=>$page1??'','page2'=>$page2 ?? '','page3'=>$page3 ?? ''])
+                        @endif
+                    </nav>
+                @endif
                 <div class="d-flex align-items-center gap-2">
-                    <h5 class="fw-bold text-dark mb-0 text-truncate" style="max-width: 200px;">@yield('page-title')</h5>
+                    <div class="lh-sm overflow-hidden">
+                        <h5 class="fw-bold text-dark mb-0 text-truncate" style="max-width: min(420px, 38vw);">@yield('page-title')</h5>
+                        @hasSection('page-subtitle')
+                            <div class="small text-muted text-truncate" style="max-width: min(420px, 38vw);">@yield('page-subtitle')</div>
+                        @endif
+                    </div>
                     @stack('page-title-action')
                 </div>
             </div>

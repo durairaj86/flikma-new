@@ -1,5 +1,5 @@
 @section('page-title','Credit Note')
-@section('page-sub-title','Manage credit notes and adjustments')
+@section('page-subtitle', 'Credit note adjustments and refunds')
 @section('js','credit_note')
 @push('page-title-action')
     <button class="btn btn-link btn-sm text-muted p-0 text-decoration-none lh-1"
@@ -94,12 +94,8 @@
         <div class="container-fluid px-lg-5">
 
             {{-- Header --}}
-            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
-                <div>
-                    <h4 class="fw-bold mb-0" style="color:#0f172a;">Credit Notes</h4>
-                    <p class="text-muted mb-0 small">Credit note adjustments and refunds</p>
-                </div>
-                <div class="d-flex gap-2 mt-2 mt-sm-0">
+            <div class="d-flex flex-wrap justify-content-end align-items-center mb-3">
+                <div class="d-flex gap-2">
                     <button class="btn btn-outline-primary btn-sm rounded-pill px-3" id="filter-box">
                         <i class="bi bi-funnel me-1"></i> Filter
                     </button>

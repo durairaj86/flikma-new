@@ -1,5 +1,6 @@
 @section('js', 'supplier_aging_summary')
 @section('page-title', 'Supplier Aging Summary')
+@section('page-subtitle', 'Outstanding payables across all suppliers, by aging period')
 
 <div class="aging-wrapper min-vh-100 bg-light py-4">
     <div class="container-fluid px-lg-5">
@@ -13,30 +14,7 @@
         @endphp
 
         {{-- Header --}}
-        <div class="row align-items-center mb-4 d-print-none">
-            <div class="col-md-6">
-                <h1 class="h3 fw-bold text-slate-900 mb-1">Supplier Aging Summary</h1>
-                <p class="text-muted small mb-0">Outstanding payables across all suppliers, by aging period</p>
-            </div>
-            <div class="col-md-6 text-md-end mt-3 mt-md-0">
-                <div class="btn-group shadow-sm">
-                    <button class="btn btn-white border border-end-0" onclick="window.print()">
-                        <i class="bi bi-printer me-2"></i>Print
-                    </button>
-                    <div class="btn-group">
-                        <button class="btn btn-white border dropdown-toggle" data-bs-toggle="dropdown">
-                            <i class="bi bi-download me-2"></i>Export
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                            <li><a class="dropdown-item py-2" href="#" onclick="sasExportPdf(event)"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
-                            <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- Filter Bar --}}
+                {{-- Filter Bar --}}
         <div class="card border-0 shadow-sm mb-4 d-print-none">
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
@@ -64,7 +42,7 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-lg-6">
+                    <div class="col-lg-6 col-xl-3">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">Search Supplier</label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-0 text-muted"><i class="bi bi-search"></i></span>
@@ -72,7 +50,25 @@
                                    placeholder="Supplier name or code..." wire:model.live.debounce.300ms="search" />
                         </div>
                     </div>
-                </div>
+
+                    <div class="col-lg-12 col-xl-3">
+                        <div class="d-flex flex-wrap gap-2 justify-content-end">
+                            <div class="btn-group shadow-sm">
+                                <button class="btn btn-white border border-end-0" onclick="window.print()">
+                                    <i class="bi bi-printer me-2"></i>Print
+                                </button>
+                                <div class="btn-group">
+                                    <button class="btn btn-white border dropdown-toggle" data-bs-toggle="dropdown">
+                                        <i class="bi bi-download me-2"></i>Export
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
+                                        <li><a class="dropdown-item py-2" href="#" onclick="sasExportPdf(event)"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
+                                        <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div></div>
             </div>
         </div>
 
