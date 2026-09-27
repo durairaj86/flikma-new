@@ -42,7 +42,16 @@
                                         </label>
                                     </div>
 
-                                    <div class="d-flex flex-wrap theme-show gap-3 pt-2">
+                                                                        <style>
+                                                                            .theme-show { align-items: stretch; }
+                                                                            .theme-show .theme-container { display: flex; }
+                                                                            .theme-show .theme { display: flex; flex-direction: column; flex: 1 1 auto; }
+                                                                            .theme-show .theme-name { min-height: 2.8em; display: flex; align-items: flex-end; justify-content: center; text-align: center; }
+                                                                            .theme-show .theme-container > .btn { flex: 1 1 auto; height: auto !important; min-height: 120px; }
+                                                                        </style>
+
+
+                                                                        <div class="d-flex flex-wrap theme-show gap-3 pt-2">
                                         <div class="theme-container" style="width: 140px;">
                                             <div class="theme active border border-primary p-2 rounded-3 text-center shadow-sm" data-theme="stylish" style="cursor:pointer; transform: translateY(-3px);">
                                                 <div class="image-container" style="height: 80px; display:flex; align-items:center; justify-content:center;">
@@ -59,6 +68,8 @@
                                                 </div>
                                                 <div class="theme-name small fw-medium mt-2 text-primary">Stylish</div>
                                             </div>
+                                        </div>
+
                                         <div class="theme-container" style="width: 140px;">
                                             <div class="theme border p-2 rounded-3 text-center" data-theme="bilingual" style="cursor:pointer;">
                                                 <div class="image-container" style="height: 80px; display:flex; align-items:center; justify-content:center;">
@@ -147,10 +158,6 @@
                                             </div>
                                         </div>
 
-                                        </div>
-
-                                        </div>
-
                                         <div class="theme-container" style="width: 140px;">
                                             <div class="theme border p-2 rounded-3 text-center" data-theme="advance-gst-tally" style="cursor:pointer;">
                                                 <div class="image-container" style="height: 80px; display:flex; align-items:center; justify-content:center;">
@@ -171,10 +178,8 @@
                                             </div>
                                         </div>
 
-                                        </div>
-
                                         <div class="theme-container" style="width: 140px;">
-                                            <button class="btn btn-outline-secondary w-100 h-100 border-2 border-dashed" style="height: 120px;">
+                                            <button class="btn btn-outline-secondary w-100 h-100 border-2 border-dashed" style="height: 100%; min-height: 120px;">
                                                 <i class="bi bi-grid-3x3-gap me-1"></i> See All Themes
                                             </button>
                                         </div>

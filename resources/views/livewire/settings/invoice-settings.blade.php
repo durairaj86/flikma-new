@@ -379,16 +379,36 @@
                             </label>
                         </div>
 
-                        <div class="d-flex flex-wrap theme-show gap-3 pt-2">
+                                                            <style>
+                                                                .theme-show { align-items: stretch; }
+                                                                .theme-show .theme-container { display: flex; }
+                                                                .theme-show .theme { display: flex; flex-direction: column; flex: 1 1 auto; }
+                                                                .theme-show .theme-name { min-height: 2.8em; display: flex; align-items: flex-end; justify-content: center; text-align: center; }
+                                                                .theme-show .theme-container > .btn { flex: 1 1 auto; height: auto !important; min-height: 120px; }
+                                                            </style>
+
+
+                                                            <div class="d-flex flex-wrap theme-show gap-3 pt-2">
                             <div class="theme-container" style="width: 140px;">
                                 <div class="theme active border border-primary p-2 rounded-3 text-center shadow-sm" data-theme="stylish" style="cursor:pointer; transform: translateY(-3px);" wire:click="$set('theme', 'stylish')">
                                     <div class="image-container" style="height: 80px; display:flex; align-items:center; justify-content:center;">
-                                        <img src="#" alt="Stylish" class="img-fluid rounded" style="max-height:100%;">
+                                        <svg viewBox="0 0 100 80" width="100%" height="100%" style="max-height:100%;">
+                                                <rect x="4" y="4" width="92" height="72" fill="#fff" stroke="#333" stroke-width="1.5"/>
+                                                <rect x="4" y="4" width="92" height="14" fill="none" stroke="#333" stroke-width="1"/>
+                                                <text x="50" y="13" font-size="7" font-weight="700" text-anchor="middle" fill="#333">TAX INVOICE</text>
+                                                <line x1="4" y1="30" x2="96" y2="30" stroke="#999" stroke-width="0.5"/>
+                                                <line x1="4" y1="38" x2="96" y2="38" stroke="#999" stroke-width="0.5"/>
+                                                <rect x="8" y="46" width="84" height="8" fill="#e0e0e0"/>
+                                                <line x1="8" y1="58" x2="92" y2="58" stroke="#ccc" stroke-width="0.5"/>
+                                                <line x1="8" y1="64" x2="92" y2="64" stroke="#ccc" stroke-width="0.5"/>
+                                                </svg>
                                     </div>
                                     <div class="theme-name small fw-medium mt-2 text-primary">Stylish</div>
                                 </div>
-                                        <div class="theme-container" style="width: 140px;">
-                                            <div class="theme border p-2 rounded-3 text-center" data-theme="bilingual" style="cursor:pointer;">
+                            </div>
+
+                            <div class="theme-container" style="width: 140px;">
+                                            <div class="theme border p-2 rounded-3 text-center" data-theme="bilingual" style="cursor:pointer;" wire:click="$set('theme', 'bilingual')">
                                                 <div class="image-container" style="height: 80px; display:flex; align-items:center; justify-content:center;">
                                                     <svg viewBox="0 0 100 80" width="100%" height="100%" style="max-height:100%;">
                                                         <rect x="4" y="4" width="92" height="72" fill="#fff" stroke="#2FA36B" stroke-width="1.5"/>
@@ -409,7 +429,7 @@
                                         </div>
 
                                         <div class="theme-container" style="width: 140px;">
-                                            <div class="theme border p-2 rounded-3 text-center" data-theme="fastfatoora" style="cursor:pointer;">
+                                            <div class="theme border p-2 rounded-3 text-center" data-theme="fastfatoora" style="cursor:pointer;" wire:click="$set('theme', 'fastfatoora')">
                                                 <div class="image-container" style="height: 80px; display:flex; align-items:center; justify-content:center;">
                                                     <svg viewBox="0 0 100 80" width="100%" height="100%" style="max-height:100%;">
                                                         <rect x="4" y="4" width="92" height="72" fill="#fff" stroke="#15803d" stroke-width="1.5"/>
@@ -430,7 +450,7 @@
                                         </div>
 
                                         <div class="theme-container" style="width: 140px;">
-                                            <div class="theme border p-2 rounded-3 text-center" data-theme="ai-fatoora" style="cursor:pointer;">
+                                            <div class="theme border p-2 rounded-3 text-center" data-theme="ai-fatoora" style="cursor:pointer;" wire:click="$set('theme', 'ai-fatoora')">
                                                 <div class="image-container" style="height: 80px; display:flex; align-items:center; justify-content:center;">
                                                     <svg viewBox="0 0 100 80" width="100%" height="100%" style="max-height:100%;">
                                                         <rect x="4" y="4" width="92" height="72" fill="#fff" stroke="#0f2a52" stroke-width="1.5"/>
@@ -454,7 +474,7 @@
                                         </div>
 
                                         <div class="theme-container" style="width: 140px;">
-                                            <div class="theme border p-2 rounded-3 text-center" data-theme="fastfatoora-classic" style="cursor:pointer;">
+                                            <div class="theme border p-2 rounded-3 text-center" data-theme="fastfatoora-classic" style="cursor:pointer;" wire:click="$set('theme', 'fastfatoora-classic')">
                                                 <div class="image-container" style="height: 80px; display:flex; align-items:center; justify-content:center;">
                                                     <svg viewBox="0 0 100 80" width="100%" height="100%" style="max-height:100%;">
                                                         <rect x="4" y="4" width="92" height="72" fill="#fff" stroke="#0d9488" stroke-width="1.5"/>
@@ -475,23 +495,28 @@
                                             </div>
                                         </div>
 
-                            </div>
-
-                            </div>
-
                             <div class="theme-container" style="width: 140px;">
                                 <div class="theme border p-2 rounded-3 text-center" data-theme="advance-gst-tally" style="cursor:pointer;" wire:click="$set('theme', 'advance-gst-tally')">
                                     <div class="image-container" style="height: 80px; display:flex; align-items:center; justify-content:center;">
-                                        <img src="#" alt="Advanced GST (Tally)" class="img-fluid rounded" style="max-height:100%;">
+                                        <svg viewBox="0 0 100 80" width="100%" height="100%" style="max-height:100%;">
+                                                <rect x="4" y="4" width="92" height="72" fill="#fff" stroke="#000" stroke-width="2"/>
+                                                <rect x="4" y="4" width="92" height="10" fill="#eee" stroke="#000" stroke-width="1"/>
+                                                <text x="50" y="11.5" font-size="6" font-family="monospace" font-weight="700" text-anchor="middle" fill="#000">TAX INVOICE</text>
+                                                <line x1="4" y1="24" x2="96" y2="24" stroke="#000" stroke-width="1"/>
+                                                <line x1="50" y1="14" x2="50" y2="24" stroke="#000" stroke-width="0.5"/>
+                                                <line x1="4" y1="38" x2="96" y2="38" stroke="#000" stroke-width="1"/>
+                                                <line x1="50" y1="24" x2="50" y2="38" stroke="#000" stroke-width="0.5"/>
+                                                <rect x="4" y="44" width="92" height="7" fill="#000"/>
+                                                <line x1="4" y1="58" x2="96" y2="58" stroke="#666" stroke-width="0.5"/>
+                                                <line x1="4" y1="65" x2="96" y2="65" stroke="#666" stroke-width="0.5"/>
+                                                </svg>
                                     </div>
                                     <div class="theme-name small fw-medium mt-2">Advanced GST (Tally)</div>
                                 </div>
                             </div>
 
-                            </div>
-
                             <div class="theme-container" style="width: 140px;">
-                                <button class="btn btn-outline-secondary w-100 h-100 border-2 border-dashed" style="height: 120px;">
+                                <button class="btn btn-outline-secondary w-100 h-100 border-2 border-dashed" style="height: 100%; min-height: 120px;">
                                     <i class="bi bi-grid-3x3-gap me-1"></i> See All Themes
                                 </button>
                             </div>
