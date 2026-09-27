@@ -10,62 +10,89 @@
                 <i class="bi bi-file-earmark-spreadsheet fs-5"></i>
             </div>
 
-            <div class="lh-sm overflow-hidden">
-                @php
-                    $breadcrumb = null;
-                    if($segment1 == 'dashboard1') { $breadcrumb = 'customer'; }
-                    elseif(in_array($segment1,['customers','customer','prospects'])) { $breadcrumb = 'customer'; }
-                    elseif(in_array($segment1,['suppliers','supplier'])) { $breadcrumb = 'supplier'; }
-                    elseif(in_array($segment1,['masters','settings'])) {
-                        $breadcrumb = $segment1; $page1 = $segment2; $page2 = $segment3; $page3 = $segment4;
-                    }
-                    elseif(in_array($segment1,['sales','operation','invoice'])){
-                        if($segment2 != 'overview'){ $breadcrumb = $segment1; }
-                        $page1 = $segment2;
-                    }
-                    elseif($segment1 == 'finance'){ $breadcrumb = 'invoice'; $page1 = 'proforma'; }
-                    elseif($segment1 == 'reports'){ $breadcrumb = 'reports'; $page1 = 'reports'; }
-                    elseif($segment1 == 'bl'){ $breadcrumb = 'bl'; $page1 = $segment2; }
-                @endphp
-
-                @if(!isset($breadcrumb) || $breadcrumb !== 'reports')
-                    <nav aria-label="breadcrumb" class="mb-0 d-none d-sm-block">
-                        @if(isset($breadcrumb))
-                            @include('includes.breadcrumb.'.$breadcrumb, ['page1'=>$page1??'','page2'=>$page2 ?? '','page3'=>$page3 ?? ''])
-                        @endif
-                    </nav>
-                @endif
-                <div class="d-flex align-items-center gap-2">
-                    <div class="lh-sm overflow-hidden">
-                        <h5 class="fw-bold text-dark mb-0 text-truncate" style="max-width: min(420px, 38vw);">@yield('page-title')</h5>
-                        @hasSection('page-subtitle')
-                            <div class="small text-muted text-truncate" style="max-width: min(420px, 38vw);">@yield('page-subtitle')</div>
-                        @endif
-                    </div>
-                    @stack('page-title-action')
-                </div>
-            </div>
+            @include('includes.page-heading')
         </div>
 
         <div class="d-flex align-items-center gap-2">
-            {{--<div class="dropdown d-none d-md-block">
-                <button class="btn btn-light border-0 rounded-circle p-2" type="button" data-bs-toggle="dropdown">
-                    <i class="bi bi-grid-3x3-gap fs-5"></i>
+            {{-- Quick create / theme / header-toggle: the header-side counterparts of
+                 the right rail's buttons, so the same actions are reachable in
+                 either layout. The array lists must stay in step with
+                 layouts/profile-menu.blade.php. --}}
+            @php
+                $headerCreateLinks = [
+                    ['label' => 'New Enquiry', 'icon' => 'bi-envelope-plus', 'title' => 'Add Enquiry', 'url' => url('sales/enquiry/create'), 'size' => 'xxl', 'minHeight' => '650px', 'scroll' => false],
+                    ['label' => 'New Quotation', 'icon' => 'bi-chat-left-quote', 'title' => 'New Quotation', 'url' => url('sales/quotation/create'), 'size' => 'xxl', 'minHeight' => '700px', 'scroll' => false],
+                    ['label' => 'Customer Invoice', 'icon' => 'bi-receipt', 'title' => 'New Customer Invoice', 'url' => url('invoice/customer/create?jobId=list'), 'size' => '4xl', 'scroll' => false],
+                    ['label' => 'Supplier Invoice', 'icon' => 'bi-receipt-cutoff', 'title' => 'New Supplier Invoice', 'url' => url('invoice/supplier/create?jobId=list'), 'size' => 'xl'],
+                    ['label' => 'Waybill', 'icon' => 'bi-box-seam', 'title' => 'New Waybill', 'url' => url('bl/waybill/create'), 'size' => 'lg', 'scroll' => false],
+                    ['label' => 'Expense', 'icon' => 'bi-cash-coin', 'title' => 'Add Expense', 'url' => url('finance/expense/create'), 'size' => 'lg'],
+                ];
+
+                $headerThemes = [
+                    ['key' => 'gray', 'label' => 'Dark Gray', 'swatch' => '#343a40', 'accent' => '#7CC4F0'],
+                    ['key' => 'light', 'label' => 'Light', 'swatch' => '#ffffff', 'accent' => '#5B4FE5'],
+                    ['key' => 'dark', 'label' => 'Dark', 'swatch' => '#12141c', 'accent' => '#8B7CF6'],
+                    ['key' => 'indigo', 'label' => 'Indigo', 'swatch' => '#1e1b4b', 'accent' => '#FBBF24'],
+                    ['key' => 'ocean', 'label' => 'Ocean', 'swatch' => '#0b3d54', 'accent' => '#22D3EE'],
+                    ['key' => 'forest', 'label' => 'Forest', 'swatch' => '#10291d', 'accent' => '#FBBF24'],
+                ];
+            @endphp
+
+            <div class="dropdown">
+                <button class="btn btn-light border-0 rounded-circle header-icon-btn" type="button" data-bs-toggle="dropdown"
+                        title="Create" aria-label="Create">
+                    <i class="bi bi-plus-lg fs-5 text-secondary"></i>
                 </button>
-                <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-3" style="width: 300px;">
-                    <h6 class="dropdown-header px-0 mb-2 text-uppercase fw-bold">Quick Apps</h6>
-                    <div class="row g-2 text-center">
-                        <div class="col-4">
-                            <a href="/chat" class="d-block p-2 text-decoration-none rounded hover-bg-light">
-                                <i class="bi bi-chat-dots text-primary fs-4"></i>
-                                <div class="small text-dark mt-1">Chat</div>
-                            </a>
-                        </div>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" style="min-width: 220px;">
+                    @foreach($headerCreateLinks as $link)
+                        <li>
+                            {{-- These are modal fragments, not pages. The delegated
+                                 handler in layouts/profile-menu.blade.php opens them
+                                 through the app's own webModal loader. --}}
+                            <button type="button" class="dropdown-item py-2"
+                                    data-create-url="{{ $link['url'] }}"
+                                    data-create-title="{{ $link['title'] }}"
+                                    data-create-size="{{ $link['size'] }}"
+                                    data-create-min-height="{{ $link['minHeight'] ?? '' }}"
+                                    data-create-scroll="{{ array_key_exists('scroll', $link) && $link['scroll'] === false ? '0' : '1' }}">
+                                <i class="bi {{ $link['icon'] }} me-2"></i> {{ $link['label'] }}
+                            </button>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+
+            <form method="POST" action="{{ route('header.toggle') }}" class="m-0">
+                @csrf
+                <button type="submit" class="btn btn-light border-0 rounded-circle header-icon-btn"
+                        title="Hide Top Header" aria-label="Hide top header">
+                    <i class="bi bi-layout-text-window-reverse fs-5 text-secondary"></i>
+                </button>
+            </form>
+
+            <div class="dropdown">
+                <button class="btn btn-light border-0 rounded-circle header-icon-btn" type="button" data-bs-toggle="dropdown"
+                        title="Sidebar Theme" aria-label="Sidebar theme">
+                    <i class="bi bi-palette2 fs-5 text-secondary"></i>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 p-3 header-theme-picker">
+                    <div class="theme-picker-heading">Sidebar Theme</div>
+                    <div class="theme-swatch-grid">
+                        @foreach($headerThemes as $theme)
+                            <button type="button" class="theme-swatch-btn" data-theme-key="{{ $theme['key'] }}"
+                                    title="{{ $theme['label'] }}">
+                                <span class="theme-swatch-preview" style="background: {{ $theme['swatch'] }};">
+                                    <span class="theme-swatch-accent" style="background: {{ $theme['accent'] }};"></span>
+                                    <i class="bi bi-check-lg theme-swatch-check"></i>
+                                </span>
+                                <span class="theme-swatch-label">{{ $theme['label'] }}</span>
+                            </button>
+                        @endforeach
                     </div>
                 </div>
-            </div>--}}
+            </div>
 
-            <a href="#" class="btn btn-light border-0 rounded-circle p-2 position-relative" id="activity-feed">
+            <a href="#" class="btn btn-light border-0 rounded-circle header-icon-btn position-relative" id="activity-feed">
                 <i class="bi bi-bell fs-5 text-secondary"></i>
                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" style="font-size: 0.65rem;">3</span>
             </a>
@@ -111,29 +138,89 @@
 
     /* public/css/manual.css has a legacy "open dropdowns on hover" rule
        (.navbar .dropdown:hover .dropdown-menu) meant for an old nav.
-       It forces this menu visible via CSS only, without Bootstrap's JS
+       It forces the menu visible via CSS only, without Bootstrap's JS
        ever running Popper to position it — so on hover it renders
        unpositioned and appears cut off at the edge of the screen.
        Clicking works fine because Bootstrap's JS + Popper position it
-       correctly. Opt this menu out of the hover trick so it only opens
-       on click (higher specificity than manual.css's rule wins here). */
+       correctly. Opt every header dropdown out of the hover trick so they
+       only open on click (higher specificity than manual.css's rule wins
+       here). This covers the account menu plus the create and theme pickers
+       added alongside the right rail. */
     @media (min-width: 992px) {
-        .navbar .dropdown.user-account-menu .dropdown-menu {
+        .navbar .dropdown .dropdown-menu {
             display: none;
             visibility: visible;
             opacity: 1;
             transform: none;
         }
 
-        .navbar .dropdown.user-account-menu:hover .dropdown-menu {
+        .navbar .dropdown:hover .dropdown-menu {
             display: none;
             visibility: visible;
             opacity: 1;
             transform: none;
         }
 
-        .navbar .dropdown.user-account-menu .dropdown-menu.show {
+        .navbar .dropdown .dropdown-menu.show {
             display: block;
         }
     }
+
+    /* The header theme picker reuses the swatch styles defined in
+       layouts/profile-menu.blade.php, which hides the tick with Alpine's
+       x-show. There is no Alpine component in the header, so the tick is
+       toggled by a class here instead. */
+    .header-theme-picker .theme-swatch-check {
+        display: none;
+    }
+
+    .header-theme-picker .theme-swatch-btn.active .theme-swatch-check {
+        display: inline-block;
+    }
+    /* rounded-circle only renders a true circle when the box is square, and
+       these icon buttons are not: p-2 plus the icon's inherited line-height
+       (.btn sets 1.5, so fs-5's 20px font becomes a 30px line box) made them
+       36.4 x 46 — a tall ellipse. Pin the box and centre the glyph instead, so
+       the shape no longer depends on the icon's own metrics. */
+    .header-icon-btn {
+        width: 38px;
+        height: 38px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+    }
 </style>
+
+<script>
+    /* Writes the same data-sidebar-theme attribute and localStorage key the
+       sidebar's own palette button uses, so the two stay in agreement no
+       matter which one the user clicks. */
+    (function () {
+        var picker = document.querySelector('.header-theme-picker');
+        if (! picker) {
+            return;
+        }
+
+        function paint() {
+            var current = document.documentElement.getAttribute('data-sidebar-theme') || 'gray';
+            picker.querySelectorAll('.theme-swatch-btn').forEach(function (btn) {
+                btn.classList.toggle('active', btn.getAttribute('data-theme-key') === current);
+            });
+        }
+
+        paint();
+
+        picker.addEventListener('click', function (event) {
+            var btn = event.target.closest('.theme-swatch-btn');
+            if (! btn) {
+                return;
+            }
+            var theme = btn.getAttribute('data-theme-key');
+            document.documentElement.setAttribute('data-sidebar-theme', theme);
+            localStorage.setItem('flikma-sidebar-theme', theme);
+            paint();
+        });
+    })();
+</script>

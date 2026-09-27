@@ -19,6 +19,27 @@ Route::get('/welcome', function () {
 })->middleware(['auth', 'verified'])->name('welcome');
 
 Route::middleware(['auth', 'module.permission'])->group(function () {
+    /* Top-header visibility: when on, the header hosts the action icons and the
+       right rail collapses to zero width; when off, the icons move into the rail.
+       Mirrors the reference app's two-layout setup. Lives inside the authenticated
+       group so a signed-out request can't flip the tenant's setting. */
+    Route::post('header/toggle', function () {
+        $company = \App\Models\Master\Company::currentFresh();
+        if ($company) {
+            // Direct assignment rather than update([...]) — Company declares no
+            // $fillable, so Eloquent rejects mass assignment. This matches how
+            // CompanyController::store writes to the model.
+            $company->header_enabled = ! $company->header_enabled;
+            $company->save();
+
+            // companies() memoizes with rememberForever, so the next page load
+            // would otherwise still render the layout the user just switched away from.
+            \App\Models\Master\Company::forgetCached($company->id);
+        }
+
+        return back();
+    })->name('header.toggle');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

@@ -16,5 +16,19 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // AI token exhaustion is a user-fixable condition, not a crash, so the
+        // scanning endpoints want a readable message they can surface in their
+        // own error UI. 402 (Payment Required) keeps it distinct from a 500.
+        $exceptions->render(function (\App\Exceptions\AiTokenLimitExceededException $e, $request) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status' => 'error',
+                    'title' => 'AI Token Limit Reached',
+                    'message' => $e->getMessage(),
+                    'data' => [],
+                ], 402);
+            }
+
+            return null;
+        });
     })->create();

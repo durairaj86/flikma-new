@@ -17,5 +17,7 @@ Route::namespace('finance')->prefix('finance/expense')->group(function () {
     Route::get('/{id}/print', [ExpenseController::class, 'print']);
     Route::delete('/{id}', [ExpenseController::class, 'destroy'])->name('expenses.destroy');
 
-    Route::get('/{id}/actions', [ExpenseController::class, 'actions']);
+    Route::post('/ai/scan-receipt', [App\Http\Controllers\Finance\AiAssistController::class, 'scanReceipt'])->name('expenses.ai.scan-receipt');
+    Route::post('/ai/suggest-category', [App\Http\Controllers\Finance\AiAssistController::class, 'suggestExpenseCategory'])->name('expenses.ai.suggest-category');
+    Route::post('/ai/save-supplier', [App\Http\Controllers\Finance\AiAssistController::class, 'saveScannedSupplier'])->name('expenses.ai.save-supplier');
 });

@@ -12,6 +12,7 @@ class Company extends Model
     protected $table = 'companies';
     protected $casts = [
         'business_type' => 'array',
+        'header_enabled' => 'boolean',
         'is_in_trial' => 'boolean',
         'trial_ends_at' => 'date',
         'subscription_expiry_date' => 'date',
@@ -57,5 +58,21 @@ class Company extends Model
         return Cache::rememberForever(static::$cache . $companyId, function () use ($companyId) {
             return static::find($companyId);
         });
+    }
+
+    /**
+     * Drop the memoized copy of a company.
+     *
+     * companies() caches with rememberForever, so anything that writes to the
+     * companies row has to call this or every later read in the request — and
+     * every subsequent request — keeps seeing the old values.
+     */
+    public static function forgetCached(?int $companyId = null): void
+    {
+        $companyId = $companyId ?? session('company_id') ?? auth()->user()?->company_id;
+
+        if ($companyId) {
+            Cache::forget(self::$cache . $companyId);
+        }
     }
 }

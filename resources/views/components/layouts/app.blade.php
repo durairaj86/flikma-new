@@ -124,6 +124,13 @@
             padding-bottom: 2rem;
         }
 
+        /* The right rail is position:fixed, so without the header on it would sit
+           on top of the page. Reserve its 60px column here; when the header is
+           showing the rail collapses to zero width and needs no room. */
+        body:not(.has-top-header) .wrapper {
+            padding-right: 60px;
+        }
+
         .dropdown-menu {
             border: none;
             box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
@@ -132,7 +139,8 @@
         /* Hide app chrome when printing: only the page content should print */
         @media print {
             #sidebar-container,
-            header.navbar {
+            header.navbar,
+            .profile-menu-fixed {
                 display: none !important;
             }
             body, html {
@@ -143,6 +151,7 @@
                 display: block !important;
                 height: auto !important;
                 width: auto !important;
+                padding-right: 0 !important;
             }
             .main-content {
                 display: block !important;
@@ -164,7 +173,17 @@
     </script>
     @include('includes.js')
 </head>
-<body data-module="@yield('js')">
+@php
+    /* Top header on/off. When it's on, the header hosts the quick-create /
+       theme / account actions and the right rail collapses to nothing. When
+       it's off, those same actions move into the rail instead. Defaulting to
+       true keeps the header showing for anyone who has never set it.
+       Resolved before <body> because the body tag carries the mode class that
+       the rail's CSS keys off. */
+    $headerCompany = \App\Models\Master\Company::companies()->first();
+    $headerEnabled = $headerCompany ? (bool) $headerCompany->header_enabled : true;
+@endphp
+<body data-module="@yield('js')" class="@if($headerEnabled) has-top-header @endif">
 <input type="hidden" value="@yield('extra-js')" id="extra-js">
 @php
     $segments = request()->segments();
@@ -175,7 +194,7 @@
         $menu = $segment1;
         $submenu = $segment2;
         $user = \Illuminate\Support\Facades\Auth::user();
-@endphp
+    @endphp
 <div x-data="{ sidebarOpen: false }" class="wrapper">
 
     <div id="sidebar-container">
@@ -183,12 +202,20 @@
     </div>
 
     <div class="main-content">
-        @include('includes.header')
+        @if($headerEnabled)
+            @include('includes.header')
+        @else
+            {{-- Header off: the rail carries the actions, but the page keeps its
+                 own breadcrumb/title/subtitle in a slim topbar. --}}
+            @include('layouts.topbar')
+        @endif
 
         <main class="content-scroll-area">
             @yield('content', $slot ?? '')
         </main>
     </div>
+
+    @include('layouts.profile-menu')
 </div>
 
 
