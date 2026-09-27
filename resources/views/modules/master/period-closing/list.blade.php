@@ -4,7 +4,6 @@
     <main class="gmail-content bg-white d-flex">
         @include('includes.master-navigation')
         <section class="flex-grow-1 px-4 d-flex flex-column">
-            @include('includes.master-header')
             <div class="d-flex justify-content-between align-items-start mb-3">
                 <div class="align-items-center flex-shrink-0">
                     <p class="text-muted small mb-0">

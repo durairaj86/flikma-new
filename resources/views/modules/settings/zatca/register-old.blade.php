@@ -6,7 +6,6 @@
         @include('includes.settings-navigation')
 
         <section class="flex-grow-1 px-4 d-flex flex-column">
-            @include('includes.master-header')
 
             <div class="">
 

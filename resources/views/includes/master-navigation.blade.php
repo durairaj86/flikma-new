@@ -10,6 +10,11 @@
 <aside class="border-end d-flex flex-column justify-content-between"
        style="width: 240px; background-color: #f8f9fa; height: 100vh; position: sticky; top: 0;">
     <div class="pt-3 px-3">
+        <a href="{{ url('/dashboard') }}" id="back-to-dashboard"
+           class="d-flex align-items-center text-decoration-none text-secondary fw-medium py-2 mb-3">
+            <i class="bi bi-arrow-left me-2"></i> Back to Dashboard
+        </a>
+
         <h5 class="fw-semibold mb-3 text-secondary">Master Data</h5>
 
         <ul class="nav flex-column fw-medium" id="master-navigation">
@@ -174,6 +179,14 @@
     </div>
 </aside>
 <style>
+    /* Back to dashboard */
+    #back-to-dashboard {
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: .75rem;
+        margin-bottom: 1rem !important;
+    }
+    #back-to-dashboard:hover { color: #0d6efd !important; }
+
     /* Sidebar link base */
     #master-navigation li {
         list-style: none;

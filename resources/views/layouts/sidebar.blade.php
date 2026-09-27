@@ -1164,6 +1164,13 @@
     }
 </style>
 
+@php
+    /* Masters and Settings each render their own secondary sidebar, so the main
+       menu collapses to its 70px rail by default on those pages and hands the
+       width back to the content. A manual toggle is remembered per section so
+       the choice sticks instead of resetting on every page load. */
+    $sidebarAutoCollapseSection = in_array($segment1 ?? '', ['masters', 'settings'], true) ? $segment1 : null;
+@endphp
 <script>
     (function () {
         var sidebarContainer = document.getElementById('sidebar-container');
@@ -1176,18 +1183,53 @@
         /* ---- Collapse ---------------------------------------------------- */
         if (toggleBtn) {
             var STORAGE_KEY = 'flikma-sidebar-collapsed';
+            var SECTION_KEY = 'flikma-sidebar-collapsed-sections';
+            var AUTO_SECTION = {!! json_encode($sidebarAutoCollapseSection) !!};
+
+            function readSectionState(section) {
+                if (!section) {
+                    return null;
+                }
+                try {
+                    var all = JSON.parse(localStorage.getItem(SECTION_KEY) || '{}');
+                    return (all && typeof all === 'object' && typeof all[section] === 'boolean') ? all[section] : null;
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            function writeSectionState(section, collapsed) {
+                if (!section) {
+                    return;
+                }
+                try {
+                    var all = JSON.parse(localStorage.getItem(SECTION_KEY) || '{}');
+                    if (!all || typeof all !== 'object') {
+                        all = {};
+                    }
+                    all[section] = collapsed;
+                    localStorage.setItem(SECTION_KEY, JSON.stringify(all));
+                } catch (e) {
+                    /* Private mode or quota exceeded: keep the default. */
+                }
+            }
 
             function applyState(collapsed) {
                 sidebarContainer.classList.toggle('sidebar-collapsed', collapsed);
                 toggleBtn.setAttribute('title', collapsed ? 'Expand menu' : 'Collapse menu');
             }
 
-            applyState(localStorage.getItem(STORAGE_KEY) === '1');
+            var sectionState = readSectionState(AUTO_SECTION);
+            if (sectionState === null) {
+                sectionState = AUTO_SECTION ? true : localStorage.getItem(STORAGE_KEY) === '1';
+            }
+            applyState(sectionState);
 
             toggleBtn.addEventListener('click', function () {
                 var collapsed = !sidebarContainer.classList.contains('sidebar-collapsed');
                 applyState(collapsed);
                 localStorage.setItem(STORAGE_KEY, collapsed ? '1' : '0');
+                writeSectionState(AUTO_SECTION, collapsed);
             });
         }
 

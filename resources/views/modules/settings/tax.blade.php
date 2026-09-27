@@ -4,7 +4,6 @@
     <main class="gmail-content bg-white d-flex flex-column">
         @include('includes.settings-navigation')
         <section class="flex-grow-1 px-4 d-flex flex-column">
-            @include('includes.master-header')
 
             <div class="card border-0 shadow-sm rounded-3 p-4 mt-4">
 
