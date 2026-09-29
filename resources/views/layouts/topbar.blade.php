@@ -18,6 +18,9 @@
                 </button>
                 @include('includes.page-heading')
             </div>
+            <div class="d-flex align-items-center gap-2">
+                @include('includes.language-toggle')
+            </div>
         </div>
     </header>
 @endauth

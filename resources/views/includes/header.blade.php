@@ -92,6 +92,8 @@
                 </div>
             </div>
 
+            @include('includes.language-toggle')
+
             <a href="#" class="btn btn-light border-0 rounded-circle header-icon-btn position-relative" id="activity-feed">
                 <i class="bi bi-bell fs-5 text-secondary"></i>
                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" style="font-size: 0.65rem;">3</span>
