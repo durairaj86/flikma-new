@@ -32,14 +32,25 @@
      data-button-save="Save Expense">
     
     <!-- AI Scan Card -->
-    <div class="card mb-3 shadow-sm">
+    <div class="card mb-3 shadow-sm" id="ai-scan-card">
         <div class="card-body p-3">
             <h6 class="fw-bold mb-2 text-primary">Scan Receipt with AI</h6>
             <input type="file" id="ai-scan-input" class="d-none" accept="image/*,.pdf">
             <button type="button" class="btn btn-outline-primary btn-sm" onclick="$('#ai-scan-input').click()">
                 <i class="bi bi-robot"></i> Upload Receipt/Bill
             </button>
-            <span id="ai-scan-loader" class="ms-2 d-none"><i class="bi bi-arrow-repeat spin"></i> Processing...</span>
+            <span id="ai-scan-loader" class="ms-2 d-none">
+                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                <span class="ms-1">Processing with AI... Please wait</span>
+            </span>
+        </div>
+    </div>
+
+    <!-- Overlay while scanning -->
+    <div id="ai-scanning-overlay" class="d-none position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-75 d-flex justify-content-center align-items-center" style="z-index: 1000;">
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+            <h5 class="mt-2 text-primary">AI is Scanning...</h5>
         </div>
     </div>
 
@@ -197,10 +208,14 @@
                         <tr class="align-middle main-row">
                             <!-- Account -->
                             <td class="col-md-2">
-                                <x-common.account-groups :parentAccount="$parents"
-                                                         :subAccounts="$subAccounts"
-                                                         :value="$subItem->account_id"></x-common.account-groups>
-                                {{--<x-common.accounts :accounts="$accounts" :value="$subItem->account_id"/>--}}
+                                <div class="input-group">
+                                    <x-common.account-groups :parentAccount="$parents"
+                                                             :subAccounts="$subAccounts"
+                                                             :value="$subItem->account_id"></x-common.account-groups>
+                                    <button type="button" class="btn btn-sm btn-outline-info ai-help-btn" title="AI Category Help">
+                                        <i class="bi bi-magic"></i>
+                                    </button>
+                                </div>
                             </td>
 
                             <td class="col-md-3">
@@ -320,8 +335,15 @@
             $btnShowScan.removeClass('d-none');
         });
 
-        $('#start-ai-scan').on('click', function () {
-            let formData = new FormData($('#aiScanForm')[0]);
+        // Auto-trigger scan
+        $('#ai-scan-input').on('change', function () {
+            // Show overlay, hide scan card
+            $('#ai-scanning-overlay').removeClass('d-none');
+            $('#ai-scan-card').addClass('d-none');
+            
+            let formData = new FormData();
+            formData.append('image', this.files[0]);
+            
             $.ajax({
                 url: '{{ route('expenses.ai.scan-receipt') }}',
                 type: 'POST',
@@ -333,18 +355,54 @@
                     $('input[name="reference_number"]').val(res.description);
                     if(res.supplier_id) $('select[name="supplier"]')[0].tomselect.setValue(res.supplier_id);
                     
-                    let $tbody = $('#EXPENSE-tbody');
-                    let $row = $tbody.find('tr:first');
+                    let $row = $('#EXPENSE-tbody tr:first');
                     if(res.account_id) $row.find('select[name="account[]"]')[0].tomselect.setValue(res.account_id);
+                    else {
+                        // Handle "not available" - perhaps show a prompt?
+                        // For now, let's just log it
+                        console.log('Account not matched automatically.');
+                    }
                     $row.find('textarea[name="comment[]"]').val(res.description);
                     $row.find('input[name="unit_price[]"]').val(res.subtotal);
-                    $btnShowForm.click();
+                    
+                    // Reset UI
+                    $('#ai-scanning-overlay').addClass('d-none');
+                    $('#ai-scan-card').removeClass('d-none');
                     toastr.success('Scan complete');
                 },
                 error: function (err) {
-                    toastr.error('Scan failed');
+                    $('#ai-scanning-overlay').addClass('d-none');
+                    $('#ai-scan-card').removeClass('d-none');
+                    toastr.error(err.responseJSON?.message || 'Scan failed');
                 }
             });
+        });
+
+        });
+
+        // AI Help for account
+        $('#EXPENSE-tbody').on('click', '.ai-help-btn', function() {
+            let $row = $(this).closest('tr');
+            let desc = $row.find('textarea[name="comment[]"]').val();
+            let vendor = $('select[name="supplier"]').find('option:selected').text();
+            
+            // Show overlay only for this row
+            $('#ai-scanning-overlay').removeClass('d-none').find('h5').text('AI is suggesting account...');
+            
+            $.post('{{ route('expenses.ai.suggest-category') }}', {description: desc, vendor: vendor}, function(res) {
+                $('#ai-scanning-overlay').addClass('d-none');
+                if(res.account_id) {
+                    $row.find('select[name="account[]"]')[0].tomselect.setValue(res.account_id);
+                    toastr.success('Account suggested: ' + res.account_name);
+                } else {
+                    toastr.info('No confident account match found — please select manually.');
+                }
+            }).fail(function(){
+                $('#ai-scanning-overlay').addClass('d-none');
+                toastr.error('AI suggestion failed.');
+            });
+        });
+
         });
     });
 </script>

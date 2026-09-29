@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // scanning endpoints want a readable message they can surface in their
         // own error UI. 402 (Payment Required) keeps it distinct from a 500.
         $exceptions->render(function (\App\Exceptions\AiTokenLimitExceededException $e, $request) {
+            \Illuminate\Support\Facades\Log::info('AI Token limit exception rendered');
             if ($request->expectsJson()) {
                 return response()->json([
                     'status' => 'error',
