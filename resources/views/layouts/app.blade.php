@@ -1,5 +1,12 @@
+@php
+    // includes/language-toggle.blade.php persists the Arabic/English choice
+    // in the googtrans cookie Google's translate widget reads. Read it here
+    // too so the very first response already has the right dir/lang and RTL
+    // stylesheets — no client-side flash of the LTR layout.
+    $isArabicUi = request()->cookie('googtrans') === '/en/ar';
+@endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ $isArabicUi ? 'ar' : str_replace('_', '-', app()->getLocale()) }}" dir="{{ $isArabicUi ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,7 +21,7 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet"/>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/{{ $isArabicUi ? 'bootstrap.rtl.min.css' : 'bootstrap.min.css' }}" rel="stylesheet">
 
     {{--<link rel="preload" href="{{ asset('css/adminlte.css') }}" as="style"/>--}}
     <link href="{{ asset('fontawesome/css/all.css') }}" as="style"/>
@@ -45,7 +52,7 @@
     <!--end::Third Party Plugin(Bootstrap Icons)-->
     <!--begin::Required Plugin(AdminLTE)-->
 
-    <link rel="stylesheet" href="{{ asset('css/adminlte.css?v='.appVersion()) }}"/>
+    <link rel="stylesheet" href="{{ asset(($isArabicUi ? 'css/adminlte.rtl.css' : 'css/adminlte.css').'?v='.appVersion()) }}"/>
 
     <link rel="stylesheet" href="{{ asset('css/jquery-confirm.css') }}"/>
 
@@ -109,6 +116,14 @@
             background-color: var(--sb-bg, #f8f9fa);
         }
 
+        /* flex row's main-axis is already writing-direction aware, so the
+           sidebar/main-content order mirrors on its own under dir="rtl" —
+           only the physical border side needs flipping by hand. */
+        [dir="rtl"] #sidebar-container {
+            border-right: none;
+            border-left: 1px solid var(--sb-border, #dee2e6);
+        }
+
         .main-content {
             flex: 1;
             display: flex;
@@ -133,6 +148,14 @@
            re-parents anything after it out of .wrapper. */
         body:not(.has-top-header) .wrapper {
             padding-right: 60px;
+        }
+
+        /* The rail itself lives in layouts/profile-menu.blade.php and needs
+           its own `right: 0` -> `left: 0` flip there; this just reserves the
+           matching column on the mirrored side. */
+        [dir="rtl"] body:not(.has-top-header) .wrapper {
+            padding-right: 0;
+            padding-left: 60px;
         }
 
         .dropdown-menu {
