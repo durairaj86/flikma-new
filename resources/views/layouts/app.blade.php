@@ -1,12 +1,11 @@
 @php
-    // includes/language-toggle.blade.php persists the Arabic/English choice
-    // in the googtrans cookie Google's translate widget reads. Read it here
-    // too so the very first response already has the right dir/lang and RTL
-    // stylesheets — no client-side flash of the LTR layout.
-    $isArabicUi = request()->cookie('googtrans') === '/en/ar';
+    // SetLocale (app/Http/Middleware/SetLocale.php) applies the session
+    // locale the EN/AR toggle writes before this view ever renders, so
+    // app()->getLocale() already reflects it here.
+    $isArabicUi = app()->getLocale() === 'ar';
 @endphp
 <!DOCTYPE html>
-<html lang="{{ $isArabicUi ? 'ar' : str_replace('_', '-', app()->getLocale()) }}" dir="{{ $isArabicUi ? 'rtl' : 'ltr' }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ $isArabicUi ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">

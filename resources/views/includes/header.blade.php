@@ -20,27 +20,27 @@
                  layouts/profile-menu.blade.php. --}}
             @php
                 $headerCreateLinks = [
-                    ['label' => 'New Enquiry', 'icon' => 'bi-envelope-plus', 'title' => 'Add Enquiry', 'url' => url('sales/enquiry/create'), 'size' => 'xxl', 'minHeight' => '650px', 'scroll' => false],
-                    ['label' => 'New Quotation', 'icon' => 'bi-chat-left-quote', 'title' => 'New Quotation', 'url' => url('sales/quotation/create'), 'size' => 'xxl', 'minHeight' => '700px', 'scroll' => false],
-                    ['label' => 'Customer Invoice', 'icon' => 'bi-receipt', 'title' => 'New Customer Invoice', 'url' => url('invoice/customer/create?jobId=list'), 'size' => '4xl', 'scroll' => false],
-                    ['label' => 'Supplier Invoice', 'icon' => 'bi-receipt-cutoff', 'title' => 'New Supplier Invoice', 'url' => url('invoice/supplier/create?jobId=list'), 'size' => 'xl'],
-                    ['label' => 'Waybill', 'icon' => 'bi-box-seam', 'title' => 'New Waybill', 'url' => url('bl/waybill/create'), 'size' => 'lg', 'scroll' => false],
-                    ['label' => 'Expense', 'icon' => 'bi-cash-coin', 'title' => 'Add Expense', 'url' => url('finance/expense/create'), 'size' => 'lg'],
+                    ['label' => __('New Enquiry'), 'icon' => 'bi-envelope-plus', 'title' => __('Add Enquiry'), 'url' => url('sales/enquiry/create'), 'size' => 'xxl', 'minHeight' => '650px', 'scroll' => false],
+                    ['label' => __('New Quotation'), 'icon' => 'bi-chat-left-quote', 'title' => __('New Quotation'), 'url' => url('sales/quotation/create'), 'size' => 'xxl', 'minHeight' => '700px', 'scroll' => false],
+                    ['label' => __('Customer Invoice'), 'icon' => 'bi-receipt', 'title' => __('New Customer Invoice'), 'url' => url('invoice/customer/create?jobId=list'), 'size' => '4xl', 'scroll' => false],
+                    ['label' => __('Supplier Invoice'), 'icon' => 'bi-receipt-cutoff', 'title' => __('New Supplier Invoice'), 'url' => url('invoice/supplier/create?jobId=list'), 'size' => 'xl'],
+                    ['label' => __('Waybill'), 'icon' => 'bi-box-seam', 'title' => __('New Waybill'), 'url' => url('bl/waybill/create'), 'size' => 'lg', 'scroll' => false],
+                    ['label' => __('Expense'), 'icon' => 'bi-cash-coin', 'title' => __('Add Expense'), 'url' => url('finance/expense/create'), 'size' => 'lg'],
                 ];
 
                 $headerThemes = [
-                    ['key' => 'gray', 'label' => 'Dark Gray', 'swatch' => '#343a40', 'accent' => '#7CC4F0'],
-                    ['key' => 'light', 'label' => 'Light', 'swatch' => '#ffffff', 'accent' => '#5B4FE5'],
-                    ['key' => 'dark', 'label' => 'Dark', 'swatch' => '#12141c', 'accent' => '#8B7CF6'],
-                    ['key' => 'indigo', 'label' => 'Indigo', 'swatch' => '#1e1b4b', 'accent' => '#FBBF24'],
-                    ['key' => 'ocean', 'label' => 'Ocean', 'swatch' => '#0b3d54', 'accent' => '#22D3EE'],
-                    ['key' => 'forest', 'label' => 'Forest', 'swatch' => '#10291d', 'accent' => '#FBBF24'],
+                    ['key' => 'gray', 'label' => __('Dark Gray'), 'swatch' => '#343a40', 'accent' => '#7CC4F0'],
+                    ['key' => 'light', 'label' => __('Light'), 'swatch' => '#ffffff', 'accent' => '#5B4FE5'],
+                    ['key' => 'dark', 'label' => __('Dark'), 'swatch' => '#12141c', 'accent' => '#8B7CF6'],
+                    ['key' => 'indigo', 'label' => __('Indigo'), 'swatch' => '#1e1b4b', 'accent' => '#FBBF24'],
+                    ['key' => 'ocean', 'label' => __('Ocean'), 'swatch' => '#0b3d54', 'accent' => '#22D3EE'],
+                    ['key' => 'forest', 'label' => __('Forest'), 'swatch' => '#10291d', 'accent' => '#FBBF24'],
                 ];
             @endphp
 
             <div class="dropdown">
                 <button class="btn btn-light border-0 rounded-circle header-icon-btn" type="button" data-bs-toggle="dropdown"
-                        title="Create" aria-label="Create">
+                        title="{{ __('Create') }}" aria-label="{{ __('Create') }}">
                     <i class="bi bi-plus-lg fs-5 text-secondary"></i>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" style="min-width: 220px;">
@@ -65,18 +65,18 @@
             <form method="POST" action="{{ route('header.toggle') }}" class="m-0">
                 @csrf
                 <button type="submit" class="btn btn-light border-0 rounded-circle header-icon-btn"
-                        title="Hide Top Header" aria-label="Hide top header">
+                        title="{{ __('Hide Top Header') }}" aria-label="{{ __('Hide top header') }}">
                     <i class="bi bi-layout-text-window-reverse fs-5 text-secondary"></i>
                 </button>
             </form>
 
             <div class="dropdown">
                 <button class="btn btn-light border-0 rounded-circle header-icon-btn" type="button" data-bs-toggle="dropdown"
-                        title="Sidebar Theme" aria-label="Sidebar theme">
+                        title="{{ __('Sidebar Theme') }}" aria-label="{{ __('Sidebar theme') }}">
                     <i class="bi bi-palette2 fs-5 text-secondary"></i>
                 </button>
                 <div class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 p-3 header-theme-picker">
-                    <div class="theme-picker-heading">Sidebar Theme</div>
+                    <div class="theme-picker-heading">{{ __('Sidebar Theme') }}</div>
                     <div class="theme-swatch-grid">
                         @foreach($headerThemes as $theme)
                             <button type="button" class="theme-swatch-btn" data-theme-key="{{ $theme['key'] }}"
@@ -101,7 +101,7 @@
 
             <div class="dropdown ms-2 user-account-menu">
                 <button class="btn btn-white border-0 d-flex align-items-center p-1 rounded-pill hover-shadow" type="button" data-bs-toggle="dropdown">
-                    @php $userName = $user->name ?? 'Guest'; @endphp
+                    @php $userName = $user->name ?? __('Guest'); @endphp
                     @if($user->profile_photo_path ?? null)
                         <img src="{{ asset($user->profile_photo_path) }}" class="rounded-circle" width="32" height="32" alt="User" style="object-fit: cover;">
                     @else
@@ -116,12 +116,12 @@
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" style="min-width: 240px; max-width: 90vw;">
                     <li class="px-3 py-2 border-bottom">
-                        <div class="small text-muted">Signed in as:</div>
-                        <div class="fw-bold text-dark truncate-email" title="{{ $user->email ?? 'Guest' }}">{{ $user->email ?? 'Guest' }}</div>
+                        <div class="small text-muted">{{ __('Signed in as:') }}</div>
+                        <div class="fw-bold text-dark truncate-email" title="{{ $user->email ?? __('Guest') }}">{{ $user->email ?? __('Guest') }}</div>
                     </li>
-                    <li><a class="dropdown-item py-2" href="{{ url('settings/account') }}"><i class="bi bi-person me-2"></i> My Profile</a></li>
+                    <li><a class="dropdown-item py-2" href="{{ url('settings/account') }}"><i class="bi bi-person me-2"></i> {{ __('My Profile') }}</a></li>
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item text-danger py-2" href="/logout"><i class="bi bi-box-arrow-right me-2"></i> Logout</a></li>
+                    <li><a class="dropdown-item text-danger py-2" href="/logout"><i class="bi bi-box-arrow-right me-2"></i> {{ __('Logout') }}</a></li>
                 </ul>
             </div>
         </div>

@@ -40,6 +40,16 @@ Route::middleware(['auth', 'module.permission'])->group(function () {
         return back();
     })->name('header.toggle');
 
+    /* EN/AR toggle: persists the choice in the session so SetLocale (the
+       global web middleware) applies it on every subsequent request. */
+    Route::get('locale/{locale}', function (string $locale) {
+        if (in_array($locale, ['en', 'ar'], true)) {
+            session(['locale' => $locale]);
+        }
+
+        return back();
+    })->name('locale.switch');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

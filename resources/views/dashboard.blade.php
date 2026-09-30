@@ -1,5 +1,5 @@
-@section('page-title','Dashboard')
-@section('page-sub-title','Overview of the company\'s performance')
+@section('page-title', __('Dashboard'))
+@section('page-sub-title', __('Overview of the company\'s performance'))
 <x-app-layout>
 
     <style>
@@ -47,9 +47,9 @@
                         </div>
                         <div class="col-auto">
                             <div class="btn-group" role="group" aria-label="Period">
-                                <button class="btn btn-outline-secondary btn-sm">Today</button>
-                                <button class="btn btn-outline-secondary btn-sm">Week</button>
-                                <button class="btn btn-outline-secondary btn-sm active">Month</button>
+                                <button class="btn btn-outline-secondary btn-sm">{{ __('Today') }}</button>
+                                <button class="btn btn-outline-secondary btn-sm">{{ __('Week') }}</button>
+                                <button class="btn btn-outline-secondary btn-sm active">{{ __('Month') }}</button>
                             </div>
                         </div>
                     </div>
@@ -70,7 +70,7 @@
                                                 <i class="fa-solid fa-dollar-sign text-primary"></i>
                                             </div>
                                             <div>
-                                                <div class="stat-label">Total Sales</div>
+                                                <div class="stat-label">{{ __('Total Sales') }}</div>
                                                 <div class="stat-value">{{ number_format($totalSales, 0) }}</div>
                                                 <div class="muted-sm {{ $salesGrowth >= 0 ? 'text-success' : 'text-danger' }}">
                                                     <i class="fa fa-arrow-{{ $salesGrowth >= 0 ? 'up' : 'down' }}"></i> {{ abs($salesGrowth) }}%
@@ -87,9 +87,9 @@
                                                 <i class="fa-solid fa-file-invoice text-info"></i>
                                             </div>
                                             <div>
-                                                <div class="stat-label">Invoices</div>
+                                                <div class="stat-label">{{ __('Invoices') }}</div>
                                                 <div class="stat-value">{{ number_format($totalInvoices) }}</div>
-                                                <div class="muted-sm">Due: {{ $dueInvoices }}</div>
+                                                <div class="muted-sm">{{ __('Due') }}: {{ $dueInvoices }}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -102,9 +102,9 @@
                                                 <i class="fa-solid fa-users text-warning"></i>
                                             </div>
                                             <div>
-                                                <div class="stat-label">Customers</div>
+                                                <div class="stat-label">{{ __('Customers') }}</div>
                                                 <div class="stat-value">{{ number_format($totalCustomers) }}</div>
-                                                <div class="muted-sm">New: {{ $newCustomers }}</div>
+                                                <div class="muted-sm">{{ __('New') }}: {{ $newCustomers }}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -117,10 +117,10 @@
                                                 <i class="fa-solid fa-chart-line text-success"></i>
                                             </div>
                                             <div>
-                                                <div class="stat-label">Profit</div>
+                                                <div class="stat-label">{{ __('Profit') }}</div>
                                                 <div class="stat-value">{{ number_format($profit, 0) }}</div>
                                                 <div class="muted-sm {{ $profitMargin > 0 ? 'text-success' : 'text-danger' }}">
-                                                    Margin {{ $profitMargin }}%
+                                                    {{ __('Margin') }} {{ $profitMargin }}%
                                                 </div>
                                             </div>
                                         </div>
@@ -137,12 +137,12 @@
                                         <div class="row g-0 text-center">
                                             <div class="col-6 border-end">
                                                 <i class="fa-solid fa-ship text-primary fs-3 mb-2"></i>
-                                                <h6 class="fw-normal mb-1">ETA Today</h6>
+                                                <h6 class="fw-normal mb-1">{{ __('ETA Today') }}</h6>
                                                 <h4 class="fw-bold text-primary mb-0">{{ $etaToday }}</h4>
                                             </div>
                                             <div class="col-6">
                                                 <i class="fa-solid fa-plane-departure text-success fs-3 mb-2"></i>
-                                                <h6 class="fw-normal mb-1">ETD Tomorrow</h6>
+                                                <h6 class="fw-normal mb-1">{{ __('ETD Tomorrow') }}</h6>
                                                 <h4 class="fw-bold text-success mb-0">{{ $etdTomorrow }}</h4>
                                             </div>
                                         </div>
@@ -155,12 +155,12 @@
                                         <div class="row g-0 text-center">
                                             <div class="col-6 border-end">
                                                 <i class="fa-solid fa-truck text-info fs-3 mb-2"></i>
-                                                <h6 class="fw-normal mb-1">ATA This Week</h6>
+                                                <h6 class="fw-normal mb-1">{{ __('ATA This Week') }}</h6>
                                                 <h4 class="fw-bold text-info mb-0">{{ $ataThisWeek }}</h4>
                                             </div>
                                             <div class="col-6">
                                                 <i class="fa-solid fa-plane-arrival text-danger fs-3 mb-2"></i>
-                                                <h6 class="fw-normal mb-1">ATD This Week</h6>
+                                                <h6 class="fw-normal mb-1">{{ __('ATD This Week') }}</h6>
                                                 <h4 class="fw-bold text-danger mb-0">{{ $atdThisWeek }}</h4>
                                             </div>
                                         </div>
@@ -172,15 +172,15 @@
                                 <div class="col-md-6">
                                     <div class="card shadow-sm border-0 p-3 h-100">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <h6 class="fw-semibold mb-0">Job Status</h6>
+                                            <h6 class="fw-semibold mb-0">{{ __('Job Status') }}</h6>
                                             <i class="fa-solid fa-truck-fast text-primary"></i>
                                         </div>
                                         <div class="d-flex justify-content-between mb-1">
-                                            <span>Active Jobs</span>
+                                            <span>{{ __('Active Jobs') }}</span>
                                             <span class="fw-bold text-primary">{{ $activeJobs }}</span>
                                         </div>
                                         <div class="d-flex justify-content-between">
-                                            <span>Completed This Month</span>
+                                            <span>{{ __('Completed This Month') }}</span>
                                             <span class="fw-bold text-success">{{ $completedJobsThisMonth }}</span>
                                         </div>
                                     </div>
@@ -190,15 +190,15 @@
                                 <div class="col-md-6">
                                     <div class="card shadow-sm border-0 p-3 h-100">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <h6 class="fw-semibold mb-0">Payments</h6>
+                                            <h6 class="fw-semibold mb-0">{{ __('Payments') }}</h6>
                                             <i class="fa-solid fa-money-bill-transfer text-success"></i>
                                         </div>
                                         <div class="d-flex justify-content-between mb-1">
-                                            <span>To Collect</span>
+                                            <span>{{ __('To Collect') }}</span>
                                             <span class="fw-bold text-warning">₹{{ number_format($toCollect, 0) }}</span>
                                         </div>
                                         <div class="d-flex justify-content-between">
-                                            <span>To Pay</span>
+                                            <span>{{ __('To Pay') }}</span>
                                             <span class="fw-bold text-danger">₹{{ number_format($toPay, 0) }}</span>
                                         </div>
                                     </div>
@@ -210,8 +210,8 @@
                                 <div class="col-md-7">
                                     <div class="card">
                                         <div class="card-header d-flex justify-content-between align-items-center">
-                                            <h6 class="mb-0">Revenue vs Expenses</h6>
-                                            <div class="text-muted small">Monthly</div>
+                                            <h6 class="mb-0">{{ __('Revenue vs Expenses') }}</h6>
+                                            <div class="text-muted small">{{ __('Monthly') }}</div>
                                         </div>
                                         <div class="card-body" style="min-height:220px;">
                                             <canvas id="salesMainChart" style="height:220px;"></canvas>
@@ -222,8 +222,8 @@
                                 <div class="col-md-5">
                                     <div class="card">
                                         <div class="card-header d-flex justify-content-between align-items-center">
-                                            <h6 class="mb-0">Revenue Trend</h6>
-                                            <div class="text-muted small">This month</div>
+                                            <h6 class="mb-0">{{ __('Revenue Trend') }}</h6>
+                                            <div class="text-muted small">{{ __('This month') }}</div>
                                         </div>
                                         <div class="card-body" style="min-height:220px;">
                                             <canvas id="revenueMainChart" style="height:220px;"></canvas>
@@ -235,8 +235,8 @@
                             <!-- Bottom: Recent transactions (wide) -->
                             <div class="card">
                                 <div class="card-header d-flex flex-row justify-content-between align-items-center w-100">
-                                    <h6 class="mb-0 me-2">Recent Transactions</h6>
-                                    <a href="{{ route('invoices.customer') }}" class="btn btn-sm btn-outline-secondary ms-auto flex-shrink-0">View All</a>
+                                    <h6 class="mb-0 me-2">{{ __('Recent Transactions') }}</h6>
+                                    <a href="{{ route('invoices.customer') }}" class="btn btn-sm btn-outline-secondary ms-auto flex-shrink-0">{{ __('View All') }}</a>
                                 </div>
                                 <div class="card-body p-0">
                                     <div class="table-responsive">
@@ -244,11 +244,11 @@
                                             <thead class="table-light">
                                             <tr>
                                                 <th>#</th>
-                                                <th>Invoice</th>
-                                                <th>Customer</th>
-                                                <th>Date</th>
-                                                <th class="text-end">Amount</th>
-                                                <th>Status</th>
+                                                <th>{{ __('Invoice') }}</th>
+                                                <th>{{ __('Customer') }}</th>
+                                                <th>{{ __('Date') }}</th>
+                                                <th class="text-end">{{ __('Amount') }}</th>
+                                                <th>{{ __('Status') }}</th>
                                             </tr>
                                             </thead>
                                             <tbody>
@@ -256,18 +256,18 @@
                                                 <tr>
                                                     <td>{{ $transaction->id }}</td>
                                                     <td>{{ $transaction->invoice_number ?? $transaction->row_no }}</td>
-                                                    <td>{{ $transaction->customer->name ?? 'N/A' }}</td>
+                                                    <td>{{ $transaction->customer->name ?? __('N/A') }}</td>
                                                     <td>{{ $transaction->invoice_date }}</td>
                                                     <td class="text-end">{{ number_format($transaction->grand_total, 0) }}</td>
                                                     <td>
                                                         @if($transaction->status == 'approved')
-                                                            <span class="badge bg-success">Paid</span>
+                                                            <span class="badge bg-success">{{ __('Paid') }}</span>
                                                         @elseif($transaction->status == 'draft')
-                                                            <span class="badge bg-warning text-dark">Pending</span>
+                                                            <span class="badge bg-warning text-dark">{{ __('Pending') }}</span>
                                                         @elseif($transaction->status == 'overdue')
-                                                            <span class="badge bg-danger">Overdue</span>
+                                                            <span class="badge bg-danger">{{ __('Overdue') }}</span>
                                                         @elseif($transaction->status == 'partial')
-                                                            <span class="badge bg-info text-dark">Part Paid</span>
+                                                            <span class="badge bg-info text-dark">{{ __('Part Paid') }}</span>
                                                         @else
                                                             <span class="badge bg-secondary">{{ $transaction->status }}</span>
                                                         @endif
@@ -275,14 +275,14 @@
                                                 </tr>
                                             @empty
                                                 <tr>
-                                                    <td colspan="6" class="text-center">No recent transactions found</td>
+                                                    <td colspan="6" class="text-center">{{ __('No recent transactions found') }}</td>
                                                 </tr>
                                             @endforelse
                                             </tbody>
                                         </table>
                                     </div>
                                 </div>
-                                <div class="card-footer text-muted small">Showing {{ count($recentTransactions) }} of {{ $totalInvoices }} transactions</div>
+                                <div class="card-footer text-muted small">{{ __('Showing :shown of :total transactions', ['shown' => count($recentTransactions), 'total' => $totalInvoices]) }}</div>
                             </div>
 
                         </div> <!-- /.left-col -->
@@ -293,31 +293,31 @@
                             <div class="right-card">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div>
-                                        <h6>Outstanding</h6>
+                                        <h6>{{ __('Outstanding') }}</h6>
                                         <div class="big">{{ number_format($outstanding, 0) }}</div>
-                                        <div class="muted-sm mt-1">Total amount outstanding</div>
+                                        <div class="muted-sm mt-1">{{ __('Total amount outstanding') }}</div>
                                     </div>
                                     <div class="text-end">
-                                        <span class="badge bg-danger">Overdue</span>
+                                        <span class="badge bg-danger">{{ __('Overdue') }}</span>
                                         <div class="muted-sm mt-2">
-                                            {{ $outstandingChange >= 0 ? '+' : '' }}{{ $outstandingChange }}% vs last month
+                                            {{ $outstandingChange >= 0 ? '+' : '' }}{{ $outstandingChange }}% {{ __('vs last month') }}
                                         </div>
                                     </div>
                                 </div>
 
                                 <hr class="my-2" />
                                 <div>
-                                    <div class="d-flex justify-content-between small mb-1"><div>Due <small class="text-muted">0-30d</small></div><div>{{ number_format($outstanding30d, 0) }}</div></div>
+                                    <div class="d-flex justify-content-between small mb-1"><div>{{ __('Due') }} <small class="text-muted">{{ __('0-30d') }}</small></div><div>{{ number_format($outstanding30d, 0) }}</div></div>
                                     <div class="progress mb-2" style="height:8px;">
                                         <div class="progress-bar bg-warning" style="width:{{ $outstanding > 0 ? ($outstanding30d / $outstanding) * 100 : 0 }}%"></div>
                                     </div>
 
-                                    <div class="d-flex justify-content-between small mb-1"><div>Due <small class="text-muted">31-60d</small></div><div>{{ number_format($outstanding60d, 0) }}</div></div>
+                                    <div class="d-flex justify-content-between small mb-1"><div>{{ __('Due') }} <small class="text-muted">{{ __('31-60d') }}</small></div><div>{{ number_format($outstanding60d, 0) }}</div></div>
                                     <div class="progress mb-2" style="height:8px;">
                                         <div class="progress-bar bg-danger" style="width:{{ $outstanding > 0 ? ($outstanding60d / $outstanding) * 100 : 0 }}%"></div>
                                     </div>
 
-                                    <div class="d-flex justify-content-between small mb-1"><div>Due <small class="text-muted">60+d</small></div><div>{{ number_format($outstanding60Plus, 0) }}</div></div>
+                                    <div class="d-flex justify-content-between small mb-1"><div>{{ __('Due') }} <small class="text-muted">{{ __('60+d') }}</small></div><div>{{ number_format($outstanding60Plus, 0) }}</div></div>
                                     <div class="progress mb-0" style="height:8px;">
                                         <div class="progress-bar bg-secondary" style="width:{{ $outstanding > 0 ? ($outstanding60Plus / $outstanding) * 100 : 0 }}%"></div>
                                     </div>
@@ -328,12 +328,12 @@
                             <div class="right-card">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <h6>Awaiting Approval</h6>
-                                        <div class="big">{{ $awaitingApproval->count() }} Invoices</div>
-                                        <div class="muted-sm mt-1">Total {{ number_format($awaitingApprovalTotal, 0) }}</div>
+                                        <h6>{{ __('Awaiting Approval') }}</h6>
+                                        <div class="big">{{ $awaitingApproval->count() }} {{ __('Invoices') }}</div>
+                                        <div class="muted-sm mt-1">{{ __('Total') }} {{ number_format($awaitingApprovalTotal, 0) }}</div>
                                     </div>
                                     <div>
-                                        <a href="{{ route('invoices.customer') }}" class="btn btn-sm btn-outline-primary"><i class="fa fa-check"></i> Review</a>
+                                        <a href="{{ route('invoices.customer') }}" class="btn btn-sm btn-outline-primary"><i class="fa fa-check"></i> {{ __('Review') }}</a>
                                     </div>
                                 </div>
 
@@ -345,13 +345,13 @@
                                             <div class="d-flex justify-content-between">
                                                 <div>{{ $invoice->invoice_number ?? $invoice->row_no }}</div>
                                                 <div class="text-end">{{ number_format($invoice->grand_total, 0) }}
-                                                    <span class="text-muted d-block">{{ $invoice->customer->name ?? 'N/A' }}</span>
+                                                    <span class="text-muted d-block">{{ $invoice->customer->name ?? __('N/A') }}</span>
                                                 </div>
                                             </div>
                                         </div>
                                     @empty
                                         <div class="list-group-item px-0">
-                                            <div class="text-center">No invoices awaiting approval</div>
+                                            <div class="text-center">{{ __('No invoices awaiting approval') }}</div>
                                         </div>
                                     @endforelse
                                 </div>
@@ -361,8 +361,8 @@
                             <div class="right-card">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <h6>Cost Summary</h6>
-                                        <div class="muted-sm">This month</div>
+                                        <h6>{{ __('Cost Summary') }}</h6>
+                                        <div class="muted-sm">{{ __('This month') }}</div>
                                     </div>
                                     <div style="width:120px;">
                                         <canvas id="costMiniChart" class="mini-canvas"></canvas>
@@ -371,9 +371,9 @@
 
                                 <hr class="my-2" />
                                 <div class="small">
-                                    <div class="d-flex justify-content-between mb-1"><div>Material</div><div>{{ $materialPercent }}%</div></div>
-                                    <div class="d-flex justify-content-between mb-1"><div>Labour</div><div>{{ $labourPercent }}%</div></div>
-                                    <div class="d-flex justify-content-between mb-0"><div>Transport</div><div>{{ $transportPercent }}%</div></div>
+                                    <div class="d-flex justify-content-between mb-1"><div>{{ __('Material') }}</div><div>{{ $materialPercent }}%</div></div>
+                                    <div class="d-flex justify-content-between mb-1"><div>{{ __('Labour') }}</div><div>{{ $labourPercent }}%</div></div>
+                                    <div class="d-flex justify-content-between mb-0"><div>{{ __('Transport') }}</div><div>{{ $transportPercent }}%</div></div>
                                 </div>
                             </div>
 
@@ -381,9 +381,9 @@
                             <div class="right-card">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <h6>Revenue Summary</h6>
+                                        <h6>{{ __('Revenue Summary') }}</h6>
                                         <div class="big">{{ number_format($currentMonthSales, 0) }}</div>
-                                        <div class="muted-sm mt-1">Net revenue (MTD)</div>
+                                        <div class="muted-sm mt-1">{{ __('Net revenue (MTD)') }}</div>
                                     </div>
                                     <div style="width:120px;">
                                         <canvas id="revMiniChart" class="mini-canvas"></canvas>
@@ -392,11 +392,11 @@
 
                                 <hr class="my-2" />
                                 <div class="d-flex justify-content-between small">
-                                    <div>Collected</div>
+                                    <div>{{ __('Collected') }}</div>
                                     <div class="text-success">{{ number_format($currentMonthCollected, 0) }}</div>
                                 </div>
                                 <div class="d-flex justify-content-between small">
-                                    <div>Pending</div>
+                                    <div>{{ __('Pending') }}</div>
                                     <div class="text-danger">{{ number_format($currentMonthPending, 0) }}</div>
                                 </div>
                             </div>
@@ -411,7 +411,7 @@
 
 
 
-                <footer class="small text-center mt-3 mb-0">© <span id="y"></span> {{ companyName() }} — All rights reserved.</footer>
+                <footer class="small text-center mt-3 mb-0">© <span id="y"></span> {{ companyName() }} — {{ __('All rights reserved.') }}</footer>
     </div>
 
         <!-- Scripts -->
@@ -431,8 +431,8 @@
                 data: {
                     labels: monthlyLabels,
                     datasets: [
-                        { label: 'Revenue', data: monthlyRevenue, backgroundColor: 'rgba(13,110,253,0.9)', borderRadius: 6 },
-                        { label: 'Expenses', data: monthlyExpenses, backgroundColor: 'rgba(220,53,69,0.85)', borderRadius: 6 }
+                        { label: @json(__('Revenue')), data: monthlyRevenue, backgroundColor: 'rgba(13,110,253,0.9)', borderRadius: 6 },
+                        { label: @json(__('Expenses')), data: monthlyExpenses, backgroundColor: 'rgba(220,53,69,0.85)', borderRadius: 6 }
                     ]
                 },
                 options: {
@@ -455,7 +455,7 @@
                 data: {
                     labels: weeklyLabels,
                     datasets: [{
-                        label: 'Revenue',
+                        label: @json(__('Revenue')),
                         data: weeklyRevenueData,
                         borderColor: 'rgba(13,110,253,0.95)',
                         backgroundColor: 'rgba(13,110,253,0.12)',
@@ -471,7 +471,7 @@
             new Chart(document.getElementById('costMiniChart'), {
                 type: 'doughnut',
                 data: {
-                    labels: ['Material','Labour','Transport'],
+                    labels: [@json(__('Material')), @json(__('Labour')), @json(__('Transport'))],
                     datasets: [{
                         data: [@json($materialPercent), @json($labourPercent), @json($transportPercent)],
                         backgroundColor: ['#0d6efd','#ffc107','#20c997']

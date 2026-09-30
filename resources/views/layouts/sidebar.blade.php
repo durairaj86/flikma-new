@@ -8,11 +8,11 @@
         </a>
         <div class="sidebar-brand-actions d-flex align-items-center flex-shrink-0">
             <button type="button" id="sidebarThemeBtn" class="sidebar-theme-btn btn btn-sm border-0 p-1"
-                    title="Sidebar theme" aria-label="Change sidebar theme">
+                    title="{{ __('Sidebar theme') }}" aria-label="{{ __('Change sidebar theme') }}">
                 <i class="bi bi-palette"></i>
             </button>
             <button type="button" id="sidebarToggleBtn" class="sidebar-toggle-btn btn btn-sm border-0 p-1"
-                    title="Collapse menu" aria-label="Toggle sidebar menu">
+                    title="{{ __('Collapse menu') }}" aria-label="{{ __('Toggle sidebar menu') }}">
                 <i class="bi bi-chevron-double-left"></i>
             </button>
         </div>
@@ -28,7 +28,7 @@
                 <li class="nav-item {{ $menu == 'dashboard' ? 'active' : '' }}">
                     <a href="/dashboard" class="nav-link">
                         <i class="nav-icon bi bi-speedometer"></i>
-                        <p>Dashboard</p>
+                        <p>{{ __('Dashboard') }}</p>
                     </a>
                 </li>
 
@@ -42,7 +42,7 @@
                     <a href="#" class="nav-link">
                         <i class="nav-icon bi bi-people-fill"></i>
                         <p>
-                            Customers
+                            {{ __('Customers') }}
                             <i class="nav-arrow bi bi-chevron-right"></i>
                         </p>
                     </a>
@@ -50,46 +50,46 @@
                         <li class="nav-item">
                             <a href="/customers" class="nav-link {{ $menu == 'customers' ? 'active' : '' }}"
                                id="menu-customer-list">
-                                <p>Customer List</p>
+                                <p>{{ __('Customer List') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/reports/customer-statement"
                                class="nav-link {{ $submenu == 'customer-statement' ? 'active' : '' }}"
                                id="menu-customer-statement-list">
-                                <p>Customer Statement</p>
+                                <p>{{ __('Customer Statement') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/reports/customer-balance-summary"
                                class="nav-link {{ $submenu == 'customer-balance-summary' ? 'active' : '' }}">
-                                <p>Customer Balance Summary</p>
+                                <p>{{ __('Customer Balance Summary') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/reports/customer-activity-report"
                                class="nav-link {{ $submenu == 'customer-activity-report' ? 'active' : '' }}">
-                                <p>Customer Activity Report</p>
+                                <p>{{ __('Customer Activity Report') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/reports/customer-aging"
                                class="nav-link {{ $submenu == 'customer-aging' ? 'active' : '' }}"
                                id="menu-customer-aging-list">
-                                <p>Customer Aging</p>
+                                <p>{{ __('Customer Aging') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/reports/customer-aging-all"
                                class="nav-link {{ $submenu == 'customer-aging-all' ? 'active' : '' }}"
                                id="menu-customer-aging-all-list">
-                                <p>Customer Aging (All)</p>
+                                <p>{{ __('Customer Aging (All)') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/prospects" class="nav-link {{ $menu == 'prospects' ? 'active' : '' }}"
                                id="menu-prospect-list">
-                                <p>Prospect</p>
+                                <p>{{ __('Prospect') }}</p>
                             </a>
                         </li>
                     </ul>
@@ -104,7 +104,7 @@
                     <a href="#" class="nav-link">
                         <i class="nav-icon bi bi-truck"></i>
                         <p>
-                            Suppliers / Agents
+                            {{ __('Suppliers / Agents') }}
                             <i class="nav-arrow bi bi-chevron-right"></i>
                         </p>
                     </a>
@@ -112,33 +112,33 @@
                         <li class="nav-item">
                             <a href="/suppliers" class="nav-link {{ $menu == 'suppliers' ? 'active' : '' }}"
                                id="menu-supplier-list">
-                                <p>Supplier List</p>
+                                <p>{{ __('Supplier List') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/reports/supplier-statement"
                                class="nav-link {{ $submenu == 'supplier-statement' ? 'active' : '' }}">
-                                <p>Supplier Statement</p>
+                                <p>{{ __('Supplier Statement') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/reports/supplier-balance-summary"
                                class="nav-link {{ $submenu == 'supplier-balance-summary' ? 'active' : '' }}">
-                                <p>Supplier Balance Summary</p>
+                                <p>{{ __('Supplier Balance Summary') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/reports/supplier-aging"
                                class="nav-link {{ $submenu == 'supplier-aging' ? 'active' : '' }}"
                                id="menu-supplier-aging-list">
-                                <p>Supplier Aging</p>
+                                <p>{{ __('Supplier Aging') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/reports/supplier-aging-all"
                                class="nav-link {{ $submenu == 'supplier-aging-all' ? 'active' : '' }}"
                                id="menu-supplier-aging-all-list">
-                                <p>Supplier Aging (All)</p>
+                                <p>{{ __('Supplier Aging (All)') }}</p>
                             </a>
                         </li>
                     </ul>
@@ -152,29 +152,29 @@
                     <a href="#" class="nav-link">
                         <i class="nav-icon bi bi-cart"></i>
                         <p>
-                            Sales
+                            {{ __('Sales') }}
                             <i class="nav-arrow bi bi-chevron-right"></i>
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="/sales/enquiries" class="nav-link {{ $submenu == 'enquiries' ? 'active' : '' }}">
-                                <p>Enquiries</p>
+                                <p>{{ __('Enquiries') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/sales/quotations" class="nav-link {{ $submenu == 'quotations' ? 'active' : '' }}">
-                                <p>Quotations</p>
+                                <p>{{ __('Quotations') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/reports/sale-report" class="nav-link {{ $submenu == 'sale-report' ? 'active' : '' }}">
-                                <p>Sales Report</p>
+                                <p>{{ __('Sales Report') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/sales/overview" class="nav-link {{ $submenu == 'overview' ? 'active' : '' }}">
-                                <p>Overview</p>
+                                <p>{{ __('Overview') }}</p>
                             </a>
                         </li>
                     </ul>
@@ -185,31 +185,31 @@
                     <a href="#" class="nav-link">
                         <i class="nav-icon bi bi-gear"></i>
                         <p>
-                            Operations
+                            {{ __('Operations') }}
                             <i class="nav-arrow bi bi-chevron-right"></i>
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="/operation/jobs" class="nav-link {{ $submenu == 'jobs' ? 'active' : '' }}">
-                                <p>Jobs</p>
+                                <p>{{ __('Jobs') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/operation/job-overview" class="nav-link {{ $submenu == 'job-overview' ? 'active' : '' }}">
-                                <p>Job Overview</p>
+                                <p>{{ __('Job Overview') }}</p>
                             </a>
                         </li>
                         {{--<li class="nav-item">
                             <a href="/operations/tracking"
                                class="nav-link {{ $submenu == 'tracking' ? 'active' : '' }}">
-                                <p>Shipment Tracking</p>
+                                <p>{{ __('Shipment Tracking') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/operations/documents"
                                class="nav-link {{ $submenu == 'documents' ? 'active' : '' }}">
-                                <p>Documents</p>
+                                <p>{{ __('Documents') }}</p>
                             </a>
                         </li>--}}
                     </ul>
@@ -222,7 +222,7 @@
                     <a href="#" class="nav-link">
                         <i class="nav-icon bi bi-wallet2"></i>
                         <p>
-                            Finances
+                            {{ __('Finances') }}
                             <i class="nav-arrow bi bi-chevron-right"></i>
                         </p>
                     </a>
@@ -230,7 +230,7 @@
                         <li class="nav-item {{ $menu == 'invoice' ? 'menu-open' : '' }}">
                             <a href="#" class="nav-link">
                                 <p>
-                                    Invoices
+                                    {{ __('Invoices') }}
                                     <i class="nav-arrow bi bi-chevron-right"></i>
                                 </p>
                             </a>
@@ -238,19 +238,19 @@
                                 <li class="nav-item">
                                     <a href="/invoice/proforma"
                                        class="nav-link {{ $submenu == 'proforma' ? 'active' : '' }}">
-                                        <p>Proforma Invoice</p>
+                                        <p>{{ __('Proforma Invoice') }}</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="/invoice/supplier"
                                        class="nav-link {{ $submenu == 'supplier' ? 'active' : '' }}">
-                                        <p>Supplier Invoice</p>
+                                        <p>{{ __('Supplier Invoice') }}</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="/invoice/customer"
                                        class="nav-link {{ $submenu == 'customer' ? 'active' : '' }}">
-                                        <p>Customer Invoice</p>
+                                        <p>{{ __('Customer Invoice') }}</p>
                                     </a>
                                 </li>
                             </ul>
@@ -258,7 +258,7 @@
                         <li class="nav-item {{ $menu == 'adjustment' ? 'menu-open' : '' }}">
                             <a href="#" class="nav-link">
                                 <p>
-                                    Adjustments
+                                    {{ __('Adjustments') }}
                                     <i class="nav-arrow bi bi-chevron-right"></i>
                                 </p>
                             </a>
@@ -266,7 +266,7 @@
                                 <li class="nav-item">
                                     <a href="/adjustment/credit-note"
                                        class="nav-link {{ $submenu == 'credit-note' ? 'active' : '' }}">
-                                        <p>Credit Notes</p>
+                                        <p>{{ __('Credit Notes') }}</p>
                                     </a>
                                 </li>
                             </ul>
@@ -274,7 +274,7 @@
                         {{--<li class="nav-item {{ $menu == 'voucher' ? 'menu-open' : '' }}">
                             <a href="#" class="nav-link">
                                 <p>
-                                    Vouchers
+                                    {{ __('Vouchers') }}
                                     <i class="nav-arrow bi bi-chevron-right"></i>
                                 </p>
                             </a>
@@ -282,19 +282,19 @@
                                 <li class="nav-item">
                                     <a href="/invoice/proforma"
                                        class="nav-link {{ $submenu == 'proforma' ? 'active' : '' }}">
-                                        <p>Payments</p>
+                                        <p>{{ __('Payments') }}</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="/invoice/supplier"
                                        class="nav-link {{ $submenu == 'supplier' ? 'active' : '' }}">
-                                        <p>Collections</p>
+                                        <p>{{ __('Collections') }}</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="/invoice/customer"
                                        class="nav-link {{ $submenu == 'customer' ? 'active' : '' }}">
-                                        <p>Journal Voucher</p>
+                                        <p>{{ __('Journal Voucher') }}</p>
                                     </a>
                                 </li>
                             </ul>
@@ -302,19 +302,19 @@
                         <li class="nav-item">
                             <a href="/finance/expense"
                                class="nav-link {{ $submenu == 'expense' ? 'active' : '' }}">
-                                <p>Expenses</p>
+                                <p>{{ __('Expenses') }}</p>
                             </a>
                         </li>
                         {{--<li class="nav-item">
                             <a href="/finance/asset"
                                class="nav-link {{ $submenu == 'asset' ? 'active' : '' }}">
-                                <p>Assets</p>
+                                <p>{{ __('Assets') }}</p>
                             </a>
                         </li>--}}
                         <li class="nav-item">
                             <a href="/finance/accounts"
                                class="nav-link {{ $submenu == 'accounts' ? 'active' : '' }}">
-                                <p>Chart of Accounts</p>
+                                <p>{{ __('Chart of Accounts') }}</p>
                             </a>
                         </li>
                     </ul>
@@ -324,7 +324,7 @@
                     <a href="#" class="nav-link">
                         <i class="nav-icon bi bi-cart"></i>
                         <p>
-                            Transactions
+                            {{ __('Transactions') }}
                             <i class="nav-arrow bi bi-chevron-right"></i>
                         </p>
                     </a>
@@ -332,24 +332,24 @@
                         <li class="nav-item">
                             <a href="/transaction/payments"
                                class="nav-link {{ $submenu == 'payments' ? 'active' : '' }}">
-                                <p>Payments</p>
+                                <p>{{ __('Payments') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/transaction/collections"
                                class="nav-link {{ $submenu == 'collections' ? 'active' : '' }}">
-                                <p>Collections</p>
+                                <p>{{ __('Collections') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/transaction/overview"
                                class="nav-link {{ $submenu == 'overview' ? 'active' : '' }}">
-                                <p>Transactions Overview</p>
+                                <p>{{ __('Transactions Overview') }}</p>
                             </a>
                         </li>
                         {{--<li class="nav-item">
                             <a href="/transaction/vouchers" class="nav-link {{ $submenu == 'vouchers' ? 'active' : '' }}">
-                                <p>Vouchers</p>
+                                <p>{{ __('Vouchers') }}</p>
                             </a>
                         </li>--}}
                     </ul>
@@ -359,24 +359,24 @@
                     <a href="#" class="nav-link">
                         <i class="nav-icon bi bi-cart"></i>
                         <p>
-                            Bill of Lading
+                            {{ __('Bill of Lading') }}
                             <i class="nav-arrow bi bi-chevron-right"></i>
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="/bl/airway-bill" class="nav-link {{ $submenu == 'airway-bill' ? 'active' : '' }}">
-                                <p>Airway Bill</p>
+                                <p>{{ __('Airway Bill') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/bl/seaway" class="nav-link {{ $submenu == 'seaway' ? 'active' : '' }}">
-                                <p>Seaway Bill</p>
+                                <p>{{ __('Seaway Bill') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/bl/waybill" class="nav-link {{ $submenu == 'waybill' ? 'active' : '' }}">
-                                <p>Waybill</p>
+                                <p>{{ __('Waybill') }}</p>
                             </a>
                         </li>
                     </ul>
@@ -385,7 +385,7 @@
                     <a href="#" class="nav-link">
                         <i class="nav-icon bi bi-cart"></i>
                         <p>
-                            Payroll
+                            {{ __('Payroll') }}
                             <i class="nav-arrow bi bi-chevron-right"></i>
                         </p>
                     </a>
@@ -393,25 +393,25 @@
                         <li class="nav-item">
                             <a href="/payroll/attendance"
                                class="nav-link {{ $submenu == 'collections' ? 'active' : '' }}">
-                                <p>Attendance</p>
+                                <p>{{ __('Attendance') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/payroll/basic/salary"
                                class="nav-link {{ $submenu == 'basic' ? 'active' : '' }}">
-                                <p>Basic Salary</p>
+                                <p>{{ __('Basic Salary') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/payroll/monthly/salary"
                                class="nav-link {{ $submenu == 'collections' ? 'active' : '' }}">
-                                <p>Monthly Salary</p>
+                                <p>{{ __('Monthly Salary') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/payroll/employee/loan"
                                class="nav-link {{ $submenu == 'employee-loan' ? 'active' : '' }}">
-                                <p>Employee Loan</p>
+                                <p>{{ __('Employee Loan') }}</p>
                             </a>
                         </li>
                     </ul>
@@ -422,7 +422,7 @@
                     <a href="#" class="nav-link">
                         <i class="nav-icon bi bi-bar-chart-line"></i>
                         <p>
-                            Reports
+                            {{ __('Reports') }}
                             <i class="nav-arrow bi bi-chevron-right"></i>
                         </p>
                     </a>
@@ -432,86 +432,86 @@
                         @endphp
                         <li class="nav-item {{ in_array($submenu, $jobReportSlugs) ? 'menu-open' : '' }}">
                             <a href="#" class="nav-link">
-                                <p>Job Report <i class="nav-arrow bi bi-chevron-right"></i></p>
+                                <p>{{ __('Job Report') }} <i class="nav-arrow bi bi-chevron-right"></i></p>
                             </a>
                             <ul class="nav nav-treeview ms-3">
                                 {{--<li class="nav-item">
                                     <a href="/reports/job-report"
                                        class="nav-link {{ $submenu == 'job-report' ? 'active' : '' }}">
-                                        <p>Job Report</p>
+                                        <p>{{ __('Job Report') }}</p>
                                     </a>
                                 </li>--}}
                                 <li class="nav-item">
                                     <a href="/reports/job-balance-report"
                                        class="nav-link {{ $submenu == 'job-balance-report' ? 'active' : '' }}">
-                                        <p>Job Balance Report</p>
+                                        <p>{{ __('Job Balance Report') }}</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="/reports/job-income-report"
                                        class="nav-link {{ $submenu == 'job-income-report' ? 'active' : '' }}">
-                                        <p>Job Income Report</p>
+                                        <p>{{ __('Job Income Report') }}</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="/reports/provisional-report"
                                        class="nav-link {{ $submenu == 'provisional-report' ? 'active' : '' }}">
-                                        <p>Provisional Report</p>
+                                        <p>{{ __('Provisional Report') }}</p>
                                     </a>
                                 </li>
                             </ul>
                         </li>
                         <li class="nav-item {{ $menu == 'reports' ? 'menu-open' : '' }}">
                             <a href="#" class="nav-link">
-                                <p>Finance Report <i class="nav-arrow bi bi-chevron-right"></i></p>
+                                <p>{{ __('Finance Report') }} <i class="nav-arrow bi bi-chevron-right"></i></p>
                             </a>
                             <ul class="nav nav-treeview ms-3">
                                 <li class="nav-item">
                                     <a href="/reports/trial-balance"
                                        class="nav-link {{ $submenu == 'trial-balance' ? 'active' : '' }}">
-                                        <p>Trial Balance</p>
+                                        <p>{{ __('Trial Balance') }}</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="/reports/balance-sheet"
                                        class="nav-link {{ $submenu == 'balance-sheet' ? 'active' : '' }}">
-                                        <p>Balance Sheet</p>
+                                        <p>{{ __('Balance Sheet') }}</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="/reports/profit-and-loss"
                                        class="nav-link {{ $submenu == 'profit-and-loss' ? 'active' : '' }}">
-                                        <p>Profit & Loss Report</p>
+                                        <p>{{ __('Profit & Loss Report') }}</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="/reports/general-ledger"
                                        class="nav-link {{ $submenu == 'general-ledger' ? 'active' : '' }}">
-                                        <p>Customer Ledger</p>
+                                        <p>{{ __('Customer Ledger') }}</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="/reports/supplier-ledger"
                                        class="nav-link {{ $submenu == 'supplier-ledger' ? 'active' : '' }}">
-                                        <p>Supplier Ledger</p>
+                                        <p>{{ __('Supplier Ledger') }}</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="/reports/tax-summary"
                                        class="nav-link {{ $submenu == 'tax-summary' ? 'active' : '' }}">
-                                        <p>Tax Summary</p>
+                                        <p>{{ __('Tax Summary') }}</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="/reports/input-tax"
                                        class="nav-link {{ $submenu == 'input-tax' ? 'active' : '' }}">
-                                        <p>Input Tax</p>
+                                        <p>{{ __('Input Tax') }}</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="/reports/output-tax"
                                        class="nav-link {{ $submenu == 'output-tax' ? 'active' : '' }}">
-                                        <p>Output Tax</p>
+                                        <p>{{ __('Output Tax') }}</p>
                                     </a>
                                 </li>
                             </ul>
@@ -519,7 +519,7 @@
                         <li class="nav-item">
                             <a href="/reports/waybill-report"
                                class="nav-link {{ $submenu == 'waybill-report' ? 'active' : '' }}">
-                                <p>Waybill Report</p>
+                                <p>{{ __('Waybill Report') }}</p>
                             </a>
                         </li>
                     </ul>
@@ -530,7 +530,7 @@
                     <a href="#" class="nav-link">
                         <i class="nav-icon bi bi-bar-chart-line"></i>
                         <p>
-                            Inventory
+                            {{ __('Inventory') }}
                             <i class="nav-arrow bi bi-chevron-right"></i>
                         </p>
                     </a>
@@ -538,7 +538,7 @@
                         <li class="nav-item">
                             <a href="/inventory/items"
                                class="nav-link {{ $submenu == 'items' ? 'active' : '' }}">
-                                <p>Items</p>
+                                <p>{{ __('Items') }}</p>
                             </a>
                         </li>
                     </ul>
@@ -548,14 +548,14 @@
                 <li class="nav-item">
                     <a href="/masters/users" class="nav-link {{ $segment1 == 'masters' ? 'active' : '' }}">
                         <i class="nav-icon bi bi-database"></i>
-                        <p>Masters</p>
+                        <p>{{ __('Masters') }}</p>
                     </a>
                 </li>
                 {{--<li class="nav-item {{ $segment1 == 'masters' ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link">
                         <i class="nav-icon bi bi-database"></i>
                         <p>
-                            Masters
+                            {{ __('Masters') }}
                             <i class="nav-arrow bi bi-chevron-right"></i>
                         </p>
                     </a>
@@ -564,7 +564,7 @@
                         <!-- Users -->
                         <li class="nav-item">
                             <a href="/masters/users" class="nav-link {{ $submenu == 'users' ? 'active' : '' }}">
-                                <p>Users</p>
+                                <p>{{ __('Users') }}</p>
                             </a>
                         </li>
 
@@ -572,7 +572,7 @@
                         <li class="nav-item">
                             <a href="/masters/transport/directories/seaports"
                                class="nav-link {{ $submenu == 'directories' ? 'active' : '' }}">
-                                <p>Transport Directory</p>
+                                <p>{{ __('Transport Directory') }}</p>
                             </a>
                         </li>
 
@@ -580,60 +580,60 @@
                         <!-- Logistics Data -->
                         <li class="nav-item {{ in_array($segment2,['services','package','container','incoterms','currencies','quotation-terms','hs-tariffs','period-closing']) ? 'menu-open' : '' }}">
                             <a href="#" class="nav-link">
-                                <p>Predefined Data <i class="nav-arrow bi bi-chevron-right"></i></p>
+                                <p>{{ __('Predefined Data') }} <i class="nav-arrow bi bi-chevron-right"></i></p>
                             </a>
                             <ul class="nav nav-treeview ms-3">
                                 <li class="nav-item">
                                     <a href="/masters/services"
                                        class="nav-link {{ $submenu=='services' ? 'active':'' }}">
-                                        <p>Logistics Services</p>
+                                        <p>{{ __('Logistics Services') }}</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="/masters/package/codes"
                                        class="nav-link {{ $submenu=='packages' ? 'active':'' }}">
-                                        <p>Package Codes</p>
+                                        <p>{{ __('Package Codes') }}</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="/masters/container/types"
                                        class="nav-link {{ $submenu=='container' ? 'active':'' }}">
-                                        <p>Container Types</p>
+                                        <p>{{ __('Container Types') }}</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="/masters/incoterms"
                                        class="nav-link {{ $submenu=='incoterms' ? 'active':'' }}">
-                                        <p>Incoterms</p>
+                                        <p>{{ __('Incoterms') }}</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="/masters/quotation-terms"
                                        class="nav-link {{ $submenu=='quotation-terms' ? 'active':'' }}">
-                                        <p>Quotation Terms</p>
+                                        <p>{{ __('Quotation Terms') }}</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="/masters/hs-tariffs"
                                        class="nav-link {{ $submenu=='hs-tariffs' ? 'active':'' }}">
-                                        <p>HS Tariff</p>
+                                        <p>{{ __('HS Tariff') }}</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="/masters/period-closing"
                                        class="nav-link {{ $submenu=='period-closing' ? 'active':'' }}">
-                                        <p>Period Closing</p>
+                                        <p>{{ __('Period Closing') }}</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="/masters/currencies"
                                        class="nav-link {{ $submenu=='currencies' ? 'active':'' }}">
-                                        <p>Currencies</p>
+                                        <p>{{ __('Currencies') }}</p>
                                     </a>
                                 </li>
                                 --}}{{--<li class="nav-item">
                                     <a href="/masters/categories" class="nav-link {{ $submenu=='categories' ? 'active':'' }}">
-                                        <p>Categories</p>
+                                        <p>{{ __('Categories') }}</p>
                                     </a>
                                 </li>--}}{{--
                             </ul>
@@ -642,7 +642,7 @@
                         <!-- Banks -->
                         <li class="nav-item">
                             <a href="/masters/banks" class="nav-link {{ $submenu == 'banks' ? 'active' : '' }}">
-                                <p>Banks</p>
+                                <p>{{ __('Banks') }}</p>
                             </a>
                         </li>
 
@@ -655,19 +655,19 @@
                     <a href="#" class="nav-link">
                         <i class="nav-icon bi bi-credit-card"></i>
                         <p>
-                            Billing
+                            {{ __('Billing') }}
                             <i class="nav-arrow bi bi-chevron-right"></i>
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="/billing" class="nav-link {{ $menu == 'billing' && ! $submenu ? 'active' : '' }}">
-                                <p>Billing &amp; Subscription</p>
+                                <p>{{ __('Billing & Subscription') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/billing/ai-usage" class="nav-link {{ $submenu == 'ai-usage' ? 'active' : '' }}">
-                                <p>AI Usage</p>
+                                <p>{{ __('AI Usage') }}</p>
                             </a>
                         </li>
                     </ul>
@@ -677,7 +677,7 @@
                 <li class="nav-item">
                     <a href="/settings/company" class="nav-link {{ $menu == 'settings' ? 'active' : '' }}">
                         <i class="nav-icon bi bi-gear"></i>
-                        <p>Settings</p>
+                        <p>{{ __('Settings') }}</p>
                     </a>
                 </li>
             </ul>
