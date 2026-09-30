@@ -1,5 +1,5 @@
 @section('js','hs_tariff')
-@section('page-title','HS Tariff')
+@section('page-title', __('HS Tariff'))
 <x-app-layout>
     <main class="gmail-content bg-white d-flex">
         @include('includes.master-navigation')
@@ -9,11 +9,11 @@
                     <div class="search-box position-relative me-3">
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                         <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="Search..." aria-label="Search...">
+                               placeholder="{{ __('Search...') }}" aria-label="{{ __('Search...') }}">
                     </div>
                 </div>
                 <div class="d-flex align-items-center">
-                    <button class="btn btn-primary rounded-pill px-4" id="new">New HS Tariff</button>
+                    <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New HS Tariff') }}</button>
                 </div>
             </div>
             <div class="shadow bdr-r-10 py-3 flex-grow-1">
@@ -23,10 +23,10 @@
                         <thead class="table-light sticky-top bg-white">
                         <tr>
                             <th>#</th>
-                            <th>HS Code</th>
-                            <th>Description</th>
-                            <th>Duty Rate</th>
-                            <th>Unit</th>
+                            <th>{{ __('HS Code') }}</th>
+                            <th>{{ __('Description') }}</th>
+                            <th>{{ __('Duty Rate') }}</th>
+                            <th>{{ __('Unit') }}</th>
                             <th></th>
                         </tr>
                         </thead>

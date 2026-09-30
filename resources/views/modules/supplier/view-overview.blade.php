@@ -8,8 +8,8 @@
             @endswitch
         ">
             @switch($supplier->status)
-                @case(3) Active @break
-                @case(4) Blocked @break
+                @case(3) {{ __('Active') }} @break
+                @case(4) {{ __('Blocked') }} @break
             @endswitch
         </span>
     </div>
@@ -18,7 +18,7 @@
         <div class="row g-3 mb-3">
             {{-- Basic Info --}}
             <div class="col-md-6">
-                <h6 class="text-muted">Basic Information</h6>
+                <h6 class="text-muted">{{ __('Basic Information') }}</h6>
                 <ul class="list-unstyled mb-0">
                     <li><i class="bi bi-envelope me-1"></i> {{ $supplier->email }}</li>
                     <li><i class="bi bi-telephone me-1"></i> {{ $supplier->phone }}</li>
@@ -29,10 +29,10 @@
 
             {{-- Business Info --}}
             <div class="col-md-6">
-                <h6 class="text-muted">Business Information</h6>
+                <h6 class="text-muted">{{ __('Business Information') }}</h6>
                 <ul class="list-unstyled mb-0">
                     <li><i class="bi bi-building me-1"></i> {{ ucfirst($supplier->business_type) }}</li>
-                    <li><i class="bi bi-card-text me-1"></i> VAT: {{ $supplier->vat_number ?? 'N/A' }}</li>
+                    <li><i class="bi bi-card-text me-1"></i> {{ __('VAT') }}: {{ $supplier->vat_number ?? 'N/A' }}</li>
                     <li><i class="bi bi-currency-exchange me-1"></i> {{ $supplier->currency }}</li>
                 </ul>
             </div>
@@ -41,39 +41,39 @@
         {{-- Credit Info --}}
         <div class="row g-3 mb-3">
             <div class="col-md-6">
-                <h6 class="text-muted">Credit Information</h6>
+                <h6 class="text-muted">{{ __('Credit Information') }}</h6>
                 <ul class="list-unstyled mb-0">
                     <li><i class="bi bi-wallet2 me-1"></i> {{ number_format($supplier->credit_limit, 2) }} {{ $supplier->currency }}</li>
-                    <li><i class="bi bi-clock me-1"></i> {{ $supplier->credit_days }} days</li>
+                    <li><i class="bi bi-clock me-1"></i> {{ $supplier->credit_days }} {{ __('days') }}</li>
                 </ul>
             </div>
 
             {{-- Joined Date --}}
             <div class="col-md-6">
-                <h6 class="text-muted">Joined</h6>
+                <h6 class="text-muted">{{ __('Joined') }}</h6>
                 <p class="mb-0"><i class="bi bi-calendar-check me-1"></i>{{ $supplier->created_at->format('d M, Y') }}</p>
             </div>
         </div>
 
         <div class="row g-3 mb-3">
             <div class="col-md-12">
-                <h6 class="text-muted">Communication</h6>
+                <h6 class="text-muted">{{ __('Communication') }}</h6>
                 <ul class="list-unstyled mb-0">
-                    <li><span class="text-muted">Address : </span> {{ nl2br($supplier->address1_en) }}</li>
-                    <li><span class="text-muted">Building Number : </span> {{ $supplier->building_number }}</li>
-                    <li><span class="text-muted">Plot Number : </span> {{ $supplier->plot_no }}</li>
-                    <li><span class="text-muted">Postal Code : </span> {{ $supplier->postal_code }}</li>
+                    <li><span class="text-muted">{{ __('Address') }} : </span> {{ nl2br($supplier->address1_en) }}</li>
+                    <li><span class="text-muted">{{ __('Building Number') }} : </span> {{ $supplier->building_number }}</li>
+                    <li><span class="text-muted">{{ __('Plot Number') }} : </span> {{ $supplier->plot_no }}</li>
+                    <li><span class="text-muted">{{ __('Postal Code') }} : </span> {{ $supplier->postal_code }}</li>
                 </ul>
             </div>
         </div>
 
         {{-- Tags / Badges --}}
         <div class="mb-3">
-            <h6 class="text-muted">Tags / Badges</h6>
+            <h6 class="text-muted">{{ __('Tags / Badges') }}</h6>
             @forelse($supplier->tags ?? [] as $tag)
                 <span class="badge bg-primary me-1">{{ $tag->name }}</span>
             @empty
-                <span class="text-muted">No tags</span>
+                <span class="text-muted">{{ __('No tags') }}</span>
             @endforelse
         </div>
     </div>

@@ -1,5 +1,5 @@
 @section('js','zatca')
-@section('page-title','Zatca Integration')
+@section('page-title', __('Zatca Integration'))
 
 <x-app-layout>
     <main class="gmail-content bg-white d-flex ">
@@ -11,16 +11,16 @@
                 {{-- Header and Context --}}
                 <div class="mb-5 pb-4 border-bottom">
                     <div>
-                        <h2 class="fw-bolder text-primary mb-2">E-Invoicing Security and Registration</h2>
+                        <h2 class="fw-bolder text-primary mb-2">{{ __('E-Invoicing Security and Registration') }}</h2>
                         <p class="text-muted">
-                            This interface manages the cryptographic registration of your E-Invoicing Solution Unit (ESU) with the Zakat, Tax and Customs Authority (ZATCA), ensuring compliance across two mandatory phases.
+                            {{ __('This interface manages the cryptographic registration of your E-Invoicing Solution Unit (ESU) with the Zakat, Tax and Customs Authority (ZATCA), ensuring compliance across two mandatory phases.') }}
                         </p>
                     </div>
 
                     <div class="mt-3">
                         <div class="alert alert-info border-0 shadow-sm" role="alert">
-                            <h6 class="alert-heading fw-bold mb-2">🔐 Security Note: OTP is Mandatory</h6>
-                            <p class="mb-0 small">The One-Time Password (OTP) secures the communication link and facilitates the issuance of the **Cryptographic Stamp Identifier (CSID)** for your system. **A new OTP is required for each phase.**</p>
+                            <h6 class="alert-heading fw-bold mb-2">{{ __('🔐 Security Note: OTP is Mandatory') }}</h6>
+                            <p class="mb-0 small">{{ __('The One-Time Password (OTP) secures the communication link and facilitates the issuance of the **Cryptographic Stamp Identifier (CSID)** for your system. **A new OTP is required for each phase.**') }}</p>
                         </div>
                     </div>
                 </div>
@@ -32,9 +32,9 @@
                             <div class="card border-0 shadow-lg p-5 bg-success-subtle text-center">
                                 <div class="card-body">
                                     <i class="bi bi-patch-check-fill text-success display-1 mb-4"></i>
-                                    <h1 class="fw-bolder text-success mb-3">ZATCA Integration Complete!</h1>
+                                    <h1 class="fw-bolder text-success mb-3">{{ __('ZATCA Integration Complete!') }}</h1>
                                     <p class="lead text-success-emphasis mb-4">
-                                        Your E-Invoicing Solution Unit (ESU) is **fully registered** and **activated** for live production e-invoicing.
+                                        {{ __('Your E-Invoicing Solution Unit (ESU) is **fully registered** and **activated** for live production e-invoicing.') }}
                                     </p>
 
                                     {{--<div class="d-flex justify-content-center gap-4 border-top pt-4">
@@ -49,7 +49,7 @@
                                     </div>--}}
 
                                     <p class="small text-muted mt-4">
-                                        You may now generate and submit electronic invoices according to ZATCA regulations.
+                                        {{ __('You may now generate and submit electronic invoices according to ZATCA regulations.') }}
                                     </p>
                                 </div>
                             </div>
@@ -61,11 +61,11 @@
                         <div class="d-none" id="simulation-card-wrapper">
                             <div class="card h-100 border-start border-5 border-warning shadow-lg" id="simulation-card">
                                 <div class="card-body p-4 p-md-5">
-                                    <span class="badge bg-warning text-dark mb-3 fs-6">STAGE 1: SIMULATION</span>
-                                    <h4 class="card-title fw-bold text-warning-emphasis mb-3 me-3">Compliance Certification</h4>
+                                    <span class="badge bg-warning text-dark mb-3 fs-6">{{ __('STAGE 1: SIMULATION') }}</span>
+                                    <h4 class="card-title fw-bold text-warning-emphasis mb-3 me-3">{{ __('Compliance Certification') }}</h4>
 
                                     <p class="small text-muted mb-4">
-                                        This phase validates your system's technical compatibility with ZATCA's standards. Successful validation generates the **Compliance CSID**.
+                                        {{ __('This phase validates your system\'s technical compatibility with ZATCA\'s standards. Successful validation generates the **Compliance CSID**.') }}
                                     </p>
 
                                     {{-- DYNAMIC CONTENT: OTP Form OR Success Message --}}
@@ -74,14 +74,14 @@
                                         <div id="simulation-otp-form-container">
                                             <form id="simulation-form" class="mb-4">
                                                 <div class="mb-3">
-                                                    <label for="simulation_otp" class="form-label fw-medium">Simulation Phase OTP <span class="text-danger">*</span></label>
+                                                    <label for="simulation_otp" class="form-label fw-medium">{{ __('Simulation Phase OTP') }} <span class="text-danger">*</span></label>
                                                     <small class="text-muted d-block mb-1">
-                                                        Paste the unique 6-digit OTP obtained from the ZATCA E-invoicing Portal.
+                                                        {{ __('Paste the unique 6-digit OTP obtained from the ZATCA E-invoicing Portal.') }}
                                                     </small>
                                                     <input class="form-control form-control-lg"
                                                            id="simulation_otp"
                                                            name="simulation_otp"
-                                                           placeholder="e.g., 123456"
+                                                           placeholder="{{ __('e.g., 123456') }}"
                                                            minlength="6" maxlength="6"
                                                            type="text"
                                                            required>
@@ -90,16 +90,16 @@
                                                     <button id="submit-simulation-validate"
                                                             type="button"
                                                             class="btn btn-warning text-dark fw-bold">
-                                                        <i class="bi bi-gear me-2"></i> Validate Simulation CSID
+                                                        <i class="bi bi-gear me-2"></i> {{ __('Validate Simulation CSID') }}
                                                     </button>
                                                 </div>
                                             </form>
 
                                             <div class="mt-4 pt-3 border-top">
-                                                <h6 class="fw-bold text-success pb-2">STATUS: Ready for Production Activation</h6>
+                                                <h6 class="fw-bold text-success pb-2">{{ __('STATUS: Ready for Production Activation') }}</h6>
                                                 <ul class="list-unstyled small mb-0">
-                                                    <li><i class="bi bi-check-circle-fill text-success me-2"></i> The Compliance CSID has been successfully issued and registered.</li>
-                                                    <li><i class="bi bi-check-circle-fill text-warning me-2"></i> You may now proceed to Stage 2.</li>
+                                                    <li><i class="bi bi-check-circle-fill text-success me-2"></i> {{ __('The Compliance CSID has been successfully issued and registered.') }}</li>
+                                                    <li><i class="bi bi-check-circle-fill text-warning me-2"></i> {{ __('You may now proceed to Stage 2.') }}</li>
                                                 </ul>
                                             </div>
                                         </div>
@@ -107,9 +107,9 @@
                                         {{-- Case 2: Display Success Message (Already validated) --}}
                                         <div id="simulation-success-message-container" class="text-center p-4 rounded bg-success-subtle">
                                             <i class="bi bi-check-circle-fill display-4 text-success mb-3"></i>
-                                            <h5 class="fw-bold text-success">STAGE 1: ACTIVATED</h5>
+                                            <h5 class="fw-bold text-success">{{ __('STAGE 1: ACTIVATED') }}</h5>
                                             <p class="small text-success mb-0">
-                                                The Compliance CSID has been successfully issued and registered. **You may now proceed to Stage 2: Production Activation.**
+                                                {{ __('The Compliance CSID has been successfully issued and registered. **You may now proceed to Stage 2: Production Activation.**') }}
                                             </p>
                                         </div>
                                     @endif
@@ -128,62 +128,62 @@
                                         {{-- Left: explanation panel --}}
                                         <div class="col-md-5 bg-success-subtle p-4 p-md-5">
                                             <span class="badge bg-success mb-3 fs-6">
-                                                <i class="bi bi-shield-check me-1"></i> E-Invoicing Activation
+                                                <i class="bi bi-shield-check me-1"></i> {{ __('E-Invoicing Activation') }}
                                             </span>
-                                            <h3 class="fw-bolder text-success-emphasis mb-3">Activate Live E-Invoicing</h3>
+                                            <h3 class="fw-bolder text-success-emphasis mb-3">{{ __('Activate Live E-Invoicing') }}</h3>
                                             <p class="text-muted mb-4">
-                                                Complete this one-time step to connect your account to ZATCA and start issuing compliant electronic invoices.
+                                                {{ __('Complete this one-time step to connect your account to ZATCA and start issuing compliant electronic invoices.') }}
                                             </p>
 
-                                            <h6 class="fw-bold text-success-emphasis pb-2">What you'll need</h6>
+                                            <h6 class="fw-bold text-success-emphasis pb-2">{{ __('What you\'ll need') }}</h6>
                                             <ul class="list-unstyled small mb-4">
                                                 <li class="d-flex mb-2">
                                                     <i class="bi bi-1-circle-fill text-success me-2 mt-1"></i>
-                                                    <span>A One-Time Password (OTP) issued from the ZATCA E-Invoicing Portal.</span>
+                                                    <span>{{ __('A One-Time Password (OTP) issued from the ZATCA E-Invoicing Portal.') }}</span>
                                                 </li>
                                                 <li class="d-flex mb-2">
                                                     <i class="bi bi-2-circle-fill text-success me-2 mt-1"></i>
-                                                    <span>Just a few minutes — activation completes as soon as the OTP is verified.</span>
+                                                    <span>{{ __('Just a few minutes — activation completes as soon as the OTP is verified.') }}</span>
                                                 </li>
                                             </ul>
 
                                             <div class="alert alert-warning border-0 small mb-0">
                                                 <i class="bi bi-exclamation-triangle me-1"></i>
-                                                The OTP is single-use and expires quickly. Request it from the ZATCA portal right before entering it here.
+                                                {{ __('The OTP is single-use and expires quickly. Request it from the ZATCA portal right before entering it here.') }}
                                             </div>
                                         </div>
 
                                         {{-- Right: OTP form --}}
                                         <div class="col-md-7 p-4 p-md-5">
-                                            <h5 class="fw-bold text-dark mb-4">Enter Your Activation OTP</h5>
+                                            <h5 class="fw-bold text-dark mb-4">{{ __('Enter Your Activation OTP') }}</h5>
 
                                             <form id="production-form" class="mb-4">
                                                 <div class="mb-4">
-                                                    <label for="core_otp" class="form-label fw-medium">ZATCA OTP <span class="text-danger">*</span></label>
+                                                    <label for="core_otp" class="form-label fw-medium">{{ __('ZATCA OTP') }} <span class="text-danger">*</span></label>
                                                     <input class="form-control form-control-lg"
                                                            id="core_otp"
                                                            name="core_otp"
-                                                           placeholder="e.g., 654321"
+                                                           placeholder="{{ __('e.g., 654321') }}"
                                                            minlength="6" maxlength="6"
                                                            type="text"
                                                            required>
-                                                    <small class="text-muted d-block mt-1">Enter the 6-digit code exactly as shown on the ZATCA portal.</small>
+                                                    <small class="text-muted d-block mt-1">{{ __('Enter the 6-digit code exactly as shown on the ZATCA portal.') }}</small>
                                                 </div>
 
                                                 <div class="d-grid">
                                                     <button id="submit-core-validate"
                                                             type="button"
                                                             class="btn btn-success btn-lg fw-bold">
-                                                        <i class="bi bi-rocket-takeoff me-2"></i> Activate Live E-Invoicing
+                                                        <i class="bi bi-rocket-takeoff me-2"></i> {{ __('Activate Live E-Invoicing') }}
                                                     </button>
                                                 </div>
                                             </form>
 
                                             <div class="pt-3 border-top">
-                                                <h6 class="fw-bold text-primary pb-2">Before you activate</h6>
+                                                <h6 class="fw-bold text-primary pb-2">{{ __('Before you activate') }}</h6>
                                                 <ul class="list-unstyled small mb-0">
-                                                    <li class="mb-1"><i class="bi bi-check-circle-fill text-success me-2"></i> Your company details, VAT number, and CR number are up to date under Settings.</li>
-                                                    <li class="mb-1"><i class="bi bi-check-circle-fill text-success me-2"></i> You have a valid, unused OTP from the ZATCA portal.</li>
+                                                    <li class="mb-1"><i class="bi bi-check-circle-fill text-success me-2"></i> {{ __('Your company details, VAT number, and CR number are up to date under Settings.') }}</li>
+                                                    <li class="mb-1"><i class="bi bi-check-circle-fill text-success me-2"></i> {{ __('You have a valid, unused OTP from the ZATCA portal.') }}</li>
                                                 </ul>
                                             </div>
                                         </div>
@@ -206,11 +206,11 @@
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-body text-center p-5">
                 <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
-                    <span class="visually-hidden">Loading...</span>
+                    <span class="visually-hidden">{{ __('Loading...') }}</span>
                 </div>
-                <h5 id="loadingModalLabel" class="fw-bold text-primary">Validating ZATCA OTP & Installing...</h5>
+                <h5 id="loadingModalLabel" class="fw-bold text-primary">{{ __('Validating ZATCA OTP & Installing...') }}</h5>
                 <p class="text-muted small">
-                    Establishing a secure connection and requesting CSID certificate. Please do not close this window.
+                    {{ __('Establishing a secure connection and requesting CSID certificate. Please do not close this window.') }}
                 </p>
             </div>
         </div>

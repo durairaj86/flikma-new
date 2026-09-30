@@ -2,7 +2,7 @@
     <div class="d-flex justify-content-between align-items-center flex-wrap">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-4">
             <div class="module-info">
-                <span class="fw-semibold fs-5">{{ $collection->row_no ?? 'New Collection' }}</span>
+                <span class="fw-semibold fs-5">{{ $collection->row_no ?? __('New Collection') }}</span>
             </div>
 
         </div>
@@ -27,14 +27,14 @@
                 <div class="row g-3">
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label for="customer" class="form-label required">Customer <span
+                            <label for="customer" class="form-label required">{{ __('Customer') }} <span
                                     class="text-danger">*</span></label>
                             <x-common.customers :value="$collection->customer_id" :required="true"></x-common.customers>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label for="collection_date" class="form-label required">Collection Date <span
+                            <label for="collection_date" class="form-label required">{{ __('Collection Date') }} <span
                                     class="text-danger">*</span></label>
                             <input type="text" class="form-control datepicker" id="collection_date" name="collection_date"
                                    value="{{ $collection->collection_date ? \Carbon\Carbon::parse($collection->collection_date)->format('d-m-Y') : date('d-m-Y') }}"
@@ -43,7 +43,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label for="payment_method" class="form-label required">Paid Through <span
+                            <label for="payment_method" class="form-label required">{{ __('Paid Through') }} <span
                                     class="text-danger">*</span></label>
                             <x-common.account-groups :parentAccount="$parents"
                                                      :subAccounts="$subAccounts"
@@ -77,7 +77,7 @@
                     </div>--}}
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label for="currency" class="form-label required">Currency <span
+                            <label for="currency" class="form-label required">{{ __('Currency') }} <span
                                     class="text-danger">*</span></label>
                             <x-common.currencies-exchange :value="$collection->currency"
                                                           exchangeRate="{{ $collection->currency_rate }}"
@@ -86,16 +86,16 @@
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label for="reference_no" class="form-label required">Reference No <span
+                            <label for="reference_no" class="form-label required">{{ __('Reference No') }} <span
                                     class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="reference_no" name="reference_no" required
                                    value="{{ $collection->reference_no }}"
-                                   placeholder="Check/Transaction Reference">
+                                   placeholder="{{ __('Check/Transaction Reference') }}">
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label for="bank_charges" class="form-label">Bank Charges</label>
+                            <label for="bank_charges" class="form-label">{{ __('Bank Charges') }}</label>
                             <input type="text" step="0.01" class="form-control float" id="bank_charges"
                                    name="bank_charges"
                                    value="{{ old('bank_charges', $collection->bank_charges) }}">
@@ -103,7 +103,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label for="other_charges" class="form-label">Other Charges</label>
+                            <label for="other_charges" class="form-label">{{ __('Other Charges') }}</label>
                             <input type="text" step="0.01" class="form-control float" id="other_charges"
                                    name="other_charges"
                                    value="{{ old('other_charges', $collection->other_charges) }}">
@@ -111,7 +111,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label for="notes" class="form-label">Notes</label>
+                            <label for="notes" class="form-label">{{ __('Notes') }}</label>
                             <textarea class="form-control" id="notes" name="notes"
                                       rows="1">{{ $collection->notes }}</textarea>
                         </div>
@@ -122,7 +122,7 @@
                     <div class="row">
                         <div class="col-12">
                             <div class="alert alert-danger">
-                                <strong>Disapproval Reason:</strong> {{ $collection->disapproval_reason }}
+                                <strong>{{ __('Disapproval Reason') }}:</strong> {{ $collection->disapproval_reason }}
                             </div>
                         </div>
                     </div>
@@ -133,10 +133,10 @@
             <div class="card-body p-0">
                 <div class="row mt-4">
                     <div class="col-12">
-                        <h4>Customer Invoices</h4>
+                        <h4>{{ __('Customer Invoices') }}</h4>
                         <div class="alert alert-info" id="no-invoices-message"
                              style="{{ count($customerInvoices) > 0 ? 'display: none;' : '' }}">
-                            No invoices available for this customer.
+                            {{ __('No invoices available for this customer.') }}
                         </div>
                         <div class="table-responsive" id="invoices-table-container"
                              style="{{ count($customerInvoices) > 0 ? '' : 'display: none;' }}">
@@ -146,13 +146,13 @@
                                     <th width="5%"><input type="checkbox"
                                                           id="select-all-invoices">
                                     </th>
-                                    <th>Invoice No</th>
-                                    <th>Job No</th>
-                                    <th>Invoice Date</th>
-                                    <th>Due Date</th>
-                                    <th class="text-end">Total Amount</th>
-                                    <th class="text-end">Collection Amount</th>
-                                    <th class="text-end">Balance Amount</th>
+                                    <th>{{ __('Invoice No') }}</th>
+                                    <th>{{ __('Job No') }}</th>
+                                    <th>{{ __('Invoice Date') }}</th>
+                                    <th>{{ __('Due Date') }}</th>
+                                    <th class="text-end">{{ __('Total Amount') }}</th>
+                                    <th class="text-end">{{ __('Collection Amount') }}</th>
+                                    <th class="text-end">{{ __('Balance Amount') }}</th>
                                 </tr>
                                 </thead>
                                 <tbody id="invoices-body">
@@ -192,7 +192,7 @@
                 <div class="row mt-4">
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label">Total Collection Amount</label>
+                            <label class="form-label">{{ __('Total Collection Amount') }}</label>
                             <h3 id="total-collection-amount">{{ number_format($collection->grand_total, 2) }}</h3>
                         </div>
                     </div>

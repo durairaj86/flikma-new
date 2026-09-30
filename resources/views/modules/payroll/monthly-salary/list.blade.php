@@ -1,5 +1,5 @@
 @section('js','monthly_salary')
-@section('page-title','Monthly Salary')
+@section('page-title', __('Monthly Salary'))
 <x-app-layout>
     <main class="gmail-content bg-white px-3">
         <div id="filterPanel" class="card shadow-sm border-0 d-none">
@@ -7,7 +7,7 @@
             <div class="card-header bg-light border-0 py-3">
                 <div class="d-flex align-items-center gap-2">
                     <i class="bi bi-funnel-fill text-primary"></i>
-                    <h6 class="mb-0 fw-semibold">Advanced Filters</h6>
+                    <h6 class="mb-0 fw-semibold">{{ __('Advanced Filters') }}</h6>
                 </div>
             </div>
 
@@ -18,9 +18,9 @@
                     <div class="bg-light rounded p-3 mb-4">
                         <div class="row g-3 align-items-end">
                             <div class="col-md-3 form-filter">
-                                <label class="form-label fw-medium">Employee</label>
+                                <label class="form-label fw-medium">{{ __('Employee') }}</label>
                                 <select class="tom-select" name="employee_id" id="filter-employee">
-                                    <option value="">All Employees</option>
+                                    <option value="">{{ __('All Employees') }}</option>
                                     @foreach(\App\Models\User::all() as $employee)
                                         <option value="{{ $employee->id }}">{{ $employee->name }}</option>
                                     @endforeach
@@ -28,25 +28,25 @@
                             </div>
 
                             <div class="col-md-3 form-filter">
-                                <label class="form-label fw-medium">Month/Year</label>
+                                <label class="form-label fw-medium">{{ __('Month/Year') }}</label>
                                 <div class="d-flex input-group-filter gap-2">
                                     <select class="tom-select" name="month" id="filter-month">
-                                        <option value="">All Months</option>
-                                        <option value="1">January</option>
-                                        <option value="2">February</option>
-                                        <option value="3">March</option>
-                                        <option value="4">April</option>
-                                        <option value="5">May</option>
-                                        <option value="6">June</option>
-                                        <option value="7">July</option>
-                                        <option value="8">August</option>
-                                        <option value="9">September</option>
-                                        <option value="10">October</option>
-                                        <option value="11">November</option>
-                                        <option value="12">December</option>
+                                        <option value="">{{ __('All Months') }}</option>
+                                        <option value="1">{{ __('January') }}</option>
+                                        <option value="2">{{ __('February') }}</option>
+                                        <option value="3">{{ __('March') }}</option>
+                                        <option value="4">{{ __('April') }}</option>
+                                        <option value="5">{{ __('May') }}</option>
+                                        <option value="6">{{ __('June') }}</option>
+                                        <option value="7">{{ __('July') }}</option>
+                                        <option value="8">{{ __('August') }}</option>
+                                        <option value="9">{{ __('September') }}</option>
+                                        <option value="10">{{ __('October') }}</option>
+                                        <option value="11">{{ __('November') }}</option>
+                                        <option value="12">{{ __('December') }}</option>
                                     </select>
                                     <select class="tom-select" name="year" id="filter-year">
-                                        <option value="">All Years</option>
+                                        <option value="">{{ __('All Years') }}</option>
                                         @for($i = date('Y'); $i >= date('Y') - 5; $i--)
                                             <option value="{{ $i }}">{{ $i }}</option>
                                         @endfor
@@ -59,7 +59,7 @@
                     <!-- Action buttons -->
                     <div class="text-center mt-4">
                         <button class="btn btn-primary btn-round px-4" type="button" id="apply-filter">
-                            <i class="bi bi-search me-1"></i> Search
+                            <i class="bi bi-search me-1"></i> {{ __('Search') }}
                         </button>
                     </div>
                 </form>
@@ -74,10 +74,10 @@
                 <div class="position-relative">
                     <!-- Compact Filter button -->
                     <button class="btn btn-outline-primary btn-round me-2" id="filter-box"><i class="bi bi-funnel"></i>
-                        Filter
+                        {{ __('Filter') }}
                     </button>
                 </div>
-                <button class="btn btn-primary rounded-pill px-4" id="new">New Monthly Salary</button>
+                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Monthly Salary') }}</button>
             </div>
         </div>
 
@@ -88,7 +88,7 @@
                     <div class="search-box position-relative me-2">
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                         <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="Search..." aria-label="Search...">
+                               placeholder="{{ __('Search...') }}" aria-label="{{ __('Search...') }}">
                     </div>
                 </div>
             </div>
@@ -98,16 +98,16 @@
                        data-title="Monthly Salary" data-model-size="md">
                     <thead class="table-light bg-white">
                     <tr>
-                        <th>Employee</th>
-                        <th>Month/Year</th>
-                        <th>Basic Salary</th>
-                        <th>Allowances</th>
-                        <th>Overtime</th>
-                        <th>Bonus</th>
-                        <th>Deductions</th>
-                        <th>Total Salary</th>
-                        <th>Payment Date</th>
-                        <th>Status</th>
+                        <th>{{ __('Employee') }}</th>
+                        <th>{{ __('Month/Year') }}</th>
+                        <th>{{ __('Basic Salary') }}</th>
+                        <th>{{ __('Allowances') }}</th>
+                        <th>{{ __('Overtime') }}</th>
+                        <th>{{ __('Bonus') }}</th>
+                        <th>{{ __('Deductions') }}</th>
+                        <th>{{ __('Total Salary') }}</th>
+                        <th>{{ __('Payment Date') }}</th>
+                        <th>{{ __('Status') }}</th>
                         <th></th>
                     </tr>
                     </thead>

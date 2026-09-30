@@ -1,4 +1,4 @@
-@section('page-title','Quotations New')
+@section('page-title', __('Quotations New'))
 @section('js','quotation-new')
 <x-app-layout>
     <main class="gmail-content bg-white px-3">
@@ -34,7 +34,7 @@
             <div class="card-header bg-light border-0 py-3">
                 <div class="d-flex align-items-center gap-2">
                     <i class="bi bi-funnel-fill text-primary"></i>
-                    <h6 class="mb-0 fw-semibold">Advanced Filters</h6>
+                    <h6 class="mb-0 fw-semibold">{{ __('Advanced Filters') }}</h6>
                 </div>
             </div>
             <div class="card-body">
@@ -54,7 +54,7 @@
                                 </select>
                             </div>--}}
                             <div class="col-md-4 form-filter">
-                                <label class="form-label fw-medium">Quotation Date</label>
+                                <label class="form-label fw-medium">{{ __('Quotation Date') }}</label>
                                 <div class="d-flex input-group-filter gap-2">
                                     <input type="date" class="form-control datepicker from-date default-filter" id="filter-from-date" name="filter-from-date"
                                            value="{{ \Carbon\Carbon::today()->subMonth(6)->startOfMonth()->format('d-m-Y') }}">
@@ -63,13 +63,13 @@
                                 </div>
                             </div>
                             <div class="col-md-3 form-filter">
-                                <label class="form-label fw-medium">Client</label>
+                                <label class="form-label fw-medium">{{ __('Client') }}</label>
                                 <x-common.customers multiple></x-common.customers>
                             </div>
                         </div>
                         <div class="text-center mt-4">
                             <button class="btn btn-primary btn-round px-4" type="button" id="apply-filter">
-                                <i class="bi bi-search me-1"></i> Search
+                                <i class="bi bi-search me-1"></i> {{ __('Search') }}
                             </button>
                         </div>
                     </div>
@@ -85,7 +85,7 @@
                         <button class="nav-link px-3 py-2 d-flex align-items-center gap-1 active status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button"
                                 id="{{ \App\Models\QuotationNew\QuotationNew::STATUS_PENDING }}">
-                            <i class="bi bi-clock me-1"></i> Pending -
+                            <i class="bi bi-clock me-1"></i> {{ __('Pending') }} -
                             <span class="status-count ms-1" id="pendingCount">0</span>
                         </button>
                     </li>
@@ -93,7 +93,7 @@
                         <button class="nav-link py-2 d-flex align-items-center gap-1 status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button"
                                 id="{{ \App\Models\QuotationNew\QuotationNew::STATUS_APPROVED }}">
-                            <i class="bi bi-check-circle me-1"></i> Approved -
+                            <i class="bi bi-check-circle me-1"></i> {{ __('Approved') }} -
                             <span class="status-count ms-1" id="approvedCount">0</span>
                         </button>
                     </li>
@@ -101,7 +101,7 @@
                         <button class="nav-link py-2 d-flex align-items-center gap-1 status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button"
                                 id="{{ \App\Models\QuotationNew\QuotationNew::STATUS_CANCELLED }}">
-                            <i class="bi bi-x-circle me-1"></i> Cancelled -
+                            <i class="bi bi-x-circle me-1"></i> {{ __('Cancelled') }} -
                             <span class="status-count ms-1" id="cancelledCount">0</span>
                         </button>
                     </li>
@@ -109,10 +109,10 @@
             </div>
             <div class="d-flex justify-content-between gap-2">
                 <button class="btn btn-outline-secondary btn-round" id="filter-box">
-                    <i class="bi bi-funnel"></i> Filter
+                    <i class="bi bi-funnel"></i> {{ __('Filter') }}
                 </button>
                 <a href="{{ url('sales/quotations-new/create') }}" class="btn btn-primary rounded-pill px-4" id="new">
-                    New Quotation
+                    {{ __('New Quotation') }}
                 </a>
             </div>
         </div>
@@ -125,7 +125,7 @@
                     <div class="search-box position-relative me-2">
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                         <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="Search quotations...">
+                               placeholder="{{ __('Search quotations...') }}">
                     </div>
                 </div>
             </div>
@@ -133,44 +133,44 @@
                 <table class="table align-middle dataTable" id="dataTable" data-model-size="lg">
                     <thead class="table-light sticky-top">
                     <tr>
-                        <th style="min-width:140px;">Quote No</th>
-                        <th style="min-width:200px;">Client</th>
-                        <th style="min-width:85px;">Branch</th>
-                        <th style="min-width:100px;">Date</th>
-                        <th style="min-width:90px;">Status</th>
-                        <th style="min-width:120px;">Latest Comments</th>
-                        <th style="min-width:150px;">Operational Activity</th>
-                        <th style="min-width:130px;">Origin</th>
-                        <th style="min-width:200px;">Destination</th>
-                        <th style="min-width:100px;">Valid From</th>
-                        <th style="min-width:90px;">Valid To</th>
-                        <th style="min-width:100px;">User Name</th>
-                        <th style="min-width:100px;">Sales Person</th>
-                        <th style="min-width:90px;">INCO Term</th>
-                        <th style="min-width:140px;">Carrier</th>
-                        <th style="min-width:120px;">Remarks</th>
-                        <th style="min-width:110px;">Shipment No.</th>
-                        <th style="min-width:80px;">Job No.</th>
-                        <th style="min-width:80px;">No.of Pcs</th>
-                        <th style="min-width:90px;">G.Weight</th>
-                        <th style="min-width:80px;">Volume</th>
-                        <th style="min-width:80px;">P.Sale</th>
-                        <th style="min-width:75px;">P.Cost</th>
-                        <th style="min-width:70px;">GP</th>
-                        <th style="min-width:65px;">GP%</th>
-                        <th style="min-width:120px;">Shipper Name</th>
-                        <th style="min-width:130px;">Consignee Name</th>
-                        <th style="min-width:110px;">Shipment Status</th>
-                        <th style="min-width:100px;">ETD</th>
-                        <th style="min-width:100px;">ETA</th>
-                        <th style="min-width:110px;">Origin Agent</th>
-                        <th style="min-width:140px;">Destination Agent</th>
-                        <th style="min-width:100px;">Enquiry No</th>
-                        <th style="min-width:80px;">No Of Teu</th>
-                        <th style="min-width:120px;">Container Type</th>
-                        <th style="min-width:160px;">Vessel/Flight Name</th>
-                        <th style="min-width:140px;">Voyage/Flight No</th>
-                        <th style="min-width:130px;">Place Of Delivery</th>
+                        <th style="min-width:140px;">{{ __('Quote No') }}</th>
+                        <th style="min-width:200px;">{{ __('Client') }}</th>
+                        <th style="min-width:85px;">{{ __('Branch') }}</th>
+                        <th style="min-width:100px;">{{ __('Date') }}</th>
+                        <th style="min-width:90px;">{{ __('Status') }}</th>
+                        <th style="min-width:120px;">{{ __('Latest Comments') }}</th>
+                        <th style="min-width:150px;">{{ __('Operational Activity') }}</th>
+                        <th style="min-width:130px;">{{ __('Origin') }}</th>
+                        <th style="min-width:200px;">{{ __('Destination') }}</th>
+                        <th style="min-width:100px;">{{ __('Valid From') }}</th>
+                        <th style="min-width:90px;">{{ __('Valid To') }}</th>
+                        <th style="min-width:100px;">{{ __('User Name') }}</th>
+                        <th style="min-width:100px;">{{ __('Sales Person') }}</th>
+                        <th style="min-width:90px;">{{ __('INCO Term') }}</th>
+                        <th style="min-width:140px;">{{ __('Carrier') }}</th>
+                        <th style="min-width:120px;">{{ __('Remarks') }}</th>
+                        <th style="min-width:110px;">{{ __('Shipment No.') }}</th>
+                        <th style="min-width:80px;">{{ __('Job No') }}.</th>
+                        <th style="min-width:80px;">{{ __('No.of Pcs') }}</th>
+                        <th style="min-width:90px;">{{ __('G.Weight') }}</th>
+                        <th style="min-width:80px;">{{ __('Volume') }}</th>
+                        <th style="min-width:80px;">{{ __('P.Sale') }}</th>
+                        <th style="min-width:75px;">{{ __('P.Cost') }}</th>
+                        <th style="min-width:70px;">{{ __('GP') }}</th>
+                        <th style="min-width:65px;">{{ __('GP%') }}</th>
+                        <th style="min-width:120px;">{{ __('Shipper Name') }}</th>
+                        <th style="min-width:130px;">{{ __('Consignee Name') }}</th>
+                        <th style="min-width:110px;">{{ __('Shipment Status') }}</th>
+                        <th style="min-width:100px;">{{ __('ETD') }}</th>
+                        <th style="min-width:100px;">{{ __('ETA') }}</th>
+                        <th style="min-width:110px;">{{ __('Origin Agent') }}</th>
+                        <th style="min-width:140px;">{{ __('Destination Agent') }}</th>
+                        <th style="min-width:100px;">{{ __('Enquiry No') }}</th>
+                        <th style="min-width:80px;">{{ __('No Of Teu') }}</th>
+                        <th style="min-width:120px;">{{ __('Container Type') }}</th>
+                        <th style="min-width:160px;">{{ __('Vessel/Flight Name') }}</th>
+                        <th style="min-width:140px;">{{ __('Voyage/Flight No') }}</th>
+                        <th style="min-width:130px;">{{ __('Place Of Delivery') }}</th>
                         <th style="min-width:50px;"></th>
                     </tr>
                     </thead>

@@ -2,7 +2,7 @@
     <div class="d-flex justify-content-between align-items-center flex-wrap">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-4">
             <div class="module-info">
-                <span class="fw-semibold fs-5">{{ $expense->row_no ?? 'New Expense' }}</span>
+                <span class="fw-semibold fs-5">{{ $expense->row_no ?? __('New Expense') }}</span>
             </div>
         </div>
         <div id="show-buttons"></div>
@@ -14,8 +14,8 @@
 <div id="ai-scan-view" class="container-fluid py-5 d-none text-center" style="background: #f8f9fa;">
     <div class="mx-auto" style="max-width: 500px;">
         <i class="bi bi-robot fs-1 text-primary"></i>
-        <h4 class="mt-3">Scan Receipt with AI</h4>
-        <p class="text-muted">Upload a receipt image to automatically fill expense details.</p>
+        <h4 class="mt-3">{{ __('Scan Receipt with AI') }}</h4>
+        <p class="text-muted">{{ __('Upload a receipt image to automatically fill expense details.') }}</p>
         <form id="aiScanForm" enctype="multipart/form-data">
             @csrf
             <div class="mb-3">
@@ -23,25 +23,25 @@
             </div>
         </form>
         <div class="d-flex gap-2 justify-content-center">
-            <button type="button" id="start-ai-scan" class="btn btn-primary">Start Scanning</button>
+            <button type="button" id="start-ai-scan" class="btn btn-primary">{{ __('Start Scanning') }}</button>
         </div>
     </div>
 </div>
 
 <div class="container-fluid align-items-center px-0 mb-4" id="modal-buttons" data-buttons="cancel,save"
-     data-button-save="Save Expense">
-    
+     data-button-save="{{ __('Save Expense') }}">
+
     <!-- AI Scan Card -->
     <div class="card mb-3 shadow-sm" id="ai-scan-card">
         <div class="card-body p-3">
-            <h6 class="fw-bold mb-2 text-primary">Scan Receipt with AI</h6>
+            <h6 class="fw-bold mb-2 text-primary">{{ __('Scan Receipt with AI') }}</h6>
             <input type="file" id="ai-scan-input" class="d-none" accept="image/*,.pdf">
             <button type="button" class="btn btn-outline-primary btn-sm" onclick="$('#ai-scan-input').click()">
-                <i class="bi bi-robot"></i> Upload Receipt/Bill
+                <i class="bi bi-robot"></i> {{ __('Upload Receipt/Bill') }}
             </button>
             <span id="ai-scan-loader" class="ms-2 d-none">
                 <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                <span class="ms-1">Processing with AI... Please wait</span>
+                <span class="ms-1">{{ __('Processing with AI... Please wait') }}</span>
             </span>
         </div>
     </div>
@@ -50,7 +50,7 @@
     <div id="ai-scanning-overlay" class="d-none position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-75 d-flex justify-content-center align-items-center" style="z-index: 1000;">
         <div class="text-center">
             <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
-            <h5 class="mt-2 text-primary">AI is Scanning...</h5>
+            <h5 class="mt-2 text-primary">{{ __('AI is Scanning...') }}</h5>
         </div>
     </div>
 
@@ -64,25 +64,25 @@
                 <div class="row g-3">
                     <!-- Customer -->
                     <div class="col-md-4">
-                        <label class="form-label">Customer</label>
+                        <label class="form-label">{{ __('Customer') }}</label>
                         <x-common.customers :value="$expense->customer_id" :required="false"></x-common.customers>
                     </div>
 
                     <!-- Supplier -->
                     <div class="col-md-4">
-                        <label class="form-label">Supplier</label>
+                        <label class="form-label">{{ __('Supplier') }}</label>
                         <x-common.suppliers :value="$expense->vendor_id" :required="false"></x-common.suppliers>
                     </div>
 
                     <!-- Reference Number -->
                     <div class="col-md-4">
-                        <label class="form-label">Reference Number</label>
+                        <label class="form-label">{{ __('Reference Number') }}</label>
                         <input type="text" name="reference_number" class="form-control" value="{{ $expense->reference_number }}">
                     </div>
 
                     <!-- Expense Date -->
                     <div class="col-md-4">
-                        <label class="form-label">Expense Date *</label>
+                        <label class="form-label">{{ __('Expense Date') }} *</label>
                         <input type="date" name="posted_at" class="form-control datepicker"
                                value="{{ $expense->posted_at }}" required>
                     </div>
@@ -99,7 +99,7 @@
 
                     <!-- Payment Mode -->
                     <div class="col-md-4">
-                        <label class="form-label">Payment Mode</label>
+                        <label class="form-label">{{ __('Payment Mode') }}</label>
                         <x-common.account-groups :parentAccount="$mainParents" name="main_account"
                                                  :subAccounts="$mainSubAccounts"
                                                  :value="$expense->payment_mode"></x-common.account-groups>
@@ -122,13 +122,13 @@
                         </div>
                     </div>--}}
                     <div class="col-md-4">
-                        <label class="form-label">Attachments</label>
+                        <label class="form-label">{{ __('Attachments') }}</label>
                         <input type="file" name="attachments[]" class="form-control" multiple>
                         @if($expense->documents && count($expense->documents))
                             <small class="text-primary text-decoration-underline cursor-pointer"
                                    data-bs-toggle="offcanvas" data-bs-target="#attachmentsDrawer">
                                 {{ $expense->documents->count() }}
-                                {{ \Illuminate\Support\Str::plural('Document', $expense->documents->count()) }}
+                                {{ __('Document(s)') }}
                             </small>
                         @endif
                     </div>
@@ -141,9 +141,9 @@
                     <div class="offcanvas offcanvas-end" tabindex="-1" id="attachmentsDrawer"
                          aria-labelledby="attachmentsDrawerLabel" style="width: 500px;">
                         <div class="offcanvas-header border-bottom">
-                            <h5 id="attachmentsDrawerLabel" class="mb-0">Expense Documents</h5>
+                            <h5 id="attachmentsDrawerLabel" class="mb-0">{{ __('Expense Documents') }}</h5>
                             <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
-                                    aria-label="Close"></button>
+                                    aria-label="{{ __('Close') }}"></button>
                         </div>
                         <div class="offcanvas-body p-0">
                             @if($expense->documents && $expense->documents->count())
@@ -161,13 +161,13 @@
                                             <div class="d-flex align-items-center gap-2">
                                                 <!-- View -->
                                                 <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank"
-                                                   class="text-success" title="View">
+                                                   class="text-success" title="{{ __('View') }}">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
                                                 <!-- Download -->
                                                 <a href="{{ asset('storage/' . $doc->file_path) }}"
                                                    download="{{ $doc->file_name }}"
-                                                   class="text-primary" title="Download">
+                                                   class="text-primary" title="{{ __('Download') }}">
                                                     <i class="bi bi-download"></i>
                                                 </a>
                                             </div>
@@ -177,7 +177,7 @@
                             @else
                                 <div class="text-center py-5 text-muted">
                                     <i class="bi bi-folder2-open fs-2 d-block mb-2"></i>
-                                    No documents uploaded.
+                                    {{ __('No documents uploaded.') }}
                                 </div>
                             @endif
                         </div>
@@ -192,12 +192,12 @@
                 <table class="table align-middle mb-0" id="expenseItemsTable">
                     <thead class="table-light">
                     <tr>
-                        <th>Account</th>
-                        <th>Employee</th>
-                        <th>Comment</th>
-                        <th class="text-end d-none">Qty</th>
-                        <th class="text-end">Rate</th>
-                        <th class="text-end">VAT (%)</th>
+                        <th>{{ __('Account') }}</th>
+                        <th>{{ __('Employee') }}</th>
+                        <th>{{ __('Comment') }}</th>
+                        <th class="text-end d-none">{{ __('Qty') }}</th>
+                        <th class="text-end">{{ __('Rate') }}</th>
+                        <th class="text-end">{{ __('VAT (%)') }}</th>
                         {{--<th class="text-end">Total</th>--}}
                         <th></th>
                     </tr>
@@ -212,7 +212,7 @@
                                     <x-common.account-groups :parentAccount="$parents"
                                                              :subAccounts="$subAccounts"
                                                              :value="$subItem->account_id"></x-common.account-groups>
-                                    <button type="button" class="btn btn-sm btn-outline-info ai-help-btn" title="AI Category Help">
+                                    <button type="button" class="btn btn-sm btn-outline-info ai-help-btn" title="{{ __('AI Category Help') }}">
                                         <i class="bi bi-magic"></i>
                                     </button>
                                 </div>
@@ -270,19 +270,19 @@
 
                     <tfoot class="fw-semibold">
                     <tr>
-                        <td colspan="5" class="text-end">Subtotal</td>
+                        <td colspan="5" class="text-end">{{ __('Subtotal') }}</td>
                         <td class="text-end"
                             id="subTotal">{{ number_format($expense->sub_total ?? 0, decimals()) }}</td>
                         <td></td>
                     </tr>
                     <tr>
-                        <td colspan="5" class="text-end">Total Tax</td>
+                        <td colspan="5" class="text-end">{{ __('Total Tax') }}</td>
                         <td class="text-end"
                             id="totalTax">{{ number_format($expense->tax_total ?? 0, decimals()) }}</td>
                         <td></td>
                     </tr>
                     <tr>
-                        <td colspan="5" class="text-end">Grand Total</td>
+                        <td colspan="5" class="text-end">{{ __('Grand Total') }}</td>
                         <td class="text-end fw-bold" id="grandNet">
                             {{ number_format($expense->grand_total ?? 0, decimals()) }}
                         </td>
@@ -305,12 +305,12 @@
 <div id="ai-scan-view" class="container-fluid py-5 d-none text-center" style="background: #f8f9fa;">
     <div class="mx-auto" style="max-width: 500px;">
         <i class="bi bi-robot fs-1 text-primary"></i>
-        <h4 class="mt-3">Scan Receipt with AI</h4>
+        <h4 class="mt-3">{{ __('Scan Receipt with AI') }}</h4>
         <form id="aiScanForm" enctype="multipart/form-data">
             @csrf
             <div class="mb-3"><input type="file" name="image" class="form-control" required accept="image/*,.pdf"></div>
         </form>
-        <button type="button" id="start-ai-scan" class="btn btn-primary">Start Scanning</button>
+        <button type="button" id="start-ai-scan" class="btn btn-primary">{{ __('Start Scanning') }}</button>
     </div>
 </div>
 
@@ -368,12 +368,12 @@
                     // Reset UI
                     $('#ai-scanning-overlay').addClass('d-none');
                     $('#ai-scan-card').removeClass('d-none');
-                    toastr.success('Scan complete');
+                    toastr.success("{{ __('Scan complete') }}");
                 },
                 error: function (err) {
                     $('#ai-scanning-overlay').addClass('d-none');
                     $('#ai-scan-card').removeClass('d-none');
-                    toastr.error(err.responseJSON?.message || 'Scan failed');
+                    toastr.error(err.responseJSON?.message || "{{ __('Scan failed') }}");
                 }
             });
         });
@@ -387,19 +387,19 @@
             let vendor = $('select[name="supplier"]').find('option:selected').text();
             
             // Show overlay only for this row
-            $('#ai-scanning-overlay').removeClass('d-none').find('h5').text('AI is suggesting account...');
-            
+            $('#ai-scanning-overlay').removeClass('d-none').find('h5').text("{{ __('AI is suggesting account...') }}");
+
             $.post('{{ route('expenses.ai.suggest-category') }}', {description: desc, vendor: vendor}, function(res) {
                 $('#ai-scanning-overlay').addClass('d-none');
                 if(res.account_id) {
                     $row.find('select[name="account[]"]')[0].tomselect.setValue(res.account_id);
-                    toastr.success('Account suggested: ' + res.account_name);
+                    toastr.success("{{ __('Account suggested:') }} " + res.account_name);
                 } else {
-                    toastr.info('No confident account match found — please select manually.');
+                    toastr.info("{{ __('No confident account match found — please select manually.') }}");
                 }
             }).fail(function(){
                 $('#ai-scanning-overlay').addClass('d-none');
-                toastr.error('AI suggestion failed.');
+                toastr.error("{{ __('AI suggestion failed.') }}");
             });
         });
 

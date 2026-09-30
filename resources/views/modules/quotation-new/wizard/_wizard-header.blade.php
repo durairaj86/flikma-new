@@ -1,10 +1,10 @@
 @php
     $steps = [
-        1 => 'Create Quotation',
-        2 => 'Port Details',
-        3 => 'Container / Consignment',
-        4 => 'Charge Details',
-        5 => 'Summary',
+        1 => __('Create Quotation'),
+        2 => __('Port Details'),
+        3 => __('Container / Consignment'),
+        4 => __('Charge Details'),
+        5 => __('Summary'),
     ];
 @endphp
 <div class="d-flex justify-content-center mb-4 mt-2">

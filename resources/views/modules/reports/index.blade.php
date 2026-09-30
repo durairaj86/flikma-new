@@ -1,11 +1,11 @@
-@section('page-title', 'Report Index')
+@section('page-title', __('Report Index'))
 
 <x-app-layout>
     <div class="container-fluid px-4 py-4">
         <div class="d-flex align-items-center justify-content-between mb-4">
             <div>
-                <h1 class="h4 fw-bold text-dark mb-1">Reports Overview</h1>
-                <p class="text-muted small mb-0">Select a report below to view detailed data and analytics.</p>
+                <h1 class="h4 fw-bold text-dark mb-1">{{ __('Reports Overview') }}</h1>
+                <p class="text-muted small mb-0">{{ __('Select a report below to view detailed data and analytics.') }}</p>
             </div>
             <i class="bi bi-bar-chart-line h2 text-muted opacity-25"></i>
         </div>
@@ -14,44 +14,44 @@
             @php
                 $reportGroups = [
                     [
-                        'title' => 'Job Reports',
+                        'title' => __('Job Reports'),
                         'icon' => 'bi-briefcase',
                         'color' => 'primary',
                         'reports' => [
-                            ['url' => '/reports/job-report', 'name' => 'Job Report', 'desc' => 'General overview of all active and completed jobs.'],
-                            ['url' => '/reports/job-balance-report', 'name' => 'Job Balance Report', 'desc' => 'Outstanding balances and payment statuses per job.'],
-                            ['url' => '/reports/job-income-report', 'name' => 'Job Income Report', 'desc' => 'Analysis of revenue generated from specific job categories.'],
-                            ['url' => '/reports/provisional-report', 'name' => 'Provisional Report', 'desc' => 'Provisional vs actual cost and sales with profit/loss and margin per job.'],
+                            ['url' => '/reports/job-report', 'name' => __('Job Report'), 'desc' => __('General overview of all active and completed jobs.')],
+                            ['url' => '/reports/job-balance-report', 'name' => __('Job Balance Report'), 'desc' => __('Outstanding balances and payment statuses per job.')],
+                            ['url' => '/reports/job-income-report', 'name' => __('Job Income Report'), 'desc' => __('Analysis of revenue generated from specific job categories.')],
+                            ['url' => '/reports/provisional-report', 'name' => __('Provisional Report'), 'desc' => __('Provisional vs actual cost and sales with profit/loss and margin per job.')],
                         ]
                     ],
                     [
-                        'title' => 'Operations Reports',
+                        'title' => __('Operations Reports'),
                         'icon' => 'bi-cart-check',
                         'color' => 'success',
                         'reports' => [
-                            ['url' => '/reports/sale-report', 'name' => 'Sales Report', 'desc' => 'Daily, weekly, and monthly sales transaction summaries.'],
-                            ['url' => '/reports/customer-activity-report', 'name' => 'Customer Activity Report', 'desc' => 'Job activity, revenue, and profitability grouped by customer.'],
+                            ['url' => '/reports/sale-report', 'name' => __('Sales Report'), 'desc' => __('Daily, weekly, and monthly sales transaction summaries.')],
+                            ['url' => '/reports/customer-activity-report', 'name' => __('Customer Activity Report'), 'desc' => __('Job activity, revenue, and profitability grouped by customer.')],
                         ]
                     ],
                     [
-                        'title' => 'Finance Reports',
+                        'title' => __('Finance Reports'),
                         'icon' => 'bi-bank',
                         'color' => 'info',
                         'reports' => [
-                            ['url' => '/reports/trial-balance', 'name' => 'Trial Balance', 'desc' => 'Mathematical verification of ledger balances.'],
-                            ['url' => '/reports/balance-sheet', 'name' => 'Balance Sheet', 'desc' => 'Snapshot of company assets, liabilities, and equity.'],
-                            ['url' => '/reports/profit-and-loss', 'name' => 'Profit & Loss', 'desc' => 'Revenue and expense summary for a specific period.'],
-                            ['url' => '/reports/general-ledger', 'name' => 'Customer Ledger', 'desc' => 'Complete transaction history per customer with running balance.'],
+                            ['url' => '/reports/trial-balance', 'name' => __('Trial Balance'), 'desc' => __('Mathematical verification of ledger balances.')],
+                            ['url' => '/reports/balance-sheet', 'name' => __('Balance Sheet'), 'desc' => __('Snapshot of company assets, liabilities, and equity.')],
+                            ['url' => '/reports/profit-and-loss', 'name' => __('Profit & Loss'), 'desc' => __('Revenue and expense summary for a specific period.')],
+                            ['url' => '/reports/general-ledger', 'name' => __('Customer Ledger'), 'desc' => __('Complete transaction history per customer with running balance.')],
                         ]
                     ],
                     [
-                        'title' => 'Tax Compliance',
+                        'title' => __('Tax Compliance'),
                         'icon' => 'bi-percent',
                         'color' => 'warning',
                         'reports' => [
-                            ['url' => '/reports/tax-summary', 'name' => 'Tax Summary', 'desc' => 'High-level overview of total Input vs Output tax.'],
-                            ['url' => '/reports/input-tax', 'name' => 'Input Tax', 'desc' => 'Detailed list of tax paid on purchases (Recoverable).'],
-                            ['url' => '/reports/output-tax', 'name' => 'Output Tax', 'desc' => 'Detailed list of tax collected on sales (Payable).'],
+                            ['url' => '/reports/tax-summary', 'name' => __('Tax Summary'), 'desc' => __('High-level overview of total Input vs Output tax.')],
+                            ['url' => '/reports/input-tax', 'name' => __('Input Tax'), 'desc' => __('Detailed list of tax paid on purchases (Recoverable).')],
+                            ['url' => '/reports/output-tax', 'name' => __('Output Tax'), 'desc' => __('Detailed list of tax collected on sales (Payable).')],
                         ]
                     ],
                 ];

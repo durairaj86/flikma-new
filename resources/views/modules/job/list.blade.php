@@ -1,11 +1,11 @@
-@section('page-title','Jobs')
+@section('page-title', __('Jobs'))
 @section('js','job')
 @section('extra-js','customer')
 @push('page-title-action')
     <button class="btn btn-link btn-sm text-muted p-0 text-decoration-none lh-1"
             data-bs-toggle="modal" data-bs-target="#jobWorkflowModal"
-            title="How jobs work">
-        <i class="bi bi-info-circle fs-6"></i><span class="d-none d-md-inline ms-1" style="font-size:0.8rem;">How it works</span>
+            title="{{ __('How jobs work') }}">
+        <i class="bi bi-info-circle fs-6"></i><span class="d-none d-md-inline ms-1" style="font-size:0.8rem;">{{ __('How it works') }}</span>
     </button>
 @endpush
 <x-app-layout>
@@ -17,7 +17,7 @@
             <div class="card-header bg-light border-0 py-3">
                 <div class="d-flex align-items-center gap-2">
                     <i class="bi bi-funnel-fill text-primary"></i>
-                    <h6 class="mb-0 fw-semibold">Advanced Filters</h6>
+                    <h6 class="mb-0 fw-semibold">{{ __('Advanced Filters') }}</h6>
                 </div>
             </div>
 
@@ -45,7 +45,7 @@
                             </div>--}}
 
                             <div class="col-md-2 form-filter">
-                                <label class="form-label fw-medium">Job Date</label>
+                                <label class="form-label fw-medium">{{ __('Job Date') }}</label>
                                 <div class="d-flex input-group-filter gap-2">
                                     <input type="date" class="form-control datepicker from-date default-filter" id="filter-from-date" name="filter-from-date"
                                            value="{{ \Carbon\Carbon::today()->subMonth(6)->startOfMonth()->format('d-m-Y') }}">
@@ -55,19 +55,19 @@
                             </div>
 
                             <div class="col-md-2 form-filter">
-                                <label class="form-label fw-medium">Customer</label>
+                                <label class="form-label fw-medium">{{ __('Customer') }}</label>
                                 <x-common.customers multiple></x-common.customers>
                             </div>
 
                             <div class="col-md-2 form-filter">
-                                <label class="form-label fw-medium">Carrier</label>
-                                <input type="text" class="form-control" id="filter-carrier" name="filter_carrier" placeholder="Search carrier">
+                                <label class="form-label fw-medium">{{ __('Carrier') }}</label>
+                                <input type="text" class="form-control" id="filter-carrier" name="filter_carrier" placeholder="{{ __('Search carrier') }}">
                             </div>
 
 
                             <div class="col-md-3 form-filter pol-pod-select">
                                 <label class="form-label fw-medium">
-                                    POL <small class="text-muted">(Port of Loading)</small>
+                                    {{ __('POL') }} <small class="text-muted">({{ __('Port of Loading') }})</small>
                                 </label>
 
                                 <div class="position-relative">
@@ -76,17 +76,17 @@
                                     <div class="shipment-toggle">
                                         <input type="radio" class="btn-check sync-sea avoid-filter" name="shipment_mode" id="polSea"
                                                value="sea" checked>
-                                        <label for="polSea">Sea</label>
+                                        <label for="polSea">{{ __('Sea') }}</label>
 
                                         <input type="radio" class="btn-check sync-air avoid-filter" name="shipment_mode" id="polAir"
                                                value="air">
-                                        <label for="polAir">Air</label>
+                                        <label for="polAir">{{ __('Air') }}</label>
                                     </div>
 
                                     <!-- POL -->
                                     <select id="filter-pol" name="filter-pol"
                                             class="tom-select-search"
-                                            data-placeholder="Select Port of Loading">
+                                            data-placeholder="{{ __('Select Port of Loading') }}">
                                         <option value=""></option>
                                     </select>
 
@@ -96,7 +96,7 @@
 
                             <div class="col-md-3 pol-pod-select">
                                 <label class="form-label fw-medium">
-                                    POD <small class="text-muted">(Port of Discharge)</small>
+                                    {{ __('POD') }} <small class="text-muted">({{ __('Port of Discharge') }})</small>
                                 </label>
 
                                 <div class="position-relative">
@@ -106,17 +106,17 @@
                                         <input type="radio" class="btn-check sync-sea avoid-filter" name="shipment_mode_2" id="polSea2"
                                                checked
                                                value="sea">
-                                        <label for="polSea2">Sea</label>
+                                        <label for="polSea2">{{ __('Sea') }}</label>
 
                                         <input type="radio" class="btn-check sync-air avoid-filter" name="shipment_mode_2" id="polAir2"
                                                value="air">
-                                        <label for="polAir2">Air</label>
+                                        <label for="polAir2">{{ __('Air') }}</label>
                                     </div>
 
                                     <!-- POD -->
                                     <select id="filter-pod" name="filter-pod"
                                             class="tom-select-search"
-                                            data-placeholder="Select Port of Discharge">
+                                            data-placeholder="{{ __('Select Port of Discharge') }}">
                                         <option value=""></option>
                                     </select>
 
@@ -129,7 +129,7 @@
                         <div class="text-center mt-4">
                             {{--<button class="btn btn-outline-secondary me-2 px-4">Reset</button>--}}
                             <button class="btn btn-primary btn-round px-4" type="button" id="apply-filter">
-                                <i class="bi bi-search me-1"></i> Search
+                                <i class="bi bi-search me-1"></i> {{ __('Search') }}
                             </button>
                         </div>
 
@@ -148,7 +148,7 @@
                             <button
                                 class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn active"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="pending">
-                                <span><i class="bi bi-clock me-1"></i> Pending -</span>
+                                <span><i class="bi bi-clock me-1"></i> {{ __('Pending') }} -</span>
                                 <span class="status-count ms-2" id="pendingCount">0</span>
                             </button>
                         </li>
@@ -156,21 +156,21 @@
                             <button
                                 class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="completed">
-                                <span><i class="bi bi-check-circle me-1"></i> Completed -</span>
+                                <span><i class="bi bi-check-circle me-1"></i> {{ __('Completed') }} -</span>
                                 <span class="status-count ms-2" id="completedCount">0</span>
                             </button>
                         </li>
                         <li class="nav-item me-2">
                             <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                     data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="cancelled">
-                                <span><i class="bi bi-x-circle me-1"></i> Cancelled -</span>
+                                <span><i class="bi bi-x-circle me-1"></i> {{ __('Cancelled') }} -</span>
                                 <span class="status-count ms-2" id="cancelledCount">0</span>
                             </button>
                         </li>
                         <li class="nav-item">
                             <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                     data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="trashed">
-                                <span><i class="bi bi bi-trash me-1"></i> Trashed -</span>
+                                <span><i class="bi bi bi-trash me-1"></i> {{ __('Trashed') }} -</span>
                                 <span class="status-count ms-2" id="trashedCount">0</span>
                             </button>
                         </li>
@@ -179,12 +179,12 @@
             </div>
             <div class="d-flex justify-content-between align-items-center gap-2">
                 <button class="btn btn-outline-primary btn-round me-2" id="filter-box">
-                    <i class="bi bi-funnel"></i> Filter
+                    <i class="bi bi-funnel"></i> {{ __('Filter') }}
                 </button>
-                <button class="btn btn-outline-secondary btn-round" id="columnSettingsBtn" title="Column Settings">
-                    <i class="bi bi-columns-gap"></i> Columns
+                <button class="btn btn-outline-secondary btn-round" id="columnSettingsBtn" title="{{ __('Column Settings') }}">
+                    <i class="bi bi-columns-gap"></i> {{ __('Columns') }}
                 </button>
-                <button class="btn btn-primary rounded-pill px-4" id="new">New Job</button>
+                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Job') }}</button>
             </div>
         </div>
 
@@ -193,19 +193,19 @@
 
                 <div class="col-12 col-lg-4">
                     <div class="rounded-3 bg-body-tertiary px-4 py-3 h-100">
-                        <h6 class="text-uppercase text-muted fw-semibold small mb-3" style="letter-spacing:.03em;">Summary</h6>
+                        <h6 class="text-uppercase text-muted fw-semibold small mb-3" style="letter-spacing:.03em;">{{ __('Summary') }}</h6>
                         <div class="row g-2 text-center">
                             <div class="col-4">
                                 <div id="summaryTotalJobs" class="fs-4 fw-bold mb-0">0</div>
-                                <small class="text-muted">Total Jobs</small>
+                                <small class="text-muted">{{ __('Total Jobs') }}</small>
                             </div>
                             <div class="col-4">
                                 <div id="summaryPendingJobs" class="fs-4 fw-bold mb-0">0</div>
-                                <small class="text-muted">Pending</small>
+                                <small class="text-muted">{{ __('Pending') }}</small>
                             </div>
                             <div class="col-4">
                                 <div id="summaryCompletedJobs" class="fs-4 fw-bold mb-0">0</div>
-                                <small class="text-muted">Completed</small>
+                                <small class="text-muted">{{ __('Completed') }}</small>
                             </div>
                         </div>
                     </div>
@@ -213,15 +213,15 @@
 
                 <div class="col-12 col-lg-4">
                     <div class="rounded-3 bg-success-subtle px-4 py-3 h-100">
-                        <h6 class="text-uppercase text-success-emphasis fw-semibold small mb-3" style="letter-spacing:.03em;">Completed Jobs</h6>
+                        <h6 class="text-uppercase text-success-emphasis fw-semibold small mb-3" style="letter-spacing:.03em;">{{ __('Completed Jobs') }}</h6>
                         <div class="row g-2 text-center">
                             <div class="col-6">
                                 <div id="completedJobsCount" class="fs-4 fw-bold mb-0">0</div>
-                                <small class="text-muted">Completed</small>
+                                <small class="text-muted">{{ __('Completed') }}</small>
                             </div>
                             <div class="col-6">
                                 <div id="completionRate" class="fs-4 fw-bold mb-0">0%</div>
-                                <small class="text-muted">Completion Rate</small>
+                                <small class="text-muted">{{ __('Completion Rate') }}</small>
                             </div>
                         </div>
                     </div>
@@ -229,15 +229,15 @@
 
                 <div class="col-12 col-lg-4">
                     <div class="rounded-3 bg-warning-subtle px-4 py-3 h-100">
-                        <h6 class="text-uppercase text-warning-emphasis fw-semibold small mb-3" style="letter-spacing:.03em;">Needs Attention</h6>
+                        <h6 class="text-uppercase text-warning-emphasis fw-semibold small mb-3" style="letter-spacing:.03em;">{{ __('Needs Attention') }}</h6>
                         <div class="row g-2 text-center">
                             <div class="col-6">
                                 <div id="cancelledJobsCount" class="fs-4 fw-bold mb-0">0</div>
-                                <small class="text-muted">Cancelled</small>
+                                <small class="text-muted">{{ __('Cancelled') }}</small>
                             </div>
                             <div class="col-6">
                                 <div id="trashedJobsCount" class="fs-4 fw-bold mb-0">0</div>
-                                <small class="text-muted">Trashed</small>
+                                <small class="text-muted">{{ __('Trashed') }}</small>
                             </div>
                         </div>
                     </div>
@@ -281,9 +281,9 @@
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
 
                         <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="Search jobs..." aria-label="Search jobs...">
+                               placeholder="{{ __('Search jobs...') }}" aria-label="{{ __('Search jobs...') }}">
                     </div>
-                    <select id="pageLength" class="form-select form-select-sm w-auto" aria-label="Rows per page">
+                    <select id="pageLength" class="form-select form-select-sm w-auto" aria-label="{{ __('Rows per page') }}">
                         <option value="25" selected>25</option>
                         <option value="50">50</option>
                         <option value="100">100</option>
@@ -297,17 +297,17 @@
                     <div class="mb-3">
                         <i class="bi bi-truck" style="font-size:3.5rem;color:#dde3ed;"></i>
                     </div>
-                    <h5 class="fw-semibold text-muted mb-2">No Jobs Yet</h5>
+                    <h5 class="fw-semibold text-muted mb-2">{{ __('No Jobs Yet') }}</h5>
                     <p class="text-muted small mb-4 mx-auto" style="max-width:400px;">
-                        Jobs created directly or converted from an accepted quotation will appear here.
+                        {{ __('Jobs created directly or converted from an accepted quotation will appear here.') }}
                     </p>
                     <div class="d-flex gap-2 justify-content-center flex-wrap">
                         <button class="btn btn-primary rounded-pill px-4" id="new-first">
-                            <i class="bi bi-plus-lg me-1"></i> Create First Job
+                            <i class="bi bi-plus-lg me-1"></i> {{ __('Create First Job') }}
                         </button>
                         <button class="btn btn-outline-secondary rounded-pill px-4"
                                 data-bs-toggle="modal" data-bs-target="#jobWorkflowModal">
-                            <i class="bi bi-diagram-3 me-1"></i> How It Works
+                            <i class="bi bi-diagram-3 me-1"></i> {{ __('How It Works') }}
                         </button>
                     </div>
                 </div>
@@ -315,8 +315,8 @@
                     <div class="mb-3">
                         <i class="bi bi-search" style="font-size:3rem;color:#dde3ed;"></i>
                     </div>
-                    <h5 class="fw-semibold text-muted mb-2">No Results Found</h5>
-                    <p class="text-muted small mb-0">Try adjusting your search or filter criteria.</p>
+                    <h5 class="fw-semibold text-muted mb-2">{{ __('No Results Found') }}</h5>
+                    <p class="text-muted small mb-0">{{ __('Try adjusting your search or filter criteria.') }}</p>
                 </div>
             </div>
 
@@ -466,9 +466,9 @@
                 <div class="modal-header border-0 pb-0">
                     <div>
                         <h5 class="modal-title fw-semibold" id="jobWorkflowModalLabel">
-                            <i class="bi bi-diagram-3 text-primary me-2"></i>Job Workflow
+                            <i class="bi bi-diagram-3 text-primary me-2"></i>{{ __('Job Workflow') }}
                         </h5>
-                        <p class="text-muted small mb-0">How jobs move through your system</p>
+                        <p class="text-muted small mb-0">{{ __('How jobs move through your system') }}</p>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
@@ -482,16 +482,16 @@
                             <div class="d-flex flex-column align-items-center">
                                 <div class="wf-box wf-neutral">
                                     <i class="bi bi-arrow-repeat me-1"></i>
-                                    From Quotation
-                                    <div class="wf-badge bg-secondary text-white">Accepted Quote Converted</div>
+                                    {{ __('From Quotation') }}
+                                    <div class="wf-badge bg-secondary text-white">{{ __('Accepted Quote Converted') }}</div>
                                 </div>
                                 <div class="wf-arrow">↓</div>
                             </div>
                             <div class="d-flex flex-column align-items-center">
                                 <div class="wf-box wf-neutral">
                                     <i class="bi bi-plus-circle me-1"></i>
-                                    Direct Job
-                                    <div class="wf-badge bg-secondary text-white">New Job Button</div>
+                                    {{ __('Direct Job') }}
+                                    <div class="wf-badge bg-secondary text-white">{{ __('New Job Button') }}</div>
                                 </div>
                                 <div class="wf-arrow">↓</div>
                             </div>
@@ -499,31 +499,31 @@
 
                         <!-- Step 1: Job Created -->
                         <div class="wf-box wf-pending">
-                            <div class="text-muted" style="font-size:0.7rem;font-weight:400;">STEP 1</div>
-                            <i class="bi bi-briefcase-fill me-1"></i> Job Created
-                            <div class="wf-badge bg-warning text-dark">Pending</div>
+                            <div class="text-muted" style="font-size:0.7rem;font-weight:400;">{{ __('STEP 1') }}</div>
+                            <i class="bi bi-briefcase-fill me-1"></i> {{ __('Job Created') }}
+                            <div class="wf-badge bg-warning text-dark">{{ __('Pending') }}</div>
                         </div>
                         <div class="wf-arrow">↓</div>
 
                         <!-- Step 2: Operations -->
                         <div class="wf-box wf-action">
-                            <div class="text-muted" style="font-size:0.7rem;font-weight:400;">STEP 2</div>
-                            <i class="bi bi-box-seam me-1"></i> Operations &amp; Documentation
-                            <div class="text-muted mt-1" style="font-size:0.75rem;">Containers, packages, customs clearance</div>
+                            <div class="text-muted" style="font-size:0.7rem;font-weight:400;">{{ __('STEP 2') }}</div>
+                            <i class="bi bi-box-seam me-1"></i> {{ __('Operations & Documentation') }}
+                            <div class="text-muted mt-1" style="font-size:0.75rem;">{{ __('Containers, packages, customs clearance') }}</div>
                         </div>
                         <div class="wf-arrow">↓</div>
 
                         <!-- Step 3: Invoicing -->
                         <div class="wf-box wf-job">
-                            <div class="text-muted" style="font-size:0.7rem;font-weight:400;">STEP 3</div>
-                            <i class="bi bi-receipt me-1"></i> Raise Invoices
-                            <div class="text-muted mt-1" style="font-size:0.75rem;">Customer Invoice &amp; Supplier Invoice</div>
+                            <div class="text-muted" style="font-size:0.7rem;font-weight:400;">{{ __('STEP 3') }}</div>
+                            <i class="bi bi-receipt me-1"></i> {{ __('Raise Invoices') }}
+                            <div class="text-muted mt-1" style="font-size:0.75rem;">{{ __('Customer Invoice & Supplier Invoice') }}</div>
                         </div>
                         <div class="wf-arrow">↓</div>
 
                         <!-- Decision -->
                         <div class="wf-box wf-decision">
-                            <i class="bi bi-question-circle me-1"></i> Job Outcome
+                            <i class="bi bi-question-circle me-1"></i> {{ __('Job Outcome') }}
                         </div>
 
                         <!-- Split paths -->
@@ -533,8 +533,8 @@
                             <div class="d-flex flex-column align-items-center">
                                 <div class="wf-arrow">↓</div>
                                 <div class="wf-box wf-success">
-                                    <i class="bi bi-check-circle me-1"></i> Completed
-                                    <div class="wf-badge bg-success text-white">Completed</div>
+                                    <i class="bi bi-check-circle me-1"></i> {{ __('Completed') }}
+                                    <div class="wf-badge bg-success text-white">{{ __('Completed') }}</div>
                                 </div>
                             </div>
 
@@ -542,8 +542,8 @@
                             <div class="d-flex flex-column align-items-center">
                                 <div class="wf-arrow">↓</div>
                                 <div class="wf-box wf-danger">
-                                    <i class="bi bi-x-circle me-1"></i> Cancelled
-                                    <div class="wf-badge bg-danger text-white">Cancelled</div>
+                                    <i class="bi bi-x-circle me-1"></i> {{ __('Cancelled') }}
+                                    <div class="wf-badge bg-danger text-white">{{ __('Cancelled') }}</div>
                                 </div>
                             </div>
                         </div>
@@ -552,30 +552,30 @@
 
                     <!-- Status legend -->
                     <hr class="mt-4">
-                    <h6 class="fw-semibold text-muted mb-3 small text-uppercase">Status Guide</h6>
+                    <h6 class="fw-semibold text-muted mb-3 small text-uppercase">{{ __('Status Guide') }}</h6>
                     <div class="row g-2">
                         <div class="col-sm-6 col-md-3">
                             <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#fffbf0;border:1px solid #ffc107;">
-                                <span class="badge bg-warning text-dark">Pending</span>
-                                <small class="text-muted">In progress / not yet completed</small>
+                                <span class="badge bg-warning text-dark">{{ __('Pending') }}</span>
+                                <small class="text-muted">{{ __('In progress / not yet completed') }}</small>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-3">
                             <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#f0fff4;border:1px solid #198754;">
-                                <span class="badge bg-success">Completed</span>
-                                <small class="text-muted">Operations &amp; invoicing finished</small>
+                                <span class="badge bg-success">{{ __('Completed') }}</span>
+                                <small class="text-muted">{{ __('Operations & invoicing finished') }}</small>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-3">
                             <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#fff5f5;border:1px solid #dc3545;">
-                                <span class="badge bg-danger">Cancelled</span>
-                                <small class="text-muted">Job called off</small>
+                                <span class="badge bg-danger">{{ __('Cancelled') }}</span>
+                                <small class="text-muted">{{ __('Job called off') }}</small>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-3">
                             <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#f8f9fa;border:1px solid #6c757d;">
-                                <span class="badge bg-secondary">Trashed</span>
-                                <small class="text-muted">Soft-deleted, can be restored</small>
+                                <span class="badge bg-secondary">{{ __('Trashed') }}</span>
+                                <small class="text-muted">{{ __('Soft-deleted, can be restored') }}</small>
                             </div>
                         </div>
                     </div>
@@ -583,9 +583,9 @@
                 <div class="modal-footer border-0 pt-0">
                     <button class="btn btn-primary rounded-pill px-4" data-bs-dismiss="modal"
                             onclick="setTimeout(()=>document.getElementById('new').click(),300)">
-                        <i class="bi bi-plus-lg me-1"></i> Create Job
+                        <i class="bi bi-plus-lg me-1"></i> {{ __('Create Job') }}
                     </button>
-                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">{{ __('Close') }}</button>
                 </div>
             </div>
         </div>
@@ -599,9 +599,9 @@
                 <div class="modal-header border-0 pb-0">
                     <div>
                         <h5 class="modal-title fw-semibold" id="columnSettingsModalLabel">
-                            <i class="bi bi-columns-gap text-primary me-2"></i>Column Settings
+                            <i class="bi bi-columns-gap text-primary me-2"></i>{{ __('Column Settings') }}
                         </h5>
-                        <p class="text-muted small mb-0">Choose and arrange the columns shown in the job list</p>
+                        <p class="text-muted small mb-0">{{ __('Choose and arrange the columns shown in the job list') }}</p>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
@@ -612,9 +612,9 @@
                         <!-- Left: Available Fields -->
                         <div class="col-md-4 border-end d-flex flex-column" style="max-height:520px;">
                             <div class="p-3 border-bottom bg-light">
-                                <h6 class="fw-semibold mb-2 small text-uppercase text-muted">Available Fields</h6>
+                                <h6 class="fw-semibold mb-2 small text-uppercase text-muted">{{ __('Available Fields') }}</h6>
                                 <input type="text" id="csFieldSearch" class="form-control form-control-sm rounded-pill"
-                                       placeholder="Search fields…">
+                                       placeholder="{{ __('Search fields…') }}">
                             </div>
                             <div id="csFieldList" class="flex-grow-1 overflow-auto p-2"></div>
                         </div>
@@ -622,10 +622,10 @@
                         <!-- Right: Column Order -->
                         <div class="col-md-8 d-flex flex-column" style="max-height:520px;">
                             <div class="p-3 border-bottom bg-light d-flex align-items-center justify-content-between">
-                                <h6 class="fw-semibold mb-0 small text-uppercase text-muted">Column Order</h6>
+                                <h6 class="fw-semibold mb-0 small text-uppercase text-muted">{{ __('Column Order') }}</h6>
                                 <span class="text-muted" style="font-size:0.75rem;">
-                                    <i class="bi bi-grip-vertical"></i> Drag to reorder &nbsp;·&nbsp;
-                                    <i class="bi bi-chevron-down"></i> Add sub-column
+                                    <i class="bi bi-grip-vertical"></i> {{ __('Drag to reorder') }} &nbsp;·&nbsp;
+                                    <i class="bi bi-chevron-down"></i> {{ __('Add sub-column') }}
                                 </span>
                             </div>
                             <div id="csColumnList" class="flex-grow-1 overflow-auto p-3"></div>
@@ -635,7 +635,7 @@
                     <!-- Preview -->
                     <div class="border-top p-3 bg-light">
                         <h6 class="small fw-semibold text-muted text-uppercase mb-2">
-                            <i class="bi bi-eye me-1"></i>Preview
+                            <i class="bi bi-eye me-1"></i>{{ __('Preview') }}
                         </h6>
                         <div class="table-responsive" style="max-height:100px;overflow:auto;">
                             <table class="table table-sm table-bordered mb-0 text-nowrap" id="csPreviewTable">
@@ -652,11 +652,11 @@
 
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-outline-danger btn-sm rounded-pill me-auto" id="csResetBtn">
-                        <i class="bi bi-arrow-counterclockwise me-1"></i>Reset to Default
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>{{ __('Reset to Default') }}
                     </button>
-                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
                     <button type="button" class="btn btn-primary rounded-pill px-4" id="csSaveBtn">
-                        <i class="bi bi-check2 me-1"></i>Save
+                        <i class="bi bi-check2 me-1"></i>{{ __('Save') }}
                     </button>
                 </div>
             </div>

@@ -1,7 +1,7 @@
-<div class="container px-4 py-3 align-items-center" id="modal-buttons" data-buttons="cancel,save" data-button-save="Save Account">
+<div class="container px-4 py-3 align-items-center" id="modal-buttons" data-buttons="cancel,save" data-button-save="{{ __('Save Account') }}">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
-        <h5 class="fw-semibold mb-0">{{ $account->name ?? 'New Account' }}</h5>
+        <h5 class="fw-semibold mb-0">{{ $account->name ?? __('New Account') }}</h5>
         <div id="show-buttons"></div>
     </div>
 
@@ -13,12 +13,12 @@
         <div class="row gy-3">
             <!-- Account Type -->
             <div class="col-md-8 d-flex align-items-center">
-                <label class="col-4 col-form-label fw-semibold text-secondary">Account Type <span
+                <label class="col-4 col-form-label fw-semibold text-secondary">{{ __('Account Type') }} <span
                         class="text-danger">*</span></label>
                 <div class="col-8">
                     <select name="parent_id" id="parent_id" class="tom-select" data-live-search="true"
                             required>
-                        <option value="">Select Parent Account</option>
+                        <option value="">{{ __('Select Parent Account') }}</option>
 
                         @foreach($accountTypes as $type => $accounts)
                             <optgroup label="{{ ucfirst($type) }}">
@@ -35,40 +35,40 @@
 
             <!-- Account Name -->
             <div class="col-md-8 d-flex align-items-center">
-                <label class="col-4 col-form-label fw-semibold text-secondary">Account Name <span
+                <label class="col-4 col-form-label fw-semibold text-secondary">{{ __('Account Name') }} <span
                         class="text-danger">*</span></label>
                 <div class="col-8">
                     <input type="text" class="form-control" name="account_name" value="{{ $account->name }}"
-                           placeholder="Enter account name" autocomplete="off" required>
+                           placeholder="{{ __('Enter account name') }}" autocomplete="off" required>
                 </div>
             </div>
 
             <!-- Account Code -->
             <div class="col-md-8 d-flex align-items-center">
-                <label class="col-4 col-form-label fw-semibold text-secondary">Account Code</label>
+                <label class="col-4 col-form-label fw-semibold text-secondary">{{ __('Account Code') }}</label>
                 <div class="col-8">
                     <input type="text" class="form-control" name="account_code" autocomplete="off" value="{{ $account->code }}"
-                           placeholder="Enter account code">
+                           placeholder="{{ __('Enter account code') }}">
                 </div>
             </div>
 
             <!-- Description -->
             <div class="col-md-8 d-flex align-items-start">
-                <label class="col-4 col-form-label fw-semibold text-secondary pt-2">Description</label>
+                <label class="col-4 col-form-label fw-semibold text-secondary pt-2">{{ __('Description') }}</label>
                 <div class="col-8">
                     <textarea class="form-control h-100" name="description" rows="2"
-                              placeholder="Enter description">{{ $account->description }}</textarea>
+                              placeholder="{{ __('Enter description') }}">{{ $account->description }}</textarea>
                 </div>
             </div>
 
             <!-- Active Status -->
             <div class="col-md-8 d-flex align-items-center">
-                <label class="col-4 col-form-label fw-semibold text-secondary">Status</label>
+                <label class="col-4 col-form-label fw-semibold text-secondary">{{ __('Status') }}</label>
                 <div class="col-8">
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" name="is_active" id="isActive"
                                value="1" @checked($account->is_active)>
-                        <label class="form-check-label fw-semibold" for="isActive">Active</label>
+                        <label class="form-check-label fw-semibold" for="isActive">{{ __('Active') }}</label>
                     </div>
                 </div>
             </div>
@@ -76,23 +76,23 @@
             <!-- ================= Bank Details ================= -->
             <div class="col-md-8 d-none" id="bankDetailsCard">
                 <hr class="my-2">
-                <h6 class="fw-semibold text-secondary small mb-3">Bank Details</h6>
+                <h6 class="fw-semibold text-secondary small mb-3">{{ __('Bank Details') }}</h6>
 
                 <div class="d-flex align-items-center mb-2">
-                    <label class="col-4 col-form-label fw-semibold text-secondary">Account Number</label>
+                    <label class="col-4 col-form-label fw-semibold text-secondary">{{ __('Account Number') }}</label>
                     <div class="col-8">
-                        <input type="text" class="form-control" name="account_number" placeholder="Enter bank account number">
+                        <input type="text" class="form-control" name="account_number" placeholder="{{ __('Enter bank account number') }}">
                     </div>
                 </div>
 
                 <div class="d-flex align-items-center">
-                    <label class="col-4 col-form-label fw-semibold text-secondary">Currency</label>
+                    <label class="col-4 col-form-label fw-semibold text-secondary">{{ __('Currency') }}</label>
                     <div class="col-8">
                         <select name="currency" id="currency" class="form-control selectpicker" data-live-search="true">
-                            <option value="INR">INR - Indian Rupee</option>
-                            <option value="USD">USD - US Dollar</option>
-                            <option value="EUR">EUR - Euro</option>
-                            <option value="GBP">GBP - British Pound</option>
+                            <option value="INR">{{ __('INR - Indian Rupee') }}</option>
+                            <option value="USD">{{ __('USD - US Dollar') }}</option>
+                            <option value="EUR">{{ __('EUR - Euro') }}</option>
+                            <option value="GBP">{{ __('GBP - British Pound') }}</option>
                         </select>
                     </div>
                 </div>
@@ -134,7 +134,7 @@
 
             // Fetch Parent Accounts
             if (!type) {
-                parentSelect.innerHTML = '<option value="">Select Parent Account</option>';
+                parentSelect.innerHTML = '<option value="">{{ __('Select Parent Account') }}</option>';
                 selectPicker.selectpicker('refresh');
                 return;
             }
@@ -142,7 +142,7 @@
             fetch(`/finance/account/get/${type}`)
                 .then(res => res.json())
                 .then(data => {
-                    let options = '<option value="">Select Parent Account</option>';
+                    let options = '<option value="">{{ __('Select Parent Account') }}</option>';
                     data.forEach(acc => {
                         options += `<option value="${acc.id}">${acc.name}</option>`;
                     });
@@ -150,7 +150,7 @@
                     selectPicker.selectpicker('refresh');
                 })
                 .catch(() => {
-                    parentSelect.innerHTML = '<option value="">Error loading accounts</option>';
+                    parentSelect.innerHTML = '<option value="">{{ __('Error loading accounts') }}</option>';
                     selectPicker.selectpicker('refresh');
                 });
         });

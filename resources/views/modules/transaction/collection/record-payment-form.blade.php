@@ -8,7 +8,7 @@
     <div class="rp-summary px-4 py-3">
         <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
             <div>
-                <div class="rp-eyebrow">Recording Payment For</div>
+                <div class="rp-eyebrow">{{ __('Recording Payment For') }}</div>
                 <div class="d-flex align-items-center gap-2 mt-1">
                     <h4 class="text-white fw-bold mb-0">{{ $invoice->row_no }}</h4>
                     @if($invoice->job_no)
@@ -18,21 +18,21 @@
                 <div class="text-white-75 small mt-1">{{ $invoice->customer->name_en ?? '' }} <span class="opacity-75">&middot; {{ $invoice->customer->row_no ?? '' }}</span></div>
             </div>
             <div class="text-md-end">
-                <div class="rp-eyebrow">Balance Due</div>
+                <div class="rp-eyebrow">{{ __('Balance Due') }}</div>
                 <div class="text-white fw-bold rp-balance">{{ number_format($balanceAmount, 2) }} <span class="fs-6 fw-normal opacity-75">{{ $currency }}</span></div>
             </div>
         </div>
         <div class="row g-3 mt-1 pt-3 rp-summary-divider">
             <div class="col-4">
-                <div class="rp-eyebrow">Invoice Total</div>
+                <div class="rp-eyebrow">{{ __('Invoice Total') }}</div>
                 <div class="text-white fw-semibold">{{ number_format($invoice->grand_total, 2) }}</div>
             </div>
             <div class="col-4">
-                <div class="rp-eyebrow">Already Paid</div>
+                <div class="rp-eyebrow">{{ __('Already Paid') }}</div>
                 <div class="text-white fw-semibold">{{ number_format($invoice->paid_amount, 2) }}</div>
             </div>
             <div class="col-4">
-                <div class="rp-eyebrow">Due Date</div>
+                <div class="rp-eyebrow">{{ __('Due Date') }}</div>
                 <div class="text-white fw-semibold">{{ $invoice->due_at }}</div>
             </div>
         </div>
@@ -55,7 +55,7 @@
 
                 {{-- Payment amount — the one field that matters most --}}
                 <div class="rp-amount-card mb-4">
-                    <label for="rp_amount" class="form-label fw-semibold text-uppercase small ls-1 text-muted mb-2">Payment Amount</label>
+                    <label for="rp_amount" class="form-label fw-semibold text-uppercase small ls-1 text-muted mb-2">{{ __('Payment Amount') }}</label>
                     <div class="d-flex align-items-center gap-3 flex-wrap">
                         <div class="input-group rp-amount-input">
                             <span class="input-group-text bg-white border-end-0 fw-semibold">{{ $currency }}</span>
@@ -66,11 +66,11 @@
                                    max="{{ $balanceAmount }}" data-balance="{{ $balanceAmount }}" required>
                         </div>
                         <div class="btn-group btn-group-sm" role="group">
-                            <button type="button" class="btn btn-outline-primary" id="rp_amount_full">Full Balance</button>
+                            <button type="button" class="btn btn-outline-primary" id="rp_amount_full">{{ __('Full Balance') }}</button>
                             <button type="button" class="btn btn-outline-primary" id="rp_amount_half">50%</button>
                         </div>
                         <div class="ms-auto text-end">
-                            <div class="small text-muted text-uppercase">Remaining After</div>
+                            <div class="small text-muted text-uppercase">{{ __('Remaining After') }}</div>
                             <div class="fw-bold" id="rp_remaining">0.00 {{ $currency }}</div>
                         </div>
                     </div>
@@ -78,48 +78,48 @@
 
                 <div class="row g-3">
                     <div class="col-md-4">
-                        <label for="collection_date" class="form-label required">Collection Date <span class="text-danger">*</span></label>
+                        <label for="collection_date" class="form-label required">{{ __('Collection Date') }} <span class="text-danger">*</span></label>
                         <input type="text" class="form-control datepicker" id="collection_date" name="collection_date"
                                value="{{ $collection->collection_date ? \Carbon\Carbon::parse($collection->collection_date)->format('d-m-Y') : date('d-m-Y') }}"
                                required>
                     </div>
                     <div class="col-md-4">
-                        <label for="payment_method" class="form-label required">Paid Through <span class="text-danger">*</span></label>
+                        <label for="payment_method" class="form-label required">{{ __('Paid Through') }} <span class="text-danger">*</span></label>
                         <x-common.account-groups :parentAccount="$parents"
                                                  :subAccounts="$subAccounts"
                                                  :value="$collection->account"></x-common.account-groups>
                     </div>
                     <div class="col-md-4">
-                        <label for="currency" class="form-label required">Currency <span class="text-danger">*</span></label>
+                        <label for="currency" class="form-label required">{{ __('Currency') }} <span class="text-danger">*</span></label>
                         <x-common.currencies-exchange :value="$invoice->currency"
                                                       exchangeRate="{{ $collection->currency_rate ?? 1 }}"
                                                       width="auto"></x-common.currencies-exchange>
                     </div>
                     <div class="col-md-4">
-                        <label for="reference_no" class="form-label required">Reference No <span class="text-danger">*</span></label>
+                        <label for="reference_no" class="form-label required">{{ __('Reference No') }} <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="reference_no" name="reference_no" required
                                value="{{ $collection->reference_no }}"
-                               placeholder="Check/Transaction Reference">
+                               placeholder="{{ __('Check/Transaction Reference') }}">
                     </div>
                     <div class="col-md-4">
-                        <label for="bank_charges" class="form-label">Bank Charges</label>
+                        <label for="bank_charges" class="form-label">{{ __('Bank Charges') }}</label>
                         <input type="text" step="0.01" class="form-control float" id="bank_charges"
                                name="bank_charges" value="{{ old('bank_charges', $collection->bank_charges) }}">
                     </div>
                     <div class="col-md-4">
-                        <label for="other_charges" class="form-label">Other Charges</label>
+                        <label for="other_charges" class="form-label">{{ __('Other Charges') }}</label>
                         <input type="text" step="0.01" class="form-control float" id="other_charges"
                                name="other_charges" value="{{ old('other_charges', $collection->other_charges) }}">
                     </div>
                     <div class="col-12">
-                        <label for="notes" class="form-label">Notes</label>
+                        <label for="notes" class="form-label">{{ __('Notes') }}</label>
                         <textarea class="form-control" id="notes" name="notes" rows="2">{{ $collection->notes }}</textarea>
                     </div>
                 </div>
 
                 @if($collection->status == 3)
                     <div class="alert alert-danger mt-3">
-                        <strong>Disapproval Reason:</strong> {{ $collection->disapproval_reason }}
+                        <strong>{{ __('Disapproval Reason') }}:</strong> {{ $collection->disapproval_reason }}
                     </div>
                 @endif
             </div>

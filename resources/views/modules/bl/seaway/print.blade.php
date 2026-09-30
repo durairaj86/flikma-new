@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seaway Bill - {{ $seawayBill->row_no }}</title>
+    <title>{{ __('Seaway Bill') }} - {{ $seawayBill->row_no }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -101,133 +101,133 @@
 </head>
 <body>
     <div class="header">
-        <img src="{{ companyLogo() }}" alt="Company Logo" class="logo">
+        <img src="{{ companyLogo() }}" alt="{{ __('Company Logo') }}" class="logo">
         <div class="company-name">{{ companyName() }}</div>
         <div class="company-address">
             {{ companyAddress() }}<br>
-            Tel: {{ companyPhone() }} | Email: {{ companyEmail() }}
+            {{ __('Tel') }}: {{ companyPhone() }} | {{ __('Email') }}: {{ companyEmail() }}
         </div>
     </div>
 
-    <div class="document-title">Seaway Bill</div>
+    <div class="document-title">{{ __('Seaway Bill') }}</div>
 
     <div class="section">
         <div class="row">
             <div class="col-6">
-                <div class="label">Seaway Bill No:</div>
+                <div class="label">{{ __('Seaway Bill No') }}:</div>
                 {{ $seawayBill->row_no }}
             </div>
             <div class="col-6">
-                <div class="label">Seaway Bill Date:</div>
+                <div class="label">{{ __('Seaway Bill Date') }}:</div>
                 {{ $seawayBill->seaway_bill_date }}
             </div>
         </div>
         <div class="row">
             <div class="col-6">
-                <div class="label">Job Reference:</div>
+                <div class="label">{{ __('Job Reference') }}:</div>
                 {{ $seawayBill->job->row_no }}
             </div>
             <div class="col-6">
-                <div class="label">Customer:</div>
+                <div class="label">{{ __('Customer') }}:</div>
                 {{ $seawayBill->customer->name }}
             </div>
         </div>
     </div>
 
     <div class="section">
-        <div class="section-title">Vessel Information</div>
+        <div class="section-title">{{ __('Vessel Information') }}</div>
         <div class="row">
             <div class="col-6">
-                <div class="label">Origin Port:</div>
+                <div class="label">{{ __('Origin Port') }}:</div>
                 {{ $seawayBill->origin_port }}
             </div>
             <div class="col-6">
-                <div class="label">Destination Port:</div>
+                <div class="label">{{ __('Destination Port') }}:</div>
                 {{ $seawayBill->destination_port }}
             </div>
         </div>
         <div class="row">
             <div class="col-6">
-                <div class="label">Vessel Name:</div>
-                {{ $seawayBill->vessel_name ?? 'N/A' }}
+                <div class="label">{{ __('Vessel Name') }}:</div>
+                {{ $seawayBill->vessel_name ?? __('N/A') }}
             </div>
             <div class="col-6">
-                <div class="label">Voyage Number:</div>
-                {{ $seawayBill->voyage_number ?? 'N/A' }}
+                <div class="label">{{ __('Voyage Number') }}:</div>
+                {{ $seawayBill->voyage_number ?? __('N/A') }}
             </div>
         </div>
         <div class="row">
             <div class="col-6">
-                <div class="label">Departure Time:</div>
-                {{ $seawayBill->departure_time ? $seawayBill->departure_time : 'N/A' }}
+                <div class="label">{{ __('Departure Time') }}:</div>
+                {{ $seawayBill->departure_time ? $seawayBill->departure_time : __('N/A') }}
             </div>
             <div class="col-6">
-                <div class="label">Arrival Time:</div>
-                {{ $seawayBill->arrival_time ? $seawayBill->arrival_time : 'N/A' }}
+                <div class="label">{{ __('Arrival Time') }}:</div>
+                {{ $seawayBill->arrival_time ? $seawayBill->arrival_time : __('N/A') }}
             </div>
         </div>
     </div>
 
     <div class="section">
-        <div class="section-title">Delivery Information</div>
+        <div class="section-title">{{ __('Delivery Information') }}</div>
         <div class="row">
             <div class="col-6">
-                <div class="label">Delivery Date:</div>
+                <div class="label">{{ __('Delivery Date') }}:</div>
                 {{ $seawayBill->delivery_date }}
             </div>
         </div>
         <div class="row">
             <div class="col-6">
-                <div class="label">Delivery Address:</div>
+                <div class="label">{{ __('Delivery Address') }}:</div>
                 {{ $seawayBill->delivery_address }}
             </div>
             <div class="col-6">
-                <div class="label">Contact Person:</div>
+                <div class="label">{{ __('Contact Person') }}:</div>
                 {{ $seawayBill->contact_person }}<br>
-                <div class="label">Contact Phone:</div>
+                <div class="label">{{ __('Contact Phone') }}:</div>
                 {{ $seawayBill->contact_phone }}
             </div>
         </div>
     </div>
 
     <div class="section">
-        <div class="section-title">Shipment Details</div>
+        <div class="section-title">{{ __('Shipment Details') }}</div>
         <div class="row">
             <div class="col-4">
-                <div class="label">Shipment Type:</div>
+                <div class="label">{{ __('Shipment Type') }}:</div>
                 @if($seawayBill->shipment_type == 'document')
-                    Document
+                    {{ __('Document') }}
                 @elseif($seawayBill->shipment_type == 'parcel')
-                    Parcel
+                    {{ __('Parcel') }}
                 @elseif($seawayBill->shipment_type == 'freight')
-                    Freight
+                    {{ __('Freight') }}
                 @endif
             </div>
             <div class="col-4">
-                <div class="label">Service Type:</div>
+                <div class="label">{{ __('Service Type') }}:</div>
                 @if($seawayBill->service_type == 'standard')
-                    Standard
+                    {{ __('Standard') }}
                 @elseif($seawayBill->service_type == 'express')
-                    Express
+                    {{ __('Express') }}
                 @elseif($seawayBill->service_type == 'same_day')
-                    Same Day
+                    {{ __('Same Day') }}
                 @endif
             </div>
             <div class="col-4">
-                <div class="label">Payment Method:</div>
+                <div class="label">{{ __('Payment Method') }}:</div>
                 @if($seawayBill->payment_method == 'prepaid')
-                    Prepaid
+                    {{ __('Prepaid') }}
                 @elseif($seawayBill->payment_method == 'collect')
-                    Collect
+                    {{ __('Collect') }}
                 @elseif($seawayBill->payment_method == 'third_party')
-                    Third Party
+                    {{ __('Third Party') }}
                 @endif
             </div>
         </div>
         @if($seawayBill->special_instructions)
         <div class="row">
             <div class="col-12">
-                <div class="label">Special Instructions:</div>
+                <div class="label">{{ __('Special Instructions') }}:</div>
                 {{ $seawayBill->special_instructions }}
             </div>
         </div>
@@ -235,16 +235,16 @@
     </div>
 
     <div class="section">
-        <div class="section-title">Shipment Items</div>
+        <div class="section-title">{{ __('Shipment Items') }}</div>
         <table>
             <thead>
                 <tr>
-                    <th>Description</th>
-                    <th>Comment</th>
-                    <th class="text-right">Quantity</th>
-                    <th class="text-right">Weight (kg)</th>
-                    <th class="text-right">Dimensions (cm)</th>
-                    <th class="text-center">Fragile</th>
+                    <th>{{ __('Description') }}</th>
+                    <th>{{ __('Comment') }}</th>
+                    <th class="text-right">{{ __('Quantity') }}</th>
+                    <th class="text-right">{{ __('Weight (kg)') }}</th>
+                    <th class="text-right">{{ __('Dimensions (cm)') }}</th>
+                    <th class="text-center">{{ __('Fragile') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -255,7 +255,7 @@
                     <td class="text-right">{{ $item->quantity }}</td>
                     <td class="text-right">{{ $item->weight }}</td>
                     <td class="text-right">{{ $item->length }} x {{ $item->width }} x {{ $item->height }}</td>
-                    <td class="text-center">{{ $item->fragile ? 'Yes' : 'No' }}</td>
+                    <td class="text-center">{{ $item->fragile ? __('Yes') : __('No') }}</td>
                 </tr>
                 @endforeach
             </tbody>
@@ -265,21 +265,21 @@
     <div class="section">
         <div class="row">
             <div class="col-6">
-                <div class="label">Shipper's Signature:</div>
+                <div class="label">{{ __("Shipper\'s Signature") }}:</div>
                 <div style="height: 60px; border-bottom: 1px solid #ddd; margin-top: 30px;"></div>
-                <div style="margin-top: 5px;">Date: ___________________</div>
+                <div style="margin-top: 5px;">{{ __('Date') }}: ___________________</div>
             </div>
             <div class="col-6">
-                <div class="label">Receiver's Signature:</div>
+                <div class="label">{{ __("Receiver\'s Signature") }}:</div>
                 <div style="height: 60px; border-bottom: 1px solid #ddd; margin-top: 30px;"></div>
-                <div style="margin-top: 5px;">Date: ___________________</div>
+                <div style="margin-top: 5px;">{{ __('Date') }}: ___________________</div>
             </div>
         </div>
     </div>
 
     <div class="footer">
-        <p>This seaway bill is subject to the terms and conditions of the carrier. All goods are carried at owner's risk.</p>
-        <p>Printed on: {{ now()->format('d M Y H:i') }}</p>
+        <p>{{ __("This seaway bill is subject to the terms and conditions of the carrier. All goods are carried at owner's risk.") }}</p>
+        <p>{{ __('Printed on: :date', ['date' => now()->format('d M Y H:i')]) }}</p>
     </div>
 </body>
 </html>

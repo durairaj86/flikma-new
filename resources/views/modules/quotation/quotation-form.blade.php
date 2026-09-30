@@ -1,12 +1,12 @@
 <div class="container-fluid px-4 py-3 align-items-center" id="modal-buttons" data-buttons="cancel,save"
-     data-button-save="Save Quotation">
+     data-button-save="{{ __('Save Quotation') }}">
     <!-- Meta Info -->
     <div class="row g-3 align-items-center bg-white border-bottom py-2 mb-3 small">
         <div class="d-flex justify-content-between align-items-center flex-wrap">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-4">
                 <div class="module-info">
                     <span
-                        class="fw-semibold fs-5">{{ $quotation->row_no ?? (isset($enquiryData) ? 'New Quotation from Enquiry' : 'New Quotation') }}</span>
+                        class="fw-semibold fs-5">{{ $quotation->row_no ?? (isset($enquiryData) ? __('New Quotation from Enquiry') : __('New Quotation')) }}</span>
                 </div>
 
             </div>
@@ -33,35 +33,35 @@
                             class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn active"
                             data-bs-toggle="tab" data-bs-target="#general"
                             type="button">
-                            <i class="bi bi-info-circle me-1"></i> General
+                            <i class="bi bi-info-circle me-1"></i> {{ __('General') }}
                         </button>
                     </li>
                     <li class="nav-item me-2">
                         <button class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#container"
                                 type="button">
-                            <i class="bi bi-layout-wtf me-1"></i> Containers
+                            <i class="bi bi-layout-wtf me-1"></i> {{ __('Containers') }}
                         </button>
                     </li>
                     <li class="nav-item me-2">
                         <button class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#package"
                                 type="button">
-                            <i class="bi bi-box-seam me-1"></i> Packages
+                            <i class="bi bi-box-seam me-1"></i> {{ __('Packages') }}
                         </button>
                     </li>
                     <li class="nav-item">
                         <button class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#other"
                                 type="button">
-                            <i class="bi bi bi-collection me-1"></i> Other Info
+                            <i class="bi bi bi-collection me-1"></i> {{ __('Other Info') }}
                         </button>
                     </li>
                     <li class="nav-item me-2">
                         <button class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#charges"
                                 type="button">
-                            <i class="bi bi-receipt me-1"></i> Charges
+                            <i class="bi bi-receipt me-1"></i> {{ __('Charges') }}
                         </button>
                     </li>
                 </ul>
@@ -80,15 +80,15 @@
                     <!-- Quotation Info -->
                     <div class="model-form-tab-div">
                         <div class="model-form-sub-title">
-                            <h5>General</h5>
+                            <h5>{{ __('General') }}</h5>
                         </div>
                         <div class="row g-3">
                             <div class="col-md-4">
                                 <label class="form-label d-flex align-items-center">
-                                    Customer
+                                    {{ __('Customer') }}
                                     <i class="bi bi-info-circle ms-1 text-muted" data-bs-toggle="tooltip"
                                        data-bs-placement="right"
-                                       title="Enter customer name or select from database"></i>
+                                       title="{{ __('Enter customer name or select from database') }}"></i>
                                 </label>
                                 <x-common.customers :value="$quotation->customer_id" :required="true"></x-common.customers>
                                 {{--<select id="customer" name="customer" autocomplete="off">
@@ -100,11 +100,11 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label d-flex justify-content-between align-items-center">
-                                    Prospect Customer
+                                    {{ __('Prospect Customer') }}
                                 </label>
                                 <select name="prospect" id="prospect" class="tom-select"
                                         data-live-search="true" {{ $quotation->prospect_id ? 'data-has-prospect=true' : '' }}>
-                                    <option value="">--Select--</option>
+                                    <option value="">{{ __('--Select--') }}</option>
                                     @foreach(\App\Models\Prospect\Prospect::prospectCustomers() as $prospect)
                                         <option value="{{ encodeId($prospect->id) }}"
                                                 data-subtext="{{ $prospect->row_no }}"
@@ -113,16 +113,15 @@
                                         </option>
                                     @endforeach
                                     <option data-divider="true"></option>
-                                    <option value="__new__" data-type="new" data-module="PROSPECT">+ Add New
-                                        Prospect
+                                    <option value="__new__" data-type="new" data-module="PROSPECT">{{ __('+ Add New Prospect') }}
                                     </option>
                                 </select>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label d-flex align-items-center">
-                                    Quotation Date
+                                    {{ __('Quotation Date') }}
                                     <i class="bi bi-info-circle ms-1 text-muted" data-bs-toggle="tooltip"
-                                       data-bs-placement="right" title="Date on which the quotation is created"></i>
+                                       data-bs-placement="right" title="{{ __('Date on which the quotation is created') }}"></i>
                                 </label>
                                 <input type="date" class="form-control datepicker" name="posted_at"
                                        autocomplete="off"
@@ -131,20 +130,20 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label d-flex align-items-center">
-                                    Valid Until
+                                    {{ __('Valid Until') }}
                                     <i class="bi bi-info-circle ms-1 text-muted" data-bs-toggle="tooltip"
-                                       data-bs-placement="right" title="The last date this quotation is valid"></i>
+                                       data-bs-placement="right" title="{{ __('The last date this quotation is valid') }}"></i>
                                 </label>
                                 <input type="date" class="form-control datepicker" name="valid_until" autocomplete="off"
                                        value="{{ $quotation->valid_until }}"
                                        maxlength="10">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Select Services</label>
+                                <label class="form-label">{{ __('Select Services') }}</label>
                                 <x-common.service :value="$quotation->services"/>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Salesman</label>
+                                <label class="form-label">{{ __('Salesman') }}</label>
                                 <x-common.salesperson
                                     :value="$quotation->salesperson_id"></x-common.salesperson>
                             </div>
@@ -158,11 +157,11 @@
                     <!-- Cargo Routing -->
                     <div class="model-form-tab-div">
                         <div class="model-form-sub-title">
-                            <h5>Cargo Routing</h5>
+                            <h5>{{ __('Cargo Routing') }}</h5>
                         </div>
                         <div class="row g-3">
                             <div class="col-md-4">
-                                <label for="activity_id" class="form-label">Activity</label>
+                                <label for="activity_id" class="form-label">{{ __('Activity') }}</label>
                                 <x-common.activity
                                     :value="$quotation->activity_id"></x-common.activity>
                             </div>
@@ -186,16 +185,16 @@
                             </div>--}}
 
                             <div class="col-md-4">
-                                <label class="form-label">Place of Receipt</label>
+                                <label class="form-label">{{ __('Place of Receipt') }}</label>
                                 <input type="text" class="form-control" name="place_of_receipt" autocomplete="off"
                                        value="{{ $quotation->place_of_receipt }}"
                                        maxlength="100">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Origin</label>
+                                <label class="form-label">{{ __('Origin') }}</label>
                                 <select id="pol" name="pol" class="tom-select-search" autocomplete="off" required
-                                        data-placeholder="--Select Origin--">
-                                    <option value="">--Select Origin--</option>
+                                        data-placeholder="{{ __('--Select Origin--') }}">
+                                    <option value="">{{ __('--Select Origin--') }}</option>
                                     @if($quotation->pol)
                                         <option value="{{ $quotation->pol }}" selected>{{ $quotation->pol }}</option>
                                     @endif
@@ -205,10 +204,10 @@
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Destination</label>
+                                <label class="form-label">{{ __('Destination') }}</label>
                                 <select id="pod" name="pod" class="tom-select-search" autocomplete="off" required
-                                        data-placeholder="--Select Destination--">
-                                    <option value="" @selected(!$quotation->pod)>--Select Destination--
+                                        data-placeholder="{{ __('--Select Destination--') }}">
+                                    <option value="" @selected(!$quotation->pod)>{{ __('--Select Destination--') }}
                                     </option>
                                     @if($quotation->pod)
                                         <option value="{{ $quotation->pod }}" selected>{{ $quotation->pod }}</option>
@@ -220,25 +219,25 @@
                             </div>
 
                             <div class="col-md-4">
-                                <label class="form-label">Place of Delivery</label>
+                                <label class="form-label">{{ __('Place of Delivery') }}</label>
                                 <input type="text" class="form-control" name="place_of_delivery" autocomplete="off"
                                        value="{{ $quotation->place_of_delivery }}"
                                        maxlength="100">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Final Destination</label>
+                                <label class="form-label">{{ __('Final Destination') }}</label>
                                 <input type="text" class="form-control" name="final_destination" autocomplete="off"
                                        value="{{ $quotation->final_destination }}"
                                        maxlength="100">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Pickup Date</label>
+                                <label class="form-label">{{ __('Pickup Date') }}</label>
                                 <input type="date" name="pickup_date" id="pickup_date"
                                        class="form-control rounded-3 datepicker"
                                        value="{{ $quotation->pickup_date }}">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Pickup Address</label>
+                                <label class="form-label">{{ __('Pickup Address') }}</label>
                                 <textarea name="pickup_address" id="pickup_address"
                                           class="form-control rounded-3">{{ $quotation->pickup_address }}</textarea>
                             </div>
@@ -256,27 +255,27 @@
                     </div>
                     <div class="model-form-tab-div">
                         <div class="model-form-sub-title">
-                            <h5>Cargo Details</h5>
+                            <h5>{{ __('Cargo Details') }}</h5>
                         </div>
                         <div class="row g-3">
                             <div class="col-md-4">
-                                <label class="form-label">Carrier / Line</label>
+                                <label class="form-label">{{ __('Carrier / Line') }}</label>
                                 <select id="carrier" name="carrier" class="tom-select-search" data-live-search="true"
-                                        data-placeholder="--Select Carrier--" autocomplete="off">
-                                    <option value="">--Select--</option>
+                                        data-placeholder="{{ __('--Select Carrier--') }}" autocomplete="off">
+                                    <option value="">{{ __('--Select--') }}</option>
                                     <option value="{{ $quotation->carrier }}">{{ $quotation->carrier }}</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Shipper</label>
+                                <label class="form-label">{{ __('Shipper') }}</label>
                                 <input type="text" name="shipper" id="shipper"
                                        class="form-control rounded-3"
                                        value="{{ $quotation->shipper }}">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Incoterm</label>
+                                <label class="form-label">{{ __('Incoterm') }}</label>
                                 <select class="tom-select" name="incoterm" data-live-search="true">
-                                    <option value="">Select</option>
+                                    <option value="">{{ __('Select') }}</option>
                                     @foreach(incoterms() as $incoterm)
                                         <option value="{{ $incoterm->code }}"
                                                 data-subtext="{{ $incoterm->description }}" @selected($quotation->incoterm == $incoterm->code)>{{ $incoterm->name }}</option>
@@ -284,7 +283,7 @@
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Commodity</label>
+                                <label class="form-label">{{ __('Commodity') }}</label>
                                 <input type="text" name="commodity" id="commodity" class="form-control rounded-3"
                                        value="{{ $quotation->commodity }}">
                             </div>
@@ -309,16 +308,16 @@
                         <table class="table" id="containerTable">
                             <thead>
                             <tr>
-                                <th>Size</th>
-                                <th>Type</th>
-                                <th>Number</th>
-                                <th>Seal No</th>
-                                <th>Gross Weight (Kg)</th>
-                                <th>Net Weight (Kg)</th>
-                                <th>Volume (CBM)</th>
-                                <th>Hazardous</th>
-                                <th>Quantity & UOM</th>
-                                <th>Remarks</th>
+                                <th>{{ __('Size') }}</th>
+                                <th>{{ __('Type') }}</th>
+                                <th>{{ __('Number') }}</th>
+                                <th>{{ __('Seal No') }}</th>
+                                <th>{{ __('Gross Weight (Kg)') }}</th>
+                                <th>{{ __('Net Weight (Kg)') }}</th>
+                                <th>{{ __('Volume (CBM)') }}</th>
+                                <th>{{ __('Hazardous') }}</th>
+                                <th>{{ __('Quantity & UOM') }}</th>
+                                <th>{{ __('Remarks') }}</th>
                                 <th width="5%"></th>
                             </tr>
                             </thead>
@@ -366,10 +365,10 @@
                                     <td>
                                         <select name="haz[]" class="tom-select">
                                             <option value="0" {{ ($container->hazardous ?? '') == 0 ? 'selected':'' }}>
-                                                No
+                                                {{ __('No') }}
                                             </option>
                                             <option value="1" {{ ($container->hazardous ?? '') == 1 ? 'selected':'' }}>
-                                                Yes
+                                                {{ __('Yes') }}
                                             </option>
                                         </select>
                                     </td>
@@ -399,7 +398,7 @@
 
                                     <td>
                                         <input type="text" name="container_remark[]" class="form-control"
-                                               placeholder="Notes" value="{{ $container->remarks ?? '' }}">
+                                               placeholder="{{ __('Notes') }}" value="{{ $container->remarks ?? '' }}">
                                     </td>
 
                                     <td class=" align-content-center">
@@ -426,16 +425,16 @@
                     <table class="table align-middle" id="packageTable">
                         <thead>
                         <tr>
-                            <th>Type</th>
-                            <th>Description</th>
-                            <th>Qty</th>
-                            <th>L (cm)</th>
-                            <th>W (cm)</th>
-                            <th>H (cm)</th>
-                            <th>Weight (Kg)</th>
-                            <th>Volume (m3)</th>
-                            <th>Total Weight (Kg)</th>
-                            <th>Chargeable Weight (Kg)</th>
+                            <th>{{ __('Type') }}</th>
+                            <th>{{ __('Description') }}</th>
+                            <th>{{ __('Qty') }}</th>
+                            <th>{{ __('L (cm)') }}</th>
+                            <th>{{ __('W (cm)') }}</th>
+                            <th>{{ __('H (cm)') }}</th>
+                            <th>{{ __('Weight (Kg)') }}</th>
+                            <th>{{ __('Volume (m3)') }}</th>
+                            <th>{{ __('Total Weight (Kg)') }}</th>
+                            <th>{{ __('Chargeable Weight (Kg)') }}</th>
                             <th width="5%"></th>
                         </tr>
                         </thead>
@@ -449,7 +448,7 @@
                             <tr>
                                 <td>
                                     <select name="package_type[]" class="tom-select" data-max-width="100">
-                                        <option value="">Select</option>
+                                        <option value="">{{ __('Select') }}</option>
                                         @foreach(packageType() as $id => $name)
                                             <option value="{{ $id }}"
                                                 {{ $package && $package->package_type == $id ? 'selected' : '' }}>
@@ -533,17 +532,17 @@
                             <thead class="table-light">
                             <tr>
                                 <th class="text-center" style="width:38px">#</th>
-                                <th style="min-width:200px">Charge Description</th>
-                                <th style="min-width:110px">Unit</th>
-                                <th style="min-width:60px">Qty</th>
-                                <th style="min-width:85px">Currency</th>
-                                <th style="min-width:80px">Ex.Rate</th>
-                                <th style="min-width:100px">Amount/Qty</th>
-                                <th style="min-width:105px">FCY Amount</th>
-                                <th style="min-width:110px">Amount (Local)</th>
-                                <th style="min-width:100px">Tax Group</th>
-                                <th style="min-width:140px">Remarks</th>
-                                <th style="width:70px" class="text-center">Action</th>
+                                <th style="min-width:200px">{{ __('Charge Description') }}</th>
+                                <th style="min-width:110px">{{ __('Unit') }}</th>
+                                <th style="min-width:60px">{{ __('Qty') }}</th>
+                                <th style="min-width:85px">{{ __('Currency') }}</th>
+                                <th style="min-width:80px">{{ __('Ex.Rate') }}</th>
+                                <th style="min-width:100px">{{ __('Amount/Qty') }}</th>
+                                <th style="min-width:105px">{{ __('FCY Amount') }}</th>
+                                <th style="min-width:110px">{{ __('Amount (Local)') }}</th>
+                                <th style="min-width:100px">{{ __('Tax Group') }}</th>
+                                <th style="min-width:140px">{{ __('Remarks') }}</th>
+                                <th style="width:70px" class="text-center">{{ __('Action') }}</th>
                             </tr>
                             </thead>
                             <tbody id="chargesBody">
@@ -557,7 +556,7 @@
                                     <td class="text-center text-muted small chg-line-no">{{ $i + 1 }}</td>
                                     <td>
                                         <select name="chg_description[]" class="form-select form-select-sm chg-description">
-                                            <option value="">— Select —</option>
+                                            <option value="">{{ __('— Select —') }}</option>
                                             @foreach($chargeDescriptions as $desc)
                                                 <option value="{{ $desc->description }}"
                                                     @selected(($charge->charge_description ?? '') === $desc->description)>
@@ -568,7 +567,7 @@
                                     </td>
                                     <td>
                                         <select name="chg_unit[]" class="form-select form-select-sm chg-unit">
-                                            <option value="">— Select —</option>
+                                            <option value="">{{ __('— Select —') }}</option>
                                             @foreach(\App\Models\Master\Unit::units() as $unit)
                                                 <option value="{{ $unit->unit_name }}"
                                                     @selected(($charge->unit ?? '') === $unit->unit_name)>
@@ -631,13 +630,13 @@
                                     </td>
                                     <td class="align-content-center">
                                         <div class="d-flex justify-content-between gap-2 action-icons">
-                                            <div class="chg-add-row" title="Add">
+                                            <div class="chg-add-row" title="{{ __('Add') }}">
                                                 <i class="bi bi-plus-circle text-muted"></i>
                                             </div>
-                                            <div class="chg-clone-row" title="Clone">
+                                            <div class="chg-clone-row" title="{{ __('Clone') }}">
                                                 <i class="bi bi-copy text-muted"></i>
                                             </div>
-                                            <div class="chg-remove-row" title="Delete">
+                                            <div class="chg-remove-row" title="{{ __('Delete') }}">
                                                 <i class="bi bi-trash text-danger"></i>
                                             </div>
                                         </div>
@@ -647,7 +646,7 @@
                             </tbody>
                             <tfoot>
                             <tr class="table-light fw-semibold small">
-                                <td colspan="7" class="text-end pe-2">Totals:</td>
+                                <td colspan="7" class="text-end pe-2">{{ __('Totals:') }}</td>
                                 <td><span id="chgGrandFcy">0.00</span></td>
                                 <td><span id="chgGrandLocal">0.00</span></td>
                                 <td colspan="3"></td>
@@ -661,9 +660,9 @@
                 <div class="tab-pane" id="other" role="tabpanel">
                     <div class="row">
                         <div class="col-12 g-3">
-                            <label class="form-label">Terms & Conditions</label>
+                            <label class="form-label">{{ __('Terms & Conditions') }}</label>
                             <textarea class="form-control h-100" id="terms" rows="3" name="terms" autocomplete="off"
-                                      maxlength="500">{{ $quotation->terms ?? (isset($enquiryData->id) ? "This quotation was created from Enquiry " . $quotation->row_no . (isset($enquiryData->prospect) && $quotation->prospect_id ? "\nProspect Customer: " . $quotation->prospect->name . " (" . $quotation->prospect->row_no . ")" : "") : "") }}</textarea>
+                                      maxlength="500">{{ $quotation->terms ?? (isset($enquiryData->id) ? __('This quotation was created from Enquiry :no', ['no' => $quotation->row_no]) . (isset($enquiryData->prospect) && $quotation->prospect_id ? "\n" . __('Prospect Customer: :name (:code)', ['name' => $quotation->prospect->name, 'code' => $quotation->prospect->row_no]) : '') : '') }}</textarea>
                         </div>
                     </div>
                 </div>

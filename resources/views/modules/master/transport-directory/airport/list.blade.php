@@ -1,5 +1,5 @@
 @section('js','airport')
-@section('page-title','Airports')
+@section('page-title', __('Airports'))
 <x-app-layout>
     <main class="gmail-content bg-white d-flex">
         @include('includes.master-navigation')
@@ -11,28 +11,28 @@
                             <a href="{{ asset('masters/transport/directories/seaports') }}"
                                class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn"
                                data-turbo="false">
-                                <span><i class="bi bi-geo-alt me-1"></i> Seaport</span>
+                                <span><i class="bi bi-geo-alt me-1"></i> {{ __('Seaport') }}</span>
                             </a>
                         </li>
                         <li class="nav-item me-2">
                             <a href="{{ asset('masters/transport/directories/airports') }}"
                                class="nav-link py-2 d-flex align-items-center justify-content-between status-btn active"
                                data-turbo="false">
-                                <span><i class="bi bi-airplane me-1"></i> Airport</span>
+                                <span><i class="bi bi-airplane me-1"></i> {{ __('Airport') }}</span>
                             </a>
                         </li>
                         <li class="nav-item me-2">
                             <button
                                 class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button">
-                                <span><i class="fas fa-ship me-1"></i> Shipping Lines</span>
+                                <span><i class="fas fa-ship me-1"></i> {{ __('Shipping Lines') }}</span>
                             </button>
                         </li>
                         <li class="nav-item">
                             <button
                                 class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button">
-                                <span><i class="fas fa-plane-departure me-1"></i> Air Lines</span>
+                                <span><i class="fas fa-plane-departure me-1"></i> {{ __('Air Lines') }}</span>
                             </button>
                         </li>
                     </ul>
@@ -45,10 +45,10 @@
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
 
                         <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="Search customers..." aria-label="Search customers...">
+                               placeholder="{{ __('Search customers...') }}" aria-label="{{ __('Search customers...') }}">
                     </div>
                 </div>
-                <button class="btn btn-primary rounded-pill px-4" id="new">New Airport</button>
+                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Airport') }}</button>
             </div>
             <div class="shadow bdr-r-10 py-3 flex-grow-1">
                 <!-- Table with scroll -->
@@ -57,9 +57,9 @@
                         <thead class="table-light sticky-top bg-white">
                         <tr>
                             <th style="width: 10px">#</th>
-                            <th>Port Name</th>
-                            <th>Port Code</th>
-                            <th>Country Name</th>
+                            <th>{{ __('Port Name') }}</th>
+                            <th>{{ __('Port Code') }}</th>
+                            <th>{{ __('Country Name') }}</th>
                             <th></th>
                         </tr>
                         </thead>

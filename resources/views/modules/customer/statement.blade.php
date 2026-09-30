@@ -1,5 +1,5 @@
 @section('js','customer_statement')
-@section('page-title','Customer Statement')
+@section('page-title', __('Customer Statement'))
 <x-app-layout>
     @livewire('report.finance.customer-statement')
 </x-app-layout>

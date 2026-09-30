@@ -1,7 +1,7 @@
 <!-- Customer Drawer Offcanvas -->
 <div class="offcanvas offcanvas-end customer-drawer" tabindex="-1" id="customerDrawer" style="width: 600px;">
     <div class="offcanvas-header border-bottom bg-light px-4 py-3 d-flex justify-content-between align-items-center">
-        <h5 id="customerDrawerLabel" class="mb-0 fw-bold">Customer Details</h5>
+        <h5 id="customerDrawerLabel" class="mb-0 fw-bold">{{ __('Customer Details') }}</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
     </div>
 
@@ -36,7 +36,7 @@
         <div class="tab-pane fade" id="invoicesTab">
             <div class="card shadow-sm mb-3">
                 <div class="card-body">
-                    <h6 class="fw-bold mb-3">Recent Invoices</h6>
+                    <h6 class="fw-bold mb-3">{{ __('Recent Invoices') }}</h6>
                     <div id="customerInvoices"></div>
                 </div>
             </div>
@@ -46,7 +46,7 @@
         <div class="tab-pane fade" id="transactionsTab">
             <div class="card shadow-sm mb-3">
                 <div class="card-body">
-                    <h6 class="fw-bold mb-3">Recent Transactions</h6>
+                    <h6 class="fw-bold mb-3">{{ __('Recent Transactions') }}</h6>
                     <div id="customerTransactions"></div>
                 </div>
             </div>

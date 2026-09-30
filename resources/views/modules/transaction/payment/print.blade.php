@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment #{{ $payment->row_no }}</title>
+    <title>{{ __('Payment') }} #{{ $payment->row_no }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -125,55 +125,55 @@
         <div class="header">
             <h1>{{ companyName() }}</h1>
             <p>{{ companyAddress() }}</p>
-            <p>Phone: {{ companyPhone() }} | Email: {{ companyEmail() }}</p>
-            <h2>PAYMENT VOUCHER</h2>
+            <p>{{ __('Phone') }}: {{ companyPhone() }} | {{ __('Email') }}: {{ companyEmail() }}</p>
+            <h2>{{ __('PAYMENT VOUCHER') }}</h2>
         </div>
 
         <div class="row">
             <div class="col">
                 <div class="card">
-                    <div class="card-header">Payment Information</div>
+                    <div class="card-header">{{ __('Payment Information') }}</div>
                     <div class="card-body">
                         <table class="borderless">
                             <tr>
-                                <th width="40%">Payment Number:</th>
+                                <th width="40%">{{ __('Payment Number') }}:</th>
                                 <td>{{ $payment->row_no }}</td>
                             </tr>
                             <tr>
-                                <th>Payment Date:</th>
+                                <th>{{ __('Payment Date') }}:</th>
                                 <td>{{ $payment->payment_date }}</td>
                             </tr>
                             <tr>
-                                <th>Payment Method:</th>
+                                <th>{{ __('Payment Method') }}:</th>
                                 <td>{{ $payment->payment_method }}</td>
                             </tr>
                             <tr>
-                                <th>Reference Number:</th>
-                                <td>{{ $payment->reference_no ?? 'N/A' }}</td>
+                                <th>{{ __('Reference Number') }}:</th>
+                                <td>{{ $payment->reference_no ?? __('N/A') }}</td>
                             </tr>
                             <tr>
-                                <th>Currency:</th>
+                                <th>{{ __('Currency') }}:</th>
                                 <td>{{ strtoupper($payment->currency) }}</td>
                             </tr>
                             <tr>
-                                <th>Currency Rate:</th>
+                                <th>{{ __('Currency Rate') }}:</th>
                                 <td>{{ number_format($payment->currency_rate, 4) }}</td>
                             </tr>
                             <tr>
-                                <th>Status:</th>
+                                <th>{{ __('Status') }}:</th>
                                 <td>
                                     @if($payment->status == 1)
-                                        <span class="badge badge-warning">Draft</span>
+                                        <span class="badge badge-warning">{{ __('Draft') }}</span>
                                     @elseif($payment->status == 2)
-                                        <span class="badge badge-success">Approved</span>
+                                        <span class="badge badge-success">{{ __('Approved') }}</span>
                                     @elseif($payment->status == 3)
-                                        <span class="badge badge-danger">Disapproved</span>
+                                        <span class="badge badge-danger">{{ __('Disapproved') }}</span>
                                     @endif
                                 </td>
                             </tr>
                             @if($payment->status == 3)
                                 <tr>
-                                    <th>Disapproval Reason:</th>
+                                    <th>{{ __('Disapproval Reason') }}:</th>
                                     <td>{{ $payment->disapproval_reason }}</td>
                                 </tr>
                             @endif
@@ -183,24 +183,24 @@
             </div>
             <div class="col">
                 <div class="card">
-                    <div class="card-header">Supplier & Job Information</div>
+                    <div class="card-header">{{ __('Supplier & Job Information') }}</div>
                     <div class="card-body">
                         <table class="borderless">
                             <tr>
-                                <th width="40%">Supplier:</th>
-                                <td>{{ $payment->supplier->name ?? 'N/A' }}</td>
+                                <th width="40%">{{ __('Supplier') }}:</th>
+                                <td>{{ $payment->supplier->name ?? __('N/A') }}</td>
                             </tr>
                             <tr>
-                                <th>Supplier Address:</th>
-                                <td>{{ $payment->supplier->address ?? 'N/A' }}</td>
+                                <th>{{ __('Supplier Address') }}:</th>
+                                <td>{{ $payment->supplier->address ?? __('N/A') }}</td>
                             </tr>
                             <tr>
-                                <th>Supplier Contact:</th>
-                                <td>{{ $payment->supplier->phone ?? 'N/A' }}</td>
+                                <th>{{ __('Supplier Contact') }}:</th>
+                                <td>{{ $payment->supplier->phone ?? __('N/A') }}</td>
                             </tr>
                             <tr>
-                                <th>Job Number:</th>
-                                <td>{{ $payment->job_no ?? 'N/A' }}</td>
+                                <th>{{ __('Job Number') }}:</th>
+                                <td>{{ $payment->job_no ?? __('N/A') }}</td>
                             </tr>
                         </table>
                     </div>
@@ -209,51 +209,51 @@
         </div>
 
         <div class="card">
-            <div class="card-header">Invoices Paid</div>
+            <div class="card-header">{{ __('Invoices Paid') }}</div>
             <div class="card-body">
                 <table class="bordered">
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Invoice Number</th>
-                            <th>Invoice Date</th>
-                            <th>Due Date</th>
-                            <th>Invoice Total</th>
-                            <th>Payment Amount</th>
+                            <th>{{ __('Invoice Number') }}</th>
+                            <th>{{ __('Invoice Date') }}</th>
+                            <th>{{ __('Due Date') }}</th>
+                            <th>{{ __('Invoice Total') }}</th>
+                            <th>{{ __('Payment Amount') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($payment->paymentInvoices as $index => $paymentInvoice)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
-                                <td>{{ $paymentInvoice->supplierInvoice->row_no ?? 'N/A' }}</td>
-                                <td>{{ $paymentInvoice->supplierInvoice->invoice_date ?? 'N/A' }}</td>
-                                <td>{{ $paymentInvoice->supplierInvoice->due_at ?? 'N/A' }}</td>
+                                <td>{{ $paymentInvoice->supplierInvoice->row_no ?? __('N/A') }}</td>
+                                <td>{{ $paymentInvoice->supplierInvoice->invoice_date ?? __('N/A') }}</td>
+                                <td>{{ $paymentInvoice->supplierInvoice->due_at ?? __('N/A') }}</td>
                                 <td class="text-end">{{ number_format($paymentInvoice->supplierInvoice->grand_total ?? 0, 2) }} {{ strtoupper($payment->currency) }}</td>
                                 <td class="text-end">{{ number_format($paymentInvoice->amount, 2) }} {{ strtoupper($payment->currency) }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center">No invoices found</td>
+                                <td colspan="6" class="text-center">{{ __('No invoices found') }}</td>
                             </tr>
                         @endforelse
                     </tbody>
                     <tfoot>
                         <tr>
-                            <th colspan="5" class="text-end">Sub Total:</th>
+                            <th colspan="5" class="text-end">{{ __('Sub Total') }}:</th>
                             <th class="text-end">{{ number_format($payment->sub_total, 2) }} {{ strtoupper($payment->currency) }}</th>
                         </tr>
                         <tr>
-                            <th colspan="5" class="text-end">Tax Total:</th>
+                            <th colspan="5" class="text-end">{{ __('Tax Total') }}:</th>
                             <th class="text-end">{{ number_format($payment->tax_total, 2) }} {{ strtoupper($payment->currency) }}</th>
                         </tr>
                         <tr>
-                            <th colspan="5" class="text-end">Grand Total:</th>
+                            <th colspan="5" class="text-end">{{ __('Grand Total') }}:</th>
                             <th class="text-end">{{ number_format($payment->grand_total, 2) }} {{ strtoupper($payment->currency) }}</th>
                         </tr>
                         @if($payment->currency != 'SAR')
                             <tr>
-                                <th colspan="5" class="text-end">Base Currency Total:</th>
+                                <th colspan="5" class="text-end">{{ __('Base Currency Total') }}:</th>
                                 <th class="text-end">{{ number_format($payment->base_grand_total, 2) }} SAR</th>
                             </tr>
                         @endif
@@ -264,7 +264,7 @@
 
         @if($payment->notes)
             <div class="card">
-                <div class="card-header">Notes</div>
+                <div class="card-header">{{ __('Notes') }}</div>
                 <div class="card-body">
                     {{ $payment->notes }}
                 </div>
@@ -274,32 +274,32 @@
         <div class="row" style="margin-top: 50px;">
             <div class="col">
                 <div style="border-top: 1px solid #333; padding-top: 10px; text-align: center;">
-                    <p>Prepared By</p>
-                    <p>{{ $payment->createdBy->name ?? 'N/A' }}</p>
+                    <p>{{ __('Prepared By') }}</p>
+                    <p>{{ $payment->createdBy->name ?? __('N/A') }}</p>
                 </div>
             </div>
             <div class="col">
                 <div style="border-top: 1px solid #333; padding-top: 10px; text-align: center;">
-                    <p>Approved By</p>
-                    <p>{{ $payment->approvedBy->name ?? 'N/A' }}</p>
+                    <p>{{ __('Approved By') }}</p>
+                    <p>{{ $payment->approvedBy->name ?? __('N/A') }}</p>
                 </div>
             </div>
             <div class="col">
                 <div style="border-top: 1px solid #333; padding-top: 10px; text-align: center;">
-                    <p>Received By</p>
+                    <p>{{ __('Received By') }}</p>
                     <p>&nbsp;</p>
                 </div>
             </div>
         </div>
 
         <div class="footer">
-            <p>This is a computer-generated document. No signature is required.</p>
-            <p>Printed on: {{ now()->format('d-m-Y H:i:s') }}</p>
+            <p>{{ __('This is a computer-generated document. No signature is required.') }}</p>
+            <p>{{ __('Printed on') }}: {{ now()->format('d-m-Y H:i:s') }}</p>
         </div>
 
         <div class="no-print" style="margin-top: 20px; text-align: center;">
             <button onclick="window.print()" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                Print Document
+                {{ __('Print Document') }}
             </button>
         </div>
     </div>

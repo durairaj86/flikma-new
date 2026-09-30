@@ -1,17 +1,16 @@
 @section('js','supplier')
-@section('page-title','Supplier Statement')
+@section('page-title', __('Supplier Statement'))
 
 <x-app-layout>
     <div class="container py-4" id="supplier-statement">
         <!-- Header -->
         <div class="mb-4 text-center">
-            <h4 class="mb-1 fw-bold text-primary">Supplier Statement</h4>
+            <h4 class="mb-1 fw-bold text-primary">{{ __('Supplier Statement') }}</h4>
             <small class="text-muted">
-                From {{ \Carbon\Carbon::parse($fromDate)->format('d-m-Y') }}
-                to {{ \Carbon\Carbon::parse($toDate)->format('d-m-Y') }}
+                {{ __('From :from to :to', ['from' => \Carbon\Carbon::parse($fromDate)->format('d-m-Y'), 'to' => \Carbon\Carbon::parse($toDate)->format('d-m-Y')]) }}
             </small><br>
             <small class="text-muted">
-                Currency: {{ $selectedSupplier->currency ?? 'SAR' }}
+                {{ __('Currency') }}: {{ $selectedSupplier->currency ?? 'SAR' }}
             </small>
         </div>
 
@@ -19,7 +18,7 @@
         <form method="GET" class="mb-4">
             <div class="row g-3 align-items-end">
                 <div class="col-md-4">
-                    <label class="form-label fw-semibold">Select Supplier</label>
+                    <label class="form-label fw-semibold">{{ __('Select Supplier') }}</label>
                     <select name="supplier_id" class="form-select">
                         @foreach($suppliers as $supplier)
                             <option value="{{ $supplier->id }}"
@@ -30,16 +29,16 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label fw-semibold">From Date</label>
+                    <label class="form-label fw-semibold">{{ __('From Date') }}</label>
                     <input type="date" name="from_date" class="form-control" value="{{ $fromDate }}">
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label fw-semibold">To Date</label>
+                    <label class="form-label fw-semibold">{{ __('To Date') }}</label>
                     <input type="date" name="to_date" class="form-control" value="{{ $toDate }}">
                 </div>
                 <div class="col-md-2">
                     <button class="btn btn-primary w-100">
-                        <i class="bi bi-funnel me-1"></i> Filter
+                        <i class="bi bi-funnel me-1"></i> {{ __('Filter') }}
                     </button>
                 </div>
             </div>
@@ -53,10 +52,10 @@
                     <div class="p-3 border rounded bg-white shadow-sm h-100">
                         <h5 class="fw-bold mb-2 text-primary">{{ $selectedSupplier->name }}</h5>
                         <div class="small text-muted">
-                            <div>Email: {{ $selectedSupplier->email ?? '-' }}</div>
-                            <div>Phone: {{ $selectedSupplier->phone ?? '-' }}</div>
-                            <div>Code: <span class="fw-semibold">{{ $selectedSupplier->row_no ?? '-' }}</span></div>
-                            <div>Currency: <span class="fw-semibold">{{ $selectedSupplier->currency ?? 'SAR' }}</span></div>
+                            <div>{{ __('Email') }}: {{ $selectedSupplier->email ?? '-' }}</div>
+                            <div>{{ __('Phone') }}: {{ $selectedSupplier->phone ?? '-' }}</div>
+                            <div>{{ __('Code') }}: <span class="fw-semibold">{{ $selectedSupplier->row_no ?? '-' }}</span></div>
+                            <div>{{ __('Currency') }}: <span class="fw-semibold">{{ $selectedSupplier->currency ?? 'SAR' }}</span></div>
                         </div>
                     </div>
                 @endif
@@ -65,28 +64,28 @@
             <!-- Right: Account Summary -->
             <div class="col-md-4 mb-3">
                 <div class="p-3 border rounded bg-light shadow-sm h-100">
-                    <div class="fw-bold mb-3 text-secondary text-uppercase">Account Summary</div>
+                    <div class="fw-bold mb-3 text-secondary text-uppercase">{{ __('Account Summary') }}</div>
 
                     <div class="d-flex justify-content-between py-1">
-                        <span>Opening Balance</span>
+                        <span>{{ __('Opening Balance') }}</span>
                         <span class="fw-semibold">{{ $selectedSupplier->currency ?? 'SAR' }} {{ number_format($openingBalance, 2) }}</span>
                     </div>
                     <hr class="my-1">
 
                     <div class="d-flex justify-content-between py-1">
-                        <span>Total Invoiced</span>
+                        <span>{{ __('Total Invoiced') }}</span>
                         <span class="text-danger fw-semibold">{{ $selectedSupplier->currency ?? 'SAR' }} {{ number_format($invoicedAmount, 2) }}</span>
                     </div>
                     <hr class="my-1">
 
                     <div class="d-flex justify-content-between py-1">
-                        <span>Total Paid</span>
+                        <span>{{ __('Total Paid') }}</span>
                         <span class="text-success fw-semibold">{{ $selectedSupplier->currency ?? 'SAR' }} {{ number_format($paidAmount, 2) }}</span>
                     </div>
                     <hr class="my-1">
 
                     <div class="d-flex justify-content-between py-1 fw-bold border-top pt-2">
-                        <span>Closing Balance</span>
+                        <span>{{ __('Closing Balance') }}</span>
                         <span class="{{ $closingBalance >= 0 ? 'text-danger' : 'text-success' }}">
                             {{ $selectedSupplier->currency ?? 'SAR' }}
                             {{ $closingBalance >= 0
@@ -103,20 +102,20 @@
             <table class="table table-striped table-hover mb-0 align-middle">
                 <thead class="table-light sticky-top">
                 <tr>
-                    <th>Date</th>
-                    <th>Voucher No</th>
-                    <th>Reference</th>
-                    <th>Job No</th>
-                    <th>Description</th>
-                    <th class="text-end">Debit</th>
-                    <th class="text-end">Credit</th>
-                    <th class="text-end">Balance</th>
+                    <th>{{ __('Date') }}</th>
+                    <th>{{ __('Voucher No') }}</th>
+                    <th>{{ __('Reference') }}</th>
+                    <th>{{ __('Job No') }}</th>
+                    <th>{{ __('Description') }}</th>
+                    <th class="text-end">{{ __('Debit') }}</th>
+                    <th class="text-end">{{ __('Credit') }}</th>
+                    <th class="text-end">{{ __('Balance') }}</th>
                 </tr>
                 </thead>
                 <tbody>
                 @php $runningBalance = $openingBalance; @endphp
                 <tr class="fw-semibold bg-light">
-                    <td colspan="7">Opening Balance</td>
+                    <td colspan="7">{{ __('Opening Balance') }}</td>
                     <td class="text-end">{{ number_format($runningBalance,2) }}</td>
                 </tr>
 
@@ -138,7 +137,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="text-center text-muted py-3">No transactions found.</td>
+                        <td colspan="8" class="text-center text-muted py-3">{{ __('No transactions found.') }}</td>
                     </tr>
                 @endforelse
                 </tbody>

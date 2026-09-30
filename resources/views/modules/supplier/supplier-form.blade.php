@@ -2,7 +2,7 @@
     <div class="row align-items-center bg-white  small">
         <div class="d-flex justify-content-between align-items-center flex-wrap">
             <div class="module-info">
-                <span class="fw-semibold fs-5">{{ $supplier->name ?? 'New Supplier' }}</span> <small
+                <span class="fw-semibold fs-5">{{ $supplier->name ?? __('New Supplier') }}</span> <small
                     class="text-secondary">{{ $supplier->row_no ? ' - ' . $supplier->row_no : '' }}</small>
             </div>
         </div>
@@ -22,7 +22,7 @@
                                 class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn active"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic"
                                 type="button">
-                                <i class="bi bi-person-lines-fill me-1"></i> Basic Info
+                                <i class="bi bi-person-lines-fill me-1"></i> {{ __('Basic Info') }}
                             </button>
                         </li>
                         <li class="nav-item me-2">
@@ -30,7 +30,7 @@
                                 class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-address"
                                 type="button">
-                                <i class="bi bi-geo-alt-fill me-1"></i> Address
+                                <i class="bi bi-geo-alt-fill me-1"></i> {{ __('Address') }}
                             </button>
                         </li>
                         {{--<li class="nav-item me-2">
@@ -52,54 +52,54 @@
                     <div class="tab-pane show active" id="tab-basic">
                         <div class="model-form-tab-div">
                             <div class="model-form-sub-title">
-                                <h5>General</h5>
+                                <h5>{{ __('General') }}</h5>
                             </div>
                             <div class="row">
                                 <div class="col-md-4 form-group">
-                                    <label class="form-label">Supplier Name (English)</label>
+                                    <label class="form-label">{{ __('Supplier Name (English)') }}</label>
                                     <input type="text" name="name_en" class="form-control" required
                                            value="{{ $supplier->name_en }}">
                                 </div>
                                 <div class="col-md-4 form-group">
-                                    <label class="form-label">Supplier Name (Arabic)</label>
+                                    <label class="form-label">{{ __('Supplier Name (Arabic)') }}</label>
                                     <input type="text" name="name_ar" class="form-control" dir="rtl"
                                            value="{{ $supplier->name_ar }}">
                                 </div>
                                 <div class="col-md-4 form-group">
-                                    <label class="form-label">Default Currency</label>
+                                    <label class="form-label">{{ __('Default Currency') }}</label>
                                     <x-common.currencies :value="$supplier->currency"></x-common.currencies>
                                 </div>
                                 <div class="col-md-4 form-group">
-                                    <label class="form-label">Email</label>
+                                    <label class="form-label">{{ __('Email') }}</label>
                                     <input type="email" name="email" class="form-control"
                                            value="{{ $supplier->email }}">
                                 </div>
                                 <div class="col-md-4 form-group">
-                                    <label class="form-label">Phone</label>
+                                    <label class="form-label">{{ __('Phone') }}</label>
                                     <input type="text" name="phone" class="form-control"
                                            pattern="^\+?[0-9]{10,15}$" maxlength="16"
                                            value="{{ $supplier->phone }}"
-                                           placeholder="+966 1234567890 or 966 1234567890">
+                                           placeholder="{{ __('+966 1234567890 or 966 1234567890') }}">
                                 </div>
                                 <div class="col-md-4 form-group">
-                                    <label class="form-label">Alternate Phone</label>
+                                    <label class="form-label">{{ __('Alternate Phone') }}</label>
                                     <input type="text" name="alt_phone" class="form-control"
                                            value="{{ $supplier->alt_phone }}">
                                 </div>
                             </div>
                             <div class="model-form-sub-title">
-                                <h5>Business Settings</h5>
+                                <h5>{{ __('Business Settings') }}</h5>
                             </div>
                             <div class="row">
                                 <div class="col-md-4 form-group">
-                                    <label class="form-label d-block mb-2">Business Type</label>
+                                    <label class="form-label d-block mb-2">{{ __('Business Type') }}</label>
 
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" type="radio" name="business_type"
                                                id="registered"
                                                value="registered"
                                                required {{ $supplier->business_type == 'registered' ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="registered">Registered</label>
+                                        <label class="form-check-label" for="registered">{{ __('Registered') }}</label>
                                     </div>
 
                                     <div class="form-check form-check-inline">
@@ -107,33 +107,33 @@
                                                id="unregistered"
                                                value="unregistered"
                                             {{ ($supplier->business_type != 'registered' || !$supplier->business_type == 'unregistered') ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="unregistered">Unregistered</label>
+                                        <label class="form-check-label" for="unregistered">{{ __('Unregistered') }}</label>
                                     </div>
                                 </div>
 
 
                                 <div class="col-md-4 form-group">
-                                    <label class="form-label">CR Number</label>
+                                    <label class="form-label">{{ __('CR Number') }}</label>
                                     <input type="text" name="cr_number" class="form-control"
                                            value="{{ $supplier->cr_number }}">
                                 </div>
                                 <div class="col-md-4 form-group">
-                                    <label class="form-label">VAT Number</label>
+                                    <label class="form-label">{{ __('VAT Number') }}</label>
                                     <input type="text" name="vat_number" class="form-control"
                                            value="{{ $supplier->vat_number }}">
                                 </div>
                             </div>
                             <div class="model-form-sub-title">
-                                <h5>Credit Settings</h5>
+                                <h5>{{ __('Credit Settings') }}</h5>
                             </div>
                             <div class="row">
                                 <div class="col-md-4 form-group">
-                                    <label class="form-label">Credit Limit</label>
+                                    <label class="form-label">{{ __('Credit Limit') }}</label>
                                     <input type="number" name="credit_limit" class="form-control" min="0"
                                            value="{{ $supplier->credit_limit }}">
                                 </div>
                                 <div class="col-md-4 form-group">
-                                    <label class="form-label">Credit Days</label>
+                                    <label class="form-label">{{ __('Credit Days') }}</label>
                                     <input type="number" name="credit_days" class="form-control" min="0"
                                            value="{{ $supplier->credit_days }}">
                                 </div>
@@ -146,16 +146,16 @@
                     <div class="tab-pane" id="tab-address">
                         <div class="model-form-tab-div">
                             <div class="model-form-sub-title">
-                                <h5>Address</h5>
+                                <h5>{{ __('Address') }}</h5>
                             </div>
                             <div class="row">
                                 <div class="col-md-4 form-group mb-5">
-                                    <label class="form-label">Address (English)</label>
+                                    <label class="form-label">{{ __('Address (English)') }}</label>
                                     <textarea name="address1_en"
                                               class="form-control h-100">{{ $supplier->address1_en }}</textarea>
                                 </div>
                                 <div class="col-md-4 form-group mb-5">
-                                    <label class="form-label">Address (Arabic)</label>
+                                    <label class="form-label">{{ __('Address (Arabic)') }}</label>
                                     <textarea name="address1_ar" class="form-control h-100"
                                               dir="rtl">{{ $supplier->address1_ar }}</textarea>
                                 </div>
@@ -170,32 +170,32 @@
                                            value="{{ $supplier->address2_ar }}">
                                 </div>--}}
                                 <div class="col-md-4 form-group">
-                                    <label class="form-label">City (English)</label>
+                                    <label class="form-label">{{ __('City (English)') }}</label>
                                     <input type="text" name="city_en" class="form-control"
                                            value="{{ $supplier->city_en }}">
                                 </div>
                                 <div class="col-md-4 form-group">
-                                    <label class="form-label">City (Arabic)</label>
+                                    <label class="form-label">{{ __('City (Arabic)') }}</label>
                                     <input type="text" name="city_ar" class="form-control" dir="rtl"
                                            value="{{ $supplier->city_ar }}">
                                 </div>
                                 <div class="col-md-4 form-group">
-                                    <label class="form-label">Building Number</label>
+                                    <label class="form-label">{{ __('Building Number') }}</label>
                                     <input type="text" name="building_number" class="form-control"
                                            value="{{ $supplier->building_number }}">
                                 </div>
                                 <div class="col-md-4 form-group">
-                                    <label class="form-label">Plot No</label>
+                                    <label class="form-label">{{ __('Plot No') }}</label>
                                     <input type="text" name="plot_no" class="form-control"
                                            value="{{ $supplier->plot_no }}">
                                 </div>
                                 <div class="col-md-4 form-group">
-                                    <label class="form-label">Postal Code</label>
+                                    <label class="form-label">{{ __('Postal Code') }}</label>
                                     <input type="text" name="postal_code" class="form-control"
                                            value="{{ $supplier->postal_code }}">
                                 </div>
                                 <div class="col-md-4 form-group">
-                                    <label class="form-label">Country</label>
+                                    <label class="form-label">{{ __('Country') }}</label>
                                     <x-common.country :value="$supplier->country"></x-common.country>
                                 </div>
                             </div>

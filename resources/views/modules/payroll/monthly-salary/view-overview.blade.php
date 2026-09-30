@@ -106,14 +106,14 @@
     <div class="container">
         {{-- DRAFT Watermark --}}
         @if($monthlySalary->status == 'cancelled')
-            <div class="draft-watermark">CANCELLED</div>
+            <div class="draft-watermark">{{ __('CANCELLED') }}</div>
         @elseif($monthlySalary->status == 'draft')
-            <div class="draft-watermark">DRAFT</div>
+            <div class="draft-watermark">{{ __('DRAFT') }}</div>
         @endif
         <div class="no-print d-flex justify-content-end mb-3">
             <button type="button" class="btn btn-dark btn-sm"
                     onclick="MONTHLY_SALARY.printPreview('{{ $monthlySalary->id }}')">
-                <i class="bi bi-printer me-1"></i> Print Slip
+                <i class="bi bi-printer me-1"></i> {{ __('Print Slip') }}
             </button>
         </div>
 
@@ -122,7 +122,7 @@
                 <img src="{{ companyLogo() }}" alt="Logo" style="max-height: 50px;">
             </div>
             <div class="text-center">
-                <div class="title">Payslip</div>
+                <div class="title">{{ __('Payslip') }}</div>
                 <div class="fw-bold">{{ date('F Y', mktime(0, 0, 0, $monthlySalary->month, 10)) }}</div>
             </div>
             <div class="text-end" style="font-size: 12px;">
@@ -133,21 +133,21 @@
 
         <table class="info-table">
             <tr>
-                <td class="label">Employee Name</td>
+                <td class="label">{{ __('Employee Name') }}</td>
                 <td>: {{ $monthlySalary->employee->name }}</td>
-                <td class="label">Employee ID</td>
+                <td class="label">{{ __('Employee ID') }}</td>
                 <td>: {{ $monthlySalary->employee->employee_code ?? $monthlySalary->employee_id }}</td>
             </tr>
             <tr>
-                <td class="label">Department</td>
-                <td>: {{ $monthlySalary->employee->department->name ?? 'General' }}</td>
-                <td class="label">Payment Mode</td>
+                <td class="label">{{ __('Department') }}</td>
+                <td>: {{ $monthlySalary->employee->department->name ?? __('General') }}</td>
+                <td class="label">{{ __('Payment Mode') }}</td>
                 <td>: {{ strtoupper($monthlySalary->payment_method) }}</td>
             </tr>
             <tr>
-                <td class="label">Designation</td>
-                <td>: {{ $monthlySalary->employee->position ?? 'Staff' }}</td>
-                <td class="label">Payment Date</td>
+                <td class="label">{{ __('Designation') }}</td>
+                <td>: {{ $monthlySalary->employee->position ?? __('Staff') }}</td>
+                <td class="label">{{ __('Payment Date') }}</td>
                 <td>: {{ date('d-m-Y', strtotime($monthlySalary->payment_date)) }}</td>
             </tr>
         </table>
@@ -155,47 +155,47 @@
         <table class="salary-table">
             <thead>
             <tr>
-                <th>Earnings</th>
-                <th class="text-end">Amount</th>
-                <th>Deductions</th>
-                <th class="text-end">Amount</th>
+                <th>{{ __('Earnings') }}</th>
+                <th class="text-end">{{ __('Amount') }}</th>
+                <th>{{ __('Deductions') }}</th>
+                <th class="text-end">{{ __('Amount') }}</th>
             </tr>
             </thead>
             <tbody>
             <tr>
-                <td>Basic Salary</td>
+                <td>{{ __('Basic Salary') }}</td>
                 <td class="text-end">{{ number_format($monthlySalary->basic_salary, 2) }}</td>
-                <td>Loan Recovery</td>
+                <td>{{ __('Loan Recovery') }}</td>
                 <td class="text-end">{{ number_format($monthlySalary->loan_deduction, 2) }}</td>
             </tr>
             <tr>
-                <td>Housing Allowance</td>
+                <td>{{ __('Housing Allowance') }}</td>
                 <td class="text-end">{{ number_format($monthlySalary->housing_allowance, 2) }}</td>
-                <td>Other Deductions</td>
+                <td>{{ __('Other Deductions') }}</td>
                 <td class="text-end">{{ number_format($monthlySalary->deductions, 2) }}</td>
             </tr>
             <tr>
-                <td>Transportation</td>
+                <td>{{ __('Transportation') }}</td>
                 <td class="text-end">{{ number_format($monthlySalary->transportation_allowance, 2) }}</td>
                 <td></td>
                 <td class="text-end"></td>
             </tr>
             <tr>
-                <td>Other Allowances</td>
+                <td>{{ __('Other Allowances') }}</td>
                 <td class="text-end">{{ number_format($monthlySalary->food_allowance + $monthlySalary->phone_allowance + $monthlySalary->other_allowance, 2) }}</td>
                 <td></td>
                 <td class="text-end"></td>
             </tr>
             <tr>
-                <td>Overtime / Bonus</td>
+                <td>{{ __('Overtime / Bonus') }}</td>
                 <td class="text-end">{{ number_format($monthlySalary->overtime_amount + $monthlySalary->bonus, 2) }}</td>
                 <td></td>
                 <td class="text-end"></td>
             </tr>
             <tr class="total-box">
-                <td>Total Earnings (A)</td>
+                <td>{{ __('Total Earnings (A)') }}</td>
                 <td class="text-end">{{ number_format($monthlySalary->basic_salary + $monthlySalary->housing_allowance + $monthlySalary->transportation_allowance + $monthlySalary->food_allowance + $monthlySalary->phone_allowance + $monthlySalary->other_allowance + $monthlySalary->overtime_amount + $monthlySalary->bonus, 2) }}</td>
-                <td>Total Deductions (B)</td>
+                <td>{{ __('Total Deductions (B)') }}</td>
                 <td class="text-end">{{ number_format($monthlySalary->deductions + $monthlySalary->loan_deduction, 2) }}</td>
             </tr>
             </tbody>
@@ -203,8 +203,8 @@
 
         <div class="net-salary-section">
             <div>
-                <div class="fw-bold">Net Salary Payable (A - B)</div>
-                <div class="words">Amount in words: {{ amountInWords($monthlySalary->total_salary) }} Only</div>
+                <div class="fw-bold">{{ __('Net Salary Payable (A - B)') }}</div>
+                <div class="words">{{ __('Amount in words') }}: {{ amountInWords($monthlySalary->total_salary) }} {{ __('Only') }}</div>
             </div>
             <div class="text-end">
                 <h4 class="fw-bold mb-0">{{ number_format($monthlySalary->total_salary, 2) }}</h4>
@@ -213,17 +213,17 @@
 
         @if($monthlySalary->remarks)
             <div class="mt-3 small">
-                <strong>Remarks:</strong> {{ $monthlySalary->remarks }}
+                <strong>{{ __('Remarks') }}:</strong> {{ $monthlySalary->remarks }}
             </div>
         @endif
 
         <div class="signature-section">
-            <div class="sig-box">Employee Signature</div>
-            <div class="sig-box">Director / Manager</div>
+            <div class="sig-box">{{ __('Employee Signature') }}</div>
+            <div class="sig-box">{{ __('Director / Manager') }}</div>
         </div>
 
         <div class="text-center mt-5 text-muted" style="font-size: 10px;">
-            This is a computer-generated payslip and does not require a physical signature.
+            {{ __('This is a computer-generated payslip and does not require a physical signature.') }}
         </div>
     </div>
 @endsection

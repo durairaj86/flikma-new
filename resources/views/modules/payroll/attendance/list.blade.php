@@ -1,5 +1,5 @@
 @section('js','attendance')
-@section('page-title','Attendance')
+@section('page-title', __('Attendance'))
 <x-app-layout>
     <main class="gmail-content bg-white px-3">
 
@@ -10,7 +10,7 @@
                 <div class="position-relative">
                     <!-- Compact Filter button -->
                 </div>
-                <button class="btn btn-primary rounded-pill px-4" id="new">New Attendance Record</button>
+                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Attendance Record') }}</button>
             </div>
         </div>
 
@@ -20,12 +20,12 @@
         <!-- List View -->
         <div class="shadow bdr-r-10 py-3 flex-grow-1">
             <div class="d-flex justify-content-between px-3 flex-shrink-0 mb-3">
-                <h5 class="fw-bold">Attendance Records</h5>
+                <h5 class="fw-bold">{{ __('Attendance Records') }}</h5>
                 <div class="align-items-center gap-2">
                     <div class="search-box position-relative me-2">
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                         <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="Search..." aria-label="Search...">
+                               placeholder="{{ __('Search...') }}" aria-label="{{ __('Search...') }}">
                     </div>
                 </div>
             </div>
@@ -34,13 +34,13 @@
                 <table class="table align-middle dataTable" id="dataTable" data-min-height="min-height:75vh;" data-title="Attendance" data-model-size="md">
                     <thead class="table-light bg-white">
                     <tr>
-                        <th>Employee</th>
-                        <th>Date</th>
-                        <th>Day</th>
-                        <th>Check In</th>
-                        <th>Check Out</th>
-                        <th>Status</th>
-                        <th>Remarks</th>
+                        <th>{{ __('Employee') }}</th>
+                        <th>{{ __('Date') }}</th>
+                        <th>{{ __('Day') }}</th>
+                        <th>{{ __('Check In') }}</th>
+                        <th>{{ __('Check Out') }}</th>
+                        <th>{{ __('Status') }}</th>
+                        <th>{{ __('Remarks') }}</th>
                         <th></th>
                     </tr>
                     </thead>

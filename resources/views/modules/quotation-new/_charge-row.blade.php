@@ -5,14 +5,14 @@
     {{-- Col 2: Charge Description --}}
     <td>
         <input type="text" name="charge_description[]" class="form-control form-control-sm"
-               value="{{ $charge?->charge_description ?? '' }}" placeholder="Charge description">
+               value="{{ $charge?->charge_description ?? '' }}" placeholder="{{ __('Charge description') }}">
     </td>
 
     {{-- Col 3: OFD Type --}}
     <td>
         <select name="ofd_type[]" class="form-select form-select-sm">
             @foreach(['N/A','ORIGIN','DESTINATION','OTHERS'] as $ofd)
-                <option value="{{ $ofd }}" @selected(($charge?->ofd_type ?? 'N/A') === $ofd)>{{ $ofd }}</option>
+                <option value="{{ $ofd }}" @selected(($charge?->ofd_type ?? 'N/A') === $ofd)>{{ __($ofd) }}</option>
             @endforeach
         </select>
     </td>
@@ -20,7 +20,7 @@
     {{-- Col 4: Unit --}}
     <td>
         <input type="text" name="unit[]" class="form-control form-control-sm"
-               value="{{ $charge?->unit ?? '' }}" placeholder="e.g. PER CONTAINER">
+               value="{{ $charge?->unit ?? '' }}" placeholder="{{ __('e.g. PER CONTAINER') }}">
     </td>
 
     {{-- Col 5: Qty --}}
@@ -32,8 +32,8 @@
     {{-- Col 6: Freight --}}
     <td>
         <select name="freight[]" class="form-select form-select-sm">
-            <option value="PREPAID" @selected(($charge?->freight ?? 'PREPAID') === 'PREPAID')>PREPAID</option>
-            <option value="COLLECT" @selected(($charge?->freight ?? '') === 'COLLECT')>COLLECT</option>
+            <option value="PREPAID" @selected(($charge?->freight ?? 'PREPAID') === 'PREPAID')>{{ __('PREPAID') }}</option>
+            <option value="COLLECT" @selected(($charge?->freight ?? '') === 'COLLECT')>{{ __('COLLECT') }}</option>
         </select>
     </td>
 

@@ -1,4 +1,4 @@
-@section('page-title','Prospects')
+@section('page-title', __('Prospects'))
 @section('js','prospect')
 <x-app-layout>
     <!-- Main Content -->
@@ -13,7 +13,7 @@
                             <button
                                 class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="all">
-                                <span><i class="bi bi-clock me-1"></i> Prospect -</span>
+                                <span><i class="bi bi-clock me-1"></i> {{ __('Prospect') }} -</span>
                                 <span class="status-count ms-2" id="allCount">0</span>
                             </button>
                         </li>
@@ -32,7 +32,7 @@
                 <div class="position-relative">
                     <!-- Compact Filter button -->
                     <button class="btn btn-outline-secondary me-2" onclick="toggleFilter()"><i class="bi bi-funnel"></i>
-                        Filter
+                        {{ __('Filter') }}
                     </button>
 
                     <!-- Filter panel (dropdown style) -->
@@ -68,45 +68,45 @@
                         <!-- Activity type -->
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">Activity type</span>
-                                <button class="btn btn-link btn-sm p-0" onclick="resetField('activity')">Reset</button>
+                                <span class="fw-medium">{{ __('Activity type') }}</span>
+                                <button class="btn btn-link btn-sm p-0" onclick="resetField('activity')">{{ __('Reset') }}</button>
                             </div>
                             <select class="form-select" id="activityType">
-                                <option>All warehouses</option>
-                                <option>Warehouse 1</option>
-                                <option>Warehouse 2</option>
+                                <option>{{ __('All warehouses') }}</option>
+                                <option>{{ __('Warehouse 1') }}</option>
+                                <option>{{ __('Warehouse 2') }}</option>
                             </select>
                         </div>
 
                         <!-- Status -->
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">Status</span>
-                                <button class="btn btn-link btn-sm p-0" onclick="resetField('status')">Reset</button>
+                                <span class="fw-medium">{{ __('Status') }}</span>
+                                <button class="btn btn-link btn-sm p-0" onclick="resetField('status')">{{ __('Reset') }}</button>
                             </div>
                             <select class="form-select" id="status">
-                                <option>Active</option>
-                                <option>Inactive</option>
+                                <option>{{ __('Active') }}</option>
+                                <option>{{ __('Inactive') }}</option>
                             </select>
                         </div>
 
                         <!-- Keyword search -->
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">Keyword search</span>
-                                <button class="btn btn-link btn-sm p-0" onclick="resetField('keyword')">Reset</button>
+                                <span class="fw-medium">{{ __('Keyword search') }}</span>
+                                <button class="btn btn-link btn-sm p-0" onclick="resetField('keyword')">{{ __('Reset') }}</button>
                             </div>
-                            <input type="text" class="form-control" placeholder="Search..." id="keyword">
+                            <input type="text" class="form-control" placeholder="{{ __('Search...') }}" id="keyword">
                         </div>
 
                         <!-- Buttons -->
                         <div class="d-flex justify-content-between">
-                            <button class="btn btn-outline-secondary" onclick="resetAll()">Reset all</button>
-                            <button class="btn btn-success">Apply now</button>
+                            <button class="btn btn-outline-secondary" onclick="resetAll()">{{ __('Reset all') }}</button>
+                            <button class="btn btn-success">{{ __('Apply now') }}</button>
                         </div>
                     </div>
                 </div>
-                <button class="btn btn-primary rounded-pill px-4" id="new">New Prospect</button>
+                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Prospect') }}</button>
             </div>
         </div>
 
@@ -118,7 +118,7 @@
 
                 <!-- Example static label -->
                 <div class="d-inline-flex align-items-center bg-light border rounded-pill px-2 py-1 me-2 mb-2 small" style="font-size: 0.8rem;">
-                    <span class="me-2">Date: 10-12-2024 / 10-12-2025</span>
+                    <span class="me-2">{{ __('Date') }}: 10-12-2024 / 10-12-2025</span>
                     <button type="button" class="btn btn-sm btn-light p-0 border-0 d-flex align-items-center justify-content-center"
                             style="width: 16px; height: 16px; line-height: 1;" aria-label="Close" onclick="clearDateLabel()">
                         &times;
@@ -129,7 +129,7 @@
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
 
                         <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="Search prospects..." aria-label="Search prospects...">
+                               placeholder="{{ __('Search prospects...') }}" aria-label="{{ __('Search prospects...') }}">
                     </div>
                 </div>
             </div>
@@ -140,12 +140,12 @@
                     <thead class="table-light sticky-top bg-white">
                     <tr>
                         <th>#</th>
-                        <th>Prospect</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Salesperson</th>
-                        <th>Created</th>
-                        <th class="text-center">Actions</th>
+                        <th>{{ __('Prospect') }}</th>
+                        <th>{{ __('Email') }}</th>
+                        <th>{{ __('Phone') }}</th>
+                        <th>{{ __('Salesperson') }}</th>
+                        <th>{{ __('Created') }}</th>
+                        <th class="text-center">{{ __('Actions') }}</th>
                     </tr>
                     </thead>
                     <tbody></tbody>

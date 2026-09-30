@@ -2,7 +2,7 @@
     <div class="d-flex justify-content-between align-items-center flex-wrap">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-4">
             <div class="module-info">
-                <span class="fw-semibold fs-5">{{ $employeeLoan->row_no ?? 'New Employee Loan' }}</span>
+                <span class="fw-semibold fs-5">{{ $employeeLoan->row_no ?? __('New Employee Loan') }}</span>
             </div>
         </div>
         <div id="show-buttons"></div>
@@ -20,13 +20,13 @@
                 <div class="row g-3">
                     <!-- Employee -->
                     <div class="col-md-6">
-                        <label class="form-label required">Employee <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Employee') }} <sup class="text-danger">*</sup></label>
                         <x-common.employee value="{{ $employeeLoan->employee_id ?? '' }}"></x-common.employee>
                     </div>
 
                     <!-- Loan Amount -->
                     <div class="col-md-6">
-                        <label class="form-label required">Loan Amount <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Loan Amount') }} <sup class="text-danger">*</sup></label>
                         <input type="text" name="loan_amount" id="loan_amount" class="form-control float"
                                value="{{ $employeeLoan->loan_amount ?? 0 }}" min="0" step="0.01" required>
                     </div>
@@ -35,49 +35,49 @@
                 <!-- Loan Details Section -->
                 <div class="row g-3 mt-3">
                     <div class="col-12">
-                        <h5 class="border-bottom pb-2">Loan Details</h5>
+                        <h5 class="border-bottom pb-2">{{ __('Loan Details') }}</h5>
                     </div>
 
                     <!-- Interest Rate -->
                     <div class="col-md-4">
-                        <label class="form-label">Interest Rate (%)</label>
+                        <label class="form-label">{{ __('Interest Rate (%)') }}</label>
                         <input type="text" name="interest_rate" id="interest_rate" class="form-control float"
                                value="{{ $employeeLoan->interest_rate ?? 0 }}" min="0" step="0.01">
                     </div>
 
                     <!-- Number of Installments -->
                     <div class="col-md-4">
-                        <label class="form-label required">Number of Installments <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Number of Installments') }} <sup class="text-danger">*</sup></label>
                         <input type="text" name="number_of_installments" id="number_of_installments" class="form-control integer"
                                value="{{ $employeeLoan->number_of_installments ?? 1 }}" min="1" step="1" required>
                     </div>
 
                     <!-- Installment Amount -->
                     <div class="col-md-4">
-                        <label class="form-label required">Installment Amount <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Installment Amount') }} <sup class="text-danger">*</sup></label>
                         <input type="text" name="installment_amount" id="installment_amount" class="form-control float"
                                value="{{ $employeeLoan->installment_amount ?? 0 }}" min="0" step="0.01" required readonly disabled>
                     </div>
 
                     <!-- Loan Date -->
                     <div class="col-md-4">
-                        <label class="form-label required">Loan Date <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Loan Date') }} <sup class="text-danger">*</sup></label>
                         <input type="date" id="loan_date" name="loan_date" class="form-control datepicker"
                                value="{{ isset($employeeLoan) ? formDate($employeeLoan->loan_date) : '' }}" required>
                     </div>
 
                     <!-- First Payment Date -->
                     <div class="col-md-4">
-                        <label class="form-label required">First Payment Date <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('First Payment Date') }} <sup class="text-danger">*</sup></label>
                         <input type="date" id="first_payment_date" name="first_payment_date" class="form-control datepicker"
                                value="{{ isset($employeeLoan) ? formDate($employeeLoan->first_payment_date) : '' }}" required>
                     </div>
 
                     <!-- Payment Method -->
                     <div class="col-md-4">
-                        <label class="form-label required">Payment Method <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Payment Method') }} <sup class="text-danger">*</sup></label>
                         <select name="payment_method" class="tom-select" required>
-                            <option value="">Select Payment Method</option>
+                            <option value="">{{ __('Select Payment Method') }}</option>
                             @foreach($paymentMethods as $method)
                                 <option value="{{ $method }}" @selected(isset($employeeLoan) && $employeeLoan->payment_method == $method)>
                                     {{ ucwords(str_replace('_', ' ', $method)) }}
@@ -88,23 +88,23 @@
 
                     <!-- Remaining Amount -->
                     <div class="col-md-4">
-                        <label class="form-label required">Remaining Amount <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Remaining Amount') }} <sup class="text-danger">*</sup></label>
                         <input type="text" name="remaining_amount" id="remaining_amount" class="form-control float"
                                value="{{ $employeeLoan->remaining_amount ?? 0 }}" min="0" step="0.01" required>
                     </div>
 
                     <!-- Remaining Installments -->
                     <div class="col-md-4">
-                        <label class="form-label required">Remaining Installments <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Remaining Installments') }} <sup class="text-danger">*</sup></label>
                         <input type="text" name="remaining_installments" id="remaining_installments" class="form-control integer"
                                value="{{ $employeeLoan->remaining_installments ?? 0 }}" min="0" step="1" required>
                     </div>
 
                     <!-- Purpose -->
                     <div class="col-md-12">
-                        <label class="form-label">Purpose</label>
+                        <label class="form-label">{{ __('Purpose') }}</label>
                         <textarea name="purpose" class="form-control h-75" rows="3"
-                                  placeholder="Purpose of the loan...">{{ $employeeLoan->purpose ?? '' }}</textarea>
+                                  placeholder="{{ __('Purpose of the loan...') }}">{{ $employeeLoan->purpose ?? '' }}</textarea>
                     </div>
                 </div>
             </div>
@@ -112,9 +112,9 @@
 
         <!-- Remarks -->
         <div class="mt-3 px-4">
-            <label class="form-label fw-semibold">Remarks</label>
+            <label class="form-label fw-semibold">{{ __('Remarks') }}</label>
             <textarea name="remarks" class="form-control h-100" rows="4"
-                      placeholder="Any additional information...">{{ $employeeLoan->remarks ?? '' }}</textarea>
+                      placeholder="{{ __('Any additional information...') }}">{{ $employeeLoan->remarks ?? '' }}</textarea>
         </div>
     </form>
 </div>

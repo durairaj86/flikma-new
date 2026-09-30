@@ -5,7 +5,7 @@
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
-                <div class="fw-bold text-uppercase title">Asset</div>
+                <div class="fw-bold text-uppercase title">{{ __('Asset') }}</div>
                 <div class="small text-muted">#{{ $asset->row_no ?? $asset->id }}</div>
             </div>
             <div class="text-end">
@@ -20,15 +20,15 @@
             <div class="col-6">
                 <table class="table table-borderless small">
                     <tr>
-                        <td class="fw-semibold">Acquisition Date</td>
+                        <td class="fw-semibold">{{ __('Acquisition Date') }}</td>
                         <td>{{ showDate($asset->acquisition_date) }}</td>
                     </tr>
                     <tr>
-                        <td class="fw-semibold">Depreciation Start</td>
+                        <td class="fw-semibold">{{ __('Depreciation Start') }}</td>
                         <td>{{ showDate($asset->depreciation_start_date) }}</td>
                     </tr>
                     <tr>
-                        <td class="fw-semibold">Useful Life (Months)</td>
+                        <td class="fw-semibold">{{ __('Useful Life (Months)') }}</td>
                         <td>{{ $asset->useful_life_months ?? $asset->category?->useful_life_months }}</td>
                     </tr>
                 </table>
@@ -36,15 +36,15 @@
             <div class="col-6">
                 <table class="table table-borderless small">
                     <tr>
-                        <td class="fw-semibold">Cost</td>
+                        <td class="fw-semibold">{{ __('Cost') }}</td>
                         <td class="text-end">{{ number_format($asset->cost, 2) }}</td>
                     </tr>
                     <tr>
-                        <td class="fw-semibold">Residual</td>
+                        <td class="fw-semibold">{{ __('Residual') }}</td>
                         <td class="text-end">{{ number_format($asset->residual_value, 2) }}</td>
                     </tr>
                     <tr>
-                        <td class="fw-semibold">Book Value</td>
+                        <td class="fw-semibold">{{ __('Book Value') }}</td>
                         <td class="text-end">{{ number_format(max(0, $asset->cost - $asset->depreciations->sum('amount')), 2) }}</td>
                     </tr>
                 </table>
@@ -52,15 +52,15 @@
         </div>
 
         <div class="section mt-3">
-            <h6 class="fw-semibold border-bottom pb-1 mb-3">Depreciation Schedule</h6>
+            <h6 class="fw-semibold border-bottom pb-1 mb-3">{{ __('Depreciation Schedule') }}</h6>
             <table class="table table-bordered align-middle small">
                 <thead class="bg-light">
                 <tr>
                     <th>#</th>
-                    <th>Period</th>
-                    <th class="text-end">Amount</th>
-                    <th class="text-end">Accumulated</th>
-                    <th class="text-end">Book Value</th>
+                    <th>{{ __('Period') }}</th>
+                    <th class="text-end">{{ __('Amount') }}</th>
+                    <th class="text-end">{{ __('Accumulated') }}</th>
+                    <th class="text-end">{{ __('Book Value') }}</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -74,7 +74,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="text-center text-muted">No schedule generated yet.</td>
+                        <td colspan="5" class="text-center text-muted">{{ __('No schedule generated yet.') }}</td>
                     </tr>
                 @endforelse
                 </tbody>

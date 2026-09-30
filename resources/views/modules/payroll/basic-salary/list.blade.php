@@ -1,5 +1,5 @@
 @section('js','basic_salary')
-@section('page-title','Basic Salary')
+@section('page-title', __('Basic Salary'))
 <x-app-layout>
     <main class="gmail-content bg-white px-3">
         <div id="filterPanel" class="card shadow-sm border-0 d-none">
@@ -7,7 +7,7 @@
             <div class="card-header bg-light border-0 py-3">
                 <div class="d-flex align-items-center gap-2">
                     <i class="bi bi-funnel-fill text-primary"></i>
-                    <h6 class="mb-0 fw-semibold">Advanced Filters</h6>
+                    <h6 class="mb-0 fw-semibold">{{ __('Advanced Filters') }}</h6>
                 </div>
             </div>
 
@@ -33,7 +33,7 @@
                             </div>--}}
 
                             <div class="col-md-4 form-filter">
-                                <label class="form-label fw-medium">Effective Date</label>
+                                <label class="form-label fw-medium">{{ __('Effective Date') }}</label>
                                 <div class="d-flex input-group-filter gap-2">
                                     <input type="date" class="form-control datepicker from-date default-filter" id="filter-from-date" name="filter-from-date"
                                            value="{{ \Carbon\Carbon::today()->subMonth(6)->startOfMonth()->format('d-m-Y') }}">
@@ -43,9 +43,9 @@
                             </div>
 
                             <div class="col-md-3 form-filter">
-                                <label class="form-label fw-medium">Employee</label>
+                                <label class="form-label fw-medium">{{ __('Employee') }}</label>
                                 <select class="tom-select" name="employee_id" id="filter-employee">
-                                    <option value="">All Employees</option>
+                                    <option value="">{{ __('All Employees') }}</option>
                                     @foreach(\App\Models\User::all() as $employee)
                                         <option value="{{ $employee->id }}">{{ $employee->name }}</option>
                                     @endforeach
@@ -57,7 +57,7 @@
                     <!-- Action buttons -->
                     <div class="text-center mt-4">
                         <button class="btn btn-primary btn-round px-4" type="button" id="apply-filter">
-                            <i class="bi bi-search me-1"></i> Search
+                            <i class="bi bi-search me-1"></i> {{ __('Search') }}
                         </button>
                     </div>
                 </form>
@@ -72,10 +72,10 @@
                 <div class="position-relative">
                     <!-- Compact Filter button -->
                     <button class="btn btn-outline-primary btn-round me-2" id="filter-box"><i class="bi bi-funnel"></i>
-                        Filter
+                        {{ __('Filter') }}
                     </button>
                 </div>
-                <button class="btn btn-primary rounded-pill px-4" id="new">New Basic Salary</button>
+                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Basic Salary') }}</button>
             </div>
         </div>
 
@@ -86,7 +86,7 @@
                     <div class="search-box position-relative me-2">
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                         <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="Search..." aria-label="Search...">
+                               placeholder="{{ __('Search...') }}" aria-label="{{ __('Search...') }}">
                     </div>
                 </div>
             </div>
@@ -95,16 +95,16 @@
                 <table class="table align-middle dataTable" id="dataTable" data-min-height="min-height:75vh;" data-title="Basic Salary" data-model-size="lg">
                     <thead class="table-light bg-white">
                     <tr>
-                        <th>Employee</th>
-                        <th>Basic Salary</th>
-                        <th>Housing Allowance</th>
-                        <th>Transportation Allowance</th>
-                        <th>Food Allowance</th>
-                        <th>Phone Allowance</th>
-                        <th>Other Allowance</th>
-                        <th>Total Salary</th>
-                        <th>Effective Date</th>
-                        <th>Status</th>
+                        <th>{{ __('Employee') }}</th>
+                        <th>{{ __('Basic Salary') }}</th>
+                        <th>{{ __('Housing Allowance') }}</th>
+                        <th>{{ __('Transportation Allowance') }}</th>
+                        <th>{{ __('Food Allowance') }}</th>
+                        <th>{{ __('Phone Allowance') }}</th>
+                        <th>{{ __('Other Allowance') }}</th>
+                        <th>{{ __('Total Salary') }}</th>
+                        <th>{{ __('Effective Date') }}</th>
+                        <th>{{ __('Status') }}</th>
                         <th></th>
                     </tr>
                     </thead>

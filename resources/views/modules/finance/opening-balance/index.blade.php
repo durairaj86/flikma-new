@@ -1,4 +1,4 @@
-@section('page-title','Opening Balance')
+@section('page-title', __('Opening Balance'))
 <x-app-layout>
     <main class="gmail-content bg-white px-3">
 
@@ -18,25 +18,25 @@
         {{-- Header --}}
         <div class="d-flex justify-content-between align-items-center py-3">
             <div>
-                <h5 class="fw-bold mb-0">Opening Balances</h5>
-                <small class="text-muted">Maintain beginning balances for accounts and sub-ledgers.</small>
+                <h5 class="fw-bold mb-0">{{ __('Opening Balances') }}</h5>
+                <small class="text-muted">{{ __('Maintain beginning balances for accounts and sub-ledgers.') }}</small>
             </div>
             <a href="{{ route('finance.opening-balance.create') }}" class="btn btn-primary rounded-pill px-4">
-                <i class="bi bi-plus-lg me-1"></i> New Entry
+                <i class="bi bi-plus-lg me-1"></i> {{ __('New Entry') }}
             </a>
         </div>
 
         {{-- Filter Card --}}
         <div class="card border-0 shadow-sm mb-3">
             <div class="card-header bg-white py-3">
-                <h6 class="mb-0 fw-semibold">Filters</h6>
+                <h6 class="mb-0 fw-semibold">{{ __('Filters') }}</h6>
             </div>
             <div class="card-body py-3">
                 <form method="GET" action="{{ route('finance.opening-balance') }}" class="row g-2 align-items-end">
                     <div class="col-md-3">
-                        <label class="form-label small fw-medium">Account</label>
+                        <label class="form-label small fw-medium">{{ __('Account') }}</label>
                         <select name="account_id" class="form-select form-select-sm">
-                            <option value="">All Accounts</option>
+                            <option value="">{{ __('All Accounts') }}</option>
                             @foreach($accounts as $acc)
                                 <option value="{{ $acc->id }}" {{ (string)request('account_id') === (string)$acc->id ? 'selected' : '' }}>
                                     {{ $acc->name }}{{ $acc->code ? ' ('.$acc->code.')' : '' }}
@@ -45,9 +45,9 @@
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label small fw-medium">Customer</label>
+                        <label class="form-label small fw-medium">{{ __('Customer') }}</label>
                         <select name="customer_id" class="form-select form-select-sm">
-                            <option value="">All Customers</option>
+                            <option value="">{{ __('All Customers') }}</option>
                             @foreach($customers as $c)
                                 <option value="{{ $c->id }}" {{ (string)request('customer_id') === (string)$c->id ? 'selected' : '' }}>
                                     {{ $c->name_en }}
@@ -56,9 +56,9 @@
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label small fw-medium">Supplier</label>
+                        <label class="form-label small fw-medium">{{ __('Supplier') }}</label>
                         <select name="supplier_id" class="form-select form-select-sm">
-                            <option value="">All Suppliers</option>
+                            <option value="">{{ __('All Suppliers') }}</option>
                             @foreach($suppliers as $s)
                                 <option value="{{ $s->id }}" {{ (string)request('supplier_id') === (string)$s->id ? 'selected' : '' }}>
                                     {{ $s->name_en }}
@@ -67,17 +67,17 @@
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label small fw-medium">From</label>
+                        <label class="form-label small fw-medium">{{ __('From') }}</label>
                         <input type="date" name="date_from" class="form-control form-control-sm" value="{{ request('date_from') }}">
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label small fw-medium">To</label>
+                        <label class="form-label small fw-medium">{{ __('To') }}</label>
                         <input type="date" name="date_to" class="form-control form-control-sm" value="{{ request('date_to') }}">
                     </div>
                     <div class="col-md-1">
                         <div class="d-flex gap-1">
-                            <button class="btn btn-sm btn-primary w-100">Filter</button>
-                            <a href="{{ route('finance.opening-balance') }}" class="btn btn-sm btn-light border" title="Clear">
+                            <button class="btn btn-sm btn-primary w-100">{{ __('Filter') }}</button>
+                            <a href="{{ route('finance.opening-balance') }}" class="btn btn-sm btn-light border" title="{{ __('Clear') }}">
                                 <i class="bi bi-arrow-clockwise"></i>
                             </a>
                         </div>
@@ -92,12 +92,12 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th class="ps-4">Date</th>
-                            <th>Account</th>
-                            <th>Party</th>
-                            <th class="text-end">Debit</th>
-                            <th class="text-end">Credit</th>
-                            <th class="text-end pe-4">Actions</th>
+                            <th class="ps-4">{{ __('Date') }}</th>
+                            <th>{{ __('Account') }}</th>
+                            <th>{{ __('Party') }}</th>
+                            <th class="text-end">{{ __('Debit') }}</th>
+                            <th class="text-end">{{ __('Credit') }}</th>
+                            <th class="text-end pe-4">{{ __('Actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -116,10 +116,10 @@
                                 </td>
                                 <td>
                                     @if($ob->customer)
-                                        <span class="badge bg-primary">Customer</span>
+                                        <span class="badge bg-primary">{{ __('Customer') }}</span>
                                         <span class="ms-1 small">{{ $ob->customer->name_en }}</span>
                                     @elseif($ob->supplier)
-                                        <span class="badge bg-warning text-dark">Supplier</span>
+                                        <span class="badge bg-warning text-dark">{{ __('Supplier') }}</span>
                                         <span class="ms-1 small">{{ $ob->supplier->name_en }}</span>
                                     @else
                                         <span class="text-muted">—</span>
@@ -131,13 +131,13 @@
                                     <div class="d-flex gap-1 justify-content-end">
                                         <a href="{{ route('finance.opening-balance.edit', $ob->id) }}"
                                            class="btn btn-sm btn-light border"
-                                           title="Edit">
+                                           title="{{ __('Edit') }}">
                                             <i class="bi bi-pencil"></i>
                                         </a>
                                         <button type="button"
                                                 class="btn btn-sm btn-light border text-danger"
                                                 onclick="deleteEntry({{ $ob->id }})"
-                                                title="Delete">
+                                                title="{{ __('Delete') }}">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </div>
@@ -147,10 +147,10 @@
                             <tr>
                                 <td colspan="6" class="text-center py-5 text-muted">
                                     <i class="bi bi-inbox fs-2 d-block mb-2"></i>
-                                    No opening balance entries found.
+                                    {{ __('No opening balance entries found.') }}
                                     <div class="mt-2">
                                         <a href="{{ route('finance.opening-balance.create') }}" class="btn btn-primary btn-sm rounded-pill">
-                                            Create First Entry
+                                            {{ __('Create First Entry') }}
                                         </a>
                                     </div>
                                 </td>
@@ -174,16 +174,16 @@
             <div class="modal-content">
                 <div class="modal-header border-0">
                     <h6 class="modal-title fw-bold text-danger">
-                        <i class="bi bi-exclamation-triangle me-1"></i> Delete Entry
+                        <i class="bi bi-exclamation-triangle me-1"></i> {{ __('Delete Entry') }}
                     </h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to delete this entry? This action cannot be undone.
+                    {{ __('Are you sure you want to delete this entry? This action cannot be undone.') }}
                 </div>
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger btn-sm" id="confirmDeleteBtn">Delete</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                    <button type="button" class="btn btn-danger btn-sm" id="confirmDeleteBtn">{{ __('Delete') }}</button>
                 </div>
             </div>
         </div>
@@ -201,7 +201,7 @@
             if (!deleteId) return;
             const btn = this;
             btn.disabled = true;
-            btn.textContent = 'Deleting...';
+            btn.textContent = "{{ __('Deleting...') }}";
 
             fetch(`/masters/finance/opening-balance/${deleteId}/delete`, {
                 method: 'DELETE',
@@ -216,15 +216,15 @@
                     bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
                     window.location.reload();
                 } else {
-                    alert(data.message || 'Error deleting entry.');
+                    alert(data.message || "{{ __('Error deleting entry.') }}");
                     btn.disabled = false;
-                    btn.textContent = 'Delete';
+                    btn.textContent = "{{ __('Delete') }}";
                 }
             })
             .catch(() => {
-                alert('An error occurred.');
+                alert("{{ __('An error occurred.') }}");
                 btn.disabled = false;
-                btn.textContent = 'Delete';
+                btn.textContent = "{{ __('Delete') }}";
             });
         });
     </script>

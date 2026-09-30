@@ -2,14 +2,14 @@
     <div class="d-flex justify-content-between align-items-center flex-wrap">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-4">
             <div class="module-info">
-                <span class="fw-semibold fs-5">{{ $waybill->row_no ?? 'New Waybill' }}</span>
+                <span class="fw-semibold fs-5">{{ $waybill->row_no ?? __('New Waybill') }}</span>
             </div>
         </div>
         <div id="show-buttons"></div>
     </div>
 </div>
 <div class="container-fluid align-items-center px-0 mb-4" id="modal-buttons" data-buttons="cancel,save"
-     data-button-save="Save Waybill">
+     data-button-save="{{ __('Save Waybill') }}">
     <form id="moduleForm" novalidate action="{{ request()->url() }}">
         @csrf
         <input type="hidden" name="data-id" value="{{ $waybill->id }}">
@@ -20,9 +20,9 @@
                 <div class="row g-3">
                     <!-- Job Reference -->
                     <div class="col-md-4">
-                        <label class="form-label required">Job <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Job') }} <sup class="text-danger">*</sup></label>
                         <select name="job_id" id="job_id" class="tom-select" data-live-search="true" required>
-                            <option value="">Select Job</option>
+                            <option value="">{{ __('Select Job') }}</option>
                             @foreach($jobs as $job)
                                 <option value="{{ $job->id }}"
                                         @selected($waybill->job_id == $job->id) data-subtext="{{ $job->customer?->name_en }}"
@@ -35,33 +35,33 @@
 
                     <!-- Customer -->
                     <div class="col-md-4">
-                        <label class="form-label required">Customer <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Customer') }} <sup class="text-danger">*</sup></label>
                         <x-common.customers :value="$waybill->customer_id ?? ''" :required="true"></x-common.customers>
                     </div>
 
                     <!-- Waybill Date -->
                     <div class="col-md-4">
-                        <label class="form-label required">Waybill Date <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Waybill Date') }} <sup class="text-danger">*</sup></label>
                         <input type="date" id="waybill_date" name="waybill_date" class="form-control datepicker"
                                value="{{ formDate($waybill->waybill_date) }}" required>
                     </div>
 
                     <!-- Delivery Date -->
                     <div class="col-md-4">
-                        <label class="form-label required">Delivery Date <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Delivery Date') }} <sup class="text-danger">*</sup></label>
                         <input type="date" id="delivery_date" name="delivery_date" class="form-control datepicker"
                                value="{{ formDate($waybill->delivery_date) }}" required>
                     </div>
 
                     <!-- Attachments -->
                     <div class="col-md-4">
-                        <label class="form-label">Attachments</label>
+                        <label class="form-label">{{ __('Attachments') }}</label>
                         <input type="file" name="attachments[]" class="form-control" multiple>
                         @if($waybill->documents && count($waybill->documents))
                             <small class="text-primary text-decoration-underline cursor-pointer"
                                    data-bs-toggle="offcanvas" data-bs-target="#attachmentsDrawer">
                                 {{ $waybill->documents->count() }}
-                                {{ \Illuminate\Support\Str::plural('Document', $waybill->documents->count()) }}
+                                {{ __(\Illuminate\Support\Str::plural('Document', $waybill->documents->count())) }}
                             </small>
                         @endif
                     </div>
@@ -70,12 +70,12 @@
                 <!-- Delivery Information Section -->
                 <div class="row g-3 mt-3">
                     <div class="col-12">
-                        <h5 class="border-bottom pb-2">Delivery Information</h5>
+                        <h5 class="border-bottom pb-2">{{ __('Delivery Information') }}</h5>
                     </div>
 
                     <!-- Delivery Address -->
                     <div class="col-md-6">
-                        <label class="form-label required">Delivery Address <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Delivery Address') }} <sup class="text-danger">*</sup></label>
                         <textarea name="delivery_address" class="form-control h-75" rows="3"
                                   required>{{ $waybill->delivery_address ?? '' }}</textarea>
                     </div>
@@ -85,7 +85,7 @@
                         <div class="row g-3">
                             <!-- Contact Person -->
                             <div class="col-md-12">
-                                <label class="form-label required">Contact Person <sup
+                                <label class="form-label required">{{ __('Contact Person') }} <sup
                                             class="text-danger">*</sup></label>
                                 <input type="text" name="contact_person" class="form-control"
                                        value="{{ $waybill->contact_person ?? '' }}" required>
@@ -93,7 +93,7 @@
 
                             <!-- Contact Phone -->
                             <div class="col-md-12">
-                                <label class="form-label required">Contact Phone <sup
+                                <label class="form-label required">{{ __('Contact Phone') }} <sup
                                             class="text-danger">*</sup></label>
                                 <input type="text" name="contact_phone" class="form-control"
                                        value="{{ $waybill->contact_phone ?? '' }}" required>
@@ -105,19 +105,19 @@
                 <!-- Shipment Details Section -->
                 <div class="row g-3 mt-3">
                     <div class="col-12">
-                        <h5 class="border-bottom pb-2">Shipment Details</h5>
+                        <h5 class="border-bottom pb-2">{{ __('Shipment Details') }}</h5>
                     </div>
 
                     <!-- Shipment Type -->
                     <div class="col-md-4">
-                        <label class="form-label required">Shipment Type <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Shipment Type') }} <sup class="text-danger">*</sup></label>
                         <div class="d-flex gap-4 mt-2">
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="shipment_type"
                                        id="shipment_type_document" value="document"
                                        {{ ($waybill->shipment_type ?? '') == 'document' ? 'checked' : '' }} required>
                                 <label class="form-check-label" for="shipment_type_document">
-                                    Document
+                                    {{ __('Document') }}
                                 </label>
                             </div>
                             <div class="form-check">
@@ -125,7 +125,7 @@
                                        id="shipment_type_parcel"
                                        value="parcel" {{ ($waybill->shipment_type ?? '') == 'parcel' ? 'checked' : '' }}>
                                 <label class="form-check-label" for="shipment_type_parcel">
-                                    Parcel
+                                    {{ __('Parcel') }}
                                 </label>
                             </div>
                             <div class="form-check">
@@ -133,7 +133,7 @@
                                        id="shipment_type_freight"
                                        value="freight" {{ ($waybill->shipment_type ?? '') == 'freight' ? 'checked' : '' }}>
                                 <label class="form-check-label" for="shipment_type_freight">
-                                    Freight
+                                    {{ __('Freight') }}
                                 </label>
                             </div>
                         </div>
@@ -141,34 +141,34 @@
 
                     <!-- Service Type -->
                     <div class="col-md-4">
-                        <label class="form-label required">Service Type <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Service Type') }} <sup class="text-danger">*</sup></label>
                         <select name="service_type" class="tom-select" required>
-                            <option value="">Select Service Type</option>
+                            <option value="">{{ __('Select Service Type') }}</option>
                             <option value="standard" {{ ($waybill->service_type ?? '') == 'standard' ? 'selected' : '' }}>
-                                Standard
+                                {{ __('Standard') }}
                             </option>
                             <option value="express" {{ ($waybill->service_type ?? '') == 'express' ? 'selected' : '' }}>
-                                Express
+                                {{ __('Express') }}
                             </option>
                             <option value="same_day" {{ ($waybill->service_type ?? '') == 'same_day' ? 'selected' : '' }}>
-                                Same Day
+                                {{ __('Same Day') }}
                             </option>
                         </select>
                     </div>
 
                     <!-- Payment Method -->
                     <div class="col-md-4">
-                        <label class="form-label required">Payment Method <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Payment Method') }} <sup class="text-danger">*</sup></label>
                         <select name="payment_method" class="tom-select" required>
-                            <option value="">Select Payment Method</option>
+                            <option value="">{{ __('Select Payment Method') }}</option>
                             <option value="prepaid" {{ ($waybill->payment_method ?? '') == 'prepaid' ? 'selected' : '' }}>
-                                Prepaid
+                                {{ __('Prepaid') }}
                             </option>
                             <option value="collect" {{ ($waybill->payment_method ?? '') == 'collect' ? 'selected' : '' }}>
-                                Collect
+                                {{ __('Collect') }}
                             </option>
                             <option value="third_party" {{ ($waybill->payment_method ?? '') == 'third_party' ? 'selected' : '' }}>
-                                Third Party
+                                {{ __('Third Party') }}
                             </option>
                         </select>
                     </div>
@@ -182,12 +182,12 @@
                 <table class="table align-middle mb-0" id="waybillItemsTable">
                     <thead class="table-light">
                     <tr>
-                        <th>Description</th>
-                        <th>Comment</th>
-                        <th class="text-end">Quantity</th>
-                        <th class="text-end">Weight (kg)</th>
-                        <th class="text-end">Dimensions (cm)</th>
-                        <th class="text-center">Fragile</th>
+                        <th>{{ __('Description') }}</th>
+                        <th>{{ __('Comment') }}</th>
+                        <th class="text-end">{{ __('Quantity') }}</th>
+                        <th class="text-end">{{ __('Weight (kg)') }}</th>
+                        <th class="text-end">{{ __('Dimensions (cm)') }}</th>
+                        <th class="text-center">{{ __('Fragile') }}</th>
                         <th></th>
                     </tr>
                     </thead>
@@ -318,9 +318,9 @@
 
         <!-- Special Instructions -->
         <div class="mt-3 px-4">
-            <label class="form-label fw-semibold">Special Instructions</label>
+            <label class="form-label fw-semibold">{{ __('Special Instructions') }}</label>
             <textarea name="special_instructions" class="form-control h-100" rows="4"
-                      placeholder="Any special handling instructions...">{{ $waybill->special_instructions ?? '' }}</textarea>
+                      placeholder="{{ __('Any special handling instructions...') }}">{{ $waybill->special_instructions ?? '' }}</textarea>
         </div>
     </form>
 </div>

@@ -1,10 +1,10 @@
 @section('js','proforma_invoice')
-@section('page-title','Proforma Invoice')
+@section('page-title', __('Proforma Invoice'))
 @push('page-title-action')
     <button class="btn btn-link btn-sm text-muted p-0 text-decoration-none lh-1"
             data-bs-toggle="modal" data-bs-target="#proformaInvoiceWorkflowModal"
-            title="How proforma invoices work">
-        <i class="bi bi-info-circle fs-6"></i><span class="d-none d-md-inline ms-1" style="font-size:0.8rem;">How it works</span>
+            title="{{ __('How proforma invoices work') }}">
+        <i class="bi bi-info-circle fs-6"></i><span class="d-none d-md-inline ms-1" style="font-size:0.8rem;">{{ __('How it works') }}</span>
     </button>
 @endpush
 <x-app-layout>
@@ -15,7 +15,7 @@
             <div class="card-header bg-light border-0 py-3">
                 <div class="d-flex align-items-center gap-2">
                     <i class="bi bi-funnel-fill text-primary"></i>
-                    <h6 class="mb-0 fw-semibold">Advanced Filters</h6>
+                    <h6 class="mb-0 fw-semibold">{{ __('Advanced Filters') }}</h6>
                 </div>
             </div>
 
@@ -43,7 +43,7 @@
                             </div>--}}
 
                             <div class="col-md-3 form-filter">
-                                <label class="form-label fw-medium">Invoice Date</label>
+                                <label class="form-label fw-medium">{{ __('Invoice Date') }}</label>
                                 <div class="d-flex input-group-filter gap-2">
                                     <input type="date" class="form-control datepicker from-date default-filter" id="filter-from-date" name="filter-from-date"
                                            value="{{ \Carbon\Carbon::today()->subMonth(6)->startOfMonth()->format('d-m-Y') }}">
@@ -53,13 +53,13 @@
                             </div>
 
                             <div class="col-md-3 form-filter">
-                                <label class="form-label fw-medium">Customer</label>
+                                <label class="form-label fw-medium">{{ __('Customer') }}</label>
                                 <x-common.customers multiple></x-common.customers>
                             </div>
 
                             <div class="col-md-2 form-filter pol-pod-select">
                                 <label class="form-label fw-medium">
-                                    POL <small class="text-muted">(Port of Loading)</small>
+                                    {{ __('POL') }} <small class="text-muted">({{ __('Port of Loading') }})</small>
                                 </label>
 
                                 <div class="position-relative">
@@ -68,17 +68,17 @@
                                     <div class="shipment-toggle">
                                         <input type="radio" class="btn-check sync-sea avoid-filter" name="shipment_mode" id="polSea"
                                                value="sea" checked>
-                                        <label for="polSea">Sea</label>
+                                        <label for="polSea">{{ __('Sea') }}</label>
 
                                         <input type="radio" class="btn-check sync-air avoid-filter" name="shipment_mode" id="polAir"
                                                value="air">
-                                        <label for="polAir">Air</label>
+                                        <label for="polAir">{{ __('Air') }}</label>
                                     </div>
 
                                     <!-- POL -->
                                     <select id="filter-pol" name="filter-pol"
                                             class="tom-select-search"
-                                            data-placeholder="Select Port of Loading">
+                                            data-placeholder="{{ __('Select Port of Loading') }}">
                                         <option value=""></option>
                                     </select>
 
@@ -87,7 +87,7 @@
 
                             <div class="col-md-2 pol-pod-select">
                                 <label class="form-label fw-medium">
-                                    POD <small class="text-muted">(Port of Discharge)</small>
+                                    {{ __('POD') }} <small class="text-muted">({{ __('Port of Discharge') }})</small>
                                 </label>
 
                                 <div class="position-relative">
@@ -97,17 +97,17 @@
                                         <input type="radio" class="btn-check sync-sea avoid-filter" name="shipment_mode_2" id="polSea2"
                                                checked
                                                value="sea">
-                                        <label for="polSea2">Sea</label>
+                                        <label for="polSea2">{{ __('Sea') }}</label>
 
                                         <input type="radio" class="btn-check sync-air avoid-filter" name="shipment_mode_2" id="polAir2"
                                                value="air">
-                                        <label for="polAir2">Air</label>
+                                        <label for="polAir2">{{ __('Air') }}</label>
                                     </div>
 
                                     <!-- POD -->
                                     <select id="filter-pod" name="filter-pod"
                                             class="tom-select-search"
-                                            data-placeholder="Select Port of Discharge">
+                                            data-placeholder="{{ __('Select Port of Discharge') }}">
                                         <option value=""></option>
                                     </select>
 
@@ -115,10 +115,10 @@
                             </div>
 
                             <div class="col-md-2 form-filter">
-                                <label class="form-label fw-medium">Job Number</label>
+                                <label class="form-label fw-medium">{{ __('Job Number') }}</label>
                                 <select id="filter-job" name="filter-job"
                                         class="tom-select-search"
-                                        data-placeholder="Search Job Number">
+                                        data-placeholder="{{ __('Search Job Number') }}">
                                     <option value=""></option>
                                 </select>
                             </div>
@@ -129,7 +129,7 @@
                     <!-- Action buttons -->
                     <div class="text-center mt-4">
                         <button class="btn btn-primary btn-round px-4" type="button" id="apply-filter">
-                            <i class="bi bi-search me-1"></i> Search
+                            <i class="bi bi-search me-1"></i> {{ __('Search') }}
                         </button>
                     </div>
                 </form>
@@ -149,7 +149,7 @@
                             <button
                                 class="nav-link px-3 py-2 d-flex align-items-center active justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="draft">
-                                <span><i class="bi bi-clock me-1"></i> Draft -</span>
+                                <span><i class="bi bi-clock me-1"></i> {{ __('Draft') }} -</span>
                                 <span class="status-count ms-2" id="draftCount">0</span>
                             </button>
                         </li>
@@ -167,7 +167,7 @@
                             <button
                                 class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="approved">
-                                <span><i class="bi bi-check-circle me-1"></i> Approved -</span>
+                                <span><i class="bi bi-check-circle me-1"></i> {{ __('Approved') }} -</span>
                                 <span class="status-count ms-2" id="approvedCount">0</span>
                             </button>
                         </li>
@@ -175,7 +175,7 @@
                         <li class="nav-item me-2">
                             <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                     data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="converted">
-                                <span><i class="bi bi-clipboard-check me-1"></i> Converted to Invoice -</span>
+                                <span><i class="bi bi-clipboard-check me-1"></i> {{ __('Converted to Invoice') }} -</span>
                                 <span class="status-count ms-2" id="convertedCount">0</span>
                             </button>
                         </li>
@@ -183,7 +183,7 @@
                         <li class="nav-item">
                             <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                     data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="cancelled">
-                                <span><i class="bi bi-x-circle"></i> Cancelled -</span>
+                                <span><i class="bi bi-x-circle"></i> {{ __('Cancelled') }} -</span>
                                 <span class="status-count ms-2" id="cancelledCount">0</span>
                             </button>
                         </li>
@@ -195,10 +195,10 @@
                 <div class="position-relative">
                     <!-- Compact Filter button -->
                     <button class="btn btn-outline-primary btn-round me-2" id="filter-box"><i class="bi bi-funnel"></i>
-                        Filter
+                        {{ __('Filter') }}
                     </button>
                 </div>
-                <button class="btn btn-primary rounded-pill px-4" id="new" data-loader-id="{{ $job_id ?? 'list' }}">New Proforma Invoice</button>
+                <button class="btn btn-primary rounded-pill px-4" id="new" data-loader-id="{{ $job_id ?? 'list' }}">{{ __('New Proforma Invoice') }}</button>
             </div>
         </div>
 
@@ -207,19 +207,19 @@
 
                 <div class="col-12 col-lg-4">
                     <div class="rounded-3 bg-body-tertiary px-4 py-3 h-100">
-                        <h6 class="text-uppercase text-muted fw-semibold small mb-3" style="letter-spacing:.03em;">Summary</h6>
+                        <h6 class="text-uppercase text-muted fw-semibold small mb-3" style="letter-spacing:.03em;">{{ __('Summary') }}</h6>
                         <div class="row g-2 text-center">
                             <div class="col-4">
                                 <div id="cardAllCount" class="fs-4 fw-bold mb-0">0</div>
-                                <small class="text-muted">Total Invoices</small>
+                                <small class="text-muted">{{ __('Total Invoices') }}</small>
                             </div>
                             <div class="col-4">
                                 <div id="cardApprovedCount" class="fs-4 fw-bold mb-0">0</div>
-                                <small class="text-muted">Approved</small>
+                                <small class="text-muted">{{ __('Approved') }}</small>
                             </div>
                             <div class="col-4">
                                 <div id="cardDraftCount" class="fs-4 fw-bold mb-0">0</div>
-                                <small class="text-muted">Draft</small>
+                                <small class="text-muted">{{ __('Draft') }}</small>
                             </div>
                         </div>
                     </div>
@@ -227,19 +227,19 @@
 
                 <div class="col-12 col-lg-4">
                     <div class="rounded-3 bg-pf-approved px-4 py-3 h-100">
-                        <h6 class="text-uppercase text-pf-approved fw-semibold small mb-3" style="letter-spacing:.03em;">Approved Invoices</h6>
+                        <h6 class="text-uppercase text-pf-approved fw-semibold small mb-3" style="letter-spacing:.03em;">{{ __('Approved Invoices') }}</h6>
                         <div class="row g-2 text-center">
                             <div class="col-4">
                                 <div id="total_approved_sub" class="fs-4 fw-bold mb-0">0.00</div>
-                                <small class="text-muted">Total Amount</small>
+                                <small class="text-muted">{{ __('Total Amount') }}</small>
                             </div>
                             <div class="col-4">
                                 <div id="total_approved_tax" class="fs-4 fw-bold mb-0">0.00</div>
-                                <small class="text-muted">Total Tax</small>
+                                <small class="text-muted">{{ __('Total Tax') }}</small>
                             </div>
                             <div class="col-4">
                                 <div id="total_approved_grand" class="fs-4 fw-bold mb-0">0.00</div>
-                                <small class="text-muted">Net Total</small>
+                                <small class="text-muted">{{ __('Net Total') }}</small>
                             </div>
                         </div>
                     </div>
@@ -247,19 +247,19 @@
 
                 <div class="col-12 col-lg-4">
                     <div class="rounded-3 bg-pf-draft px-4 py-3 h-100">
-                        <h6 class="text-uppercase text-pf-draft fw-semibold small mb-3" style="letter-spacing:.03em;">Draft Invoices</h6>
+                        <h6 class="text-uppercase text-pf-draft fw-semibold small mb-3" style="letter-spacing:.03em;">{{ __('Draft Invoices') }}</h6>
                         <div class="row g-2 text-center">
                             <div class="col-4">
                                 <div id="total_draft_sub" class="fs-4 fw-bold mb-0">0.00</div>
-                                <small class="text-muted">Total Amount</small>
+                                <small class="text-muted">{{ __('Total Amount') }}</small>
                             </div>
                             <div class="col-4">
                                 <div id="total_draft_tax" class="fs-4 fw-bold mb-0">0.00</div>
-                                <small class="text-muted">Total Tax</small>
+                                <small class="text-muted">{{ __('Total Tax') }}</small>
                             </div>
                             <div class="col-4">
                                 <div id="total_draft_grand" class="fs-4 fw-bold mb-0">0.00</div>
-                                <small class="text-muted">Net Total</small>
+                                <small class="text-muted">{{ __('Net Total') }}</small>
                             </div>
                         </div>
                     </div>
@@ -279,7 +279,7 @@
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
 
                         <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="Search..." aria-label="Search...">
+                               placeholder="{{ __('Search...') }}" aria-label="{{ __('Search...') }}">
                     </div>
                 </div>
             </div>
@@ -287,13 +287,13 @@
                 <table class="table align-middle dataTable" id="dataTable" data-min-height="min-height:75vh;" data-title="Job" data-model-size="lg">
                     <thead>
                     <tr class="text-muted text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.03em;">
-                        <th>Invoice #</th>
-                        <th>Job</th>
-                        <th>Customer</th>
-                        <th class="text-end">Excl. VAT</th>
-                        <th class="text-end">Tax</th>
-                        <th class="text-end">Total</th>
-                        <th>Date</th>
+                        <th>{{ __('Invoice #') }}</th>
+                        <th>{{ __('Job') }}</th>
+                        <th>{{ __('Customer') }}</th>
+                        <th class="text-end">{{ __('Excl. VAT') }}</th>
+                        <th class="text-end">{{ __('Tax') }}</th>
+                        <th class="text-end">{{ __('Total') }}</th>
+                        <th>{{ __('Date') }}</th>
                         <th></th>
                     </tr>
                     </thead>
@@ -384,9 +384,9 @@
                 <div class="modal-header border-0 pb-0">
                     <div>
                         <h5 class="modal-title fw-semibold" id="proformaInvoiceWorkflowModalLabel">
-                            <i class="bi bi-diagram-3 text-primary me-2"></i>Proforma Invoice Workflow
+                            <i class="bi bi-diagram-3 text-primary me-2"></i>{{ __('Proforma Invoice Workflow') }}
                         </h5>
-                        <p class="text-muted small mb-0">How proforma invoices move through your system</p>
+                        <p class="text-muted small mb-0">{{ __('How proforma invoices move through your system') }}</p>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
@@ -396,22 +396,22 @@
                     <div class="d-flex flex-column align-items-center gap-0">
 
                         <div class="wf-box wf-pending">
-                            <div class="text-muted" style="font-size:0.7rem;font-weight:400;">STEP 1</div>
-                            <i class="bi bi-file-earmark-plus me-1"></i> Create Proforma Invoice
-                            <div class="wf-badge bg-secondary text-white">Draft</div>
+                            <div class="text-muted" style="font-size:0.7rem;font-weight:400;">{{ __('STEP 1') }}</div>
+                            <i class="bi bi-file-earmark-plus me-1"></i> {{ __('Create Proforma Invoice') }}
+                            <div class="wf-badge bg-secondary text-white">{{ __('Draft') }}</div>
                         </div>
                         <div class="wf-arrow">↓</div>
 
                         <div class="wf-box wf-action">
-                            <div class="text-muted" style="font-size:0.7rem;font-weight:400;">STEP 2</div>
-                            <i class="bi bi-send me-1"></i> Send to Customer
-                            <div class="wf-badge bg-info text-white">Sent</div>
+                            <div class="text-muted" style="font-size:0.7rem;font-weight:400;">{{ __('STEP 2') }}</div>
+                            <i class="bi bi-send me-1"></i> {{ __('Send to Customer') }}
+                            <div class="wf-badge bg-info text-white">{{ __('Sent') }}</div>
                         </div>
                         <div class="wf-arrow">↓</div>
 
                         <!-- Decision -->
                         <div class="wf-box wf-decision">
-                            <i class="bi bi-question-circle me-1"></i> Customer Decision
+                            <i class="bi bi-question-circle me-1"></i> {{ __('Customer Decision') }}
                         </div>
 
                         <div class="d-flex justify-content-center gap-5 w-100 mt-0">
@@ -420,13 +420,13 @@
                             <div class="d-flex flex-column align-items-center">
                                 <div class="wf-arrow">↓</div>
                                 <div class="wf-box wf-success">
-                                    <i class="bi bi-check-circle me-1"></i> Approved
-                                    <div class="wf-badge bg-success text-white">Approved</div>
+                                    <i class="bi bi-check-circle me-1"></i> {{ __('Approved') }}
+                                    <div class="wf-badge bg-success text-white">{{ __('Approved') }}</div>
                                 </div>
                                 <div class="wf-arrow">↓</div>
                                 <div class="wf-box wf-job">
-                                    <i class="bi bi-arrow-repeat me-1"></i> Convert to Customer Invoice
-                                    <div class="wf-badge text-white" style="background:#0dcaf0;">Converted</div>
+                                    <i class="bi bi-arrow-repeat me-1"></i> {{ __('Convert to Customer Invoice') }}
+                                    <div class="wf-badge text-white" style="background:#0dcaf0;">{{ __('Converted') }}</div>
                                 </div>
                             </div>
 
@@ -434,13 +434,13 @@
                             <div class="d-flex flex-column align-items-center">
                                 <div class="wf-arrow">↓</div>
                                 <div class="wf-box wf-danger">
-                                    <i class="bi bi-x-circle me-1"></i> Rejected
-                                    <div class="wf-badge bg-danger text-white">Rejected</div>
+                                    <i class="bi bi-x-circle me-1"></i> {{ __('Rejected') }}
+                                    <div class="wf-badge bg-danger text-white">{{ __('Rejected') }}</div>
                                 </div>
                                 <div class="wf-arrow">↓</div>
                                 <div class="wf-box wf-danger">
-                                    <i class="bi bi-slash-circle me-1"></i> Cancelled
-                                    <div class="wf-badge bg-danger text-white">Cancelled</div>
+                                    <i class="bi bi-slash-circle me-1"></i> {{ __('Cancelled') }}
+                                    <div class="wf-badge bg-danger text-white">{{ __('Cancelled') }}</div>
                                 </div>
                             </div>
                         </div>
@@ -449,42 +449,42 @@
 
                     <!-- Status legend -->
                     <hr class="mt-4">
-                    <h6 class="fw-semibold text-muted mb-3 small text-uppercase">Status Guide</h6>
+                    <h6 class="fw-semibold text-muted mb-3 small text-uppercase">{{ __('Status Guide') }}</h6>
                     <div class="row g-2">
                         <div class="col-sm-6 col-md-4">
                             <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#f8f9fa;border:1px solid #6c757d;">
-                                <span class="badge bg-secondary">Draft</span>
-                                <small class="text-muted">Being prepared</small>
+                                <span class="badge bg-secondary">{{ __('Draft') }}</span>
+                                <small class="text-muted">{{ __('Being prepared') }}</small>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-4">
                             <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#f0f7ff;border:1px solid #0d6efd;">
-                                <span class="badge bg-info text-white">Sent</span>
-                                <small class="text-muted">Awaiting customer response</small>
+                                <span class="badge bg-info text-white">{{ __('Sent') }}</span>
+                                <small class="text-muted">{{ __('Awaiting customer response') }}</small>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-4">
                             <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#f0fff4;border:1px solid #198754;">
-                                <span class="badge bg-success">Approved</span>
-                                <small class="text-muted">Customer approved</small>
+                                <span class="badge bg-success">{{ __('Approved') }}</span>
+                                <small class="text-muted">{{ __('Customer approved') }}</small>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-4">
                             <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#fff5f5;border:1px solid #dc3545;">
-                                <span class="badge bg-danger">Rejected</span>
-                                <small class="text-muted">Customer declined</small>
+                                <span class="badge bg-danger">{{ __('Rejected') }}</span>
+                                <small class="text-muted">{{ __('Customer declined') }}</small>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-4">
                             <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#fff5f5;border:1px solid #dc3545;">
-                                <span class="badge bg-danger">Cancelled</span>
-                                <small class="text-muted">Withdrawn</small>
+                                <span class="badge bg-danger">{{ __('Cancelled') }}</span>
+                                <small class="text-muted">{{ __('Withdrawn') }}</small>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-4">
                             <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#f0fdff;border:1px solid #0dcaf0;">
-                                <span class="badge" style="background:#0dcaf0;">Converted</span>
-                                <small class="text-muted">Turned into a Customer Invoice</small>
+                                <span class="badge" style="background:#0dcaf0;">{{ __('Converted') }}</span>
+                                <small class="text-muted">{{ __('Turned into a Customer Invoice') }}</small>
                             </div>
                         </div>
                     </div>
@@ -492,9 +492,9 @@
                 <div class="modal-footer border-0 pt-0">
                     <button class="btn btn-primary rounded-pill px-4" data-bs-dismiss="modal"
                             onclick="setTimeout(()=>document.getElementById('new').click(),300)">
-                        <i class="bi bi-plus-lg me-1"></i> Create Proforma Invoice
+                        <i class="bi bi-plus-lg me-1"></i> {{ __('Create Proforma Invoice') }}
                     </button>
-                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">{{ __('Close') }}</button>
                 </div>
             </div>
         </div>

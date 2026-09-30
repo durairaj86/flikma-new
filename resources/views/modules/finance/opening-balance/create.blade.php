@@ -1,18 +1,18 @@
-@section('page-title','New Opening Balance')
-@section('page-subtitle', 'Add customer, supplier, and GL account opening balances')
+@section('page-title', __('New Opening Balance'))
+@section('page-subtitle', __('Add customer, supplier, and GL account opening balances'))
 <x-app-layout>
     <main class="gmail-content bg-white px-3 pb-5">
 
         {{-- Page actions --}}
         <div class="d-flex justify-content-end align-items-center py-3 border-bottom mb-3">
             <a href="{{ route('finance.opening-balance') }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-                <i class="bi bi-arrow-left me-1"></i> Back to List
+                <i class="bi bi-arrow-left me-1"></i> {{ __('Back to List') }}
             </a>
         </div>
 
         @if($errors->any())
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <strong>Please fix the following errors:</strong>
+                <strong>{{ __('Please fix the following errors:') }}</strong>
                 <ul class="mb-0 mt-1">
                     @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -31,17 +31,17 @@
                 <div class="card-header bg-white py-3">
                     <div class="row g-3 align-items-start">
                         <div class="col-md-4">
-                            <label class="form-label fw-medium">Balance Date <span class="text-danger">*</span></label>
+                            <label class="form-label fw-medium">{{ __('Balance Date') }} <span class="text-danger">*</span></label>
                             @if($lockedDate)
                                 <input type="date" name="posted_at" value="{{ $lockedDate }}"
                                        class="form-control bg-light" readonly>
                                 <div class="form-text text-info">
-                                    <i class="bi bi-lock-fill me-1"></i> Date locked based on previous entries.
+                                    <i class="bi bi-lock-fill me-1"></i> {{ __('Date locked based on previous entries.') }}
                                 </div>
                             @else
                                 <input type="date" name="posted_at" class="form-control"
                                        value="{{ old('posted_at', date('Y-m-d')) }}" required>
-                                <div class="form-text text-muted">This date will be used for all balances.</div>
+                                <div class="form-text text-muted">{{ __('This date will be used for all balances.') }}</div>
                             @endif
                         </div>
                     </div>
@@ -53,21 +53,21 @@
                         <button type="button" class="nav-link py-3 fw-semibold small border-0 rounded-0"
                                 :class="activeTab === 'customers' ? 'active bg-white text-primary' : 'text-muted'"
                                 @click="activeTab = 'customers'">
-                            <i class="bi bi-people me-1"></i> Customers ({{ count($customers) }})
+                            <i class="bi bi-people me-1"></i> {{ __('Customers') }} ({{ count($customers) }})
                         </button>
                     </li>
                     <li class="nav-item">
                         <button type="button" class="nav-link py-3 fw-semibold small border-0 rounded-0"
                                 :class="activeTab === 'suppliers' ? 'active bg-white text-primary' : 'text-muted'"
                                 @click="activeTab = 'suppliers'">
-                            <i class="bi bi-truck me-1"></i> Suppliers ({{ count($suppliers) }})
+                            <i class="bi bi-truck me-1"></i> {{ __('Suppliers') }} ({{ count($suppliers) }})
                         </button>
                     </li>
                     <li class="nav-item">
                         <button type="button" class="nav-link py-3 fw-semibold small border-0 rounded-0"
                                 :class="activeTab === 'accounts' ? 'active bg-white text-primary' : 'text-muted'"
                                 @click="activeTab = 'accounts'">
-                            <i class="bi bi-journal-text me-1"></i> GL Accounts ({{ count($accounts) }})
+                            <i class="bi bi-journal-text me-1"></i> {{ __('GL Accounts') }} ({{ count($accounts) }})
                         </button>
                     </li>
                 </ul>
@@ -77,10 +77,10 @@
                     <table class="table table-hover table-bordered align-middle mb-0 border-top-0">
                         <thead class="table-light">
                             <tr>
-                                <th class="ps-4" style="width:35%">Customer Name</th>
-                                <th class="text-end" style="width:20%">Debit (Amount Owed to You)</th>
-                                <th class="text-end" style="width:20%">Credit</th>
-                                <th class="pe-4">Notes</th>
+                                <th class="ps-4" style="width:35%">{{ __('Customer Name') }}</th>
+                                <th class="text-end" style="width:20%">{{ __('Debit (Amount Owed to You)') }}</th>
+                                <th class="text-end" style="width:20%">{{ __('Credit') }}</th>
+                                <th class="pe-4">{{ __('Notes') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -107,13 +107,13 @@
                                     <td class="pe-4">
                                         <input type="text" name="balances[c{{ $index }}][notes]"
                                                class="form-control form-control-sm border-0 bg-transparent"
-                                               placeholder="Add optional notes...">
+                                               placeholder="{{ __('Add optional notes...') }}">
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
                                     <td colspan="4" class="text-center py-4 text-muted small">
-                                        All customers already have opening balances or no customers found.
+                                        {{ __('All customers already have opening balances or no customers found.') }}
                                     </td>
                                 </tr>
                             @endforelse
@@ -126,10 +126,10 @@
                     <table class="table table-hover table-bordered align-middle mb-0 border-top-0">
                         <thead class="table-light">
                             <tr>
-                                <th class="ps-4" style="width:35%">Supplier Name</th>
-                                <th class="text-end" style="width:20%">Debit</th>
-                                <th class="text-end" style="width:20%">Credit</th>
-                                <th class="pe-4">Notes</th>
+                                <th class="ps-4" style="width:35%">{{ __('Supplier Name') }}</th>
+                                <th class="text-end" style="width:20%">{{ __('Debit') }}</th>
+                                <th class="text-end" style="width:20%">{{ __('Credit') }}</th>
+                                <th class="pe-4">{{ __('Notes') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -156,13 +156,13 @@
                                     <td class="pe-4">
                                         <input type="text" name="balances[s{{ $index }}][notes]"
                                                class="form-control form-control-sm border-0 bg-transparent"
-                                               placeholder="Add optional notes...">
+                                               placeholder="{{ __('Add optional notes...') }}">
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
                                     <td colspan="4" class="text-center py-4 text-muted small">
-                                        All suppliers already have opening balances or no suppliers found.
+                                        {{ __('All suppliers already have opening balances or no suppliers found.') }}
                                     </td>
                                 </tr>
                             @endforelse
@@ -175,10 +175,10 @@
                     <table class="table table-hover table-bordered align-middle mb-0 border-top-0">
                         <thead class="table-light">
                             <tr>
-                                <th class="ps-4" style="width:35%">Account</th>
-                                <th class="text-end" style="width:20%">Debit</th>
-                                <th class="text-end" style="width:20%">Credit</th>
-                                <th class="pe-4">Notes</th>
+                                <th class="ps-4" style="width:35%">{{ __('Account') }}</th>
+                                <th class="text-end" style="width:20%">{{ __('Debit') }}</th>
+                                <th class="text-end" style="width:20%">{{ __('Credit') }}</th>
+                                <th class="pe-4">{{ __('Notes') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -207,13 +207,13 @@
                                     <td class="pe-4">
                                         <input type="text" name="balances[a{{ $index }}][notes]"
                                                class="form-control form-control-sm border-0 bg-transparent"
-                                               placeholder="Add optional notes...">
+                                               placeholder="{{ __('Add optional notes...') }}">
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
                                     <td colspan="4" class="text-center py-4 text-muted small">
-                                        All accounts already have opening balances or no posting accounts found.
+                                        {{ __('All accounts already have opening balances or no posting accounts found.') }}
                                     </td>
                                 </tr>
                             @endforelse
@@ -227,15 +227,15 @@
                         <div class="col-md-8">
                             <div class="d-flex gap-4">
                                 <div class="small">
-                                    <span class="text-muted">Valid Entries:</span>
+                                    <span class="text-muted">{{ __('Valid Entries') }}:</span>
                                     <span class="fw-bold text-primary" x-text="validEntries">0</span>
                                 </div>
                                 <div class="small">
-                                    <span class="text-muted">Total Debit:</span>
+                                    <span class="text-muted">{{ __('Total Debit') }}:</span>
                                     <span class="fw-bold" x-text="formatCurrency(totalDebit)">0.00</span>
                                 </div>
                                 <div class="small">
-                                    <span class="text-muted">Total Credit:</span>
+                                    <span class="text-muted">{{ __('Total Credit') }}:</span>
                                     <span class="fw-bold" x-text="formatCurrency(totalCredit)">0.00</span>
                                 </div>
                             </div>
@@ -244,11 +244,11 @@
                             <div class="d-flex gap-2 justify-content-end">
                                 <a href="{{ route('finance.opening-balance') }}"
                                    class="btn btn-outline-secondary px-4 rounded-pill">
-                                    Cancel
+                                    {{ __('Cancel') }}
                                 </a>
                                 <button type="submit" class="btn btn-primary px-5 rounded-pill"
                                         :disabled="validEntries === 0">
-                                    <i class="bi bi-check2-circle me-1"></i> Save All Balances
+                                    <i class="bi bi-check2-circle me-1"></i> {{ __('Save All Balances') }}
                                 </button>
                             </div>
                         </div>

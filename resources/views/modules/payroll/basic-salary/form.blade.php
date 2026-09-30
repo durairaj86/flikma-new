@@ -2,7 +2,7 @@
     <div class="d-flex justify-content-between align-items-center flex-wrap">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-4">
             <div class="module-info">
-                <span class="fw-semibold fs-5">{{ $basicSalary->row_no ?? 'New Basic Salary' }}</span>
+                <span class="fw-semibold fs-5">{{ $basicSalary->row_no ?? __('New Basic Salary') }}</span>
             </div>
         </div>
         <div id="show-buttons"></div>
@@ -20,13 +20,13 @@
                 <div class="row g-3">
                     <!-- Employee -->
                     <div class="col-md-6">
-                        <label class="form-label required">Employee <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Employee') }} <sup class="text-danger">*</sup></label>
                         <x-common.employee value="{{ $basicSalary->employee_id ?? '' }}"></x-common.employee>
                     </div>
 
                     <!-- Effective Date -->
                     <div class="col-md-6">
-                        <label class="form-label required">Effective Date <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Effective Date') }} <sup class="text-danger">*</sup></label>
                         <input type="date" id="effective_date" name="effective_date" class="form-control datepicker"
                                value="{{ isset($basicSalary) ? showDate($basicSalary->effective_date) : '' }}" required>
                     </div>
@@ -35,61 +35,61 @@
                 <!-- Salary Details Section -->
                 <div class="row g-3 mt-3">
                     <div class="col-12">
-                        <h5 class="border-bottom pb-2">Salary Details</h5>
+                        <h5 class="border-bottom pb-2">{{ __('Salary Details') }}</h5>
                     </div>
 
                     <!-- Basic Salary -->
                     <div class="col-md-4">
-                        <label class="form-label required">Basic Salary <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Basic Salary') }} <sup class="text-danger">*</sup></label>
                         <input type="text" name="basic_salary" class="form-control float"
                                value="{{ $basicSalary->basic_salary ?? 0 }}" min="0" step="0.01" required>
                     </div>
 
                     <!-- Housing Allowance -->
                     <div class="col-md-4">
-                        <label class="form-label">Housing Allowance</label>
+                        <label class="form-label">{{ __('Housing Allowance') }}</label>
                         <input type="text" name="housing_allowance" class="form-control float"
                                value="{{ $basicSalary->housing_allowance ?? 0 }}" min="0" step="0.01">
                     </div>
 
                     <!-- Transportation Allowance -->
                     <div class="col-md-4">
-                        <label class="form-label">Transportation Allowance</label>
+                        <label class="form-label">{{ __('Transportation Allowance') }}</label>
                         <input type="text" name="transportation_allowance" class="form-control float"
                                value="{{ $basicSalary->transportation_allowance ?? 0 }}" min="0" step="0.01">
                     </div>
 
                     <!-- Food Allowance -->
                     <div class="col-md-4">
-                        <label class="form-label">Food Allowance</label>
+                        <label class="form-label">{{ __('Food Allowance') }}</label>
                         <input type="text" name="food_allowance" class="form-control float"
                                value="{{ $basicSalary->food_allowance ?? 0 }}" min="0" step="0.01">
                     </div>
 
                     <!-- Phone Allowance -->
                     <div class="col-md-4">
-                        <label class="form-label">Phone Allowance</label>
+                        <label class="form-label">{{ __('Phone Allowance') }}</label>
                         <input type="text" name="phone_allowance" class="form-control float"
                                value="{{ $basicSalary->phone_allowance ?? 0 }}" min="0" step="0.01">
                     </div>
 
                     <!-- Other Allowance -->
                     <div class="col-md-4">
-                        <label class="form-label">Other Allowance</label>
+                        <label class="form-label">{{ __('Other Allowance') }}</label>
                         <input type="text" name="other_allowance" class="form-control float"
                                value="{{ $basicSalary->other_allowance ?? 0 }}" min="0" step="0.01">
                     </div>
 
                     <!-- Status -->
                     <div class="col-md-4">
-                        <label class="form-label required">Status <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Status') }} <sup class="text-danger">*</sup></label>
                         <select name="status" class="tom-select" required>
                             <option value="active" @selected(isset($basicSalary) && $basicSalary->status == 'active')>
-                                Active
+                                {{ __('Active') }}
                             </option>
                             <option
                                 value="inactive" @selected(isset($basicSalary) && $basicSalary->status == 'inactive')>
-                                Inactive
+                                {{ __('Inactive') }}
                             </option>
                         </select>
                     </div>
@@ -99,9 +99,9 @@
 
         <!-- Remarks -->
         <div class="mt-3 px-4">
-            <label class="form-label fw-semibold">Remarks</label>
+            <label class="form-label fw-semibold">{{ __('Remarks') }}</label>
             <textarea name="remarks" class="form-control h-100" rows="4"
-                      placeholder="Any additional information...">{{ $basicSalary->remarks ?? '' }}</textarea>
+                      placeholder="{{ __('Any additional information...') }}">{{ $basicSalary->remarks ?? '' }}</textarea>
         </div>
     </form>
 </div>

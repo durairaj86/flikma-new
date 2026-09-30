@@ -1,4 +1,4 @@
-@section('page-title', 'My Account Settings')
+@section('page-title', __('My Account Settings'))
 @section('js', 'user')
 
 <x-app-layout>
@@ -19,7 +19,7 @@
                                         @csrf
                                         <div class="mb-5 pb-3 border-bottom">
 
-                                            <h5 class="fw-bold mb-4 text-secondary">Basic Profile Information</h5>
+                                            <h5 class="fw-bold mb-4 text-secondary">{{ __('Basic Profile Information') }}</h5>
 
                                             <div class="d-flex align-items-center mb-4">
                                                 <div class="profile-pic me-4 position-relative">
@@ -27,7 +27,7 @@
                                                     @if($user->profile_photo_path)
                                                         <img src="{{ asset($user->profile_photo_path) }}"
                                                              class="rounded-circle shadow-lg"
-                                                             width="80" height="80" alt="Profile Picture"
+                                                             width="80" height="80" alt="{{ __('Profile Picture') }}"
                                                              id="profile_photo_preview">
                                                     @else
                                                         <div id="profile_avatar"
@@ -56,35 +56,33 @@
                                                     <label for="profile_photo_upload"
                                                            class="btn btn-outline-primary btn-sm mt-2"
                                                            style="cursor: pointer;">
-                                                        Change Photo
+                                                        {{ __('Change Photo') }}
                                                     </label>
                                                 </div>
                                             </div>
 
                                             <div class="row g-4 mt-4">
                                                 <div class="col-md-6">
-                                                    <label class="form-label fw-medium">Full Name</label>
+                                                    <label class="form-label fw-medium">{{ __('Full Name') }}</label>
                                                     <input type="text" class="form-control" name="full_name"
                                                            value="{{ $user->name }}">
                                                 </div>
 
                                                 <div class="col-md-6">
-                                                    <label class="form-label fw-medium">Role / Designation</label>
+                                                    <label class="form-label fw-medium">{{ __('Role / Designation') }}</label>
                                                     <input type="text" class="form-control" disabled
                                                            value="{{ roleDisplay($user->role) }}">
                                                 </div>
 
                                                 <div class="col-md-6">
-                                                    <label class="form-label fw-medium">Email Address
-                                                        (Read-Only)</label>
+                                                    <label class="form-label fw-medium">{{ __('Email Address (Read-Only)') }}</label>
                                                     <input type="email" class="form-control bg-light" disabled
                                                            value="{{ $user->email }}" readonly>
-                                                    <small class="text-muted">Contact support to change your primary
-                                                        email.</small>
+                                                    <small class="text-muted">{{ __('Contact support to change your primary email.') }}</small>
                                                 </div>
 
                                                 <div class="col-md-6">
-                                                    <label class="form-label fw-medium">Phone Number</label>
+                                                    <label class="form-label fw-medium">{{ __('Phone Number') }}</label>
                                                     <input type="tel" class="form-control" name="phone"
                                                            value="{{ $user->phone }}">
                                                 </div>
@@ -95,26 +93,26 @@
                                         {{-- 2. SECURITY & AUTHENTICATION SECTION --}}
                                         {{-- ------------------------------------------------ --}}
                                         <div class="mt-4">
-                                            <h5 class="fw-bold mb-4 text-secondary">Security & Authentication</h5>
+                                            <h5 class="fw-bold mb-4 text-secondary">{{ __('Security & Authentication') }}</h5>
 
                                             <div class="row g-4">
                                                 <div class="col-md-6">
-                                                    <label class="form-label fw-medium">Current Password</label>
+                                                    <label class="form-label fw-medium">{{ __('Current Password') }}</label>
                                                     <input type="password" class="form-control" name="current_password"
-                                                           placeholder="Enter current password">
+                                                           placeholder="{{ __('Enter current password') }}">
                                                 </div>
 
                                                 <div class="col-md-6">
-                                                    <label class="form-label fw-medium">New Password</label>
+                                                    <label class="form-label fw-medium">{{ __('New Password') }}</label>
                                                     <input type="password" class="form-control" name="new_password"
-                                                           placeholder="Enter new password">
+                                                           placeholder="{{ __('Enter new password') }}">
                                                 </div>
 
                                                 <div class="col-md-6">
-                                                    <label class="form-label fw-medium">Confirm New Password</label>
+                                                    <label class="form-label fw-medium">{{ __('Confirm New Password') }}</label>
                                                     <input type="password" class="form-control"
                                                            name="confirm_new_password"
-                                                           placeholder="Confirm new password">
+                                                           placeholder="{{ __('Confirm new password') }}">
                                                 </div>
                                             </div>
                                         </div>
@@ -125,7 +123,7 @@
                                         <div class="text-end mt-5 pt-3 border-top">
                                             <button type="submit" class="btn btn-primary btn-lg px-5 fw-bold shadow-sm"
                                                     id="submit">
-                                                <i class="bi bi-cloud-arrow-up me-2"></i> Save All Changes
+                                                <i class="bi bi-cloud-arrow-up me-2"></i> {{ __('Save All Changes') }}
                                             </button>
                                         </div>
 

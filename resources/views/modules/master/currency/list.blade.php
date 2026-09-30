@@ -1,5 +1,5 @@
 @section('js','currency')
-@section('page-title','Currencies')
+@section('page-title', __('Currencies'))
 <x-app-layout>
     <main class="gmail-content bg-white d-flex">
         @include('includes.master-navigation')
@@ -11,9 +11,9 @@
                         <thead class="table-light sticky-top bg-white">
                         <tr>
                             <th>#</th>
-                            <th>Code</th>
-                            <th>Name</th>
-                            <th>Country</th>
+                            <th>{{ __('Code') }}</th>
+                            <th>{{ __('Name') }}</th>
+                            <th>{{ __('Country') }}</th>
                         </tr>
                         </thead>
                         <tbody>

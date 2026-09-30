@@ -1,5 +1,5 @@
 @section('js','employee_loan')
-@section('page-title','Employee Loan')
+@section('page-title', __('Employee Loan'))
 <x-app-layout>
     <main class="gmail-content bg-white px-3">
         <div id="filterPanel" class="card shadow-sm border-0 d-none">
@@ -7,7 +7,7 @@
             <div class="card-header bg-light border-0 py-3">
                 <div class="d-flex align-items-center gap-2">
                     <i class="bi bi-funnel-fill text-primary"></i>
-                    <h6 class="mb-0 fw-semibold">Advanced Filters</h6>
+                    <h6 class="mb-0 fw-semibold">{{ __('Advanced Filters') }}</h6>
                 </div>
             </div>
 
@@ -33,7 +33,7 @@
                             </div>--}}
 
                             <div class="col-md-4 form-filter">
-                                <label class="form-label fw-medium">Loan Date</label>
+                                <label class="form-label fw-medium">{{ __('Loan Date') }}</label>
                                 <div class="d-flex input-group-filter gap-2">
                                     <input type="date" class="form-control datepicker from-date default-filter"
                                            id="filter-from-date" name="filter-from-date"
@@ -45,9 +45,9 @@
                             </div>
 
                             <div class="col-md-3 form-filter">
-                                <label class="form-label fw-medium">Employee</label>
+                                <label class="form-label fw-medium">{{ __('Employee') }}</label>
                                 <select class="tom-select" name="employee_id" id="filter-employee">
-                                    <option value="">All Employees</option>
+                                    <option value="">{{ __('All Employees') }}</option>
                                     @foreach(\App\Models\User::where('status', 'active')->get() as $employee)
                                         <option value="{{ $employee->id }}">{{ $employee->name }}</option>
                                     @endforeach
@@ -55,14 +55,14 @@
                             </div>
 
                             <div class="col-md-3 form-filter">
-                                <label class="form-label fw-medium">Status</label>
+                                <label class="form-label fw-medium">{{ __('Status') }}</label>
                                 <select class="tom-select" name="status" id="filter-status">
-                                    <option value="">All Statuses</option>
-                                    <option value="pending">Pending</option>
-                                    <option value="approved">Approved</option>
-                                    <option value="rejected">Rejected</option>
-                                    <option value="paid">Paid</option>
-                                    <option value="partially_paid">Partially Paid</option>
+                                    <option value="">{{ __('All Statuses') }}</option>
+                                    <option value="pending">{{ __('Pending') }}</option>
+                                    <option value="approved">{{ __('Approved') }}</option>
+                                    <option value="rejected">{{ __('Rejected') }}</option>
+                                    <option value="paid">{{ __('Paid') }}</option>
+                                    <option value="partially_paid">{{ __('Partially Paid') }}</option>
                                 </select>
                             </div>
                         </div>
@@ -71,7 +71,7 @@
                     <!-- Action buttons -->
                     <div class="text-center mt-4">
                         <button class="btn btn-primary btn-round px-4" type="button" id="apply-filter">
-                            <i class="bi bi-search me-1"></i> Search
+                            <i class="bi bi-search me-1"></i> {{ __('Search') }}
                         </button>
                     </div>
                 </form>
@@ -86,10 +86,10 @@
                 <div class="position-relative">
                     <!-- Compact Filter button -->
                     <button class="btn btn-outline-primary btn-round me-2" id="filter-box"><i class="bi bi-funnel"></i>
-                        Filter
+                        {{ __('Filter') }}
                     </button>
                 </div>
-                <button class="btn btn-primary rounded-pill px-4" id="new">New Employee Loan</button>
+                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Employee Loan') }}</button>
             </div>
         </div>
 
@@ -100,7 +100,7 @@
                     <div class="search-box position-relative me-2">
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                         <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="Search..." aria-label="Search...">
+                               placeholder="{{ __('Search...') }}" aria-label="{{ __('Search...') }}">
                     </div>
                 </div>
             </div>
@@ -110,14 +110,14 @@
                        data-title="Employee Loan" data-model-size="md">
                     <thead class="table-light bg-white">
                     <tr>
-                        <th>Employee</th>
-                        <th>Loan Amount</th>
-                        <th>Installment</th>
-                        <th>Remaining</th>
-                        <th>Loan Date</th>
-                        <th>First Payment</th>
-                        <th>Payment Method</th>
-                        <th>Status</th>
+                        <th>{{ __('Employee') }}</th>
+                        <th>{{ __('Loan Amount') }}</th>
+                        <th>{{ __('Installment') }}</th>
+                        <th>{{ __('Remaining') }}</th>
+                        <th>{{ __('Loan Date') }}</th>
+                        <th>{{ __('First Payment') }}</th>
+                        <th>{{ __('Payment Method') }}</th>
+                        <th>{{ __('Status') }}</th>
                         <th></th>
                     </tr>
                     </thead>

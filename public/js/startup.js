@@ -352,7 +352,7 @@ let GLOBAL_FN = {
                             toastr.error(value[0]);
                         });
                     } else {
-                        toastr.error("Something went wrong!");
+                        toastr.error(trans("Something went wrong!"));
                     }
                 },
             });
@@ -450,7 +450,7 @@ CALCULATION = {
 }
 
 function changeCustomerStatus(url, settings, newStatus, clickElement = null) {
-    let message = "Are you sure you want to change status?";
+    let message = trans("Are you sure you want to change status?");
     let requireReason = false;
 
     // This function is shared across modules whose status codes are
@@ -463,12 +463,12 @@ function changeCustomerStatus(url, settings, newStatus, clickElement = null) {
         message = settings.confirmMessage;
         requireReason = !!settings.requireReason;
     } else if (newStatus === '2') {
-        message = "Are you sure you want to convert this customer to Confirmed?";
+        message = trans("Are you sure you want to convert this customer to Confirmed?");
     } else if (newStatus === '5') {
-        message = "Why do you want to reject this customer?";
+        message = trans("Why do you want to reject this customer?");
         requireReason = true;
     } else if (newStatus === '4') {
-        message = "Why do you want to block this customer?";
+        message = trans("Why do you want to block this customer?");
         requireReason = true;
     }
     let input, inputType, oldValue, row;
@@ -480,17 +480,17 @@ function changeCustomerStatus(url, settings, newStatus, clickElement = null) {
     }
 
     $.confirm({
-        title: 'Confirm!',
+        title: trans('Confirm!'),
         content: requireReason
             ? '<div class="form-group">' +
             '<label>' + message + '</label>' +
-            '<textarea id="reasonInput" class="form-control mt-2" placeholder="Enter reason..."></textarea>' +
+            '<textarea id="reasonInput" class="form-control mt-2" placeholder="' + trans("Enter reason...") + '"></textarea>' +
             '</div>'
             : message,
         /*type: requireReason ? 'red' : 'blue',*/
         buttons: {
             cancel: {
-                text: 'No',
+                text: trans('No'),
                 btnClass: 'btn-secondary',
                 action: function () {
                     // Revert based on input type
@@ -502,7 +502,7 @@ function changeCustomerStatus(url, settings, newStatus, clickElement = null) {
                 }
             },
             confirm: {
-                text: 'Yes',
+                text: trans('Yes'),
                 btnClass: 'btn-primary',
                 action: function () {
                     let reason = null;
@@ -548,7 +548,7 @@ function changeCustomerStatus(url, settings, newStatus, clickElement = null) {
                                     }
                                 });
                             } else {
-                                toastr.error("Something went wrong!");
+                                toastr.error(trans("Something went wrong!"));
                                 // Revert on AJAX error
                                 if (inputType === 'checkbox') {
                                     input.prop('checked', oldValue);
@@ -565,7 +565,7 @@ function changeCustomerStatus(url, settings, newStatus, clickElement = null) {
 }
 
 function deleteFn(url, settings) {
-    let message = "Are you sure you want to delete?";
+    let message = trans("Are you sure you want to delete?");
 
     $.confirm({
         title: 'Confirm!',
@@ -603,7 +603,7 @@ function deleteFn(url, settings) {
                                     toastr.error(value[0]);
                                 });
                             } else {
-                                toastr.error("Something went wrong!");
+                                toastr.error(trans("Something went wrong!"));
                             }
                         }
                     });
@@ -618,7 +618,7 @@ function deleteFn(url, settings) {
 let webModal = {
     openGlobalModal(options) {
         let defaults = {
-            title: 'Modal',
+            title: trans('Modal'),
             content: null,
             size: 'xl',
             scroll: true,
@@ -748,7 +748,7 @@ let webModal = {
         }
 
 // Setup ESC confirm handler
-        webModal.modelHandler($modalEl[0], '#globalModal', "Close main modal?");
+        webModal.modelHandler($modalEl[0], '#globalModal', trans("Close main modal?"));
         webModal.openChildModal.load();
         this.submitForm(modal);
     },
@@ -828,7 +828,7 @@ let webModal = {
                                         },
                                         success: finish,
                                         error: function () {
-                                            toastr.warning('Saved, but approving it failed — it is still saved as a draft.');
+                                            toastr.warning(trans('Saved, but approving it failed — it is still saved as a draft.'));
                                             finish();
                                         }
                                     });
@@ -849,7 +849,7 @@ let webModal = {
                                     toastr.error(value[0]);
                                 });*/
                             } else {
-                                toastr.error("Something went wrong!");
+                                toastr.error(trans("Something went wrong!"));
                             }
                         },
                         /*error: function(xhr){
@@ -857,7 +857,7 @@ let webModal = {
                             setupModalFooter(); // Re-add footer buttons after validation errors
                         },*/
                         complete: function () {
-                            submitBtn.prop('disabled', false).html('Submit');
+                            submitBtn.prop('disabled', false).html(trans('Submit'));
                         }
                     });
                 }
@@ -895,13 +895,13 @@ let webModal = {
         if (buttonsConfig.includes('saveDraft') && form.length) {
             html += `
             <button type="button" class="btn btn-outline-secondary" form="${form.attr('id')}" id="modalSaveAsDraftBtn">
-                <i class="bi bi-file-earmark me-1"></i> ${buttons.data('button-draft') ?? 'Save as Draft'}
+                <i class="bi bi-file-earmark me-1"></i> ${buttons.data('button-draft') ?? trans('Save as Draft')}
             </button>`;
         }
         if (buttonsConfig.includes('saveApprove') && form.length) {
             html += `
             <button type="button" class="btn btn-success" form="${form.attr('id')}" id="modalSaveApproveBtn">
-                <i class="bi bi-check2-circle me-1"></i> ${buttons.data('button-approve') ?? 'Save and Approve'}
+                <i class="bi bi-check2-circle me-1"></i> ${buttons.data('button-approve') ?? trans('Save and Approve')}
             </button>`;
         }
         if (buttonsConfig.includes('save') && form.length) {
@@ -1082,7 +1082,7 @@ let webModal = {
                                     toastr.error(value[0]);
                                 });
                             } else {
-                                toastr.error("Something went wrong!");
+                                toastr.error(trans("Something went wrong!"));
                             }
                         },
                         /*error: function(xhr){
@@ -1090,7 +1090,7 @@ let webModal = {
                             setupModalFooter(); // Re-add footer buttons after validation errors
                         },*/
                         complete: function () {
-                            submitBtn.prop('disabled', false).html('Submit');
+                            submitBtn.prop('disabled', false).html(trans('Submit'));
                         }
                     });
                 }
@@ -1107,7 +1107,7 @@ let webModal = {
     type="button"
     class="btn btn-outline-secondary"
     id="modalSaveNewBtn"
-    aria-label="Save and open new form"
+    aria-label="${trans('Save and open new form')}"
   >
     <i class="bi bi-x-circle me-1"></i> Save & New
   </button>
@@ -1116,7 +1116,7 @@ let webModal = {
     type="submit"
     class="btn btn-primary"
     form="${formId}"
-    aria-label="Submit the form"
+    aria-label="${trans('Submit the form')}"
   >
     <i class="bi bi-check-circle me-1"></i> Save
   </button>
@@ -1139,7 +1139,8 @@ let webModal = {
             modalInstance.hide();
         }
     },*/
-    modelHandler(modalEl, modalSelector, message = "Are you sure you want to close the modal?") {
+    modelHandler(modalEl, modalSelector, message = null) {
+        message = message || trans("Are you sure you want to close the modal?");
         /*$('#globalModal a.btn-close').off().on('click', function () {
             $('.modal-backdrop').remove();
         });*/
@@ -1184,14 +1185,14 @@ let webModal = {
             const parentModal = bootstrap.Modal.getInstance(modalEl);
 
             $.confirm({
-                title: 'Are you sure you want to exit?',
+                title: trans('Are you sure you want to exit?'),
                 content: 'Some information has been modified. Please save your changes or continue without saving.',
                 autoClose: false,
                 backgroundDismiss: false,
                 escapeKey: false,
                 buttons: {
                     cancel: {
-                        text: 'Exit',
+                        text: trans('Exit'),
                         btnClass: '',
                         action: function () {
                             if (lastFocusedInput) {
@@ -1202,7 +1203,7 @@ let webModal = {
                         }
                     },
                     confirm: {
-                        text: 'Confirm',
+                        text: trans('Confirm'),
                         btnClass: 'btn-primary',
                         id: 'confirmYes',
                         action: function () {
@@ -1360,7 +1361,8 @@ let webModal = {
             modalEl.removeEventListener('keydown', handler);
         });*/
     },
-    modelHandler2222(modalEl, modalSelector, message = "Are you sure you want to close the modal?") {
+    modelHandler2222(modalEl, modalSelector, message = null) {
+        message = message || trans("Are you sure you want to close the modal?");
         $('#globalModal a.btn-close, #globalModal #btn-cancel').off().on('click', function () {
             $('.modal-backdrop').remove();
         });
@@ -1723,7 +1725,7 @@ webDataTable = {
                 error: function () {
                     // Remove loader
                     dropdownDiv.find(".loader-item").remove();
-                    toastr.error("Failed to load actions");
+                    toastr.error(trans("Failed to load actions"));
                 }
             });
         },
@@ -1787,7 +1789,7 @@ webDataTable = {
                     let modalSize = dataTableData.data('model-size');
                     let minHeight = dataTableData.data('min-height');
                     webModal.openGlobalModal({
-                        title: 'Edit ' + title,
+                        title: trans('Edit') + ' ' + title,
                         url: GLOBAL_FN.buildUrl(window[MODULE].baseUrl + '/' + id + '/create'),
                         content: null,
                         size: modalSize || 'xl',

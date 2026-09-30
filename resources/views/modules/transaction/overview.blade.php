@@ -1,10 +1,10 @@
-@section('page-title','Transactions Overview')
-@section('page-subtitle', 'Real-time payments & collections dashboard')
+@section('page-title', __('Transactions Overview'))
+@section('page-subtitle', __('Real-time payments & collections dashboard'))
 @section('print-footer')
 <script>
     window.printFooter = {
         show: true,
-        custom: 'Transactions Overview - Generated on {{ date('d-m-Y H:i') }}'
+        custom: '{{ __('Transactions Overview') }} - {{ __('Generated on') }} {{ date('d-m-Y H:i') }}'
     };
 </script>
 @endsection
@@ -60,12 +60,12 @@
             <div class="d-flex flex-wrap justify-content-end align-items-center mb-3">
                 <div class="d-flex align-items-center gap-2">
                     <select id="dateRange" class="form-select form-select-sm" style="width:auto;min-width:140px;">
-                        <option value="this_month" {{ $range==='this_month' ? 'selected' : '' }}>This Month</option>
-                        <option value="last_month" {{ $range==='last_month' ? 'selected' : '' }}>Last Month</option>
-                        <option value="this_year" {{ $range==='this_year' ? 'selected' : '' }}>This Year</option>
+                        <option value="this_month" {{ $range==='this_month' ? 'selected' : '' }}>{{ __('This Month') }}</option>
+                        <option value="last_month" {{ $range==='last_month' ? 'selected' : '' }}>{{ __('Last Month') }}</option>
+                        <option value="this_year" {{ $range==='this_year' ? 'selected' : '' }}>{{ __('This Year') }}</option>
                     </select>
                     <button class="btn btn-primary btn-sm px-3" id="btn-apply">
-                        <i class="bi bi-arrow-repeat me-1"></i> Apply
+                        <i class="bi bi-arrow-repeat me-1"></i> {{ __('Apply') }}
                     </button>
                 </div>
             </div>
@@ -75,9 +75,9 @@
                 <div class="col-lg-3 col-md-6">
                     <div class="txn-kpi-card d-flex align-items-center justify-content-between">
                         <div>
-                            <div class="kpi-label">Total Collected</div>
+                            <div class="kpi-label">{{ __('Total Collected') }}</div>
                             <div class="kpi-value" id="kpiCollected">SAR 0</div>
-                            <div class="kpi-sub">From customers this period</div>
+                            <div class="kpi-sub">{{ __('From customers this period') }}</div>
                         </div>
                         <div class="txn-icon-circle" style="background:rgba(22,163,74,0.1);color:#16a34a;">
                             <i class="bi bi-wallet2"></i>
@@ -87,9 +87,9 @@
                 <div class="col-lg-3 col-md-6">
                     <div class="txn-kpi-card d-flex align-items-center justify-content-between">
                         <div>
-                            <div class="kpi-label">Total Paid</div>
+                            <div class="kpi-label">{{ __('Total Paid') }}</div>
                             <div class="kpi-value" id="kpiPaid">SAR 0</div>
-                            <div class="kpi-sub">To suppliers this period</div>
+                            <div class="kpi-sub">{{ __('To suppliers this period') }}</div>
                         </div>
                         <div class="txn-icon-circle" style="background:rgba(220,38,38,0.1);color:#dc2626;">
                             <i class="bi bi-cash-coin"></i>
@@ -99,9 +99,9 @@
                 <div class="col-lg-3 col-md-6">
                     <div class="txn-kpi-card d-flex align-items-center justify-content-between">
                         <div>
-                            <div class="kpi-label">Net Cash Flow</div>
+                            <div class="kpi-label">{{ __('Net Cash Flow') }}</div>
                             <div class="kpi-value" id="kpiNetCashFlow">SAR 0</div>
-                            <div class="kpi-sub">Collected minus paid</div>
+                            <div class="kpi-sub">{{ __('Collected minus paid') }}</div>
                         </div>
                         <div class="txn-icon-circle" style="background:rgba(11,106,160,0.1);color:#0b6aa0;">
                             <i class="bi bi-arrow-left-right"></i>
@@ -111,9 +111,9 @@
                 <div class="col-lg-3 col-md-6">
                     <div class="txn-kpi-card d-flex align-items-center justify-content-between">
                         <div>
-                            <div class="kpi-label">Avg Transaction</div>
+                            <div class="kpi-label">{{ __('Avg Transaction') }}</div>
                             <div class="kpi-value" id="kpiAvgTransaction">SAR 0</div>
-                            <div class="kpi-sub">Avg value per transaction</div>
+                            <div class="kpi-sub">{{ __('Avg value per transaction') }}</div>
                         </div>
                         <div class="txn-icon-circle" style="background:rgba(91,87,174,0.1);color:#5b57ae;">
                             <i class="bi bi-bar-chart-line"></i>
@@ -126,31 +126,31 @@
             <div class="row g-3 mb-4">
                 <div class="col-lg-2 col-md-4 col-6">
                     <div class="txn-kpi-card text-center py-2">
-                        <div class="kpi-label">Payments</div>
+                        <div class="kpi-label">{{ __('Payments') }}</div>
                         <div class="kpi-value" id="kpiPaymentsCount" style="font-size:1.3rem;">0</div>
                     </div>
                 </div>
                 <div class="col-lg-2 col-md-4 col-6">
                     <div class="txn-kpi-card text-center py-2">
-                        <div class="kpi-label">Collections</div>
+                        <div class="kpi-label">{{ __('Collections') }}</div>
                         <div class="kpi-value" id="kpiCollectionsCount" style="font-size:1.3rem;">0</div>
                     </div>
                 </div>
                 <div class="col-lg-2 col-md-4 col-6">
                     <div class="txn-kpi-card text-center py-2">
-                        <div class="kpi-label">Pending Payments</div>
+                        <div class="kpi-label">{{ __('Pending Payments') }}</div>
                         <div class="kpi-value" id="kpiPendingPayments" style="font-size:1.3rem;color:#dc2626;">0</div>
                     </div>
                 </div>
                 <div class="col-lg-2 col-md-6 col-6">
                     <div class="txn-kpi-card text-center py-2">
-                        <div class="kpi-label">Pending Collections</div>
+                        <div class="kpi-label">{{ __('Pending Collections') }}</div>
                         <div class="kpi-value" id="kpiPendingCollections" style="font-size:1.3rem;color:#dc2626;">0</div>
                     </div>
                 </div>
                 <div class="col-lg-4 col-md-6 col-6">
                     <div class="txn-kpi-card text-center py-2">
-                        <div class="kpi-label">vs Last Month (Net Cash Flow)</div>
+                        <div class="kpi-label">{{ __('vs Last Month (Net Cash Flow)') }}</div>
                         <div class="kpi-value" id="kpiNetChange" style="font-size:1.1rem;">0%</div>
                     </div>
                 </div>
@@ -161,8 +161,8 @@
                 <div class="col-xl-7">
                     <div class="txn-card h-100">
                         <div class="txn-card-header">
-                            <h6><i class="bi bi-graph-up me-2" style="color:#0b6aa0;"></i>Cash Flow Trend</h6>
-                            <span class="badge-txn">{{ $range === 'this_year' ? 'Monthly' : 'Weekly' }}</span>
+                            <h6><i class="bi bi-graph-up me-2" style="color:#0b6aa0;"></i>{{ __('Cash Flow Trend') }}</h6>
+                            <span class="badge-txn">{{ $range === 'this_year' ? __('Monthly') : __('Weekly') }}</span>
                         </div>
                         <div class="txn-card-body">
                             <canvas id="chartCashFlow" height="180"></canvas>
@@ -172,8 +172,8 @@
                 <div class="col-xl-5">
                     <div class="txn-card h-100">
                         <div class="txn-card-header">
-                            <h6><i class="bi bi-pie-chart me-2" style="color:#5b57ae;"></i>Collections by Account</h6>
-                            <span class="badge-txn">Top 6</span>
+                            <h6><i class="bi bi-pie-chart me-2" style="color:#5b57ae;"></i>{{ __('Collections by Account') }}</h6>
+                            <span class="badge-txn">{{ __('Top 6') }}</span>
                         </div>
                         <div class="txn-card-body">
                             <canvas id="chartCollectionsByAccount" height="180"></canvas>
@@ -187,7 +187,7 @@
                 <div class="col-lg-4">
                     <div class="txn-card h-100">
                         <div class="txn-card-header">
-                            <h6><i class="bi bi-bank me-2" style="color:#16a34a;"></i>Payments by Account</h6>
+                            <h6><i class="bi bi-bank me-2" style="color:#16a34a;"></i>{{ __('Payments by Account') }}</h6>
                         </div>
                         <div class="txn-card-body">
                             <canvas id="chartPaymentsByAccount" height="170"></canvas>
@@ -197,7 +197,7 @@
                 <div class="col-lg-4">
                     <div class="txn-card h-100">
                         <div class="txn-card-header">
-                            <h6><i class="bi bi-cash-coin me-2" style="color:#dc2626;"></i>Payment Status</h6>
+                            <h6><i class="bi bi-cash-coin me-2" style="color:#dc2626;"></i>{{ __('Payment Status') }}</h6>
                         </div>
                         <div class="txn-card-body">
                             <canvas id="chartPaymentStatus" height="170"></canvas>
@@ -207,7 +207,7 @@
                 <div class="col-lg-4">
                     <div class="txn-card h-100">
                         <div class="txn-card-header">
-                            <h6><i class="bi bi-wallet2 me-2" style="color:#5b57ae;"></i>Collection Status</h6>
+                            <h6><i class="bi bi-wallet2 me-2" style="color:#5b57ae;"></i>{{ __('Collection Status') }}</h6>
                         </div>
                         <div class="txn-card-body">
                             <canvas id="chartCollectionStatus" height="170"></canvas>
@@ -221,8 +221,8 @@
                 <div class="col-lg-6">
                     <div class="txn-card">
                         <div class="txn-card-header">
-                            <h6><i class="bi bi-truck me-2" style="color:#f59e0b;"></i>Top Suppliers by Payment</h6>
-                            <span class="badge-txn">Payments / Total</span>
+                            <h6><i class="bi bi-truck me-2" style="color:#f59e0b;"></i>{{ __('Top Suppliers by Payment') }}</h6>
+                            <span class="badge-txn">{{ __('Payments / Total') }}</span>
                         </div>
                         <div class="txn-card-body p-0">
                             <div style="max-height:320px;overflow:auto;">
@@ -230,9 +230,9 @@
                                     <thead class="table-light">
                                         <tr>
                                             <th>#</th>
-                                            <th>Supplier</th>
-                                            <th class="text-end">Payments</th>
-                                            <th class="text-end">Total (SAR)</th>
+                                            <th>{{ __('Supplier') }}</th>
+                                            <th class="text-end">{{ __('Payments') }}</th>
+                                            <th class="text-end">{{ __('Total (SAR)') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody id="tableSuppliers"></tbody>
@@ -244,8 +244,8 @@
                 <div class="col-lg-6">
                     <div class="txn-card">
                         <div class="txn-card-header">
-                            <h6><i class="bi bi-people me-2" style="color:#0b6aa0;"></i>Top Customers by Collection</h6>
-                            <span class="badge-txn">Collections / Total</span>
+                            <h6><i class="bi bi-people me-2" style="color:#0b6aa0;"></i>{{ __('Top Customers by Collection') }}</h6>
+                            <span class="badge-txn">{{ __('Collections / Total') }}</span>
                         </div>
                         <div class="txn-card-body p-0">
                             <div style="max-height:320px;overflow:auto;">
@@ -253,9 +253,9 @@
                                     <thead class="table-light">
                                         <tr>
                                             <th>#</th>
-                                            <th>Customer</th>
-                                            <th class="text-end">Collections</th>
-                                            <th class="text-end">Total (SAR)</th>
+                                            <th>{{ __('Customer') }}</th>
+                                            <th class="text-end">{{ __('Collections') }}</th>
+                                            <th class="text-end">{{ __('Total (SAR)') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody id="tableCustomers"></tbody>
@@ -271,18 +271,18 @@
                 <div class="col-12">
                     <div class="txn-card">
                         <div class="txn-card-header">
-                            <h6><i class="bi bi-link-45deg me-2" style="color:#0b6aa0;"></i>Invoice Settlement Summary</h6>
-                            <span class="badge-txn">All-time, approved invoices</span>
+                            <h6><i class="bi bi-link-45deg me-2" style="color:#0b6aa0;"></i>{{ __('Invoice Settlement Summary') }}</h6>
+                            <span class="badge-txn">{{ __('All-time, approved invoices') }}</span>
                         </div>
                         <div class="txn-card-body p-0">
                             <table class="table txn-table mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Type</th>
-                                        <th class="text-end">Approved (SAR)</th>
-                                        <th class="text-end">Settled (SAR)</th>
-                                        <th class="text-end">Outstanding (SAR)</th>
-                                        <th style="width:220px;">Settlement Rate</th>
+                                        <th>{{ __('Type') }}</th>
+                                        <th class="text-end">{{ __('Approved (SAR)') }}</th>
+                                        <th class="text-end">{{ __('Settled (SAR)') }}</th>
+                                        <th class="text-end">{{ __('Outstanding (SAR)') }}</th>
+                                        <th style="width:220px;">{{ __('Settlement Rate') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tableSettlement"></tbody>
@@ -336,7 +336,7 @@
                 <td class="text-end fw-semibold">${fmtCurrency(s.total)}</td>
             </tr>`;
         }).join('');
-        document.getElementById('tableSuppliers').innerHTML = supHtml || '<tr><td colspan="4" class="text-center text-muted py-3">No data</td></tr>';
+        document.getElementById('tableSuppliers').innerHTML = supHtml || '<tr><td colspan="4" class="text-center text-muted py-3">{{ __('No data') }}</td></tr>';
 
         // Top customers table
         const custHtml = (d.topCustomers || []).map((c, i) => {
@@ -347,7 +347,7 @@
                 <td class="text-end fw-semibold">${fmtCurrency(c.total)}</td>
             </tr>`;
         }).join('');
-        document.getElementById('tableCustomers').innerHTML = custHtml || '<tr><td colspan="4" class="text-center text-muted py-3">No data</td></tr>';
+        document.getElementById('tableCustomers').innerHTML = custHtml || '<tr><td colspan="4" class="text-center text-muted py-3">{{ __('No data') }}</td></tr>';
 
         // Settlement summary table (links back to Customer/Supplier Invoice modules)
         const settlementHtml = (d.settlementSummary || []).map(s => {
@@ -368,7 +368,7 @@
                 </td>
             </tr>`;
         }).join('');
-        document.getElementById('tableSettlement').innerHTML = settlementHtml || '<tr><td colspan="5" class="text-center text-muted py-3">No data</td></tr>';
+        document.getElementById('tableSettlement').innerHTML = settlementHtml || '<tr><td colspan="5" class="text-center text-muted py-3">{{ __('No data') }}</td></tr>';
 
         // --- Charts ---
         const colorPalette = ['#0b6aa0','#5b57ae','#16a34a','#f59e0b','#dc2626','#8b5cf6','#06b6d4','#f97316'];
@@ -385,7 +385,7 @@
                 labels: trendLabels,
                 datasets: [
                     {
-                        label: 'Collected',
+                        label: '{{ __('Collected') }}',
                         data: trend.collected,
                         borderColor: '#16a34a',
                         backgroundColor: 'rgba(22,163,74,0.1)',
@@ -395,7 +395,7 @@
                         borderWidth: 2.5
                     },
                     {
-                        label: 'Paid',
+                        label: '{{ __('Paid') }}',
                         data: trend.paid,
                         borderColor: '#dc2626',
                         backgroundColor: 'rgba(220,38,38,0.1)',

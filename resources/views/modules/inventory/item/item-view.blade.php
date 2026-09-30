@@ -1,7 +1,7 @@
 <!-- Item Drawer Offcanvas -->
 <div class="offcanvas offcanvas-end item-drawer" tabindex="-1" id="itemDrawer" style="width: 600px;">
     <div class="offcanvas-header border-bottom bg-light px-4 py-3 d-flex justify-content-between align-items-center">
-        <h5 id="itemDrawerLabel" class="mb-0 fw-bold">Item Details</h5>
+        <h5 id="itemDrawerLabel" class="mb-0 fw-bold">{{ __('Item Details') }}</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
     </div>
 

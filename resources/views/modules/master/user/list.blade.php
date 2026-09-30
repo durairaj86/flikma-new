@@ -1,5 +1,5 @@
 @section('js','user')
-@section('page-title','Users')
+@section('page-title', __('Users'))
 <x-app-layout>
     <main class="gmail-content bg-white d-flex">
         @include('includes.master-navigation')
@@ -12,7 +12,7 @@
                             <button
                                 class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn active"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="user">
-                                <span><i class="bi bi-person-check text-warning me-1"></i> Active Users -</span>
+                                <span><i class="bi bi-person-check text-warning me-1"></i> {{ __('Active Users') }} -</span>
                                 <span class="status-count ms-2" id="userCount">0</span>
                             </button>
                         </li>
@@ -20,7 +20,7 @@
                             <button
                                 class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="employee">
-                                <span><i class="bi bi-people text-success me-1"></i> Employees -</span>
+                                <span><i class="bi bi-people text-success me-1"></i> {{ __('Employees') }} -</span>
                                 <span class="status-count ms-2" id="employeeCount">0</span>
                             </button>
                         </li>
@@ -28,7 +28,7 @@
                             <button
                                 class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="terminated">
-                                <span><i class="bi bi-person-x text-secondary me-1"></i> Terminated -</span>
+                                <span><i class="bi bi-person-x text-secondary me-1"></i> {{ __('Terminated') }} -</span>
                                 <span class="status-count ms-2" id="terminatedCount">0</span>
                             </button>
                         </li>
@@ -36,7 +36,7 @@
                             <button
                                 class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="allUsers">
-                                <span><i class="bi bi-people-fill text-danger me-1"></i> All -</span>
+                                <span><i class="bi bi-people-fill text-danger me-1"></i> {{ __('All') }} -</span>
                                 <span class="status-count ms-2" id="allusersCount">0</span>
                             </button>
                         </li>
@@ -50,10 +50,10 @@
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
 
                         <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="Search..." aria-label="Search...">
+                               placeholder="{{ __('Search...') }}" aria-label="{{ __('Search...') }}">
                     </div>
                 </div>
-                <button class="btn btn-primary rounded-pill px-4" id="new">New User</button>
+                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New User') }}</button>
             </div>
             <div class="shadow bdr-r-10 py-3 flex-grow-1">
                 <!-- Table with scroll -->
@@ -62,11 +62,11 @@
                         <thead class="table-light sticky-top bg-white">
                         <tr>
                             <th style="width: 10px">#</th>
-                            <th>Name</th>
-                            <th>Contact</th>
-                            <th>Department</th>
-                            <th>Last Login</th>
-                            <th>Joined</th>
+                            <th>{{ __('Name') }}</th>
+                            <th>{{ __('Contact') }}</th>
+                            <th>{{ __('Department') }}</th>
+                            <th>{{ __('Last Login') }}</th>
+                            <th>{{ __('Joined') }}</th>
                             <th></th>
                         </tr>
                         </thead>

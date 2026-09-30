@@ -1,11 +1,11 @@
 <div class="container px-4 py-3 align-items-center" id="modal-buttons" data-buttons="cancel,save"
-     data-button-save="Save HS Tariff">
+     data-button-save="{{ __('Save HS Tariff') }}">
     <!-- Meta Info -->
     <div class="row g-3 align-items-center bg-white border-bottom py-2 mb-3 small">
         <div class="d-flex justify-content-between align-items-center flex-wrap">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-4">
                 <div class="module-info">
-                    <span class="fw-semibold fs-5">{{ $hsTariff->hs_code ?? 'New HS Tariff' }}</span>
+                    <span class="fw-semibold fs-5">{{ $hsTariff->hs_code ?? __('New HS Tariff') }}</span>
                 </div>
             </div>
             <div id="show-buttons"></div>
@@ -19,26 +19,26 @@
             <div class="model-form-tab-div">
                 <div class="row g-3">
                     <div class="col-6 form-group">
-                        <label class="form-label required">HS Code <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('HS Code') }} <sup class="text-danger">*</sup></label>
                         <input type="text" name="hs_code" class="form-control" required
                                value="{{ $hsTariff->hs_code ?? '' }}">
                     </div>
 
                     <div class="col-6 form-group">
-                        <label class="form-label required">Duty Rate (%) <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Duty Rate (%)') }} <sup class="text-danger">*</sup></label>
                         <input type="number" name="duty_rate" class="form-control" step="0.01" min="0" max="100"
                                required value="{{ $hsTariff->duty_rate ?? '' }}">
                     </div>
 
                     <div class="col-8 form-group">
-                        <label class="form-label required">Description <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Description') }} <sup class="text-danger">*</sup></label>
                         <input type="text" name="description" class="form-control" required
                                value="{{ $hsTariff->description ?? '' }}">
                     </div>
 
                     <div class="col-4 form-group">
-                        <label class="form-label">Unit</label>
-                        <input type="text" name="unit" class="form-control" placeholder="e.g. KG, PCS"
+                        <label class="form-label">{{ __('Unit') }}</label>
+                        <input type="text" name="unit" class="form-control" placeholder="{{ __('e.g. KG, PCS') }}"
                                value="{{ $hsTariff->unit ?? '' }}">
                     </div>
 
@@ -47,7 +47,7 @@
                             <input type="checkbox" class="form-check-input" role="switch" id="is_active"
                                    name="is_active" value="1"
                                    @checked($hsTariff->is_active ?? true)>
-                            <label class="form-check-label" for="is_active">Active</label>
+                            <label class="form-check-label" for="is_active">{{ __('Active') }}</label>
                         </div>
                     </div>
                 </div>
