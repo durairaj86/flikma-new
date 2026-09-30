@@ -14,6 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'module.permission' => \App\Http\Middleware\CheckModulePermission::class,
         ]);
+
+        $middleware->web(append: [
+            \App\Http\Middleware\SetLocale::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // AI token exhaustion is a user-fixable condition, not a crash, so the
