@@ -25,12 +25,8 @@
 {{--@if(env('APP_JS') !== 'local')
     <script src="{{ asset('js/all.js') }}"></script>
 @endif--}}
-<script>
-    /* startup.js can't run through Blade's __(), so the confirm/toast text
-       it hardcodes is looked up here instead: trans(key) returns the
-       translation for the current locale, or the English key itself when
-       none exists (English) or a key is missing from lang/ar.json. */
-    window.i18n = @json(collect([
+@php
+    $i18nKeys = [
         'Are you sure you want to change status?',
         'Are you sure you want to convert this customer to Confirmed?',
         'Why do you want to reject this customer?',
@@ -55,7 +51,15 @@
         'Edit',
         'Submit',
         'Saved, but approving it failed — it is still saved as a draft.',
-    ])->mapWithKeys(fn($key) => [$key => __($key)]));
+    ];
+    $i18nMap = collect($i18nKeys)->mapWithKeys(fn($key) => [$key => __($key)]);
+@endphp
+<script>
+    /* startup.js can't run through Blade's __(), so the confirm/toast text
+       it hardcodes is looked up here instead: trans(key) returns the
+       translation for the current locale, or the English key itself when
+       none exists (English) or a key is missing from lang/ar.json. */
+    window.i18n = @json($i18nMap);
 
     window.trans = function (key) {
         return (window.i18n && window.i18n[key]) || key;
