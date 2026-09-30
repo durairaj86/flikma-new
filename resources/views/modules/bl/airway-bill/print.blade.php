@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Airway Bill - {{ $airwayBill->row_no }}</title>
+    <title>{{ __('Airway Bill') }} - {{ $airwayBill->row_no }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -82,123 +82,123 @@
 </head>
 <body>
     <div class="header">
-        <img src="{{ asset('images/logo.png') }}" alt="Company Logo" class="logo">
-        <div class="title">AIRWAY BILL</div>
+        <img src="{{ asset('images/logo.png') }}" alt="{{ __('Company Logo') }}" class="logo">
+        <div class="title">{{ __('AIRWAY BILL') }}</div>
         <div class="subtitle">{{ $airwayBill->row_no }}</div>
     </div>
 
     <div class="section">
         <div class="row">
             <div class="col">
-                <div class="label">Customer:</div>
-                <div class="value">{{ $airwayBill->customer->name ?? 'N/A' }}</div>
+                <div class="label">{{ __('Customer') }}:</div>
+                <div class="value">{{ $airwayBill->customer->name ?? __('N/A') }}</div>
 
-                <div class="label">Job Reference:</div>
-                <div class="value">{{ $airwayBill->job->row_no ?? 'N/A' }}</div>
+                <div class="label">{{ __('Job Reference') }}:</div>
+                <div class="value">{{ $airwayBill->job->row_no ?? __('N/A') }}</div>
 
-                <div class="label">Airway Bill Date:</div>
-                <div class="value">{{ $airwayBill->airway_bill_date ? date('d/m/Y', strtotime($airwayBill->airway_bill_date)) : 'N/A' }}</div>
+                <div class="label">{{ __('Airway Bill Date') }}:</div>
+                <div class="value">{{ $airwayBill->airway_bill_date ? date('d/m/Y', strtotime($airwayBill->airway_bill_date)) : __('N/A') }}</div>
             </div>
             <div class="col">
-                <div class="label">Delivery Date:</div>
-                <div class="value">{{ $airwayBill->delivery_date ? date('d/m/Y', strtotime($airwayBill->delivery_date)) : 'N/A' }}</div>
+                <div class="label">{{ __('Delivery Date') }}:</div>
+                <div class="value">{{ $airwayBill->delivery_date ? date('d/m/Y', strtotime($airwayBill->delivery_date)) : __('N/A') }}</div>
 
-                <div class="label">Status:</div>
+                <div class="label">{{ __('Status') }}:</div>
                 <div class="value">{{ ucfirst($airwayBill->status) }}</div>
             </div>
         </div>
     </div>
 
     <div class="section">
-        <div class="section-title">Flight Information</div>
+        <div class="section-title">{{ __('Flight Information') }}</div>
         <div class="row">
             <div class="col">
-                <div class="label">Origin Airport:</div>
-                <div class="value">{{ $airwayBill->origin_airport ?? 'N/A' }}</div>
+                <div class="label">{{ __('Origin Airport') }}:</div>
+                <div class="value">{{ $airwayBill->origin_airport ?? __('N/A') }}</div>
 
-                <div class="label">Destination Airport:</div>
-                <div class="value">{{ $airwayBill->destination_airport ?? 'N/A' }}</div>
+                <div class="label">{{ __('Destination Airport') }}:</div>
+                <div class="value">{{ $airwayBill->destination_airport ?? __('N/A') }}</div>
             </div>
             <div class="col">
-                <div class="label">Carrier:</div>
-                <div class="value">{{ $airwayBill->carrier ?? 'N/A' }}</div>
+                <div class="label">{{ __('Carrier') }}:</div>
+                <div class="value">{{ $airwayBill->carrier ?? __('N/A') }}</div>
 
-                <div class="label">Flight Number:</div>
-                <div class="value">{{ $airwayBill->flight_number ?? 'N/A' }}</div>
+                <div class="label">{{ __('Flight Number') }}:</div>
+                <div class="value">{{ $airwayBill->flight_number ?? __('N/A') }}</div>
             </div>
             <div class="col">
-                <div class="label">Departure Time:</div>
-                <div class="value">{{ $airwayBill->departure_time ? date('d/m/Y H:i', strtotime($airwayBill->departure_time)) : 'N/A' }}</div>
+                <div class="label">{{ __('Departure Time') }}:</div>
+                <div class="value">{{ $airwayBill->departure_time ? date('d/m/Y H:i', strtotime($airwayBill->departure_time)) : __('N/A') }}</div>
 
-                <div class="label">Arrival Time:</div>
-                <div class="value">{{ $airwayBill->arrival_time ? date('d/m/Y H:i', strtotime($airwayBill->arrival_time)) : 'N/A' }}</div>
+                <div class="label">{{ __('Arrival Time') }}:</div>
+                <div class="value">{{ $airwayBill->arrival_time ? date('d/m/Y H:i', strtotime($airwayBill->arrival_time)) : __('N/A') }}</div>
             </div>
         </div>
     </div>
 
     <div class="section">
-        <div class="section-title">Delivery Information</div>
+        <div class="section-title">{{ __('Delivery Information') }}</div>
         <div class="row">
             <div class="col">
-                <div class="label">Delivery Address:</div>
-                <div class="value">{{ $airwayBill->delivery_address ?? 'N/A' }}</div>
+                <div class="label">{{ __('Delivery Address') }}:</div>
+                <div class="value">{{ $airwayBill->delivery_address ?? __('N/A') }}</div>
             </div>
             <div class="col">
-                <div class="label">Contact Person:</div>
-                <div class="value">{{ $airwayBill->contact_person ?? 'N/A' }}</div>
+                <div class="label">{{ __('Contact Person') }}:</div>
+                <div class="value">{{ $airwayBill->contact_person ?? __('N/A') }}</div>
 
-                <div class="label">Contact Phone:</div>
-                <div class="value">{{ $airwayBill->contact_phone ?? 'N/A' }}</div>
+                <div class="label">{{ __('Contact Phone') }}:</div>
+                <div class="value">{{ $airwayBill->contact_phone ?? __('N/A') }}</div>
             </div>
         </div>
     </div>
 
     <div class="section">
-        <div class="section-title">Shipment Details</div>
+        <div class="section-title">{{ __('Shipment Details') }}</div>
         <div class="row">
             <div class="col">
-                <div class="label">Shipment Type:</div>
-                <div class="value">{{ ucfirst($airwayBill->shipment_type) ?? 'N/A' }}</div>
+                <div class="label">{{ __('Shipment Type') }}:</div>
+                <div class="value">{{ ucfirst($airwayBill->shipment_type) ?? __('N/A') }}</div>
             </div>
             <div class="col">
-                <div class="label">Service Type:</div>
-                <div class="value">{{ ucfirst($airwayBill->service_type) ?? 'N/A' }}</div>
+                <div class="label">{{ __('Service Type') }}:</div>
+                <div class="value">{{ ucfirst($airwayBill->service_type) ?? __('N/A') }}</div>
             </div>
             <div class="col">
-                <div class="label">Payment Method:</div>
-                <div class="value">{{ ucfirst(str_replace('_', ' ', $airwayBill->payment_method)) ?? 'N/A' }}</div>
+                <div class="label">{{ __('Payment Method') }}:</div>
+                <div class="value">{{ ucfirst(str_replace('_', ' ', $airwayBill->payment_method)) ?? __('N/A') }}</div>
             </div>
         </div>
     </div>
 
     <div class="section">
-        <div class="section-title">Items</div>
+        <div class="section-title">{{ __('Items') }}</div>
         <table>
             <thead>
                 <tr>
-                    <th>Description</th>
-                    <th>Comment</th>
-                    <th>Quantity</th>
-                    <th>Weight (kg)</th>
-                    <th>Dimensions (cm)</th>
-                    <th>Fragile</th>
+                    <th>{{ __('Description') }}</th>
+                    <th>{{ __('Comment') }}</th>
+                    <th>{{ __('Quantity') }}</th>
+                    <th>{{ __('Weight (kg)') }}</th>
+                    <th>{{ __('Dimensions (cm)') }}</th>
+                    <th>{{ __('Fragile') }}</th>
                 </tr>
             </thead>
             <tbody>
                 @if(count($airwayBill->airwayBillSubs) > 0)
                     @foreach($airwayBill->airwayBillSubs as $item)
                         <tr>
-                            <td>{{ $item->description->description ?? 'N/A' }}</td>
-                            <td>{{ $item->comment ?? 'N/A' }}</td>
+                            <td>{{ $item->description->description ?? __('N/A') }}</td>
+                            <td>{{ $item->comment ?? __('N/A') }}</td>
                             <td>{{ $item->quantity }}</td>
                             <td>{{ $item->weight }}</td>
                             <td>{{ $item->length }} x {{ $item->width }} x {{ $item->height }}</td>
-                            <td>{{ $item->fragile ? 'Yes' : 'No' }}</td>
+                            <td>{{ $item->fragile ? __('Yes') : __('No') }}</td>
                         </tr>
                     @endforeach
                 @else
                     <tr>
-                        <td colspan="6" class="text-center">No items found</td>
+                        <td colspan="6" class="text-center">{{ __('No items found') }}</td>
                     </tr>
                 @endif
             </tbody>
@@ -207,13 +207,13 @@
 
     @if($airwayBill->special_instructions)
         <div class="section">
-            <div class="section-title">Special Instructions</div>
+            <div class="section-title">{{ __('Special Instructions') }}</div>
             <div>{{ $airwayBill->special_instructions }}</div>
         </div>
     @endif
 
     <div class="footer">
-        <p>This document was generated on {{ date('d/m/Y H:i:s') }}</p>
+        <p>{{ __('This document was generated on :date', ['date' => date('d/m/Y H:i:s')]) }}</p>
     </div>
 </body>
 </html>

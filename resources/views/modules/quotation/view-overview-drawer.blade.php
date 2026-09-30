@@ -51,42 +51,42 @@
 <div class="tab-pane fade show active" id="quotationGeneralTab" role="tabpanel">
 
     <div class="section">
-        <h6>Party &amp; Quotation Information</h6>
+        <h6>{{ __('Party & Quotation Information') }}</h6>
         <div class="info-grid">
-            <div><strong>Party:</strong><span>{{ $quotation->party->name ?? '-' }}</span></div>
-            <div><strong>Quote No:</strong><span>#{{ $quotation->row_no }}</span></div>
-            <div><strong>Email:</strong><span>{{ $quotation->party->email ?? '-' }}</span></div>
-            <div><strong>Quotation Date:</strong><span>{{ showDate($quotation->posted_at) }}</span></div>
-            <div><strong>Phone:</strong><span>{{ $quotation->party->phone ?? '-' }}</span></div>
-            <div><strong>Valid Until:</strong><span>{{ showDate($quotation->valid_until) }}</span></div>
-            <div><strong>Prepared By:</strong><span>{{ $quotation->prepared_by ?? '-' }}</span></div>
-            <div><strong>Shipment Mode:</strong><span>{{ shipmentMode()[$quotation->shipment_mode] ?? '-' }}</span></div>
-            <div><strong>Activity:</strong><span>{{ $quotation->activity->name ?? '-' }}</span></div>
-            <div><strong>Status:</strong><span>{{ \App\Enums\QuotationEnum::tryFrom($quotation->status)?->label() ?? '-' }}</span></div>
+            <div><strong>{{ __('Party') }}:</strong><span>{{ $quotation->party->name ?? '-' }}</span></div>
+            <div><strong>{{ __('Quote No') }}:</strong><span>#{{ $quotation->row_no }}</span></div>
+            <div><strong>{{ __('Email') }}:</strong><span>{{ $quotation->party->email ?? '-' }}</span></div>
+            <div><strong>{{ __('Quotation Date') }}:</strong><span>{{ showDate($quotation->posted_at) }}</span></div>
+            <div><strong>{{ __('Phone') }}:</strong><span>{{ $quotation->party->phone ?? '-' }}</span></div>
+            <div><strong>{{ __('Valid Until') }}:</strong><span>{{ showDate($quotation->valid_until) }}</span></div>
+            <div><strong>{{ __('Prepared By') }}:</strong><span>{{ $quotation->prepared_by ?? '-' }}</span></div>
+            <div><strong>{{ __('Shipment Mode') }}:</strong><span>{{ shipmentMode()[$quotation->shipment_mode] ?? '-' }}</span></div>
+            <div><strong>{{ __('Activity') }}:</strong><span>{{ $quotation->activity->name ?? '-' }}</span></div>
+            <div><strong>{{ __('Status') }}:</strong><span>{{ \App\Enums\QuotationEnum::tryFrom($quotation->status)?->label() ?? '-' }}</span></div>
         </div>
     </div>
 
     <div class="section">
-        <h6>Shipment Routing</h6>
+        <h6>{{ __('Shipment Routing') }}</h6>
         <div class="info-grid">
-            <div><strong>Place of Receipt:</strong><span>{{ $quotation->place_of_receipt ?? '-' }}</span></div>
-            <div><strong>POL:</strong><span>{{ $quotation->pol ?? '-' }}</span></div>
-            <div><strong>POD:</strong><span>{{ $quotation->pod ?? '-' }}</span></div>
-            <div><strong>Place of Delivery:</strong><span>{{ $quotation->place_of_delivery ?? '-' }}</span></div>
-            <div><strong>Final Destination:</strong><span>{{ $quotation->final_destination ?? '-' }}</span></div>
-            <div><strong>Incoterm:</strong><span>{{ $quotation->incoterm ?? '-' }}</span></div>
-            <div><strong>Carrier:</strong><span>{{ $quotation->carrier ?? '-' }}</span></div>
+            <div><strong>{{ __('Place of Receipt') }}:</strong><span>{{ $quotation->place_of_receipt ?? '-' }}</span></div>
+            <div><strong>{{ __('POL') }}:</strong><span>{{ $quotation->pol ?? '-' }}</span></div>
+            <div><strong>{{ __('POD') }}:</strong><span>{{ $quotation->pod ?? '-' }}</span></div>
+            <div><strong>{{ __('Place of Delivery') }}:</strong><span>{{ $quotation->place_of_delivery ?? '-' }}</span></div>
+            <div><strong>{{ __('Final Destination') }}:</strong><span>{{ $quotation->final_destination ?? '-' }}</span></div>
+            <div><strong>{{ __('Incoterm') }}:</strong><span>{{ $quotation->incoterm ?? '-' }}</span></div>
+            <div><strong>{{ __('Carrier') }}:</strong><span>{{ $quotation->carrier ?? '-' }}</span></div>
         </div>
     </div>
 
     @if($quotation->terms || $quotation->notes)
         <div class="section">
-            <h6>Additional Information</h6>
+            <h6>{{ __('Additional Information') }}</h6>
             @if($quotation->terms)
-                <p class="mb-2"><strong>Terms &amp; Conditions:</strong> {{ $quotation->terms }}</p>
+                <p class="mb-2"><strong>{{ __('Terms & Conditions') }}:</strong> {{ $quotation->terms }}</p>
             @endif
             @if($quotation->notes)
-                <p class="mb-0"><strong>Notes:</strong> {{ $quotation->notes }}</p>
+                <p class="mb-0"><strong>{{ __('Notes') }}:</strong> {{ $quotation->notes }}</p>
             @endif
         </div>
     @endif
@@ -100,8 +100,8 @@
             <table class="table table-bordered table-sm align-middle">
                 <thead>
                 <tr>
-                    <th>#</th><th>Size</th><th>Container No</th><th>Seal No</th>
-                    <th>Gross Wt</th><th>Net Wt</th><th>CBM</th><th>Hazardous</th>
+                    <th>#</th><th>{{ __('Size') }}</th><th>{{ __('Container No') }}</th><th>{{ __('Seal No') }}</th>
+                    <th>{{ __('Gross Wt') }}</th><th>{{ __('Net Wt') }}</th><th>CBM</th><th>{{ __('Hazardous') }}</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -123,7 +123,7 @@
     @else
         <div class="text-center py-5 text-muted">
             <i class="bi bi-box-seam fs-2 mb-2 d-block"></i>
-            No containers added to this quotation.
+            {{ __('No containers added to this quotation.') }}
         </div>
     @endif
 </div>
@@ -135,8 +135,8 @@
             <table class="table table-bordered table-sm align-middle">
                 <thead>
                 <tr>
-                    <th>#</th><th>Commodity</th><th>Description</th><th>HS Code</th>
-                    <th>L</th><th>W</th><th>H</th><th>Weight</th>
+                    <th>#</th><th>{{ __('Commodity') }}</th><th>{{ __('Description') }}</th><th>{{ __('HS Code') }}</th>
+                    <th>L</th><th>W</th><th>H</th><th>{{ __('Weight') }}</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -158,7 +158,7 @@
     @else
         <div class="text-center py-5 text-muted">
             <i class="bi bi-boxes fs-2 mb-2 d-block"></i>
-            No packages added to this quotation.
+            {{ __('No packages added to this quotation.') }}
         </div>
     @endif
 </div>
@@ -170,8 +170,8 @@
             <table class="table table-bordered table-sm align-middle">
                 <thead>
                 <tr>
-                    <th>#</th><th>Charge Description</th><th>Unit</th><th class="text-end">Qty</th>
-                    <th class="text-end">Rate</th><th>Currency</th><th class="text-end">FCY Amount</th><th class="text-end">Local Amount</th>
+                    <th>#</th><th>{{ __('Charge Description') }}</th><th>{{ __('Unit') }}</th><th class="text-end">{{ __('Qty') }}</th>
+                    <th class="text-end">{{ __('Rate') }}</th><th>{{ __('Currency') }}</th><th class="text-end">{{ __('FCY Amount') }}</th><th class="text-end">{{ __('Local Amount') }}</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -190,7 +190,7 @@
                 </tbody>
                 <tfoot>
                 <tr class="fw-bold">
-                    <td colspan="7" class="text-end">Total</td>
+                    <td colspan="7" class="text-end">{{ __('Total') }}</td>
                     <td class="text-end">{{ number_format($quotation->charges->sum('local_amount'), 2) }}</td>
                 </tr>
                 </tfoot>
@@ -199,7 +199,7 @@
     @else
         <div class="text-center py-5 text-muted">
             <i class="bi bi-receipt fs-2 mb-2 d-block"></i>
-            No charges added to this quotation.
+            {{ __('No charges added to this quotation.') }}
         </div>
     @endif
 </div>

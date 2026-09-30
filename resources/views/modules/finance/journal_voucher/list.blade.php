@@ -1,4 +1,4 @@
-@section('page-title','Journal Vouchers')
+@section('page-title', __('Journal Vouchers'))
 @section('js','journal_voucher')
 <x-app-layout>
     <!-- Main Content -->
@@ -12,7 +12,7 @@
                             <button
                                 class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn active"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="draft">
-                                <span><i class="bi bi-clock me-1"></i> Draft -</span>
+                                <span><i class="bi bi-clock me-1"></i> {{ __('Draft') }} -</span>
                                 <span class="status-count ms-2" id="draftCount">0</span>
                             </button>
                         </li>
@@ -20,7 +20,7 @@
                             <button
                                 class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="approved">
-                                <span><i class="bi bi-check-circle me-1"></i> Approved -</span>
+                                <span><i class="bi bi-check-circle me-1"></i> {{ __('Approved') }} -</span>
                                 <span class="status-count ms-2" id="approvedCount">0</span>
                             </button>
                         </li>
@@ -31,7 +31,7 @@
                 <div class="position-relative">
                     <!-- Compact Filter button -->
                     <button class="btn btn-outline-secondary me-2" onclick="toggleFilter()"><i class="bi bi-funnel"></i>
-                        Filter
+                        {{ __('Filter') }}
                     </button>
 
                     <!-- Filter panel (dropdown style) -->
@@ -67,51 +67,51 @@
                         <!-- Voucher Type -->
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">Voucher Type</span>
-                                <button class="btn btn-link btn-sm p-0" onclick="resetField('voucherType')">Reset</button>
+                                <span class="fw-medium">{{ __('Voucher Type') }}</span>
+                                <button class="btn btn-link btn-sm p-0" onclick="resetField('voucherType')">{{ __('Reset') }}</button>
                             </div>
                             <select class="form-select" id="voucherType">
-                                <option value="">All Types</option>
-                                <option value="1">Accounting / Finance</option>
-                                <option value="2">Inventory / Stock Adjustments</option>
-                                <option value="3">VAT / Tax Adjustments</option>
-                                <option value="4">Bank Reconciliation</option>
-                                <option value="5">Opening Balances</option>
-                                <option value="6">Miscellaneous / Others</option>
+                                <option value="">{{ __('All Types') }}</option>
+                                <option value="1">{{ __('Accounting / Finance') }}</option>
+                                <option value="2">{{ __('Inventory / Stock Adjustments') }}</option>
+                                <option value="3">{{ __('VAT / Tax Adjustments') }}</option>
+                                <option value="4">{{ __('Bank Reconciliation') }}</option>
+                                <option value="5">{{ __('Opening Balances') }}</option>
+                                <option value="6">{{ __('Miscellaneous / Others') }}</option>
                             </select>
                         </div>
 
                         <!-- Status -->
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">Status</span>
-                                <button class="btn btn-link btn-sm p-0" onclick="resetField('status')">Reset</button>
+                                <span class="fw-medium">{{ __('Status') }}</span>
+                                <button class="btn btn-link btn-sm p-0" onclick="resetField('status')">{{ __('Reset') }}</button>
                             </div>
                             <select class="form-select" id="status">
-                                <option value="">All Statuses</option>
-                                <option value="1">Draft</option>
-                                <option value="2">Approved</option>
-                                <option value="3">Disapproved</option>
+                                <option value="">{{ __('All Statuses') }}</option>
+                                <option value="1">{{ __('Draft') }}</option>
+                                <option value="2">{{ __('Approved') }}</option>
+                                <option value="3">{{ __('Disapproved') }}</option>
                             </select>
                         </div>
 
                         <!-- Keyword search -->
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">Keyword search</span>
-                                <button class="btn btn-link btn-sm p-0" onclick="resetField('keyword')">Reset</button>
+                                <span class="fw-medium">{{ __('Keyword search') }}</span>
+                                <button class="btn btn-link btn-sm p-0" onclick="resetField('keyword')">{{ __('Reset') }}</button>
                             </div>
-                            <input type="text" class="form-control" placeholder="Search..." id="keyword">
+                            <input type="text" class="form-control" placeholder="{{ __('Search...') }}" id="keyword">
                         </div>
 
                         <!-- Buttons -->
                         <div class="d-flex justify-content-between">
-                            <button class="btn btn-outline-secondary" onclick="resetAll()">Reset all</button>
-                            <button class="btn btn-success">Apply now</button>
+                            <button class="btn btn-outline-secondary" onclick="resetAll()">{{ __('Reset all') }}</button>
+                            <button class="btn btn-success">{{ __('Apply now') }}</button>
                         </div>
                     </div>
                 </div>
-                <button class="btn btn-primary rounded-pill px-4" id="new">New Journal Voucher</button>
+                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Journal Voucher') }}</button>
             </div>
         </div>
 
@@ -119,10 +119,10 @@
             <div class="d-flex justify-content-between px-3 flex-shrink-0">
                 <div class="d-inline-flex align-items-center bg-light border rounded-pill px-2 py-1 me-2 mb-2 small"
                      style="font-size: 0.8rem;">
-                    <span class="me-2">Date: 10-12-2024 / 10-12-2025</span>
+                    <span class="me-2">{{ __('Date') }}: 10-12-2024 / 10-12-2025</span>
                     <button type="button"
                             class="btn btn-sm btn-light p-0 border-0 d-flex align-items-center justify-content-center"
-                            style="width: 16px; height: 16px; line-height: 1;" aria-label="Close"
+                            style="width: 16px; height: 16px; line-height: 1;" aria-label="{{ __('Close') }}"
                             onclick="clearDateLabel()">
                         &times;
                     </button>
@@ -132,7 +132,7 @@
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
 
                         <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="Search journal vouchers..." aria-label="Search journal vouchers...">
+                               placeholder="{{ __('Search journal vouchers...') }}" aria-label="{{ __('Search journal vouchers...') }}">
                     </div>
                 </div>
             </div>
@@ -141,15 +141,15 @@
                     <thead class="table-light bg-white">
                     <tr>
                         <th>#</th>
-                        <th>Voucher No</th>
-                        <th>Voucher Type</th>
-                        <th>Job No</th>
-                        <th>Voucher Date</th>
-                        <th>Reference No</th>
-                        <th>Currency</th>
-                        <th>Debit Total</th>
-                        <th>Credit Total</th>
-                        <th>Status</th>
+                        <th>{{ __('Voucher No') }}</th>
+                        <th>{{ __('Voucher Type') }}</th>
+                        <th>{{ __('Job No') }}</th>
+                        <th>{{ __('Voucher Date') }}</th>
+                        <th>{{ __('Reference No') }}</th>
+                        <th>{{ __('Currency') }}</th>
+                        <th>{{ __('Debit Total') }}</th>
+                        <th>{{ __('Credit Total') }}</th>
+                        <th>{{ __('Status') }}</th>
                     </tr>
                     </thead>
                 </table>
@@ -162,21 +162,21 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="disapprovalReasonModalLabel">Disapproval Reason</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <h5 class="modal-title" id="disapprovalReasonModalLabel">{{ __('Disapproval Reason') }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
                     </div>
                     <div class="modal-body">
                         <form id="disapprovalReasonForm">
                             <input type="hidden" id="journal_voucher_id" name="journal_voucher_id">
                             <div class="mb-3">
-                                <label for="reason" class="form-label">Reason for Disapproval</label>
+                                <label for="reason" class="form-label">{{ __('Reason for Disapproval') }}</label>
                                 <textarea class="form-control" id="reason" name="reason" rows="3" required></textarea>
                             </div>
                         </form>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-danger" id="submitDisapprovalReason">Submit</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                        <button type="button" class="btn btn-danger" id="submitDisapprovalReason">{{ __('Submit') }}</button>
                     </div>
                 </div>
             </div>

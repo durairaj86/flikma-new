@@ -4,18 +4,18 @@
     <div class="invoice-wrapper">
         {{-- DRAFT Watermark --}}
         @if($supplierInvoice->status == 1)
-            <div class="draft-watermark">DRAFT</div>
+            <div class="draft-watermark">{{ __('DRAFT') }}</div>
         @endif
         <!-- Action Buttons -->
         <div class="d-flex justify-content-end align-items-center gap-2 mb-3">
             <button type="button" class="btn btn-outline-secondary btn-sm" onclick="SUPPLIER_INVOICE.printPreview('{{ $supplierInvoice->id }}')">
-                <i class="bi bi-printer me-1"></i> Print
+                <i class="bi bi-printer me-1"></i> {{ __('Print') }}
             </button>
             <button type="button" class="btn btn-outline-secondary btn-sm" onclick="SUPPLIER_INVOICE.downloadPDF('{{ $supplierInvoice->id }}')">
-                <i class="bi bi-file-earmark-pdf me-1"></i> Download PDF
+                <i class="bi bi-file-earmark-pdf me-1"></i> {{ __('Download PDF') }}
             </button>
             <button type="button" class="btn btn-outline-secondary">
-                <i class="bi bi-x-circle me-1"></i> Cancel
+                <i class="bi bi-x-circle me-1"></i> {{ __('Cancel') }}
             </button>
         </div>
 
@@ -32,19 +32,19 @@
                 </small>
             </div>
         </div>
-        <div class="invoice-title">SUPPLIER INVOICE</div>
+        <div class="invoice-title">{{ __('SUPPLIER INVOICE') }}</div>
 
         <!-- Supplier Info -->
         <div class="row mb-4">
             <div class="col-6">
-                <h6><strong>To,</strong></h6>
+                <h6><strong>{{ __('To,') }}</strong></h6>
                 <div><strong>{{ $supplierInvoice->supplier->name }}</strong></div>
                 <div>{{ $supplierInvoice->supplier->address ?? '-' }}</div>
                 @if($supplierInvoice->supplier->email)
-                    <div>Email: {{ $supplierInvoice->supplier->email }}</div>
+                    <div>{{ __('Email') }}: {{ $supplierInvoice->supplier->email }}</div>
                 @endif
                 @if($supplierInvoice->supplier->phone)
-                    <div>Phone: {{ $supplierInvoice->supplier->phone }}</div>
+                    <div>{{ __('Phone') }}: {{ $supplierInvoice->supplier->phone }}</div>
                 @endif
             </div>
             <div class="col-6">
@@ -52,42 +52,42 @@
 
                     <!-- Each row: label and value -->
                     <div class="d-flex w-100 justify-content-end">
-                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">Supplier Invoice No:</div>
+                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">{{ __('Supplier Invoice No') }}:</div>
                         <div class="text-end" style="min-width: 120px;">#{{ $supplierInvoice->row_no }}</div>
                     </div>
 
                     <div class="d-flex w-100 justify-content-end">
-                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">Received Invoice No:</div>
+                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">{{ __('Received Invoice No') }}:</div>
                         <div class="text-end" style="min-width: 120px;">#{{ $supplierInvoice->invoice_number }}</div>
                     </div>
 
                     <div class="d-flex w-100 justify-content-end">
-                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">Invoice Date:</div>
+                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">{{ __('Invoice Date') }}:</div>
                         <div class="text-end" style="min-width: 120px;">{{ $supplierInvoice->invoice_date }}</div>
                     </div>
 
                     <div class="d-flex w-100 justify-content-end">
-                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">Due Date:</div>
+                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">{{ __('Due Date') }}:</div>
                         <div class="text-end" style="min-width: 120px;">{{ $supplierInvoice->due_at }}</div>
                     </div>
 
                     <div class="d-flex w-100 justify-content-end">
-                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">Currency:</div>
+                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">{{ __('Currency') }}:</div>
                         <div class="text-end" style="min-width: 120px;">{{ $supplierInvoice->currency }}</div>
                     </div>
 
                     <div class="d-flex w-100 justify-content-end">
-                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">Exchange Rate:</div>
+                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">{{ __('Exchange Rate') }}:</div>
                         <div class="text-end" style="min-width: 120px;">{{ number_format($supplierInvoice->currency_rate, decimals()) }}</div>
                     </div>
 
                     <div class="d-flex w-100 justify-content-end">
-                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">Job:</div>
+                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">{{ __('Job') }}:</div>
                         <div class="text-end" style="min-width: 120px;">{{ $supplierInvoice->job_no }}</div>
                     </div>
 
                     <div class="d-flex w-100 justify-content-end">
-                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">Status:</div>
+                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">{{ __('Status') }}:</div>
                         <div class="text-end" style="min-width: 120px;">
                 <span class="badge
                     @if($supplierInvoice->status == 1) bg-warning text-dark
@@ -106,10 +106,10 @@
 
 
             <div class="col-6 text-end d-none">
-                <div><strong>Currency:</strong> {{ $supplierInvoice->currency }}</div>
-                <div><strong>Exchange Rate:</strong> {{ number_format($supplierInvoice->currency_rate, decimals()) }}</div>
-                <div><strong>Job:</strong> {{ $supplierInvoice->job_no }}</div>
-                <div><strong>Status:</strong>
+                <div><strong>{{ __('Currency') }}:</strong> {{ $supplierInvoice->currency }}</div>
+                <div><strong>{{ __('Exchange Rate') }}:</strong> {{ number_format($supplierInvoice->currency_rate, decimals()) }}</div>
+                <div><strong>{{ __('Job') }}:</strong> {{ $supplierInvoice->job_no }}</div>
+                <div><strong>{{ __('Status') }}:</strong>
                     <span class="badge
                 @if($supplierInvoice->status == 1) bg-warning text-dark
                 @elseif($supplierInvoice->status == 2) bg-success
@@ -129,11 +129,11 @@
                     <thead>
                     <tr>
                         <th style="width: 40px;">#</th>
-                        <th>Description</th>
-                        <th class="text-end">Qty</th>
-                        <th class="text-end">Unit</th>
-                        <th class="text-end">Unit Price</th>
-                        <th class="text-end">Tax</th>
+                        <th>{{ __('Description') }}</th>
+                        <th class="text-end">{{ __('Qty') }}</th>
+                        <th class="text-end">{{ __('Unit') }}</th>
+                        <th class="text-end">{{ __('Unit Price') }}</th>
+                        <th class="text-end">{{ __('Tax') }}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -165,21 +165,21 @@
             </div>
             <table class="total-table">
                 <tr>
-                    <td><strong>Subtotal</strong></td>
+                    <td><strong>{{ __('Subtotal') }}</strong></td>
                     <td class="text-end">{{ amountFormat($supplierInvoice->sub_total) }}</td>
                 </tr>
                 <tr>
-                    <td><strong>Tax</strong></td>
+                    <td><strong>{{ __('Tax') }}</strong></td>
                     <td class="text-end">{{ amountFormat($supplierInvoice->tax_total) }}</td>
                 </tr>
                 @if($supplierInvoice->discount_total > 0)
                     <tr>
-                        <td><strong>Discount</strong></td>
+                        <td><strong>{{ __('Discount') }}</strong></td>
                         <td class="text-end">-{{ amountFormat($supplierInvoice->discount_total) }}</td>
                     </tr>
                 @endif
                 <tr>
-                    <td><strong>Grand Total</strong>
+                    <td><strong>{{ __('Grand Total') }}</strong>
                         @if(strtoupper($supplierInvoice->currency) !== 'SAR')
                             <div class="currency-note">{{ amountFormat($supplierInvoice->currency_rate) }} SAR</div>
                         @endif
@@ -193,13 +193,13 @@
                     </td>
                 </tr>
                 <tr>
-                    <td><strong>Paid Amount</strong></td>
+                    <td><strong>{{ __('Paid Amount') }}</strong></td>
                     <td class="text-end">
                         {{ amountFormat($supplierInvoice->paid_amount ?? 0) }} {{ $supplierInvoice->currency }}
                     </td>
                 </tr>
                 <tr class="table-secondary">
-                    <td><strong>Balance</strong></td>
+                    <td><strong>{{ __('Balance') }}</strong></td>
                     <td class="text-end fw-bold">
                         {{ amountFormat(($supplierInvoice->grand_total ?? 0) - ($supplierInvoice->paid_amount ?? 0)) }} {{ $supplierInvoice->currency }}
                     </td>
@@ -209,14 +209,14 @@
 
         <!-- Amount in Words -->
         <div class="mt-2">
-            <strong>Amount in Words:</strong>
+            <strong>{{ __('Amount in Words') }}:</strong>
             <span>{{ amountInWords(round($supplierInvoice->grand_total, 2)) }} {{ $supplierInvoice->currency }}</span>
         </div>
 
         <!-- Terms -->
         @if($supplierInvoice->terms)
             <div class="terms-box mt-4">
-                <h6 class="fw-semibold mb-2">Terms & Conditions</h6>
+                <h6 class="fw-semibold mb-2">{{ __('Terms & Conditions') }}</h6>
                 <p class="mb-0">{{ $supplierInvoice->terms }}</p>
             </div>
         @endif
@@ -224,8 +224,8 @@
         <!-- Footer -->
         <footer class="mt-5 pt-3 border-top text-center text-muted small">
             <div class="d-flex justify-content-between">
-                <div>Email: {{ companyEmail() }}</div>
-                <div>Phone: {{ companyPhone() }}</div>
+                <div>{{ __('Email') }}: {{ companyEmail() }}</div>
+                <div>{{ __('Phone') }}: {{ companyPhone() }}</div>
             </div>
         </footer>
 

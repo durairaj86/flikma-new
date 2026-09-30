@@ -2,7 +2,7 @@
     <div class="d-flex justify-content-between align-items-center flex-wrap">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-4">
             <div class="module-info">
-                <span class="fw-semibold fs-5">{{ $monthlySalary->row_no ?? 'New Monthly Salary' }}</span>
+                <span class="fw-semibold fs-5">{{ $monthlySalary->row_no ?? __('New Monthly Salary') }}</span>
             </div>
         </div>
         <div id="show-buttons"></div>
@@ -20,7 +20,7 @@
                 <div class="row g-3">
                     <!-- Employee -->
                     <div class="col-md-6">
-                        <label class="form-label required">Employee <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Employee') }} <sup class="text-danger">*</sup></label>
                         <x-common.employee value="{{ $monthlySalary->employee_id ?? '' }}" id="employee_id"></x-common.employee>
                     </div>
 
@@ -28,9 +28,9 @@
                     <div class="col-md-6">
                         <div class="row">
                             <div class="col-md-6">
-                                <label class="form-label required">Month <sup class="text-danger">*</sup></label>
+                                <label class="form-label required">{{ __('Month') }} <sup class="text-danger">*</sup></label>
                                 <select name="month" class="tom-select" required>
-                                    <option value="">Select Month</option>
+                                    <option value="">{{ __('Select Month') }}</option>
                                     @foreach($months as $key => $month)
                                         <option value="{{ $key }}" @selected($salaryMonth == $key)>
                                             {{ $month }}
@@ -39,9 +39,9 @@
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label required">Year <sup class="text-danger">*</sup></label>
+                                <label class="form-label required">{{ __('Year') }} <sup class="text-danger">*</sup></label>
                                 <select name="year" class="tom-select" required>
-                                    <option value="">Select Year</option>
+                                    <option value="">{{ __('Select Year') }}</option>
                                     @foreach($years as $key => $year)
                                         <option value="{{ $key }}" @selected($salaryYear == $key)>
                                             {{ $year }}
@@ -57,23 +57,23 @@
                 <div class="row g-3 mt-3">
                     <div class="col-12 border-bottom">
                         <div class="d-flex justify-content-between">
-                            <h5>Salary Details</h5>
+                            <h5>{{ __('Salary Details') }}</h5>
                             <button type="button" id="fetch-basic-salary" class="btn btn-sm btn-outline-primary mb-3">
-                                <i class="bi bi-arrow-repeat"></i> Fetch Basic Salary Details
+                                <i class="bi bi-arrow-repeat"></i> {{ __('Fetch Basic Salary Details') }}
                             </button>
                         </div>
                     </div>
 
                     <!-- Basic Salary -->
                     <div class="col-md-4">
-                        <label class="form-label required">Basic Salary <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Basic Salary') }} <sup class="text-danger">*</sup></label>
                         <input type="text" name="basic_salary" id="basic_salary" class="form-control float"
                                value="{{ $monthlySalary->basic_salary ?? 0 }}" min="0" step="0.01" required>
                     </div>
 
                     <!-- Housing Allowance -->
                     <div class="col-md-4">
-                        <label class="form-label">Housing Allowance</label>
+                        <label class="form-label">{{ __('Housing Allowance') }}</label>
                         <input type="text" name="housing_allowance" id="housing_allowance"
                                class="form-control allowance float"
                                value="{{ $monthlySalary->housing_allowance ?? 0 }}" min="0" step="0.01">
@@ -81,7 +81,7 @@
 
                     <!-- Transportation Allowance -->
                     <div class="col-md-4">
-                        <label class="form-label">Transportation Allowance</label>
+                        <label class="form-label">{{ __('Transportation Allowance') }}</label>
                         <input type="text" name="transportation_allowance" id="transportation_allowance"
                                class="form-control allowance float"
                                value="{{ $monthlySalary->transportation_allowance ?? 0 }}" min="0" step="0.01">
@@ -89,7 +89,7 @@
 
                     <!-- Food Allowance -->
                     <div class="col-md-4">
-                        <label class="form-label">Food Allowance</label>
+                        <label class="form-label">{{ __('Food Allowance') }}</label>
                         <input type="text" name="food_allowance" id="food_allowance"
                                class="form-control allowance float"
                                value="{{ $monthlySalary->food_allowance ?? 0 }}" min="0" step="0.01">
@@ -97,7 +97,7 @@
 
                     <!-- Phone Allowance -->
                     <div class="col-md-4">
-                        <label class="form-label">Phone Allowance</label>
+                        <label class="form-label">{{ __('Phone Allowance') }}</label>
                         <input type="text" name="phone_allowance" id="phone_allowance"
                                class="form-control allowance float"
                                value="{{ $monthlySalary->phone_allowance ?? 0 }}" min="0" step="0.01">
@@ -105,7 +105,7 @@
 
                     <!-- Other Allowance -->
                     <div class="col-md-4">
-                        <label class="form-label">Other Allowance</label>
+                        <label class="form-label">{{ __('Other Allowance') }}</label>
                         <input type="text" name="other_allowance" id="other_allowance"
                                class="form-control allowance float"
                                value="{{ $monthlySalary->other_allowance ?? 0 }}" min="0" step="0.01">
@@ -113,14 +113,14 @@
 
                     <!-- Overtime Hours -->
                     <div class="col-md-4">
-                        <label class="form-label">Overtime Hours</label>
+                        <label class="form-label">{{ __('Overtime Hours') }}</label>
                         <input type="text" name="overtime_hours" id="overtime_hours" class="form-control float"
                                value="{{ $monthlySalary->overtime_hours ?? 0 }}" min="0" step="0.01">
                     </div>
 
                     <!-- Overtime Amount -->
                     <div class="col-md-4">
-                        <label class="form-label">Overtime Amount</label>
+                        <label class="form-label">{{ __('Overtime Amount') }}</label>
                         <input type="text" name="overtime_amount" id="overtime_amount"
                                class="form-control addition float"
                                value="{{ $monthlySalary->overtime_amount ?? 0 }}" min="0" step="0.01">
@@ -128,21 +128,21 @@
 
                     <!-- Bonus -->
                     <div class="col-md-4">
-                        <label class="form-label">Bonus</label>
+                        <label class="form-label">{{ __('Bonus') }}</label>
                         <input type="text" name="bonus" id="bonus" class="form-control addition float"
                                value="{{ $monthlySalary->bonus ?? 0 }}" min="0" step="0.01">
                     </div>
 
                     <!-- Deductions -->
                     <div class="col-md-4">
-                        <label class="form-label">Deductions</label>
+                        <label class="form-label">{{ __('Deductions') }}</label>
                         <input type="text" name="deductions" id="deductions" class="form-control deduction float"
                                value="{{ $monthlySalary->deductions ?? 0 }}" min="0" step="0.01">
                     </div>
 
                     <!-- Loan Deduction -->
                     <div class="col-md-4">
-                        <label class="form-label">Loan Deduction</label>
+                        <label class="form-label">{{ __('Loan Deduction') }}</label>
                         <input type="text" name="loan_deduction" id="loan_deduction"
                                class="form-control deduction float"
                                value="{{ $monthlySalary->loan_deduction ?? 0 }}" min="0" step="0.01">
@@ -150,14 +150,14 @@
 
                     <!-- Total Salary -->
                     <div class="col-md-4">
-                        <label class="form-label required">Total Salary <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Total Salary') }} <sup class="text-danger">*</sup></label>
                         <input type="text" name="total_salary" id="total_salary" class="form-control float"
                                value="{{ $monthlySalary->total_salary ?? 0 }}" min="0" step="0.01" required readonly disabled>
                     </div>
 
                     <!-- Payment Date -->
                     <div class="col-md-4">
-                        <label class="form-label required">Payment Date <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Payment Date') }} <sup class="text-danger">*</sup></label>
                         <input type="date" id="payment_date" name="payment_date" class="form-control datepicker"
                                value="{{ isset($monthlySalary) ? showDate($monthlySalary->payment_date) : '' }}"
                                required>
@@ -165,9 +165,9 @@
 
                     <!-- Payment Method -->
                     <div class="col-md-4">
-                        <label class="form-label required">Payment Method <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Payment Method') }} <sup class="text-danger">*</sup></label>
                         <select name="payment_method" class="tom-select" required>
-                            <option value="">Select Payment Method</option>
+                            <option value="">{{ __('Select Payment Method') }}</option>
                             @foreach($paymentMethods as $method)
                                 <option
                                     value="{{ $method }}" @selected(isset($monthlySalary) && $monthlySalary->payment_method == $method)>
@@ -179,18 +179,18 @@
 
                     <!-- Status -->
                     <div class="col-md-4">
-                        <label class="form-label required">Status <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Status') }} <sup class="text-danger">*</sup></label>
                         <select name="status" class="tom-select" required>
                             <option
                                 value="pending" @selected(isset($monthlySalary) && $monthlySalary->status == 'pending')>
-                                Pending
+                                {{ __('Pending') }}
                             </option>
                             <option value="paid" @selected(isset($monthlySalary) && $monthlySalary->status == 'paid')>
-                                Paid
+                                {{ __('Paid') }}
                             </option>
                             <option
                                 value="cancelled" @selected(isset($monthlySalary) && $monthlySalary->status == 'cancelled')>
-                                Cancelled
+                                {{ __('Cancelled') }}
                             </option>
                         </select>
                     </div>
@@ -200,9 +200,9 @@
 
         <!-- Remarks -->
         <div class="mt-3 px-4">
-            <label class="form-label fw-semibold">Remarks</label>
+            <label class="form-label fw-semibold">{{ __('Remarks') }}</label>
             <textarea name="remarks" class="form-control h-100" rows="4"
-                      placeholder="Any additional information...">{{ $monthlySalary->remarks ?? '' }}</textarea>
+                      placeholder="{{ __('Any additional information...') }}">{{ $monthlySalary->remarks ?? '' }}</textarea>
         </div>
     </form>
 </div>

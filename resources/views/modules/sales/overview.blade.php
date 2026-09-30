@@ -1,10 +1,10 @@
-@section('page-title','Sales Overview')
-@section('page-subtitle', 'Real-time sales performance dashboard')
+@section('page-title', __('Sales Overview'))
+@section('page-subtitle', __('Real-time sales performance dashboard'))
 @section('print-footer')
 <script>
     window.printFooter = {
         show: true,
-        custom: 'Sales Overview - Generated on {{ date('d-m-Y H:i') }}'
+        custom: '{{ __('Sales Overview - Generated on :date', ['date' => date('d-m-Y H:i')]) }}'
     };
 </script>
 @endsection
@@ -66,12 +66,12 @@
             <div class="d-flex flex-wrap justify-content-end align-items-center mb-3">
                 <div class="d-flex align-items-center gap-2">
                     <select id="dateRange" class="form-select form-select-sm" style="width:auto;min-width:140px;">
-                        <option value="this_month" {{ $range==='this_month' ? 'selected' : '' }}>This Month</option>
-                        <option value="last_month" {{ $range==='last_month' ? 'selected' : '' }}>Last Month</option>
-                        <option value="this_year" {{ $range==='this_year' ? 'selected' : '' }}>This Year</option>
+                        <option value="this_month" {{ $range==='this_month' ? 'selected' : '' }}>{{ __('This Month') }}</option>
+                        <option value="last_month" {{ $range==='last_month' ? 'selected' : '' }}>{{ __('Last Month') }}</option>
+                        <option value="this_year" {{ $range==='this_year' ? 'selected' : '' }}>{{ __('This Year') }}</option>
                     </select>
                     <button class="btn btn-primary btn-sm px-3" id="btn-apply">
-                        <i class="bi bi-arrow-repeat me-1"></i> Apply
+                        <i class="bi bi-arrow-repeat me-1"></i> {{ __('Apply') }}
                     </button>
                 </div>
             </div>
@@ -81,9 +81,9 @@
                 <div class="col-lg-3 col-md-6">
                     <div class="sales-kpi-card d-flex align-items-center justify-content-between">
                         <div>
-                            <div class="kpi-label">Total Sales</div>
+                            <div class="kpi-label">{{ __('Total Sales') }}</div>
                             <div class="kpi-value" id="kpiSales">SAR 0</div>
-                            <div class="kpi-sub">Invoiced this period</div>
+                            <div class="kpi-sub">{{ __('Invoiced this period') }}</div>
                         </div>
                         <div class="sales-icon-circle" style="background:rgba(11,106,160,0.1);color:#0b6aa0;">
                             <i class="bi bi-cart-check"></i>
@@ -93,9 +93,9 @@
                 <div class="col-lg-3 col-md-6">
                     <div class="sales-kpi-card d-flex align-items-center justify-content-between">
                         <div>
-                            <div class="kpi-label">Pending Approval</div>
+                            <div class="kpi-label">{{ __('Pending Approval') }}</div>
                             <div class="kpi-value" id="kpiPendingApproval">SAR 0</div>
-                            <div class="kpi-sub">Draft &amp; sent invoices</div>
+                            <div class="kpi-sub">{{ __('Draft & sent invoices') }}</div>
                         </div>
                         <div class="sales-icon-circle" style="background:rgba(22,163,74,0.1);color:#16a34a;">
                             <i class="bi bi-wallet2"></i>
@@ -105,9 +105,9 @@
                 <div class="col-lg-3 col-md-6">
                     <div class="sales-kpi-card d-flex align-items-center justify-content-between">
                         <div>
-                            <div class="kpi-label">Outstanding</div>
+                            <div class="kpi-label">{{ __('Outstanding') }}</div>
                             <div class="kpi-value" id="kpiOutstanding" style="color:#dc2626;">SAR 0</div>
-                            <div class="kpi-sub">Balance due</div>
+                            <div class="kpi-sub">{{ __('Balance due') }}</div>
                         </div>
                         <div class="sales-icon-circle" style="background:rgba(220,38,38,0.1);color:#dc2626;">
                             <i class="bi bi-exclamation-triangle"></i>
@@ -117,9 +117,9 @@
                 <div class="col-lg-3 col-md-6">
                     <div class="sales-kpi-card d-flex align-items-center justify-content-between">
                         <div>
-                            <div class="kpi-label">Avg Invoice</div>
+                            <div class="kpi-label">{{ __('Avg Invoice') }}</div>
                             <div class="kpi-value" id="kpiAvgInvoice">SAR 0</div>
-                            <div class="kpi-sub">Avg value per invoice</div>
+                            <div class="kpi-sub">{{ __('Avg value per invoice') }}</div>
                         </div>
                         <div class="sales-icon-circle" style="background:rgba(91,87,174,0.1);color:#5b57ae;">
                             <i class="bi bi-bar-chart-line"></i>
@@ -132,31 +132,31 @@
             <div class="row g-3 mb-4">
                 <div class="col-lg-2 col-md-4 col-6">
                     <div class="sales-kpi-card text-center py-2">
-                        <div class="kpi-label">Invoices</div>
+                        <div class="kpi-label">{{ __('Invoices') }}</div>
                         <div class="kpi-value" id="kpiInvoiceCount" style="font-size:1.3rem;">0</div>
                     </div>
                 </div>
                 <div class="col-lg-2 col-md-4 col-6">
                     <div class="sales-kpi-card text-center py-2">
-                        <div class="kpi-label">Customers</div>
+                        <div class="kpi-label">{{ __('Customers') }}</div>
                         <div class="kpi-value" id="kpiCustomerCount" style="font-size:1.3rem;">0</div>
                     </div>
                 </div>
                 <div class="col-lg-2 col-md-4 col-6">
                     <div class="sales-kpi-card text-center py-2">
-                        <div class="kpi-label">Recurring</div>
+                        <div class="kpi-label">{{ __('Recurring') }}</div>
                         <div class="kpi-value" id="kpiRecurring" style="font-size:1.3rem;">0%</div>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 col-6">
                     <div class="sales-kpi-card text-center py-2">
-                        <div class="kpi-label">vs Last Month (Sales)</div>
+                        <div class="kpi-label">{{ __('vs Last Month (Sales)') }}</div>
                         <div class="kpi-value" id="kpiSalesChange" style="font-size:1.1rem;">0%</div>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 col-6">
                     <div class="sales-kpi-card text-center py-2">
-                        <div class="kpi-label">Approval Rate</div>
+                        <div class="kpi-label">{{ __('Approval Rate') }}</div>
                         <div class="kpi-value" id="kpiApprovalRate" style="font-size:1.1rem;">0%</div>
                     </div>
                 </div>
@@ -167,8 +167,8 @@
                 <div class="col-xl-7">
                     <div class="sales-card h-100">
                         <div class="sales-card-header">
-                            <h6><i class="bi bi-graph-up me-2" style="color:#0b6aa0;"></i>Sales Trend</h6>
-                            <span class="badge-sales">{{ $range === 'this_year' ? 'Monthly' : 'Weekly' }}</span>
+                            <h6><i class="bi bi-graph-up me-2" style="color:#0b6aa0;"></i>{{ __('Sales Trend') }}</h6>
+                            <span class="badge-sales">{{ $range === 'this_year' ? __('Monthly') : __('Weekly') }}</span>
                         </div>
                         <div class="sales-card-body">
                             <canvas id="chartSalesTrend" height="180"></canvas>
@@ -178,8 +178,8 @@
                 <div class="col-xl-5">
                     <div class="sales-card h-100">
                         <div class="sales-card-header">
-                            <h6><i class="bi bi-pie-chart me-2" style="color:#5b57ae;"></i>Sales by Service Type</h6>
-                            <span class="badge-sales">Top 6</span>
+                            <h6><i class="bi bi-pie-chart me-2" style="color:#5b57ae;"></i>{{ __('Sales by Service Type') }}</h6>
+                            <span class="badge-sales">{{ __('Top 6') }}</span>
                         </div>
                         <div class="sales-card-body">
                             <canvas id="chartCategory" height="180"></canvas>
@@ -193,7 +193,7 @@
                 <div class="col-lg-4">
                     <div class="sales-card h-100">
                         <div class="sales-card-header">
-                            <h6><i class="bi bi-geo-alt me-2" style="color:#16a34a;"></i>Sales by Region</h6>
+                            <h6><i class="bi bi-geo-alt me-2" style="color:#16a34a;"></i>{{ __('Sales by Region') }}</h6>
                         </div>
                         <div class="sales-card-body">
                             <canvas id="chartRegion" height="170"></canvas>
@@ -203,7 +203,7 @@
                 <div class="col-lg-4">
                     <div class="sales-card h-100">
                         <div class="sales-card-header">
-                            <h6><i class="bi bi-people me-2" style="color:#0b6aa0;"></i>Salesperson Performance</h6>
+                            <h6><i class="bi bi-people me-2" style="color:#0b6aa0;"></i>{{ __('Salesperson Performance') }}</h6>
                         </div>
                         <div class="sales-card-body">
                             <canvas id="chartSalesperson" height="170"></canvas>
@@ -213,7 +213,7 @@
                 <div class="col-lg-4">
                     <div class="sales-card h-100">
                         <div class="sales-card-header">
-                            <h6><i class="bi bi-check-circle me-2" style="color:#5b57ae;"></i>Invoice Status</h6>
+                            <h6><i class="bi bi-check-circle me-2" style="color:#5b57ae;"></i>{{ __('Invoice Status') }}</h6>
                         </div>
                         <div class="sales-card-body">
                             <canvas id="chartStatus" height="170"></canvas>
@@ -227,8 +227,8 @@
                 <div class="col-lg-7">
                     <div class="sales-card">
                         <div class="sales-card-header">
-                            <h6><i class="bi bi-trophy me-2" style="color:#f59e0b;"></i>Top 10 Customers by Revenue</h6>
-                            <span class="badge-sales">Revenue / Invoices / Outstanding</span>
+                            <h6><i class="bi bi-trophy me-2" style="color:#f59e0b;"></i>{{ __('Top 10 Customers by Revenue') }}</h6>
+                            <span class="badge-sales">{{ __('Revenue / Invoices / Outstanding') }}</span>
                         </div>
                         <div class="sales-card-body p-0">
                             <div style="max-height:380px;overflow:auto;">
@@ -236,10 +236,10 @@
                                     <thead class="table-light">
                                         <tr>
                                             <th>#</th>
-                                            <th>Customer</th>
-                                            <th class="text-end">Invoices</th>
-                                            <th class="text-end">Revenue (SAR)</th>
-                                            <th class="text-end">Outstanding</th>
+                                            <th>{{ __('Customer') }}</th>
+                                            <th class="text-end">{{ __('Invoices') }}</th>
+                                            <th class="text-end">{{ __('Revenue (SAR)') }}</th>
+                                            <th class="text-end">{{ __('Outstanding') }}</th>
                                             <th class="text-end">%</th>
                                         </tr>
                                     </thead>
@@ -252,8 +252,8 @@
                 <div class="col-lg-5">
                     <div class="sales-card">
                         <div class="sales-card-header">
-                            <h6><i class="bi bi-box me-2" style="color:#0b6aa0;"></i>Top 10 Items by Revenue</h6>
-                            <span class="badge-sales">Qty & Revenue</span>
+                            <h6><i class="bi bi-box me-2" style="color:#0b6aa0;"></i>{{ __('Top 10 Items by Revenue') }}</h6>
+                            <span class="badge-sales">{{ __('Qty & Revenue') }}</span>
                         </div>
                         <div class="sales-card-body p-0">
                             <div style="max-height:380px;overflow:auto;">
@@ -261,9 +261,9 @@
                                     <thead class="table-light">
                                         <tr>
                                             <th>#</th>
-                                            <th>Item / Service</th>
-                                            <th class="text-end">Qty</th>
-                                            <th class="text-end">Revenue (SAR)</th>
+                                            <th>{{ __('Item / Service') }}</th>
+                                            <th class="text-end">{{ __('Qty') }}</th>
+                                            <th class="text-end">{{ __('Revenue (SAR)') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody id="tableItems"></tbody>
@@ -279,15 +279,15 @@
                 <div class="col-12">
                     <div class="sales-card">
                         <div class="sales-card-header">
-                            <h6><i class="bi bi-list-check me-2" style="color:#0b6aa0;"></i>Invoice Status Breakdown</h6>
+                            <h6><i class="bi bi-list-check me-2" style="color:#0b6aa0;"></i>{{ __('Invoice Status Breakdown') }}</h6>
                         </div>
                         <div class="sales-card-body p-0">
                             <table class="table sales-table mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Status</th>
-                                        <th class="text-end">Count</th>
-                                        <th class="text-end">Total (SAR)</th>
+                                        <th>{{ __('Status') }}</th>
+                                        <th class="text-end">{{ __('Count') }}</th>
+                                        <th class="text-end">{{ __('Total (SAR)') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tableInvoiceStatuses"></tbody>
@@ -346,7 +346,7 @@
                 <td class="text-end">${pc}%</td>
             </tr>`;
         }).join('');
-        document.getElementById('tableCustomers').innerHTML = custHtml || '<tr><td colspan="6" class="text-center text-muted py-3">No data</td></tr>';
+        document.getElementById('tableCustomers').innerHTML = custHtml || '<tr><td colspan="6" class="text-center text-muted py-3">{{ __('No data') }}</td></tr>';
 
         // Top items table
         const itemsHtml = (d.items || []).map((i, idx) => {
@@ -357,7 +357,7 @@
                 <td class="text-end fw-semibold">${fmtCurrency(i.revenue)}</td>
             </tr>`;
         }).join('');
-        document.getElementById('tableItems').innerHTML = itemsHtml || '<tr><td colspan="4" class="text-center text-muted py-3">No data</td></tr>';
+        document.getElementById('tableItems').innerHTML = itemsHtml || '<tr><td colspan="4" class="text-center text-muted py-3">{{ __('No data') }}</td></tr>';
 
         // Invoice status table
         const statuses = d.invoiceStatuses || [];
@@ -369,7 +369,7 @@
                 <td class="text-end fw-semibold">${fmtCurrency(s.total)}</td>
             </tr>`;
         }).join('');
-        document.getElementById('tableInvoiceStatuses').innerHTML = statusHtml || '<tr><td colspan="3" class="text-center text-muted py-3">No data</td></tr>';
+        document.getElementById('tableInvoiceStatuses').innerHTML = statusHtml || '<tr><td colspan="3" class="text-center text-muted py-3">{{ __('No data') }}</td></tr>';
 
         // --- Charts ---
         const colorPalette = ['#0b6aa0','#5b57ae','#16a34a','#f59e0b','#dc2626','#8b5cf6','#06b6d4','#f97316'];
@@ -378,14 +378,14 @@
         // Sales Trend
         const ctxTrend = document.getElementById('chartSalesTrend').getContext('2d');
         const trendLabels = '{{ $range }}' === 'this_year'
-            ? ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].slice(0, d.salesTrend.length)
+            ? ['{{ __('Jan') }}','{{ __('Feb') }}','{{ __('Mar') }}','{{ __('Apr') }}','{{ __('May') }}','{{ __('Jun') }}','{{ __('Jul') }}','{{ __('Aug') }}','{{ __('Sep') }}','{{ __('Oct') }}','{{ __('Nov') }}','{{ __('Dec') }}'].slice(0, d.salesTrend.length)
             : Array.from({length: d.salesTrend.length}, (_, i) => 'W' + (i + 1));
         new Chart(ctxTrend, {
             type: 'line',
             data: {
                 labels: trendLabels,
                 datasets: [{
-                    label: 'Sales',
+                    label: '{{ __('Sales') }}',
                     data: d.salesTrend,
                     borderColor: '#0b6aa0',
                     backgroundColor: (() => {
@@ -484,7 +484,7 @@
             data: {
                 labels: statuses.map(s => s.label),
                 datasets: [{
-                    label: 'Count',
+                    label: '{{ __('Count') }}',
                     data: statuses.map(s => s.count),
                     backgroundColor: statuses.map(s =>
                         s.status === 'approved' ? '#16a34a' : s.status === 'draft' ? '#94a3b8' : s.status === 'cancelled' ? '#dc2626' : s.status === 'rejected' ? '#dc2626' : s.status === 'converted' ? '#0dcaf0' : '#f59e0b'

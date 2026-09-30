@@ -4,19 +4,19 @@
 
         {{-- DRAFT Watermark --}}
         @if($customerInvoice->status == 1)
-            <div class="draft-watermark">DRAFT</div>
+            <div class="draft-watermark">{{ __('DRAFT') }}</div>
         @endif
 
         <!-- Action Buttons (screen only) -->
         <div class="d-print-none d-flex justify-content-end align-items-center gap-2 mb-3">
             <button type="button" class="btn btn-outline-secondary btn-sm" onclick="CUSTOMER_INVOICE.printPreview('{{ $customerInvoice->id }}')">
-                <i class="bi bi-printer me-1"></i> Print
+                <i class="bi bi-printer me-1"></i> {{ __('Print') }}
             </button>
             <button type="button" class="btn btn-outline-secondary btn-sm" onclick="CUSTOMER_INVOICE.downloadPDF('{{ $customerInvoice->id }}')">
-                <i class="bi bi-file-earmark-pdf me-1"></i> Download PDF
+                <i class="bi bi-file-earmark-pdf me-1"></i> {{ __('Download PDF') }}
             </button>
             <button type="button" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-x-circle me-1"></i> Cancel
+                <i class="bi bi-x-circle me-1"></i> {{ __('Cancel') }}
             </button>
         </div>
 
@@ -33,7 +33,7 @@
             </div>
 
             <div class="text-end">
-                <h3 class="text-uppercase fw-bold text-primary mb-1">Invoice</h3>
+                <h3 class="text-uppercase fw-bold text-primary mb-1">{{ __('Invoice') }}</h3>
                 <h5 class="fw-bold">#{{ $customerInvoice->row_no }}</h5>
             </div>
         </div>
@@ -41,51 +41,51 @@
         <!-- Customer Info -->
         <div class="row mb-4">
             <div class="col-6">
-                <h6><strong>To,</strong></h6>
+                <h6><strong>{{ __('To,') }}</strong></h6>
                 <div><strong>{{ $customerInvoice->customer->name }}</strong></div>
                 <div>{{ $customerInvoice->customer->address ?? '-' }}</div>
                 @if($customerInvoice->customer->email)
-                    <div>Email: {{ $customerInvoice->customer->email }}</div>
+                    <div>{{ __('Email') }}: {{ $customerInvoice->customer->email }}</div>
                 @endif
                 @if($customerInvoice->customer->phone)
-                    <div>Phone: {{ $customerInvoice->customer->phone }}</div>
+                    <div>{{ __('Phone') }}: {{ $customerInvoice->customer->phone }}</div>
                 @endif
             </div>
             <div class="col-6">
                 <div class="d-flex flex-column align-items-end gap-2">
 
                     <div class="d-flex w-100 justify-content-end">
-                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">Invoice No:</div>
+                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">{{ __('Invoice No') }}:</div>
                         <div class="text-end" style="min-width: 120px;">#{{ $customerInvoice->row_no }}</div>
                     </div>
 
                     <div class="d-flex w-100 justify-content-end">
-                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">Invoice Date:</div>
+                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">{{ __('Invoice Date') }}:</div>
                         <div class="text-end" style="min-width: 120px;">{{ $customerInvoice->invoice_date }}</div>
                     </div>
 
                     <div class="d-flex w-100 justify-content-end">
-                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">Due Date:</div>
+                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">{{ __('Due Date') }}:</div>
                         <div class="text-end" style="min-width: 120px;">{{ $customerInvoice->due_at }}</div>
                     </div>
 
                     <div class="d-flex w-100 justify-content-end">
-                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">Currency:</div>
+                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">{{ __('Currency') }}:</div>
                         <div class="text-end" style="min-width: 120px;">{{ $customerInvoice->currency }}</div>
                     </div>
 
                     <div class="d-flex w-100 justify-content-end">
-                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">Exchange Rate:</div>
+                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">{{ __('Exchange Rate') }}:</div>
                         <div class="text-end" style="min-width: 120px;">{{ number_format($customerInvoice->currency_rate, decimals()) }}</div>
                     </div>
 
                     <div class="d-flex w-100 justify-content-end">
-                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">Job:</div>
+                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">{{ __('Job') }}:</div>
                         <div class="text-end" style="min-width: 120px;">{{ $customerInvoice->job_no }}</div>
                     </div>
 
                     <div class="d-flex w-100 justify-content-end">
-                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">Status:</div>
+                        <div class="text-end fw-semibold me-2" style="min-width: 120px;">{{ __('Status') }}:</div>
                         <div class="text-end" style="min-width: 120px;">
                             <span class="badge bg-warning text-dark">
                                 {{ \App\Enums\CustomerInvoiceEnum::from($customerInvoice->status)->label() }}
@@ -104,11 +104,11 @@
                     <thead>
                     <tr>
                         <th style="width: 40px;">#</th>
-                        <th>Description</th>
-                        <th class="text-end">Qty</th>
-                        <th class="text-end">Unit</th>
-                        <th class="text-end">Unit Price</th>
-                        <th class="text-end">Tax</th>
+                        <th>{{ __('Description') }}</th>
+                        <th class="text-end">{{ __('Qty') }}</th>
+                        <th class="text-end">{{ __('Unit') }}</th>
+                        <th class="text-end">{{ __('Unit Price') }}</th>
+                        <th class="text-end">{{ __('Tax') }}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -140,21 +140,21 @@
             </div>
             <table class="total-table">
                 <tr>
-                    <td><strong>Subtotal</strong></td>
+                    <td><strong>{{ __('Subtotal') }}</strong></td>
                     <td class="text-end">{{ amountFormat($customerInvoice->sub_total) }}</td>
                 </tr>
                 <tr>
-                    <td><strong>Tax</strong></td>
+                    <td><strong>{{ __('Tax') }}</strong></td>
                     <td class="text-end">{{ amountFormat($customerInvoice->tax_total) }}</td>
                 </tr>
                 @if($customerInvoice->discount_total > 0)
                     <tr>
-                        <td><strong>Discount</strong></td>
+                        <td><strong>{{ __('Discount') }}</strong></td>
                         <td class="text-end">-{{ amountFormat($customerInvoice->discount_total) }}</td>
                     </tr>
                 @endif
                 <tr>
-                    <td><strong>Grand Total</strong>
+                    <td><strong>{{ __('Grand Total') }}</strong>
                         @if(strtoupper($customerInvoice->currency) !== 'SAR')
                             <div class="currency-note">{{ amountFormat($customerInvoice->currency_rate) }} SAR</div>
                         @endif
@@ -172,14 +172,14 @@
 
         <!-- Amount in Words -->
         <div class="mt-2">
-            <strong>Amount in Words:</strong>
+            <strong>{{ __('Amount in Words') }}:</strong>
             <span>{{ amountInWords(round($customerInvoice->grand_total, 2)) }} {{ $customerInvoice->currency }}</span>
         </div>
 
         <!-- Terms -->
         @if($customerInvoice->terms)
             <div class="terms-box mt-4">
-                <h6 class="fw-semibold mb-2">Terms & Conditions</h6>
+                <h6 class="fw-semibold mb-2">{{ __('Terms & Conditions') }}</h6>
                 <p class="mb-0">{{ $customerInvoice->terms }}</p>
             </div>
         @endif
@@ -187,8 +187,8 @@
         <!-- Footer -->
         <footer class="mt-5 pt-3 border-top text-center text-muted small">
             <div class="d-flex justify-content-between">
-                <div>Email: {{ companyEmail() }}</div>
-                <div>Phone: {{ companyPhone() }}</div>
+                <div>{{ __('Email') }}: {{ companyEmail() }}</div>
+                <div>{{ __('Phone') }}: {{ companyPhone() }}</div>
             </div>
         </footer>
     </div>

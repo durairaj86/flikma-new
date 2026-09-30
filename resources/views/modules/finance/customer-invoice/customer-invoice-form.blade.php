@@ -2,14 +2,14 @@
     <div class="d-flex justify-content-between align-items-center flex-wrap">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-4">
             <div class="module-info">
-                <span class="fw-semibold fs-5">{{ $customer->row_no ?? 'New Customer Invoice' }}</span>
+                <span class="fw-semibold fs-5">{{ $customer->row_no ?? __('New Customer Invoice') }}</span>
             </div>
         </div>
         <div id="show-buttons"></div>
     </div>
 </div>
 <div class="container-fluid align-items-center px-0 mb-4" id="modal-buttons" data-buttons="cancel,save"
-     data-button-save="Save Invoice">
+     data-button-save="{{ __('Save Invoice') }}">
     <form id="moduleForm" novalidate action="{{ request()->url() }}">
         @csrf
         <input type="hidden" name="data-id" value="{{ $customer->id }}">
@@ -20,10 +20,10 @@
                 <div class="row g-3">
                     <!-- Job Reference -->
                     <div class="col-md-4">
-                        <label class="form-label required">Job <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Job') }} <sup class="text-danger">*</sup></label>
                         <select name="job_id" class="tom-select" data-live-search="true"
                                 {{--@disabled($job_id)--}} required data-call-back="customerList">
-                            <option value="">Select Job</option>
+                            <option value="">{{ __('Select Job') }}</option>
                             @foreach($jobs as $job)
                                 <option value="{{ $job->id }}"
                                         @selected($customer->job_id == $job->id || $job->id == $job_id) data-subtext="{{ $job->customer->name_en }}"
@@ -36,14 +36,14 @@
 
                     <!-- Customer -->
                     <div class="col-md-4">
-                        <label class="form-label required">Customer <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Customer') }} <sup class="text-danger">*</sup></label>
                         <x-common.customers :value="$customer->customer_id ?? $job_customer_id" disabled="true"
                                             :required="true" {{--:disabled="(bool)$job_customer_id" :new="false"--}}></x-common.customers>
                     </div>
 
                     <!-- Invoice Date -->
                     <div class="col-md-4">
-                        <label class="form-label required">Invoice Date <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Invoice Date') }} <sup class="text-danger">*</sup></label>
                         <input type="date" id="invoice_date" name="invoice_date" class="form-control datepicker"
                                value="{{ $customer->invoice_date ?? \Carbon\Carbon::today()->format('d-m-Y') }}"
                                required>
@@ -51,19 +51,19 @@
 
                     <!-- Due Date -->
                     <div class="col-md-4">
-                        <label class="form-label required">Due Date <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Due Date') }} <sup class="text-danger">*</sup></label>
                         <input type="date" id="due_date" name="due_date" class="form-control datepicker"
                                value="{{ $customer->due_at }}" required>
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label">Attachments</label>
+                        <label class="form-label">{{ __('Attachments') }}</label>
                         <input type="file" name="attachments[]" class="form-control" multiple>
                         @if($customer->documents && count($customer->documents))
                             <small class="text-primary text-decoration-underline cursor-pointer"
                                    data-bs-toggle="offcanvas" data-bs-target="#attachmentsDrawer">
                                 {{ $customer->documents->count() }}
-                                {{ \Illuminate\Support\Str::plural('Document', $customer->documents->count()) }}
+                                {{ __('Document(s)') }}
                             </small>
                         @endif
                     </div>
@@ -74,7 +74,7 @@
 
                     <!-- Currency -->
                     <div class="col-md-4">
-                        <label class="form-label">Currency *</label>
+                        <label class="form-label">{{ __('Currency') }} *</label>
                         <x-common.currencies-exchange :value="$customer->currency" width="auto" :disabled="true"
                                                       :exchangeRate="$customer->currency_rate"/>
                     </div>
@@ -88,9 +88,9 @@
                     <div class="offcanvas offcanvas-end" tabindex="-1" id="attachmentsDrawer"
                          aria-labelledby="attachmentsDrawerLabel" style="width: 500px;">
                         <div class="offcanvas-header border-bottom">
-                            <h5 id="attachmentsDrawerLabel" class="mb-0">Customer Documents</h5>
+                            <h5 id="attachmentsDrawerLabel" class="mb-0">{{ __('Customer Documents') }}</h5>
                             <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
-                                    aria-label="Close"></button>
+                                    aria-label="{{ __('Close') }}"></button>
                         </div>
                         <div class="offcanvas-body p-0">
                             @if($customer->documents->count())
@@ -108,13 +108,13 @@
                                             <div class="d-flex align-items-center gap-2">
                                                 <!-- View -->
                                                 <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank"
-                                                   class="text-success" title="View">
+                                                   class="text-success" title="{{ __('View') }}">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
                                                 <!-- Download -->
                                                 <a href="{{ asset('storage/' . $doc->file_path) }}"
                                                    download="{{ $doc->file_name }}"
-                                                   class="text-primary" title="Download">
+                                                   class="text-primary" title="{{ __('Download') }}">
                                                     <i class="bi bi-download"></i>
                                                 </a>
                                             </div>
@@ -124,7 +124,7 @@
                             @else
                                 <div class="text-center py-5 text-muted">
                                     <i class="bi bi-folder2-open fs-2 d-block mb-2"></i>
-                                    No documents uploaded.
+                                    {{ __('No documents uploaded.') }}
                                 </div>
                             @endif
                         </div>
@@ -139,15 +139,15 @@
                 <table class="table align-middle mb-0" id="customerItemsTable">
                     <thead class="table-light">
                     <tr>
-                        <th>Description</th>
-                        <th>Comment</th>
-                        <th>Account</th>
-                        <th>Unit</th>
-                        <th class="text-end">Qty</th>
+                        <th>{{ __('Description') }}</th>
+                        <th>{{ __('Comment') }}</th>
+                        <th>{{ __('Account') }}</th>
+                        <th>{{ __('Unit') }}</th>
+                        <th class="text-end">{{ __('Qty') }}</th>
                         {{--<th class="text-end">Cost</th>--}}
-                        <th class="text-end">Price</th>
-                        <th class="text-end">Tax (%)</th>
-                        <th class="text-end d-none">Amount</th>
+                        <th class="text-end">{{ __('Price') }}</th>
+                        <th class="text-end">{{ __('Tax (%)') }}</th>
+                        <th class="text-end d-none">{{ __('Amount') }}</th>
                         <th></th>
                     </tr>
                     </thead>
@@ -230,17 +230,17 @@
                                 <i class="bi bi-plus-circle"></i> Add Item
                             </button>
                         </td>--}}
-                        <td colspan="6" class="text-end">Subtotal</td>
+                        <td colspan="6" class="text-end">{{ __('Subtotal') }}</td>
                         <td class="text-end" id="subTotal">{{ number_format($customer->sub_total, decimals()) }}</td>
                         <td></td>
                     </tr>
                     <tr>
-                        <td colspan="6" class="text-end">Total Tax</td>
+                        <td colspan="6" class="text-end">{{ __('Total Tax') }}</td>
                         <td class="text-end" id="totalTax">{{ number_format($customer->tax_total, decimals()) }}</td>
                         <td></td>
                     </tr>
                     <tr>
-                        <td colspan="6" class="text-end">Grand Total</td>
+                        <td colspan="6" class="text-end">{{ __('Grand Total') }}</td>
                         <td class="text-end fw-bold" id="grandNet">
                             {{ number_format($customer->grand_total, decimals()) }}
                         </td>
@@ -253,9 +253,9 @@
 
         <!-- Remarks -->
         <div class="mt-3 px-4">
-            <label class="form-label fw-semibold">Terms & Conditions</label>
+            <label class="form-label fw-semibold">{{ __('Terms & Conditions') }}</label>
             <textarea name="terms" class="form-control h-100" rows="4"
-                      placeholder="Any additional notes...">{{ $customer->terms }}</textarea>
+                      placeholder="{{ __('Any additional notes...') }}">{{ $customer->terms }}</textarea>
         </div>
     </form>
 </div>

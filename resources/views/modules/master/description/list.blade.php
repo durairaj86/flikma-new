@@ -1,4 +1,4 @@
-@section('page-title','Descriptions')
+@section('page-title', __('Descriptions'))
 @section('js','description')
 <x-app-layout>
     <!-- Main Content -->
@@ -12,26 +12,26 @@
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
 
                         <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="Search..." aria-label="Search...">
+                               placeholder="{{ __('Search...') }}" aria-label="{{ __('Search...') }}">
                     </div>
                 </div>
-                <button class="btn btn-primary rounded-pill px-4" id="new">New Description</button>
+                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Description') }}</button>
             </div>
 
             <!-- Table Section -->
             <div class="shadow bdr-r-10 py-3 flex-grow-1">
                 <!-- Table with scroll -->
                 <div class="flex-grow-1 overflow-auto" style="min-height:320px;">
-                    <table class="table align-middle dataTable" id="dataTable" data-title="Description" data-min-height="min-height:75vh;" data-model-size="md">
+                    <table class="table align-middle dataTable" id="dataTable" data-title="{{ __('Description') }}" data-min-height="min-height:75vh;" data-model-size="md">
                         <thead class="table-light sticky-top bg-white">
                         <tr>
                             <th>#</th>
-                            <th>Description <small>(In English)</small></th>
-                            <th>Description <small>(In Arabic)</small></th>
-                            <th>Sale Account</th>
-                            <th>Purchase Account</th>
-                            <th>Created Date</th>
-                            <th class="text-center">Actions</th>
+                            <th>{{ __('Description') }} <small>{{ __('(In English)') }}</small></th>
+                            <th>{{ __('Description') }} <small>{{ __('(In Arabic)') }}</small></th>
+                            <th>{{ __('Sale Account') }}</th>
+                            <th>{{ __('Purchase Account') }}</th>
+                            <th>{{ __('Created Date') }}</th>
+                            <th class="text-center">{{ __('Actions') }}</th>
                         </tr>
                         </thead>
                         <tbody></tbody>

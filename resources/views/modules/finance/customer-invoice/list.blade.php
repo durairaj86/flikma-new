@@ -1,10 +1,10 @@
 @section('js','customer_invoice')
-@section('page-title','Customer Invoice')
+@section('page-title', __('Customer Invoice'))
 @push('page-title-action')
     <button class="btn btn-link btn-sm text-muted p-0 text-decoration-none lh-1"
             data-bs-toggle="modal" data-bs-target="#customerInvoiceWorkflowModal"
-            title="How customer invoices work">
-        <i class="bi bi-info-circle fs-6"></i><span class="d-none d-md-inline ms-1" style="font-size:0.8rem;">How it works</span>
+            title="{{ __('How customer invoices work') }}">
+        <i class="bi bi-info-circle fs-6"></i><span class="d-none d-md-inline ms-1" style="font-size:0.8rem;">{{ __('How it works') }}</span>
     </button>
 @endpush
 <x-app-layout>
@@ -15,7 +15,7 @@
             <div class="card-header bg-light border-0 py-3">
                 <div class="d-flex align-items-center gap-2">
                     <i class="bi bi-funnel-fill text-primary"></i>
-                    <h6 class="mb-0 fw-semibold">Advanced Filters</h6>
+                    <h6 class="mb-0 fw-semibold">{{ __('Advanced Filters') }}</h6>
                 </div>
             </div>
 
@@ -43,7 +43,7 @@
                             </div>--}}
 
                             <div class="col-md-3 form-filter">
-                                <label class="form-label fw-medium">Invoice Date</label>
+                                <label class="form-label fw-medium">{{ __('Invoice Date') }}</label>
                                 <div class="d-flex input-group-filter gap-2">
                                     <input type="date" class="form-control datepicker from-date default-filter" id="filter-from-date" name="filter-from-date"
                                            value="{{ \Carbon\Carbon::today()->subMonth(6)->startOfMonth()->format('d-m-Y') }}">
@@ -53,36 +53,36 @@
                             </div>
 
                             <div class="col-md-3 form-filter">
-                                <label class="form-label fw-medium">Customer</label>
+                                <label class="form-label fw-medium">{{ __('Customer') }}</label>
                                 <x-common.customers multiple="true" :value="request()->query('customer') ? [(int) request()->query('customer')] : null"></x-common.customers>
                             </div>
 
                             <div class="col-md-2 form-filter">
-                                <label class="form-label fw-medium">Status</label>
-                                <select class="tom-select avoid-filter" name="filter-status" id="filter-status" size="3" placeholder="All Status">
-                                    <option value="all" selected>All Status</option>
-                                    <option value="1">Draft</option>
-                                    <option value="3">Approved</option>
-                                    <option value="5">Cancelled</option>
+                                <label class="form-label fw-medium">{{ __('Status') }}</label>
+                                <select class="tom-select avoid-filter" name="filter-status" id="filter-status" size="3" placeholder="{{ __('All Status') }}">
+                                    <option value="all" selected>{{ __('All Status') }}</option>
+                                    <option value="1">{{ __('Draft') }}</option>
+                                    <option value="3">{{ __('Approved') }}</option>
+                                    <option value="5">{{ __('Cancelled') }}</option>
                                 </select>
                             </div>
 
                             <div class="col-md-2 form-filter">
-                                <label class="form-label fw-medium">Payment Status</label>
-                                <select class="tom-select avoid-filter" name="filter-payment-status" id="filter-payment-status" size="3" placeholder="All Payments">
-                                    <option value="all" selected>All Payments</option>
-                                    <option value="paid">Paid</option>
-                                    <option value="partial">Partially Paid</option>
-                                    <option value="unpaid">Unpaid</option>
+                                <label class="form-label fw-medium">{{ __('Payment Status') }}</label>
+                                <select class="tom-select avoid-filter" name="filter-payment-status" id="filter-payment-status" size="3" placeholder="{{ __('All Payments') }}">
+                                    <option value="all" selected>{{ __('All Payments') }}</option>
+                                    <option value="paid">{{ __('Paid') }}</option>
+                                    <option value="partial">{{ __('Partially Paid') }}</option>
+                                    <option value="unpaid">{{ __('Unpaid') }}</option>
                                 </select>
                             </div>
 
                             <div class="col-md-2 form-filter">
-                                <label class="form-label fw-medium">Invoice Type</label>
+                                <label class="form-label fw-medium">{{ __('Invoice Type') }}</label>
                                 <select class="tom-select avoid-filter" name="filter-overdue" id="filter-overdue">
-                                    <option value="all" selected>All Invoices</option>
-                                    <option value="overdue">Overdue Invoices</option>
-                                    <option value="non_due">Non-Due Invoices</option>
+                                    <option value="all" selected>{{ __('All Invoices') }}</option>
+                                    <option value="overdue">{{ __('Overdue Invoices') }}</option>
+                                    <option value="non_due">{{ __('Non-Due Invoices') }}</option>
                                 </select>
                             </div>
 
@@ -93,7 +93,7 @@
                     <!-- Action Buttons -->
                     <div class="text-center mt-4">
                         <button class="btn btn-primary btn-round px-4" type="button" id="apply-filter">
-                            <i class="bi bi-search me-1"></i> Search
+                            <i class="bi bi-search me-1"></i> {{ __('Search') }}
                         </button>
                     </div>
                 </form>
@@ -115,7 +115,7 @@
                             <button
                                 class="nav-link px-3 py-2 d-flex align-items-center active justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="all">
-                                <span><i class="bi bi-collection me-1"></i> All -</span>
+                                <span><i class="bi bi-collection me-1"></i> {{ __('All') }} -</span>
                                 <span class="status-count ms-2" id="allCount">0</span>
                             </button>
                         </li>
@@ -124,7 +124,7 @@
                             <button
                                 class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="draft">
-                                <span><i class="bi bi-clock text-secondary me-1"></i> Draft -</span>
+                                <span><i class="bi bi-clock text-secondary me-1"></i> {{ __('Draft') }} -</span>
                                 <span class="status-count ms-2" id="draftCount">0</span>
                             </button>
                         </li>
@@ -133,7 +133,7 @@
                             <button
                                 class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="approved">
-                                <span><i class="bi bi-check-circle me-1"></i> Approved -</span>
+                                <span><i class="bi bi-check-circle me-1"></i> {{ __('Approved') }} -</span>
                                 <span class="status-count ms-2" id="approvedCount">0</span>
                             </button>
                         </li>
@@ -142,7 +142,7 @@
                             <button
                                 class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="overdue">
-                                <span><i class="bi bi-exclamation-triangle text-danger me-1"></i> Overdue Invoice -</span>
+                                <span><i class="bi bi-exclamation-triangle text-danger me-1"></i> {{ __('Overdue Invoice') }} -</span>
                                 <span class="status-count ms-2" id="overdueCount">0</span>
                             </button>
                         </li>
@@ -151,7 +151,7 @@
                             <button
                                 class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="creditnote">
-                                <span><i class="bi bi-receipt-cutoff text-warning me-1"></i> Credit Note -</span>
+                                <span><i class="bi bi-receipt-cutoff text-warning me-1"></i> {{ __('Credit Note') }} -</span>
                                 <span class="status-count ms-2" id="creditnoteCount">0</span>
                             </button>
                         </li>
@@ -159,7 +159,7 @@
                         <li class="nav-item">
                             <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                     data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="cancelled">
-                                <span><i class="bi bi-x-circle"></i> Cancelled -</span>
+                                <span><i class="bi bi-x-circle"></i> {{ __('Cancelled') }} -</span>
                                 <span class="status-count ms-2" id="cancelledCount">0</span>
                             </button>
                         </li>
@@ -171,11 +171,10 @@
                 <div class="position-relative">
                     <!-- Compact Filter button -->
                     <button class="btn btn-outline-primary btn-round me-2" id="filter-box"><i class="bi bi-funnel"></i>
-                        Filter
+                        {{ __('Filter') }}
                     </button>
                 </div>
-                <button class="btn btn-primary rounded-pill px-4" id="new" data-loader-id="{{ $job_id ?? 'list' }}">New
-                    Customer Invoice
+                <button class="btn btn-primary rounded-pill px-4" id="new" data-loader-id="{{ $job_id ?? 'list' }}">{{ __('New Customer Invoice') }}
                 </button>
             </div>
         </div>
@@ -191,7 +190,7 @@
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
 
                         <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="Search..." aria-label="Search...">
+                               placeholder="{{ __('Search...') }}" aria-label="{{ __('Search...') }}">
                     </div>
                 </div>
             </div>
@@ -200,14 +199,14 @@
                 <table class="table align-middle dataTable" id="dataTable" data-min-height="min-height:75vh;" data-title="Job" data-model-size="lg">
                     <thead>
                     <tr class="text-muted text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.03em;">
-                        <th>Invoice #</th>
-                        <th>Job</th>
-                        <th>Customer</th>
-                        <th class="text-end">Excl. VAT</th>
-                        <th class="text-end">Tax</th>
-                        <th class="text-end">Balance Due</th>
-                        <th>Dates</th>
-                        <th class="text-end">Aging</th>
+                        <th>{{ __('Invoice #') }}</th>
+                        <th>{{ __('Job') }}</th>
+                        <th>{{ __('Customer') }}</th>
+                        <th class="text-end">{{ __('Excl. VAT') }}</th>
+                        <th class="text-end">{{ __('Tax') }}</th>
+                        <th class="text-end">{{ __('Balance Due') }}</th>
+                        <th>{{ __('Dates') }}</th>
+                        <th class="text-end">{{ __('Aging') }}</th>
                         <th></th>
                     </tr>
                     </thead>
@@ -249,9 +248,9 @@
                 <div class="modal-header border-0 pb-0">
                     <div>
                         <h5 class="modal-title fw-semibold" id="customerInvoiceWorkflowModalLabel">
-                            <i class="bi bi-diagram-3 text-primary me-2"></i>Customer Invoice Workflow
+                            <i class="bi bi-diagram-3 text-primary me-2"></i>{{ __('Customer Invoice Workflow') }}
                         </h5>
-                        <p class="text-muted small mb-0">How customer invoices move through your system</p>
+                        <p class="text-muted small mb-0">{{ __('How customer invoices move through your system') }}</p>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
@@ -261,22 +260,22 @@
                     <div class="d-flex flex-column align-items-center gap-0">
 
                         <div class="wf-box wf-pending">
-                            <div class="text-muted" style="font-size:0.7rem;font-weight:400;">STEP 1</div>
-                            <i class="bi bi-file-earmark-plus me-1"></i> Create Customer Invoice
-                            <div class="wf-badge bg-secondary text-white">Draft</div>
+                            <div class="text-muted" style="font-size:0.7rem;font-weight:400;">{{ __('STEP 1') }}</div>
+                            <i class="bi bi-file-earmark-plus me-1"></i> {{ __('Create Customer Invoice') }}
+                            <div class="wf-badge bg-secondary text-white">{{ __('Draft') }}</div>
                         </div>
                         <div class="wf-arrow">↓</div>
 
                         <div class="wf-box wf-action">
-                            <div class="text-muted" style="font-size:0.7rem;font-weight:400;">STEP 2</div>
-                            <i class="bi bi-send me-1"></i> Send to Customer
-                            <div class="wf-badge bg-info text-white">Sent</div>
+                            <div class="text-muted" style="font-size:0.7rem;font-weight:400;">{{ __('STEP 2') }}</div>
+                            <i class="bi bi-send me-1"></i> {{ __('Send to Customer') }}
+                            <div class="wf-badge bg-info text-white">{{ __('Sent') }}</div>
                         </div>
                         <div class="wf-arrow">↓</div>
 
                         <!-- Decision -->
                         <div class="wf-box wf-decision">
-                            <i class="bi bi-question-circle me-1"></i> Approval Decision
+                            <i class="bi bi-question-circle me-1"></i> {{ __('Approval Decision') }}
                         </div>
 
                         <div class="d-flex justify-content-center gap-5 w-100 mt-0">
@@ -285,13 +284,13 @@
                             <div class="d-flex flex-column align-items-center">
                                 <div class="wf-arrow">↓</div>
                                 <div class="wf-box wf-success">
-                                    <i class="bi bi-check-circle me-1"></i> Approved
-                                    <div class="wf-badge bg-success text-white">Approved</div>
+                                    <i class="bi bi-check-circle me-1"></i> {{ __('Approved') }}
+                                    <div class="wf-badge bg-success text-white">{{ __('Approved') }}</div>
                                 </div>
                                 <div class="wf-arrow">↓</div>
                                 <div class="wf-box wf-job">
-                                    <i class="bi bi-cash-coin me-1"></i> Ready for Collection
-                                    <div class="wf-badge text-white" style="background:#0dcaf0;">Collections Module</div>
+                                    <i class="bi bi-cash-coin me-1"></i> {{ __('Ready for Collection') }}
+                                    <div class="wf-badge text-white" style="background:#0dcaf0;">{{ __('Collections Module') }}</div>
                                 </div>
                             </div>
 
@@ -299,13 +298,13 @@
                             <div class="d-flex flex-column align-items-center">
                                 <div class="wf-arrow">↓</div>
                                 <div class="wf-box wf-danger">
-                                    <i class="bi bi-x-circle me-1"></i> Rejected
-                                    <div class="wf-badge bg-danger text-white">Rejected</div>
+                                    <i class="bi bi-x-circle me-1"></i> {{ __('Rejected') }}
+                                    <div class="wf-badge bg-danger text-white">{{ __('Rejected') }}</div>
                                 </div>
                                 <div class="wf-arrow">↓</div>
                                 <div class="wf-box wf-danger">
-                                    <i class="bi bi-slash-circle me-1"></i> Cancelled
-                                    <div class="wf-badge bg-danger text-white">Cancelled</div>
+                                    <i class="bi bi-slash-circle me-1"></i> {{ __('Cancelled') }}
+                                    <div class="wf-badge bg-danger text-white">{{ __('Cancelled') }}</div>
                                 </div>
                             </div>
                         </div>
@@ -314,42 +313,42 @@
 
                     <!-- Status legend -->
                     <hr class="mt-4">
-                    <h6 class="fw-semibold text-muted mb-3 small text-uppercase">Status Guide</h6>
+                    <h6 class="fw-semibold text-muted mb-3 small text-uppercase">{{ __('Status Guide') }}</h6>
                     <div class="row g-2">
                         <div class="col-sm-6 col-md-4">
                             <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#f8f9fa;border:1px solid #6c757d;">
-                                <span class="badge bg-secondary">Draft</span>
-                                <small class="text-muted">Being prepared</small>
+                                <span class="badge bg-secondary">{{ __('Draft') }}</span>
+                                <small class="text-muted">{{ __('Being prepared') }}</small>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-4">
                             <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#f0f7ff;border:1px solid #0d6efd;">
-                                <span class="badge bg-info text-white">Sent</span>
-                                <small class="text-muted">Awaiting customer response</small>
+                                <span class="badge bg-info text-white">{{ __('Sent') }}</span>
+                                <small class="text-muted">{{ __('Awaiting customer response') }}</small>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-4">
                             <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#f0fff4;border:1px solid #198754;">
-                                <span class="badge bg-success">Approved</span>
-                                <small class="text-muted">Ready for collection</small>
+                                <span class="badge bg-success">{{ __('Approved') }}</span>
+                                <small class="text-muted">{{ __('Ready for collection') }}</small>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-4">
                             <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#fff5f5;border:1px solid #dc3545;">
-                                <span class="badge bg-danger">Rejected</span>
-                                <small class="text-muted">Customer declined</small>
+                                <span class="badge bg-danger">{{ __('Rejected') }}</span>
+                                <small class="text-muted">{{ __('Customer declined') }}</small>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-4">
                             <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#fff5f5;border:1px solid #dc3545;">
-                                <span class="badge bg-danger">Cancelled</span>
-                                <small class="text-muted">Withdrawn</small>
+                                <span class="badge bg-danger">{{ __('Cancelled') }}</span>
+                                <small class="text-muted">{{ __('Withdrawn') }}</small>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-4">
                             <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#f0fdff;border:1px solid #0dcaf0;">
-                                <span class="badge" style="background:#0dcaf0;">Converted</span>
-                                <small class="text-muted">Turned into a collection</small>
+                                <span class="badge" style="background:#0dcaf0;">{{ __('Converted') }}</span>
+                                <small class="text-muted">{{ __('Turned into a collection') }}</small>
                             </div>
                         </div>
                     </div>
@@ -357,9 +356,9 @@
                 <div class="modal-footer border-0 pt-0">
                     <button class="btn btn-primary rounded-pill px-4" data-bs-dismiss="modal"
                             onclick="setTimeout(()=>document.getElementById('new').click(),300)">
-                        <i class="bi bi-plus-lg me-1"></i> Create Customer Invoice
+                        <i class="bi bi-plus-lg me-1"></i> {{ __('Create Customer Invoice') }}
                     </button>
-                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">{{ __('Close') }}</button>
                 </div>
             </div>
         </div>

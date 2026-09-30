@@ -1,5 +1,5 @@
 @section('js','waybill')
-@section('page-title','Waybill')
+@section('page-title', __('Waybill'))
 <x-app-layout>
     <main class="gmail-content bg-white px-3">
         <div id="filterPanel" class="card shadow-sm border-0 d-none">
@@ -7,7 +7,7 @@
             <div class="card-header bg-light border-0 py-3">
                 <div class="d-flex align-items-center gap-2">
                     <i class="bi bi-funnel-fill text-primary"></i>
-                    <h6 class="mb-0 fw-semibold">Advanced Filters</h6>
+                    <h6 class="mb-0 fw-semibold">{{ __('Advanced Filters') }}</h6>
                 </div>
             </div>
 
@@ -33,7 +33,7 @@
                             </div>--}}
 
                             <div class="col-md-4 form-filter">
-                                <label class="form-label fw-medium">Waybill Date</label>
+                                <label class="form-label fw-medium">{{ __('Waybill Date') }}</label>
                                 <div class="d-flex input-group-filter gap-2">
                                     <input type="date" class="form-control datepicker from-date default-filter" id="filter-from-date" name="filter-from-date"
                                            value="{{ \Carbon\Carbon::today()->subMonth(6)->startOfMonth()->format('d-m-Y') }}">
@@ -43,7 +43,7 @@
                             </div>
 
                             <div class="col-md-3 form-filter">
-                                <label class="form-label fw-medium">Customer</label>
+                                <label class="form-label fw-medium">{{ __('Customer') }}</label>
                                 <x-common.customers multiple></x-common.customers>
                             </div>
                         </div>
@@ -52,7 +52,7 @@
                     <!-- Action buttons -->
                     <div class="text-center mt-4">
                         <button class="btn btn-primary btn-round px-4" type="button" id="apply-filter">
-                            <i class="bi bi-search me-1"></i> Search
+                            <i class="bi bi-search me-1"></i> {{ __('Search') }}
                         </button>
                     </div>
                 </form>
@@ -72,28 +72,28 @@
                         <li class="nav-item me-2">
                             <button class="nav-link px-3 py-2 d-flex align-items-center active justify-content-between status-btn"
                                     data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="all">
-                                <span><i class="bi bi-collection me-1"></i> All -</span>
+                                <span><i class="bi bi-collection me-1"></i> {{ __('All') }} -</span>
                                 <span class="status-count ms-2" id="allCount">0</span>
                             </button>
                         </li>
                         <li class="nav-item me-2">
                             <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                     data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="pending">
-                                <span><i class="bi bi-clock me-1"></i> Pending -</span>
+                                <span><i class="bi bi-clock me-1"></i> {{ __('Pending') }} -</span>
                                 <span class="status-count ms-2" id="pendingCount">0</span>
                             </button>
                         </li>
                         <li class="nav-item me-2">
                             <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                     data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="in_transit">
-                                <span><i class="bi bi-truck me-1"></i> In Transit -</span>
+                                <span><i class="bi bi-truck me-1"></i> {{ __('In Transit') }} -</span>
                                 <span class="status-count ms-2" id="in_transitCount">0</span>
                             </button>
                         </li>
                         <li class="nav-item">
                             <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                     data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="delivered">
-                                <span><i class="bi bi-check-circle me-1"></i> Delivered -</span>
+                                <span><i class="bi bi-check-circle me-1"></i> {{ __('Delivered') }} -</span>
                                 <span class="status-count ms-2" id="deliveredCount">0</span>
                             </button>
                         </li>
@@ -104,11 +104,10 @@
                 <div class="position-relative">
                     <!-- Compact Filter button -->
                     <button class="btn btn-outline-primary btn-round me-2" id="filter-box"><i class="bi bi-funnel"></i>
-                        Filter
+                        {{ __('Filter') }}
                     </button>
                 </div>
-                <button class="btn btn-primary rounded-pill px-4" id="new" data-loader-id="{{ $job_id ?? 'list' }}">New
-                    Waybill
+                <button class="btn btn-primary rounded-pill px-4" id="new" data-loader-id="{{ $job_id ?? 'list' }}">{{ __('New Waybill') }}
                 </button>
             </div>
         </div>
@@ -120,7 +119,7 @@
                     <div class="search-box position-relative me-2">
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                         <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="Search..." aria-label="Search...">
+                               placeholder="{{ __('Search...') }}" aria-label="{{ __('Search...') }}">
                     </div>
                 </div>
             </div>
@@ -129,14 +128,14 @@
                 <table class="table align-middle dataTable" id="dataTable" data-min-height="min-height:75vh;" data-title="Waybill" data-model-size="lg">
                     <thead class="table-light bg-white">
                     <tr>
-                        <th>Waybill No</th>
-                        <th>Customer</th>
-                        <th>Job No</th>
-                        <th>POL <i class="bi bi-arrow-right"></i> POD</th>
-                        <th>Delivery Address</th>
-                        <th>Delivery Date</th>
-                        <th>Status</th>
-                        <th>Waybill Date</th>
+                        <th>{{ __('Waybill No') }}</th>
+                        <th>{{ __('Customer') }}</th>
+                        <th>{{ __('Job No') }}</th>
+                        <th>{{ __('POL') }} <i class="bi bi-arrow-right"></i> {{ __('POD') }}</th>
+                        <th>{{ __('Delivery Address') }}</th>
+                        <th>{{ __('Delivery Date') }}</th>
+                        <th>{{ __('Status') }}</th>
+                        <th>{{ __('Waybill Date') }}</th>
                         <th></th>
                     </tr>
                     </thead>

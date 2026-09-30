@@ -1,10 +1,10 @@
-@section('page-title','Job Overview')
-@section('page-subtitle', 'Real-time operations performance dashboard')
+@section('page-title', __('Job Overview'))
+@section('page-subtitle', __('Real-time operations performance dashboard'))
 @section('print-footer')
 <script>
     window.printFooter = {
         show: true,
-        custom: 'Job Overview - Generated on {{ date('d-m-Y H:i') }}'
+        custom: '{{ __('Job Overview - Generated on :date', ['date' => date('d-m-Y H:i')]) }}'
     };
 </script>
 @endsection
@@ -59,12 +59,12 @@
             <div class="d-flex flex-wrap justify-content-end align-items-center mb-3">
                 <div class="d-flex align-items-center gap-2">
                     <select id="dateRange" class="form-select form-select-sm" style="width:auto;min-width:140px;">
-                        <option value="this_month" {{ $range==='this_month' ? 'selected' : '' }}>This Month</option>
-                        <option value="last_month" {{ $range==='last_month' ? 'selected' : '' }}>Last Month</option>
-                        <option value="this_year" {{ $range==='this_year' ? 'selected' : '' }}>This Year</option>
+                        <option value="this_month" {{ $range==='this_month' ? 'selected' : '' }}>{{ __('This Month') }}</option>
+                        <option value="last_month" {{ $range==='last_month' ? 'selected' : '' }}>{{ __('Last Month') }}</option>
+                        <option value="this_year" {{ $range==='this_year' ? 'selected' : '' }}>{{ __('This Year') }}</option>
                     </select>
                     <button class="btn btn-primary btn-sm px-3" id="btn-apply">
-                        <i class="bi bi-arrow-repeat me-1"></i> Apply
+                        <i class="bi bi-arrow-repeat me-1"></i> {{ __('Apply') }}
                     </button>
                 </div>
             </div>
@@ -74,9 +74,9 @@
                 <div class="col-lg-3 col-md-6">
                     <div class="job-kpi-card d-flex align-items-center justify-content-between">
                         <div>
-                            <div class="kpi-label">Total Jobs</div>
+                            <div class="kpi-label">{{ __('Total Jobs') }}</div>
                             <div class="kpi-value" id="kpiTotalJobs">0</div>
-                            <div class="kpi-sub">Created this period</div>
+                            <div class="kpi-sub">{{ __('Created this period') }}</div>
                         </div>
                         <div class="job-icon-circle" style="background:rgba(11,106,160,0.1);color:#0b6aa0;">
                             <i class="bi bi-briefcase"></i>
@@ -86,9 +86,9 @@
                 <div class="col-lg-3 col-md-6">
                     <div class="job-kpi-card d-flex align-items-center justify-content-between">
                         <div>
-                            <div class="kpi-label">Completed</div>
+                            <div class="kpi-label">{{ __('Completed') }}</div>
                             <div class="kpi-value" id="kpiCompletedJobs">0</div>
-                            <div class="kpi-sub">Finished this period</div>
+                            <div class="kpi-sub">{{ __('Finished this period') }}</div>
                         </div>
                         <div class="job-icon-circle" style="background:rgba(22,163,74,0.1);color:#16a34a;">
                             <i class="bi bi-check-circle"></i>
@@ -98,9 +98,9 @@
                 <div class="col-lg-3 col-md-6">
                     <div class="job-kpi-card d-flex align-items-center justify-content-between">
                         <div>
-                            <div class="kpi-label">Pending</div>
+                            <div class="kpi-label">{{ __('Pending') }}</div>
                             <div class="kpi-value" id="kpiPendingJobs" style="color:#dc2626;">0</div>
-                            <div class="kpi-sub">Currently in progress</div>
+                            <div class="kpi-sub">{{ __('Currently in progress') }}</div>
                         </div>
                         <div class="job-icon-circle" style="background:rgba(220,38,38,0.1);color:#dc2626;">
                             <i class="bi bi-hourglass-split"></i>
@@ -110,9 +110,9 @@
                 <div class="col-lg-3 col-md-6">
                     <div class="job-kpi-card d-flex align-items-center justify-content-between">
                         <div>
-                            <div class="kpi-label">Invoiced Jobs</div>
+                            <div class="kpi-label">{{ __('Invoiced Jobs') }}</div>
                             <div class="kpi-value" id="kpiInvoicedJobs">0</div>
-                            <div class="kpi-sub">Have a customer invoice</div>
+                            <div class="kpi-sub">{{ __('Have a customer invoice') }}</div>
                         </div>
                         <div class="job-icon-circle" style="background:rgba(91,87,174,0.1);color:#5b57ae;">
                             <i class="bi bi-receipt"></i>
@@ -125,37 +125,37 @@
             <div class="row g-3 mb-4">
                 <div class="col-lg-2 col-md-4 col-6">
                     <div class="job-kpi-card text-center py-2">
-                        <div class="kpi-label">Cancelled</div>
+                        <div class="kpi-label">{{ __('Cancelled') }}</div>
                         <div class="kpi-value" id="kpiCancelledJobs" style="font-size:1.3rem;">0</div>
                     </div>
                 </div>
                 <div class="col-lg-2 col-md-4 col-6">
                     <div class="job-kpi-card text-center py-2">
-                        <div class="kpi-label">Customers</div>
+                        <div class="kpi-label">{{ __('Customers') }}</div>
                         <div class="kpi-value" id="kpiCustomerCount" style="font-size:1.3rem;">0</div>
                     </div>
                 </div>
                 <div class="col-lg-2 col-md-4 col-6">
                     <div class="job-kpi-card text-center py-2">
-                        <div class="kpi-label">From Quotations</div>
+                        <div class="kpi-label">{{ __('From Quotations') }}</div>
                         <div class="kpi-value" id="kpiFromQuotations" style="font-size:1.3rem;">0</div>
                     </div>
                 </div>
                 <div class="col-lg-2 col-md-4 col-6">
                     <div class="job-kpi-card text-center py-2">
-                        <div class="kpi-label">Repeat Customers</div>
+                        <div class="kpi-label">{{ __('Repeat Customers') }}</div>
                         <div class="kpi-value" id="kpiRepeat" style="font-size:1.3rem;">0%</div>
                     </div>
                 </div>
                 <div class="col-lg-2 col-md-4 col-6">
                     <div class="job-kpi-card text-center py-2">
-                        <div class="kpi-label">Avg Containers/Job</div>
+                        <div class="kpi-label">{{ __('Avg Containers/Job') }}</div>
                         <div class="kpi-value" id="kpiAvgContainers" style="font-size:1.3rem;">0</div>
                     </div>
                 </div>
                 <div class="col-lg-2 col-md-4 col-6">
                     <div class="job-kpi-card text-center py-2">
-                        <div class="kpi-label">vs Last Month</div>
+                        <div class="kpi-label">{{ __('vs Last Month') }}</div>
                         <div class="kpi-value" id="kpiJobsChange" style="font-size:1.1rem;">0%</div>
                     </div>
                 </div>
@@ -166,8 +166,8 @@
                 <div class="col-xl-7">
                     <div class="job-card h-100">
                         <div class="job-card-header">
-                            <h6><i class="bi bi-graph-up me-2" style="color:#0b6aa0;"></i>Jobs Trend</h6>
-                            <span class="badge-job">{{ $range === 'this_year' ? 'Monthly' : 'Weekly' }}</span>
+                            <h6><i class="bi bi-graph-up me-2" style="color:#0b6aa0;"></i>{{ __('Jobs Trend') }}</h6>
+                            <span class="badge-job">{{ $range === 'this_year' ? __('Monthly') : __('Weekly') }}</span>
                         </div>
                         <div class="job-card-body">
                             <canvas id="chartJobsTrend" height="180"></canvas>
@@ -177,8 +177,8 @@
                 <div class="col-xl-5">
                     <div class="job-card h-100">
                         <div class="job-card-header">
-                            <h6><i class="bi bi-signpost-split me-2" style="color:#5b57ae;"></i>Job Source</h6>
-                            <span class="badge-job">Sales Pipeline</span>
+                            <h6><i class="bi bi-signpost-split me-2" style="color:#5b57ae;"></i>{{ __('Job Source') }}</h6>
+                            <span class="badge-job">{{ __('Sales Pipeline') }}</span>
                         </div>
                         <div class="job-card-body">
                             <canvas id="chartJobSource" height="180"></canvas>
@@ -192,7 +192,7 @@
                 <div class="col-lg-3 col-md-6">
                     <div class="job-card h-100">
                         <div class="job-card-header">
-                            <h6><i class="bi bi-graph-up-arrow me-2" style="color:#16a34a;"></i>Completion Rate</h6>
+                            <h6><i class="bi bi-graph-up-arrow me-2" style="color:#16a34a;"></i>{{ __('Completion Rate') }}</h6>
                         </div>
                         <div class="job-card-body">
                             <canvas id="chartCompletionRate" height="170"></canvas>
@@ -202,7 +202,7 @@
                 <div class="col-lg-3 col-md-6">
                     <div class="job-card h-100">
                         <div class="job-card-header">
-                            <h6><i class="bi bi-truck me-2" style="color:#16a34a;"></i>Top Carriers</h6>
+                            <h6><i class="bi bi-truck me-2" style="color:#16a34a;"></i>{{ __('Top Carriers') }}</h6>
                         </div>
                         <div class="job-card-body">
                             <canvas id="chartTopCarriers" height="170"></canvas>
@@ -212,7 +212,7 @@
                 <div class="col-lg-3 col-md-6">
                     <div class="job-card h-100">
                         <div class="job-card-header">
-                            <h6><i class="bi bi-receipt-cutoff me-2" style="color:#0b6aa0;"></i>Invoicing Coverage</h6>
+                            <h6><i class="bi bi-receipt-cutoff me-2" style="color:#0b6aa0;"></i>{{ __('Invoicing Coverage') }}</h6>
                         </div>
                         <div class="job-card-body">
                             <canvas id="chartInvoicingCoverage" height="170"></canvas>
@@ -222,7 +222,7 @@
                 <div class="col-lg-3 col-md-6">
                     <div class="job-card h-100">
                         <div class="job-card-header">
-                            <h6><i class="bi bi-people me-2" style="color:#f59e0b;"></i>Handled By</h6>
+                            <h6><i class="bi bi-people me-2" style="color:#f59e0b;"></i>{{ __('Handled By') }}</h6>
                         </div>
                         <div class="job-card-body">
                             <canvas id="chartHandledBy" height="170"></canvas>
@@ -236,8 +236,8 @@
                 <div class="col-lg-7">
                     <div class="job-card">
                         <div class="job-card-header">
-                            <h6><i class="bi bi-trophy me-2" style="color:#f59e0b;"></i>Top 10 Customers by Job Count</h6>
-                            <span class="badge-job">Jobs / Containers / Packages</span>
+                            <h6><i class="bi bi-trophy me-2" style="color:#f59e0b;"></i>{{ __('Top 10 Customers by Job Count') }}</h6>
+                            <span class="badge-job">{{ __('Jobs / Containers / Packages') }}</span>
                         </div>
                         <div class="job-card-body p-0">
                             <div style="max-height:380px;overflow:auto;">
@@ -245,10 +245,10 @@
                                     <thead class="table-light">
                                         <tr>
                                             <th>#</th>
-                                            <th>Customer</th>
-                                            <th class="text-end">Jobs</th>
-                                            <th class="text-end">Containers</th>
-                                            <th class="text-end">Packages</th>
+                                            <th>{{ __('Customer') }}</th>
+                                            <th class="text-end">{{ __('Jobs') }}</th>
+                                            <th class="text-end">{{ __('Containers') }}</th>
+                                            <th class="text-end">{{ __('Packages') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody id="tableCustomers"></tbody>
@@ -260,8 +260,8 @@
                 <div class="col-lg-5">
                     <div class="job-card">
                         <div class="job-card-header">
-                            <h6><i class="bi bi-signpost-split me-2" style="color:#0b6aa0;"></i>Top Routes</h6>
-                            <span class="badge-job">POL &rarr; POD</span>
+                            <h6><i class="bi bi-signpost-split me-2" style="color:#0b6aa0;"></i>{{ __('Top Routes') }}</h6>
+                            <span class="badge-job">{{ __('POL') }} &rarr; {{ __('POD') }}</span>
                         </div>
                         <div class="job-card-body p-0">
                             <div style="max-height:380px;overflow:auto;">
@@ -269,8 +269,8 @@
                                     <thead class="table-light">
                                         <tr>
                                             <th>#</th>
-                                            <th>Route</th>
-                                            <th class="text-end">Jobs</th>
+                                            <th>{{ __('Route') }}</th>
+                                            <th class="text-end">{{ __('Jobs') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody id="tableRoutes"></tbody>
@@ -286,15 +286,15 @@
                 <div class="col-12">
                     <div class="job-card">
                         <div class="job-card-header">
-                            <h6><i class="bi bi-list-check me-2" style="color:#0b6aa0;"></i>Job Status Breakdown</h6>
+                            <h6><i class="bi bi-list-check me-2" style="color:#0b6aa0;"></i>{{ __('Job Status Breakdown') }}</h6>
                         </div>
                         <div class="job-card-body p-0">
                             <table class="table job-table mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Status</th>
-                                        <th class="text-end">Count</th>
-                                        <th class="text-end">% of Total</th>
+                                        <th>{{ __('Status') }}</th>
+                                        <th class="text-end">{{ __('Count') }}</th>
+                                        <th class="text-end">{{ __('% of Total') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tableJobStatuses"></tbody>
@@ -348,7 +348,7 @@
                 <td class="text-end">${c.packages}</td>
             </tr>`;
         }).join('');
-        document.getElementById('tableCustomers').innerHTML = custHtml || '<tr><td colspan="5" class="text-center text-muted py-3">No data</td></tr>';
+        document.getElementById('tableCustomers').innerHTML = custHtml || '<tr><td colspan="5" class="text-center text-muted py-3">{{ __('No data') }}</td></tr>';
 
         // Top routes table
         const routesHtml = (d.routes || []).map((r, idx) => {
@@ -358,7 +358,7 @@
                 <td class="text-end">${fmt(r.jobs)}</td>
             </tr>`;
         }).join('');
-        document.getElementById('tableRoutes').innerHTML = routesHtml || '<tr><td colspan="3" class="text-center text-muted py-3">No data</td></tr>';
+        document.getElementById('tableRoutes').innerHTML = routesHtml || '<tr><td colspan="3" class="text-center text-muted py-3">{{ __('No data') }}</td></tr>';
 
         // Job status table
         const statuses = d.jobStatuses || [];
@@ -372,7 +372,7 @@
                 <td class="text-end fw-semibold">${pctOfTotal}%</td>
             </tr>`;
         }).join('');
-        document.getElementById('tableJobStatuses').innerHTML = statusHtml || '<tr><td colspan="3" class="text-center text-muted py-3">No data</td></tr>';
+        document.getElementById('tableJobStatuses').innerHTML = statusHtml || '<tr><td colspan="3" class="text-center text-muted py-3">{{ __('No data') }}</td></tr>';
 
         // --- Charts ---
         const colorPalette = ['#0b6aa0','#8b5cf6','#f59e0b','#06b6d4','#dc2626','#f97316'];
@@ -382,14 +382,14 @@
         // Jobs Trend
         const ctxTrend = document.getElementById('chartJobsTrend').getContext('2d');
         const trendLabels = '{{ $range }}' === 'this_year'
-            ? ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].slice(0, d.jobsTrend.length)
+            ? ['{{ __('Jan') }}','{{ __('Feb') }}','{{ __('Mar') }}','{{ __('Apr') }}','{{ __('May') }}','{{ __('Jun') }}','{{ __('Jul') }}','{{ __('Aug') }}','{{ __('Sep') }}','{{ __('Oct') }}','{{ __('Nov') }}','{{ __('Dec') }}'].slice(0, d.jobsTrend.length)
             : Array.from({length: d.jobsTrend.length}, (_, i) => 'W' + (i + 1));
         new Chart(ctxTrend, {
             type: 'line',
             data: {
                 labels: trendLabels,
                 datasets: [{
-                    label: 'Jobs',
+                    label: '{{ __('Jobs') }}',
                     data: d.jobsTrend,
                     borderColor: '#0b6aa0',
                     backgroundColor: (() => {
@@ -446,7 +446,7 @@
             data: {
                 labels: trendLabels,
                 datasets: [{
-                    label: 'Completion Rate',
+                    label: '{{ __('Completion Rate') }}',
                     data: d.completionRateTrend || [],
                     borderColor: '#16a34a',
                     backgroundColor: (() => {

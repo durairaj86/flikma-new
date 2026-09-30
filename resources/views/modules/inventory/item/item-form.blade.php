@@ -2,7 +2,7 @@
     <div class="row align-items-center bg-white small">
         <div class="d-flex justify-content-between align-items-center flex-wrap">
             <div class="module-info">
-                <span class="fw-semibold fs-5">{{ $item->name_en ?? 'New Item' }}</span> <small
+                <span class="fw-semibold fs-5">{{ $item->name_en ?? __('New Item') }}</span> <small
                     class="text-secondary">{{ $item->sku_code ? ' - ' . $item->sku_code : '' }}</small>
             </div>
         </div>
@@ -23,7 +23,7 @@
                                 class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn active"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic"
                                 type="button">
-                                <i class="bi bi-info-circle me-1"></i> Item Info
+                                <i class="bi bi-info-circle me-1"></i> {{ __('Item Info') }}
                             </button>
                         </li>
                     </ul>
@@ -39,55 +39,55 @@
                     <div class="tab-pane show active" id="tab-basic">
                         <div class="model-form-tab-div">
                             <div class="model-form-sub-title">
-                                <h5>General Information</h5>
+                                <h5>{{ __('General Information') }}</h5>
                             </div>
                             <div class="row">
                                 <div class="col-md-6 form-group">
-                                    <label class="form-label required">Item Name (English) <sup class="text-danger">*</sup></label>
+                                    <label class="form-label required">{{ __('Item Name (English)') }} <sup class="text-danger">*</sup></label>
                                     <input type="text" name="name_en" class="form-control" required
                                            value="{{ $item->name_en ?? '' }}">
                                 </div>
                                 <div class="col-md-6 form-group">
-                                    <label class="form-label required">Item Name (Arabic) <sup class="text-danger">*</sup></label>
+                                    <label class="form-label required">{{ __('Item Name (Arabic)') }} <sup class="text-danger">*</sup></label>
                                     <input type="text" name="name_ar" class="form-control" dir="rtl" required
                                            value="{{ $item->name_ar ?? '' }}">
                                 </div>
                                 <div class="col-md-6 form-group">
-                                    <label class="form-label required">Account Type <sup class="text-danger">*</sup></label>
+                                    <label class="form-label required">{{ __('Account Type') }} <sup class="text-danger">*</sup></label>
                                     <select class="form-control" id="account_type" name="account_type" required>
-                                        <option value="">-- Select Account Type --</option>
-                                        <option value="expense" {{ (isset($item) && $item->account_type == 'expense') ? 'selected' : '' }}>Expense</option>
-                                        <option value="income" {{ (isset($item) && $item->account_type == 'income') ? 'selected' : '' }}>Income</option>
+                                        <option value="">{{ __('-- Select Account Type --') }}</option>
+                                        <option value="expense" {{ (isset($item) && $item->account_type == 'expense') ? 'selected' : '' }}>{{ __('Expense') }}</option>
+                                        <option value="income" {{ (isset($item) && $item->account_type == 'income') ? 'selected' : '' }}>{{ __('Income') }}</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6 form-group">
-                                    <label class="form-label">SKU Code</label>
-                                    <input type="text" class="form-control" id="sku_code" value="{{ $item->sku_code ?? 'Will be generated automatically' }}" readonly>
+                                    <label class="form-label">{{ __('SKU Code') }}</label>
+                                    <input type="text" class="form-control" id="sku_code" value="{{ $item->sku_code ?? __('Will be generated automatically') }}" readonly>
                                 </div>
                             </div>
                             <div class="model-form-sub-title">
-                                <h5>Pricing</h5>
+                                <h5>{{ __('Pricing') }}</h5>
                             </div>
                             <div class="row">
                                 <div class="col-md-6 form-group">
-                                    <label class="form-label">Cost Price</label>
+                                    <label class="form-label">{{ __('Cost Price') }}</label>
                                     <input type="number" step="0.01" min="0" class="form-control" id="cost_price" name="cost_price" value="{{ $item->cost_price ?? '' }}">
                                 </div>
                                 <div class="col-md-6 form-group">
-                                    <label class="form-label">Selling Price</label>
+                                    <label class="form-label">{{ __('Selling Price') }}</label>
                                     <input type="number" step="0.01" min="0" class="form-control" id="selling_price" name="selling_price" value="{{ $item->selling_price ?? '' }}">
                                     <div class="invalid-feedback" id="selling_price_error"></div>
                                 </div>
                             </div>
 
                             <div class="model-form-sub-title">
-                                <h5>Accounting</h5>
+                                <h5>{{ __('Accounting') }}</h5>
                             </div>
                             <div class="row">
                                 <div class="col-md-6 form-group">
-                                    <label class="form-label">Cost Account</label>
+                                    <label class="form-label">{{ __('Cost Account') }}</label>
                                     <select class="form-control" id="cost_account_id" name="cost_account_id">
-                                        <option value="">-- Select Cost Account --</option>
+                                        <option value="">{{ __('-- Select Cost Account --') }}</option>
                                         @foreach($costAccounts as $account)
                                             <option value="{{ $account->id }}" {{ (isset($item) && $item->cost_account_id == $account->id) ? 'selected' : '' }}>
                                                 {{ $account->name }} ({{ $account->code }})
@@ -96,9 +96,9 @@
                                     </select>
                                 </div>
                                 <div class="col-md-6 form-group">
-                                    <label class="form-label">Sales Account</label>
+                                    <label class="form-label">{{ __('Sales Account') }}</label>
                                     <select class="form-control" id="sales_account_id" name="sales_account_id">
-                                        <option value="">-- Select Sales Account --</option>
+                                        <option value="">{{ __('-- Select Sales Account --') }}</option>
                                         @foreach($salesAccounts as $account)
                                             <option value="{{ $account->id }}" {{ (isset($item) && $item->sales_account_id == $account->id) ? 'selected' : '' }}>
                                                 {{ $account->name }} ({{ $account->code }})
@@ -124,7 +124,7 @@
 
                                         if (costPrice > 0 && sellingPrice > 0 && sellingPrice <= costPrice) {
                                             $('#selling_price').addClass('is-invalid');
-                                            $('#selling_price_error').text('Selling price must be greater than cost price');
+                                            $('#selling_price_error').text('{{ __('Selling price must be greater than cost price') }}');
                                             return false;
                                         } else {
                                             $('#selling_price').removeClass('is-invalid');

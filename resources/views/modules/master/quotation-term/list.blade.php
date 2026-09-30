@@ -1,5 +1,5 @@
 @section('js','quotation_term')
-@section('page-title','Quotation Terms')
+@section('page-title', __('Quotation Terms'))
 <x-app-layout>
     <main class="gmail-content bg-white d-flex" id="content-wrapper">
         @include('includes.master-navigation')
@@ -9,11 +9,11 @@
                     <div class="search-box position-relative me-3">
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                         <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="Search..." aria-label="Search...">
+                               placeholder="{{ __('Search...') }}" aria-label="{{ __('Search...') }}">
                     </div>
                 </div>
                 <div class="d-flex align-items-center">
-                    <button class="btn btn-primary rounded-pill px-4" id="new">New Quotation Term</button>
+                    <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Quotation Term') }}</button>
                 </div>
             </div>
             <div class="shadow bdr-r-10 py-3 flex-grow-1">
@@ -23,9 +23,9 @@
                         <thead class="table-light sticky-top bg-white">
                         <tr>
                             <th>#</th>
-                            <th>Title</th>
-                            <th>Scope</th>
-                            <th>Terms</th>
+                            <th>{{ __('Title') }}</th>
+                            <th>{{ __('Scope') }}</th>
+                            <th>{{ __('Terms') }}</th>
                             <th></th>
                         </tr>
                         </thead>

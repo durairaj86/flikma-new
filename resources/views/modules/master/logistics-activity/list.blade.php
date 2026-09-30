@@ -1,5 +1,5 @@
 @section('js','logistics_activity')
-@section('page-title','Logistic Activities')
+@section('page-title', __('Logistic Activities'))
 <x-app-layout>
     <main class="gmail-content bg-white d-flex" style="min-height: 100vh;">
         @include('includes.master-navigation')
@@ -11,11 +11,11 @@
                     <div class="search-box position-relative me-3">
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                         <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="Search..." aria-label="Search...">
+                               placeholder="{{ __('Search...') }}" aria-label="{{ __('Search...') }}">
                     </div>
                 </div>
                 <div class="d-flex align-items-center">
-                    <button class="btn btn-primary rounded-pill px-4" id="new">New Activity</button>
+                    <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Activity') }}</button>
                 </div>
             </div>
 
@@ -25,10 +25,10 @@
                     <thead class="table-light sticky-top bg-white">
                     <tr>
                         <th>#</th>
-                        <th>Activity</th>
-                        <th>Code</th>
-                        <th>Type</th>
-                        <th>Service</th>
+                        <th>{{ __('Activity') }}</th>
+                        <th>{{ __('Code') }}</th>
+                        <th>{{ __('Type') }}</th>
+                        <th>{{ __('Service') }}</th>
                         <th></th>
                     </tr>
                     </thead>

@@ -86,20 +86,20 @@
         <!-- Action Buttons -->
         <div class="d-flex justify-content-end align-items-center gap-2 mb-3 no-print">
             <button type="button" class="btn btn-outline-secondary btn-sm" onclick="ENQUIRY.printPreview('{{ $enquiry->id }}')">
-                <i class="bi bi-printer me-1"></i> Print
+                <i class="bi bi-printer me-1"></i> {{ __('Print') }}
             </button>
             <button type="button" class="btn btn-outline-secondary btn-sm" onclick="ENQUIRY.downloadPDF('{{ $enquiry->id }}')">
-                <i class="bi bi-file-earmark-pdf me-1"></i> Download PDF
+                <i class="bi bi-file-earmark-pdf me-1"></i> {{ __('Download PDF') }}
             </button>
             <button type="button" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-x-circle me-1"></i> Cancel
+                <i class="bi bi-x-circle me-1"></i> {{ __('Cancel') }}
             </button>
         </div>
 
         <!-- Company Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div class="company-logo">
-                <img src="{{ companyLogo() }}" alt="Company Logo" style="max-height: 60px;">
+                <img src="{{ companyLogo() }}" alt="{{ __('Company Logo') }}" style="max-height: 60px;">
             </div>
             <div class="company-info text-end">
                 <h5 class="mb-1">{{ companyName() }}</h5>
@@ -113,13 +113,13 @@
         <!-- Enquiry Header -->
         <div class="enquiry-header">
             <div class="left">
-                <div class="title">ENQUIRY</div>
+                <div class="title">{{ __('Enquiry') }}</div>
                 <div>#{{ $enquiry->row_no }}</div>
             </div>
             <div class="right">
-                <div><strong>Date:</strong> {{ showDate($enquiry->created_at) }}</div>
+                <div><strong>{{ __('Date:') }}</strong> {{ showDate($enquiry->created_at) }}</div>
                 <div>
-                    <strong>Status:</strong>
+                    <strong>{{ __('Status:') }}</strong>
                     <span class="badge-status bg-warning text-dark">
                     {{ \App\Enums\EnquiryEnum::from($enquiry->status)->label() }}
                 </span>
@@ -129,53 +129,53 @@
 
         <!-- Customer Card -->
         <div class="card shadow-sm mb-3">
-            <div class="card-header">Customer Information</div>
+            <div class="card-header">{{ __('Customer Information') }}</div>
             <div class="card-body">
                 <div class="row g-2">
-                    <div class="col-md-6"><strong>Name:</strong> {{ $enquiry->customer->name }}</div>
-                    <div class="col-md-6"><strong>Email:</strong> {{ $enquiry->customer->email ?? '-' }}</div>
-                    <div class="col-md-6"><strong>Phone:</strong> {{ $enquiry->customer->phone ?? '-' }}</div>
+                    <div class="col-md-6"><strong>{{ __('Name:') }}</strong> {{ $enquiry->customer->name }}</div>
+                    <div class="col-md-6"><strong>{{ __('Email:') }}</strong> {{ $enquiry->customer->email ?? '-' }}</div>
+                    <div class="col-md-6"><strong>{{ __('Phone:') }}</strong> {{ $enquiry->customer->phone ?? '-' }}</div>
                 </div>
             </div>
         </div>
 
         <!-- Shipment Card -->
         <div class="card shadow-sm mb-3">
-            <div class="card-header">Shipment Details</div>
+            <div class="card-header">{{ __('Shipment Details') }}</div>
             <div class="card-body">
                 <div class="row g-2">
-                    <div class="col-md-4"><strong>Type:</strong> {{ ucfirst($enquiry->shipment_type) }}</div>
-                    <div class="col-md-4"><strong>Category:</strong> {{ ucfirst($enquiry->shipment_category) }}</div>
-                    <div class="col-md-4"><strong>Weight:</strong> {{ $enquiry->weight }} kg</div>
-                    <div class="col-md-4"><strong>Volume:</strong> {{ $enquiry->volume }} m³</div>
-                    <div class="col-md-4"><strong>Pickup:</strong> {{ showDate($enquiry->pickup_date) }}</div>
+                    <div class="col-md-4"><strong>{{ __('Type:') }}</strong> {{ ucfirst($enquiry->shipment_type) }}</div>
+                    <div class="col-md-4"><strong>{{ __('Category:') }}</strong> {{ ucfirst($enquiry->shipment_category) }}</div>
+                    <div class="col-md-4"><strong>{{ __('Weight:') }}</strong> {{ $enquiry->weight }} {{ __('kg') }}</div>
+                    <div class="col-md-4"><strong>{{ __('Volume:') }}</strong> {{ $enquiry->volume }} m³</div>
+                    <div class="col-md-4"><strong>{{ __('Pickup:') }}</strong> {{ showDate($enquiry->pickup_date) }}</div>
                 </div>
             </div>
         </div>
 
         <!-- Origin & Destination Card -->
         <div class="card shadow-sm mb-3">
-            <div class="card-header">POL & POD</div>
+            <div class="card-header">{{ __('POL & POD') }}</div>
             <div class="card-body">
                 <div class="row g-2">
-                    <div class="col-md-6"><strong>Port of Loading (POL):</strong> {{ $enquiry->pol }}</div>
-                    <div class="col-md-6"><strong>Port of Discharge (POD):</strong> {{ $enquiry->pod }}</div>
+                    <div class="col-md-6"><strong>{{ __('Port of Loading (POL):') }}</strong> {{ $enquiry->pol }}</div>
+                    <div class="col-md-6"><strong>{{ __('Port of Discharge (POD):') }}</strong> {{ $enquiry->pod }}</div>
                 </div>
             </div>
         </div>
 
         <!-- Items Card -->
         <div class="card shadow-sm mb-3">
-            <div class="card-header">Containers / Packages</div>
+            <div class="card-header">{{ __('Containers / Packages') }}</div>
             <div class="card-body p-0">
                 @if($enquiry->shipment_category == 'container')
                     <table class="table table-bordered table-sm mb-0">
                         <thead>
                         <tr>
-                            <th>Size</th>
-                            <th>Type</th>
-                            <th>Quantity</th>
-                            <th>Hazardous</th>
+                            <th>{{ __('Size') }}</th>
+                            <th>{{ __('Type') }}</th>
+                            <th>{{ __('Quantity') }}</th>
+                            <th>{{ __('Hazardous') }}</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -188,7 +188,7 @@
                                 <td>{{ $containerSize[$item->container_size] ?? '' }}</td>
                                 <td>{{ $containerTypes[$item->container_type] ?? '' }}</td>
                                 <td>{{ $item->container_quantity }}</td>
-                                <td>{{ $item->container_hazardous == 1 ? 'Yes' : 'No' }}</td>
+                                <td>{{ $item->container_hazardous == 1 ? __('Yes') : __('No') }}</td>
                             </tr>
                         @endforeach
                         </tbody>
@@ -197,11 +197,11 @@
                     <table class="table table-bordered table-sm mb-0">
                         <thead>
                         <tr>
-                            <th>Package Type</th>
-                            <th>Length</th>
-                            <th>Width</th>
-                            <th>Height</th>
-                            <th>Weight</th>
+                            <th>{{ __('Package Type') }}</th>
+                            <th>{{ __('Length') }}</th>
+                            <th>{{ __('Width') }}</th>
+                            <th>{{ __('Height') }}</th>
+                            <th>{{ __('Weight') }}</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -226,14 +226,14 @@
         <!-- Notes -->
         @if($enquiry->remark)
             <div class="card shadow-sm mb-3">
-                <div class="card-header">Notes</div>
+                <div class="card-header">{{ __('Notes') }}</div>
                 <div class="card-body">{{ $enquiry->remark }}</div>
             </div>
         @endif
 
         <!-- Footer -->
         <footer class="text-center text-muted">
-            <div>Email: {{ companyEmail() }} | Phone: {{ companyPhone() }}</div>
+            <div>{{ __('Email:') }} {{ companyEmail() }} | {{ __('Phone:') }} {{ companyPhone() }}</div>
         </footer>
 
     </div>

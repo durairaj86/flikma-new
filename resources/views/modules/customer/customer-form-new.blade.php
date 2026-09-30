@@ -5,7 +5,7 @@
         <div class="col-12">
             <nav aria-label="breadcrumb" class="mb-2">
                 <ol class="breadcrumb small mb-0">
-                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item"><a href="#">{{ __('Home') }}</a></li>
                     <li class="breadcrumb-item"><a href="#">G H Contracts</a></li>
                     <li class="breadcrumb-item active" aria-current="page">G H CONTRACTS</li>
                 </ol>
@@ -13,14 +13,14 @@
 
             <div class="d-flex align-items-start justify-content-between bg-white rounded-3 p-3 shadow-sm">
                 <div>
-                    <div class="mb-2 small text-muted">Created: <strong class="text-dark">{{ $created ?? '29-04-2019' }}</strong></div>
+                    <div class="mb-2 small text-muted">{{ __('Created:') }} <strong class="text-dark">{{ $created ?? '29-04-2019' }}</strong></div>
                     <h5 class="mb-0">{{ $contract_code ?? 'CMAIR-20_1918*B' }}</h5>
-                    <div class="small text-muted mt-1">Last modified: <strong class="text-dark">{{ $modified ?? 'TOPCON 15-01-2019' }}</strong></div>
+                    <div class="small text-muted mt-1">{{ __('Last modified:') }} <strong class="text-dark">{{ $modified ?? 'TOPCON 15-01-2019' }}</strong></div>
                 </div>
 
                 <div class="d-flex align-items-center gap-2">
-                    <button class="btn btn-outline-secondary btn-sm">Save</button>
-                    <button class="btn btn-primary btn-sm">Save & Next <i class="bi bi-arrow-right ms-1"></i></button>
+                    <button class="btn btn-outline-secondary btn-sm">{{ __('Save') }}</button>
+                    <button class="btn btn-primary btn-sm">{{ __('Save & Next') }} <i class="bi bi-arrow-right ms-1"></i></button>
                 </div>
             </div>
         </div>
@@ -34,37 +34,37 @@
                 <ul class="nav nav-pills flex-column gap-2" role="tablist" aria-orientation="vertical">
                     <li class="nav-item">
                         <button class="nav-link active d-flex align-items-center" data-bs-toggle="pill" data-bs-target="#tab-general" type="button">
-                            <i class="bi bi-check-circle-fill text-success me-2"></i> Basic Info
+                            <i class="bi bi-check-circle-fill text-success me-2"></i> {{ __('Basic Info') }}
                         </button>
                     </li>
                     <li class="nav-item">
                         <button class="nav-link d-flex align-items-center" data-bs-toggle="pill" data-bs-target="#tab-comprehensive" type="button">
-                            <i class="bi bi-check-circle-fill text-success me-2"></i> Address
+                            <i class="bi bi-check-circle-fill text-success me-2"></i> {{ __('Address') }}
                         </button>
                     </li>
                     <li class="nav-item">
                         <button class="nav-link d-flex align-items-center" data-bs-toggle="pill" data-bs-target="#tab-services" type="button">
-                            <i class="bi bi-check-circle-fill text-success me-2"></i> Contact
+                            <i class="bi bi-check-circle-fill text-success me-2"></i> {{ __('Contact') }}
                         </button>
                     </li>
                     <li class="nav-item">
                         <button class="nav-link d-flex align-items-center" data-bs-toggle="pill" data-bs-target="#tab-exception" type="button">
-                            <i class="bi bi-circle me-2"></i> Exception Handling
+                            <i class="bi bi-circle me-2"></i> {{ __('Exception Handling') }}
                         </button>
                     </li>
                     <li class="nav-item">
                         <button class="nav-link d-flex align-items-center" data-bs-toggle="pill" data-bs-target="#tab-cancellation" type="button">
-                            <i class="bi bi-circle me-2"></i> Cancellation
+                            <i class="bi bi-circle me-2"></i> {{ __('Cancellation') }}
                         </button>
                     </li>
                     <li class="nav-item">
                         <button class="nav-link d-flex align-items-center" data-bs-toggle="pill" data-bs-target="#tab-delay" type="button">
-                            <i class="bi bi-circle me-2"></i> Delay
+                            <i class="bi bi-circle me-2"></i> {{ __('Delay') }}
                         </button>
                     </li>
                     <li class="nav-item">
                         <button class="nav-link d-flex align-items-center" data-bs-toggle="pill" data-bs-target="#tab-other" type="button">
-                            <i class="bi bi-circle me-2"></i> Other
+                            <i class="bi bi-circle me-2"></i> {{ __('Other') }}
                         </button>
                     </li>
                 </ul>
@@ -88,35 +88,35 @@
                                 <table class="table table-borderless align-middle mb-0">
                                     <thead class="small text-muted">
                                     <tr>
-                                        <th style="min-width:180px">Aircraft name</th>
-                                        <th style="min-width:220px">Service name</th>
-                                        <th style="min-width:180px">Service Rate Group</th>
-                                        <th style="min-width:140px">Rate type</th>
-                                        <th style="min-width:120px">Charges</th>
-                                        <th style="width:100px" class="text-center">Action</th>
+                                        <th style="min-width:180px">{{ __('Aircraft name') }}</th>
+                                        <th style="min-width:220px">{{ __('Service name') }}</th>
+                                        <th style="min-width:180px">{{ __('Service Rate Group') }}</th>
+                                        <th style="min-width:140px">{{ __('Rate type') }}</th>
+                                        <th style="min-width:120px">{{ __('Charges') }}</th>
+                                        <th style="width:100px" class="text-center">{{ __('Action') }}</th>
                                     </tr>
                                     </thead>
                                     <tbody>
                                     {{-- example row --}}
                                     <tr class="border-top">
                                         <td class="pe-2">
-                                            <input type="text" class="form-control form-control-sm" placeholder="Aircraft name">
+                                            <input type="text" class="form-control form-control-sm" placeholder="{{ __('Aircraft name') }}">
                                         </td>
                                         <td class="pe-2">
                                             <input type="text" class="form-control form-control-sm" placeholder="BS - Baggage service">
                                         </td>
                                         <td class="pe-2">
-                                            <input type="text" class="form-control form-control-sm" placeholder="Value">
+                                            <input type="text" class="form-control form-control-sm" placeholder="{{ __('Value') }}">
                                         </td>
                                         <td class="pe-2">
-                                            <input type="text" class="form-control form-control-sm" placeholder="Value">
+                                            <input type="text" class="form-control form-control-sm" placeholder="{{ __('Value') }}">
                                         </td>
                                         <td class="pe-2">
-                                            <input type="text" class="form-control form-control-sm" placeholder="Value">
+                                            <input type="text" class="form-control form-control-sm" placeholder="{{ __('Value') }}">
                                         </td>
                                         <td class="text-center">
-                                            <button class="btn btn-link btn-sm text-secondary p-0" title="Edit"><i class="bi bi-pencil"></i></button>
-                                            <button class="btn btn-link btn-sm text-danger p-0 ms-2" title="Delete"><i class="bi bi-trash"></i></button>
+                                            <button class="btn btn-link btn-sm text-secondary p-0" title="{{ __('Edit') }}"><i class="bi bi-pencil"></i></button>
+                                            <button class="btn btn-link btn-sm text-danger p-0 ms-2" title="{{ __('Delete') }}"><i class="bi bi-trash"></i></button>
                                         </td>
                                     </tr>
                                     </tbody>
@@ -127,13 +127,13 @@
                             <form>
                                 <div class="row g-3">
                                     <div class="col-md-6 col-lg-4">
-                                        <label class="form-label small">Service Name</label>
-                                        <input type="text" class="form-control form-control-sm" placeholder="Service Name">
+                                        <label class="form-label small">{{ __('Service Name') }}</label>
+                                        <input type="text" class="form-control form-control-sm" placeholder="{{ __('Service Name') }}">
                                     </div>
                                     <div class="col-md-6 col-lg-4">
-                                        <label class="form-label small">Service Rate Group</label>
+                                        <label class="form-label small">{{ __('Service Rate Group') }}</label>
                                         <select class="form-select form-select-sm">
-                                            <option value="">Service Rate Group</option>
+                                            <option value="">{{ __('Service Rate Group') }}</option>
                                         </select>
                                     </div>
                                     <div class="col-md-6 col-lg-4">
@@ -144,56 +144,56 @@
                                     </div>
 
                                     <div class="col-md-6 col-lg-4">
-                                        <label class="form-label small">Rate types</label>
+                                        <label class="form-label small">{{ __('Rate types') }}</label>
                                         <select class="form-select form-select-sm">
-                                            <option value="">Select</option>
+                                            <option value="">{{ __('Select') }}</option>
                                         </select>
                                     </div>
 
                                     <div class="col-md-6 col-lg-4">
-                                        <label class="form-label small">Charges</label>
-                                        <input type="text" class="form-control form-control-sm" placeholder="Charges">
+                                        <label class="form-label small">{{ __('Charges') }}</label>
+                                        <input type="text" class="form-control form-control-sm" placeholder="{{ __('Charges') }}">
                                     </div>
 
                                     <div class="col-md-6 col-lg-4">
-                                        <label class="form-label small">Stand By Rate Type</label>
-                                        <input type="text" class="form-control form-control-sm" placeholder="Stand By Rate Type">
+                                        <label class="form-label small">{{ __('Stand By Rate Type') }}</label>
+                                        <input type="text" class="form-control form-control-sm" placeholder="{{ __('Stand By Rate Type') }}">
                                     </div>
 
                                     <div class="col-md-6 col-lg-4">
-                                        <label class="form-label small">Cancellation Rate Type</label>
-                                        <input type="text" class="form-control form-control-sm" placeholder="Cancellation Rate Type">
+                                        <label class="form-label small">{{ __('Cancellation Rate Type') }}</label>
+                                        <input type="text" class="form-control form-control-sm" placeholder="{{ __('Cancellation Rate Type') }}">
                                     </div>
 
                                     <div class="col-md-6 col-lg-4">
-                                        <label class="form-label small">Night handling Charges</label>
-                                        <input type="text" class="form-control form-control-sm" placeholder="Night handling Charges">
+                                        <label class="form-label small">{{ __('Night handling Charges') }}</label>
+                                        <input type="text" class="form-control form-control-sm" placeholder="{{ __('Night handling Charges') }}">
                                     </div>
 
                                     <div class="col-md-6 col-lg-4">
-                                        <label class="form-label small">Stand By Rate Charges</label>
-                                        <input type="text" class="form-control form-control-sm" placeholder="Stand By Rate Charges">
+                                        <label class="form-label small">{{ __('Stand By Rate Charges') }}</label>
+                                        <input type="text" class="form-control form-control-sm" placeholder="{{ __('Stand By Rate Charges') }}">
                                     </div>
 
                                     {{-- checkboxes row example --}}
                                     <div class="col-12">
                                         <div class="form-check form-check-inline">
                                             <input class="form-check-input" type="checkbox" id="optOr" value="or">
-                                            <label class="form-check-label small" for="optOr">OR</label>
+                                            <label class="form-check-label small" for="optOr">{{ __('OR') }}</label>
                                         </div>
                                         <div class="form-check form-check-inline">
                                             <input class="form-check-input" type="checkbox" id="optRequired" value="required">
-                                            <label class="form-check-label small" for="optRequired">Required</label>
+                                            <label class="form-check-label small" for="optRequired">{{ __('Required') }}</label>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="d-flex justify-content-between align-items-center mt-4">
                                     <div>
-                                        <button type="button" class="btn btn-outline-secondary btn-sm">Copy From</button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm">{{ __('Copy From') }}</button>
                                     </div>
                                     <div>
-                                        <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                                        <button type="submit" class="btn btn-primary btn-sm">{{ __('Save') }}</button>
                                     </div>
                                 </div>
                             </form>
@@ -202,16 +202,16 @@
                             <div class="mt-4 small">
                                 <div class="list-group list-group-flush">
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>Aircraft name <span class="text-muted ms-2">BS - Baggage service</span></div>
-                                        <div class="text-muted">Value</div>
+                                        <div>{{ __('Aircraft name') }} <span class="text-muted ms-2">BS - Baggage service</span></div>
+                                        <div class="text-muted">{{ __('Value') }}</div>
                                     </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>Aircraft name <span class="text-muted ms-2">BS - Baggage service</span></div>
-                                        <div class="text-muted">Value</div>
+                                        <div>{{ __('Aircraft name') }} <span class="text-muted ms-2">BS - Baggage service</span></div>
+                                        <div class="text-muted">{{ __('Value') }}</div>
                                     </div>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>Aircraft name <span class="text-muted ms-2">BS - Baggage service</span></div>
-                                        <div class="text-muted">Value</div>
+                                        <div>{{ __('Aircraft name') }} <span class="text-muted ms-2">BS - Baggage service</span></div>
+                                        <div class="text-muted">{{ __('Value') }}</div>
                                     </div>
                                 </div>
                             </div>

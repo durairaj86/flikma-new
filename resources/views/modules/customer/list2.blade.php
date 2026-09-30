@@ -1,5 +1,5 @@
 @section('js','customer')
-@section('page-title','Customers')
+@section('page-title', __('Customers'))
 <x-app-layout>
     <div class="shadow m-4 bdr-r-10">
         <div class="p-4 pt-0 pb-0">
@@ -11,7 +11,7 @@
                             <button class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn"
                                     data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="pending">
                             <span class="d-flex align-items-center">
-                                <i class="bi bi-play-circle me-1"></i> Pending -
+                                <i class="bi bi-play-circle me-1"></i> {{ __('Pending') }} -
                             </span>
                                 <small class="status-count d-flex align-items-center justify-content-center"
                                        id="pendingCount">0</small>
@@ -22,7 +22,7 @@
                         <li class="nav-item">
                             <button class="nav-link py-2 d-flex align-items-center justify-content-between active status-btn"
                                     data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="confirmed">
-                                <span><i class="bi bi-play-circle me-1"></i> Confirmed -</span>
+                                <span><i class="bi bi-play-circle me-1"></i> {{ __('Confirmed') }} -</span>
                                 <span class="status-count d-flex align-items-center justify-content-center"
                                       id="confirmedCount">0</span>
                             </button>
@@ -31,7 +31,7 @@
                         <li class="nav-item">
                             <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                     data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="blocked">
-                                <span><i class="bi bi-play-circle me-1"></i> Blocked -</span>
+                                <span><i class="bi bi-play-circle me-1"></i> {{ __('Blocked') }} -</span>
                                 <span class="status-count d-flex align-items-center justify-content-center"
                                       id="blockedCount">0</span>
                             </button>
@@ -40,7 +40,7 @@
                         <li class="nav-item">
                             <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                     data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="rejected">
-                                <span><i class="bi bi-play-circle me-1"></i> Rejected -</span>
+                                <span><i class="bi bi-play-circle me-1"></i> {{ __('Rejected') }} -</span>
                                 <span class="status-count d-flex align-items-center justify-content-center"
                                       id="rejectedCount">0</span>
                             </button>
@@ -112,16 +112,16 @@
 
                 <div class="status-tabs">
                     <button class="status-btn active" id="pending">
-                        <i class="bi bi-clock"></i> Pending <span class="status-count" id="pendingCount">3</span>
+                        <i class="bi bi-clock"></i> {{ __('Pending') }} <span class="status-count" id="pendingCount">3</span>
                     </button>
                     <button class="status-btn" id="confirmed">
-                        <i class="bi bi-check-circle"></i> Confirmed <span class="status-count" id="confirmedCount">5</span>
+                        <i class="bi bi-check-circle"></i> {{ __('Confirmed') }} <span class="status-count" id="confirmedCount">5</span>
                     </button>
                     <button class="status-btn" id="blocked">
-                        <i class="bi bi-slash-circle"></i> Blocked <span class="status-count" id="blockedCount">2</span>
+                        <i class="bi bi-slash-circle"></i> {{ __('Blocked') }} <span class="status-count" id="blockedCount">2</span>
                     </button>
                     <button class="status-btn" id="rejected">
-                        <i class="bi bi-x-circle"></i> Rejected <span class="status-count" id="rejectedCount">1</span>
+                        <i class="bi bi-x-circle"></i> {{ __('Rejected') }} <span class="status-count" id="rejectedCount">1</span>
                     </button>
                 </div>
 
@@ -144,7 +144,7 @@
 
 
                 <!-- Button -->
-                <button class="btn btn-primary btn-round" id="new">New Customer</button>
+                <button class="btn btn-primary btn-round" id="new">{{ __('New Customer') }}</button>
             </div>
         </div>
         <div class="pt-0">
@@ -153,14 +153,14 @@
                     <thead>
                     <tr>
                         <th style="width: 10px">#</th>
-                        <th>Customer</th>
-                        <th>Contact</th>
-                        <th>Location</th>
-                        <th>Currency</th>
-                        <th>VAT #</th>
-                        <th>Credit</th>
-                        <th>Salesperson</th>
-                        <th>Joined</th>
+                        <th>{{ __('Customer') }}</th>
+                        <th>{{ __('Contact') }}</th>
+                        <th>{{ __('Location') }}</th>
+                        <th>{{ __('Currency') }}</th>
+                        <th>{{ __('VAT #') }}</th>
+                        <th>{{ __('Credit') }}</th>
+                        <th>{{ __('Salesperson') }}</th>
+                        <th>{{ __('Joined') }}</th>
                         <th></th>
                     </tr>
                     </thead>

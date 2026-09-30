@@ -1,9 +1,9 @@
 <div class="container px-4 py-3 align-items-center" id="modal-buttons" data-buttons="cancel,save"
-     data-button-save="Save Department">
+     data-button-save="{{ __('Save Department') }}">
     <div class="row g-3 align-items-center bg-white border-bottom py-2 mb-3 small">
         <div class="d-flex justify-content-between align-items-center flex-wrap">
             <div class="module-info">
-                <span class="fw-semibold fs-5">{{ $department->name ?? 'New Department' }}</span>
+                <span class="fw-semibold fs-5">{{ $department->name ?? __('New Department') }}</span>
             </div>
             <div id="show-buttons"></div>
         </div>
@@ -16,13 +16,13 @@
                     <li class="nav-item me-2">
                         <button class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn active"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button">
-                            <i class="bi bi-building me-1"></i> Details
+                            <i class="bi bi-building me-1"></i> {{ __('Details') }}
                         </button>
                     </li>
                     <li class="nav-item me-2">
                         <button class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-rights" type="button">
-                            <i class="bi bi-shield-lock me-1"></i> User Rights
+                            <i class="bi bi-shield-lock me-1"></i> {{ __('User Rights') }}
                         </button>
                     </li>
                 </ul>
@@ -37,20 +37,20 @@
                     <div class="model-form-tab-div">
                         <div class="row mt-2">
                             <div class="col-4 form-group">
-                                <label class="form-label">Department Name</label>
+                                <label class="form-label">{{ __('Department Name') }}</label>
                                 <input type="text" name="name" class="form-control" required
                                        value="{{ $department->name ?? '' }}">
                             </div>
                             <div class="col-4 form-group">
-                                <label class="form-label">Code</label>
+                                <label class="form-label">{{ __('Code') }}</label>
                                 <input type="text" name="code" class="form-control"
                                        value="{{ $department->code ?? '' }}">
                             </div>
                             <div class="col-4 form-group">
-                                <label class="form-label">Status</label>
+                                <label class="form-label">{{ __('Status') }}</label>
                                 <select name="is_active" class="tom-select" required>
-                                    <option value="1" @selected(($department->is_active ?? true))>Active</option>
-                                    <option value="0" @selected(!($department->is_active ?? true))>Inactive</option>
+                                    <option value="1" @selected(($department->is_active ?? true))>{{ __('Active') }}</option>
+                                    <option value="0" @selected(!($department->is_active ?? true))>{{ __('Inactive') }}</option>
                                 </select>
                             </div>
                         </div>
@@ -60,22 +60,20 @@
                 <div class="tab-pane" id="tab-rights">
                     <div class="model-form-tab-div">
                         <p class="text-secondary small mb-3">
-                            Choose what users in this department can see and do in each part of the
-                            software. The Super User (the account that registered the company) is
-                            never limited by these rights.
+                            {{ __('Choose what users in this department can see and do in each part of the software. The Super User (the account that registered the company) is never limited by these rights.') }}
                         </p>
                         <div class="table-responsive">
                             <table class="table table-sm align-middle">
                                 <thead>
                                 <tr>
-                                    <th>Module</th>
-                                    <th class="text-center">View</th>
-                                    <th class="text-center">Create</th>
-                                    <th class="text-center">Edit</th>
-                                    <th class="text-center">Delete</th>
-                                    <th class="text-center">Approve</th>
-                                    <th class="text-center">Confirm</th>
-                                    <th class="text-center">All</th>
+                                    <th>{{ __('Module') }}</th>
+                                    <th class="text-center">{{ __('View') }}</th>
+                                    <th class="text-center">{{ __('Create') }}</th>
+                                    <th class="text-center">{{ __('Edit') }}</th>
+                                    <th class="text-center">{{ __('Delete') }}</th>
+                                    <th class="text-center">{{ __('Approve') }}</th>
+                                    <th class="text-center">{{ __('Confirm') }}</th>
+                                    <th class="text-center">{{ __('All') }}</th>
                                 </tr>
                                 </thead>
                                 <tbody>

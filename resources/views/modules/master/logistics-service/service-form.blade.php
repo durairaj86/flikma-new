@@ -1,11 +1,11 @@
 <div class="container px-4 py-3 align-items-center" id="modal-buttons" data-buttons="cancel,save"
-     data-button-save="Save Customer">
+     data-button-save="{{ __('Save Customer') }}">
     <!-- Meta Info -->
     <div class="row g-3 align-items-center bg-white border-bottom py-2 mb-3 small">
         <div class="d-flex justify-content-between align-items-center flex-wrap">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-4">
                 <div class="module-info">
-                    <span class="fw-semibold fs-5">{{ $logisticService->name ?? 'New Activity' }}</span>
+                    <span class="fw-semibold fs-5">{{ $logisticService->name ?? __('New Activity') }}</span>
                 </div>
 
             </div>
@@ -27,9 +27,9 @@
                             <div class="row g-3">
                                 <!-- Category -->
                                 <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Category</label>
+                                    <label class="form-label fw-semibold">{{ __('Category') }}</label>
                                     <select name="category" class="form-control selectpicker" required>
-                                        <option value="">Select Category</option>
+                                        <option value="">{{ __('Select Category') }}</option>
                                         @foreach(services() as $logisticServiceId => $logisticServiceName)
                                             <option
                                                 value="{{ $logisticServiceId }}" @selected($logisticServiceId == $logisticService->category_id)>{{ $logisticServiceName }}</option>
@@ -39,53 +39,51 @@
                                 <div class="col-md-6"></div>
                                 <!-- Mode -->
                                 <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Mode</label>
+                                    <label class="form-label fw-semibold">{{ __('Mode') }}</label>
                                     <select name="mode" class="form-control selectpicker" required>
-                                        <option value="">Select Mode</option>
-                                        <option value="sea" @selected($logisticService->mode == 'sea')>Sea</option>
-                                        <option value="air" @selected($logisticService->mode == 'air')>Air</option>
-                                        <option value="land" @selected($logisticService->mode == 'land')>Land</option>
-                                        <option value="vas" @selected($logisticService->mode == 'vas')>Value Added
-                                            Service
+                                        <option value="">{{ __('Select Mode') }}</option>
+                                        <option value="sea" @selected($logisticService->mode == 'sea')>{{ __('Sea') }}</option>
+                                        <option value="air" @selected($logisticService->mode == 'air')>{{ __('Air') }}</option>
+                                        <option value="land" @selected($logisticService->mode == 'land')>{{ __('Land') }}</option>
+                                        <option value="vas" @selected($logisticService->mode == 'vas')>{{ __('Value Added Service') }}
                                         </option>
                                     </select>
                                 </div>
 
 
                                 <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Type</label>
+                                    <label class="form-label fw-semibold">{{ __('Type') }}</label>
                                     <select name="type" class="form-control selectpicker" required>
-                                        <option value="">Select Category</option>
-                                        <option value="import" @selected($logisticService->type == 'import')>Import
+                                        <option value="">{{ __('Select Category') }}</option>
+                                        <option value="import" @selected($logisticService->type == 'import')>{{ __('Import') }}
                                         </option>
-                                        <option value="export" @selected($logisticService->type == 'export')>Export
+                                        <option value="export" @selected($logisticService->type == 'export')>{{ __('Export') }}
                                         </option>
-                                        <option value="land" @selected($logisticService->type == 'land')>Land</option>
+                                        <option value="land" @selected($logisticService->type == 'land')>{{ __('Land') }}</option>
                                         <option value="value-added" @selected($logisticService->type == 'value-added')>
-                                            Value
-                                            Added
+                                            {{ __('Value Added') }}
                                         </option>
                                     </select>
                                 </div>
 
                                 <!-- Description English -->
                                 <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Service (English)</label>
+                                    <label class="form-label fw-semibold">{{ __('Service (English)') }}</label>
                                     <input type="text" name="service_en" class="form-control"
                                            value="{{ $logisticService->service_en ?? '' }}"
-                                           placeholder="Service name">
+                                           placeholder="{{ __('Service name') }}">
                                 </div>
 
                                 <!-- Description Arabic -->
                                 <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Service (Arabic)</label>
+                                    <label class="form-label fw-semibold">{{ __('Service (Arabic)') }}</label>
                                     <input type="text" name="service_ar" class="form-control text-end"
                                            value="{{ $logisticService->service_ar ?? '' }}"
-                                           placeholder="Service in arabic">
+                                           placeholder="{{ __('Service in arabic') }}">
                                 </div>
 
                                 <div class="col-md-12">
-                                    <label class="form-label fw-semibold">Description (about service)</label>
+                                    <label class="form-label fw-semibold">{{ __('Description (about service)') }}</label>
                                     <textarea name="description"
                                               class="form-control h-100">{{ $logisticService->description ?? '' }}</textarea>
                                 </div>

@@ -1,5 +1,5 @@
 @section('js','supplier')
-@section('page-title','Suppliers')
+@section('page-title', __('Suppliers'))
 <x-app-layout>
     <main class="gmail-content bg-white px-3">
         <!-- Tabs -->
@@ -12,7 +12,7 @@
                             <button
                                 class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn active"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="confirmed">
-                                <span><i class="bi bi-check-circle me-1"></i> Active -</span>
+                                <span><i class="bi bi-check-circle me-1"></i> {{ __('Active') }} -</span>
                                 <span class="status-count ms-2"
                                       id="confirmedCount">0</span>
                             </button>
@@ -21,7 +21,7 @@
                             <button
                                 class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="blocked">
-                                <span><i class="bi bi-slash-circle me-1"></i> Blocked -</span>
+                                <span><i class="bi bi-slash-circle me-1"></i> {{ __('Blocked') }} -</span>
                                 <span class="status-count ms-2"
                                       id="blockedCount">0</span>
                             </button>
@@ -30,8 +30,8 @@
                 </div>
             </div>
             <div class="d-flex justify-content-between">
-                <button class="btn btn-primary rounded-pill px-4" id="new">New Supplier</button>
-                <button class="btn btn-outline-primary rounded-pill px-4 ms-2" id="import">Import</button>
+                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Supplier') }}</button>
+                <button class="btn btn-outline-primary rounded-pill px-4 ms-2" id="import">{{ __('Import') }}</button>
             </div>
         </div>
         {{-- min-height guarantees room for a fully-expanded row action dropdown
@@ -46,7 +46,7 @@
                 <!-- Example static label -->
                 <div class="d-inline-flex align-items-center bg-light border rounded-pill px-2 py-1 me-2 mb-2 small"
                      style="font-size: 0.8rem;">
-                    <span class="me-2">Date: 10-12-2024 / 10-12-2025</span>
+                    <span class="me-2">{{ __('Date') }}: 10-12-2024 / 10-12-2025</span>
                     <button type="button"
                             class="btn btn-sm btn-light p-0 border-0 d-flex align-items-center justify-content-center"
                             style="width: 16px; height: 16px; line-height: 1;" aria-label="Close"
@@ -59,7 +59,7 @@
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
 
                         <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="Search suppliers..." aria-label="Search suppliers...">
+                               placeholder="{{ __('Search suppliers...') }}" aria-label="{{ __('Search suppliers...') }}">
                     </div>
                 </div>
             </div>
@@ -70,14 +70,14 @@
                     <thead class="table-light bg-white">
                     <tr>
                         <th style="width: 10px">#</th>
-                        <th>Supplier</th>
-                        <th>Contact</th>
-                        <th>Location</th>
-                        <th>Currency</th>
-                        <th>VAT #</th>
-                        <th>Credit</th>
-                        <th>Due</th>
-                        <th>Joined</th>
+                        <th>{{ __('Supplier') }}</th>
+                        <th>{{ __('Contact') }}</th>
+                        <th>{{ __('Location') }}</th>
+                        <th>{{ __('Currency') }}</th>
+                        <th>{{ __('VAT #') }}</th>
+                        <th>{{ __('Credit') }}</th>
+                        <th>{{ __('Due') }}</th>
+                        <th>{{ __('Joined') }}</th>
                         <th></th>
                     </tr>
                     </thead>

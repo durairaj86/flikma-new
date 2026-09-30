@@ -1,5 +1,5 @@
 @section('js','container_type')
-@section('page-title','Container Types')
+@section('page-title', __('Container Types'))
 <x-app-layout>
     <main class="gmail-content bg-white d-flex">
         @include('includes.master-navigation')
@@ -11,9 +11,9 @@
                         <thead class="table-light sticky-top bg-white">
                         <tr>
                             <th>#</th>
-                            <th>Code</th>
-                            <th>Name</th>
-                            <th>Description</th>
+                            <th>{{ __('Code') }}</th>
+                            <th>{{ __('Name') }}</th>
+                            <th>{{ __('Description') }}</th>
                         </tr>
                         </thead>
                         <tbody>

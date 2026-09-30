@@ -2,7 +2,7 @@
     <div class="d-flex justify-content-between align-items-center flex-wrap">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-4">
             <div class="module-info">
-                <span class="fw-semibold fs-5">{{ $journalVoucher->row_no ?? 'New Journal Voucher' }}</span>
+                <span class="fw-semibold fs-5">{{ $journalVoucher->row_no ?? __('New Journal Voucher') }}</span>
             </div>
         </div>
 
@@ -12,7 +12,7 @@
 </div>
 
 <div class="container-fluid align-items-center px-0" id="modal-buttons" data-buttons="cancel,save"
-     data-button-save="Save Journal Voucher">
+     data-button-save="{{ __('Save Journal Voucher') }}">
 
     <form id="moduleForm" novalidate action="{{ route('finance.journal_vouchers.store') }}">
         @csrf
@@ -22,10 +22,10 @@
                 <div class="row g-3">
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label for="voucher_type" class="form-label required">Voucher Type <span
+                            <label for="voucher_type" class="form-label required">{{ __('Voucher Type') }} <span
                                     class="text-danger">*</span></label>
                             <select class="tom-select" id="voucher_type" name="voucher_type" required>
-                                <option value="">Select Voucher Type</option>
+                                <option value="">{{ __('Select Voucher Type') }}</option>
                                 @foreach($voucherTypes as $type)
                                     <option
                                         value="{{ $type->value }}" @selected($journalVoucher->voucher_type == $type->value)>
@@ -37,9 +37,9 @@
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label for="job_id" class="form-label">Job</label>
+                            <label for="job_id" class="form-label">{{ __('Job') }}</label>
                             <select class="tom-select" id="job_id" name="job_id">
-                                <option value="">Select Job</option>
+                                <option value="">{{ __('Select Job') }}</option>
                                 @foreach($jobs as $job)
                                     <option
                                         value="{{ $job->id }}" @selected($journalVoucher->job_id == $job->id)>
@@ -51,7 +51,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label for="voucher_date" class="form-label required">Voucher Date <span
+                            <label for="voucher_date" class="form-label required">{{ __('Voucher Date') }} <span
                                     class="text-danger">*</span></label>
                             <input type="text" class="form-control datepicker" id="voucher_date" name="voucher_date"
                                    value="{{ $journalVoucher->voucher_date ? \Carbon\Carbon::parse($journalVoucher->voucher_date)->format('Y-m-d') : date('Y-m-d') }}"
@@ -60,15 +60,15 @@
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label for="reference_no" class="form-label">Reference No</label>
+                            <label for="reference_no" class="form-label">{{ __('Reference No') }}</label>
                             <input type="text" class="form-control" id="reference_no" name="reference_no"
                                    value="{{ $journalVoucher->reference_no }}"
-                                   placeholder="Reference Number">
+                                   placeholder="{{ __('Reference Number') }}">
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label for="currency" class="form-label required">Currency <span
+                            <label for="currency" class="form-label required">{{ __('Currency') }} <span
                                     class="text-danger">*</span></label>
                             <x-common.currencies-exchange :value="$journalVoucher->currency"
                                                           exchangeRate="{{ $journalVoucher->currency_rate }}"
@@ -77,7 +77,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label for="notes" class="form-label">Notes</label>
+                            <label for="notes" class="form-label">{{ __('Notes') }}</label>
                             <textarea class="form-control" id="notes" name="notes"
                                       rows="1">{{ $journalVoucher->notes }}</textarea>
                         </div>
@@ -88,7 +88,7 @@
                     <div class="row">
                         <div class="col-12">
                             <div class="alert alert-danger">
-                                <strong>Disapproval Reason:</strong> {{ $journalVoucher->disapproval_reason }}
+                                <strong>{{ __('Disapproval Reason') }}:</strong> {{ $journalVoucher->disapproval_reason }}
                             </div>
                         </div>
                     </div>
@@ -100,24 +100,24 @@
                 <div class="row mt-4">
                     <div class="col-12">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h4>Journal Entries</h4>
+                            <h4>{{ __('Journal Entries') }}</h4>
                             <button type="button" class="btn btn-sm btn-primary" id="add-entry-row">
-                                <i class="bi bi-plus-circle me-1"></i> Add Entry
+                                <i class="bi bi-plus-circle me-1"></i> {{ __('Add Entry') }}
                             </button>
                         </div>
                         <div class="table-responsive">
                             <table class="table table-bordered table-striped" id="entries-table">
                                 <thead>
                                 <tr>
-                                    <th>Account</th>
-                                    <th>Entity Type</th>
-                                    <th>Entity</th>
-                                    <th>Description</th>
-                                    <th>Debit</th>
-                                    <th>Credit</th>
-                                    <th>Tax Account</th>
-                                    <th>Tax Amount</th>
-                                    <th width="50">Action</th>
+                                    <th>{{ __('Account') }}</th>
+                                    <th>{{ __('Entity Type') }}</th>
+                                    <th>{{ __('Entity') }}</th>
+                                    <th>{{ __('Description') }}</th>
+                                    <th>{{ __('Debit') }}</th>
+                                    <th>{{ __('Credit') }}</th>
+                                    <th>{{ __('Tax Account') }}</th>
+                                    <th>{{ __('Tax Amount') }}</th>
+                                    <th width="50">{{ __('Action') }}</th>
                                 </tr>
                                 </thead>
                                 <tbody id="entries-body">
@@ -126,7 +126,7 @@
                                         <tr class="entry-row">
                                             <td>
                                                 <select class="form-select account-select" name="account_ids[]" required>
-                                                    <option value="">Select Account</option>
+                                                    <option value="">{{ __('Select Account') }}</option>
                                                     @foreach($accounts as $account)
                                                         <option value="{{ $account->id }}" @selected($item->account_id == $account->id)>
                                                             {{ $account->code }} - {{ $account->name }}
@@ -136,16 +136,16 @@
                                             </td>
                                             <td>
                                                 <select class="form-select entity-type-select" name="entity_types[]">
-                                                    <option value="">None</option>
-                                                    <option value="customer" @selected($item->entity_type == 'customer')>Customer</option>
-                                                    <option value="supplier" @selected($item->entity_type == 'supplier')>Supplier</option>
-                                                    <option value="job" @selected($item->entity_type == 'job')>Job</option>
-                                                    <option value="tax" @selected($item->entity_type == 'tax')>Tax</option>
+                                                    <option value="">{{ __('None') }}</option>
+                                                    <option value="customer" @selected($item->entity_type == 'customer')>{{ __('Customer') }}</option>
+                                                    <option value="supplier" @selected($item->entity_type == 'supplier')>{{ __('Supplier') }}</option>
+                                                    <option value="job" @selected($item->entity_type == 'job')>{{ __('Job') }}</option>
+                                                    <option value="tax" @selected($item->entity_type == 'tax')>{{ __('Tax') }}</option>
                                                 </select>
                                             </td>
                                             <td>
                                                 <select class="form-select entity-select" name="entity_ids[]" data-entity-type="{{ $item->entity_type }}">
-                                                    <option value="">Select Entity</option>
+                                                    <option value="">{{ __('Select Entity') }}</option>
                                                     @if($item->entity_type == 'customer')
                                                         @foreach($customers as $customer)
                                                             <option value="{{ $customer->id }}" @selected($item->entity_id == $customer->id)>
@@ -178,7 +178,7 @@
                                             </td>
                                             <td>
                                                 <select class="form-select tax-account-select" name="tax_ids[]">
-                                                    <option value="">Select Tax Account</option>
+                                                    <option value="">{{ __('Select Tax Account') }}</option>
                                                     @foreach($accounts as $account)
                                                         <option value="{{ $account->id }}" @selected($item->tax_id == $account->id)>
                                                             {{ $account->code }} - {{ $account->name }}
@@ -200,7 +200,7 @@
                                     <tr class="entry-row">
                                         <td>
                                             <select class="form-select account-select" name="account_ids[]" required>
-                                                <option value="">Select Account</option>
+                                                <option value="">{{ __('Select Account') }}</option>
                                                 @foreach($accounts as $account)
                                                     <option value="{{ $account->id }}">
                                                         {{ $account->code }} - {{ $account->name }}
@@ -210,16 +210,16 @@
                                         </td>
                                         <td>
                                             <select class="form-select entity-type-select" name="entity_types[]">
-                                                <option value="">None</option>
-                                                <option value="customer">Customer</option>
-                                                <option value="supplier">Supplier</option>
-                                                <option value="job">Job</option>
-                                                <option value="tax">Tax</option>
+                                                <option value="">{{ __('None') }}</option>
+                                                <option value="customer">{{ __('Customer') }}</option>
+                                                <option value="supplier">{{ __('Supplier') }}</option>
+                                                <option value="job">{{ __('Job') }}</option>
+                                                <option value="tax">{{ __('Tax') }}</option>
                                             </select>
                                         </td>
                                         <td>
                                             <select class="form-select entity-select" name="entity_ids[]" data-entity-type="">
-                                                <option value="">Select Entity</option>
+                                                <option value="">{{ __('Select Entity') }}</option>
                                             </select>
                                         </td>
                                         <td>
@@ -233,7 +233,7 @@
                                         </td>
                                         <td>
                                             <select class="form-select tax-account-select" name="tax_ids[]">
-                                                <option value="">Select Tax Account</option>
+                                                <option value="">{{ __('Select Tax Account') }}</option>
                                                 @foreach($accounts as $account)
                                                     <option value="{{ $account->id }}">
                                                         {{ $account->code }} - {{ $account->name }}
@@ -254,15 +254,15 @@
                                 </tbody>
                                 <tfoot>
                                 <tr>
-                                    <th colspan="4" class="text-end">Total:</th>
+                                    <th colspan="4" class="text-end">{{ __('Total') }}:</th>
                                     <th id="total-debit">{{ number_format($journalVoucher->debit_total, 2) }}</th>
                                     <th id="total-credit">{{ number_format($journalVoucher->credit_total, 2) }}</th>
-                                    <th class="text-end">Total Tax:</th>
+                                    <th class="text-end">{{ __('Total Tax') }}:</th>
                                     <th id="total-tax">{{ number_format($journalVoucher->journalVoucherItems->sum('tax_amount') ?? 0, 2) }}</th>
                                     <th></th>
                                 </tr>
                                 <tr id="balance-row" class="{{ $journalVoucher->debit_total != $journalVoucher->credit_total ? 'table-danger' : 'table-success' }}">
-                                    <th colspan="4" class="text-end">Balance:</th>
+                                    <th colspan="4" class="text-end">{{ __('Balance') }}:</th>
                                     <th colspan="4" id="balance">{{ number_format(abs($journalVoucher->debit_total - $journalVoucher->credit_total), 2) }}</th>
                                     <th></th>
                                 </tr>
@@ -280,17 +280,17 @@
     $(document).ready(function() {
         // Initialize select2 for selects
         $('.account-select').select2({
-            placeholder: 'Select Account',
+            placeholder: "{{ __('Select Account') }}",
             width: '100%'
         });
 
         $('.entity-select').select2({
-            placeholder: 'Select Entity',
+            placeholder: "{{ __('Select Entity') }}",
             width: '100%'
         });
 
         $('.tax-account-select').select2({
-            placeholder: 'Select Tax Account',
+            placeholder: "{{ __('Select Tax Account') }}",
             width: '100%'
         });
 
@@ -305,7 +305,7 @@
                 <tr class="entry-row">
                     <td>
                         <select class="form-select account-select" name="account_ids[]" required>
-                            <option value="">Select Account</option>
+                            <option value="">{{ __('Select Account') }}</option>
                             @foreach($accounts as $account)
                                 <option value="{{ $account->id }}">
                                     {{ $account->code }} - {{ $account->name }}
@@ -315,16 +315,16 @@
                     </td>
                     <td>
                         <select class="form-select entity-type-select" name="entity_types[]">
-                            <option value="">None</option>
-                            <option value="customer">Customer</option>
-                            <option value="supplier">Supplier</option>
-                            <option value="job">Job</option>
-                            <option value="tax">Tax</option>
+                            <option value="">{{ __('None') }}</option>
+                            <option value="customer">{{ __('Customer') }}</option>
+                            <option value="supplier">{{ __('Supplier') }}</option>
+                            <option value="job">{{ __('Job') }}</option>
+                            <option value="tax">{{ __('Tax') }}</option>
                         </select>
                     </td>
                     <td>
                         <select class="form-select entity-select" name="entity_ids[]" data-entity-type="">
-                            <option value="">Select Entity</option>
+                            <option value="">{{ __('Select Entity') }}</option>
                         </select>
                     </td>
                     <td>
@@ -338,7 +338,7 @@
                     </td>
                     <td>
                         <select class="form-select tax-account-select" name="tax_ids[]">
-                            <option value="">Select Tax Account</option>
+                            <option value="">{{ __('Select Tax Account') }}</option>
                             @foreach($accounts as $account)
                                 <option value="{{ $account->id }}">
                                     {{ $account->code }} - {{ $account->name }}
@@ -360,17 +360,17 @@
 
             // Initialize select2 for the new row
             $('#entries-body tr:last-child .account-select').select2({
-                placeholder: 'Select Account',
+                placeholder: "{{ __('Select Account') }}",
                 width: '100%'
             });
 
             $('#entries-body tr:last-child .entity-select').select2({
-                placeholder: 'Select Entity',
+                placeholder: "{{ __('Select Entity') }}",
                 width: '100%'
             });
 
             $('#entries-body tr:last-child .tax-account-select').select2({
-                placeholder: 'Select Tax Account',
+                placeholder: "{{ __('Select Tax Account') }}",
                 width: '100%'
             });
 
@@ -384,7 +384,7 @@
                 $(this).closest('tr').remove();
                 calculateTotals();
             } else {
-                toastr.error('At least one entry is required');
+                toastr.error("{{ __('At least one entry is required') }}");
             }
         });
 
@@ -400,7 +400,7 @@
                 const entitySelect = $(this).closest('tr').find('.entity-select');
 
                 // Clear current options and add placeholder
-                entitySelect.empty().append('<option value="">Select Entity</option>');
+                entitySelect.empty().append('<option value="">{{ __('Select Entity') }}</option>');
                 entitySelect.attr('data-entity-type', entityType);
 
                 // Populate based on entity type
@@ -420,7 +420,7 @@
 
                 // Refresh select2
                 entitySelect.select2({
-                    placeholder: 'Select Entity',
+                    placeholder: "{{ __('Select Entity') }}",
                     width: '100%'
                 });
             });

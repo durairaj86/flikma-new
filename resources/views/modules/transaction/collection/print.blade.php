@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Collection #{{ $collection->row_no }}</title>
+    <title>{{ __('Collection') }} #{{ $collection->row_no }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -122,55 +122,55 @@
         <div class="header">
             <h1>{{ companyName() }}</h1>
             <p>{{ companyAddress() }}</p>
-            <p>Phone: {{ companyPhone() }} | Email: {{ companyEmail() }}</p>
-            <h2>COLLECTION VOUCHER</h2>
+            <p>{{ __('Phone') }}: {{ companyPhone() }} | {{ __('Email') }}: {{ companyEmail() }}</p>
+            <h2>{{ __('COLLECTION VOUCHER') }}</h2>
         </div>
 
         <div class="row">
             <div class="col">
                 <div class="card">
-                    <div class="card-header">Collection Information</div>
+                    <div class="card-header">{{ __('Collection Information') }}</div>
                     <div class="card-body">
                         <table class="borderless">
                             <tr>
-                                <th width="40%">Collection Number:</th>
+                                <th width="40%">{{ __('Collection Number') }}:</th>
                                 <td>{{ $collection->row_no }}</td>
                             </tr>
                             <tr>
-                                <th>Collection Date:</th>
+                                <th>{{ __('Collection Date') }}:</th>
                                 <td>{{ $collection->collection_date }}</td>
                             </tr>
                             <tr>
-                                <th>Collection Method:</th>
+                                <th>{{ __('Collection Method') }}:</th>
                                 <td>{{ $collection->collection_method }}</td>
                             </tr>
                             <tr>
-                                <th>Reference Number:</th>
-                                <td>{{ $collection->reference_no ?? 'N/A' }}</td>
+                                <th>{{ __('Reference Number') }}:</th>
+                                <td>{{ $collection->reference_no ?? __('N/A') }}</td>
                             </tr>
                             <tr>
-                                <th>Currency:</th>
+                                <th>{{ __('Currency') }}:</th>
                                 <td>{{ strtoupper($collection->currency) }}</td>
                             </tr>
                             <tr>
-                                <th>Currency Rate:</th>
+                                <th>{{ __('Currency Rate') }}:</th>
                                 <td>{{ number_format($collection->currency_rate, 4) }}</td>
                             </tr>
                             <tr>
-                                <th>Status:</th>
+                                <th>{{ __('Status') }}:</th>
                                 <td>
                                     @if($collection->status == 1)
-                                        <span class="badge badge-warning">Draft</span>
+                                        <span class="badge badge-warning">{{ __('Draft') }}</span>
                                     @elseif($collection->status == 2)
-                                        <span class="badge badge-success">Approved</span>
+                                        <span class="badge badge-success">{{ __('Approved') }}</span>
                                     @elseif($collection->status == 3)
-                                        <span class="badge badge-danger">Disapproved</span>
+                                        <span class="badge badge-danger">{{ __('Disapproved') }}</span>
                                     @endif
                                 </td>
                             </tr>
                             @if($collection->status == 3)
                                 <tr>
-                                    <th>Disapproval Reason:</th>
+                                    <th>{{ __('Disapproval Reason') }}:</th>
                                     <td>{{ $collection->disapproval_reason }}</td>
                                 </tr>
                             @endif
@@ -180,24 +180,24 @@
             </div>
             <div class="col">
                 <div class="card">
-                    <div class="card-header">Customer & Job Information</div>
+                    <div class="card-header">{{ __('Customer & Job Information') }}</div>
                     <div class="card-body">
                         <table class="borderless">
                             <tr>
-                                <th width="40%">Customer:</th>
-                                <td>{{ $collection->customer->name_en ?? 'N/A' }}</td>
+                                <th width="40%">{{ __('Customer') }}:</th>
+                                <td>{{ $collection->customer->name_en ?? __('N/A') }}</td>
                             </tr>
                             <tr>
-                                <th>Customer Address:</th>
-                                <td>{{ $collection->customer->address1_en ?? 'N/A' }}</td>
+                                <th>{{ __('Customer Address') }}:</th>
+                                <td>{{ $collection->customer->address1_en ?? __('N/A') }}</td>
                             </tr>
                             <tr>
-                                <th>Customer Contact:</th>
-                                <td>{{ $collection->customer->phone ?? 'N/A' }}</td>
+                                <th>{{ __('Customer Contact') }}:</th>
+                                <td>{{ $collection->customer->phone ?? __('N/A') }}</td>
                             </tr>
                             <tr>
-                                <th>Job Number:</th>
-                                <td>{{ $collection->job_no ?? 'N/A' }}</td>
+                                <th>{{ __('Job Number') }}:</th>
+                                <td>{{ $collection->job_no ?? __('N/A') }}</td>
                             </tr>
                         </table>
                     </div>
@@ -206,63 +206,63 @@
         </div>
 
         <div class="card">
-            <div class="card-header">Invoices Collected</div>
+            <div class="card-header">{{ __('Invoices Collected') }}</div>
             <div class="card-body">
                 <table class="bordered">
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Invoice Number</th>
-                            <th>Invoice Date</th>
-                            <th>Due Date</th>
-                            <th>Invoice Total</th>
-                            <th>Collection Amount</th>
+                            <th>{{ __('Invoice Number') }}</th>
+                            <th>{{ __('Invoice Date') }}</th>
+                            <th>{{ __('Due Date') }}</th>
+                            <th>{{ __('Invoice Total') }}</th>
+                            <th>{{ __('Collection Amount') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($collection->collectionInvoices as $index => $collectionInvoice)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
-                                <td>{{ $collectionInvoice->customerInvoice->row_no ?? 'N/A' }}</td>
-                                <td>{{ $collectionInvoice->customerInvoice->invoice_date ?? 'N/A' }}</td>
-                                <td>{{ $collectionInvoice->customerInvoice->due_at ?? 'N/A' }}</td>
+                                <td>{{ $collectionInvoice->customerInvoice->row_no ?? __('N/A') }}</td>
+                                <td>{{ $collectionInvoice->customerInvoice->invoice_date ?? __('N/A') }}</td>
+                                <td>{{ $collectionInvoice->customerInvoice->due_at ?? __('N/A') }}</td>
                                 <td class="text-end">{{ number_format($collectionInvoice->customerInvoice->grand_total ?? 0, 2) }} {{ strtoupper($collection->currency) }}</td>
                                 <td class="text-end">{{ number_format($collectionInvoice->amount, 2) }} {{ strtoupper($collection->currency) }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center">No invoices found</td>
+                                <td colspan="6" class="text-center">{{ __('No invoices found') }}</td>
                             </tr>
                         @endforelse
                     </tbody>
                     <tfoot>
                         <tr>
-                            <th colspan="5" class="text-end">Sub Total:</th>
+                            <th colspan="5" class="text-end">{{ __('Sub Total') }}:</th>
                             <th class="text-end">{{ number_format($collection->sub_total, 2) }} {{ strtoupper($collection->currency) }}</th>
                         </tr>
                         <tr>
-                            <th colspan="5" class="text-end">Tax Total:</th>
+                            <th colspan="5" class="text-end">{{ __('Tax Total') }}:</th>
                             <th class="text-end">{{ number_format($collection->tax_total, 2) }} {{ strtoupper($collection->currency) }}</th>
                         </tr>
                         @if($collection->bank_charges)
                             <tr>
-                                <th colspan="5" class="text-end">Bank Charges:</th>
+                                <th colspan="5" class="text-end">{{ __('Bank Charges') }}:</th>
                                 <th class="text-end">{{ number_format($collection->bank_charges, 2) }} {{ strtoupper($collection->currency) }}</th>
                             </tr>
                         @endif
                         @if($collection->other_charges)
                             <tr>
-                                <th colspan="5" class="text-end">Other Charges:</th>
+                                <th colspan="5" class="text-end">{{ __('Other Charges') }}:</th>
                                 <th class="text-end">{{ number_format($collection->other_charges, 2) }} {{ strtoupper($collection->currency) }}</th>
                             </tr>
                         @endif
                         <tr>
-                            <th colspan="5" class="text-end">Grand Total:</th>
+                            <th colspan="5" class="text-end">{{ __('Grand Total') }}:</th>
                             <th class="text-end">{{ number_format($collection->grand_total, 2) }} {{ strtoupper($collection->currency) }}</th>
                         </tr>
                         @if($collection->currency != 'SAR')
                             <tr>
-                                <th colspan="5" class="text-end">Base Currency Total:</th>
+                                <th colspan="5" class="text-end">{{ __('Base Currency Total') }}:</th>
                                 <th class="text-end">{{ number_format($collection->base_grand_total, 2) }} SAR</th>
                             </tr>
                         @endif
@@ -273,7 +273,7 @@
 
         @if($collection->notes)
             <div class="card">
-                <div class="card-header">Notes</div>
+                <div class="card-header">{{ __('Notes') }}</div>
                 <div class="card-body">
                     {{ $collection->notes }}
                 </div>
@@ -283,32 +283,32 @@
         <div class="row" style="margin-top: 50px;">
             <div class="col">
                 <div style="border-top: 1px solid #333; padding-top: 10px; text-align: center;">
-                    <p>Prepared By</p>
-                    <p>{{ $collection->createdBy->name ?? 'N/A' }}</p>
+                    <p>{{ __('Prepared By') }}</p>
+                    <p>{{ $collection->createdBy->name ?? __('N/A') }}</p>
                 </div>
             </div>
             <div class="col">
                 <div style="border-top: 1px solid #333; padding-top: 10px; text-align: center;">
-                    <p>Approved By</p>
-                    <p>{{ $collection->approvedBy->name ?? 'N/A' }}</p>
+                    <p>{{ __('Approved By') }}</p>
+                    <p>{{ $collection->approvedBy->name ?? __('N/A') }}</p>
                 </div>
             </div>
             <div class="col">
                 <div style="border-top: 1px solid #333; padding-top: 10px; text-align: center;">
-                    <p>Received By</p>
+                    <p>{{ __('Received By') }}</p>
                     <p>&nbsp;</p>
                 </div>
             </div>
         </div>
 
         <div class="footer">
-            <p>This is a computer-generated document. No signature is required.</p>
-            <p>Printed on: {{ now()->format('d-m-Y H:i:s') }}</p>
+            <p>{{ __('This is a computer-generated document. No signature is required.') }}</p>
+            <p>{{ __('Printed on') }}: {{ now()->format('d-m-Y H:i:s') }}</p>
         </div>
 
         <div class="no-print" style="margin-top: 20px; text-align: center;">
             <button onclick="window.print()" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                Print Document
+                {{ __('Print Document') }}
             </button>
         </div>
     </div>

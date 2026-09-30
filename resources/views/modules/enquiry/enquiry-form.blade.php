@@ -2,7 +2,7 @@
     <div class="row align-items-center bg-white  small">
         <div class="d-flex justify-content-between align-items-center flex-wrap">
             <div class="module-info">
-                <span class="fw-semibold fs-5">{{ $enquiry->row_no ?? 'New Enquiry' }}</span>
+                <span class="fw-semibold fs-5">{{ $enquiry->row_no ?? __('New Enquiry') }}</span>
             </div>
 
             <!-- Save & Next Button -->
@@ -68,7 +68,7 @@
                     <div class="tab-pane show active" id="tab-basic">
                         <div class="model-form-tab-div">
                             <div class="model-form-sub-title">
-                                <h5>General</h5>
+                                <h5>{{ __('General') }}</h5>
                             </div>
                             <div class="mb-3 row g-3">
                                 {{--<div class="col-md-4">
@@ -95,18 +95,18 @@
                                 </div>--}}
                                 <div class="col-md-4" id="customer-select">
                                     <label class="form-label d-flex justify-content-between align-items-center">
-                                        Select Customer
+                                        {{ __('Select Customer') }}
                                     </label>
 
                                     <x-common.customers :value="$enquiry->customer_id" :required="true"></x-common.customers>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label d-flex justify-content-between align-items-center">
-                                        Select Prospect Customer
+                                        {{ __('Select Prospect Customer') }}
                                     </label>
                                     <select name="prospect" id="prospect"
                                             class="tom-select" {{ $enquiry->prospect_id ? 'data-has-prospect=true' : '' }}>
-                                        <option value="">--Select--</option>
+                                        <option value="">{{ __('--Select--') }}</option>
                                         @foreach(\App\Models\Prospect\Prospect::prospectCustomers() as $prospect)
                                             <option value="{{ encodeId($prospect->id) }}"
                                                     data-subtext="{{ $prospect->row_no }}"
@@ -115,33 +115,32 @@
                                             </option>
                                         @endforeach
                                         <option data-divider="true"></option>
-                                        <option value="__new__" data-type="new" data-module="PROSPECT">+ Add New
-                                            Prospect
+                                        <option value="__new__" data-type="new" data-module="PROSPECT">{{ __('+ Add New Prospect') }}
                                         </option>
                                     </select>
                                 </div>
                             </div>
                             <div class="mb-5 row g-3">
                                 <div class="col-md-4">
-                                    <label for="salesperson" class="form-label">Select Salesperson</label>
+                                    <label for="salesperson" class="form-label">{{ __('Select Salesperson') }}</label>
                                     <x-common.salesperson :value="$enquiry->salesperson_id"></x-common.salesperson>
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label for="expiry_date" class="form-label">Expiry Date</label>
+                                    <label for="expiry_date" class="form-label">{{ __('Expiry Date') }}</label>
                                     <input type="date" name="expiry_date" id="expiry_date"
                                            class="form-control rounded-3 datepicker"
                                            value="{{ $enquiry->expiry_date }}">
                                 </div>
                                 <div class="col-md-4">
-                                    <label for="created_at" class="form-label">Creation Date</label>
+                                    <label for="created_at" class="form-label">{{ __('Creation Date') }}</label>
                                     <input type="text" readonly disabled
                                            class="form-control rounded-3" id="created_at"
                                            value="{{ $enquiry->created_at ? $enquiry->created_at : \Carbon\Carbon::today()->format('d-m-Y') }}">
                                 </div>
                             </div>
                             <div class="model-form-sub-title">
-                                <h5>Shipment Details</h5>
+                                <h5>{{ __('Shipment Details') }}</h5>
                             </div>
                             <div class="mb-5 row g-3">
                                 {{--<div class="col-md-4">
@@ -155,36 +154,36 @@
                                     </select>
                                 </div>--}}
                                 <div class="col-md-4">
-                                    <label for="shipment_type" class="form-label">Place of Receipt</label>
+                                    <label for="shipment_type" class="form-label">{{ __('Place of Receipt') }}</label>
                                     <input type="text" class="form-control" name="place_of_receipt"
                                            id="place-of-receipt"
                                            value="{{ $enquiry->place_of_receipt }}">
                                 </div>
                                 <div class="col-md-4">
-                                    <label for="activity_id" class="form-label">Activity</label>
+                                    <label for="activity_id" class="form-label">{{ __('Activity') }}</label>
                                     <x-common.activity :value="$enquiry->activity_id"
                                                        :shipmentMode="$enquiry->shipment_mode"></x-common.activity>
                                 </div>
                                 <div class="col-md-4">
-                                    <label for="shipment_category" class="form-label">Category</label>
+                                    <label for="shipment_category" class="form-label">{{ __('Category') }}</label>
                                     <select id="shipment_category" name="shipment_category"
                                             class="form-control rounded-3 tom-select"
                                             required>
                                         @if($enquiry->shipment_category != 'package')
                                             <option
                                                 value="container" @selected($enquiry->shipment_category == 'container')>
-                                                Container
+                                                {{ __('Container') }}
                                             </option>
                                         @endif
                                         @if($enquiry->shipment_category != 'container')
                                             <option value="package" @selected($enquiry->shipment_category == 'package')>
-                                                Package
+                                                {{ __('Package') }}
                                             </option>
                                         @endif
                                     </select>
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label">Select Services</label>
+                                    <label class="form-label">{{ __('Select Services') }}</label>
                                     <x-common.service :value="$enquiry->services"/>
                                 </div>
                                 {{--<div class="col-md-4">
@@ -194,22 +193,22 @@
                                            value="{{ $enquiry->weight }}">
                                 </div>--}}
                                 <div class="col-md-4">
-                                    <label for="weight" class="form-label">Shipper</label>
+                                    <label for="weight" class="form-label">{{ __('Shipper') }}</label>
                                     <input type="text" name="shipper" id="shipper"
                                            class="form-control rounded-3"
                                            value="{{ $enquiry->shipper }}">
                                 </div>
                                 <div class="col-md-4">
-                                    <label for="volume" class="form-label">Volume (m³)</label>
+                                    <label for="volume" class="form-label">{{ __('Volume (m³)') }}</label>
                                     <input type="number" name="volume" id="volume" step="0.01"
                                            class="form-control rounded-3"
                                            value="{{ $enquiry->volume }}">
                                 </div>
                                 <div class="col-md-4">
-                                    <label for="volume" class="form-label">Incoterm</label>
+                                    <label for="volume" class="form-label">{{ __('Incoterm') }}</label>
                                     <select class="form-control tom-select" name="incoterm" id="incoterm"
                                             data-live-search="true">
-                                        <option value="">Select</option>
+                                        <option value="">{{ __('Select') }}</option>
                                         @foreach(incoterms() as $incoterm)
                                             <option value="{{ $incoterm->code }}"
                                                     data-subtext="{{ $incoterm->description }}" @selected($enquiry->incoterm == $incoterm->code)>{{ $incoterm->name }}</option>
@@ -218,14 +217,14 @@
                                 </div>
                             </div>
                             <div class="model-form-sub-title">
-                                <h5>Origin & Destination</h5>
+                                <h5>{{ __('Origin & Destination') }}</h5>
                             </div>
                             <div class="mb-5 row g-3">
                                 <div class="col-md-4">
-                                    <label class="form-label">Port of Loading (POL)</label>
+                                    <label class="form-label">{{ __('Port of Loading (POL)') }}</label>
                                     <select id="pol" name="pol" class="tom-select-search" autocomplete="off" required
-                                            data-placeholder="--Select Port of Loading--">
-                                        <option value="">--Select--</option>
+                                            data-placeholder="{{ __('--Select Port of Loading--') }}">
+                                        <option value="">{{ __('--Select--') }}</option>
                                         @if($enquiry->pol)
                                             <option value="{{ $enquiry->pol }}" selected>{{ $enquiry->pol }}</option>
                                         @endif
@@ -242,10 +241,10 @@
                                            value="{{ $enquiry->origin_city }}" required>
                                 </div>--}}
                                 <div class="col-md-4">
-                                    <label class="form-label">Port of Discharge (POD)</label>
+                                    <label class="form-label">{{ __('Port of Discharge (POD)') }}</label>
                                     <select id="pod" name="pod" class="tom-select-search" autocomplete="off" required
-                                            data-placeholder="--Select Port of Discharge--">
-                                        <option value="" @selected(!$enquiry->pod)>--Select Port of Discharge--</option>
+                                            data-placeholder="{{ __('--Select Port of Discharge--') }}">
+                                        <option value="" @selected(!$enquiry->pod)>{{ __('--Select Port of Discharge--') }}</option>
                                         @if($enquiry->pod)
                                             <option value="{{ $enquiry->pod }}" selected>{{ $enquiry->pod }}</option>
                                         @endif
@@ -255,19 +254,19 @@
                                     </select>
                                 </div>
                                 <div class="col-md-4">
-                                    <label for="pickup_date" class="form-label">Pickup Date</label>
+                                    <label for="pickup_date" class="form-label">{{ __('Pickup Date') }}</label>
                                     <input type="date" name="pickup_date" id="pickup_date"
                                            class="form-control rounded-3 datepicker"
                                            value="{{ $enquiry->pickup_date }}">
                                 </div>
                             </div>
                             <div class="model-form-sub-title">
-                                <h5>Additional Notes</h5>
+                                <h5>{{ __('Additional Notes') }}</h5>
                             </div>
                             <div class="mb-5 row g-3">
                                 <div class="col-md-12">
         <textarea name="remark" id="remark" rows="3" class="form-control rounded-3 h-100"
-                  placeholder="Any additional information...">{{ $enquiry->remark }}</textarea>
+                  placeholder="{{ __('Any additional information...') }}">{{ $enquiry->remark }}</textarea>
                                 </div>
                             </div>
                         </div>

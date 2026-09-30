@@ -1,5 +1,5 @@
 @section('js','company')
-@section('page-title','Manage Business')
+@section('page-title', __('Manage Business'))
 <x-app-layout>
     <main class="gmail-content bg-white d-flex ">
         @include('includes.settings-navigation')
@@ -18,12 +18,12 @@
 
                             <div class="col-12">
                                 <div class="card shadow-sm border-0">
-                                    <div class="card-header bg-light fw-bold">1. Identity & Branding</div>
+                                    <div class="card-header bg-light fw-bold">{{ __('1. Identity & Branding') }}</div>
                                     <div class="card-body">
                                         <div class="row g-4 align-items-center">
 
                                             <div class="col-md-3 d-flex flex-column align-items-center">
-                                                <label class="form-label text-center w-100">Business Logo</label>
+                                                <label class="form-label text-center w-100">{{ __('Business Logo') }}</label>
                                                 <div
                                                     class="upload-box text-center p-3 rounded-3 border border-dashed w-100"
                                                     id="logoUploadBox" style="cursor: pointer; min-height: 120px;">
@@ -31,35 +31,32 @@
                                                            accept="image/png, image/jpeg">
                                                     <img id="logoPreview"
                                                          src="{{ $company->logo ? asset('storage/'.$company->logo) : '' }}"
-                                                         alt="Logo Preview"
+                                                         alt="{{ __('Logo Preview') }}"
                                                          class="img-fluid mb-2 rounded @if(!$company->logo) d-none @endif">
                                                     <div class="upload-text">
                                                         <i class="bi bi-cloud-arrow-up text-primary fs-4"></i>
-                                                        <p class="mb-0 small text-muted">Upload Logo</p>
-                                                        <small class="text-secondary" style="font-size: 0.75rem;">PNG /
-                                                            JPG - Max 5MB</small>
+                                                        <p class="mb-0 small text-muted">{{ __('Upload Logo') }}</p>
+                                                        <small class="text-secondary" style="font-size: 0.75rem;">{{ __('PNG / JPG - Max 5MB') }}</small>
                                                     </div>
                                                 </div>
                                             </div>
 
                                             <div class="col-md-9">
                                                 <div class="mb-3">
-                                                    <label for="business_name_en" class="form-label">Business Name (In
-                                                        English)<span
+                                                    <label for="business_name_en" class="form-label">{{ __('Business Name (In English)') }}<span
                                                             class="text-danger">*</span></label>
                                                     <input type="text" class="form-control" id="business_name_en"
                                                            name="business_name_en" value="{{ $company->name }}"
-                                                           placeholder="Enter your official business name" required>
+                                                           placeholder="{{ __('Enter your official business name') }}" required>
                                                 </div>
 
                                                 <div class="text-end">
-                                                    <label for="business_name_ar" class="form-label">Business Name (In
-                                                        Arabic)<span
+                                                    <label for="business_name_ar" class="form-label">{{ __('Business Name (In Arabic)') }}<span
                                                             class="text-danger">*</span></label>
                                                     <input type="text" class="form-control text-end"
                                                            id="business_name_ar" name="business_name_ar"
                                                            value="{{ $company->name_ar }}"
-                                                           placeholder="Enter your official business name" required>
+                                                           placeholder="{{ __('Enter your official business name') }}" required>
                                                 </div>
                                             </div>
                                         </div>
@@ -69,12 +66,12 @@
 
                             <div class="col-12">
                                 <div class="card h-100 shadow-sm border-0">
-                                    <div class="card-header bg-light fw-bold">2. Contact & Location</div>
+                                    <div class="card-header bg-light fw-bold">{{ __('2. Contact & Location') }}</div>
                                     <div class="card-body">
                                         <div class="row g-3">
 
                                             <div class="col-md-6">
-                                                <label for="companyEmail" class="form-label">Company Email<span
+                                                <label for="companyEmail" class="form-label">{{ __('Company Email') }}<span
                                                         class="text-danger">*</span></label>
                                                 <input type="email" class="form-control" id="companyEmail" required
                                                        value="{{ $company->email }}"
@@ -82,7 +79,7 @@
                                             </div>
 
                                             <div class="col-md-6">
-                                                <label for="companyPhone" class="form-label">Company Phone<span
+                                                <label for="companyPhone" class="form-label">{{ __('Company Phone') }}<span
                                                         class="text-danger">*</span></label>
                                                 <input type="tel" class="form-control" id="companyPhone" required
                                                        value="{{ $company->phone }}"
@@ -90,52 +87,50 @@
                                             </div>
 
                                             <div class="col-6 pb-0 mb-0">
-                                                <label for="address_en" class="form-label">Company Address (In
-                                                    English)<span
+                                                <label for="address_en" class="form-label">{{ __('Company Address (In English)') }}<span
                                                         class="text-danger">*</span></label>
                                                 <textarea class="form-control h-50" id="address_en" required
                                                           name="address_en" rows="4"
-                                                          placeholder="Street, Building name, etc.">{{ $company->address }}</textarea>
+                                                          placeholder="{{ __('Street, Building name, etc.') }}">{{ $company->address }}</textarea>
                                             </div>
 
                                             <div class="col-6 pb-0 mb-0 text-end">
-                                                <label for="address_ar" class="form-label">Company Address (In
-                                                    Arabic)<span
+                                                <label for="address_ar" class="form-label">{{ __('Company Address (In Arabic)') }}<span
                                                         class="text-danger">*</span></label>
                                                 <textarea class="form-control h-50 text-end" id="address_ar" required
                                                           name="address_ar" rows="4"
-                                                          placeholder="Street, Building name, etc.">{{ $company->address_ar }}</textarea>
+                                                          placeholder="{{ __('Street, Building name, etc.') }}">{{ $company->address_ar }}</textarea>
                                             </div>
 
                                             <div class="col-md-6 pt-0 mt-0">
-                                                <label for="city" class="form-label">City (In English)<span
+                                                <label for="city" class="form-label">{{ __('City (In English)') }}<span
                                                         class="text-danger">*</span></label>
                                                 <input type="text" class="form-control" id="city_en" name="city_en"
                                                        required value="{{ $company->city }}">
                                             </div>
 
                                             <div class="col-md-6 pt-0 mt-0 text-end">
-                                                <label for="city" class="form-label">City (In Arabic)<span
+                                                <label for="city" class="form-label">{{ __('City (In Arabic)') }}<span
                                                         class="text-danger">*</span></label>
                                                 <input type="text" class="form-control text-end" id="city_ar"
                                                        name="city_ar" required value="{{ $company->city_ar }}">
                                             </div>
 
                                             <div class="col-6">
-                                                <label for="city_sub_division" class="form-label">City Sub Division</label>
+                                                <label for="city_sub_division" class="form-label">{{ __('City Sub Division') }}</label>
                                                 <input type="text" class="form-control" id="city_sub_division" name="city_sub_division"
                                                        value="{{ $company->city_sub_division }}">
                                             </div>
 
                                             <div class="col-md-6">
-                                                <label for="pincode" class="form-label">Pincode<span
+                                                <label for="pincode" class="form-label">{{ __('Pincode') }}<span
                                                         class="text-danger">*</span></label>
                                                 <input type="text" class="form-control" id="pincode" name="pincode"
                                                        required value="{{ $company->postal_code }}">
                                             </div>
 
                                             <div class="col-md-6">
-                                                <label for="timezone" class="form-label">Time Zone</label>
+                                                <label for="timezone" class="form-label">{{ __('Time Zone') }}</label>
                                                 <select class="tom-select" id="timezone" name="timezone"
                                                         data-live-search="true">
                                                     @foreach(\DateTimeZone::listIdentifiers() as $tz)
@@ -150,15 +145,15 @@
 
                             <div class="col-12">
                                 <div class="card h-100 shadow-sm border-0">
-                                    <div class="card-header bg-light fw-bold">3. Business Type & Registration</div>
+                                    <div class="card-header bg-light fw-bold">{{ __('3. Business Type & Registration') }}</div>
                                     <div class="card-body">
                                         <div class="row g-3">
 
                                             <div class="col-md-6">
-                                                <label for="businessType" class="form-label">Business Type</label>
+                                                <label for="businessType" class="form-label">{{ __('Business Type') }}</label>
                                                 <select class="tom-select" id="businessType" name="businessType[]"
                                                         data-live-search="true"
-                                                        multiple placeholder="Business Type Selection">
+                                                        multiple placeholder="{{ __('Business Type Selection') }}">
                                                     @foreach(industrialTypes() as $typeValue => $typeName)
                                                         <option
                                                             value="{{ $typeValue }}" @selected(in_array($typeValue, $company->business_type ?? []))>{{ $typeName }}</option>
@@ -168,35 +163,34 @@
 
                                             @if($company->vat_status == 1)
                                                 <div class="col-md-6">
-                                                    <label class="form-label fw-medium">Are you VAT Registered?</label>
+                                                    <label class="form-label fw-medium">{{ __('Are you VAT Registered?') }}</label>
                                                     <select id="vat_status" name="vat_status" class="tom-select"
                                                             disabled>
-                                                        <option value="1" selected>Yes</option>
+                                                        <option value="1" selected>{{ __('Yes') }}</option>
                                                     </select>
                                                 </div>
 
                                                 <div class="row g-3 px-0 mx-0 vat-compliance-group">
 
                                                     <div class="col-md-6">
-                                                        <label class="form-label fw-medium">VAT Number (TRN)</label>
+                                                        <label class="form-label fw-medium">{{ __('VAT Number (TRN)') }}</label>
                                                         <input type="text" class="form-control" disabled
                                                                value="{{ $company->vat_number }}">
                                                     </div>
 
                                                     <div class="col-md-6">
-                                                        <label class="form-label fw-medium">Commercial Registration (CR)
-                                                            Number</label>
+                                                        <label class="form-label fw-medium">{{ __('Commercial Registration (CR) Number') }}</label>
                                                         <input type="text" class="form-control" disabled
                                                                value="{{ $company->cr_number }}">
                                                     </div>
                                                 </div>
                                             @else
                                                 <div class="col-md-6">
-                                                    <label class="form-label fw-medium">Are you VAT Registered?</label>
+                                                    <label class="form-label fw-medium">{{ __('Are you VAT Registered?') }}</label>
                                                     <select id="vat_status" name="vat_status" class="tom-select">
 
-                                                        <option value="0" selected>No</option>
-                                                        <option value="1">Yes</option>
+                                                        <option value="0" selected>{{ __('No') }}</option>
+                                                        <option value="1">{{ __('Yes') }}</option>
                                                     </select>
                                                 </div>
 
@@ -204,15 +198,14 @@
                                                      style="display: none;">
 
                                                     <div class="col-md-6">
-                                                        <label class="form-label fw-medium">VAT Number (TRN)</label>
+                                                        <label class="form-label fw-medium">{{ __('VAT Number (TRN)') }}</label>
                                                         <input type="text" class="form-control" id="vatNumber"
                                                                name="vatNumber" placeholder="300XXXXXXXXXXX"
                                                                value="{{ $company->vat_number }}">
                                                     </div>
 
                                                     <div class="col-md-6">
-                                                        <label class="form-label fw-medium">Commercial Registration (CR)
-                                                            Number</label>
+                                                        <label class="form-label fw-medium">{{ __('Commercial Registration (CR) Number') }}</label>
                                                         <input type="text" class="form-control"
                                                                id="crNumber" name="crNumber"
                                                                value="{{ $company->cr_number }}"
@@ -229,19 +222,18 @@
 
                             <div class="col-12">
                                 <div class="card shadow-sm border-0">
-                                    <div class="card-header bg-light fw-bold">4. Invoice Footer Details</div>
+                                    <div class="card-header bg-light fw-bold">{{ __('4. Invoice Footer Details') }}</div>
                                     <div class="card-body">
                                         <div class="row g-4">
                                             <div class="col-12">
                                                 <div class="alert alert-secondary py-2 small">
                                                     <i class="bi bi-info-circle me-2"></i>
-                                                    **Note:** The signature and any terms/conditions added here will
-                                                    appear on your final invoices.
+                                                    {{ __('**Note:** The signature and any terms/conditions added here will appear on your final invoices.') }}
                                                 </div>
                                             </div>
 
                                             <div class="col-md-4">
-                                                <label class="form-label">Authorized Signature</label>
+                                                <label class="form-label">{{ __('Authorized Signature') }}</label>
                                                 <div
                                                     class="signature-box text-center p-3 rounded-3 border border-dashed"
                                                     id="signatureUploadBox" style="cursor: pointer; min-height: 120px;">
@@ -249,20 +241,19 @@
                                                            accept="image/*">
                                                     <img id="signaturePreview"
                                                          src="{{ $company->signature_path ? asset('storage/'.$company->signature_path) : '' }}"
-                                                         alt="Signature Preview"
+                                                         alt="{{ __('Signature Preview') }}"
                                                          class="img-fluid mb-2 rounded @if(!$company->signature_path) d-none @endif">
                                                     <div class="upload-text">
                                                         <i class="bi bi-pencil-square text-primary fs-4"></i>
-                                                        <p class="mb-0 small text-muted">+ Add Signature Image</p>
+                                                        <p class="mb-0 small text-muted">{{ __('+ Add Signature Image') }}</p>
                                                     </div>
                                                 </div>
                                             </div>
 
                                             <div class="col-md-8">
-                                                <label for="terms" class="form-label">Terms & Conditions (Invoice
-                                                    Note)</label>
+                                                <label for="terms" class="form-label">{{ __('Terms & Conditions (Invoice Note)') }}</label>
                                                 <textarea class="form-control" id="terms" name="terms" rows="3"
-                                                          placeholder="e.g., Payment due within 30 days...">{{ $company->invoice_terms }}</textarea>
+                                                          placeholder="{{ __('e.g., Payment due within 30 days...') }}">{{ $company->invoice_terms }}</textarea>
                                             </div>
                                         </div>
                                     </div>
@@ -276,7 +267,7 @@
                         <div class="d-flex justify-content-end">
                             <button type="button" class="btn btn-primary btn-lg px-5 py-2 fw-bold shadow-sm"
                                     id="submit">
-                                <i class="bi bi-save me-2"></i> Update
+                                <i class="bi bi-save me-2"></i> {{ __('Update') }}
                             </button>
                         </div>
                     </div>

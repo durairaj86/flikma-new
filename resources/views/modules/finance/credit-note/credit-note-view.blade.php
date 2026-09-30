@@ -1,10 +1,10 @@
 <div class="offcanvas offcanvas-end customer-drawer" tabindex="-1" id="moduleDrawer" style="width: 45%;">
     <div class="offcanvas-header border-bottom bg-light px-4 py-3 d-flex justify-content-between align-items-center">
         <div>
-            <h5 id="moduleDrawerLabel" class="mb-0 fw-bold">Credit Note Details</h5>
+            <h5 id="moduleDrawerLabel" class="mb-0 fw-bold">{{ __('Credit Note Details') }}</h5>
             <small class="text-muted" id="drawerSubtitle"></small>
         </div>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="{{ __('Close') }}"></button>
     </div>
 
     <div class="offcanvas-body p-0">
@@ -13,19 +13,19 @@
             <li class="nav-item">
                 <button class="nav-link active fw-semibold" id="cn-overview-tab"
                         data-bs-toggle="tab" data-bs-target="#cnOverviewTab" type="button" role="tab">
-                    <i class="bi bi-file-earmark-text me-1"></i> Overview
+                    <i class="bi bi-file-earmark-text me-1"></i> {{ __('Overview') }}
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link fw-semibold" id="cn-items-tab"
                         data-bs-toggle="tab" data-bs-target="#cnItemsTab" type="button" role="tab">
-                    <i class="bi bi-list-ul me-1"></i> Line Items
+                    <i class="bi bi-list-ul me-1"></i> {{ __('Line Items') }}
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link fw-semibold" id="cn-documents-tab"
                         data-bs-toggle="tab" data-bs-target="#cnDocumentsTab" type="button" role="tab">
-                    <i class="bi bi-paperclip me-1"></i> Documents
+                    <i class="bi bi-paperclip me-1"></i> {{ __('Documents') }}
                 </button>
             </li>
         </ul>
@@ -38,7 +38,7 @@
                 <div id="moduleOverview">
                     <div class="text-center py-5 text-muted">
                         <div class="spinner-border spinner-border-sm me-2" role="status"></div>
-                        Loading...
+                        {{ __('Loading...') }}
                     </div>
                 </div>
             </div>
@@ -48,7 +48,7 @@
                 <div id="cnItemsContent">
                     <div class="text-center py-5 text-muted">
                         <i class="bi bi-list-ul fs-2 mb-2 d-block"></i>
-                        Select a credit note to view items.
+                        {{ __('Select a credit note to view items.') }}
                     </div>
                 </div>
             </div>
@@ -58,7 +58,7 @@
                 <div id="cnDocumentsContent">
                     <div class="text-center py-5 text-muted">
                         <i class="bi bi-paperclip fs-2 mb-2 d-block"></i>
-                        No documents found.
+                        {{ __('No documents found.') }}
                     </div>
                 </div>
             </div>

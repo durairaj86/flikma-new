@@ -1,11 +1,11 @@
 <div class="container px-4 py-3 align-items-center" id="modal-buttons" data-buttons="cancel,save"
-     data-button-save="Save Customer">
+     data-button-save="{{ __('Save Customer') }}">
     <!-- Meta Info -->
     <div class="row g-3 align-items-center bg-white border-bottom py-2 mb-3 small">
         <div class="d-flex justify-content-between align-items-center flex-wrap">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-4">
                 <div class="module-info">
-                    <span class="fw-semibold fs-5">{{ $user->name ?? 'New User' }}</span> <small
+                    <span class="fw-semibold fs-5">{{ $user->name ?? __('New User') }}</span> <small
                         class="text-secondary">{{ $user->row_no ? ' - ' . $user->row_no : '' }}</small>
                 </div>
 
@@ -25,7 +25,7 @@
                             class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn active"
                             data-bs-toggle="tab" data-bs-target="#tab-basic"
                             type="button">
-                            <i class="bi bi-person-lines-fill me-1"></i> Basic Info
+                            <i class="bi bi-person-lines-fill me-1"></i> {{ __('Basic Info') }}
                         </button>
                     </li>
                     <li class="nav-item me-2">
@@ -33,7 +33,7 @@
                             class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn"
                             data-bs-toggle="tab" data-bs-target="#tab-address"
                             type="button">
-                            <i class="bi bi-geo-alt-fill me-1"></i> Address
+                            <i class="bi bi-geo-alt-fill me-1"></i> {{ __('Address') }}
                         </button>
                     </li>
                 </ul>
@@ -50,46 +50,46 @@
                 <div class="tab-pane show active" id="tab-basic">
                     <div class="model-form-tab-div">
                         <div class="model-form-sub-title">
-                            <h5>Basic Info</h5>
+                            <h5>{{ __('Basic Info') }}</h5>
                         </div>
                         <div class="row">
                             <div class="col-4 form-group">
-                                <label class="form-label">Full Name</label>
+                                <label class="form-label">{{ __('Full Name') }}</label>
                                 <input type="text" name="name" class="form-control" required value="{{ $user->name }}">
                             </div>
                             <div class="col-4 form-group">
-                                <label class="form-label">Email</label>
+                                <label class="form-label">{{ __('Email') }}</label>
                                 <input type="email" name="email" class="form-control" required
                                        value="{{ $user->email }}">
                             </div>
                             <div class="col-4 form-group">
-                                <label class="form-label">Status</label>
+                                <label class="form-label">{{ __('Status') }}</label>
                                 <select name="status" class="tom-select" required>
-                                    <option value="">Select</option>
-                                    <option value="active" @selected($user->status == 'active' || !$user->exists)>Active</option>
-                                    <option value="inactive" @selected($user->exists && $user->status != 'active')>Inactive</option>
+                                    <option value="">{{ __('Select') }}</option>
+                                    <option value="active" @selected($user->status == 'active' || !$user->exists)>{{ __('Active') }}</option>
+                                    <option value="inactive" @selected($user->exists && $user->status != 'active')>{{ __('Inactive') }}</option>
                                 </select>
                             </div>
                             <div class="col-4 form-group">
-                                <label class="form-label">Login Permission</label>
+                                <label class="form-label">{{ __('Login Permission') }}</label>
                                 <select name="login_permission" id="loginPermission" class="tom-select" required>
-                                    <option value="">Select</option>
-                                    <option value="yes" @selected($user->login_permission == 'yes')>Yes
+                                    <option value="">{{ __('Select') }}</option>
+                                    <option value="yes" @selected($user->login_permission == 'yes')>{{ __('Yes') }}
                                     </option>
-                                    <option value="no" @selected($user->login_permission == 'no')>No</option>
+                                    <option value="no" @selected($user->login_permission == 'no')>{{ __('No') }}</option>
                                 </select>
                             </div>
                             <div class="col-4 form-group passwordDiv">
-                                <label class="form-label">Password</label>
+                                <label class="form-label">{{ __('Password') }}</label>
                                 <input type="password" name="password" id="password" class="form-control">
                             </div>
                             <div class="col-4 form-group confirmPasswordDiv">
-                                <label class="form-label">Confirm Password</label>
+                                <label class="form-label">{{ __('Confirm Password') }}</label>
                                 <input type="password" name="confirm_password" id="confirmPassword"
                                        class="form-control">
                             </div>
                             <div class="col-4 form-group">
-                                <label class="form-label">Department</label>
+                                <label class="form-label">{{ __('Department') }}</label>
                                 <select name="department" class="tom-select" required>
                                     @foreach($departments as $departmentId => $departmentName)
                                         <option
@@ -98,25 +98,25 @@
                                 </select>
                             </div>
                             <div class="col-4 form-group">
-                                <label class="form-label">Role</label>
+                                <label class="form-label">{{ __('Role') }}</label>
                                 <x-common.roles :value="$user->role"></x-common.roles>
                             </div>
                         </div>
                         <div class="model-form-sub-title">
-                            <h5>Contact</h5>
+                            <h5>{{ __('Contact') }}</h5>
                         </div>
                         <div class="row">
                             <div class="col-4 form-group">
-                                <label class="form-label">Phone</label>
+                                <label class="form-label">{{ __('Phone') }}</label>
                                 <input type="text" name="phone" class="form-control" value="{{ $user->phone }}" required>
                             </div>
                             <div class="col-4 form-group">
-                                <label class="form-label">Alternate Email</label>
+                                <label class="form-label">{{ __('Alternate Email') }}</label>
                                 <input type="email" name="alt_email" class="form-control"
                                        value="{{ $user->alternate_email }}">
                             </div>
                             <div class="col-4 form-group">
-                                <label class="form-label">Remarks</label>
+                                <label class="form-label">{{ __('Remarks') }}</label>
                                 <textarea name="remark" class="form-control" rows="2">{{ $user->remark }}</textarea>
                             </div>
                         </div>
@@ -127,32 +127,32 @@
                 <div class="tab-pane" id="tab-address">
                     <div class="model-form-tab-div">
                         <div class="model-form-sub-title">
-                            <h5>Address</h5>
+                            <h5>{{ __('Address') }}</h5>
                         </div>
                         <div class="row">
                             <div class="col-4 form-group">
-                                <label class="form-label">Address Line 1</label>
+                                <label class="form-label">{{ __('Address Line 1') }}</label>
                                 <input type="text" name="address1" class="form-control" value="{{ $user->address_1 }}">
                             </div>
                             <div class="col-4 form-group">
-                                <label class="form-label">Address Line 2</label>
+                                <label class="form-label">{{ __('Address Line 2') }}</label>
                                 <input type="text" name="address2" class="form-control" value="{{ $user->address_2 }}">
                             </div>
                             <div class="col-4 form-group">
-                                <label class="form-label">City</label>
+                                <label class="form-label">{{ __('City') }}</label>
                                 <input type="text" name="city" class="form-control" value="{{ $user->city }}">
                             </div>
                             <div class="col-4 form-group">
-                                <label class="form-label">State</label>
+                                <label class="form-label">{{ __('State') }}</label>
                                 <input type="text" name="state" class="form-control" value="{{ $user->state }}">
                             </div>
                             <div class="col-4 form-group">
-                                <label class="form-label">Postal Code</label>
+                                <label class="form-label">{{ __('Postal Code') }}</label>
                                 <input type="text" name="postal_code" class="form-control"
                                        value="{{ $user->postal_code }}">
                             </div>
                             <div class="col-4 form-group">
-                                <label class="form-label">Country</label>
+                                <label class="form-label">{{ __('Country') }}</label>
                                 <x-common.country :value="$user->country"></x-common.country>
                             </div>
                         </div>

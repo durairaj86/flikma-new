@@ -2,7 +2,7 @@
     <div class="d-flex justify-content-between align-items-center flex-wrap">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-4">
             <div class="module-info">
-                <span class="fw-semibold fs-5">{{ $supplier->row_no ?? 'New Supplier Invoice' }}</span>
+                <span class="fw-semibold fs-5">{{ $supplier->row_no ?? __('New Supplier Invoice') }}</span>
             </div>
         </div>
         <div id="show-buttons"></div>
@@ -25,7 +25,7 @@
     </div>
 </div>--}}
 <div class="container-fluid align-items-center px-0 mb-4" id="modal-buttons" data-buttons="cancel,save"
-     data-button-save="Save Invoice">
+     data-button-save="{{ __('Save Invoice') }}">
     <form id="moduleForm" novalidate action="{{ request()->url() }}">
         @csrf
         <input type="hidden" name="data-id" value="{{ $supplier->id }}">
@@ -36,10 +36,10 @@
                 <div class="row g-3">
                     <!-- Job Reference -->
                     <div class="col-md-4">
-                        <label class="form-label required">Job <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Job') }} <sup class="text-danger">*</sup></label>
                         <select name="job_id" class="tom-select" data-live-search="true" required
-                                placeholder="Search Job" @disabled($job_id)>
-                            <option value="">Select Job</option>
+                                placeholder="{{ __('Search Job') }}" @disabled($job_id)>
+                            <option value="">{{ __('Select Job') }}</option>
                             @foreach($jobs as $job)
                                 <option
                                     value="{{ $job->id }}" @selected($supplier->job_id == $job->id || $job->id == $job_id)>
@@ -51,7 +51,7 @@
 
                     <!-- Supplier -->
                     <div class="col-md-4">
-                        <label class="form-label required">Supplier <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Supplier') }} <sup class="text-danger">*</sup></label>
                         <x-common.suppliers :value="$supplier->supplier_id" required="required"></x-common.suppliers>
                     </div>
 
@@ -64,29 +64,29 @@
 
                     <!-- Invoice Number -->
                     <div class="col-md-4">
-                        <label class="form-label required">Invoice Number <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Invoice Number') }} <sup class="text-danger">*</sup></label>
                         <input type="text" name="invoice_number" class="form-control"
                                value="{{ $supplier->invoice_number ?? '' }}" required
-                               placeholder="Received Invoice Number">
+                               placeholder="{{ __('Received Invoice Number') }}">
                     </div>
 
                     <!-- Invoice Date -->
                     <div class="col-md-4">
-                        <label class="form-label required">Invoice Date <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Invoice Date') }} <sup class="text-danger">*</sup></label>
                         <input type="date" name="invoice_date" class="form-control datepicker"
                                value="{{ $supplier->invoice_date }}" required>
                     </div>
 
                     <!-- Due Date -->
                     <div class="col-md-4">
-                        <label class="form-label required">Due Date <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Due Date') }} <sup class="text-danger">*</sup></label>
                         <input type="date" name="due_date" class="form-control datepicker"
                                value="{{ $supplier->due_at }}" required>
                     </div>
 
                     <!-- Currency -->
                     <div class="col-md-4">
-                        <label class="form-label required">Currency <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Currency') }} <sup class="text-danger">*</sup></label>
                         <x-common.currencies-exchange :value="$supplier->currency"
                                                       :exchangeRate="$supplier->currency_rate" width="auto"/>
                     </div>
@@ -101,7 +101,7 @@
                             <small class="text-primary text-decoration-underline cursor-pointer"
                                    data-bs-toggle="offcanvas" data-bs-target="#attachmentsDrawer">
                                 {{ $supplier->documents->count() }}
-                                {{ \Illuminate\Support\Str::plural('Document', $supplier->documents->count()) }}
+                                {{ __('Document(s)') }}
                             </small>
                         @endif
                     </div>
@@ -109,9 +109,9 @@
                     <div class="offcanvas offcanvas-end" tabindex="-1" id="attachmentsDrawer"
                          aria-labelledby="attachmentsDrawerLabel" style="width: 500px;">
                         <div class="offcanvas-header border-bottom">
-                            <h5 id="attachmentsDrawerLabel" class="mb-0">Supplier Documents</h5>
+                            <h5 id="attachmentsDrawerLabel" class="mb-0">{{ __('Supplier Documents') }}</h5>
                             <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
-                                    aria-label="Close"></button>
+                                    aria-label="{{ __('Close') }}"></button>
                         </div>
                         <div class="offcanvas-body p-0">
                             @if($supplier->documents->count())
@@ -129,13 +129,13 @@
                                             <div class="d-flex align-items-center gap-2">
                                                 <!-- View -->
                                                 <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank"
-                                                   class="text-success" title="View">
+                                                   class="text-success" title="{{ __('View') }}">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
                                                 <!-- Download -->
                                                 <a href="{{ asset('storage/' . $doc->file_path) }}"
                                                    download="{{ $doc->file_name }}"
-                                                   class="text-primary" title="Download">
+                                                   class="text-primary" title="{{ __('Download') }}">
                                                     <i class="bi bi-download"></i>
                                                 </a>
                                             </div>
@@ -145,7 +145,7 @@
                             @else
                                 <div class="text-center py-5 text-muted">
                                     <i class="bi bi-folder2-open fs-2 d-block mb-2"></i>
-                                    No documents uploaded.
+                                    {{ __('No documents uploaded.') }}
                                 </div>
                             @endif
                         </div>
@@ -160,8 +160,8 @@
                 <div class="scanner-line"></div>
                 <div class="scanning-content">
                     <div class="spinner-border text-info mb-3" role="status"></div>
-                    <h4 class="fw-bold">Scanning Document...</h4>
-                    <p>Please sit back and relax. We are extracting and importing your data.</p>
+                    <h4 class="fw-bold">{{ __('Scanning Document...') }}</h4>
+                    <p>{{ __('Please sit back and relax. We are extracting and importing your data.') }}</p>
                 </div>
             </div>
             <div class="border-0 mb-4 ">
@@ -170,14 +170,14 @@
                     <table class="table align-middle mb-0" id="supplierItemsTable">
                         <thead class="table-light">
                         <tr>
-                            <th>Description</th>
-                            <th>Account</th>
-                            <th>Comment</th>
-                            <th>Unit</th>
-                            <th class="text-end">Qty</th>
-                            <th class="text-end">Unit Price</th>
-                            <th class="text-end">Tax (%)</th>
-                            <th class="text-end d-none">Amount</th>
+                            <th>{{ __('Description') }}</th>
+                            <th>{{ __('Account') }}</th>
+                            <th>{{ __('Comment') }}</th>
+                            <th>{{ __('Unit') }}</th>
+                            <th class="text-end">{{ __('Qty') }}</th>
+                            <th class="text-end">{{ __('Unit Price') }}</th>
+                            <th class="text-end">{{ __('Tax (%)') }}</th>
+                            <th class="text-end d-none">{{ __('Amount') }}</th>
                             <th></th>
                         </tr>
                         </thead>
@@ -253,13 +253,13 @@
                                     <i class="bi bi-plus-circle"></i> Add Item
                                 </button>
                             </td>--}}
-                            <td colspan="6" class="text-end">Subtotal</td>
+                            <td colspan="6" class="text-end">{{ __('Subtotal') }}</td>
                             <td class="text-end"
                                 id="subTotal">{{ number_format($supplier->sub_total, decimals()) }}</td>
                             <td></td>
                         </tr>
                         <tr>
-                            <td colspan="6" class="text-end">Total Tax</td>
+                            <td colspan="6" class="text-end">{{ __('Total Tax') }}</td>
                             <td class="text-end"
                                 id="totalTax">{{ number_format($supplier->tax_total, decimals()) }}</td>
                             <td></td>
@@ -270,7 +270,7 @@
                                 $isForeignCurrency = ($supplier->currency ?? null) && $supplier->currency !== $baseCurrency;
                             @endphp
                             <td colspan="6" class="text-end">
-                                Grand Total
+                                {{ __('Grand Total') }}
                                 <div class="grand-total-fx {{ $isForeignCurrency ? '' : 'd-none' }}">
                                     <small class="text-muted d-block mt-1">
                                         &asymp; <span id="sarRate">{{ number_format($supplier->currency_rate ?? 1, 4) }}</span>
@@ -294,9 +294,9 @@
                 </div>
             </div>
             <div class="mt-3 px-4">
-                <label class="form-label fw-semibold">Terms & Conditions</label>
+                <label class="form-label fw-semibold">{{ __('Terms & Conditions') }}</label>
                 <textarea name="terms" class="form-control h-100" rows="4"
-                          placeholder="Any additional notes...">{{ $supplier->terms }}</textarea>
+                          placeholder="{{ __('Any additional notes...') }}">{{ $supplier->terms }}</textarea>
             </div>
         </div>
         <!-- Remarks -->
@@ -306,8 +306,8 @@
 <div id="ocr-view" class="container-fluid py-5 d-none text-center" style="background: #f8f9fa;">
     <div class="mx-auto" style="max-width: 500px;">
         <i class="bi bi-cloud-arrow-up fs-1 text-primary"></i>
-        <h4 class="mt-3">Upload Invoice for OCR</h4>
-        <p class="text-muted">Upload an image or PDF to automatically fill the form.</p>
+        <h4 class="mt-3">{{ __('Upload Invoice for OCR') }}</h4>
+        <p class="text-muted">{{ __('Upload an image or PDF to automatically fill the form.') }}</p>
         <form id="ocrForm" enctype="multipart/form-data">
             @csrf
             <div class="mb-3">
@@ -315,12 +315,12 @@
             </div>
         </form>
         <div class="d-flex gap-2 justify-content-center">
-            <button type="button" id="start-ocr-scan" class="btn btn-primary">Start Scanning</button>
-            <button type="button" id="btn-cancel-scan" class="btn btn-light">Cancel</button>
+            <button type="button" id="start-ocr-scan" class="btn btn-primary">{{ __('Start Scanning') }}</button>
+            <button type="button" id="btn-cancel-scan" class="btn btn-light">{{ __('Cancel') }}</button>
         </div>
         <div id="ocr-loader" class="mt-3 d-none">
             <div class="spinner-border spinner-border-sm text-primary"></div>
-            Processing with AI...
+            {{ __('Processing with AI...') }}
         </div>
     </div>
 </div>

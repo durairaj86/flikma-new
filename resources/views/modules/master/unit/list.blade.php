@@ -1,4 +1,4 @@
-@section('page-title','Unit')
+@section('page-title', __('Unit'))
 @section('js','unit')
 <x-app-layout>
     <main class="gmail-content bg-white d-flex">
@@ -11,10 +11,10 @@
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
 
                         <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="Search..." aria-label="Search...">
+                               placeholder="{{ __('Search...') }}" aria-label="{{ __('Search...') }}">
                     </div>
                 </div>
-                <button class="btn btn-primary rounded-pill px-4" id="new">New Unit</button>
+                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Unit') }}</button>
             </div>
             <div class="shadow bdr-r-10 py-3 flex-grow-1">
                 <!-- Table with scroll -->
@@ -23,10 +23,10 @@
                         <thead class="table-light sticky-top bg-white">
                         <tr>
                             <th style="width: 10px">#</th>
-                            <th>Unit Name</th>
-                            <th>Unit Symbol</th>
-                            <th>Created Date</th>
-                            <th>Status</th>
+                            <th>{{ __('Unit Name') }}</th>
+                            <th>{{ __('Unit Symbol') }}</th>
+                            <th>{{ __('Created Date') }}</th>
+                            <th>{{ __('Status') }}</th>
                             <th></th>
                         </tr>
                         </thead>

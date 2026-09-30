@@ -1,4 +1,4 @@
-@section('page-title','Quotations')
+@section('page-title', __('Quotations'))
 {{--
     Temporary basic/static replacement for modules.quotation.list.
     The original dynamic, column-settings-driven list is left untouched at
@@ -22,7 +22,7 @@
             <div class="card-header bg-light border-0 py-3">
                 <div class="d-flex align-items-center gap-2">
                     <i class="bi bi-funnel-fill text-primary"></i>
-                    <h6 class="mb-0 fw-semibold">Advanced Filters</h6>
+                    <h6 class="mb-0 fw-semibold">{{ __('Advanced Filters') }}</h6>
                 </div>
             </div>
             <div class="card-body">
@@ -31,7 +31,7 @@
                     <div class="bg-light rounded p-3 mb-4">
                         <div class="row g-3 align-items-end">
                             <div class="col-md-3 form-filter">
-                                <label class="form-label fw-medium">Quotation Date</label>
+                                <label class="form-label fw-medium">{{ __('Quotation Date') }}</label>
                                 <div class="d-flex input-group-filter gap-2">
                                     <input type="date" class="form-control" id="filter-from-date" name="filter-from-date">
                                     <input type="date" class="form-control" id="filter-to-date" name="filter-to-date">
@@ -39,35 +39,35 @@
                             </div>
 
                             <div class="col-md-3 form-filter">
-                                <label class="form-label fw-medium">Customer</label>
+                                <label class="form-label fw-medium">{{ __('Customer') }}</label>
                                 <x-common.customers multiple></x-common.customers>
                             </div>
 
                             <div class="col-md-3 form-filter pol-pod-select">
-                                <label class="form-label fw-medium">POL <small class="text-muted">(Port of Loading)</small></label>
+                                <label class="form-label fw-medium">POL <small class="text-muted">({{ __('Port of Loading') }})</small></label>
                                 <div class="position-relative">
                                     <div class="shipment-toggle">
                                         <input type="radio" class="btn-check basic-sync-sea" name="basic_shipment_mode" id="basicPolSea" value="sea" checked>
-                                        <label for="basicPolSea">Sea</label>
+                                        <label for="basicPolSea">{{ __('Sea') }}</label>
                                         <input type="radio" class="btn-check basic-sync-air" name="basic_shipment_mode" id="basicPolAir" value="air">
-                                        <label for="basicPolAir">Air</label>
+                                        <label for="basicPolAir">{{ __('Air') }}</label>
                                     </div>
-                                    <select id="filter-pol" name="filter-pol" class="tom-select-search" data-placeholder="Select Port of Loading">
+                                    <select id="filter-pol" name="filter-pol" class="tom-select-search" data-placeholder="{{ __('Select Port of Loading') }}">
                                         <option value=""></option>
                                     </select>
                                 </div>
                             </div>
 
                             <div class="col-md-3 pol-pod-select">
-                                <label class="form-label fw-medium">POD <small class="text-muted">(Port of Discharge)</small></label>
+                                <label class="form-label fw-medium">POD <small class="text-muted">({{ __('Port of Discharge') }})</small></label>
                                 <div class="position-relative">
                                     <div class="shipment-toggle">
                                         <input type="radio" class="btn-check basic-sync-sea" name="basic_shipment_mode_2" id="basicPodSea" value="sea" checked>
-                                        <label for="basicPodSea">Sea</label>
+                                        <label for="basicPodSea">{{ __('Sea') }}</label>
                                         <input type="radio" class="btn-check basic-sync-air" name="basic_shipment_mode_2" id="basicPodAir" value="air">
-                                        <label for="basicPodAir">Air</label>
+                                        <label for="basicPodAir">{{ __('Air') }}</label>
                                     </div>
-                                    <select id="filter-pod" name="filter-pod" class="tom-select-search" data-placeholder="Select Port of Discharge">
+                                    <select id="filter-pod" name="filter-pod" class="tom-select-search" data-placeholder="{{ __('Select Port of Discharge') }}">
                                         <option value=""></option>
                                     </select>
                                 </div>
@@ -76,7 +76,7 @@
 
                         <div class="text-center mt-4">
                             <button class="btn btn-primary btn-round px-4" type="button" id="apply-filter">
-                                <i class="bi bi-search me-1"></i> Search
+                                <i class="bi bi-search me-1"></i> {{ __('Search') }}
                             </button>
                         </div>
                     </div>
@@ -91,28 +91,28 @@
                     <li class="nav-item me-2">
                         <button class="nav-link px-3 py-2 d-flex align-items-center justify-content-between active status-btn"
                                 type="button" data-tab="pending">
-                            <span><i class="bi bi-clock me-1"></i> Pending -</span>
+                            <span><i class="bi bi-clock me-1"></i> {{ __('Pending') }} -</span>
                             <span class="status-count ms-2" id="pendingCount">0</span>
                         </button>
                     </li>
                     <li class="nav-item me-2">
                         <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                 type="button" data-tab="accepted">
-                            <span><i class="bi bi-check-circle me-1"></i> Accepted -</span>
+                            <span><i class="bi bi-check-circle me-1"></i> {{ __('Accepted') }} -</span>
                             <span class="status-count ms-2" id="acceptedCount">0</span>
                         </button>
                     </li>
                     <li class="nav-item me-2">
                         <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                 type="button" data-tab="converted">
-                            <span><i class="bi bi-arrow-repeat me-1"></i> Converted To Job -</span>
+                            <span><i class="bi bi-arrow-repeat me-1"></i> {{ __('Converted To Job') }} -</span>
                             <span class="status-count ms-2" id="convertedCount">0</span>
                         </button>
                     </li>
                     <li class="nav-item me-2">
                         <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                 type="button" data-tab="cancelled">
-                            <span><i class="bi bi-x-circle me-1"></i> Cancelled / Expired -</span>
+                            <span><i class="bi bi-x-circle me-1"></i> {{ __('Cancelled / Expired') }} -</span>
                             <span class="status-count ms-2" id="cancelledCount">0</span>
                         </button>
                     </li>
@@ -120,9 +120,9 @@
             </div>
             <div class="d-flex justify-content-between align-items-center gap-2">
                 <button class="btn btn-outline-secondary btn-round" id="filter-box">
-                    <i class="bi bi-funnel"></i> Filter
+                    <i class="bi bi-funnel"></i> {{ __('Filter') }}
                 </button>
-                <button class="btn btn-primary rounded-pill px-4" id="new">New Quotation</button>
+                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Quotation') }}</button>
             </div>
         </div>
 
@@ -132,14 +132,14 @@
                 <table class="table align-middle" id="basicQuotationTable">
                     <thead class="table-light sticky-top">
                     <tr>
-                        <th>Quote No</th>
-                        <th>Client</th>
-                        <th>Activity</th>
-                        <th>Services</th>
-                        <th>Origin &rarr; Destination</th>
-                        <th>Salesperson</th>
-                        <th>Date</th>
-                        <th>Actions</th>
+                        <th>{{ __('Quote No') }}</th>
+                        <th>{{ __('Client') }}</th>
+                        <th>{{ __('Activity') }}</th>
+                        <th>{{ __('Services') }}</th>
+                        <th>{{ __('Origin') }} &rarr; {{ __('Destination') }}</th>
+                        <th>{{ __('Salesperson') }}</th>
+                        <th>{{ __('Date') }}</th>
+                        <th>{{ __('Actions') }}</th>
                     </tr>
                     </thead>
                     <tbody></tbody>
@@ -179,10 +179,10 @@
                 if (type !== 'display') return data ?? '';
                 let html = `<span class="fw-semibold text-primary quotation-no-link" style="cursor:pointer;">${data ?? ''}</span>`;
                 if (row.linked_enquiry_no) {
-                    html += `<small class="d-block text-muted lh-sm">Enquiry: ${row.linked_enquiry_no}</small>`;
+                    html += `<small class="d-block text-muted lh-sm">{{ __('Enquiry') }}: ${row.linked_enquiry_no}</small>`;
                 }
                 if (row.linked_job_no) {
-                    html += `<small class="d-block text-muted lh-sm">Job: ${row.linked_job_no}</small>`;
+                    html += `<small class="d-block text-muted lh-sm">{{ __('Job') }}: ${row.linked_job_no}</small>`;
                 }
                 return html;
             }
@@ -194,13 +194,13 @@
 
             // Mirrors services() in app/Helpers/pre-defined-helpers.php.
             const SERVICE_LABELS = {
-                1: 'Freight Forwarding',
-                2: 'Customs Clearance',
-                3: 'Transportation',
-                4: 'Warehousing',
-                5: 'Moving & Relocation',
-                6: 'Import/Export Trading',
-                7: 'Courier & Express Delivery',
+                1: "{{ __('Freight Forwarding') }}",
+                2: "{{ __('Customs Clearance') }}",
+                3: "{{ __('Transportation') }}",
+                4: "{{ __('Warehousing') }}",
+                5: "{{ __('Moving & Relocation') }}",
+                6: "{{ __('Import/Export Trading') }}",
+                7: "{{ __('Courier & Express Delivery') }}",
             };
 
             function renderServices(data) {
@@ -314,7 +314,7 @@
 
             function openNewQuotationModal(content) {
                 webModal.openGlobalModal({
-                    title: 'New Quotation',
+                    title: {{ Illuminate\Support\Js::from(__('New Quotation')) }},
                     url: '/sales/quotation/create',
                     size: 'lg',
                     scroll: false,
@@ -349,12 +349,12 @@
             // module-agnostic so it's reused directly).
             function openDrawer(id, name) {
                 $('#drawerSubtitle').text(name || '');
-                $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2"></div> Loading...</div>');
+                $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2"></div> {{ __('Loading...') }}</div>');
                 bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer')).show();
                 $.get('/sales/quotation/' + id + '/overview-drawer', function (data) {
                     $('#moduleOverview').html(data);
                 }).fail(function () {
-                    $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load quotation details.</div>');
+                    $('#moduleOverview').html('<div class="alert alert-danger m-3">{{ __('Failed to load quotation details.') }}</div>');
                 });
             }
 
@@ -425,7 +425,7 @@
                     $menu.html(buildMenuHtml(actions));
                 }).fail(function () {
                     $menu.html('');
-                    toastr.error('Failed to load actions');
+                    toastr.error({{ Illuminate\Support\Js::from(__('Failed to load actions')) }});
                 });
             });
 
@@ -442,7 +442,7 @@
             $('#basicQuotationTable tbody').on('click', '#row_edit', function () {
                 const id = $(this).data('id');
                 webModal.openGlobalModal({
-                    title: 'Edit Quotation',
+                    title: {{ Illuminate\Support\Js::from(__('Edit Quotation')) }},
                     url: '/sales/quotation/' + id + '/create',
                     size: 'xl',
                     scroll: true,
@@ -454,11 +454,11 @@
             $('#basicQuotationTable tbody').on('click', '#row_accepted,#row_pending,#row_rejected,#row_convert_to_job', function () {
                 const id = $(this).data('id');
                 const value = $(this).data('value');
-                let confirmMessage = 'Are you sure you want to change status?';
-                if (this.id === 'row_convert_to_job') confirmMessage = 'Are you sure you want to convert this quotation to a job?';
-                else if (this.id === 'row_accepted') confirmMessage = 'Are you sure you want to mark this quotation as Accepted?';
-                else if (this.id === 'row_pending') confirmMessage = 'Are you sure you want to move this quotation back to Pending?';
-                else if (this.id === 'row_rejected') confirmMessage = 'Are you sure you want to cancel this quotation?';
+                let confirmMessage = {{ Illuminate\Support\Js::from(__('Are you sure you want to change status?')) }};
+                if (this.id === 'row_convert_to_job') confirmMessage = {{ Illuminate\Support\Js::from(__('Are you sure you want to convert this quotation to a job?')) }};
+                else if (this.id === 'row_accepted') confirmMessage = {{ Illuminate\Support\Js::from(__('Are you sure you want to mark this quotation as Accepted?')) }};
+                else if (this.id === 'row_pending') confirmMessage = {{ Illuminate\Support\Js::from(__('Are you sure you want to move this quotation back to Pending?')) }};
+                else if (this.id === 'row_rejected') confirmMessage = {{ Illuminate\Support\Js::from(__('Are you sure you want to cancel this quotation?')) }};
                 changeStatus(id, value, confirmMessage);
             });
 

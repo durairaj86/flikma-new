@@ -1,10 +1,10 @@
 @php
     $statusMap = [
-        1 => ['label' => 'Draft',     'class' => 'bg-warning-subtle text-warning'],
-        2 => ['label' => 'Approved',  'class' => 'bg-success-subtle text-success'],
-        3 => ['label' => 'Cancelled', 'class' => 'bg-danger-subtle text-danger'],
+        1 => ['label' => __('Draft'),     'class' => 'bg-warning-subtle text-warning'],
+        2 => ['label' => __('Approved'),  'class' => 'bg-success-subtle text-success'],
+        3 => ['label' => __('Cancelled'), 'class' => 'bg-danger-subtle text-danger'],
     ];
-    $statusInfo = $statusMap[$creditNote->status] ?? ['label' => 'Unknown', 'class' => 'bg-secondary-subtle text-secondary'];
+    $statusInfo = $statusMap[$creditNote->status] ?? ['label' => __('Unknown'), 'class' => 'bg-secondary-subtle text-secondary'];
 @endphp
 
 <style>
@@ -29,7 +29,7 @@
     <div class="d-flex gap-2">
         <button type="button" class="btn btn-outline-secondary btn-sm"
                 onclick="CREDIT_NOTE.printPreview('{{ $creditNote->id }}')">
-            <i class="bi bi-printer me-1"></i> Print
+            <i class="bi bi-printer me-1"></i> {{ __('Print') }}
         </button>
     </div>
 </div>
@@ -41,43 +41,43 @@
         <div class="d-flex justify-content-between align-items-start mb-3">
             <div>
                 <div class="fw-bold fs-5 text-dark">#{{ $creditNote->row_no }}</div>
-                <div class="text-muted small">Credit Note</div>
+                <div class="text-muted small">{{ __('Credit Note') }}</div>
             </div>
             <div class="text-end">
                 <div class="fw-bold fs-5" style="color: #0b6aa0;">
                     {{ number_format($creditNote->grand_total, decimals()) }}
                     <small class="text-muted fw-normal fs-6">{{ strtoupper($creditNote->currency ?? 'SAR') }}</small>
                 </div>
-                <div class="text-muted small">Grand Total</div>
+                <div class="text-muted small">{{ __('Grand Total') }}</div>
             </div>
         </div>
 
         {{-- Basic Info --}}
-        <div class="cn-section-title">Basic Information</div>
+        <div class="cn-section-title">{{ __('Basic Information') }}</div>
 
         <div class="cn-detail-row">
-            <span class="cn-overview-label">Date</span>
+            <span class="cn-overview-label">{{ __('Date') }}</span>
             <span class="cn-overview-value">{{ \Carbon\Carbon::parse($creditNote->posted_at)->format('d M Y') }}</span>
         </div>
         <div class="cn-detail-row">
-            <span class="cn-overview-label">Customer</span>
+            <span class="cn-overview-label">{{ __('Customer') }}</span>
             <span class="cn-overview-value">{{ $creditNote->customer->name_en ?? '-' }}</span>
         </div>
         <div class="cn-detail-row">
-            <span class="cn-overview-label">Job</span>
+            <span class="cn-overview-label">{{ __('Job') }}</span>
             <span class="cn-overview-value">{{ $creditNote->job_no ?? '-' }}</span>
         </div>
         <div class="cn-detail-row">
-            <span class="cn-overview-label">Invoice Ref</span>
+            <span class="cn-overview-label">{{ __('Invoice Ref') }}</span>
             <span class="cn-overview-value">{{ $creditNote->invoice->row_no ?? '-' }}</span>
         </div>
         <div class="cn-detail-row">
-            <span class="cn-overview-label">Type</span>
+            <span class="cn-overview-label">{{ __('Type') }}</span>
             <span class="cn-overview-value">{{ ucfirst(str_replace('_', ' ', $creditNote->credit_note_type ?? '-')) }}</span>
         </div>
         @if($creditNote->reason)
         <div class="cn-detail-row">
-            <span class="cn-overview-label">Reason</span>
+            <span class="cn-overview-label">{{ __('Reason') }}</span>
             <span class="cn-overview-value text-end" style="max-width: 65%;">{{ $creditNote->reason }}</span>
         </div>
         @endif
@@ -88,19 +88,19 @@
 {{-- Totals card --}}
 <div class="card border-0 shadow-sm mb-3" style="border-radius: .75rem;">
     <div class="card-body p-3">
-        <div class="cn-section-title">Amounts</div>
+        <div class="cn-section-title">{{ __('Amounts') }}</div>
 
         <div class="cn-amount-row">
-            <span class="cn-overview-label">Subtotal</span>
+            <span class="cn-overview-label">{{ __('Subtotal') }}</span>
             <span class="cn-overview-value tabular-nums">{{ number_format($creditNote->sub_total, decimals()) }}</span>
         </div>
         <div class="cn-amount-row">
-            <span class="cn-overview-label">Tax</span>
+            <span class="cn-overview-label">{{ __('Tax') }}</span>
             <span class="cn-overview-value tabular-nums">{{ number_format($creditNote->tax_total, decimals()) }}</span>
         </div>
         <hr class="my-2">
         <div class="cn-amount-row cn-grand-row">
-            <span class="fw-bold text-dark">Grand Total</span>
+            <span class="fw-bold text-dark">{{ __('Grand Total') }}</span>
             <span class="fw-bold fs-6 tabular-nums" style="color: #0b6aa0;">
                 {{ number_format($creditNote->grand_total, decimals()) }}
                 <small class="text-muted fw-normal">{{ strtoupper($creditNote->currency ?? 'SAR') }}</small>
@@ -115,17 +115,17 @@
     <div class="card-header bg-white border-bottom py-2 px-3">
         <span class="fw-semibold small text-dark">
             <i class="bi bi-list-ul me-1 text-muted"></i>
-            Line Items ({{ $creditNote->creditNoteSubs->count() }})
+            {{ __('Line Items') }} ({{ $creditNote->creditNoteSubs->count() }})
         </span>
     </div>
     <div class="p-0">
         <table class="table table-sm align-middle mb-0" style="font-size: .82rem;">
             <thead style="background: #f8fafc;">
                 <tr>
-                    <th class="px-3 py-2 fw-semibold text-muted border-0" style="font-size:.72rem;">Description</th>
-                    <th class="px-3 py-2 fw-semibold text-muted border-0 text-end" style="font-size:.72rem;">Qty</th>
-                    <th class="px-3 py-2 fw-semibold text-muted border-0 text-end" style="font-size:.72rem;">Price</th>
-                    <th class="px-3 py-2 fw-semibold text-muted border-0 text-end" style="font-size:.72rem;">Total</th>
+                    <th class="px-3 py-2 fw-semibold text-muted border-0" style="font-size:.72rem;">{{ __('Description') }}</th>
+                    <th class="px-3 py-2 fw-semibold text-muted border-0 text-end" style="font-size:.72rem;">{{ __('Qty') }}</th>
+                    <th class="px-3 py-2 fw-semibold text-muted border-0 text-end" style="font-size:.72rem;">{{ __('Price') }}</th>
+                    <th class="px-3 py-2 fw-semibold text-muted border-0 text-end" style="font-size:.72rem;">{{ __('Total') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -152,7 +152,7 @@
 @if($creditNote->terms)
 <div class="card border-0 shadow-sm mb-3" style="border-radius: .75rem;">
     <div class="card-body p-3">
-        <div class="cn-section-title">Terms &amp; Conditions</div>
+        <div class="cn-section-title">{{ __('Terms & Conditions') }}</div>
         <p class="mb-0 small text-secondary">{{ $creditNote->terms }}</p>
     </div>
 </div>
@@ -164,7 +164,7 @@
     <div class="card-header bg-white border-bottom py-2 px-3">
         <span class="fw-semibold small text-dark">
             <i class="bi bi-paperclip me-1 text-muted"></i>
-            Documents ({{ $creditNote->documents->count() }})
+            {{ __('Documents') }} ({{ $creditNote->documents->count() }})
         </span>
     </div>
     <div class="card-body p-3">

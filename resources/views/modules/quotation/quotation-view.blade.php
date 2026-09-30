@@ -1,10 +1,10 @@
 <div class="offcanvas offcanvas-end customer-drawer" tabindex="-1" id="moduleDrawer" style="width: 55%;">
     <div class="offcanvas-header border-bottom bg-light px-4 py-3 d-flex justify-content-between align-items-center">
         <div>
-            <h5 id="moduleDrawerLabel" class="mb-0 fw-bold">Quotation Details</h5>
+            <h5 id="moduleDrawerLabel" class="mb-0 fw-bold">{{ __('Quotation Details') }}</h5>
             <small class="text-muted" id="drawerSubtitle"></small>
         </div>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="{{ __('Close') }}"></button>
     </div>
 
     <div class="offcanvas-body p-0">
@@ -13,25 +13,25 @@
             <li class="nav-item">
                 <button class="nav-link active fw-semibold" id="quotation-general-tab"
                         data-bs-toggle="tab" data-bs-target="#quotationGeneralTab" type="button" role="tab">
-                    <i class="bi bi-info-circle me-1"></i> General
+                    <i class="bi bi-info-circle me-1"></i> {{ __('General') }}
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link fw-semibold" id="quotation-container-tab"
                         data-bs-toggle="tab" data-bs-target="#quotationContainerTab" type="button" role="tab">
-                    <i class="bi bi-box-seam me-1"></i> Container
+                    <i class="bi bi-box-seam me-1"></i> {{ __('Container') }}
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link fw-semibold" id="quotation-package-tab"
                         data-bs-toggle="tab" data-bs-target="#quotationPackageTab" type="button" role="tab">
-                    <i class="bi bi-boxes me-1"></i> Package
+                    <i class="bi bi-boxes me-1"></i> {{ __('Package') }}
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link fw-semibold" id="quotation-charges-tab"
                         data-bs-toggle="tab" data-bs-target="#quotationChargesTab" type="button" role="tab">
-                    <i class="bi bi-receipt me-1"></i> Charges
+                    <i class="bi bi-receipt me-1"></i> {{ __('Charges') }}
                 </button>
             </li>
         </ul>
@@ -40,7 +40,7 @@
         <div class="tab-content px-4 py-3" id="moduleOverview">
             <div class="text-center py-5 text-muted">
                 <div class="spinner-border spinner-border-sm me-2" role="status"></div>
-                Loading...
+                {{ __('Loading...') }}
             </div>
         </div>
     </div>

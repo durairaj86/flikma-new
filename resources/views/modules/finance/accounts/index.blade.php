@@ -1,4 +1,4 @@
-@section('page-title','Chart of Accounts')
+@section('page-title', __('Chart of Accounts'))
 @section('js','account')
 <x-app-layout>
     <main class="gmail-content bg-white px-3">
@@ -11,7 +11,7 @@
                             <button
                                 class="nav-link px-3 py-2 d-flex align-items-center active justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-asset" type="button" id="asset" wire:click="switchTab('asset')">
-                                <span><i class="bi bi-safe me-1"></i> Asset -</span>
+                                <span><i class="bi bi-safe me-1"></i> {{ __('Asset') }} -</span>
                                 <span class="status-count ms-2" id="assetCount">0</span>
                             </button>
                         </li>
@@ -29,7 +29,7 @@
                             <button
                                 class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="liability">
-                                <span><i class="bi bi-journal-minus me-1"></i> Liability -</span>
+                                <span><i class="bi bi-journal-minus me-1"></i> {{ __('Liability') }} -</span>
                                 <span class="status-count ms-2" id="liabilityCount">0</span>
                             </button>
                         </li>
@@ -37,7 +37,7 @@
                         <li class="nav-item me-2">
                             <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                     data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="equity">
-                                <span><i class="bi bi-diagram-3 me-1"></i> Equity -</span>
+                                <span><i class="bi bi-diagram-3 me-1"></i> {{ __('Equity') }} -</span>
                                 <span class="status-count ms-2" id="equityCount">0</span>
                             </button>
                         </li>
@@ -45,7 +45,7 @@
                         <li class="nav-item">
                             <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                     data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="income">
-                                <span><i class="bi bi-graph-up-arrow"></i> Income -</span>
+                                <span><i class="bi bi-graph-up-arrow"></i> {{ __('Income') }} -</span>
                                 <span class="status-count ms-2" id="incomeCount">0</span>
                             </button>
                         </li>
@@ -53,7 +53,7 @@
                         <li class="nav-item">
                             <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                     data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="expense">
-                                <span><i class="bi bi-graph-down-arrow"></i> Expense -</span>
+                                <span><i class="bi bi-graph-down-arrow"></i> {{ __('Expense') }} -</span>
                                 <span class="status-count ms-2" id="expenseCount">0</span>
                             </button>
                         </li>
@@ -65,7 +65,7 @@
                 <div class="position-relative">
                     <!-- Compact Filter button -->
                     <button class="btn btn-outline-secondary me-2" onclick="toggleFilter()"><i class="bi bi-funnel"></i>
-                        Filter
+                        {{ __('Filter') }}
                     </button>
 
                     <!-- Filter panel (dropdown style) -->
@@ -101,45 +101,45 @@
                         <!-- Activity type -->
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">Activity type</span>
-                                <button class="btn btn-link btn-sm p-0" onclick="resetField('activity')">Reset</button>
+                                <span class="fw-medium">{{ __('Activity type') }}</span>
+                                <button class="btn btn-link btn-sm p-0" onclick="resetField('activity')">{{ __('Reset') }}</button>
                             </div>
                             <select class="form-select" id="activityType">
-                                <option>All warehouses</option>
-                                <option>Warehouse 1</option>
-                                <option>Warehouse 2</option>
+                                <option>{{ __('All warehouses') }}</option>
+                                <option>{{ __('Warehouse 1') }}</option>
+                                <option>{{ __('Warehouse 2') }}</option>
                             </select>
                         </div>
 
                         <!-- Status -->
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">Status</span>
-                                <button class="btn btn-link btn-sm p-0" onclick="resetField('status')">Reset</button>
+                                <span class="fw-medium">{{ __('Status') }}</span>
+                                <button class="btn btn-link btn-sm p-0" onclick="resetField('status')">{{ __('Reset') }}</button>
                             </div>
                             <select class="form-select" id="status">
-                                <option>Active</option>
-                                <option>Inactive</option>
+                                <option>{{ __('Active') }}</option>
+                                <option>{{ __('Inactive') }}</option>
                             </select>
                         </div>
 
                         <!-- Keyword search -->
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">Keyword search</span>
-                                <button class="btn btn-link btn-sm p-0" onclick="resetField('keyword')">Reset</button>
+                                <span class="fw-medium">{{ __('Keyword search') }}</span>
+                                <button class="btn btn-link btn-sm p-0" onclick="resetField('keyword')">{{ __('Reset') }}</button>
                             </div>
-                            <input type="text" class="form-control" placeholder="Search..." id="keyword">
+                            <input type="text" class="form-control" placeholder="{{ __('Search...') }}" id="keyword">
                         </div>
 
                         <!-- Buttons -->
                         <div class="d-flex justify-content-between">
-                            <button class="btn btn-outline-secondary" onclick="resetAll()">Reset all</button>
-                            <button class="btn btn-success">Apply now</button>
+                            <button class="btn btn-outline-secondary" onclick="resetAll()">{{ __('Reset all') }}</button>
+                            <button class="btn btn-success">{{ __('Apply now') }}</button>
                         </div>
                     </div>
                 </div>
-                <button class="btn btn-primary rounded-pill px-4" id="new">New Account</button>
+                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Account') }}</button>
             </div>
         </div>
         <div class="shadow bdr-r-10 py-3 flex-grow-1">
@@ -149,10 +149,10 @@
                 <!-- Example static label -->
                 <div class="d-inline-flex align-items-center bg-light border rounded-pill px-2 py-1 me-2 mb-2 small"
                      style="font-size: 0.8rem;">
-                    <span class="me-2">Date: 10-12-2024 / 10-12-2025</span>
+                    <span class="me-2">{{ __('Date') }}: 10-12-2024 / 10-12-2025</span>
                     <button type="button"
                             class="btn btn-sm btn-light p-0 border-0 d-flex align-items-center justify-content-center"
-                            style="width: 16px; height: 16px; line-height: 1;" aria-label="Close"
+                            style="width: 16px; height: 16px; line-height: 1;" aria-label="{{ __('Close') }}"
                             onclick="clearDateLabel()">
                         &times;
                     </button>
@@ -162,7 +162,7 @@
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
 
                         <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="Search..." aria-label="Search...">
+                               placeholder="{{ __('Search...') }}" aria-label="{{ __('Search...') }}">
                     </div>
                 </div>
             </div>
@@ -171,16 +171,16 @@
                     <table class="table align-middle dataTable" id="dataTable" data-module-url="account">
                         <thead class="table-light sticky-top bg-white">
                         <tr>
-                            <th>Name</th>
-                            <th>Code</th>
-                            <th>Parent Account</th>
-                            <th>Account No</th>
-                            <th>Active</th>
+                            <th>{{ __('Name') }}</th>
+                            <th>{{ __('Code') }}</th>
+                            <th>{{ __('Parent Account') }}</th>
+                            <th>{{ __('Account No') }}</th>
+                            <th>{{ __('Active') }}</th>
                             <th></th>
                         </tr>
                         </thead>
                         <tbody>
-                        <tr class="loading-row"><td colspan="10" class="text-center text-muted py-4">Loading...</td></tr>
+                        <tr class="loading-row"><td colspan="10" class="text-center text-muted py-4">{{ __('Loading...') }}</td></tr>
                         </tbody>
                     </table>
                 </div>

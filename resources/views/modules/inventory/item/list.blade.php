@@ -1,5 +1,5 @@
 @section('js','item')
-@section('page-title','Items')
+@section('page-title', __('Items'))
 <x-app-layout>
     <!-- Main Content -->
     <main class="gmail-content bg-white px-3">
@@ -13,7 +13,7 @@
                             <button
                                 class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn active"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="all">
-                                <span><i class="bi bi-grid text-primary me-1"></i> All Items -</span>
+                                <span><i class="bi bi-grid text-primary me-1"></i> {{ __('All Items') }} -</span>
                                 <span class="status-count ms-2" id="allCount">0</span>
                             </button>
                         </li>
@@ -24,7 +24,7 @@
                 <div class="position-relative">
                     <!-- Compact Filter button -->
                     <button class="btn btn-outline-secondary me-2" onclick="toggleFilter()"><i class="bi bi-funnel"></i>
-                        Filter
+                        {{ __('Filter') }}
                     </button>
 
                     <!-- Filter panel (dropdown style) -->
@@ -60,33 +60,33 @@
                         <!-- Account Type -->
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">Account Type</span>
-                                <button class="btn btn-link btn-sm p-0" onclick="resetField('accountType')">Reset</button>
+                                <span class="fw-medium">{{ __('Account Type') }}</span>
+                                <button class="btn btn-link btn-sm p-0" onclick="resetField('accountType')">{{ __('Reset') }}</button>
                             </div>
                             <select class="form-select" id="accountType">
-                                <option value="">All Types</option>
-                                <option value="expense">Expense</option>
-                                <option value="income">Income</option>
+                                <option value="">{{ __('All Types') }}</option>
+                                <option value="expense">{{ __('Expense') }}</option>
+                                <option value="income">{{ __('Income') }}</option>
                             </select>
                         </div>
 
                         <!-- Keyword search -->
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">Keyword search</span>
-                                <button class="btn btn-link btn-sm p-0" onclick="resetField('keyword')">Reset</button>
+                                <span class="fw-medium">{{ __('Keyword search') }}</span>
+                                <button class="btn btn-link btn-sm p-0" onclick="resetField('keyword')">{{ __('Reset') }}</button>
                             </div>
-                            <input type="text" class="form-control" placeholder="Search..." id="keyword">
+                            <input type="text" class="form-control" placeholder="{{ __('Search...') }}" id="keyword">
                         </div>
 
                         <!-- Buttons -->
                         <div class="d-flex justify-content-between">
-                            <button class="btn btn-outline-secondary" onclick="resetAll()">Reset all</button>
-                            <button class="btn btn-success">Apply now</button>
+                            <button class="btn btn-outline-secondary" onclick="resetAll()">{{ __('Reset all') }}</button>
+                            <button class="btn btn-success">{{ __('Apply now') }}</button>
                         </div>
                     </div>
                 </div>
-                <button class="btn btn-primary rounded-pill px-4" id="new">New Item</button>
+                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Item') }}</button>
             </div>
         </div>
 
@@ -99,7 +99,7 @@
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
 
                         <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="Search items..." aria-label="Search items...">
+                               placeholder="{{ __('Search items...') }}" aria-label="{{ __('Search items...') }}">
                     </div>
                 </div>
             </div>
@@ -110,14 +110,14 @@
                     <thead class="table-light bg-white">
                     <tr>
                         <th>#</th>
-                        <th>SKU Code</th>
-                        <th>Name (EN)</th>
-                        <th>Name (AR)</th>
-                        <th>Account Type</th>
-                        <th>Cost Price</th>
-                        <th>Selling Price</th>
-                        <th>Created At</th>
-                        <th class="text-center">Actions</th>
+                        <th>{{ __('SKU Code') }}</th>
+                        <th>{{ __('Name (EN)') }}</th>
+                        <th>{{ __('Name (AR)') }}</th>
+                        <th>{{ __('Account Type') }}</th>
+                        <th>{{ __('Cost Price') }}</th>
+                        <th>{{ __('Selling Price') }}</th>
+                        <th>{{ __('Created At') }}</th>
+                        <th class="text-center">{{ __('Actions') }}</th>
                     </tr>
                     </thead>
                     <tbody>

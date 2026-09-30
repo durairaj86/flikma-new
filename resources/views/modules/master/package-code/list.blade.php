@@ -1,5 +1,5 @@
 @section('js','package_code')
-@section('page-title','Package Codes')
+@section('page-title', __('Package Codes'))
 <x-app-layout>
     <main class="gmail-content bg-white d-flex">
         @include('includes.master-navigation')
@@ -9,11 +9,11 @@
                     <div class="search-box position-relative me-3">
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                         <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="Search..." aria-label="Search...">
+                               placeholder="{{ __('Search...') }}" aria-label="{{ __('Search...') }}">
                     </div>
                 </div>
                 <div class="d-flex align-items-center">
-                    <button class="btn btn-primary rounded-pill px-4" id="new">New Package Code</button>
+                    <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Package Code') }}</button>
                 </div>
             </div>
             <div class="shadow bdr-r-10 py-3 flex-grow-1">
@@ -23,8 +23,8 @@
                         <thead class="table-light sticky-top bg-white">
                         <tr>
                             <th>#</th>
-                            <th>Name</th>
-                            <th>Description</th>
+                            <th>{{ __('Name') }}</th>
+                            <th>{{ __('Description') }}</th>
                             <th></th>
                         </tr>
                         </thead>

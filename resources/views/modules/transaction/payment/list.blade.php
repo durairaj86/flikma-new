@@ -1,10 +1,10 @@
-@section('page-title','Payments')
+@section('page-title', __('Payments'))
 @section('js','payment')
 @push('page-title-action')
     <button class="btn btn-link btn-sm text-muted p-0 text-decoration-none lh-1"
             data-bs-toggle="modal" data-bs-target="#paymentWorkflowModal"
-            title="How payments work">
-        <i class="bi bi-info-circle fs-6"></i><span class="d-none d-md-inline ms-1" style="font-size:0.8rem;">How it works</span>
+            title="{{ __('How payments work') }}">
+        <i class="bi bi-info-circle fs-6"></i><span class="d-none d-md-inline ms-1" style="font-size:0.8rem;">{{ __('How it works') }}</span>
     </button>
 @endpush
 <x-app-layout>
@@ -19,7 +19,7 @@
                             <button
                                 class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn active"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="draft">
-                                <span><i class="bi bi-clock me-1"></i> Draft -</span>
+                                <span><i class="bi bi-clock me-1"></i> {{ __('Draft') }} -</span>
                                 <span class="status-count ms-2" id="draftCount">0</span>
                             </button>
                         </li>
@@ -27,7 +27,7 @@
                             <button
                                 class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="approved">
-                                <span><i class="bi bi-check-circle me-1"></i> Approved -</span>
+                                <span><i class="bi bi-check-circle me-1"></i> {{ __('Approved') }} -</span>
                                 <span class="status-count ms-2" id="approvedCount">0</span>
                             </button>
                         </li>
@@ -35,7 +35,7 @@
                             <button
                                 class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="cancelled">
-                                <span><i class="bi bi-x-circle me-1"></i> Cancelled -</span>
+                                <span><i class="bi bi-x-circle me-1"></i> {{ __('Cancelled') }} -</span>
                                 <span class="status-count ms-2" id="cancelledCount">0</span>
                             </button>
                         </li>
@@ -46,7 +46,7 @@
                 <div class="position-relative">
                     <!-- Compact Filter button -->
                     <button class="btn btn-outline-secondary me-2" onclick="toggleFilter()"><i class="bi bi-funnel"></i>
-                        Filter
+                        {{ __('Filter') }}
                     </button>
 
                     <!-- Filter panel (dropdown style) -->
@@ -82,45 +82,45 @@
                         <!-- Activity type -->
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">Activity type</span>
-                                <button class="btn btn-link btn-sm p-0" onclick="resetField('activity')">Reset</button>
+                                <span class="fw-medium">{{ __('Activity type') }}</span>
+                                <button class="btn btn-link btn-sm p-0" onclick="resetField('activity')">{{ __('Reset') }}</button>
                             </div>
                             <select class="form-select" id="activityType">
-                                <option>All warehouses</option>
-                                <option>Warehouse 1</option>
-                                <option>Warehouse 2</option>
+                                <option>{{ __('All warehouses') }}</option>
+                                <option>{{ __('Warehouse 1') }}</option>
+                                <option>{{ __('Warehouse 2') }}</option>
                             </select>
                         </div>
 
                         <!-- Status -->
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">Status</span>
-                                <button class="btn btn-link btn-sm p-0" onclick="resetField('status')">Reset</button>
+                                <span class="fw-medium">{{ __('Status') }}</span>
+                                <button class="btn btn-link btn-sm p-0" onclick="resetField('status')">{{ __('Reset') }}</button>
                             </div>
                             <select class="form-select" id="status">
-                                <option>Active</option>
-                                <option>Inactive</option>
+                                <option>{{ __('Active') }}</option>
+                                <option>{{ __('Inactive') }}</option>
                             </select>
                         </div>
 
                         <!-- Keyword search -->
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">Keyword search</span>
-                                <button class="btn btn-link btn-sm p-0" onclick="resetField('keyword')">Reset</button>
+                                <span class="fw-medium">{{ __('Keyword search') }}</span>
+                                <button class="btn btn-link btn-sm p-0" onclick="resetField('keyword')">{{ __('Reset') }}</button>
                             </div>
-                            <input type="text" class="form-control" placeholder="Search..." id="keyword">
+                            <input type="text" class="form-control" placeholder="{{ __('Search...') }}" id="keyword">
                         </div>
 
                         <!-- Buttons -->
                         <div class="d-flex justify-content-between">
-                            <button class="btn btn-outline-secondary" onclick="resetAll()">Reset all</button>
-                            <button class="btn btn-success">Apply now</button>
+                            <button class="btn btn-outline-secondary" onclick="resetAll()">{{ __('Reset all') }}</button>
+                            <button class="btn btn-success">{{ __('Apply now') }}</button>
                         </div>
                     </div>
                 </div>
-                <button class="btn btn-primary rounded-pill px-4" id="new">New Payment</button>
+                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Payment') }}</button>
             </div>
         </div>
 
@@ -128,10 +128,10 @@
             <div class="d-flex justify-content-between px-3 flex-shrink-0">
                 <div class="d-inline-flex align-items-center bg-light border rounded-pill px-2 py-1 me-2 mb-2 small"
                      style="font-size: 0.8rem;">
-                    <span class="me-2">Date: 10-12-2024 / 10-12-2025</span>
+                    <span class="me-2">{{ __('Date') }}: 10-12-2024 / 10-12-2025</span>
                     <button type="button"
                             class="btn btn-sm btn-light p-0 border-0 d-flex align-items-center justify-content-center"
-                            style="width: 16px; height: 16px; line-height: 1;" aria-label="Close"
+                            style="width: 16px; height: 16px; line-height: 1;" aria-label="{{ __('Close') }}"
                             onclick="clearDateLabel()">
                         &times;
                     </button>
@@ -141,7 +141,7 @@
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
 
                         <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="Search jobs..." aria-label="Search jobs...">
+                               placeholder="{{ __('Search jobs...') }}" aria-label="{{ __('Search jobs...') }}">
                     </div>
                 </div>
             </div>
@@ -150,14 +150,14 @@
                     <thead class="table-light bg-white">
                     <tr>
                         <th>#</th>
-                        <th>Payment No</th>
-                        <th>Supplier</th>
-                        <th>Payment Date</th>
-                        <th>Account</th>
-                        <th>Reference No</th>
-                        <th>Currency</th>
-                        <th>Amount</th>
-                        <th>Status</th>
+                        <th>{{ __('Payment No') }}</th>
+                        <th>{{ __('Supplier') }}</th>
+                        <th>{{ __('Payment Date') }}</th>
+                        <th>{{ __('Account') }}</th>
+                        <th>{{ __('Reference No') }}</th>
+                        <th>{{ __('Currency') }}</th>
+                        <th>{{ __('Amount') }}</th>
+                        <th>{{ __('Status') }}</th>
                         <th></th>
                     </tr>
                     </thead>
@@ -171,21 +171,21 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="disapprovalReasonModalLabel">Disapproval Reason</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <h5 class="modal-title" id="disapprovalReasonModalLabel">{{ __('Disapproval Reason') }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
                     </div>
                     <div class="modal-body">
                         <form id="disapprovalReasonForm">
                             <input type="hidden" id="payment_id" name="payment_id">
                             <div class="mb-3">
-                                <label for="reason" class="form-label">Reason for Disapproval</label>
+                                <label for="reason" class="form-label">{{ __('Reason for Disapproval') }}</label>
                                 <textarea class="form-control" id="reason" name="reason" rows="3" required></textarea>
                             </div>
                         </form>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-danger" id="submitDisapprovalReason">Submit</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                        <button type="button" class="btn btn-danger" id="submitDisapprovalReason">{{ __('Submit') }}</button>
                     </div>
                 </div>
             </div>
@@ -222,9 +222,9 @@
                 <div class="modal-header border-0 pb-0">
                     <div>
                         <h5 class="modal-title fw-semibold" id="paymentWorkflowModalLabel">
-                            <i class="bi bi-diagram-3 text-primary me-2"></i>Payment Workflow
+                            <i class="bi bi-diagram-3 text-primary me-2"></i>{{ __('Payment Workflow') }}
                         </h5>
-                        <p class="text-muted small mb-0">How supplier payments move through your system</p>
+                        <p class="text-muted small mb-0">{{ __('How supplier payments move through your system') }}</p>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
@@ -234,43 +234,43 @@
                     <div class="d-flex flex-column align-items-center gap-0">
 
                         <div class="wf-box wf-neutral">
-                            <i class="bi bi-receipt me-1"></i> Select Supplier &amp; Invoices
-                            <div class="wf-badge bg-secondary text-white">Approved Supplier Invoices</div>
+                            <i class="bi bi-receipt me-1"></i> {{ __('Select Supplier & Invoices') }}
+                            <div class="wf-badge bg-secondary text-white">{{ __('Approved Supplier Invoices') }}</div>
                         </div>
                         <div class="wf-arrow">↓</div>
 
                         <div class="wf-box wf-pending">
-                            <div class="text-muted" style="font-size:0.7rem;font-weight:400;">STEP 1</div>
-                            <i class="bi bi-cash-coin me-1"></i> Create Payment
-                            <div class="wf-badge bg-warning text-dark">Draft</div>
+                            <div class="text-muted" style="font-size:0.7rem;font-weight:400;">{{ __('STEP 1') }}</div>
+                            <i class="bi bi-cash-coin me-1"></i> {{ __('Create Payment') }}
+                            <div class="wf-badge bg-warning text-dark">{{ __('Draft') }}</div>
                         </div>
                         <div class="wf-arrow">↓</div>
 
                         <div class="wf-box wf-action">
-                            <div class="text-muted" style="font-size:0.7rem;font-weight:400;">STEP 2</div>
-                            <i class="bi bi-send-check me-1"></i> Approve Payment
-                            <div class="text-muted mt-1" style="font-size:0.75rem;">Deducts invoice balance &amp; posts to GL</div>
+                            <div class="text-muted" style="font-size:0.7rem;font-weight:400;">{{ __('STEP 2') }}</div>
+                            <i class="bi bi-send-check me-1"></i> {{ __('Approve Payment') }}
+                            <div class="text-muted mt-1" style="font-size:0.75rem;">{{ __('Deducts invoice balance & posts to GL') }}</div>
                         </div>
                         <div class="wf-arrow">↓</div>
 
                         <!-- Decision -->
                         <div class="wf-box wf-decision">
-                            <i class="bi bi-question-circle me-1"></i> Payment Outcome
+                            <i class="bi bi-question-circle me-1"></i> {{ __('Payment Outcome') }}
                         </div>
 
                         <div class="d-flex justify-content-center gap-5 w-100 mt-0">
                             <div class="d-flex flex-column align-items-center">
                                 <div class="wf-arrow">↓</div>
                                 <div class="wf-box wf-success">
-                                    <i class="bi bi-check-circle me-1"></i> Approved
-                                    <div class="wf-badge bg-success text-white">Approved</div>
+                                    <i class="bi bi-check-circle me-1"></i> {{ __('Approved') }}
+                                    <div class="wf-badge bg-success text-white">{{ __('Approved') }}</div>
                                 </div>
                             </div>
                             <div class="d-flex flex-column align-items-center">
                                 <div class="wf-arrow">↓</div>
                                 <div class="wf-box wf-danger">
-                                    <i class="bi bi-x-circle me-1"></i> Cancelled
-                                    <div class="wf-badge bg-danger text-white">Cancelled</div>
+                                    <i class="bi bi-x-circle me-1"></i> {{ __('Cancelled') }}
+                                    <div class="wf-badge bg-danger text-white">{{ __('Cancelled') }}</div>
                                 </div>
                             </div>
                         </div>
@@ -279,24 +279,24 @@
 
                     <!-- Status legend -->
                     <hr class="mt-4">
-                    <h6 class="fw-semibold text-muted mb-3 small text-uppercase">Status Guide</h6>
+                    <h6 class="fw-semibold text-muted mb-3 small text-uppercase">{{ __('Status Guide') }}</h6>
                     <div class="row g-2">
                         <div class="col-sm-6 col-md-4">
                             <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#fffbf0;border:1px solid #ffc107;">
-                                <span class="badge bg-warning text-dark">Draft</span>
-                                <small class="text-muted">Awaiting approval</small>
+                                <span class="badge bg-warning text-dark">{{ __('Draft') }}</span>
+                                <small class="text-muted">{{ __('Awaiting approval') }}</small>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-4">
                             <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#f0fff4;border:1px solid #198754;">
-                                <span class="badge bg-success">Approved</span>
-                                <small class="text-muted">Posted &amp; invoice balance reduced</small>
+                                <span class="badge bg-success">{{ __('Approved') }}</span>
+                                <small class="text-muted">{{ __('Posted & invoice balance reduced') }}</small>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-4">
                             <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#fff5f5;border:1px solid #dc3545;">
-                                <span class="badge bg-danger">Cancelled</span>
-                                <small class="text-muted">Payment called off</small>
+                                <span class="badge bg-danger">{{ __('Cancelled') }}</span>
+                                <small class="text-muted">{{ __('Payment called off') }}</small>
                             </div>
                         </div>
                     </div>
@@ -304,9 +304,9 @@
                 <div class="modal-footer border-0 pt-0">
                     <button class="btn btn-primary rounded-pill px-4" data-bs-dismiss="modal"
                             onclick="setTimeout(()=>document.getElementById('new').click(),300)">
-                        <i class="bi bi-plus-lg me-1"></i> Create Payment
+                        <i class="bi bi-plus-lg me-1"></i> {{ __('Create Payment') }}
                     </button>
-                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">{{ __('Close') }}</button>
                 </div>
             </div>
         </div>

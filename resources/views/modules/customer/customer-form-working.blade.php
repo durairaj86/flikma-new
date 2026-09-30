@@ -10,31 +10,31 @@
                     <li class="nav-item me-2">
                         <button class="nav-link active px-3 py-2" data-bs-toggle="tab" data-bs-target="#tab-basic"
                                 type="button">
-                            <i class="bi bi-person-lines-fill"></i> Basic Info
+                            <i class="bi bi-person-lines-fill"></i> {{ __('Basic Info') }}
                         </button>
                     </li>
                     <li class="nav-item me-2">
                         <button class="nav-link px-3 py-2" data-bs-toggle="tab" data-bs-target="#tab-address"
                                 type="button">
-                            <i class="bi bi-geo-alt-fill"></i> Address
+                            <i class="bi bi-geo-alt-fill"></i> {{ __('Address') }}
                         </button>
                     </li>
                     <li class="nav-item me-2">
                         <button class="nav-link px-3 py-2" data-bs-toggle="tab" data-bs-target="#tab-contact"
                                 type="button">
-                            <i class="bi bi-telephone-fill"></i> Contact
+                            <i class="bi bi-telephone-fill"></i> {{ __('Contact') }}
                         </button>
                     </li>
                     <li class="nav-item">
                         <button class="nav-link px-3 py-2" data-bs-toggle="tab" data-bs-target="#tab-logistics"
                                 type="button">
-                            <i class="bi bi-truck"></i> Logistics
+                            <i class="bi bi-truck"></i> {{ __('Logistics') }}
                         </button>
                     </li>
                     <li class="nav-item">
                         <button class="nav-link px-3 py-2" data-bs-toggle="tab" data-bs-target="#tab-salesman"
                                 type="button">
-                            <i class="bi bi-person-badge"></i> Salesman
+                            <i class="bi bi-person-badge"></i> {{ __('Salesman') }}
                         </button>
                     </li>
                 </ul>
@@ -47,68 +47,68 @@
             <div class="tab-pane show active" id="tab-basic">
                 <div class="model-form-tab-div">
                     <div class="model-form-sub-title">
-                        <h5>General</h5>
+                        <h5>{{ __('General') }}</h5>
                     </div>
                     <div class="row">
                         <div class="col-md-4 form-group">
-                            <label class="form-label">Customer Name (English)</label>
+                            <label class="form-label">{{ __('Customer Name (English)') }}</label>
                             <input type="text" name="name_en" class="form-control" required
                                    value="{{ $customer->name_en }}">
                         </div>
                         <div class="col-md-4 form-group">
-                            <label class="form-label">Customer Name (Arabic)</label>
+                            <label class="form-label">{{ __('Customer Name (Arabic)') }}</label>
                             <input type="text" name="name_ar" class="form-control" dir="rtl" required
                                    value="{{ $customer->name_ar }}">
                         </div>
                         <div class="col-md-4 form-group">
-                            <label class="form-label">Default Currency</label>
+                            <label class="form-label">{{ __('Default Currency') }}</label>
                             <x-common.currencies :value="$customer->currency"></x-common.currencies>
                         </div>
                     </div>
                     <div class="model-form-sub-title">
-                        <h5>Business Settings</h5>
+                        <h5>{{ __('Business Settings') }}</h5>
                     </div>
                     <div class="row">
                         <div class="col-md-4 form-group">
-                            <label class="form-label d-block mb-2">Business Type</label>
+                            <label class="form-label d-block mb-2">{{ __('Business Type') }}</label>
 
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="radio" name="business_type" id="registered"
                                        value="registered"
                                        required {{ $customer->business_type == 'registered' ? 'checked' : '' }}>
-                                <label class="form-check-label" for="registered">Registered</label>
+                                <label class="form-check-label" for="registered">{{ __('Registered') }}</label>
                             </div>
 
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="radio" name="business_type" id="unregistered"
                                        value="unregistered"
                                     {{ ($customer->business_type != 'registered' || !$customer->business_type == 'unregistered') ? 'checked' : '' }}>
-                                <label class="form-check-label" for="unregistered">Unregistered</label>
+                                <label class="form-check-label" for="unregistered">{{ __('Unregistered') }}</label>
                             </div>
                         </div>
 
 
                         <div class="col-md-4 form-group">
-                            <label class="form-label">CR Number</label>
+                            <label class="form-label">{{ __('CR Number') }}</label>
                             <input type="text" name="cr_number" class="form-control" value="{{ $customer->cr_number }}">
                         </div>
                         <div class="col-md-4 form-group">
-                            <label class="form-label">VAT Number</label>
+                            <label class="form-label">{{ __('VAT Number') }}</label>
                             <input type="text" name="vat_number" class="form-control"
                                    value="{{ $customer->vat_number }}">
                         </div>
                     </div>
                     <div class="model-form-sub-title">
-                        <h5>Credit Settings</h5>
+                        <h5>{{ __('Credit Settings') }}</h5>
                     </div>
                     <div class="row">
                         <div class="col-md-4 form-group">
-                            <label class="form-label">Credit Limit</label>
+                            <label class="form-label">{{ __('Credit Limit') }}</label>
                             <input type="number" name="credit_limit" class="form-control" min="0"
                                    value="{{ $customer->credit_limit }}">
                         </div>
                         <div class="col-md-4 form-group">
-                            <label class="form-label">Credit Days</label>
+                            <label class="form-label">{{ __('Credit Days') }}</label>
                             <input type="number" name="credit_days" class="form-control" min="0"
                                    value="{{ $customer->credit_days }}">
                         </div>
@@ -120,16 +120,16 @@
             <div class="tab-pane" id="tab-address">
                 <div class="model-form-tab-div">
                     <div class="model-form-sub-title">
-                        <h5>Address</h5>
+                        <h5>{{ __('Address') }}</h5>
                     </div>
                     <div class="row">
                         <div class="col-md-4 form-group mb-5">
-                            <label class="form-label">Address (English)</label>
+                            <label class="form-label">{{ __('Address (English)') }}</label>
                             <textarea name="address1_en"
                                       class="form-control h-100">{{ $customer->address1_en }}</textarea>
                         </div>
                         <div class="col-md-4 form-group mb-5">
-                            <label class="form-label">Address (Arabic)</label>
+                            <label class="form-label">{{ __('Address (Arabic)') }}</label>
                             <textarea name="address1_ar" class="form-control h-100"
                                       dir="rtl">{{ $customer->address1_ar }}</textarea>
                         </div>
@@ -144,30 +144,30 @@
                                    value="{{ $customer->address2_ar }}">
                         </div>--}}
                         <div class="col-md-4 form-group">
-                            <label class="form-label">City (English)</label>
+                            <label class="form-label">{{ __('City (English)') }}</label>
                             <input type="text" name="city_en" class="form-control" value="{{ $customer->city_en }}">
                         </div>
                         <div class="col-md-4 form-group">
-                            <label class="form-label">City (Arabic)</label>
+                            <label class="form-label">{{ __('City (Arabic)') }}</label>
                             <input type="text" name="city_ar" class="form-control" dir="rtl"
                                    value="{{ $customer->city_ar }}">
                         </div>
                         <div class="col-md-4 form-group">
-                            <label class="form-label">Building Number</label>
+                            <label class="form-label">{{ __('Building Number') }}</label>
                             <input type="text" name="building_number" class="form-control"
                                    value="{{ $customer->building_number }}">
                         </div>
                         <div class="col-md-4 form-group">
-                            <label class="form-label">Plot No</label>
+                            <label class="form-label">{{ __('Plot No') }}</label>
                             <input type="text" name="plot_no" class="form-control" value="{{ $customer->plot_no }}">
                         </div>
                         <div class="col-md-4 form-group">
-                            <label class="form-label">Postal Code</label>
+                            <label class="form-label">{{ __('Postal Code') }}</label>
                             <input type="text" name="postal_code" class="form-control"
                                    value="{{ $customer->postal_code }}">
                         </div>
                         <div class="col-md-4 form-group">
-                            <label class="form-label">Country</label>
+                            <label class="form-label">{{ __('Country') }}</label>
                             <x-common.country :value="$customer->country"></x-common.country>
                         </div>
                     </div>
@@ -179,21 +179,21 @@
             <div class="tab-pane" id="tab-contact">
                 <div class="model-form-tab-div">
                     <div class="model-form-sub-title">
-                        <h5>Contact</h5>
+                        <h5>{{ __('Contact') }}</h5>
                     </div>
                     <div class="row">
                         <div class="col-md-4 form-group">
-                            <label class="form-label">Email</label>
+                            <label class="form-label">{{ __('Email') }}</label>
                             <input type="email" name="email" class="form-control" required
                                    value="{{ $customer->email }}">
                         </div>
                         <div class="col-md-4 form-group">
-                            <label class="form-label">Phone</label>
+                            <label class="form-label">{{ __('Phone') }}</label>
                             <input type="text" name="phone" class="form-control" required pattern="[0-9]{10}"
                                    value="{{ $customer->phone }}">
                         </div>
                         <div class="col-md-4 form-group">
-                            <label class="form-label">Alternate Phone</label>
+                            <label class="form-label">{{ __('Alternate Phone') }}</label>
                             <input type="text" name="alt_phone" class="form-control" value="{{ $customer->alt_phone }}">
                         </div>
                     </div>
@@ -205,13 +205,13 @@
             <div class="tab-pane" id="tab-logistics">
                 <div class="model-form-tab-div">
                     <div class="model-form-sub-title">
-                        <h5>Logistics</h5>
+                        <h5>{{ __('Logistics') }}</h5>
                     </div>
                     <div class="row">
                         <div class="col-md-4 form-group">
-                            <label class="form-label">Preferred Shipping Method</label>
+                            <label class="form-label">{{ __('Preferred Shipping Method') }}</label>
                             <select name="preferred_shipping" class="form-control selectpicker">
-                                <option value="">Select</option>
+                                <option value="">{{ __('Select') }}</option>
                                 @foreach(shipmentMode() as $mode => $name)
                                     <option
                                         value="{{ $mode }}" @selected($customer->preferred_shipping == $mode)>{{$name}}</option>
@@ -219,12 +219,12 @@
                             </select>
                         </div>
                         <div class="col-md-4 form-group">
-                            <label class="form-label">Default Port</label>
+                            <label class="form-label">{{ __('Default Port') }}</label>
                             <input type="text" name="default_port" class="form-control"
                                    value="{{ $customer->default_port }}">
                         </div>
                         <div class="col-md-12 form-group">
-                            <label class="form-label">Payment Terms</label>
+                            <label class="form-label">{{ __('Payment Terms') }}</label>
                             <textarea name="payment_terms" rows="2"
                                       class="form-control">{{ $customer->payment_terms }}</textarea>
                         </div>
@@ -236,22 +236,22 @@
             <div class="tab-pane" id="tab-salesman">
                 <div class="model-form-tab-div">
                     <div class="model-form-sub-title">
-                        <h5>Salesman</h5>
+                        <h5>{{ __('Salesman') }}</h5>
                     </div>
                     <div class="row">
                         <div class="col-md-4 form-group">
-                            <label class="form-label">Salesman Name</label>
+                            <label class="form-label">{{ __('Salesman Name') }}</label>
                             <x-common.salesperson :value="$customer->salesperson_id"></x-common.salesperson>
                         </div>
                         <div class="col-md-4 form-group">
-                            <label class="form-label">Assigned Since</label>
+                            <label class="form-label">{{ __('Assigned Since') }}</label>
                             <input type="text" class="form-control"
                                    value="{{ $customer->salesman_assigned_since ?? \Carbon\Carbon::today()->format('d-m-Y') }}"
                                    disabled>
                         </div>
                         <div class="col-md-4 form-group">
-                            <label class="form-label">Primary</label>
-                            <input type="text" class="form-control" value="Yes" disabled>
+                            <label class="form-label">{{ __('Primary') }}</label>
+                            <input type="text" class="form-control" value="{{ __('Yes') }}" disabled>
                         </div>
                     </div>
                 </div>

@@ -50,38 +50,38 @@
 </style>
 
 <div class="section">
-    <h6>Supplier &amp; Invoice Information</h6>
+    <h6>{{ __('Supplier & Invoice Information') }}</h6>
     <div class="info-grid">
-        <div><strong>Supplier:</strong><span>{{ $supplierInvoice->supplier->name ?? '-' }}</span></div>
-        <div><strong>Invoice No:</strong><span>#{{ $supplierInvoice->row_no }}</span></div>
-        <div><strong>Email:</strong><span>{{ $supplierInvoice->supplier->email ?? '-' }}</span></div>
-        <div><strong>Invoice Date:</strong><span>{{ $supplierInvoice->invoice_date }}</span></div>
-        <div><strong>Phone:</strong><span>{{ $supplierInvoice->supplier->phone ?? '-' }}</span></div>
-        <div><strong>Due Date:</strong><span>{{ $supplierInvoice->due_at }}</span></div>
-        <div><strong>Job:</strong><span>{{ $supplierInvoice->job_no }}</span></div>
-        <div><strong>Currency:</strong><span>{{ $supplierInvoice->currency }} (rate {{ number_format($supplierInvoice->currency_rate, decimals()) }})</span></div>
-        <div><strong>Status:</strong><span>{{ \App\Enums\SupplierInvoiceEnum::tryFrom($supplierInvoice->status)?->label() ?? '-' }}</span></div>
+        <div><strong>{{ __('Supplier') }}:</strong><span>{{ $supplierInvoice->supplier->name ?? '-' }}</span></div>
+        <div><strong>{{ __('Invoice No') }}:</strong><span>#{{ $supplierInvoice->row_no }}</span></div>
+        <div><strong>{{ __('Email') }}:</strong><span>{{ $supplierInvoice->supplier->email ?? '-' }}</span></div>
+        <div><strong>{{ __('Invoice Date') }}:</strong><span>{{ $supplierInvoice->invoice_date }}</span></div>
+        <div><strong>{{ __('Phone') }}:</strong><span>{{ $supplierInvoice->supplier->phone ?? '-' }}</span></div>
+        <div><strong>{{ __('Due Date') }}:</strong><span>{{ $supplierInvoice->due_at }}</span></div>
+        <div><strong>{{ __('Job') }}:</strong><span>{{ $supplierInvoice->job_no }}</span></div>
+        <div><strong>{{ __('Currency') }}:</strong><span>{{ $supplierInvoice->currency }} ({{ __('rate') }} {{ number_format($supplierInvoice->currency_rate, decimals()) }})</span></div>
+        <div><strong>{{ __('Status') }}:</strong><span>{{ \App\Enums\SupplierInvoiceEnum::tryFrom($supplierInvoice->status)?->label() ?? '-' }}</span></div>
     </div>
 </div>
 
 <div class="section">
-    <h6>Line Items</h6>
+    <h6>{{ __('Line Items') }}</h6>
     @if($supplierInvoice->supplierInvoiceSubs && $supplierInvoice->supplierInvoiceSubs->count())
         <div class="table-responsive">
             <table class="table table-bordered table-sm align-middle">
                 <thead>
                 <tr>
                     <th>#</th>
-                    <th>Description</th>
-                    <th>Comment</th>
-                    <th class="text-end">Qty</th>
-                    <th>Unit</th>
-                    <th class="text-end">Unit Price</th>
-                    <th class="text-end">Line Total</th>
-                    <th>Tax Code</th>
-                    <th class="text-end">Tax %</th>
-                    <th class="text-end">Tax Amount</th>
-                    <th class="text-end">Total (Incl. Tax)</th>
+                    <th>{{ __('Description') }}</th>
+                    <th>{{ __('Comment') }}</th>
+                    <th class="text-end">{{ __('Qty') }}</th>
+                    <th>{{ __('Unit') }}</th>
+                    <th class="text-end">{{ __('Unit Price') }}</th>
+                    <th class="text-end">{{ __('Line Total') }}</th>
+                    <th>{{ __('Tax Code') }}</th>
+                    <th class="text-end">{{ __('Tax %') }}</th>
+                    <th class="text-end">{{ __('Tax Amount') }}</th>
+                    <th class="text-end">{{ __('Total (Incl. Tax)') }}</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -104,24 +104,24 @@
             </table>
         </div>
     @else
-        <div class="text-center py-4 text-muted">No line items on this invoice.</div>
+        <div class="text-center py-4 text-muted">{{ __('No line items on this invoice.') }}</div>
     @endif
 </div>
 
 <div class="section">
-    <h6>Totals</h6>
+    <h6>{{ __('Totals') }}</h6>
     <table class="total-table ms-auto" style="min-width:320px;">
         <tr>
-            <td><strong>Subtotal</strong></td>
+            <td><strong>{{ __('Subtotal') }}</strong></td>
             <td class="text-end">{{ amountFormat($supplierInvoice->sub_total) }}</td>
         </tr>
         <tr>
-            <td><strong>Tax</strong></td>
+            <td><strong>{{ __('Tax') }}</strong></td>
             <td class="text-end">{{ amountFormat($supplierInvoice->tax_total) }}</td>
         </tr>
         <tr>
             <td>
-                <strong>Grand Total</strong>
+                <strong>{{ __('Grand Total') }}</strong>
                 @if(strtoupper($supplierInvoice->currency) !== 'SAR')
                     <div style="font-size:12px;color:#666;margin-top:2px;">{{ amountFormat($supplierInvoice->currency_rate) }} SAR</div>
                 @endif
@@ -135,11 +135,11 @@
             </td>
         </tr>
         <tr>
-            <td><strong>Paid Amount</strong></td>
+            <td><strong>{{ __('Paid Amount') }}</strong></td>
             <td class="text-end">{{ amountFormat($supplierInvoice->paid_amount ?? 0) }} {{ $supplierInvoice->currency }}</td>
         </tr>
         <tr class="table-secondary">
-            <td><strong>Balance</strong></td>
+            <td><strong>{{ __('Balance') }}</strong></td>
             <td class="text-end fw-bold">
                 {{ amountFormat(($supplierInvoice->grand_total ?? 0) - ($supplierInvoice->paid_amount ?? 0)) }} {{ $supplierInvoice->currency }}
             </td>
@@ -149,7 +149,7 @@
 
 @if($supplierInvoice->terms)
     <div class="section">
-        <h6>Terms &amp; Conditions</h6>
+        <h6>{{ __('Terms & Conditions') }}</h6>
         <p class="mb-0">{{ $supplierInvoice->terms }}</p>
     </div>
 @endif

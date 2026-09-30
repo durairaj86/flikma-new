@@ -109,10 +109,10 @@
     <!-- Action Buttons -->
     <div class="d-flex justify-content-end align-items-center gap-2 mb-3">
         <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modal-print-preview" onclick="PROFORMA_INVOICE.printPreview('{{ $proforma->id }}')">
-            <i class="bi bi-printer me-1"></i> Print
+            <i class="bi bi-printer me-1"></i> {{ __('Print') }}
         </button>
         <button type="button" class="btn btn-outline-secondary">
-            <i class="bi bi-x-circle me-1"></i> Cancel
+            <i class="bi bi-x-circle me-1"></i> {{ __('Cancel') }}
         </button>
         {{--<button type="button" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-file-earmark-excel me-1"></i> Export (Excel)
@@ -133,32 +133,32 @@
             </small>
         </div>
         <div class="invoice-meta text-end">
-            <div><strong>Proforma No:</strong> {{ $proforma->row_no }}</div>
-            <div><strong>Date:</strong> {{ $proforma->posted_at }}</div>
-            <div><strong>Currency:</strong> {{ $proforma->currency }}</div>
-            <div><strong>Exchange Rate:</strong> {{ number_format($proforma->currency_rate, decimals()) }}</div>
+            <div><strong>{{ __('Proforma No') }}:</strong> {{ $proforma->row_no }}</div>
+            <div><strong>{{ __('Date') }}:</strong> {{ $proforma->posted_at }}</div>
+            <div><strong>{{ __('Currency') }}:</strong> {{ $proforma->currency }}</div>
+            <div><strong>{{ __('Exchange Rate') }}:</strong> {{ number_format($proforma->currency_rate, decimals()) }}</div>
         </div>
     </div>
 
     <!-- Title -->
-    <div class="invoice-title">PROFORMA INVOICE</div>
+    <div class="invoice-title">{{ __('PROFORMA INVOICE') }}</div>
 
     <!-- Customer Info -->
     <div class="row mb-4">
         <div class="col-6">
-            <h6><strong>To,</strong></h6>
+            <h6><strong>{{ __('To,') }}</strong></h6>
             <div><strong>{{ $proforma->customer->name }}</strong></div>
             <div>{{ $proforma->customer->address ?? '-' }}</div>
             @if($proforma->customer->email)
-                <div>Email: {{ $proforma->customer->email }}</div>
+                <div>{{ __('Email') }}: {{ $proforma->customer->email }}</div>
             @endif
             @if($proforma->customer->phone)
-                <div>Phone: {{ $proforma->customer->phone }}</div>
+                <div>{{ __('Phone') }}: {{ $proforma->customer->phone }}</div>
             @endif
         </div>
         <div class="col-6 text-end">
-            <div><strong>Job:</strong> {{ $proforma->job_no }}</div>
-            <div><strong>Status:</strong>
+            <div><strong>{{ __('Job') }}:</strong> {{ $proforma->job_no }}</div>
+            <div><strong>{{ __('Status') }}:</strong>
                 <span class="badge
                     @if($proforma->status == 1) bg-warning text-dark
                     @elseif($proforma->status == 2) bg-success
@@ -178,11 +178,11 @@
                 <thead>
                 <tr>
                     <th style="width: 40px;">#</th>
-                    <th>Description</th>
-                    <th class="text-end">Qty</th>
-                    <th class="text-end">Unit</th>
-                    <th class="text-end">Unit Price</th>
-                    <th class="text-end">Tax</th>
+                    <th>{{ __('Description') }}</th>
+                    <th class="text-end">{{ __('Qty') }}</th>
+                    <th class="text-end">{{ __('Unit') }}</th>
+                    <th class="text-end">{{ __('Unit Price') }}</th>
+                    <th class="text-end">{{ __('Tax') }}</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -206,21 +206,21 @@
         <table class="table table-borderless mb-0">
             <tbody>
             <tr>
-                <td class="text-start"><strong>Subtotal</strong></td>
+                <td class="text-start"><strong>{{ __('Subtotal') }}</strong></td>
                 <td class="text-end">{{ amountFormat($proforma->sub_total) }}</td>
             </tr>
             <tr>
-                <td class="text-start"><strong>Tax</strong></td>
+                <td class="text-start"><strong>{{ __('Tax') }}</strong></td>
                 <td class="text-end">{{ amountFormat($proforma->tax_total) }}</td>
             </tr>
             @if($proforma->discount_total > 0)
                 <tr>
-                    <td class="text-start"><strong>Discount</strong></td>
+                    <td class="text-start"><strong>{{ __('Discount') }}</strong></td>
                     <td class="text-start">-{{ amountFormat($proforma->discount_total) }}</td>
                 </tr>
             @endif
             <tr>
-                <td class="text-start"><strong>Grand Total</strong>
+                <td class="text-start"><strong>{{ __('Grand Total') }}</strong>
                     @if(strtoupper($proforma->currency) !== 'SAR')
                         <div class="currency-note">{{ amountFormat($proforma->currency_rate) }} SAR</div>
                     @endif
@@ -239,7 +239,7 @@
     <!-- Terms -->
     @if($proforma->terms)
         <div class="terms-box">
-            <h6 class="fw-semibold mb-2">Terms & Conditions</h6>
+            <h6 class="fw-semibold mb-2">{{ __('Terms & Conditions') }}</h6>
             <p class="mb-0">{{ $proforma->terms }}</p>
         </div>
     @endif
