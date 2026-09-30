@@ -25,6 +25,42 @@
 {{--@if(env('APP_JS') !== 'local')
     <script src="{{ asset('js/all.js') }}"></script>
 @endif--}}
+<script>
+    /* startup.js can't run through Blade's __(), so the confirm/toast text
+       it hardcodes is looked up here instead: trans(key) returns the
+       translation for the current locale, or the English key itself when
+       none exists (English) or a key is missing from lang/ar.json. */
+    window.i18n = @json(collect([
+        'Are you sure you want to change status?',
+        'Are you sure you want to convert this customer to Confirmed?',
+        'Why do you want to reject this customer?',
+        'Why do you want to block this customer?',
+        'Confirm!',
+        'Enter reason...',
+        'No',
+        'Yes',
+        'Are you sure you want to delete?',
+        'Modal',
+        'Close main modal?',
+        'Save as Draft',
+        'Save and Approve',
+        'Save and open new form',
+        'Submit the form',
+        'Are you sure you want to close the modal?',
+        'Are you sure you want to exit?',
+        'Exit',
+        'Confirm',
+        'Failed to load actions',
+        'Something went wrong!',
+        'Edit',
+        'Submit',
+        'Saved, but approving it failed — it is still saved as a draft.',
+    ])->mapWithKeys(fn($key) => [$key => __($key)]));
+
+    window.trans = function (key) {
+        return (window.i18n && window.i18n[key]) || key;
+    };
+</script>
 <script type="text/javascript" src="{{ asset('js/startup.js?v='.appVersion()) }}" defer></script>
 <script src="{{ asset('js/toastr.min.js') }}"></script>
 <script type="text/javascript" src="{{ asset('js/form-validation.js') }}"></script>

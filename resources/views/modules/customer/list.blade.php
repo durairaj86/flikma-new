@@ -1,5 +1,5 @@
 @section('js','customer')
-@section('page-title','Customer Directory')
+@section('page-title', __('Customer Directory'))
 <x-app-layout>
     <!-- Main Content -->
     <main class="gmail-content bg-white px-3">
@@ -13,7 +13,7 @@
                             <button
                                 class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="pending">
-                                <span><i class="bi bi-clock text-warning me-1"></i> Pending -</span>
+                                <span><i class="bi bi-clock text-warning me-1"></i> {{ __('Pending') }} -</span>
                                 <span class="status-count ms-2" id="pendingCount">0</span>
                             </button>
                         </li>
@@ -21,21 +21,21 @@
                             <button
                                 class="nav-link py-2 d-flex align-items-center justify-content-between active status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="confirmed">
-                                <span><i class="bi bi-check-circle text-success me-1"></i> Confirmed -</span>
+                                <span><i class="bi bi-check-circle text-success me-1"></i> {{ __('Confirmed') }} -</span>
                                 <span class="status-count ms-2" id="confirmedCount">0</span>
                             </button>
                         </li>
                         <li class="nav-item me-2">
                             <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                     data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="blocked">
-                                <span><i class="bi bi-slash-circle text-secondary me-1"></i> Blocked -</span>
+                                <span><i class="bi bi-slash-circle text-secondary me-1"></i> {{ __('Blocked') }} -</span>
                                 <span class="status-count ms-2" id="blockedCount">0</span>
                             </button>
                         </li>
                         <li class="nav-item">
                             <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                     data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="rejected">
-                                <span><i class="bi bi-x-circle text-danger me-1"></i> Rejected -</span>
+                                <span><i class="bi bi-x-circle text-danger me-1"></i> {{ __('Rejected') }} -</span>
                                 <span class="status-count ms-2" id="rejectedCount">0</span>
                             </button>
                         </li>
@@ -44,8 +44,8 @@
             </div>
             <div class="d-flex justify-content-between">
                 <div>
-                    <button class="btn btn-primary rounded-pill px-4" id="new">New Customer</button>
-                    <button class="btn btn-outline-primary rounded-pill px-4 ms-2" id="import">Import</button>
+                    <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Customer') }}</button>
+                    <button class="btn btn-outline-primary rounded-pill px-4 ms-2" id="import">{{ __('Import') }}</button>
                 </div>
             </div>
         </div>
@@ -70,7 +70,7 @@
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
 
                         <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="Search customers..." aria-label="Search customers...">
+                               placeholder="{{ __('Search customers...') }}" aria-label="{{ __('Search customers...') }}">
                     </div>
                 </div>
             </div>
@@ -112,16 +112,16 @@
                         <thead>
                         <tr>
                             <th class="ps-4">#</th>
-                            <th>Customer</th>
-                            <th>Contact Info</th>
-                            <th>Location</th>
-                            <th>Currency</th>
-                            <th>VAT #</th>
-                            <th>Credit Limit</th>
-                            <th>Due</th>
-                            <th>Salesperson</th>
-                            <th>Joined</th>
-                            <th class="text-center pe-4">Actions</th>
+                            <th>{{ __('Customer') }}</th>
+                            <th>{{ __('Contact Info') }}</th>
+                            <th>{{ __('Location') }}</th>
+                            <th>{{ __('Currency') }}</th>
+                            <th>{{ __('VAT #') }}</th>
+                            <th>{{ __('Credit Limit') }}</th>
+                            <th>{{ __('Due') }}</th>
+                            <th>{{ __('Salesperson') }}</th>
+                            <th>{{ __('Joined') }}</th>
+                            <th class="text-center pe-4">{{ __('Actions') }}</th>
                         </tr>
                         </thead>
                         <tbody>
