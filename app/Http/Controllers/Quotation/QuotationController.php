@@ -453,8 +453,6 @@ class QuotationController extends Controller
 
                     $this->setBaseColumns($customer);
                     $customer->save();
-                    $prospectData->customer = 1;
-                    $prospectData->save();
                     $job->customer_id = $customer->id;
                 } elseif (in_array($field, ['pol', 'pod'])) {
                     // Quotation (and Enquiry, which it's often copied from) stores
