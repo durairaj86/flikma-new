@@ -27,28 +27,28 @@
 <div class="row g-3 p-3 border-bottom">
     <div class="col-lg col-md-4">
         <div class="rpt-stat-card rpt-stat-neutral">
-            <div class="rpt-stat-label">Total Accounts</div>
+            <div class="rpt-stat-label">{{ __('Total Accounts') }}</div>
             <div class="rpt-stat-value">{{ count($accounts) }}</div>
         </div>
     </div>
     <div class="col-lg col-md-4">
         <div class="rpt-stat-card rpt-stat-debit">
-            <div class="rpt-stat-label">Total Debit (DR)</div>
+            <div class="rpt-stat-label">{{ __('Total Debit (DR)') }}</div>
             <div class="rpt-stat-value tabular-nums">{{ number_format($debitTotal, 2) }}</div>
         </div>
     </div>
     <div class="col-lg col-md-4">
         <div class="rpt-stat-card rpt-stat-credit">
-            <div class="rpt-stat-label">Total Credit (CR)</div>
+            <div class="rpt-stat-label">{{ __('Total Credit (CR)') }}</div>
             <div class="rpt-stat-value tabular-nums">{{ number_format($creditTotal, 2) }}</div>
         </div>
     </div>
     <div class="col-lg col-md-4">
         <div class="rpt-stat-card {{ $balanced ? 'rpt-stat-success' : 'rpt-stat-danger' }}">
-            <div class="rpt-stat-label">Status</div>
+            <div class="rpt-stat-label">{{ __('Status') }}</div>
             <div class="rpt-stat-value">
                 @if($balanced)
-                    <i class="bi bi-check-circle-fill me-1" style="font-size:.9rem;"></i>Balanced
+                    <i class="bi bi-check-circle-fill me-1" style="font-size:.9rem;"></i>{{ __('Balanced') }}
                 @else
                     <i class="bi bi-exclamation-triangle-fill me-1" style="font-size:.9rem;"></i>Δ {{ number_format($diff, 2) }}
                 @endif
@@ -62,17 +62,17 @@
 <table class="table table-hover align-middle mb-0">
     <thead>
     <tr class="rpt-table-head">
-        <th class="ps-4 border-0 rpt-th-code">Code</th>
-        <th class="border-0">Account Name</th>
-        <th class="border-0 rpt-th-type">Type</th>
+        <th class="ps-4 border-0 rpt-th-code">{{ __('Code') }}</th>
+        <th class="border-0">{{ __('Account Name') }}</th>
+        <th class="border-0 rpt-th-type">{{ __('Type') }}</th>
         <th class="text-end border-0 rpt-th-num">
-            <span class="d-block rpt-th-sub">Debit</span>DR
+            <span class="d-block rpt-th-sub">{{ __('Debit') }}</span>{{ __('DR') }}
         </th>
         <th class="text-end border-0 rpt-th-num">
-            <span class="d-block rpt-th-sub">Credit</span>CR
+            <span class="d-block rpt-th-sub">{{ __('Credit') }}</span>{{ __('CR') }}
         </th>
         <th class="text-end pe-4 border-0 rpt-th-num">
-            <span class="d-block rpt-th-sub">Net</span>Balance
+            <span class="d-block rpt-th-sub">{{ __('Net') }}</span>{{ __('Balance') }}
         </th>
     </tr>
     </thead>
@@ -95,7 +95,7 @@
                         $icon = $typeIcons[$type] ?? 'bi-journal';
                     @endphp
                     <i class="bi {{ $icon }} me-2"></i>{{ $type }}
-                    <span class="rpt-section-count">{{ count($typeAccounts) }} {{ Str::plural('account', count($typeAccounts)) }}</span>
+                    <span class="rpt-section-count">{{ count($typeAccounts) }} {{ __(Str::plural('account', count($typeAccounts))) }}</span>
                 </td>
             </tr>
 
@@ -122,7 +122,7 @@
                     <td class="text-end pe-4 tabular-nums fw-semibold {{ $net > 0 ? 'rpt-dr-val' : ($net < 0 ? 'rpt-cr-val' : 'rpt-zero') }}">
                         @if($net != 0)
                             {{ number_format(abs($net), 2) }}
-                            <span class="rpt-dir-label">{{ $net > 0 ? 'DR' : 'CR' }}</span>
+                            <span class="rpt-dir-label">{{ $net > 0 ? __('DR') : __('CR') }}</span>
                         @else
                             —
                         @endif
@@ -133,7 +133,7 @@
             {{-- Section subtotal --}}
             <tr class="rpt-subtotal-row">
                 <td colspan="3" class="ps-4 rpt-subtotal-label">
-                    Subtotal — {{ $type }}
+                    {{ __('Subtotal —') }} {{ $type }}
                 </td>
                 <td class="text-end tabular-nums rpt-dr-val fw-bold">
                     {{ number_format($typeTotals[$type]['debit'], 2) }}
@@ -144,7 +144,7 @@
                 <td class="text-end pe-4 tabular-nums fw-bold">
                     @php $sn = $typeTotals[$type]['debit'] - $typeTotals[$type]['credit']; @endphp
                     <span class="{{ $sn > 0 ? 'rpt-dr-val' : ($sn < 0 ? 'rpt-cr-val' : 'rpt-zero') }}">
-                        {{ $sn != 0 ? number_format(abs($sn), 2) . ($sn > 0 ? ' DR' : ' CR') : '—' }}
+                        {{ $sn != 0 ? number_format(abs($sn), 2) . ' ' . ($sn > 0 ? __('DR') : __('CR')) : '—' }}
                     </span>
                 </td>
             </tr>
@@ -156,7 +156,7 @@
                 <div class="bg-light rounded-circle p-4 d-inline-block mb-3">
                     <i class="bi bi-list-columns h2 text-muted"></i>
                 </div>
-                <div class="small">No accounts found for the selected period or search criteria.</div>
+                <div class="small">{{ __('No accounts found for the selected period or search criteria.') }}</div>
             </td>
         </tr>
     @endif
@@ -166,14 +166,14 @@
     <tfoot>
         <tr class="rpt-grand-total">
             <td colspan="3" class="ps-4 rpt-gt-label">
-                <i class="bi bi-sigma me-2"></i>Grand Total
+                <i class="bi bi-sigma me-2"></i>{{ __('Grand Total') }}
             </td>
             <td class="text-end tabular-nums rpt-gt-dr">{{ number_format($debitTotal, 2) }}</td>
             <td class="text-end tabular-nums rpt-gt-cr">{{ number_format($creditTotal, 2) }}</td>
             <td class="text-end pe-4">
                 @if($balanced)
                     <span class="badge rounded-pill px-3 py-2 bg-success-subtle text-success border border-success-subtle">
-                        <i class="bi bi-check-circle-fill me-1"></i>Balanced
+                        <i class="bi bi-check-circle-fill me-1"></i>{{ __('Balanced') }}
                     </span>
                 @else
                     <span class="badge rounded-pill px-3 py-2 bg-danger-subtle text-danger border border-danger-subtle">
@@ -197,9 +197,9 @@
                 <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
             </td>
             <td class="text-end">
-                <div class="stmt-title">TRIAL BALANCE</div>
-                <div class="stmt-sub">Period: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
-                <div class="stmt-sub">Generated: {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; Currency: SAR</div>
+                <div class="stmt-title">{{ __('TRIAL BALANCE') }}</div>
+                <div class="stmt-sub">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
+                <div class="stmt-sub">{{ __('Generated:') }} {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency:') }} SAR</div>
             </td>
         </tr>
     </table>
@@ -207,11 +207,11 @@
     <table class="stmt-table">
         <thead>
         <tr>
-            <th>Code</th>
-            <th>Account Name</th>
-            <th>Type</th>
-            <th class="text-end">Debit</th>
-            <th class="text-end">Credit</th>
+            <th>{{ __('Code') }}</th>
+            <th>{{ __('Account Name') }}</th>
+            <th>{{ __('Type') }}</th>
+            <th class="text-end">{{ __('Debit') }}</th>
+            <th class="text-end">{{ __('Credit') }}</th>
         </tr>
         </thead>
         <tbody>
@@ -225,13 +225,13 @@
             </tr>
         @empty
             <tr>
-                <td colspan="5" class="text-center">No accounts found for the selected period or search criteria.</td>
+                <td colspan="5" class="text-center">{{ __('No accounts found for the selected period or search criteria.') }}</td>
             </tr>
         @endforelse
         </tbody>
         <tfoot>
         <tr class="stmt-strong">
-            <td colspan="3">Grand Total</td>
+            <td colspan="3">{{ __('Grand Total') }}</td>
             <td class="text-end">{{ number_format($debitTotal, 2) }}</td>
             <td class="text-end">{{ number_format($creditTotal, 2) }}</td>
         </tr>
@@ -239,14 +239,14 @@
     </table>
 
     <div class="stmt-footnote">
-        {{ $balanced ? 'Books are balanced.' : 'Difference of ' . number_format($diff, 2) . ' between debit and credit totals.' }}
+        {{ $balanced ? __('Books are balanced.') : __('Difference of :amount between debit and credit totals.', ['amount' => number_format($diff, 2)]) }}
     </div>
     <div class="stmt-signatures">
         <table class="stmt-meta">
             <tr>
-                <td>Prepared By: _________________</td>
-                <td>Verified By: _________________</td>
-                <td>Approved By: _________________</td>
+                <td>{{ __('Prepared By:') }} _________________</td>
+                <td>{{ __('Verified By:') }} _________________</td>
+                <td>{{ __('Approved By:') }} _________________</td>
             </tr>
         </table>
     </div>

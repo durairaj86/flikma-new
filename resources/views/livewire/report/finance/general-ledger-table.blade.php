@@ -16,12 +16,12 @@
     }
 
     $voucherTypeMap = [
-        'CI' => ['label' => 'Customer Invoice', 'cls' => 'gl-vt-ci'],
-        'SI' => ['label' => 'Supplier Invoice', 'cls' => 'gl-vt-si'],
-        'PV' => ['label' => 'Payment Voucher',  'cls' => 'gl-vt-pv'],
-        'CR' => ['label' => 'Collection',        'cls' => 'gl-vt-cr'],
-        'JV' => ['label' => 'Journal Voucher',   'cls' => 'gl-vt-jv'],
-        'EX' => ['label' => 'Expense',           'cls' => 'gl-vt-ex'],
+        'CI' => ['label' => __('Customer Invoice'), 'cls' => 'gl-vt-ci'],
+        'SI' => ['label' => __('Supplier Invoice'), 'cls' => 'gl-vt-si'],
+        'PV' => ['label' => __('Payment Voucher'),  'cls' => 'gl-vt-pv'],
+        'CR' => ['label' => __('Collection'),        'cls' => 'gl-vt-cr'],
+        'JV' => ['label' => __('Journal Voucher'),   'cls' => 'gl-vt-jv'],
+        'EX' => ['label' => __('Expense'),           'cls' => 'gl-vt-ex'],
     ];
 @endphp
 
@@ -31,22 +31,22 @@
 <div class="row g-3 p-3 border-bottom">
     <div class="col-lg col-md-4">
         <div class="gl-stat-card gl-stat-debit">
-            <div class="gl-stat-label">Total Debit (DR)</div>
+            <div class="gl-stat-label">{{ __('Total Debit (DR)') }}</div>
             <div class="gl-stat-value tabular-nums">{{ number_format($grandTotalDebit, 2) }}</div>
         </div>
     </div>
     <div class="col-lg col-md-4">
         <div class="gl-stat-card gl-stat-credit">
-            <div class="gl-stat-label">Total Credit (CR)</div>
+            <div class="gl-stat-label">{{ __('Total Credit (CR)') }}</div>
             <div class="gl-stat-value tabular-nums">{{ number_format($grandTotalCredit, 2) }}</div>
         </div>
     </div>
     <div class="col-lg col-md-4">
         <div class="gl-stat-card {{ $netBalance >= 0 ? 'gl-stat-debit' : 'gl-stat-credit' }}">
-            <div class="gl-stat-label">Net Balance</div>
+            <div class="gl-stat-label">{{ __('Net Balance') }}</div>
             <div class="gl-stat-value tabular-nums">
                 {{ number_format(abs($netBalance), 2) }}
-                <span style="font-size:.7rem;font-weight:700;opacity:.7;">{{ $netBalance >= 0 ? 'DR' : 'CR' }}</span>
+                <span style="font-size:.7rem;font-weight:700;opacity:.7;">{{ $netBalance >= 0 ? __('DR') : __('CR') }}</span>
             </div>
         </div>
     </div>
@@ -71,19 +71,19 @@
             <table class="table table-hover align-middle mb-0">
                 <thead>
                 <tr class="gl-table-head">
-                    <th class="ps-4 border-0 gl-th-date">Date</th>
-                    <th class="border-0 gl-th-voucher">Voucher No</th>
-                    <th class="border-0 gl-th-vtype">Type</th>
-                    <th class="border-0 gl-th-ref">Account</th>
-                    <th class="border-0">Description</th>
+                    <th class="ps-4 border-0 gl-th-date">{{ __('Date') }}</th>
+                    <th class="border-0 gl-th-voucher">{{ __('Voucher No') }}</th>
+                    <th class="border-0 gl-th-vtype">{{ __('Type') }}</th>
+                    <th class="border-0 gl-th-ref">{{ __('Account') }}</th>
+                    <th class="border-0">{{ __('Description') }}</th>
                     <th class="text-end border-0 gl-th-num">
-                        <span class="d-block gl-th-sub">Debit</span>DR
+                        <span class="d-block gl-th-sub">{{ __('Debit') }}</span>{{ __('DR') }}
                     </th>
                     <th class="text-end border-0 gl-th-num">
-                        <span class="d-block gl-th-sub">Credit</span>CR
+                        <span class="d-block gl-th-sub">{{ __('Credit') }}</span>{{ __('CR') }}
                     </th>
                     <th class="text-end pe-4 border-0 gl-th-num">
-                        <span class="d-block gl-th-sub">Running</span>Balance
+                        <span class="d-block gl-th-sub">{{ __('Running') }}</span>{{ __('Balance') }}
                     </th>
                 </tr>
                 </thead>
@@ -91,7 +91,7 @@
 
                     {{-- Opening balance --}}
                     <tr class="gl-opening-row">
-                        <td class="ps-4" colspan="4"><strong>Opening Balance</strong></td>
+                        <td class="ps-4" colspan="4"><strong>{{ __('Opening Balance') }}</strong></td>
                         <td></td>
                         <td class="text-end tabular-nums {{ $opening > 0 ? 'gl-dr-val' : 'gl-zero' }}">
                             {{ $opening > 0 ? number_format($opening, 2) : '—' }}
@@ -131,13 +131,13 @@
                             </td>
                             <td class="text-end pe-4 tabular-nums gl-bal-val fw-semibold">
                                 {{ number_format($bal, 2) }}
-                                <span class="gl-bal-dir">{{ $bal >= 0 ? 'DR' : 'CR' }}</span>
+                                <span class="gl-bal-dir">{{ $bal >= 0 ? __('DR') : __('CR') }}</span>
                             </td>
                         </tr>
                     @empty
                         <tr>
                             <td colspan="8" class="text-center py-3 text-muted small fst-italic">
-                                <i class="bi bi-info-circle me-1"></i>No transactions in the selected period
+                                <i class="bi bi-info-circle me-1"></i>{{ __('No transactions in the selected period') }}
                             </td>
                         </tr>
                     @endforelse
@@ -147,13 +147,13 @@
                 <tfoot>
                 <tr class="gl-acc-total">
                     <td colspan="5" class="ps-4 gl-acc-total-label">
-                        <i class="bi bi-sigma me-1"></i>Customer Total
+                        <i class="bi bi-sigma me-1"></i>{{ __('Customer Total') }}
                     </td>
                     <td class="text-end tabular-nums gl-acc-total-dr">{{ number_format($totalDr, 2) }}</td>
                     <td class="text-end tabular-nums gl-acc-total-cr">{{ number_format($totalCr, 2) }}</td>
                     <td class="text-end pe-4 tabular-nums gl-acc-total-bal">
                         {{ number_format(abs($closing), 2) }}
-                        <span class="gl-bal-dir">{{ $closing >= 0 ? 'DR' : 'CR' }}</span>
+                        <span class="gl-bal-dir">{{ $closing >= 0 ? __('DR') : __('CR') }}</span>
                     </td>
                 </tr>
                 </tfoot>
@@ -167,13 +167,13 @@
         <tfoot>
         <tr class="gl-grand-total">
             <td class="ps-4 gl-gt-label" style="width:55%">
-                <i class="bi bi-calculator me-2"></i>Grand Total
+                <i class="bi bi-calculator me-2"></i>{{ __('Grand Total') }}
             </td>
             <td class="text-end tabular-nums gl-gt-dr" style="width:15%">{{ number_format($grandTotalDebit, 2) }}</td>
             <td class="text-end tabular-nums gl-gt-cr" style="width:15%">{{ number_format($grandTotalCredit, 2) }}</td>
             <td class="text-end pe-4 tabular-nums gl-gt-net" style="width:15%">
                 {{ number_format(abs($netBalance), 2) }}
-                <span style="font-size:.65rem;opacity:.7;">{{ $netBalance >= 0 ? 'DR' : 'CR' }}</span>
+                <span style="font-size:.65rem;opacity:.7;">{{ $netBalance >= 0 ? __('DR') : __('CR') }}</span>
             </td>
         </tr>
         </tfoot>
@@ -184,8 +184,8 @@
         <div class="bg-light rounded-circle p-4 d-inline-block mb-3">
             <i class="bi bi-journals h2 text-muted"></i>
         </div>
-        <div class="small fw-semibold mb-1">No Ledger Data Found</div>
-        <div class="x-small">Select a different date range or customer to view transactions.</div>
+        <div class="small fw-semibold mb-1">{{ __('No Ledger Data Found') }}</div>
+        <div class="x-small">{{ __('Select a different date range or customer to view transactions.') }}</div>
     </div>
 @endif
 </div>
@@ -200,13 +200,13 @@
                 <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
             </td>
             <td class="text-end">
-                <div class="stmt-title">CUSTOMER LEDGER</div>
-                <div class="stmt-sub">Period: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
+                <div class="stmt-title">{{ __('CUSTOMER LEDGER') }}</div>
+                <div class="stmt-sub">{{ __('Period') }}: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
                 @if(count($activeCustomers) > 0)
                     @php $printCustomer = reset($activeCustomers); @endphp
-                    <div class="stmt-sub">Customer: {{ $printCustomer['customer_code'] }} — {{ $printCustomer['customer_name'] }}</div>
+                    <div class="stmt-sub">{{ __('Customer') }}: {{ $printCustomer['customer_code'] }} — {{ $printCustomer['customer_name'] }}</div>
                 @endif
-                <div class="stmt-sub">Generated: {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; Currency: SAR</div>
+                <div class="stmt-sub">{{ __('Generated') }}: {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency') }}: SAR</div>
             </td>
         </tr>
     </table>
@@ -215,18 +215,18 @@
         <table class="stmt-table">
             <thead>
             <tr>
-                <th>Date</th>
-                <th>Voucher No</th>
-                <th>Account</th>
-                <th>Description</th>
-                <th class="text-end">Debit</th>
-                <th class="text-end">Credit</th>
-                <th class="text-end">Balance</th>
+                <th>{{ __('Date') }}</th>
+                <th>{{ __('Voucher No') }}</th>
+                <th>{{ __('Account') }}</th>
+                <th>{{ __('Description') }}</th>
+                <th class="text-end">{{ __('Debit') }}</th>
+                <th class="text-end">{{ __('Credit') }}</th>
+                <th class="text-end">{{ __('Balance') }}</th>
             </tr>
             </thead>
             <tbody>
             <tr class="stmt-strong">
-                <td colspan="6">Opening Balance</td>
+                <td colspan="6">{{ __('Opening Balance') }}</td>
                 <td class="text-end">{{ number_format($cust['opening_balance'], 2) }}</td>
             </tr>
             @foreach($cust['transactions'] as $txn)
@@ -243,7 +243,7 @@
             </tbody>
             <tfoot>
             <tr class="stmt-strong">
-                <td colspan="4">Total</td>
+                <td colspan="4">{{ __('Total') }}</td>
                 <td class="text-end">{{ number_format($cust['total_debit'], 2) }}</td>
                 <td class="text-end">{{ number_format($cust['total_credit'], 2) }}</td>
                 <td class="text-end">{{ number_format($cust['closing_balance'], 2) }}</td>
@@ -251,16 +251,16 @@
             </tfoot>
         </table>
     @empty
-        <div class="stmt-footnote">No ledger data found for the selected period.</div>
+        <div class="stmt-footnote">{{ __('No ledger data found for the selected period.') }}</div>
     @endforelse
 
     <table class="stmt-table">
         <tfoot>
         <tr class="stmt-strong">
-            <td colspan="4">Grand Total</td>
+            <td colspan="4">{{ __('Grand Total') }}</td>
             <td class="text-end">{{ number_format($grandTotalDebit, 2) }}</td>
             <td class="text-end">{{ number_format($grandTotalCredit, 2) }}</td>
-            <td class="text-end">{{ number_format(abs($netBalance), 2) }} {{ $netBalance >= 0 ? 'DR' : 'CR' }}</td>
+            <td class="text-end">{{ number_format(abs($netBalance), 2) }} {{ $netBalance >= 0 ? __('DR') : __('CR') }}</td>
         </tr>
         </tfoot>
     </table>
@@ -268,9 +268,9 @@
     <div class="stmt-signatures">
         <table class="stmt-meta">
             <tr>
-                <td>Prepared By: _________________</td>
-                <td>Verified By: _________________</td>
-                <td>Approved By: _________________</td>
+                <td>{{ __('Prepared By') }}: _________________</td>
+                <td>{{ __('Verified By') }}: _________________</td>
+                <td>{{ __('Approved By') }}: _________________</td>
             </tr>
         </table>
     </div>

@@ -1,6 +1,6 @@
 @section('js', 'waybill_report')
-@section('page-title', 'Waybill Report')
-@section('page-subtitle', 'Waybills issued, with delivery and status detail')
+@section('page-title', __('Waybill Report'))
+@section('page-subtitle', __('Waybills issued, with delivery and status detail'))
 
 <div class="provisional-wrapper min-vh-100 bg-light py-4">
     <div class="container-fluid px-lg-5">
@@ -11,7 +11,7 @@
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
 <div class="col-lg-4 col-md-4 col-xl-2">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">From Date</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('From Date') }}</label>
                         <input type="hidden" id="wbr-start-date-hidden" wire:model="startDate" value="{{ $startDate }}" />
                         <input type="text" id="wbr-start-date"
                                class="form-control bg-light border-0 py-2"
@@ -19,7 +19,7 @@
                                value="{{ $startDate }}" />
                     </div>
 <div class="col-lg-4 col-md-4 col-xl-2">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">To Date</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('To Date') }}</label>
                         <input type="hidden" id="wbr-end-date-hidden" wire:model="endDate" value="{{ $endDate }}" />
                         <input type="text" id="wbr-end-date"
                                class="form-control bg-light border-0 py-2"
@@ -27,9 +27,9 @@
                                value="{{ $endDate }}" />
                     </div>
 <div class="col-lg-4 col-md-4 col-xl-2 col-xxl-3">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Customer</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Customer') }}</label>
                         <select class="form-select bg-light border-0 py-2 no-ts" wire:model="customerId">
-                            <option value="">All Customers</option>
+                            <option value="">{{ __('All Customers') }}</option>
                             @foreach($customers as $customer)
                                 <option value="{{ $customer['id'] }}" @selected($customerId == $customer['id'])>
                                     {{ $customer['row_no'] }} — {{ $customer['name_en'] }}
@@ -42,20 +42,20 @@
         <button type="button" class="btn btn-pr fw-bold py-2 shadow-sm"
                                             wire:click="applyFilter" wire:loading.attr="disabled">
                                         <i class="bi bi-filter-left me-2"></i>
-                                        <span wire:loading.remove>Generate</span>
-                                        <span wire:loading><span class="spinner-border spinner-border-sm me-1"></span>Loading...</span>
+                                        <span wire:loading.remove>{{ __('Generate') }}</span>
+                                        <span wire:loading><span class="spinner-border spinner-border-sm me-1"></span>{{ __('Loading...') }}</span>
                                     </button>
         <div class="btn-group shadow-sm">
                             <button class="btn btn-white border border-end-0" onclick="window.print()">
-                                <i class="bi bi-printer me-2"></i>Print
+                                <i class="bi bi-printer me-2"></i>{{ __('Print') }}
                             </button>
                             <div class="btn-group">
                                 <button class="btn btn-white border dropdown-toggle" data-bs-toggle="dropdown">
-                                    <i class="bi bi-download me-2"></i>Export
+                                    <i class="bi bi-download me-2"></i>{{ __('Export') }}
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                                    <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'wbr-print', {orientation: 'landscape'})"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
-                                    <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
+                                    <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'wbr-print', {orientation: 'landscape'})"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
+                                    <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -66,12 +66,12 @@
     </div>
 </div>
 <div class="col-lg-4 col-md-4 col-xl-2">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Status</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Status') }}</label>
                         <select class="form-select bg-light border-0 py-2 no-ts" wire:model="status">
-                            <option value="">All Status</option>
-                            <option value="pending" @selected($status=='pending')>Pending</option>
-                            <option value="in_transit" @selected($status=='in_transit')>In Transit</option>
-                            <option value="delivered" @selected($status=='delivered')>Delivered</option>
+                            <option value="">{{ __('All Status') }}</option>
+                            <option value="pending" @selected($status=='pending')>{{ __('Pending') }}</option>
+                            <option value="in_transit" @selected($status=='in_transit')>{{ __('In Transit') }}</option>
+                            <option value="delivered" @selected($status=='delivered')>{{ __('Delivered') }}</option>
                         </select>
                     </div></div>
             </div>
@@ -83,7 +83,7 @@
             <div class="col-lg col-md-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-3 text-center">
-                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">Total Waybills</div>
+                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">{{ __('Total Waybills') }}</div>
                         <div class="h5 fw-bold text-secondary mb-0 tabular-nums">{{ $totals['total'] }}</div>
                     </div>
                 </div>
@@ -91,7 +91,7 @@
             <div class="col-lg col-md-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-3 text-center">
-                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">Pending</div>
+                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">{{ __('Pending') }}</div>
                         <div class="h5 fw-bold text-warning mb-0 tabular-nums">{{ $totals['pending'] }}</div>
                     </div>
                 </div>
@@ -99,7 +99,7 @@
             <div class="col-lg col-md-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-3 text-center">
-                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">In Transit</div>
+                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">{{ __('In Transit') }}</div>
                         <div class="h5 fw-bold text-primary mb-0 tabular-nums">{{ $totals['in_transit'] }}</div>
                     </div>
                 </div>
@@ -107,7 +107,7 @@
             <div class="col-lg col-md-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-3 text-center">
-                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">Delivered</div>
+                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">{{ __('Delivered') }}</div>
                         <div class="h5 fw-bold text-success mb-0 tabular-nums">{{ $totals['delivered'] }}</div>
                     </div>
                 </div>
@@ -120,24 +120,24 @@
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <h6 class="mb-0 fw-bold">
                     <i class="bi bi-truck me-2 text-pr"></i>
-                    Waybill Detail
+                    {{ __('Waybill Detail') }}
                 </h6>
                 <span class="badge bg-pr-subtle text-pr border border-pr-subtle px-3 py-2">
-                    {{ $totals['total'] }} {{ Str::plural('Waybill', $totals['total']) }}
+                    {{ $totals['total'] }} {{ __(Str::plural('Waybill', $totals['total'])) }}
                 </span>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead>
                     <tr class="bg-light text-muted small text-uppercase fw-bold ls-1">
-                        <th class="ps-4 border-0">Waybill No</th>
-                        <th class="border-0">Date</th>
-                        <th class="border-0">Job</th>
-                        <th class="border-0">Customer</th>
-                        <th class="border-0">Delivery Date</th>
-                        <th class="border-0">Delivery Address</th>
-                        <th class="border-0">Contact</th>
-                        <th class="text-end pe-4 border-0">Status</th>
+                        <th class="ps-4 border-0">{{ __('Waybill No') }}</th>
+                        <th class="border-0">{{ __('Date') }}</th>
+                        <th class="border-0">{{ __('Job') }}</th>
+                        <th class="border-0">{{ __('Customer') }}</th>
+                        <th class="border-0">{{ __('Delivery Date') }}</th>
+                        <th class="border-0">{{ __('Delivery Address') }}</th>
+                        <th class="border-0">{{ __('Contact') }}</th>
+                        <th class="text-end pe-4 border-0">{{ __('Status') }}</th>
                     </tr>
                     </thead>
                     <tbody class="border-top-0">
@@ -176,7 +176,7 @@
                                 <div class="bg-light rounded-circle p-4 d-inline-block mb-3">
                                     <i class="bi bi-truck h2 text-muted"></i>
                                 </div>
-                                <div class="small">No waybills found for the selected period.</div>
+                                <div class="small">{{ __('No waybills found for the selected period.') }}</div>
                             </td>
                         </tr>
                     @endforelse
@@ -195,9 +195,9 @@
                         <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
                     </td>
                     <td class="text-end">
-                        <div class="stmt-title">WAYBILL REPORT</div>
-                        <div class="stmt-sub">Period: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
-                        <div class="stmt-sub">Generated: {{ now()->format('d M Y H:i') }}</div>
+                        <div class="stmt-title">{{ __('WAYBILL REPORT') }}</div>
+                        <div class="stmt-sub">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
+                        <div class="stmt-sub">{{ __('Generated:') }} {{ now()->format('d M Y H:i') }}</div>
                     </td>
                 </tr>
             </table>
@@ -205,14 +205,14 @@
             <table class="stmt-table">
                 <thead>
                 <tr>
-                    <th>Waybill No</th>
-                    <th>Date</th>
-                    <th>Job</th>
-                    <th>Customer</th>
-                    <th>Delivery Date</th>
-                    <th>Delivery Address</th>
-                    <th>Contact</th>
-                    <th class="text-end">Status</th>
+                    <th>{{ __('Waybill No') }}</th>
+                    <th>{{ __('Date') }}</th>
+                    <th>{{ __('Job') }}</th>
+                    <th>{{ __('Customer') }}</th>
+                    <th>{{ __('Delivery Date') }}</th>
+                    <th>{{ __('Delivery Address') }}</th>
+                    <th>{{ __('Contact') }}</th>
+                    <th class="text-end">{{ __('Status') }}</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -228,12 +228,12 @@
                         <td class="text-end">{{ ucfirst(str_replace('_', ' ', $wb->status)) }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="8" class="text-center">No waybills found for the selected period.</td></tr>
+                    <tr><td colspan="8" class="text-center">{{ __('No waybills found for the selected period.') }}</td></tr>
                 @endforelse
                 </tbody>
                 <tfoot>
                 <tr class="stmt-strong">
-                    <td colspan="8">{{ $totals['total'] }} Waybill(s)</td>
+                    <td colspan="8">{{ $totals['total'] }} {{ __('Waybill(s)') }}</td>
                 </tr>
                 </tfoot>
             </table>
@@ -241,9 +241,9 @@
             <div class="stmt-signatures">
                 <table class="stmt-meta">
                     <tr>
-                        <td>Prepared By: _________________</td>
-                        <td>Verified By: _________________</td>
-                        <td>Approved By: _________________</td>
+                        <td>{{ __('Prepared By:') }} _________________</td>
+                        <td>{{ __('Verified By:') }} _________________</td>
+                        <td>{{ __('Approved By:') }} _________________</td>
                     </tr>
                 </table>
             </div>

@@ -1,6 +1,6 @@
 @section('js', 'job_balance_report')
-@section('page-title', 'Job Balance Report')
-@section('page-subtitle', 'Income vs expense per job with profit / loss and margin')
+@section('page-title', __('Job Balance Report'))
+@section('page-subtitle', __('Income vs expense per job with profit / loss and margin'))
 
 <div class="provisional-wrapper min-vh-100 bg-light py-4">
     <div class="container-fluid px-lg-5">
@@ -11,7 +11,7 @@
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
 <div class="col-lg-4 col-md-4 col-xl-2">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">From Date</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('From Date') }}</label>
                         <input type="hidden" id="jbr-start-date-hidden" wire:model="startDate" value="{{ $startDate }}" />
                         <input type="text" id="jbr-start-date"
                                class="form-control bg-light border-0 py-2"
@@ -19,7 +19,7 @@
                                value="{{ $startDate }}" />
                     </div>
 <div class="col-lg-4 col-md-4 col-xl-2">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">To Date</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('To Date') }}</label>
                         <input type="hidden" id="jbr-end-date-hidden" wire:model="endDate" value="{{ $endDate }}" />
                         <input type="text" id="jbr-end-date"
                                class="form-control bg-light border-0 py-2"
@@ -27,13 +27,13 @@
                                value="{{ $endDate }}" />
                     </div>
 <div class="col-lg-4 col-md-4 col-xl-2 col-xxl-3">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Status</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Status') }}</label>
                         <select class="form-select bg-light border-0 py-2" wire:model="status">
-                            <option value="">All Statuses</option>
-                            <option value="draft">Draft</option>
-                            <option value="active">Active</option>
-                            <option value="completed">Completed</option>
-                            <option value="cancelled">Cancelled</option>
+                            <option value="">{{ __('All Statuses') }}</option>
+                            <option value="draft">{{ __('Draft') }}</option>
+                            <option value="active">{{ __('Active') }}</option>
+                            <option value="completed">{{ __('Completed') }}</option>
+                            <option value="cancelled">{{ __('Cancelled') }}</option>
                         </select>
                     </div>
 <div class="col-lg-12 col-xl-6 col-xxl-5">
@@ -41,20 +41,20 @@
         <button type="button" class="btn btn-pr fw-bold py-2 shadow-sm"
                                             wire:click="applyFilter" wire:loading.attr="disabled">
                                         <i class="bi bi-filter-left me-2"></i>
-                                        <span wire:loading.remove>Generate</span>
-                                        <span wire:loading><span class="spinner-border spinner-border-sm me-1"></span>Loading...</span>
+                                        <span wire:loading.remove>{{ __('Generate') }}</span>
+                                        <span wire:loading><span class="spinner-border spinner-border-sm me-1"></span>{{ __('Loading...') }}</span>
                                     </button>
         <div class="btn-group shadow-sm">
                             <button class="btn btn-white border border-end-0" onclick="window.print()">
-                                <i class="bi bi-printer me-2"></i>Print
+                                <i class="bi bi-printer me-2"></i>{{ __('Print') }}
                             </button>
                             <div class="btn-group">
                                 <button class="btn btn-white border dropdown-toggle" data-bs-toggle="dropdown">
-                                    <i class="bi bi-download me-2"></i>Export
+                                    <i class="bi bi-download me-2"></i>{{ __('Export') }}
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                                    <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'jbr-print', {orientation: 'landscape'})"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
-                                    <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
+                                    <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'jbr-print', {orientation: 'landscape'})"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
+                                    <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -65,10 +65,10 @@
     </div>
 </div>
 <div class="col-lg-4 col-md-4 col-xl-2">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Search</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Search') }}</label>
                         <input type="text" class="form-control bg-light border-0 py-2"
                                wire:model.debounce.400ms="search"
-                               placeholder="Job no, AWB, HBL..." />
+                               placeholder="{{ __('Job no, AWB, HBL...') }}" />
                     </div></div>
             </div>
         </div>
@@ -79,7 +79,7 @@
             <div class="col-lg col-md-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-3 text-center">
-                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">Jobs</div>
+                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">{{ __('Jobs') }}</div>
                         <div class="h5 fw-bold text-secondary mb-0 tabular-nums">{{ $summary['total_jobs'] }}</div>
                     </div>
                 </div>
@@ -87,7 +87,7 @@
             <div class="col-lg col-md-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-3 text-center">
-                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">Income</div>
+                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">{{ __('Income') }}</div>
                         <div class="h5 fw-bold text-pr mb-0 tabular-nums">{{ number_format($summary['total_income'], 2) }}</div>
                     </div>
                 </div>
@@ -95,7 +95,7 @@
             <div class="col-lg col-md-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-3 text-center">
-                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">Expense</div>
+                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">{{ __('Expense') }}</div>
                         <div class="h5 fw-bold text-danger mb-0 tabular-nums">{{ number_format($summary['total_expense'], 2) }}</div>
                     </div>
                 </div>
@@ -103,7 +103,7 @@
             <div class="col-lg col-md-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-3 text-center">
-                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">Profit / Loss</div>
+                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">{{ __('Profit / Loss') }}</div>
                         <div class="h5 fw-bold mb-0 tabular-nums {{ $summary['profit_loss'] >= 0 ? 'text-success' : 'text-danger' }}">
                             {{ number_format($summary['profit_loss'], 2) }}
                         </div>
@@ -113,7 +113,7 @@
             <div class="col-lg col-md-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-3 text-center">
-                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">Margin</div>
+                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">{{ __('Margin') }}</div>
                         <div class="h5 fw-bold mb-0 tabular-nums {{ $summary['margin'] >= 0 ? 'text-success' : 'text-danger' }}">
                             {{ number_format($summary['margin'], 1) }}%
                         </div>
@@ -128,10 +128,10 @@
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center d-print-none">
                 <h6 class="mb-0 fw-bold">
                     <i class="bi bi-balance-scale me-2 text-pr"></i>
-                    Job Balance
+                    {{ __('Job Balance') }}
                 </h6>
                 <span class="badge bg-pr-subtle text-pr border border-pr-subtle px-3 py-2">
-                    {{ $summary['total_jobs'] }} {{ Str::plural('Job', $summary['total_jobs']) }}
+                    {{ $summary['total_jobs'] }} {{ __(Str::plural('Job', $summary['total_jobs'])) }}
                 </span>
             </div>
             <div>

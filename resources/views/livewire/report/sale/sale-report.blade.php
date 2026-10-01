@@ -1,6 +1,6 @@
 @section('js', 'sale_report')
-@section('page-title', 'Sales Report')
-@section('page-subtitle', 'Daily, weekly, and monthly sales transaction summaries')
+@section('page-title', __('Sales Report'))
+@section('page-subtitle', __('Daily, weekly, and monthly sales transaction summaries'))
 
 <div class="provisional-wrapper min-vh-100 bg-light py-4">
     <div class="container-fluid px-lg-5">
@@ -11,7 +11,7 @@
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
                     <div class="col-lg-2 col-md-4">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">From Date</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('From Date') }}</label>
                         <input type="hidden" id="sr-start-date-hidden" wire:model="startDate" value="{{ $startDate }}" />
                         <input type="text" id="sr-start-date"
                                class="form-control bg-light border-0 py-2"
@@ -19,7 +19,7 @@
                                value="{{ $startDate }}" />
                     </div>
                     <div class="col-lg-2 col-md-4">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">To Date</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('To Date') }}</label>
                         <input type="hidden" id="sr-end-date-hidden" wire:model="endDate" value="{{ $endDate }}" />
                         <input type="text" id="sr-end-date"
                                class="form-control bg-light border-0 py-2"
@@ -27,9 +27,9 @@
                                value="{{ $endDate }}" />
                     </div>
                     <div class="col-lg-2 col-md-4">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Customer</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Customer') }}</label>
                         <select class="form-select bg-light border-0 py-2" wire:model="customerId">
-                            <option value="">All Customers</option>
+                            <option value="">{{ __('All Customers') }}</option>
                             @foreach($customers as $customer)
                                 <option value="{{ $customer['id'] }}">{{ $customer['name_en'] }}</option>
                             @endforeach
@@ -40,20 +40,20 @@
                             <button type="button" class="btn btn-pr fw-bold py-2 shadow-sm"
                                     wire:click="applyFilter" wire:loading.attr="disabled">
                                 <i class="bi bi-filter-left me-2"></i>
-                                <span wire:loading.remove>Generate</span>
-                                <span wire:loading><span class="spinner-border spinner-border-sm me-1"></span>Loading...</span>
+                                <span wire:loading.remove>{{ __('Generate') }}</span>
+                                <span wire:loading><span class="spinner-border spinner-border-sm me-1"></span>{{ __('Loading...') }}</span>
                             </button>
                             <div class="btn-group shadow-sm">
                                 <button class="btn btn-white border border-end-0 py-2" onclick="window.print()">
-                                    <i class="bi bi-printer me-2"></i>Print
+                                    <i class="bi bi-printer me-2"></i>{{ __('Print') }}
                                 </button>
                                 <div class="btn-group">
                                     <button class="btn btn-white border dropdown-toggle py-2" data-bs-toggle="dropdown">
-                                        <i class="bi bi-download me-2"></i>Export
+                                        <i class="bi bi-download me-2"></i>{{ __('Export') }}
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                                        <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'sr-print', {orientation: 'landscape'})"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
-                                        <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
+                                        <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'sr-print', {orientation: 'landscape'})"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
+                                        <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -64,19 +64,19 @@
                         </div>
                     </div>
                     <div class="col-lg-2 col-md-4">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Status</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Status') }}</label>
                         <select class="form-select bg-light border-0 py-2" wire:model="status">
-                            <option value="">All Statuses</option>
-                            <option value="1">Draft</option>
-                            <option value="3">Approved</option>
-                            <option value="4">Cancelled</option>
+                            <option value="">{{ __('All Statuses') }}</option>
+                            <option value="1">{{ __('Draft') }}</option>
+                            <option value="3">{{ __('Approved') }}</option>
+                            <option value="4">{{ __('Cancelled') }}</option>
                         </select>
                     </div>
                     <div class="col-lg-2 col-md-4">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Search</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Search') }}</label>
                         <input type="text" class="form-control bg-light border-0 py-2"
                                wire:model.debounce.400ms="search"
-                               placeholder="Invoice no..." />
+                               placeholder="{{ __('Invoice no...') }}" />
                     </div>
 
                 </div>
@@ -89,7 +89,7 @@
             <div class="col-lg col-md-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-3 text-center">
-                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">Total Invoices</div>
+                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">{{ __('Total Invoices') }}</div>
                         <div class="h5 fw-bold text-secondary mb-0 tabular-nums">{{ $summary['total_count'] }}</div>
                     </div>
                 </div>
@@ -97,7 +97,7 @@
             <div class="col-lg col-md-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-3 text-center">
-                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">Total Sales</div>
+                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">{{ __('Total Sales') }}</div>
                         <div class="h5 fw-bold text-pr mb-0 tabular-nums">{{ number_format($summary['total_grand'], 2) }}</div>
                     </div>
                 </div>
@@ -105,7 +105,7 @@
             <div class="col-lg col-md-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-3 text-center">
-                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">Approved</div>
+                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">{{ __('Approved') }}</div>
                         <div class="h5 fw-bold text-success mb-0 tabular-nums">{{ number_format($summary['approved_grand'], 2) }}</div>
                     </div>
                 </div>
@@ -113,7 +113,7 @@
             <div class="col-lg col-md-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-3 text-center">
-                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">Draft</div>
+                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">{{ __('Draft') }}</div>
                         <div class="h5 fw-bold text-warning mb-0 tabular-nums">{{ number_format($summary['draft_grand'], 2) }}</div>
                     </div>
                 </div>
@@ -121,7 +121,7 @@
             <div class="col-lg col-md-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-3 text-center">
-                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">Cancelled</div>
+                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">{{ __('Cancelled') }}</div>
                         <div class="h5 fw-bold text-danger mb-0 tabular-nums">{{ number_format($summary['cancelled_grand'], 2) }}</div>
                     </div>
                 </div>
@@ -129,7 +129,7 @@
             <div class="col-lg col-md-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-3 text-center">
-                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">Total Tax</div>
+                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">{{ __('Total Tax') }}</div>
                         <div class="h5 fw-bold text-secondary mb-0 tabular-nums">{{ number_format($summary['total_tax'], 2) }}</div>
                     </div>
                 </div>
@@ -142,10 +142,10 @@
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center d-print-none">
                 <h6 class="mb-0 fw-bold">
                     <i class="bi bi-receipt me-2 text-pr"></i>
-                    Sales Transactions
+                    {{ __('Sales Transactions') }}
                 </h6>
                 <span class="badge bg-pr-subtle text-pr border border-pr-subtle px-3 py-2">
-                    {{ $summary['total_count'] }} {{ Str::plural('Invoice', $summary['total_count']) }}
+                    {{ $summary['total_count'] }} {{ __(Str::plural('Invoice', $summary['total_count'])) }}
                 </span>
             </div>
             <div>

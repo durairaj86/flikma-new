@@ -1,6 +1,6 @@
 @section('js', 'trial_balance')
-@section('page-title', 'Trial Balance')
-@section('page-subtitle', 'Double-entry verification — total debits must equal total credits')
+@section('page-title', __('Trial Balance'))
+@section('page-subtitle', __('Double-entry verification — total debits must equal total credits'))
 
 <div class="tb-wrapper min-vh-100 bg-light py-4">
     <div class="container-fluid px-lg-5">
@@ -11,7 +11,7 @@
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
 <div class="col-lg-4 col-md-4 col-xl-2">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">From Date</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('From Date') }}</label>
                         <input type="hidden" id="tb-start-hidden" wire:model.live="startDate" value="{{ $startDate }}" />
                         <input type="text" id="tb-start-date"
                                class="form-control bg-light border-0 py-2"
@@ -19,7 +19,7 @@
                                value="{{ $startDate }}" />
                     </div>
 <div class="col-lg-4 col-md-4 col-xl-2">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">To Date</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('To Date') }}</label>
                         <input type="hidden" id="tb-end-hidden" wire:model.live="endDate" value="{{ $endDate }}" />
                         <input type="text" id="tb-end-date"
                                class="form-control bg-light border-0 py-2"
@@ -27,10 +27,10 @@
                                value="{{ $endDate }}" />
                     </div>
 <div class="col-lg-4 col-md-4 col-xl-2 col-xxl-3">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Search Accounts</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Search Accounts') }}</label>
                         <input type="text"
                                class="form-control bg-light border-0 py-2"
-                               placeholder="Account name or code…"
+                               placeholder="{{ __('Account name or code…') }}"
                                wire:model.live.debounce.300ms="search" />
                     </div>
 <div class="col-lg-12 col-xl-6 col-xxl-5">
@@ -39,20 +39,20 @@
                                             wire:click="updatedStartDate('{{ $startDate }}')"
                                             wire:loading.attr="disabled">
                                         <i class="bi bi-filter-left me-2"></i>
-                                        <span wire:loading.remove>Generate</span>
-                                        <span wire:loading><span class="spinner-border spinner-border-sm me-1"></span>Loading…</span>
+                                        <span wire:loading.remove>{{ __('Generate') }}</span>
+                                        <span wire:loading><span class="spinner-border spinner-border-sm me-1"></span>{{ __('Loading…') }}</span>
                                     </button>
         <div class="btn-group shadow-sm">
                             <button class="btn btn-white border border-end-0" onclick="window.print()">
-                                <i class="bi bi-printer me-2"></i>Print
+                                <i class="bi bi-printer me-2"></i>{{ __('Print') }}
                             </button>
                             <div class="btn-group">
                                 <button class="btn btn-white border dropdown-toggle" data-bs-toggle="dropdown">
-                                    <i class="bi bi-download me-2"></i>Export
+                                    <i class="bi bi-download me-2"></i>{{ __('Export') }}
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                                    <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'tb-print')"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
-                                    <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
+                                    <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'tb-print')"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
+                                    <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -65,11 +65,11 @@
         <div class="d-flex align-items-center justify-content-between mb-3 px-1 d-print-none">
             <div class="small text-muted">
                 <i class="bi bi-calendar3 me-1"></i>
-                Period: <strong class="text-dark">{{ \Carbon\Carbon::parse($startDate)->format('d M Y') }}</strong>
+                {{ __('Period:') }} <strong class="text-dark">{{ \Carbon\Carbon::parse($startDate)->format('d M Y') }}</strong>
                 — <strong class="text-dark">{{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</strong>
             </div>
             <div class="small text-muted">
-                Generated: {{ now()->format('d M Y, H:i') }}
+                {{ __('Generated:') }} {{ now()->format('d M Y, H:i') }}
             </div>
         </div>
 
@@ -77,10 +77,10 @@
         <div class="card border-0 shadow-sm overflow-hidden">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center d-print-none">
                 <h6 class="mb-0 fw-bold">
-                    <i class="bi bi-list-columns me-2 text-tb"></i>Account Balances
+                    <i class="bi bi-list-columns me-2 text-tb"></i>{{ __('Account Balances') }}
                 </h6>
                 <span class="badge bg-tb-subtle text-tb border border-tb-subtle px-3 py-2">
-                    <i class="bi bi-currency-exchange me-1"></i>Currency: SAR
+                    <i class="bi bi-currency-exchange me-1"></i>{{ __('Currency:') }} SAR
                 </span>
             </div>
             <div class="table-responsive">

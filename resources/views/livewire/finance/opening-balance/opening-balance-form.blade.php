@@ -3,18 +3,18 @@
         <div class="card-header bg-white py-3 border-bottom-0">
             <div class="row align-items-center">
                 <div class="col">
-                    <h6 class="text-uppercase text-muted fw-bold mb-0 small">Journal Entries</h6>
+                    <h6 class="text-uppercase text-muted fw-bold mb-0 small">{{ __('Journal Entries') }}</h6>
                 </div>
                 <div class="col-auto">
                     <div class="d-flex gap-4">
                         <div class="text-end">
-                            <span class="d-block small text-muted">Total Debit</span>
+                            <span class="d-block small text-muted">{{ __('Total Debit') }}</span>
                             <span class="fw-bold fs-5 @if($totalDebit != $totalCredit) text-danger @else text-dark @endif">
                                 {{ number_format($totalDebit, 2) }}
                             </span>
                         </div>
                         <div class="text-end border-start ps-4">
-                            <span class="d-block small text-muted">Total Credit</span>
+                            <span class="d-block small text-muted">{{ __('Total Credit') }}</span>
                             <span class="fw-bold fs-5 @if($totalDebit != $totalCredit) text-danger @else text-dark @endif">
                                 {{ number_format($totalCredit, 2) }}
                             </span>
@@ -44,7 +44,7 @@
                 <div class="p-4 bg-light-subtle border-bottom mb-0">
                     <div class="row g-3">
                         <div class="col-md-3">
-                            <label class="form-label fw-semibold small">Reference Date</label>
+                            <label class="form-label fw-semibold small">{{ __('Reference Date') }}</label>
                             <div class="input-group input-group-sm">
                                 <span class="input-group-text bg-white"><i class="bi bi-calendar3"></i></span>
                                 <input type="date" class="form-control border-start-0" wire:model="date">
@@ -52,8 +52,8 @@
                             @error('date') <div class="text-danger x-small mt-1">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-9">
-                            <label class="form-label fw-semibold small">Description / Notes</label>
-                            <input type="text" class="form-control form-control-sm" placeholder="Enter reason for this opening balance..." wire:model="description">
+                            <label class="form-label fw-semibold small">{{ __('Description / Notes') }}</label>
+                            <input type="text" class="form-control form-control-sm" placeholder="{{ __('Enter reason for this opening balance...') }}" wire:model="description">
                             @error('description') <div class="text-danger x-small mt-1">{{ $message }}</div> @enderror
                         </div>
                     </div>
@@ -63,10 +63,10 @@
                     <table class="table table-hover align-middle mb-0 entry-table">
                         <thead class="bg-light">
                         <tr>
-                            <th class="ps-4 py-3 border-0 text-muted small" style="width: 15%;">ENTITY TYPE</th>
-                            <th class="py-3 border-0 text-muted small" style="width: 45%;">ACCOUNT DETAIL</th>
-                            <th class="py-3 border-0 text-muted small text-end" style="width: 15%;">DEBIT</th>
-                            <th class="py-3 border-0 text-muted small text-end" style="width: 15%;">CREDIT</th>
+                            <th class="ps-4 py-3 border-0 text-muted small" style="width: 15%;">{{ __('ENTITY TYPE') }}</th>
+                            <th class="py-3 border-0 text-muted small" style="width: 45%;">{{ __('ACCOUNT DETAIL') }}</th>
+                            <th class="py-3 border-0 text-muted small text-end" style="width: 15%;">{{ __('DEBIT') }}</th>
+                            <th class="py-3 border-0 text-muted small text-end" style="width: 15%;">{{ __('CREDIT') }}</th>
                             <th class="py-3 border-0 text-center" style="width: 10%;"></th>
                         </tr>
                         </thead>
@@ -77,9 +77,9 @@
                                     <select class="form-select form-select-sm border-0 bg-transparent fw-medium"
                                             wire:model="entries.{{ $index }}.entry_type"
                                             wire:change="changeEntryType({{ $index }}, $event.target.value)">
-                                        <option value="account">Ledger Account</option>
-                                        <option value="customer">Customer</option>
-                                        <option value="supplier">Supplier</option>
+                                        <option value="account">{{ __('Ledger Account') }}</option>
+                                        <option value="customer">{{ __('Customer') }}</option>
+                                        <option value="supplier">{{ __('Supplier') }}</option>
                                     </select>
                                 </td>
                                 <td>
@@ -89,21 +89,21 @@
                                             </span>
                                         @if($entry['entry_type'] === 'account')
                                             <select class="form-select border-0 shadow-none" wire:model="entries.{{ $index }}.account_id">
-                                                <option value="">Search Account...</option>
+                                                <option value="">{{ __('Search Account...') }}</option>
                                                 @foreach ($accounts as $account)
                                                     <option value="{{ $account->id }}">{{ $account->name }}</option>
                                                 @endforeach
                                             </select>
                                         @elseif($entry['entry_type'] === 'customer')
                                             <select class="form-select border-0 shadow-none" wire:model="entries.{{ $index }}.customer_id">
-                                                <option value="">Search Customer...</option>
+                                                <option value="">{{ __('Search Customer...') }}</option>
                                                 @foreach ($customers as $customer)
                                                     <option value="{{ $customer->id }}">{{ $customer->name_en }}</option>
                                                 @endforeach
                                             </select>
                                         @elseif($entry['entry_type'] === 'supplier')
                                             <select class="form-select border-0 shadow-none" wire:model="entries.{{ $index }}.supplier_id">
-                                                <option value="">Search Supplier...</option>
+                                                <option value="">{{ __('Search Supplier...') }}</option>
                                                 @foreach ($suppliers as $supplier)
                                                     <option value="{{ $supplier->id }}">{{ $supplier->name_en }}</option>
                                                 @endforeach
@@ -139,17 +139,17 @@
                     <div class="row align-items-center">
                         <div class="col">
                             <button type="button" class="btn btn-outline-primary btn-sm px-3 fw-bold rounded-pill" wire:click="addEntry">
-                                <i class="bi bi-plus-lg me-1"></i> Add New Row
+                                <i class="bi bi-plus-lg me-1"></i> {{ __('Add New Row') }}
                             </button>
                         </div>
                         <div class="col-auto">
                             @if($totalDebit != $totalCredit)
                                 <span class="text-danger small fw-bold me-3">
-                                    <i class="bi bi-info-circle me-1"></i> Difference: {{ number_format(abs($totalDebit - $totalCredit), 2) }}
+                                    <i class="bi bi-info-circle me-1"></i> {{ __('Difference') }}: {{ number_format(abs($totalDebit - $totalCredit), 2) }}
                                 </span>
                             @endif
                             <button type="submit" class="btn btn-primary btn-sm px-5 fw-bold shadow-sm rounded-pill">
-                                <i class="bi bi-cloud-arrow-up me-1"></i> Finalize Entry
+                                <i class="bi bi-cloud-arrow-up me-1"></i> {{ __('Finalize Entry') }}
                             </button>
                         </div>
                     </div>

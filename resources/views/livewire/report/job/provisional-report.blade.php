@@ -1,6 +1,6 @@
 @section('js', 'provisional_report')
-@section('page-title', 'Provisional Report')
-@section('page-subtitle', 'Compare provisional vs actual cost & sales — per job or by activity')
+@section('page-title', __('Provisional Report'))
+@section('page-subtitle', __('Compare provisional vs actual cost & sales — per job or by activity'))
 
 <div class="provisional-wrapper min-vh-100 bg-light py-4">
     <div class="container-fluid px-lg-5">
@@ -12,34 +12,34 @@
 
                 {{-- View Mode Toggle --}}
                 <div class="mb-3 pb-3 border-bottom">
-                    <label class="form-label small fw-bold text-uppercase text-muted ls-1 me-3">View By</label>
+                    <label class="form-label small fw-bold text-uppercase text-muted ls-1 me-3">{{ __('View By') }}</label>
                     <div class="btn-group" role="group">
                         <input type="radio" class="btn-check" name="viewMode" id="vm-job" value="job"
                                wire:model.live="viewMode" autocomplete="off"
                                @checked($viewMode === 'job') />
                         <label class="btn btn-outline-pr btn-sm px-4 fw-bold" for="vm-job">
-                            <i class="bi bi-briefcase me-1"></i>Job Based
+                            <i class="bi bi-briefcase me-1"></i>{{ __('Job Based') }}
                         </label>
 
                         <input type="radio" class="btn-check" name="viewMode" id="vm-activity" value="activity"
                                wire:model.live="viewMode" autocomplete="off"
                                @checked($viewMode === 'activity') />
                         <label class="btn btn-outline-pr btn-sm px-4 fw-bold" for="vm-activity">
-                            <i class="bi bi-activity me-1"></i>Activity Based
+                            <i class="bi bi-activity me-1"></i>{{ __('Activity Based') }}
                         </label>
                     </div>
                     <span class="ms-3 text-muted small">
                         @if($viewMode === 'activity')
-                            <i class="bi bi-info-circle me-1"></i>Grouped by shipment mode (Ocean, Air, Land, etc.)
+                            <i class="bi bi-info-circle me-1"></i>{{ __('Grouped by shipment mode (Ocean, Air, Land, etc.)') }}
                         @else
-                            <i class="bi bi-info-circle me-1"></i>One row per job
+                            <i class="bi bi-info-circle me-1"></i>{{ __('One row per job') }}
                         @endif
                     </span>
                 </div>
 
                 <div class="row g-3 align-items-end">
 <div class="col-lg-4 col-md-4 col-xl-2">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">From Date</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('From Date') }}</label>
                         <input type="hidden" id="pr-start-date-hidden" wire:model="startDate" value="{{ $startDate }}" />
                         <input type="text" id="pr-start-date"
                                class="form-control bg-light border-0 py-2"
@@ -47,7 +47,7 @@
                                value="{{ $startDate }}" />
                     </div>
 <div class="col-lg-4 col-md-4 col-xl-2">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">To Date</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('To Date') }}</label>
                         <input type="hidden" id="pr-end-date-hidden" wire:model="endDate" value="{{ $endDate }}" />
                         <input type="text" id="pr-end-date"
                                class="form-control bg-light border-0 py-2"
@@ -55,9 +55,9 @@
                                value="{{ $endDate }}" />
                     </div>
 <div class="col-lg-4 col-md-4 col-xl-2 col-xxl-3">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Mode</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Mode') }}</label>
                         <select class="form-select bg-light border-0 py-2" wire:model="shipmentMode">
-                            <option value="">All Modes</option>
+                            <option value="">{{ __('All Modes') }}</option>
                             @foreach($modes as $mode)
                                 <option value="{{ $mode }}">{{ ucfirst($mode) }}</option>
                             @endforeach
@@ -68,20 +68,20 @@
         <button type="button" class="btn btn-pr fw-bold py-2 shadow-sm"
                                             wire:click="applyFilter" wire:loading.attr="disabled">
                                         <i class="bi bi-filter-left me-2"></i>
-                                        <span wire:loading.remove>Generate</span>
-                                        <span wire:loading><span class="spinner-border spinner-border-sm me-1"></span>Loading...</span>
+                                        <span wire:loading.remove>{{ __('Generate') }}</span>
+                                        <span wire:loading><span class="spinner-border spinner-border-sm me-1"></span>{{ __('Loading...') }}</span>
                                     </button>
         <div class="btn-group shadow-sm">
                             <button class="btn btn-white border border-end-0" onclick="window.print()">
-                                <i class="bi bi-printer me-2"></i>Print
+                                <i class="bi bi-printer me-2"></i>{{ __('Print') }}
                             </button>
                             <div class="btn-group">
                                 <button class="btn btn-white border dropdown-toggle" data-bs-toggle="dropdown">
-                                    <i class="bi bi-download me-2"></i>Export
+                                    <i class="bi bi-download me-2"></i>{{ __('Export') }}
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                                    <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'pr-print', {orientation: 'landscape'})"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
-                                    <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
+                                    <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'pr-print', {orientation: 'landscape'})"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
+                                    <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -92,19 +92,19 @@
     </div>
 </div>
 <div class="col-lg-4 col-md-4 col-xl-2">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Type</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Type') }}</label>
                         <select class="form-select bg-light border-0 py-2" wire:model="shipmentType">
-                            <option value="">All Types</option>
+                            <option value="">{{ __('All Types') }}</option>
                             @foreach($types as $type)
                                 <option value="{{ $type }}">{{ ucfirst($type) }}</option>
                             @endforeach
                         </select>
                     </div>
 <div class="col-lg-4 col-md-4 col-xl-2">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Search</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Search') }}</label>
                         <input type="text" class="form-control bg-light border-0 py-2"
                                wire:model.debounce.400ms="search"
-                               placeholder="Job no..." />
+                               placeholder="{{ __('Job no...') }}" />
                     </div></div>
             </div>
         </div>
@@ -115,7 +115,7 @@
             <div class="col-lg col-md-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-3 text-center">
-                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">Prov. Cost</div>
+                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">{{ __('Prov. Cost') }}</div>
                         <div class="h5 fw-bold text-secondary mb-0 tabular-nums">{{ number_format($totals['provisional_cost'], 2) }}</div>
                     </div>
                 </div>
@@ -123,7 +123,7 @@
             <div class="col-lg col-md-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-3 text-center">
-                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">Actual Cost</div>
+                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">{{ __('Actual Cost') }}</div>
                         <div class="h5 fw-bold text-danger mb-0 tabular-nums">{{ number_format($totals['actual_cost'], 2) }}</div>
                     </div>
                 </div>
@@ -131,7 +131,7 @@
             <div class="col-lg col-md-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-3 text-center">
-                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">Prov. Sales</div>
+                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">{{ __('Prov. Sales') }}</div>
                         <div class="h5 fw-bold text-secondary mb-0 tabular-nums">{{ number_format($totals['provisional_sales'], 2) }}</div>
                     </div>
                 </div>
@@ -139,7 +139,7 @@
             <div class="col-lg col-md-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-3 text-center">
-                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">Actual Sales</div>
+                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">{{ __('Actual Sales') }}</div>
                         <div class="h5 fw-bold text-pr mb-0 tabular-nums">{{ number_format($totals['actual_sales'], 2) }}</div>
                     </div>
                 </div>
@@ -147,7 +147,7 @@
             <div class="col-lg col-md-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-3 text-center">
-                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">Profit / Loss</div>
+                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">{{ __('Profit / Loss') }}</div>
                         <div class="h5 fw-bold mb-0 tabular-nums {{ $totals['profit_loss'] >= 0 ? 'text-success' : 'text-danger' }}">
                             {{ number_format($totals['profit_loss'], 2) }}
                         </div>
@@ -157,7 +157,7 @@
             <div class="col-lg col-md-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-3 text-center">
-                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">Margin</div>
+                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">{{ __('Margin') }}</div>
                         <div class="h5 fw-bold mb-0 tabular-nums {{ $totals['margin'] >= 0 ? 'text-success' : 'text-danger' }}">
                             {{ number_format($totals['margin'], 1) }}%
                         </div>
@@ -172,10 +172,10 @@
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <h6 class="mb-0 fw-bold">
                     <i class="bi {{ $viewMode === 'activity' ? 'bi-activity' : 'bi-table' }} me-2 text-pr"></i>
-                    {{ $viewMode === 'activity' ? 'Activity Summary' : 'Job Comparison' }}
+                    {{ $viewMode === 'activity' ? __('Activity Summary') : __('Job Comparison') }}
                 </h6>
                 <span class="badge bg-pr-subtle text-pr border border-pr-subtle px-3 py-2">
-                    {{ count($rows) }} {{ $viewMode === 'activity' ? Str::plural('Activity', count($rows)) : Str::plural('Job', count($rows)) }}
+                    {{ count($rows) }} {{ $viewMode === 'activity' ? __(Str::plural('Activity', count($rows))) : __(Str::plural('Job', count($rows))) }}
                 </span>
             </div>
             <div class="table-responsive">
@@ -185,23 +185,23 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead>
                     <tr class="bg-light text-muted small text-uppercase fw-bold ls-1">
-                        <th class="ps-4 border-0">Activity (Mode)</th>
-                        <th class="text-center border-0">Jobs</th>
+                        <th class="ps-4 border-0">{{ __('Activity (Mode)') }}</th>
+                        <th class="text-center border-0">{{ __('Jobs') }}</th>
                         <th class="text-end border-0">
-                            <span class="d-block text-muted" style="font-size:0.65rem;">Provisional</span>Cost
+                            <span class="d-block text-muted" style="font-size:0.65rem;">{{ __('Provisional') }}</span>{{ __('Cost') }}
                         </th>
                         <th class="text-end border-0">
-                            <span class="d-block text-muted" style="font-size:0.65rem;">Actual</span>Cost
+                            <span class="d-block text-muted" style="font-size:0.65rem;">{{ __('Actual') }}</span>{{ __('Cost') }}
                         </th>
                         <th class="text-end border-0">
-                            <span class="d-block text-muted" style="font-size:0.65rem;">Provisional</span>Sales
+                            <span class="d-block text-muted" style="font-size:0.65rem;">{{ __('Provisional') }}</span>{{ __('Sales') }}
                         </th>
                         <th class="text-end border-0">
-                            <span class="d-block text-muted" style="font-size:0.65rem;">Actual</span>Sales
+                            <span class="d-block text-muted" style="font-size:0.65rem;">{{ __('Actual') }}</span>{{ __('Sales') }}
                         </th>
-                        <th class="text-end border-0">Profit / Loss</th>
-                        <th class="border-0">Cost vs Budget</th>
-                        <th class="text-end pe-4 border-0">Margin</th>
+                        <th class="text-end border-0">{{ __('Profit / Loss') }}</th>
+                        <th class="border-0">{{ __('Cost vs Budget') }}</th>
+                        <th class="text-end pe-4 border-0">{{ __('Margin') }}</th>
                     </tr>
                     </thead>
                     <tbody class="border-top-0">
@@ -252,12 +252,12 @@
                                     <div class="progress-bar {{ $overBudget ? 'bg-danger' : 'bg-pr' }}" style="width: {{ $costPct }}%"></div>
                                 </div>
                                 <div class="x-small text-muted mt-1">
-                                    Cost @if($row['provisional_cost'] > 0)
+                                    {{ __('Cost') }} @if($row['provisional_cost'] > 0)
                                         <span class="{{ $overBudget ? 'text-danger fw-bold' : 'text-success' }}">
                                             {{ $overBudget ? '▲' : '▼' }} {{ number_format(abs((($row['actual_cost'] - $row['provisional_cost']) / $row['provisional_cost']) * 100), 1) }}%
                                         </span>
                                     @else
-                                        <span class="text-muted">n/a</span>
+                                        <span class="text-muted">{{ __('n/a') }}</span>
                                     @endif
                                 </div>
                             </td>
@@ -273,7 +273,7 @@
                                 <div class="bg-light rounded-circle p-4 d-inline-block mb-3">
                                     <i class="bi bi-bar-chart h2 text-muted"></i>
                                 </div>
-                                <div class="small">No data found for the selected period.</div>
+                                <div class="small">{{ __('No data found for the selected period.') }}</div>
                             </td>
                         </tr>
                     @endforelse
@@ -281,7 +281,7 @@
                     @if(count($rows) > 0)
                     <tfoot class="bg-light border-top-2">
                     <tr class="fw-bold">
-                        <td class="ps-4 py-3">Totals</td>
+                        <td class="ps-4 py-3">{{ __('Totals') }}</td>
                         <td class="text-center text-muted">{{ collect($rows)->sum('job_count') }}</td>
                         <td class="text-end tabular-nums text-muted">{{ number_format($totals['provisional_cost'], 2) }}</td>
                         <td class="text-end tabular-nums text-danger">{{ number_format($totals['actual_cost'], 2) }}</td>
@@ -301,24 +301,24 @@
                     <thead>
                     <tr class="bg-light text-muted small text-uppercase fw-bold ls-1">
                         <th class="border-0" style="width: 40px;"></th>
-                        <th class="ps-2 border-0">Job No</th>
-                        <th class="border-0">Date</th>
-                        <th class="border-0">Mode / Type</th>
+                        <th class="ps-2 border-0">{{ __('Job No') }}</th>
+                        <th class="border-0">{{ __('Date') }}</th>
+                        <th class="border-0">{{ __('Mode / Type') }}</th>
                         <th class="text-end border-0">
-                            <span class="d-block text-muted" style="font-size:0.65rem;">Provisional</span>Cost
+                            <span class="d-block text-muted" style="font-size:0.65rem;">{{ __('Provisional') }}</span>{{ __('Cost') }}
                         </th>
                         <th class="text-end border-0">
-                            <span class="d-block text-muted" style="font-size:0.65rem;">Actual</span>Cost
+                            <span class="d-block text-muted" style="font-size:0.65rem;">{{ __('Actual') }}</span>{{ __('Cost') }}
                         </th>
                         <th class="text-end border-0">
-                            <span class="d-block text-muted" style="font-size:0.65rem;">Provisional</span>Sales
+                            <span class="d-block text-muted" style="font-size:0.65rem;">{{ __('Provisional') }}</span>{{ __('Sales') }}
                         </th>
                         <th class="text-end border-0">
-                            <span class="d-block text-muted" style="font-size:0.65rem;">Actual</span>Sales
+                            <span class="d-block text-muted" style="font-size:0.65rem;">{{ __('Actual') }}</span>{{ __('Sales') }}
                         </th>
-                        <th class="text-end border-0">Profit / Loss</th>
-                        <th class="border-0">Cost vs Budget</th>
-                        <th class="text-end pe-4 border-0">Margin</th>
+                        <th class="text-end border-0">{{ __('Profit / Loss') }}</th>
+                        <th class="border-0">{{ __('Cost vs Budget') }}</th>
+                        <th class="text-end pe-4 border-0">{{ __('Margin') }}</th>
                     </tr>
                     </thead>
                     <tbody class="border-top-0">
@@ -333,7 +333,7 @@
                                     <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 pr-toggle-btn"
                                             data-bs-toggle="collapse" data-bs-target="#{{ $prCollapseId }}"
                                             aria-expanded="false" aria-controls="{{ $prCollapseId }}"
-                                            title="Show details">
+                                            title="{{ __('Show details') }}">
                                         <i class="bi bi-chevron-right pr-toggle-icon text-muted"></i>
                                     </button>
                                 @endif
@@ -384,7 +384,7 @@
                                             {{ $overBudget ? '▲' : '▼' }} {{ number_format(abs((($row['actual_cost'] - $row['provisional_cost']) / $row['provisional_cost']) * 100), 1) }}%
                                         </span>
                                     @else
-                                        <span class="text-muted">n/a</span>
+                                        <span class="text-muted">{{ __('n/a') }}</span>
                                     @endif
                                 </div>
                             </td>
@@ -402,10 +402,10 @@
                                             <table class="table table-sm mb-0 bg-transparent">
                                                 <thead>
                                                     <tr class="small text-muted text-uppercase">
-                                                        <th class="border-0">Type</th>
-                                                        <th class="border-0">Row No</th>
-                                                        <th class="border-0">Date</th>
-                                                        <th class="text-end border-0">Amount</th>
+                                                        <th class="border-0">{{ __('Type') }}</th>
+                                                        <th class="border-0">{{ __('Row No') }}</th>
+                                                        <th class="border-0">{{ __('Date') }}</th>
+                                                        <th class="text-end border-0">{{ __('Amount') }}</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -441,7 +441,7 @@
                                 <div class="bg-light rounded-circle p-4 d-inline-block mb-3">
                                     <i class="bi bi-bar-chart h2 text-muted"></i>
                                 </div>
-                                <div class="small">No jobs found for the selected period.</div>
+                                <div class="small">{{ __('No jobs found for the selected period.') }}</div>
                             </td>
                         </tr>
                     @endforelse
@@ -449,7 +449,7 @@
                     @if(count($rows) > 0)
                     <tfoot class="bg-light border-top-2">
                     <tr class="fw-bold">
-                        <td colspan="4" class="ps-2 py-3">Totals</td>
+                        <td colspan="4" class="ps-2 py-3">{{ __('Totals') }}</td>
                         <td class="text-end tabular-nums text-muted">{{ number_format($totals['provisional_cost'], 2) }}</td>
                         <td class="text-end tabular-nums text-danger">{{ number_format($totals['actual_cost'], 2) }}</td>
                         <td class="text-end tabular-nums text-muted">{{ number_format($totals['provisional_sales'], 2) }}</td>
@@ -490,9 +490,9 @@
                         <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
                     </td>
                     <td class="text-end">
-                        <div class="stmt-title">PROVISIONAL REPORT{{ $viewMode === 'activity' ? ' (BY ACTIVITY)' : ' (BY JOB)' }}</div>
-                        <div class="stmt-sub">Period: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
-                        <div class="stmt-sub">Generated: {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; Currency: SAR</div>
+                        <div class="stmt-title">{{ __('PROVISIONAL REPORT') }}{{ $viewMode === 'activity' ? __(' (BY ACTIVITY)') : __(' (BY JOB)') }}</div>
+                        <div class="stmt-sub">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
+                        <div class="stmt-sub">{{ __('Generated:') }} {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency:') }} SAR</div>
                     </td>
                 </tr>
             </table>
@@ -501,14 +501,14 @@
                 <table class="stmt-table">
                     <thead>
                     <tr>
-                        <th>Activity</th>
-                        <th class="text-end">Jobs</th>
-                        <th class="text-end">Provisional Cost</th>
-                        <th class="text-end">Actual Cost</th>
-                        <th class="text-end">Provisional Sales</th>
-                        <th class="text-end">Actual Sales</th>
-                        <th class="text-end">Profit / Loss</th>
-                        <th class="text-end">Margin</th>
+                        <th>{{ __('Activity') }}</th>
+                        <th class="text-end">{{ __('Jobs') }}</th>
+                        <th class="text-end">{{ __('Provisional Cost') }}</th>
+                        <th class="text-end">{{ __('Actual Cost') }}</th>
+                        <th class="text-end">{{ __('Provisional Sales') }}</th>
+                        <th class="text-end">{{ __('Actual Sales') }}</th>
+                        <th class="text-end">{{ __('Profit / Loss') }}</th>
+                        <th class="text-end">{{ __('Margin') }}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -524,12 +524,12 @@
                             <td class="text-end">{{ number_format($row['margin'], 1) }}%</td>
                         </tr>
                     @empty
-                        <tr><td colspan="8" class="text-center">No data found for the selected period.</td></tr>
+                        <tr><td colspan="8" class="text-center">{{ __('No data found for the selected period.') }}</td></tr>
                     @endforelse
                     </tbody>
                     <tfoot>
                     <tr class="stmt-strong">
-                        <td>Totals</td>
+                        <td>{{ __('Totals') }}</td>
                         <td class="text-end">{{ collect($rows)->sum('job_count') }}</td>
                         <td class="text-end">{{ number_format($totals['provisional_cost'], 2) }}</td>
                         <td class="text-end">{{ number_format($totals['actual_cost'], 2) }}</td>
@@ -544,15 +544,15 @@
                 <table class="stmt-table">
                     <thead>
                     <tr>
-                        <th>Job No</th>
-                        <th>Date</th>
-                        <th>Mode / Type</th>
-                        <th class="text-end">Provisional Cost</th>
-                        <th class="text-end">Actual Cost</th>
-                        <th class="text-end">Provisional Sales</th>
-                        <th class="text-end">Actual Sales</th>
-                        <th class="text-end">Profit / Loss</th>
-                        <th class="text-end">Margin</th>
+                        <th>{{ __('Job No') }}</th>
+                        <th>{{ __('Date') }}</th>
+                        <th>{{ __('Mode / Type') }}</th>
+                        <th class="text-end">{{ __('Provisional Cost') }}</th>
+                        <th class="text-end">{{ __('Actual Cost') }}</th>
+                        <th class="text-end">{{ __('Provisional Sales') }}</th>
+                        <th class="text-end">{{ __('Actual Sales') }}</th>
+                        <th class="text-end">{{ __('Profit / Loss') }}</th>
+                        <th class="text-end">{{ __('Margin') }}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -570,12 +570,12 @@
                             <td class="text-end">{{ number_format($row['margin'], 1) }}%</td>
                         </tr>
                     @empty
-                        <tr><td colspan="9" class="text-center">No jobs found for the selected period.</td></tr>
+                        <tr><td colspan="9" class="text-center">{{ __('No jobs found for the selected period.') }}</td></tr>
                     @endforelse
                     </tbody>
                     <tfoot>
                     <tr class="stmt-strong">
-                        <td colspan="3">Totals</td>
+                        <td colspan="3">{{ __('Totals') }}</td>
                         <td class="text-end">{{ number_format($totals['provisional_cost'], 2) }}</td>
                         <td class="text-end">{{ number_format($totals['actual_cost'], 2) }}</td>
                         <td class="text-end">{{ number_format($totals['provisional_sales'], 2) }}</td>
@@ -590,9 +590,9 @@
             <div class="stmt-signatures">
                 <table class="stmt-meta">
                     <tr>
-                        <td>Prepared By: _________________</td>
-                        <td>Verified By: _________________</td>
-                        <td>Approved By: _________________</td>
+                        <td>{{ __('Prepared By:') }} _________________</td>
+                        <td>{{ __('Verified By:') }} _________________</td>
+                        <td>{{ __('Approved By:') }} _________________</td>
                     </tr>
                 </table>
             </div>

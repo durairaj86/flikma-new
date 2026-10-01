@@ -3,17 +3,17 @@
         <table class="table table-hover align-middle mb-0">
             <thead>
                 <tr class="bg-light text-muted small text-uppercase fw-bold ls-1">
-                    <th class="ps-4 border-0">Job No</th>
-                    <th class="border-0">Date</th>
-                    <th class="border-0">Customer</th>
-                    <th class="border-0">Activity</th>
-                    <th class="border-0">AWB / MBL</th>
-                    <th class="border-0">HBL / HAWB</th>
-                    <th class="border-0">Shipper</th>
-                    <th class="border-0">Consignee</th>
-                    <th class="border-0">POL</th>
-                    <th class="border-0">POD</th>
-                    <th class="text-center pe-4 border-0">Status</th>
+                    <th class="ps-4 border-0">{{ __('Job No') }}</th>
+                    <th class="border-0">{{ __('Date') }}</th>
+                    <th class="border-0">{{ __('Customer') }}</th>
+                    <th class="border-0">{{ __('Activity') }}</th>
+                    <th class="border-0">{{ __('AWB / MBL') }}</th>
+                    <th class="border-0">{{ __('HBL / HAWB') }}</th>
+                    <th class="border-0">{{ __('Shipper') }}</th>
+                    <th class="border-0">{{ __('Consignee') }}</th>
+                    <th class="border-0">{{ __('POL') }}</th>
+                    <th class="border-0">{{ __('POD') }}</th>
+                    <th class="text-center pe-4 border-0">{{ __('Status') }}</th>
                 </tr>
             </thead>
             <tbody class="border-top-0">
@@ -24,8 +24,8 @@
                                 <a href="/jobs/{{ $job->id }}" class="fw-bold text-pr text-decoration-none">{{ $job->row_no }}</a>
                             </td>
                             <td class="small text-muted">{{ \Carbon\Carbon::parse($job->posted_at)->format('d M Y') }}</td>
-                            <td class="small">{{ $job->customer->name ?? 'N/A' }}</td>
-                            <td class="small">{{ $job->activity->name ?? 'N/A' }}</td>
+                            <td class="small">{{ $job->customer->name ?? __('N/A') }}</td>
+                            <td class="small">{{ $job->activity->name ?? __('N/A') }}</td>
                             <td class="small text-muted">{{ $job->awb_no ?? '—' }}</td>
                             <td class="small text-muted">{{ $job->hbl_no ?? '—' }}</td>
                             <td class="small">{{ $job->shipper ?? '—' }}</td>
@@ -53,7 +53,7 @@
                             <div class="bg-light rounded-circle p-4 d-inline-block mb-3">
                                 <i class="bi bi-briefcase h2 text-muted"></i>
                             </div>
-                            <div class="small">No jobs found for the selected period.</div>
+                            <div class="small">{{ __('No jobs found for the selected period.') }}</div>
                         </td>
                     </tr>
                 @endif
@@ -71,9 +71,9 @@
                     <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
                 </td>
                 <td class="text-end">
-                    <div class="stmt-title">JOB REPORT</div>
-                    <div class="stmt-sub">Period: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
-                    <div class="stmt-sub">Generated: {{ now()->format('d M Y H:i') }}</div>
+                    <div class="stmt-title">{{ __('JOB REPORT') }}</div>
+                    <div class="stmt-sub">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
+                    <div class="stmt-sub">{{ __('Generated:') }} {{ now()->format('d M Y H:i') }}</div>
                 </td>
             </tr>
         </table>
@@ -81,15 +81,15 @@
         <table class="stmt-table">
             <thead>
             <tr>
-                <th>Job No</th>
-                <th>Date</th>
-                <th>Customer</th>
-                <th>Activity</th>
-                <th>AWB/MBL</th>
-                <th>HBL/HAWB</th>
-                <th>POL</th>
-                <th>POD</th>
-                <th>Status</th>
+                <th>{{ __('Job No') }}</th>
+                <th>{{ __('Date') }}</th>
+                <th>{{ __('Customer') }}</th>
+                <th>{{ __('Activity') }}</th>
+                <th>{{ __('AWB/MBL') }}</th>
+                <th>{{ __('HBL/HAWB') }}</th>
+                <th>{{ __('POL') }}</th>
+                <th>{{ __('POD') }}</th>
+                <th>{{ __('Status') }}</th>
             </tr>
             </thead>
             <tbody>
@@ -97,8 +97,8 @@
                 <tr>
                     <td>{{ $job->row_no }}</td>
                     <td>{{ \Carbon\Carbon::parse($job->posted_at)->format('d M Y') }}</td>
-                    <td>{{ $job->customer->name ?? 'N/A' }}</td>
-                    <td>{{ $job->activity->name ?? 'N/A' }}</td>
+                    <td>{{ $job->customer->name ?? __('N/A') }}</td>
+                    <td>{{ $job->activity->name ?? __('N/A') }}</td>
                     <td>{{ $job->awb_no ?? '—' }}</td>
                     <td>{{ $job->hbl_no ?? '—' }}</td>
                     <td>{{ $job->pol ?? '—' }}</td>
@@ -106,12 +106,12 @@
                     <td>{{ ucfirst($job->status ?? '—') }}</td>
                 </tr>
             @empty
-                <tr><td colspan="9" class="text-center">No jobs found for the selected period.</td></tr>
+                <tr><td colspan="9" class="text-center">{{ __('No jobs found for the selected period.') }}</td></tr>
             @endforelse
             </tbody>
         </table>
 
-        <div class="stmt-footnote">Total jobs: {{ count($jobReportData['jobs']) }}</div>
+        <div class="stmt-footnote">{{ __('Total jobs:') }} {{ count($jobReportData['jobs']) }}</div>
     </div>
 
     @include('includes.report-print-css', ['orientation' => 'landscape'])

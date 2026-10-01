@@ -5,9 +5,9 @@
                 <table class="table mb-0">
                     <thead class="bg-light">
                     <tr class="small text-uppercase fw-bold ls-1 text-muted">
-                        <th class="ps-4 py-3 border-0" style="width: 20%">Code</th>
-                        <th class="py-3 border-0" style="width: 55%">Operating Revenue</th>
-                        <th class="pe-4 py-3 text-end border-0" style="width: 25%">Amount</th>
+                        <th class="ps-4 py-3 border-0" style="width: 20%">{{ __('Code') }}</th>
+                        <th class="py-3 border-0" style="width: 55%">{{ __('Operating Revenue') }}</th>
+                        <th class="pe-4 py-3 text-end border-0" style="width: 25%">{{ __('Amount') }}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -19,13 +19,13 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="3" class="text-center py-3 text-muted small">No revenue activity recorded</td>
+                            <td colspan="3" class="text-center py-3 text-muted small">{{ __('No revenue activity recorded') }}</td>
                         </tr>
                     @endforelse
 
                     @if(count($profitAndLossData['revenue'] ?? []) > 0)
                     <tr class="fw-bold bg-light-subtle">
-                        <td colspan="2" class="ps-4 py-3 small">Total Operating Revenue</td>
+                        <td colspan="2" class="ps-4 py-3 small">{{ __('Total Operating Revenue') }}</td>
                         <td class="pe-4 text-end border-top border-dark py-3 tabular-nums">
                             {{ number_format($profitAndLossData['total_revenue'] ?? 0, 2) }}
                         </td>
@@ -36,7 +36,7 @@
 
                     @if(($profitAndLossData['total_revenue'] ?? 0) > 0)
                     <tr class="fw-bold text-white" style="background-color: #0ea5e9;">
-                        <td colspan="2" class="ps-4 py-3 h6 mb-0">TOTAL INCOME</td>
+                        <td colspan="2" class="ps-4 py-3 h6 mb-0">{{ __('TOTAL INCOME') }}</td>
                         <td class="pe-4 py-3 text-end h6 mb-0 tabular-nums">
                             {{ number_format($profitAndLossData['total_revenue'] ?? 0, 2) }}
                         </td>
@@ -46,9 +46,9 @@
 
                     <thead class="bg-light">
                     <tr class="small text-uppercase fw-bold ls-1 text-muted">
-                        <th class="ps-4 py-3 border-0">Code</th>
-                        <th class="py-3 border-0">Operating Expenses</th>
-                        <th class="pe-4 py-3 text-end border-0">Amount</th>
+                        <th class="ps-4 py-3 border-0">{{ __('Code') }}</th>
+                        <th class="py-3 border-0">{{ __('Operating Expenses') }}</th>
+                        <th class="pe-4 py-3 text-end border-0">{{ __('Amount') }}</th>
                     </tr>
                     </thead>
                     @forelse($profitAndLossData['expenses'] ?? [] as $account)
@@ -61,13 +61,13 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="3" class="text-center py-3 text-muted small">No expense activity recorded</td>
+                            <td colspan="3" class="text-center py-3 text-muted small">{{ __('No expense activity recorded') }}</td>
                         </tr>
                     @endforelse
 
                     @if(count($profitAndLossData['expenses'] ?? []) > 0)
                     <tr class="fw-bold bg-light-subtle">
-                        <td colspan="2" class="ps-4 py-3 small">Total Operating Expenses</td>
+                        <td colspan="2" class="ps-4 py-3 small">{{ __('Total Operating Expenses') }}</td>
                         <td class="pe-4 text-end border-top border-dark py-3 tabular-nums text-danger">
                             {{ number_format($profitAndLossData['total_expenses'] ?? 0, 2) }}
                         </td>
@@ -82,7 +82,7 @@
                     @endphp
                     <tr class="fw-bold text-white {{ $isProfit ? 'bg-success' : 'bg-danger' }}" style="{{ $isProfit ? '' : '' }}">
                         <td colspan="2" class="ps-4 py-4 h5 mb-0">
-                            NET {{ $isProfit ? 'PROFIT' : 'LOSS' }} FOR THE PERIOD
+                            {{ __('NET') }} {{ $isProfit ? __('PROFIT') : __('LOSS') }} {{ __('FOR THE PERIOD') }}
                         </td>
                         <td class="pe-4 py-4 text-end h5 mb-0 tabular-nums">
                             {{ $isProfit ? '' : '(' }}{{ number_format(abs($netIncome), 2) }}{{ $isProfit ? '' : ')' }}
@@ -93,7 +93,7 @@
 
             @if(($profitAndLossData['total_revenue'] ?? 0) > 0)
                 <div class="mt-3 text-center text-muted small">
-                    <i class="bi bi-graph-up-arrow me-1"></i> Net Profit Margin:
+                    <i class="bi bi-graph-up-arrow me-1"></i> {{ __('Net Profit Margin:') }}
                     <strong class="text-dark">
                         {{ number_format(($netIncome / $profitAndLossData['total_revenue']) * 100, 2) }}%
                     </strong>
@@ -112,16 +112,16 @@
                     <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
                 </td>
                 <td class="text-end">
-                    <div class="stmt-title">PROFIT &amp; LOSS STATEMENT</div>
-                    <div class="stmt-sub">Period: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
-                    <div class="stmt-sub">Generated: {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; Currency: SAR</div>
+                    <div class="stmt-title">{{ __('PROFIT & LOSS STATEMENT') }}</div>
+                    <div class="stmt-sub">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
+                    <div class="stmt-sub">{{ __('Generated:') }} {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency:') }} SAR</div>
                 </td>
             </tr>
         </table>
 
         <table class="stmt-table">
             <thead>
-            <tr><th colspan="2">REVENUE</th></tr>
+            <tr><th colspan="2">{{ __('REVENUE') }}</th></tr>
             </thead>
             <tbody>
             @forelse($profitAndLossData['revenue'] as $account)
@@ -130,17 +130,17 @@
                     <td class="text-end">{{ number_format($account['balance'], 2) }}</td>
                 </tr>
             @empty
-                <tr><td colspan="2" class="text-center">No revenue accounts with activity</td></tr>
+                <tr><td colspan="2" class="text-center">{{ __('No revenue accounts with activity') }}</td></tr>
             @endforelse
             </tbody>
             <tfoot>
-            <tr class="stmt-strong"><td>Total Revenue</td><td class="text-end">{{ number_format($profitAndLossData['total_revenue'] ?? 0, 2) }}</td></tr>
+            <tr class="stmt-strong"><td>{{ __('Total Revenue') }}</td><td class="text-end">{{ number_format($profitAndLossData['total_revenue'] ?? 0, 2) }}</td></tr>
             </tfoot>
         </table>
 
         <table class="stmt-table">
             <thead>
-            <tr><th colspan="2">EXPENSES</th></tr>
+            <tr><th colspan="2">{{ __('EXPENSES') }}</th></tr>
             </thead>
             <tbody>
             @forelse($profitAndLossData['expenses'] as $account)
@@ -149,21 +149,21 @@
                     <td class="text-end">{{ number_format($account['balance'], 2) }}</td>
                 </tr>
             @empty
-                <tr><td colspan="2" class="text-center">No expense accounts with activity</td></tr>
+                <tr><td colspan="2" class="text-center">{{ __('No expense accounts with activity') }}</td></tr>
             @endforelse
             </tbody>
             <tfoot>
-            <tr class="stmt-strong"><td>Total Expenses</td><td class="text-end">{{ number_format($profitAndLossData['total_expenses'] ?? 0, 2) }}</td></tr>
-            <tr class="stmt-strong"><td>Net Income / (Loss)</td><td class="text-end">{{ number_format($profitAndLossData['net_income'] ?? 0, 2) }}</td></tr>
+            <tr class="stmt-strong"><td>{{ __('Total Expenses') }}</td><td class="text-end">{{ number_format($profitAndLossData['total_expenses'] ?? 0, 2) }}</td></tr>
+            <tr class="stmt-strong"><td>{{ __('Net Income / (Loss)') }}</td><td class="text-end">{{ number_format($profitAndLossData['net_income'] ?? 0, 2) }}</td></tr>
             </tfoot>
         </table>
 
         <div class="stmt-signatures">
             <table class="stmt-meta">
                 <tr>
-                    <td>Prepared By: _________________</td>
-                    <td>Verified By: _________________</td>
-                    <td>Approved By: _________________</td>
+                    <td>{{ __('Prepared By:') }} _________________</td>
+                    <td>{{ __('Verified By:') }} _________________</td>
+                    <td>{{ __('Approved By:') }} _________________</td>
                 </tr>
             </table>
         </div>

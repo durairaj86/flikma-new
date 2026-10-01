@@ -3,19 +3,19 @@
         <table class="table table-bordered table-hover">
             <thead class="table-light">
                 <tr>
-                    <th colspan="10" class="text-center">Customer Aging Report</th>
+                    <th colspan="10" class="text-center">{{ __('Customer Aging Report') }}</th>
                 </tr>
                 <tr>
-                    <th>Invoice #</th>
-                    <th>Date</th>
-                    <th>Due Date</th>
-                    <th class="text-end">Current</th>
-                    <th class="text-end">1-30 Days</th>
-                    <th class="text-end">31-60 Days</th>
-                    <th class="text-end">61-90 Days</th>
-                    <th class="text-end">91-120 Days</th>
-                    <th class="text-end">Over 120 Days</th>
-                    <th class="text-end">Total</th>
+                    <th>{{ __('Invoice #') }}</th>
+                    <th>{{ __('Date') }}</th>
+                    <th>{{ __('Due Date') }}</th>
+                    <th class="text-end">{{ __('Current') }}</th>
+                    <th class="text-end">{{ __('1-30 Days') }}</th>
+                    <th class="text-end">{{ __('31-60 Days') }}</th>
+                    <th class="text-end">{{ __('61-90 Days') }}</th>
+                    <th class="text-end">{{ __('91-120 Days') }}</th>
+                    <th class="text-end">{{ __('Over 120 Days') }}</th>
+                    <th class="text-end">{{ __('Total') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -36,13 +36,13 @@
                     @endforeach
                 @else
                     <tr>
-                        <td colspan="10" class="text-center">No invoices found for this customer</td>
+                        <td colspan="10" class="text-center">{{ __('No invoices found for this customer') }}</td>
                     </tr>
                 @endif
             </tbody>
             <tfoot class="table-dark">
                 <tr>
-                    <th colspan="3" class="text-end">Total</th>
+                    <th colspan="3" class="text-end">{{ __('Total') }}</th>
                     <th class="text-end">{{ isset($agingData['totals']['current']) ? number_format($agingData['totals']['current'], 2) : '0.00' }}</th>
                     <th class="text-end">{{ isset($agingData['totals']['days_1_30']) ? number_format($agingData['totals']['days_1_30'], 2) : '0.00' }}</th>
                     <th class="text-end">{{ isset($agingData['totals']['days_31_60']) ? number_format($agingData['totals']['days_31_60'], 2) : '0.00' }}</th>

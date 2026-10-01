@@ -4,15 +4,15 @@
             <thead>
                 <tr class="bg-light text-muted small text-uppercase fw-bold ls-1">
                     <th class="border-0" style="width: 40px;"></th>
-                    <th class="ps-2 border-0">Job No</th>
-                    <th class="border-0">Date</th>
-                    <th class="border-0">Customer</th>
-                    <th class="border-0">Activity</th>
-                    <th class="text-center border-0">Invoices</th>
-                    <th class="text-end border-0">Approved Income</th>
-                    <th class="text-end border-0">Draft Income</th>
-                    <th class="text-end border-0">Job Total</th>
-                    <th class="text-center pe-4 border-0">Status</th>
+                    <th class="ps-2 border-0">{{ __('Job No') }}</th>
+                    <th class="border-0">{{ __('Date') }}</th>
+                    <th class="border-0">{{ __('Customer') }}</th>
+                    <th class="border-0">{{ __('Activity') }}</th>
+                    <th class="text-center border-0">{{ __('Invoices') }}</th>
+                    <th class="text-end border-0">{{ __('Approved Income') }}</th>
+                    <th class="text-end border-0">{{ __('Draft Income') }}</th>
+                    <th class="text-end border-0">{{ __('Job Total') }}</th>
+                    <th class="text-center pe-4 border-0">{{ __('Status') }}</th>
                 </tr>
             </thead>
             <tbody class="border-top-0">
@@ -36,7 +36,7 @@
                                 <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 jir-toggle-btn"
                                         data-bs-toggle="collapse" data-bs-target="#{{ $collapseId }}"
                                         aria-expanded="false" aria-controls="{{ $collapseId }}"
-                                        title="Show details">
+                                        title="{{ __('Show details') }}">
                                     <i class="bi bi-chevron-right jir-toggle-icon text-muted"></i>
                                 </button>
                             </td>
@@ -65,19 +65,19 @@
                                         <table class="table table-sm mb-0 bg-transparent">
                                             <thead>
                                                 <tr class="small text-muted text-uppercase">
-                                                    <th class="border-0">Invoice No</th>
-                                                    <th class="border-0">Invoice Date</th>
-                                                    <th class="border-0">Description</th>
-                                                    <th class="text-end border-0">Amount</th>
-                                                    <th class="text-center border-0">Status</th>
+                                                    <th class="border-0">{{ __('Invoice No') }}</th>
+                                                    <th class="border-0">{{ __('Invoice Date') }}</th>
+                                                    <th class="border-0">{{ __('Description') }}</th>
+                                                    <th class="text-end border-0">{{ __('Amount') }}</th>
+                                                    <th class="text-center border-0">{{ __('Status') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 @foreach($job['invoice_details'] as $dIndex => $detail)
                                                     @php
                                                         $lineStatus = match((int) ($detail['invoice_status'] ?? 0)) {
-                                                            3 => ['label' => 'Approved', 'class' => 'bg-success-subtle text-success border-success-subtle'],
-                                                            1 => ['label' => 'Draft', 'class' => 'bg-secondary-subtle text-secondary border-secondary-subtle'],
+                                                            3 => ['label' => __('Approved'), 'class' => 'bg-success-subtle text-success border-success-subtle'],
+                                                            1 => ['label' => __('Draft'), 'class' => 'bg-secondary-subtle text-secondary border-secondary-subtle'],
                                                             default => ['label' => '—', 'class' => 'bg-light text-muted border'],
                                                         };
                                                     @endphp
@@ -104,7 +104,7 @@
                             <div class="bg-light rounded-circle p-4 d-inline-block mb-3">
                                 <i class="bi bi-cash-stack h2 text-muted"></i>
                             </div>
-                            <div class="small">No income data found for the selected period.</div>
+                            <div class="small">{{ __('No income data found for the selected period.') }}</div>
                         </td>
                     </tr>
                 @endif
@@ -112,7 +112,7 @@
             @if(isset($jobIncomeReportData['total_income']) && $jobIncomeReportData['total_income'] > 0)
             <tfoot class="bg-light border-top-2">
                 <tr class="fw-bold">
-                    <td colspan="8" class="ps-2 py-3">Grand Total</td>
+                    <td colspan="8" class="ps-2 py-3">{{ __('Grand Total') }}</td>
                     <td class="text-end tabular-nums text-pr">{{ number_format($jobIncomeReportData['total_income'], 2) }}</td>
                     <td></td>
                 </tr>
@@ -132,9 +132,9 @@
                     <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
                 </td>
                 <td class="text-end">
-                    <div class="stmt-title">JOB INCOME REPORT</div>
-                    <div class="stmt-sub">Period: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
-                    <div class="stmt-sub">Generated: {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; Currency: SAR</div>
+                    <div class="stmt-title">{{ __('JOB INCOME REPORT') }}</div>
+                    <div class="stmt-sub">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
+                    <div class="stmt-sub">{{ __('Generated:') }} {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency:') }} {{ __('SAR') }}</div>
                 </td>
             </tr>
         </table>
@@ -142,14 +142,14 @@
         <table class="stmt-table">
             <thead>
             <tr>
-                <th>Job No</th>
-                <th>Customer</th>
-                <th>Activity</th>
-                <th class="text-end">Invoices</th>
-                <th class="text-end">Approved Income</th>
-                <th class="text-end">Draft Income</th>
-                <th class="text-end">Job Total</th>
-                <th>Status</th>
+                <th>{{ __('Job No') }}</th>
+                <th>{{ __('Customer') }}</th>
+                <th>{{ __('Activity') }}</th>
+                <th class="text-end">{{ __('Invoices') }}</th>
+                <th class="text-end">{{ __('Approved Income') }}</th>
+                <th class="text-end">{{ __('Draft Income') }}</th>
+                <th class="text-end">{{ __('Job Total') }}</th>
+                <th>{{ __('Status') }}</th>
             </tr>
             </thead>
             <tbody>
@@ -165,12 +165,12 @@
                     <td>{{ ucfirst($job['status'] ?: '—') }}</td>
                 </tr>
             @empty
-                <tr><td colspan="8" class="text-center">No income data found for the selected period.</td></tr>
+                <tr><td colspan="8" class="text-center">{{ __('No income data found for the selected period.') }}</td></tr>
             @endforelse
             </tbody>
             <tfoot>
             <tr class="stmt-strong">
-                <td colspan="6">Grand Total</td>
+                <td colspan="6">{{ __('Grand Total') }}</td>
                 <td class="text-end">{{ number_format($jobIncomeReportData['total_income'] ?? 0, 2) }}</td>
                 <td></td>
             </tr>
@@ -180,9 +180,9 @@
         <div class="stmt-signatures">
             <table class="stmt-meta">
                 <tr>
-                    <td>Prepared By: _________________</td>
-                    <td>Verified By: _________________</td>
-                    <td>Approved By: _________________</td>
+                    <td>{{ __('Prepared By:') }} _________________</td>
+                    <td>{{ __('Verified By:') }} _________________</td>
+                    <td>{{ __('Approved By:') }} _________________</td>
                 </tr>
             </table>
         </div>

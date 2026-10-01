@@ -1,6 +1,6 @@
 @section('js', 'supplier_statement')
-@section('page-title', 'Supplier Statement')
-@section('page-subtitle', 'Manage and track supplier account transaction history')
+@section('page-title', __('Supplier Statement'))
+@section('page-subtitle', __('Manage and track supplier account transaction history'))
 
 <div class="statement-wrapper min-vh-100 bg-light py-4">
     <div class="container-fluid px-lg-5">
@@ -9,16 +9,16 @@
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
                     <div class="col-lg-4 col-xl-2 col-xxl-3">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Supplier</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Supplier') }}</label>
                         <select class="form-select bg-light border-0 py-2 no-ts" wire:model.live="supplierId">
-                            <option value="">Select a supplier...</option>
+                            <option value="">{{ __('Select a supplier...') }}</option>
                             @foreach($suppliers as $sup)
                                 <option value="{{ $sup['id'] }}" wire:key="sup-opt-{{ $sup['id'] }}">{{ $sup['name_en'] }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="col-lg-2 col-md-4">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">From Date</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('From Date') }}</label>
                         <div wire:ignore>
                             <input type="text" id="ss-start-date"
                                    class="form-control bg-light border-0 py-2"
@@ -27,7 +27,7 @@
                         </div>
                     </div>
                     <div class="col-lg-2 col-md-4">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">To Date</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('To Date') }}</label>
                         <div wire:ignore>
                             <input type="text" id="ss-end-date"
                                    class="form-control bg-light border-0 py-2"
@@ -39,20 +39,20 @@
                         <div class="d-flex flex-wrap gap-2 justify-content-end align-items-center">
                             <button type="button" class="btn btn-supplier fw-bold py-2 shadow-sm" onclick="ssApplyFilter()" wire:loading.attr="disabled">
                                 <i class="bi bi-filter-left me-2"></i>
-                                <span wire:loading.remove>Generate</span>
-                                <span wire:loading><span class="spinner-border spinner-border-sm me-1"></span>Loading...</span>
+                                <span wire:loading.remove>{{ __('Generate') }}</span>
+                                <span wire:loading><span class="spinner-border spinner-border-sm me-1"></span>{{ __('Loading...') }}</span>
                             </button>
                                                         <div class="btn-group shadow-sm">
                                 <button class="btn btn-white border border-end-0" onclick="window.print()">
-                                    <i class="bi bi-printer me-2"></i>Print
+                                    <i class="bi bi-printer me-2"></i>{{ __('Print') }}
                                 </button>
                                 <div class="btn-group">
                                     <button class="btn btn-white border dropdown-toggle" data-bs-toggle="dropdown">
-                                        <i class="bi bi-download me-2"></i>Export
+                                        <i class="bi bi-download me-2"></i>{{ __('Export') }}
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                                        <li><a class="dropdown-item py-2" href="#" onclick="ssExportPdf(event)"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
-                                        <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
+                                        <li><a class="dropdown-item py-2" href="#" onclick="ssExportPdf(event)"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
+                                        <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -95,23 +95,23 @@
 
                             <div class="space-y-3 py-3 border-top border-bottom border-light">
                                 <div class="d-flex justify-content-between">
-                                    <span class="small text-muted">Opening:</span>
+                                    <span class="small text-muted">{{ __('Opening:') }}</span>
                                     <span class="small fw-bold text-dark">{{ number_format($openingBalance, 2) }}</span>
                                 </div>
                                 <div class="d-flex justify-content-between">
-                                    <span class="small text-muted">Invoiced (+):</span>
+                                    <span class="small text-muted">{{ __('Invoiced (+):') }}</span>
                                     <span class="small fw-bold text-supplier">{{ number_format($invoicedAmount, 2) }}</span>
                                 </div>
                                 <div class="d-flex justify-content-between">
-                                    <span class="small text-muted">Paid (-):</span>
+                                    <span class="small text-muted">{{ __('Paid (-):') }}</span>
                                     <span class="small fw-bold text-success">{{ number_format($paidAmount, 2) }}</span>
                                 </div>
                             </div>
 
                             <div class="mt-4 text-center">
-                                <label class="small text-uppercase text-muted d-block mb-1 fw-bold">Current Balance</label>
+                                <label class="small text-uppercase text-muted d-block mb-1 fw-bold">{{ __('Current Balance') }}</label>
                                 <h3 class="fw-bold text-supplier mb-0 tabular-nums">
-                                    <small class="h6">SAR</small> {{ number_format($closingBalance, 2) }}
+                                    <small class="h6">{{ __('SAR') }}</small> {{ number_format($closingBalance, 2) }}
                                 </h3>
                             </div>
                         </div>
@@ -121,30 +121,30 @@
                 <div class="col-xl-9">
                     <div class="card border-0 shadow-sm overflow-hidden">
                         <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
-                            <h6 class="mb-0 fw-bold"><i class="bi bi-journal-text me-2 text-supplier"></i>Transaction Ledger</h6>
+                            <h6 class="mb-0 fw-bold"><i class="bi bi-journal-text me-2 text-supplier"></i>{{ __('Transaction Ledger') }}</h6>
                             <div class="d-flex align-items-center gap-2">
                                 <span class="badge bg-light text-dark border px-3 py-2">
-                                    Period: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} &mdash; {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
+                                    {{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} &mdash; {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
                                 </span>
-                                <span class="badge bg-supplier-subtle text-supplier border border-supplier-subtle px-3 py-2">Currency: {{ $company->base_currency ?? 'SAR' }}</span>
+                                <span class="badge bg-supplier-subtle text-supplier border border-supplier-subtle px-3 py-2">{{ __('Currency:') }} {{ $company->base_currency ?? 'SAR' }}</span>
                             </div>
                         </div>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0">
                                 <thead>
                                 <tr class="bg-light text-muted small text-uppercase fw-bold ls-1">
-                                    <th class="ps-4 border-0">Date</th>
-                                    <th class="border-0">Voucher No</th>
-                                    <th class="border-0">Description</th>
-                                    <th class="border-0">FCY Amount</th>
-                                    <th class="text-end border-0">Invoiced</th>
-                                    <th class="text-end border-0">Paid</th>
-                                    <th class="text-end pe-4 border-0">Balance</th>
+                                    <th class="ps-4 border-0">{{ __('Date') }}</th>
+                                    <th class="border-0">{{ __('Voucher No') }}</th>
+                                    <th class="border-0">{{ __('Description') }}</th>
+                                    <th class="border-0">{{ __('FCY Amount') }}</th>
+                                    <th class="text-end border-0">{{ __('Invoiced') }}</th>
+                                    <th class="text-end border-0">{{ __('Paid') }}</th>
+                                    <th class="text-end pe-4 border-0">{{ __('Balance') }}</th>
                                 </tr>
                                 </thead>
                                 <tbody class="border-top-0">
                                 <tr class="bg-light-orange fw-bold">
-                                    <td class="ps-4 py-3" colspan="3">Balance Brought Forward</td>
+                                    <td class="ps-4 py-3" colspan="3">{{ __('Balance Brought Forward') }}</td>
                                     <td class="text-end"></td>
                                     <td class="text-end"></td>
                                     <td class="text-end"></td>
@@ -156,7 +156,7 @@
                                         <td class="ps-4 small text-muted">{{ \Carbon\Carbon::parse($txn->reference_date)->format('d M Y') }}</td>
                                         <td>
                                             <span class="fw-medium d-block">{{ $txn->voucher_no }}</span>
-                                            <span class="x-small text-muted uppercase">{{ $txn->voucher_type === 'SI' ? 'Supplier Invoice' : ($txn->voucher_type === 'PV' ? 'Payment Voucher' : $txn->voucher_type) }}</span>
+                                            <span class="x-small text-muted uppercase">{{ $txn->voucher_type === 'SI' ? __('Supplier Invoice') : ($txn->voucher_type === 'PV' ? __('Payment Voucher') : $txn->voucher_type) }}</span>
                                         </td>
                                         <td class="small">{{ $txn->description }}</td>
                                         <td class="small">
@@ -177,13 +177,13 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="text-center py-4 text-muted small italic">No transactions found for the selected period.</td>
+                                        <td colspan="7" class="text-center py-4 text-muted small italic">{{ __('No transactions found for the selected period.') }}</td>
                                     </tr>
                                 @endforelse
                                 </tbody>
                                 <tfoot class="bg-light border-top-2">
                                 <tr class="fw-bold">
-                                    <td colspan="3" class="ps-4 py-3">Closing Totals</td>
+                                    <td colspan="3" class="ps-4 py-3">{{ __('Closing Totals') }}</td>
                                     <td class="text-end"></td>
                                     <td class="text-end tabular-nums text-supplier">{{ number_format($invoicedAmount, 2) }}</td>
                                     <td class="text-end tabular-nums text-success">{{ number_format($paidAmount, 2) }}</td>
@@ -196,9 +196,9 @@
 
                     <div class="mt-4 p-3 bg-white border rounded shadow-sm">
                         <div class="row text-center text-muted x-small">
-                            <div class="col-md-4">Prepared By: _________________</div>
-                            <div class="col-md-4">Verified By: _________________</div>
-                            <div class="col-md-4">Supplier Signature: _________________</div>
+                            <div class="col-md-4">{{ __('Prepared By:') }} _________________</div>
+                            <div class="col-md-4">{{ __('Verified By:') }} _________________</div>
+                            <div class="col-md-4">{{ __('Supplier Signature:') }} _________________</div>
                         </div>
                     </div>
                 </div>
@@ -213,18 +213,18 @@
                         <td>
                             <div class="stmt-company">{{ $company->name ?? config('app.name') }}</div>
                             <div class="stmt-sub">
-                                @if(!empty($company->phone)) Phone: {{ $company->phone }} @endif
+                                @if(!empty($company->phone)) {{ __('Phone:') }} {{ $company->phone }} @endif
                                 @if(!empty($company->email)) &nbsp;|&nbsp; {{ $company->email }} @endif
                             </div>
                             @if(!empty($company->vat_number))
-                                <div class="stmt-sub">VAT No: {{ $company->vat_number }}</div>
+                                <div class="stmt-sub">{{ __('VAT No:') }} {{ $company->vat_number }}</div>
                             @endif
                         </td>
                         <td class="text-end">
-                            <div class="stmt-title">SUPPLIER STATEMENT OF ACCOUNT</div>
-                            <div class="stmt-sub">Period: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} to {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
-                            <div class="stmt-sub">Generated: {{ now()->format('d M Y H:i') }}</div>
-                            <div class="stmt-sub">Currency: {{ $company->base_currency ?? 'SAR' }}</div>
+                            <div class="stmt-title">{{ __('SUPPLIER STATEMENT OF ACCOUNT') }}</div>
+                            <div class="stmt-sub">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} {{ __('to') }} {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
+                            <div class="stmt-sub">{{ __('Generated:') }} {{ now()->format('d M Y H:i') }}</div>
+                            <div class="stmt-sub">{{ __('Currency:') }} {{ $company->base_currency ?? 'SAR' }}</div>
                         </td>
                     </tr>
                 </table>
@@ -232,7 +232,7 @@
                 <table class="stmt-meta stmt-box">
                     <tr>
                         <td>
-                            <div class="stmt-sub" style="text-transform: uppercase;">Supplier</div>
+                            <div class="stmt-sub" style="text-transform: uppercase;">{{ __('Supplier') }}</div>
                             <div class="stmt-strong">{{ $supplier->name_en }} ({{ $supplier->row_no }})</div>
                             <div class="stmt-sub">
                                 @if($supplier->email) {{ $supplier->email }} @endif
@@ -241,10 +241,10 @@
                         </td>
                         <td class="text-end">
                             <table class="stmt-summary">
-                                <tr><td>Opening Balance</td><td class="text-end">{{ number_format($openingBalance, 2) }}</td></tr>
-                                <tr><td>Invoiced (+)</td><td class="text-end">{{ number_format($invoicedAmount, 2) }}</td></tr>
-                                <tr><td>Paid (-)</td><td class="text-end">{{ number_format($paidAmount, 2) }}</td></tr>
-                                <tr class="stmt-strong"><td>Closing Balance</td><td class="text-end">{{ number_format($closingBalance, 2) }}</td></tr>
+                                <tr><td>{{ __('Opening Balance') }}</td><td class="text-end">{{ number_format($openingBalance, 2) }}</td></tr>
+                                <tr><td>{{ __('Invoiced (+)') }}</td><td class="text-end">{{ number_format($invoicedAmount, 2) }}</td></tr>
+                                <tr><td>{{ __('Paid (-)') }}</td><td class="text-end">{{ number_format($paidAmount, 2) }}</td></tr>
+                                <tr class="stmt-strong"><td>{{ __('Closing Balance') }}</td><td class="text-end">{{ number_format($closingBalance, 2) }}</td></tr>
                             </table>
                         </td>
                     </tr>
@@ -253,19 +253,19 @@
                 <table class="stmt-table">
                     <thead>
                     <tr>
-                        <th style="width: 10%;">Date</th>
-                        <th style="width: 12%;">Voucher No</th>
-                        <th style="width: 12%;">Type</th>
-                        <th>Description</th>
-                        <th style="width: 13%;">FCY Amount</th>
-                        <th class="text-end" style="width: 12%;">Invoiced</th>
-                        <th class="text-end" style="width: 12%;">Paid</th>
-                        <th class="text-end" style="width: 13%;">Balance</th>
+                        <th style="width: 10%;">{{ __('Date') }}</th>
+                        <th style="width: 12%;">{{ __('Voucher No') }}</th>
+                        <th style="width: 12%;">{{ __('Type') }}</th>
+                        <th>{{ __('Description') }}</th>
+                        <th style="width: 13%;">{{ __('FCY Amount') }}</th>
+                        <th class="text-end" style="width: 12%;">{{ __('Invoiced') }}</th>
+                        <th class="text-end" style="width: 12%;">{{ __('Paid') }}</th>
+                        <th class="text-end" style="width: 13%;">{{ __('Balance') }}</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr class="stmt-strong">
-                        <td colspan="7">Balance Brought Forward</td>
+                        <td colspan="7">{{ __('Balance Brought Forward') }}</td>
                         <td class="text-end">{{ number_format($openingBalance, 2) }}</td>
                     </tr>
                     @forelse($transactions as $txn)
@@ -286,13 +286,13 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center">No transactions found for the selected period.</td>
+                            <td colspan="8" class="text-center">{{ __('No transactions found for the selected period.') }}</td>
                         </tr>
                     @endforelse
                     </tbody>
                     <tfoot>
                     <tr class="stmt-strong">
-                        <td colspan="4">Closing Totals</td>
+                        <td colspan="4">{{ __('Closing Totals') }}</td>
                         <td class="text-end"></td>
                         <td class="text-end">{{ number_format($invoicedAmount, 2) }}</td>
                         <td class="text-end">{{ number_format($paidAmount, 2) }}</td>
@@ -302,14 +302,14 @@
                 </table>
 
                 <div class="stmt-footnote">
-                    This is a system generated statement. Please report any discrepancy within 15 days of receipt.
+                    {{ __('This is a system generated statement. Please report any discrepancy within 15 days of receipt.') }}
                 </div>
 
                 <table class="stmt-meta stmt-signatures">
                     <tr>
-                        <td>Prepared By: _________________</td>
-                        <td class="text-center">Verified By: _________________</td>
-                        <td class="text-end">Supplier Signature: _________________</td>
+                        <td>{{ __('Prepared By:') }} _________________</td>
+                        <td class="text-center">{{ __('Verified By:') }} _________________</td>
+                        <td class="text-end">{{ __('Supplier Signature:') }} _________________</td>
                     </tr>
                 </table>
             </div>
@@ -319,8 +319,8 @@
                     <div class="bg-light rounded-circle p-4 d-inline-block mb-3">
                         <i class="bi bi-building h1 text-muted"></i>
                     </div>
-                    <h5 class="fw-bold">No Supplier Selected</h5>
-                    <p class="text-muted mx-auto" style="max-width: 300px;">Please use the filters above to select a supplier and date range to view the statement.</p>
+                    <h5 class="fw-bold">{{ __('No Supplier Selected') }}</h5>
+                    <p class="text-muted mx-auto" style="max-width: 300px;">{{ __('Please use the filters above to select a supplier and date range to view the statement.') }}</p>
                 </div>
             </div>
         @endif
@@ -373,7 +373,7 @@
                 e.preventDefault();
                 var area = document.getElementById('supplier-statement-print');
                 if (!area) {
-                    alert('Please select a supplier first.');
+                    alert("{{ __('Please select a supplier first.') }}");
                     return;
                 }
                 var clone = area.cloneNode(true);

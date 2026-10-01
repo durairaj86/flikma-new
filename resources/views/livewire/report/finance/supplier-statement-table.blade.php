@@ -27,19 +27,19 @@
                         <div class="card-body p-0">
                             <div class="row g-0 h-100 text-center">
                                 <div class="col border-end py-3">
-                                    <div class="ls-sm mb-1">OPENING</div>
+                                    <div class="ls-sm mb-1">{{ __('OPENING') }}</div>
                                     <div class="fw-bold fs-6 font-mono text-dark">{{ number_format($supplierStatementData['openingBalance'], 2) }}</div>
                                 </div>
                                 <div class="col border-end py-3">
-                                    <div class="ls-sm text-primary-emphasis mb-1">INVOICED</div>
+                                    <div class="ls-sm text-primary-emphasis mb-1">{{ __('INVOICED') }}</div>
                                     <div class="fw-bold fs-6 font-mono text-primary">{{ number_format($supplierStatementData['invoicedAmount'], 2) }}</div>
                                 </div>
                                 <div class="col border-end py-3">
-                                    <div class="ls-sm text-success-emphasis mb-1">PAID</div>
+                                    <div class="ls-sm text-success-emphasis mb-1">{{ __('PAID') }}</div>
                                     <div class="fw-bold fs-6 font-mono text-success">{{ number_format($supplierStatementData['paidAmount'], 2) }}</div>
                                 </div>
                                 <div class="col py-3 bg-light border-start border-4 border-danger">
-                                    <div class="ls-sm text-danger mb-1">CLOSING</div>
+                                    <div class="ls-sm text-danger mb-1">{{ __('CLOSING') }}</div>
                                     <div class="fw-bold fs-6 font-mono text-danger">{{ number_format($supplierStatementData['closingBalance'], 2) }}</div>
                                 </div>
                             </div>
@@ -50,25 +50,25 @@
 
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
-                    <h6 class="mb-0 fw-bold text-dark ls-sm"><i class="bi bi-journals me-2"></i>SUPPLIER LEDGER</h6>
-                    <span class="badge bg-secondary-subtle text-secondary border px-3 py-2 rounded-pill font-mono">CURRENCY: {{ $supplierStatementData['supplier']->currency }}</span>
+                    <h6 class="mb-0 fw-bold text-dark ls-sm"><i class="bi bi-journals me-2"></i>{{ __('SUPPLIER LEDGER') }}</h6>
+                    <span class="badge bg-secondary-subtle text-secondary border px-3 py-2 rounded-pill font-mono">{{ __('CURRENCY') }}: {{ $supplierStatementData['supplier']->currency }}</span>
                 </div>
                 <div class="table-responsive" style="max-height: 60vh; overflow-y: auto;">
                     <table class="table table-sm align-middle mb-0">
                         <thead class="table-light sticky-top">
                         <tr class="text-muted fw-bold">
-                            <th class="ps-3 py-3 ls-sm">DATE</th>
-                            <th class="py-3 ls-sm">VOUCHER / REF</th>
-                            <th class="py-3 ls-sm text-center">JOB</th>
-                            <th class="py-3 ls-sm">DESCRIPTION</th>
-                            <th class="py-3 ls-sm text-end">DEBIT (-)</th>
-                            <th class="py-3 ls-sm text-end">CREDIT (+)</th>
-                            <th class="py-3 ls-sm text-end pe-3">BALANCE</th>
+                            <th class="ps-3 py-3 ls-sm">{{ __('DATE') }}</th>
+                            <th class="py-3 ls-sm">{{ __('VOUCHER / REF') }}</th>
+                            <th class="py-3 ls-sm text-center">{{ __('JOB') }}</th>
+                            <th class="py-3 ls-sm">{{ __('DESCRIPTION') }}</th>
+                            <th class="py-3 ls-sm text-end">{{ __('DEBIT (-)') }}</th>
+                            <th class="py-3 ls-sm text-end">{{ __('CREDIT (+)') }}</th>
+                            <th class="py-3 ls-sm text-end pe-3">{{ __('BALANCE') }}</th>
                         </tr>
                         </thead>
                         <tbody class="bg-white">
                         <tr class="table-light-subtle">
-                            <td colspan="4" class="ps-3 py-2 fw-bold text-muted small italic">Brought Forward (Opening Balance)</td>
+                            <td colspan="4" class="ps-3 py-2 fw-bold text-muted small italic">{{ __('Brought Forward (Opening Balance)') }}</td>
                             <td class="text-end font-mono fw-semibold">{{ $supplierStatementData['openingBalance'] < 0 ? number_format(abs($supplierStatementData['openingBalance']), 2) : '-' }}</td>
                             <td class="text-end font-mono fw-semibold">{{ $supplierStatementData['openingBalance'] > 0 ? number_format($supplierStatementData['openingBalance'], 2) : '-' }}</td>
                             <td class="text-end pe-3 font-mono fw-bold">{{ number_format($supplierStatementData['openingBalance'], 2) }}</td>
@@ -97,14 +97,14 @@
                             <tr>
                                 <td colspan="7" class="text-center py-5">
                                     <i class="bi bi-inbox text-light display-4"></i>
-                                    <p class="text-muted mt-2 mb-0">No transactions found for this period.</p>
+                                    <p class="text-muted mt-2 mb-0">{{ __('No transactions found for this period.') }}</p>
                                 </td>
                             </tr>
                         @endforelse
                         </tbody>
                         <tfoot class="table-dark sticky-bottom">
                         <tr>
-                            <th colspan="4" class="ps-3 py-3 text-uppercase ls-sm">Period Totals</th>
+                            <th colspan="4" class="ps-3 py-3 text-uppercase ls-sm">{{ __('Period Totals') }}</th>
                             <th class="text-end font-mono py-3 fs-6">{{ number_format($supplierStatementData['paidAmount'], 2) }}</th>
                             <th class="text-end font-mono py-3 fs-6">{{ number_format($supplierStatementData['invoicedAmount'], 2) }}</th>
                             <th class="text-end pe-3 font-mono py-3 fs-6 text-warning">{{ number_format($supplierStatementData['closingBalance'], 2) }}</th>
@@ -117,8 +117,8 @@
         @else
             <div class="text-center py-5 bg-white border rounded-3 shadow-sm mt-3">
                 <i class="bi bi-search display-1 text-light"></i>
-                <h5 class="text-muted mt-3 fw-normal">Ready to view statements</h5>
-                <p class="text-muted small">Please select a supplier from the list to load records.</p>
+                <h5 class="text-muted mt-3 fw-normal">{{ __('Ready to view statements') }}</h5>
+                <p class="text-muted small">{{ __('Please select a supplier from the list to load records.') }}</p>
             </div>
         @endif
     </div>

@@ -1,6 +1,6 @@
 @section('js', 'customer_aging')
-@section('page-title', 'Customer Aging Report')
-@section('page-subtitle', 'Track outstanding receivables by aging period')
+@section('page-title', __('Customer Aging Report'))
+@section('page-subtitle', __('Track outstanding receivables by aging period'))
 
 <div class="aging-wrapper min-vh-100 bg-light py-4">
     <div class="container-fluid px-lg-5">
@@ -19,16 +19,16 @@
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
                     <div class="col-lg-3 col-xxl-2">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Customer</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Customer') }}</label>
                         <select class="form-select bg-light border-0 py-2 no-ts" wire:model.live="customerId">
-                            <option value="">Select a customer...</option>
+                            <option value="">{{ __('Select a customer...') }}</option>
                             @foreach($customers as $cust)
                                 <option value="{{ $cust['id'] }}" wire:key="cust-opt-{{ $cust['id'] }}">{{ $cust['name_en'] }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="col-lg-2 col-md-4 col-xxl-2">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">As of Date</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('As of Date') }}</label>
                         <div wire:ignore>
                             <input type="text" id="ca-as-of-date"
                                    class="form-control bg-light border-0 py-2"
@@ -36,42 +36,42 @@
                         </div>
                     </div>
                     <div class="col-lg-2 col-md-4 col-xxl-2">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Interval (Days)</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Interval (Days)') }}</label>
                         <select class="form-select bg-light border-0 py-2 no-ts" wire:model.live="agingInterval">
                             @foreach(\App\Livewire\Report\Finance\CustomerAging::AGING_INTERVALS as $days)
-                                <option value="{{ $days }}">{{ $days }} Days</option>
+                                <option value="{{ $days }}">{{ $days }} {{ __('Days') }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="col-lg-2 col-md-4 col-xxl-2">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Columns</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Columns') }}</label>
                         <select class="form-select bg-light border-0 py-2 no-ts" wire:model.live="agingColumns">
                             @foreach(\App\Livewire\Report\Finance\CustomerAging::AGING_COLUMN_CHOICES as $n)
-                                <option value="{{ $n }}">{{ $n }} {{ $n === 1 ? 'Column' : 'Columns' }}</option>
+                                <option value="{{ $n }}">{{ $n }} {{ __(Str::plural('Column', $n)) }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="col-lg-3 col-xxl-2">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Search Invoice</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Search Invoice') }}</label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-0 text-muted"><i class="bi bi-search"></i></span>
                             <input type="text" class="form-control bg-light border-0 ps-0 py-2"
-                                   placeholder="Invoice no..." wire:model.live.debounce.300ms="search" />
+                                   placeholder="{{ __('Invoice no...') }}" wire:model.live.debounce.300ms="search" />
                         </div>
                     </div>
             <div class="col-lg-12 col-xxl-2">
                         <div class="d-flex flex-wrap gap-2 justify-content-end">
                             <div class="btn-group shadow-sm">
                                 <button class="btn btn-white border border-end-0" onclick="window.print()">
-                                <i class="bi bi-printer me-2"></i>Print
+                                <i class="bi bi-printer me-2"></i>{{ __('Print') }}
                                 </button>
                                 <div class="btn-group">
                                 <button class="btn btn-white border dropdown-toggle" data-bs-toggle="dropdown">
-                                <i class="bi bi-download me-2"></i>Export
+                                <i class="bi bi-download me-2"></i>{{ __('Export') }}
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                                <li><a class="dropdown-item py-2" href="#" onclick="caExportPdf(event)"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
-                                <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
+                                <li><a class="dropdown-item py-2" href="#" onclick="caExportPdf(event)"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
+                                <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
                                 </ul>
                                 </div>
                                 </div>
@@ -96,7 +96,7 @@
                 <div class="col-md col-6">
                     <div class="card border-0 shadow-sm h-100 border-start border-3 border-customer">
                         <div class="card-body text-center py-3">
-                            <div class="small text-muted fw-bold text-uppercase mb-1">Total Due</div>
+                            <div class="small text-muted fw-bold text-uppercase mb-1">{{ __('Total Due') }}</div>
                             <div class="fw-bold tabular-nums text-customer fs-5">{{ number_format($summary['grand_total'], 2) }}</div>
                         </div>
                     </div>
@@ -132,11 +132,11 @@
                             @endif
 
                             <div class="mt-3 text-center">
-                                <label class="small text-uppercase text-muted d-block mb-1 fw-bold">As of {{ \Carbon\Carbon::parse($asOfDate)->format('d M Y') }}</label>
+                                <label class="small text-uppercase text-muted d-block mb-1 fw-bold">{{ __('As of') }} {{ \Carbon\Carbon::parse($asOfDate)->format('d M Y') }}</label>
                                 <h3 class="fw-bold text-customer mb-0 tabular-nums">
                                     <small class="h6">SAR</small> {{ number_format($summary['grand_total'], 2) }}
                                 </h3>
-                                <span class="small text-muted">Total Outstanding</span>
+                                <span class="small text-muted">{{ __('Total Outstanding') }}</span>
                             </div>
 
                             {{-- Aging Bar --}}
@@ -166,11 +166,11 @@
                 <div class="col-xl-9">
                     <div class="card border-0 shadow-sm overflow-hidden">
                         <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
-                            <h6 class="mb-0 fw-bold"><i class="bi bi-table me-2 text-customer"></i>Aging Detail</h6>
+                            <h6 class="mb-0 fw-bold"><i class="bi bi-table me-2 text-customer"></i>{{ __('Aging Detail') }}</h6>
                             <div class="d-flex align-items-center gap-2">
-                                <span class="badge bg-light text-dark border px-3 py-2">{{ $agingInterval }}-day buckets</span>
+                                <span class="badge bg-light text-dark border px-3 py-2">{{ $agingInterval }}-{{ __('day buckets') }}</span>
                                 <span class="badge bg-customer-subtle text-customer border border-customer-subtle px-3 py-2">
-                                    {{ count($invoices) }} invoice(s) outstanding
+                                    {{ count($invoices) }} {{ __('invoice(s) outstanding') }}
                                 </span>
                             </div>
                         </div>
@@ -178,13 +178,13 @@
                             <table class="table table-hover align-middle mb-0">
                                 <thead>
                                 <tr class="bg-light text-muted small text-uppercase fw-bold ls-1">
-                                    <th class="ps-4 border-0">Invoice #</th>
-                                    <th class="border-0">Date</th>
-                                    <th class="border-0">Due Date</th>
+                                    <th class="ps-4 border-0">{{ __('Invoice #') }}</th>
+                                    <th class="border-0">{{ __('Date') }}</th>
+                                    <th class="border-0">{{ __('Due Date') }}</th>
                                     @foreach($bucketDefs as $def)
                                         <th class="text-end border-0" wire:key="th-{{ $def['key'] }}">{{ $def['short'] }}</th>
                                     @endforeach
-                                    <th class="text-end pe-4 border-0">Total</th>
+                                    <th class="text-end pe-4 border-0">{{ __('Total') }}</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -199,7 +199,7 @@
                                                 {{ $inv['due_date'] }}
                                             </span>
                                             @if($inv['days_overdue'] > 0)
-                                                <br><span class="x-small text-danger">{{ $inv['days_overdue'] }}d overdue</span>
+                                                <br><span class="x-small text-danger">{{ $inv['days_overdue'] }}{{ __('d overdue') }}</span>
                                             @endif
                                         </td>
                                         @foreach($bucketDefs as $i => $def)
@@ -215,14 +215,14 @@
                                     <tr>
                                         <td colspan="{{ 4 + count($bucketDefs) }}" class="text-center py-5 text-muted small">
                                             <i class="bi bi-inbox h3 d-block mb-2"></i>
-                                            No outstanding invoices found.
+                                            {{ __('No outstanding invoices found.') }}
                                         </td>
                                     </tr>
                                 @endforelse
                                 </tbody>
                                 <tfoot class="bg-light border-top">
                                 <tr class="fw-bold">
-                                    <td colspan="3" class="ps-4 py-3">Total</td>
+                                    <td colspan="3" class="ps-4 py-3">{{ __('Total') }}</td>
                                     @foreach($bucketDefs as $i => $def)
                                         <td class="text-end tabular-nums" style="color: {{ $bucketColor($i) }};" wire:key="tf-{{ $def['key'] }}">{{ number_format($summary[$def['key']], 2) }}</td>
                                     @endforeach
@@ -244,18 +244,18 @@
                         <td>
                             <div class="stmt-company">{{ $company->name ?? config('app.name') }}</div>
                             <div class="stmt-sub">
-                                @if(!empty($company->phone)) Phone: {{ $company->phone }} @endif
+                                @if(!empty($company->phone)) {{ __('Phone') }}: {{ $company->phone }} @endif
                                 @if(!empty($company->email)) &nbsp;|&nbsp; {{ $company->email }} @endif
                             </div>
                             @if(!empty($company->vat_number))
-                                <div class="stmt-sub">VAT No: {{ $company->vat_number }}</div>
+                                <div class="stmt-sub">{{ __('VAT No') }}: {{ $company->vat_number }}</div>
                             @endif
                         </td>
                         <td class="text-end">
-                            <div class="stmt-title">CUSTOMER AGING REPORT</div>
-                            <div class="stmt-sub">As of: {{ \Carbon\Carbon::parse($asOfDate)->format('d M Y') }}</div>
-                            <div class="stmt-sub">Aging: {{ $agingInterval }}-day buckets &times; {{ $agingColumns }}</div>
-                            <div class="stmt-sub">Generated: {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; Currency: SAR</div>
+                            <div class="stmt-title">{{ __('CUSTOMER AGING REPORT') }}</div>
+                            <div class="stmt-sub">{{ __('As of') }}: {{ \Carbon\Carbon::parse($asOfDate)->format('d M Y') }}</div>
+                            <div class="stmt-sub">{{ __('Aging') }}: {{ $agingInterval }}-{{ __('day buckets') }} &times; {{ $agingColumns }}</div>
+                            <div class="stmt-sub">{{ __('Generated') }}: {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency') }}: SAR</div>
                         </td>
                     </tr>
                 </table>
@@ -263,7 +263,7 @@
                 <table class="stmt-meta stmt-box">
                     <tr>
                         <td>
-                            <div class="stmt-sub" style="text-transform: uppercase;">Customer</div>
+                            <div class="stmt-sub" style="text-transform: uppercase;">{{ __('Customer') }}</div>
                             <div class="stmt-strong">{{ $customer->name_en }} ({{ $customer->row_no }})</div>
                             <div class="stmt-sub">
                                 @if($customer->email) {{ $customer->email }} @endif
@@ -272,7 +272,7 @@
                         </td>
                         <td class="text-end">
                             <table class="stmt-summary">
-                                <tr class="stmt-strong"><td>Total Outstanding</td><td class="text-end">{{ number_format($summary['grand_total'], 2) }}</td></tr>
+                                <tr class="stmt-strong"><td>{{ __('Total Outstanding') }}</td><td class="text-end">{{ number_format($summary['grand_total'], 2) }}</td></tr>
                             </table>
                         </td>
                     </tr>
@@ -281,14 +281,14 @@
                 <table class="stmt-table">
                     <thead>
                     <tr>
-                        <th>Invoice #</th>
-                        <th>Date</th>
-                        <th>Due Date</th>
-                        <th class="text-end">Days</th>
+                        <th>{{ __('Invoice #') }}</th>
+                        <th>{{ __('Date') }}</th>
+                        <th>{{ __('Due Date') }}</th>
+                        <th class="text-end">{{ __('Days') }}</th>
                         @foreach($bucketDefs as $def)
                             <th class="text-end">{{ $def['label'] }}</th>
                         @endforeach
-                        <th class="text-end">Total</th>
+                        <th class="text-end">{{ __('Total') }}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -305,13 +305,13 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ 5 + count($bucketDefs) }}" class="text-center">No outstanding invoices found.</td>
+                            <td colspan="{{ 5 + count($bucketDefs) }}" class="text-center">{{ __('No outstanding invoices found.') }}</td>
                         </tr>
                     @endforelse
                     </tbody>
                     <tfoot>
                     <tr class="stmt-strong">
-                        <td colspan="4">Total</td>
+                        <td colspan="4">{{ __('Total') }}</td>
                         @foreach($bucketDefs as $def)
                             <td class="text-end">{{ number_format($summary[$def['key']], 2) }}</td>
                         @endforeach
@@ -321,7 +321,7 @@
                 </table>
 
                 <div class="stmt-footnote">
-                    This is a system generated report. Aging buckets: {{ $agingInterval }} days &times; {{ $agingColumns }} columns.
+                    {{ __('This is a system generated report. Aging buckets:') }} {{ $agingInterval }} {{ __('days') }} &times; {{ $agingColumns }} {{ __('columns.') }}
                 </div>
             </div>
         @else
@@ -330,8 +330,8 @@
                     <div class="bg-light rounded-circle p-4 d-inline-block mb-3">
                         <i class="bi bi-people h1 text-muted"></i>
                     </div>
-                    <h5 class="fw-bold">No Customer Selected</h5>
-                    <p class="text-muted mx-auto" style="max-width: 300px;">Select a customer and date above to view their outstanding aging report.</p>
+                    <h5 class="fw-bold">{{ __('No Customer Selected') }}</h5>
+                    <p class="text-muted mx-auto" style="max-width: 300px;">{{ __('Select a customer and date above to view their outstanding aging report.') }}</p>
                 </div>
             </div>
         @endif
@@ -366,7 +366,7 @@
                 e.preventDefault();
                 var area = document.getElementById('aging-print');
                 if (!area) {
-                    alert('Please select a customer first.');
+                    alert("{{ __('Please select a customer first.') }}");
                     return;
                 }
                 var clone = area.cloneNode(true);

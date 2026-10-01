@@ -1,13 +1,13 @@
 <div>
     <div class="shadow bdr-r-10 py-3 mb-4">
         <div class="d-flex justify-content-between px-3 mb-3">
-            <h5 class="fw-bold" id="calendar-title">Attendance Calendar - {{ $months[intval($month)] }} {{ $year }}</h5>
+            <h5 class="fw-bold" id="calendar-title">{{ __('Attendance Calendar') }} - {{ $months[intval($month)] }} {{ $year }}</h5>
             <div class="btn-group">
                 <button type="button" class="btn btn-sm btn-outline-primary" wire:click="prevMonth">
-                    <i class="bi bi-chevron-left"></i> Previous
+                    <i class="bi bi-chevron-left"></i> {{ __('Previous') }}
                 </button>
                 <button type="button" class="btn btn-sm btn-outline-primary" wire:click="nextMonth">
-                    Next <i class="bi bi-chevron-right"></i>
+                    {{ __('Next') }} <i class="bi bi-chevron-right"></i>
                 </button>
             </div>
         </div>
@@ -19,7 +19,7 @@
                     <div class="g-3 align-items-end" wire:ignore id="content-wrapper">
                         <div class="d-flex justify-content-between mb-4">
                             <div>
-                                <label class="form-label fw-medium">Month</label>
+                                <label class="form-label fw-medium">{{ __('Month') }}</label>
                                 <select class="tom-select" wire:model.live="month" data-max-width="250">
                                     @foreach($months as $key => $monthName)
                                         <option
@@ -28,7 +28,7 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="form-label fw-medium">Year</label>
+                                <label class="form-label fw-medium">{{ __('Year') }}</label>
                                 <select class="tom-select" wire:model.live="year">
                                     @foreach($years as $key => $yearValue)
                                         <option
@@ -39,9 +39,9 @@
                         </div>
 
                         <div>
-                            <label class="form-label fw-medium">Employee</label>
+                            <label class="form-label fw-medium">{{ __('Employee') }}</label>
                             <select class="tom-select" data-live-search="true" wire:model.live="employeeId">
-                                <option value="">All Employees</option>
+                                <option value="">{{ __('All Employees') }}</option>
                                 @foreach($employees as $employee)
                                     <option value="{{ $employee->id }}">{{ $employee->name }}</option>
                                 @endforeach
@@ -58,13 +58,13 @@
                             <th colspan="7" class="text-center">{{ $months[intval($month)] }} {{ $year }}</th>
                         </tr>
                         <tr>
-                            <th class="text-center">Sun</th>
-                            <th class="text-center">Mon</th>
-                            <th class="text-center">Tue</th>
-                            <th class="text-center">Wed</th>
-                            <th class="text-center">Thu</th>
-                            <th class="text-center">Fri</th>
-                            <th class="text-center">Sat</th>
+                            <th class="text-center">{{ __('Sun') }}</th>
+                            <th class="text-center">{{ __('Mon') }}</th>
+                            <th class="text-center">{{ __('Tue') }}</th>
+                            <th class="text-center">{{ __('Wed') }}</th>
+                            <th class="text-center">{{ __('Thu') }}</th>
+                            <th class="text-center">{{ __('Fri') }}</th>
+                            <th class="text-center">{{ __('Sat') }}</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -151,16 +151,16 @@
             <!-- Employee List View (when no specific employee is selected) -->
             @if(empty($employeeId) && count($this->calendar) > 0)
                 <div class="mt-4">
-                    <h5 class="fw-bold mb-3">Employee Attendance Summary</h5>
+                    <h5 class="fw-bold mb-3">{{ __('Employee Attendance Summary') }}</h5>
                     <div class="table-responsive">
                         <table class="table table-bordered table-hover">
                             <thead>
                             <tr>
-                                <th>Employee</th>
-                                <th class="text-center">Present</th>
-                                <th class="text-center">Absent</th>
-                                <th class="text-center">Late</th>
-                                <th class="text-center">Leave</th>
+                                <th>{{ __('Employee') }}</th>
+                                <th class="text-center">{{ __('Present') }}</th>
+                                <th class="text-center">{{ __('Absent') }}</th>
+                                <th class="text-center">{{ __('Late') }}</th>
+                                <th class="text-center">{{ __('Leave') }}</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -193,16 +193,16 @@
 
                 @if($employeeData)
                     <div class="mt-4">
-                        <h5 class="fw-bold mb-3">{{ $employeeData['name'] }}'s Attendance Details</h5>
+                        <h5 class="fw-bold mb-3">{{ __('Attendance Details for') }} {{ $employeeData['name'] }}</h5>
                         <div class="table-responsive">
                             <table class="table table-bordered table-hover">
                                 <thead>
                                 <tr>
-                                    <th>Date</th>
-                                    <th>Day</th>
-                                    <th>Status</th>
-                                    <th>Check In</th>
-                                    <th>Check Out</th>
+                                    <th>{{ __('Date') }}</th>
+                                    <th>{{ __('Day') }}</th>
+                                    <th>{{ __('Status') }}</th>
+                                    <th>{{ __('Check In') }}</th>
+                                    <th>{{ __('Check Out') }}</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -216,8 +216,8 @@
                                                         {{ ucfirst($day['status']) }}
                                                     </span>
                                             </td>
-                                            <td>{{ $day['check_in'] ?? 'N/A' }}</td>
-                                            <td>{{ $day['check_out'] ?? 'N/A' }}</td>
+                                            <td>{{ $day['check_in'] ?? __('N/A') }}</td>
+                                            <td>{{ $day['check_out'] ?? __('N/A') }}</td>
                                         </tr>
                                     @endif
                                 @endforeach

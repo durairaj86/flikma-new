@@ -2,7 +2,7 @@
     <div class="row g-5 d-print-none">
         <div class="col-lg-6">
             <h5 class="fw-bold text-primary border-bottom border-2 pb-2 mb-3 text-uppercase small ls-1">
-                Assets
+                {{ __('Assets') }}
             </h5>
 
             <div class="mb-4">
@@ -17,23 +17,23 @@
                         </div>
                     @endforeach
                 @else
-                    <div class="text-center py-3 text-muted small">No asset accounts with activity</div>
+                    <div class="text-center py-3 text-muted small">{{ __('No asset accounts with activity') }}</div>
                 @endif
             </div>
 
             <div class="d-flex justify-content-between py-3 px-3 bg-primary text-white rounded shadow-sm mt-auto">
-                <span class="fw-bold mb-0">TOTAL ASSETS</span>
+                <span class="fw-bold mb-0">{{ __('TOTAL ASSETS') }}</span>
                 <span class="fw-bold mb-0">{{ number_format($balanceSheetData['total_assets'] ?? 0, 2) }}</span>
             </div>
         </div>
 
         <div class="col-lg-6">
             <h5 class="fw-bold text-danger border-bottom border-2 pb-2 mb-3 text-uppercase small ls-1">
-                Liabilities &amp; Equity
+                {{ __('Liabilities & Equity') }}
             </h5>
 
             <div class="mb-4">
-                <div class="fw-bold small text-muted mb-2 text-uppercase ls-1">Liabilities</div>
+                <div class="fw-bold small text-muted mb-2 text-uppercase ls-1">{{ __('Liabilities') }}</div>
                 @if(isset($balanceSheetData['liabilities']) && count($balanceSheetData['liabilities']) > 0)
                     @foreach($balanceSheetData['liabilities'] as $account)
                         <div class="d-flex justify-content-between py-2 border-bottom-dashed">
@@ -45,16 +45,16 @@
                         </div>
                     @endforeach
                 @else
-                    <div class="text-center py-2 text-muted small">No liability accounts</div>
+                    <div class="text-center py-2 text-muted small">{{ __('No liability accounts') }}</div>
                 @endif
                 <div class="d-flex justify-content-between py-2 fw-bold bg-light px-2 mt-2 rounded">
-                    <span class="small">Total Liabilities</span>
+                    <span class="small">{{ __('Total Liabilities') }}</span>
                     <span>{{ number_format($balanceSheetData['total_liabilities'] ?? 0, 2) }}</span>
                 </div>
             </div>
 
             <div class="mb-4 pt-2">
-                <div class="fw-bold small text-muted mb-2 text-uppercase ls-1">Equity</div>
+                <div class="fw-bold small text-muted mb-2 text-uppercase ls-1">{{ __('Equity') }}</div>
                 @if(isset($balanceSheetData['equity']) && count($balanceSheetData['equity']) > 0)
                     @foreach($balanceSheetData['equity'] as $account)
                         <div class="d-flex justify-content-between py-2 border-bottom-dashed">
@@ -66,16 +66,16 @@
                         </div>
                     @endforeach
                 @else
-                    <div class="text-center py-2 text-muted small">No equity accounts</div>
+                    <div class="text-center py-2 text-muted small">{{ __('No equity accounts') }}</div>
                 @endif
                 <div class="d-flex justify-content-between py-2 fw-bold bg-light px-2 mt-2 rounded">
-                    <span class="small">Total Equity</span>
+                    <span class="small">{{ __('Total Equity') }}</span>
                     <span>{{ number_format($balanceSheetData['total_equity'] ?? 0, 2) }}</span>
                 </div>
             </div>
 
             <div class="d-flex justify-content-between py-3 px-3 bg-dark text-white rounded shadow-sm mt-4">
-                <span class="fw-bold mb-0">TOTAL LIABILITIES &amp; EQUITY</span>
+                <span class="fw-bold mb-0">{{ __('TOTAL LIABILITIES & EQUITY') }}</span>
                 <span class="fw-bold mb-0">{{ number_format($balanceSheetData['total_liabilities_equity'] ?? 0, 2) }}</span>
             </div>
 
@@ -87,14 +87,14 @@
             @if($assets == $liabEquity && $assets != 0)
                 <div class="mt-4 p-3 bg-success-subtle border border-success border-opacity-25 rounded text-success small d-flex align-items-center">
                     <i class="bi bi-check-circle-fill me-2 fs-5"></i>
-                    Your Balance Sheet is perfectly balanced.
+                    {{ __('Your Balance Sheet is perfectly balanced.') }}
                 </div>
             @elseif($assets != $liabEquity)
                 <div class="mt-4 p-3 bg-danger-subtle border border-danger border-opacity-25 rounded text-danger small d-flex align-items-center">
                     <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
                     <div>
-                        <strong>Out of Balance:</strong>
-                        The difference is {{ number_format(abs($assets - $liabEquity), 2) }}
+                        <strong>{{ __('Out of Balance:') }}</strong>
+                        {{ __('The difference is') }} {{ number_format(abs($assets - $liabEquity), 2) }}
                     </div>
                 </div>
             @endif
@@ -111,16 +111,16 @@
                     <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
                 </td>
                 <td class="text-end">
-                    <div class="stmt-title">BALANCE SHEET</div>
-                    <div class="stmt-sub">As of: {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
-                    <div class="stmt-sub">Generated: {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; Currency: SAR</div>
+                    <div class="stmt-title">{{ __('BALANCE SHEET') }}</div>
+                    <div class="stmt-sub">{{ __('As of:') }} {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
+                    <div class="stmt-sub">{{ __('Generated:') }} {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency:') }} SAR</div>
                 </td>
             </tr>
         </table>
 
         <table class="stmt-table">
             <thead>
-            <tr><th colspan="2">ASSETS</th></tr>
+            <tr><th colspan="2">{{ __('ASSETS') }}</th></tr>
             </thead>
             <tbody>
             @forelse($balanceSheetData['assets'] as $account)
@@ -129,17 +129,17 @@
                     <td class="text-end">{{ number_format($account['balance'], 2) }}</td>
                 </tr>
             @empty
-                <tr><td colspan="2" class="text-center">No asset accounts with activity</td></tr>
+                <tr><td colspan="2" class="text-center">{{ __('No asset accounts with activity') }}</td></tr>
             @endforelse
             </tbody>
             <tfoot>
-            <tr class="stmt-strong"><td>Total Assets</td><td class="text-end">{{ number_format($balanceSheetData['total_assets'] ?? 0, 2) }}</td></tr>
+            <tr class="stmt-strong"><td>{{ __('Total Assets') }}</td><td class="text-end">{{ number_format($balanceSheetData['total_assets'] ?? 0, 2) }}</td></tr>
             </tfoot>
         </table>
 
         <table class="stmt-table">
             <thead>
-            <tr><th colspan="2">LIABILITIES</th></tr>
+            <tr><th colspan="2">{{ __('LIABILITIES') }}</th></tr>
             </thead>
             <tbody>
             @forelse($balanceSheetData['liabilities'] as $account)
@@ -148,17 +148,17 @@
                     <td class="text-end">{{ number_format($account['balance'], 2) }}</td>
                 </tr>
             @empty
-                <tr><td colspan="2" class="text-center">No liability accounts</td></tr>
+                <tr><td colspan="2" class="text-center">{{ __('No liability accounts') }}</td></tr>
             @endforelse
             </tbody>
             <tfoot>
-            <tr class="stmt-strong"><td>Total Liabilities</td><td class="text-end">{{ number_format($balanceSheetData['total_liabilities'] ?? 0, 2) }}</td></tr>
+            <tr class="stmt-strong"><td>{{ __('Total Liabilities') }}</td><td class="text-end">{{ number_format($balanceSheetData['total_liabilities'] ?? 0, 2) }}</td></tr>
             </tfoot>
         </table>
 
         <table class="stmt-table">
             <thead>
-            <tr><th colspan="2">EQUITY</th></tr>
+            <tr><th colspan="2">{{ __('EQUITY') }}</th></tr>
             </thead>
             <tbody>
             @forelse($balanceSheetData['equity'] as $account)
@@ -167,21 +167,21 @@
                     <td class="text-end">{{ number_format($account['balance'], 2) }}</td>
                 </tr>
             @empty
-                <tr><td colspan="2" class="text-center">No equity accounts</td></tr>
+                <tr><td colspan="2" class="text-center">{{ __('No equity accounts') }}</td></tr>
             @endforelse
             </tbody>
             <tfoot>
-            <tr class="stmt-strong"><td>Total Equity</td><td class="text-end">{{ number_format($balanceSheetData['total_equity'] ?? 0, 2) }}</td></tr>
-            <tr class="stmt-strong"><td>Total Liabilities &amp; Equity</td><td class="text-end">{{ number_format($balanceSheetData['total_liabilities_equity'] ?? 0, 2) }}</td></tr>
+            <tr class="stmt-strong"><td>{{ __('Total Equity') }}</td><td class="text-end">{{ number_format($balanceSheetData['total_equity'] ?? 0, 2) }}</td></tr>
+            <tr class="stmt-strong"><td>{{ __('Total Liabilities & Equity') }}</td><td class="text-end">{{ number_format($balanceSheetData['total_liabilities_equity'] ?? 0, 2) }}</td></tr>
             </tfoot>
         </table>
 
         <div class="stmt-signatures">
             <table class="stmt-meta">
                 <tr>
-                    <td>Prepared By: _________________</td>
-                    <td>Verified By: _________________</td>
-                    <td>Approved By: _________________</td>
+                    <td>{{ __('Prepared By:') }} _________________</td>
+                    <td>{{ __('Verified By:') }} _________________</td>
+                    <td>{{ __('Approved By:') }} _________________</td>
                 </tr>
             </table>
         </div>

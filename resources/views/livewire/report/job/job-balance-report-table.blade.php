@@ -3,14 +3,14 @@
         <table class="table table-hover align-middle mb-0">
             <thead>
                 <tr class="bg-light text-muted small text-uppercase fw-bold ls-1">
-                    <th class="ps-4 border-0">Job No</th>
-                    <th class="border-0">Date</th>
-                    <th class="border-0">Customer</th>
-                    <th class="border-0">Activity</th>
-                    <th class="text-end border-0">Income</th>
-                    <th class="text-end border-0">Expense</th>
-                    <th class="text-end border-0">Profit / Loss</th>
-                    <th class="text-center pe-4 border-0">Status</th>
+                    <th class="ps-4 border-0">{{ __('Job No') }}</th>
+                    <th class="border-0">{{ __('Date') }}</th>
+                    <th class="border-0">{{ __('Customer') }}</th>
+                    <th class="border-0">{{ __('Activity') }}</th>
+                    <th class="text-end border-0">{{ __('Income') }}</th>
+                    <th class="text-end border-0">{{ __('Expense') }}</th>
+                    <th class="text-end border-0">{{ __('Profit / Loss') }}</th>
+                    <th class="text-center pe-4 border-0">{{ __('Status') }}</th>
                 </tr>
             </thead>
             <tbody class="border-top-0">
@@ -49,7 +49,7 @@
                             <div class="bg-light rounded-circle p-4 d-inline-block mb-3">
                                 <i class="bi bi-balance-scale h2 text-muted"></i>
                             </div>
-                            <div class="small">No balance data found for the selected period.</div>
+                            <div class="small">{{ __('No balance data found for the selected period.') }}</div>
                         </td>
                     </tr>
                 @endif
@@ -57,7 +57,7 @@
             @if(isset($jobBalanceReportData['jobs']) && count($jobBalanceReportData['jobs']) > 0)
             <tfoot class="bg-light border-top-2">
                 <tr class="fw-bold">
-                    <td colspan="4" class="ps-4 py-3">Totals</td>
+                    <td colspan="4" class="ps-4 py-3">{{ __('Totals') }}</td>
                     <td class="text-end tabular-nums text-pr">{{ number_format($jobBalanceReportData['total_income'] ?? 0, 2) }}</td>
                     <td class="text-end tabular-nums text-danger">{{ number_format($jobBalanceReportData['total_expense'] ?? 0, 2) }}</td>
                     <td class="text-end tabular-nums {{ ($jobBalanceReportData['total_profit'] ?? 0) >= 0 ? 'text-success' : 'text-danger' }}">
@@ -80,9 +80,9 @@
                     <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
                 </td>
                 <td class="text-end">
-                    <div class="stmt-title">JOB BALANCE REPORT</div>
-                    <div class="stmt-sub">Period: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
-                    <div class="stmt-sub">Generated: {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; Currency: SAR</div>
+                    <div class="stmt-title">{{ __('JOB BALANCE REPORT') }}</div>
+                    <div class="stmt-sub">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
+                    <div class="stmt-sub">{{ __('Generated:') }} {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency:') }} {{ __('SAR') }}</div>
                 </td>
             </tr>
         </table>
@@ -90,13 +90,13 @@
         <table class="stmt-table">
             <thead>
             <tr>
-                <th>Job No</th>
-                <th>Date</th>
-                <th>Customer</th>
-                <th>Activity</th>
-                <th class="text-end">Income</th>
-                <th class="text-end">Expense</th>
-                <th class="text-end">Profit / Loss</th>
+                <th>{{ __('Job No') }}</th>
+                <th>{{ __('Date') }}</th>
+                <th>{{ __('Customer') }}</th>
+                <th>{{ __('Activity') }}</th>
+                <th class="text-end">{{ __('Income') }}</th>
+                <th class="text-end">{{ __('Expense') }}</th>
+                <th class="text-end">{{ __('Profit / Loss') }}</th>
             </tr>
             </thead>
             <tbody>
@@ -111,12 +111,12 @@
                     <td class="text-end">{{ number_format($job['profit'], 2) }}</td>
                 </tr>
             @empty
-                <tr><td colspan="7" class="text-center">No balance data found for the selected period.</td></tr>
+                <tr><td colspan="7" class="text-center">{{ __('No balance data found for the selected period.') }}</td></tr>
             @endforelse
             </tbody>
             <tfoot>
             <tr class="stmt-strong">
-                <td colspan="4">Total</td>
+                <td colspan="4">{{ __('Total') }}</td>
                 <td class="text-end">{{ number_format($jobBalanceReportData['total_income'] ?? 0, 2) }}</td>
                 <td class="text-end">{{ number_format($jobBalanceReportData['total_expense'] ?? 0, 2) }}</td>
                 <td class="text-end">{{ number_format($jobBalanceReportData['total_profit'] ?? 0, 2) }}</td>
@@ -127,9 +127,9 @@
         <div class="stmt-signatures">
             <table class="stmt-meta">
                 <tr>
-                    <td>Prepared By: _________________</td>
-                    <td>Verified By: _________________</td>
-                    <td>Approved By: _________________</td>
+                    <td>{{ __('Prepared By:') }} _________________</td>
+                    <td>{{ __('Verified By:') }} _________________</td>
+                    <td>{{ __('Approved By:') }} _________________</td>
                 </tr>
             </table>
         </div>

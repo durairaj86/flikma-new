@@ -3,7 +3,7 @@
         <!-- Left side - Preview -->
         <div class="col-md-6 border-end">
             <div class="p-3">
-                <h5 class="fw-bold mb-3 text-primary d-flex align-items-center"><i class="bi bi-eye me-2"></i> Invoice Preview</h5>
+                <h5 class="fw-bold mb-3 text-primary d-flex align-items-center"><i class="bi bi-eye me-2"></i> {{ __('Invoice Preview') }}</h5>
                 <div id="invoice-preview" class="border rounded p-3" style="height: 75vh; overflow-y: auto;">
                     <!-- Include the actual print.blade.php template for the preview -->
                     <div class="invoice-wrapper vh-100">
@@ -369,13 +369,13 @@
         <div class="col-md-6">
             <div class="overflow-auto" style="max-height: 85vh;">
                 <div class="p-4 p-md-5 border-bottom">
-                    <h5 class="fw-bold mb-4 text-primary d-flex align-items-center"><i class="bi bi-palette me-2"></i> Design & Branding</h5>
+                    <h5 class="fw-bold mb-4 text-primary d-flex align-items-center"><i class="bi bi-palette me-2"></i> {{ __('Design & Branding') }}</h5>
 
                     <div class="mb-4 pb-4 border-bottom">
                         <div class="d-flex align-items-center mb-3">
                             <label class="form-check-label radio-container d-flex align-items-center me-3" for="defaultThemeRadio">
                                 <input class="form-check-input" type="radio" name="themeMode" id="defaultThemeRadio" checked>
-                                <span class="fw-bold fs-6 ms-2">Select Default Theme</span>
+                                <span class="fw-bold fs-6 ms-2">{{ __('Select Default Theme') }}</span>
                             </label>
                         </div>
 
@@ -403,7 +403,7 @@
                                                 <line x1="8" y1="64" x2="92" y2="64" stroke="#ccc" stroke-width="0.5"/>
                                                 </svg>
                                     </div>
-                                    <div class="theme-name small fw-medium mt-2 text-primary">Stylish</div>
+                                    <div class="theme-name small fw-medium mt-2 text-primary">{{ __('Stylish') }}</div>
                                 </div>
                             </div>
 
@@ -424,7 +424,7 @@
                                                         <rect x="8" y="70" width="84" height="4" fill="#2FA36B"/>
                                                     </svg>
                                                 </div>
-                                                <div class="theme-name small fw-medium mt-2">Bilingual</div>
+                                                <div class="theme-name small fw-medium mt-2">{{ __('Bilingual') }}</div>
                                             </div>
                                         </div>
 
@@ -445,7 +445,7 @@
                                                         <rect x="8" y="70" width="84" height="4" fill="#15803d"/>
                                                     </svg>
                                                 </div>
-                                                <div class="theme-name small fw-medium mt-2">FastFatoora Style</div>
+                                                <div class="theme-name small fw-medium mt-2">{{ __('FastFatoora Style') }}</div>
                                             </div>
                                         </div>
 
@@ -469,7 +469,7 @@
                                                         <line x1="4" y1="72" x2="96" y2="72" stroke="#0f2a52" stroke-width="1.5"/>
                                                     </svg>
                                                 </div>
-                                                <div class="theme-name small fw-medium mt-2">AI Fatoora</div>
+                                                <div class="theme-name small fw-medium mt-2">{{ __('AI Fatoora') }}</div>
                                             </div>
                                         </div>
 
@@ -491,7 +491,7 @@
                                                         <rect x="8" y="73" width="84" height="2" fill="#0d9488"/>
                                                     </svg>
                                                 </div>
-                                                <div class="theme-name small fw-medium mt-2">FastFatoora Classic Print</div>
+                                                <div class="theme-name small fw-medium mt-2">{{ __('FastFatoora Classic Print') }}</div>
                                             </div>
                                         </div>
 
@@ -511,20 +511,20 @@
                                                 <line x1="4" y1="65" x2="96" y2="65" stroke="#666" stroke-width="0.5"/>
                                                 </svg>
                                     </div>
-                                    <div class="theme-name small fw-medium mt-2">Advanced GST (Tally)</div>
+                                    <div class="theme-name small fw-medium mt-2">{{ __('Advanced GST (Tally)') }}</div>
                                 </div>
                             </div>
 
                             <div class="theme-container" style="width: 140px;">
                                 <button class="btn btn-outline-secondary w-100 h-100 border-2 border-dashed" style="height: 100%; min-height: 120px;">
-                                    <i class="bi bi-grid-3x3-gap me-1"></i> See All Themes
+                                    <i class="bi bi-grid-3x3-gap me-1"></i> {{ __('See All Themes') }}
                                 </button>
                             </div>
                         </div>
                     </div>
 
                     <div class="select-color pt-3">
-                        <div class="fw-bold fs-6 mb-3">Select Primary Accent Color</div>
+                        <div class="fw-bold fs-6 mb-3">{{ __('Select Primary Accent Color') }}</div>
                         <div class="d-flex align-items-center gap-3">
                             <div class="color-show rounded-circle border border-dark border-opacity-25 selected" data-color="#0b6aa0" style="background:#0b6aa0; width: 32px; height: 32px; cursor:pointer; outline: 3px solid rgba(13,110,253,0.3);" wire:click="$set('primaryColor', '#0b6aa0')"></div>
                             <div class="color-show rounded-circle border border-dark border-opacity-25" data-color="#000000" style="background:#000; width: 32px; height: 32px; cursor:pointer;" wire:click="$set('primaryColor', '#000000')"></div>
@@ -534,20 +534,20 @@
                             <div class="color-show rounded-circle border border-dark border-opacity-25" data-color="#5b57ae" style="background:#5b57ae; width: 32px; height: 32px; cursor:pointer;" wire:click="$set('primaryColor', '#5b57ae')"></div>
                             <div class="color-show rounded-circle border border-dark border-opacity-25" data-color="#cd9d23" style="background:#cd9d23; width: 32px; height: 32px; cursor:pointer;" wire:click="$set('primaryColor', '#cd9d23')"></div>
                             <div class="color-show rounded-circle border border-dark border-opacity-25" data-color="#bf6200" style="background:#bf6200; width: 32px; height: 32px; cursor:pointer;" wire:click="$set('primaryColor', '#bf6200')"></div>
-                            <button class="btn btn-outline-secondary btn-sm ms-3"><i class="bi bi-eyedropper me-1"></i> Custom</button>
+                            <button class="btn btn-outline-secondary btn-sm ms-3"><i class="bi bi-eyedropper me-1"></i> {{ __('Custom') }}</button>
                         </div>
                     </div>
                 </div>
 
                 <div class="p-4 p-md-5 border-bottom">
-                    <h5 class="fw-bold mb-4 text-primary d-flex align-items-center"><i class="bi bi-gear me-2"></i> Display Options</h5>
+                    <h5 class="fw-bold mb-4 text-primary d-flex align-items-center"><i class="bi bi-gear me-2"></i> {{ __('Display Options') }}</h5>
 
                     <div class="row g-3">
                         <div class="col-md-6">
                             <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
                                 <div>
-                                    <label class="fw-medium mb-0">Show party balance in invoice</label>
-                                    <i class="bi bi-question-circle ms-2 text-muted small" data-bs-toggle="tooltip" title="Displays the customer's total outstanding balance."></i>
+                                    <label class="fw-medium mb-0">{{ __('Show party balance in invoice') }}</label>
+                                    <i class="bi bi-question-circle ms-2 text-muted small" data-bs-toggle="tooltip" title="{{ __("Displays the customer's total outstanding balance.") }}"></i>
                                 </div>
                                 <div class="form-check form-switch m-0">
                                     <input class="form-check-input" type="checkbox" role="switch" id="togglePartyBalance" data-key="partyBalance" wire:model="partyBalance">
@@ -558,7 +558,7 @@
                         <div class="col-md-6">
                             <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
                                 <div>
-                                    <label class="fw-medium mb-0">Enable free item quantity</label>
+                                    <label class="fw-medium mb-0">{{ __('Enable free item quantity') }}</label>
                                 </div>
                                 <div class="form-check form-switch m-0">
                                     <input class="form-check-input" type="checkbox" role="switch" id="toggleFreeItem" data-key="freeItemQty" wire:model="freeItemQty">
@@ -569,7 +569,7 @@
                         <div class="col-md-6">
                             <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
                                 <div>
-                                    <label class="fw-medium mb-0">Show item description in invoice</label>
+                                    <label class="fw-medium mb-0">{{ __('Show item description in invoice') }}</label>
                                 </div>
                                 <div class="form-check form-switch m-0">
                                     <input class="form-check-input" type="checkbox" role="switch" id="toggleItemDesc" data-key="itemDescription" wire:model="itemDescription">
@@ -580,7 +580,7 @@
                         <div class="col-md-6">
                             <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
                                 <div>
-                                    <label class="fw-medium mb-0">Show Alternate Unit in Invoice</label>
+                                    <label class="fw-medium mb-0">{{ __('Show Alternate Unit in Invoice') }}</label>
                                 </div>
                                 <div class="form-check form-switch m-0">
                                     <input class="form-check-input" type="checkbox" role="switch" id="toggleAltUnit" data-key="altUnit" wire:model="altUnit">
@@ -591,7 +591,7 @@
                         <div class="col-md-6">
                             <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
                                 <div>
-                                    <label class="fw-medium mb-0">Show phone number on Invoice</label>
+                                    <label class="fw-medium mb-0">{{ __('Show phone number on Invoice') }}</label>
                                 </div>
                                 <div class="form-check form-switch m-0">
                                     <input class="form-check-input" type="checkbox" role="switch" id="toggleShowPhone" data-key="showPhone" wire:model="showPhone">
@@ -602,8 +602,8 @@
                         <div class="col-md-6">
                             <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
                                 <div>
-                                    <label class="fw-medium mb-0">Show time on Invoices</label>
-                                    <i class="bi bi-info-circle ms-2 text-muted small" data-bs-toggle="tooltip" title="Time will be shown only if Invoice Date is today's Date."></i>
+                                    <label class="fw-medium mb-0">{{ __('Show time on Invoices') }}</label>
+                                    <i class="bi bi-info-circle ms-2 text-muted small" data-bs-toggle="tooltip" title="{{ __("Time will be shown only if Invoice Date is today's Date.") }}"></i>
                                 </div>
                                 <div class="form-check form-switch m-0">
                                     <input class="form-check-input" type="checkbox" role="switch" id="toggleShowTime" data-key="showTime" wire:model="showTime">
@@ -614,12 +614,12 @@
                 </div>
 
                 <div class="p-4 p-md-5">
-                    <h5 class="fw-bold mb-4 text-primary d-flex align-items-center"><i class="bi bi-sliders me-2"></i> Advanced Invoice Structure</h5>
+                    <h5 class="fw-bold mb-4 text-primary d-flex align-items-center"><i class="bi bi-sliders me-2"></i> {{ __('Advanced Invoice Structure') }}</h5>
 
                     <div class="card mb-3 border-secondary border-opacity-25">
                         <div class="card-header bg-white p-3 collapsed" id="headingInvoiceDetails" data-bs-toggle="collapse" data-bs-target="#collapseInvoiceDetails" aria-expanded="false" aria-controls="collapseInvoiceDetails" style="cursor: pointer;">
                             <h6 class="mb-0 fw-bold d-flex justify-content-between align-items-center">
-                                Invoice Details
+                                {{ __('Invoice Details') }}
                                 <i class="bi bi-chevron-down ms-2"></i>
                             </h6>
                         </div>
@@ -627,26 +627,26 @@
                             <div class="card-body">
                                 <div class="row">
                                     <!-- Original 6 columns -->
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colAwb" data-invoice-detail="awb_hbl" wire:model="awbHbl"><label class="form-check-label">AWB / HBL No</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colIncoterm" data-invoice-detail="incoterm" wire:model="incoterm"><label class="form-check-label">Incoterm</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colPolPod" data-invoice-detail="pol_pod" wire:model="polPod"><label class="form-check-label">POL / POD</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colVoyage" data-invoice-detail="voyage_flight" wire:model="voyageFlight"><label class="form-check-label">Voyage / Flight No</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colShipMode" data-invoice-detail="shipment_mode" wire:model="shipmentMode"><label class="form-check-label">Shipment Mode</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colCarrier" data-invoice-detail="carrier" wire:model="carrier"><label class="form-check-label">Carrier</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colAwb" data-invoice-detail="awb_hbl" wire:model="awbHbl"><label class="form-check-label">{{ __('AWB / HBL No') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colIncoterm" data-invoice-detail="incoterm" wire:model="incoterm"><label class="form-check-label">{{ __('Incoterm') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colPolPod" data-invoice-detail="pol_pod" wire:model="polPod"><label class="form-check-label">{{ __('POL / POD') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colVoyage" data-invoice-detail="voyage_flight" wire:model="voyageFlight"><label class="form-check-label">{{ __('Voyage / Flight No') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colShipMode" data-invoice-detail="shipment_mode" wire:model="shipmentMode"><label class="form-check-label">{{ __('Shipment Mode') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colCarrier" data-invoice-detail="carrier" wire:model="carrier"><label class="form-check-label">{{ __('Carrier') }}</label></div></div>
 
                                     <!-- Additional job columns -->
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colJobNumber" wire:model="invoiceDetails.job_number"><label class="form-check-label">Job Number</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colRefNumber" wire:model="invoiceDetails.reference_number"><label class="form-check-label">Reference Number</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colActivity" wire:model="invoiceDetails.activity"><label class="form-check-label">Logistics Activity</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colShipCategory" wire:model="invoiceDetails.shipment_category"><label class="form-check-label">Shipment Category</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colPlaceReceipt" wire:model="invoiceDetails.place_of_receipt"><label class="form-check-label">Place of Receipt</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colPlaceDelivery" wire:model="invoiceDetails.place_of_delivery"><label class="form-check-label">Place of Delivery</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colFinalDest" wire:model="invoiceDetails.final_destination"><label class="form-check-label">Final Destination</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colCommodity" wire:model="invoiceDetails.commodity"><label class="form-check-label">Commodity</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colPickupDate" wire:model="invoiceDetails.pickup_date"><label class="form-check-label">Pickup Date</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colDeliveryDate" wire:model="invoiceDetails.delivery_date"><label class="form-check-label">Delivery Date</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colEta" wire:model="invoiceDetails.eta"><label class="form-check-label">ETA</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colEtd" wire:model="invoiceDetails.etd"><label class="form-check-label">ETD</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colJobNumber" wire:model="invoiceDetails.job_number"><label class="form-check-label">{{ __('Job Number') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colRefNumber" wire:model="invoiceDetails.reference_number"><label class="form-check-label">{{ __('Reference Number') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colActivity" wire:model="invoiceDetails.activity"><label class="form-check-label">{{ __('Logistics Activity') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colShipCategory" wire:model="invoiceDetails.shipment_category"><label class="form-check-label">{{ __('Shipment Category') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colPlaceReceipt" wire:model="invoiceDetails.place_of_receipt"><label class="form-check-label">{{ __('Place of Receipt') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colPlaceDelivery" wire:model="invoiceDetails.place_of_delivery"><label class="form-check-label">{{ __('Place of Delivery') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colFinalDest" wire:model="invoiceDetails.final_destination"><label class="form-check-label">{{ __('Final Destination') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colCommodity" wire:model="invoiceDetails.commodity"><label class="form-check-label">{{ __('Commodity') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colPickupDate" wire:model="invoiceDetails.pickup_date"><label class="form-check-label">{{ __('Pickup Date') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colDeliveryDate" wire:model="invoiceDetails.delivery_date"><label class="form-check-label">{{ __('Delivery Date') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colEta" wire:model="invoiceDetails.eta"><label class="form-check-label">{{ __('ETA') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="colEtd" wire:model="invoiceDetails.etd"><label class="form-check-label">{{ __('ETD') }}</label></div></div>
                                 </div>
                             </div>
                         </div>
@@ -655,41 +655,41 @@
                     <div class="card mb-3 border-secondary border-opacity-25">
                         <div class="card-header bg-white p-3" id="headingPartyDetails" data-bs-toggle="collapse" data-bs-target="#collapsePartyDetails" aria-expanded="true" aria-controls="collapsePartyDetails" style="cursor: pointer;">
                             <h6 class="mb-0 fw-bold d-flex justify-content-between align-items-center">
-                                Party Details: Custom Fields
+                                {{ __('Party Details: Custom Fields') }}
                                 <i class="bi bi-chevron-up ms-2"></i>
                             </h6>
                         </div>
                         <div id="collapsePartyDetails" class="collapse show" aria-labelledby="headingPartyDetails">
                             <div class="card-body">
-                                <h6 class="mb-3">Customer Information</h6>
+                                <h6 class="mb-3">{{ __('Customer Information') }}</h6>
                                 <div class="row">
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyCode" wire:model="partyDetails.code"><label class="form-check-label">Customer Code</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyUniqueCode" wire:model="partyDetails.unique_code"><label class="form-check-label">Unique Code</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyBusinessType" wire:model="partyDetails.business_type"><label class="form-check-label">Business Type</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyCrNumber" wire:model="partyDetails.cr_number"><label class="form-check-label">CR Number</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyVatNumber" wire:model="partyDetails.vat_number"><label class="form-check-label">VAT Number</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyCreditLimit" wire:model="partyDetails.credit_limit"><label class="form-check-label">Credit Limit</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyCreditDays" wire:model="partyDetails.credit_days"><label class="form-check-label">Credit Days</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyRegion" wire:model="partyDetails.region"><label class="form-check-label">Region</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyPostalCode" wire:model="partyDetails.postal_code"><label class="form-check-label">Postal Code</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyCountry" wire:model="partyDetails.country"><label class="form-check-label">Country</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyEmail" wire:model="partyDetails.email"><label class="form-check-label">Email</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyAltPhone" wire:model="partyDetails.alt_phone"><label class="form-check-label">Alternative Phone</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyPreferredShipping" wire:model="partyDetails.preferred_shipping"><label class="form-check-label">Preferred Shipping</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyPreferredCarrier" wire:model="partyDetails.preferred_carrier"><label class="form-check-label">Preferred Carrier</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyDefaultPort" wire:model="partyDetails.default_port"><label class="form-check-label">Default Port</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyPaymentMethod" wire:model="partyDetails.payment_method"><label class="form-check-label">Payment Method</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyIban" wire:model="partyDetails.iban"><label class="form-check-label">IBAN</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyPaymentTerms" wire:model="partyDetails.payment_terms"><label class="form-check-label">Payment Terms</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partySalesperson" wire:model="partyDetails.salesperson"><label class="form-check-label">Salesperson</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyCode" wire:model="partyDetails.code"><label class="form-check-label">{{ __('Customer Code') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyUniqueCode" wire:model="partyDetails.unique_code"><label class="form-check-label">{{ __('Unique Code') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyBusinessType" wire:model="partyDetails.business_type"><label class="form-check-label">{{ __('Business Type') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyCrNumber" wire:model="partyDetails.cr_number"><label class="form-check-label">{{ __('CR Number') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyVatNumber" wire:model="partyDetails.vat_number"><label class="form-check-label">{{ __('VAT Number') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyCreditLimit" wire:model="partyDetails.credit_limit"><label class="form-check-label">{{ __('Credit Limit') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyCreditDays" wire:model="partyDetails.credit_days"><label class="form-check-label">{{ __('Credit Days') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyRegion" wire:model="partyDetails.region"><label class="form-check-label">{{ __('Region') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyPostalCode" wire:model="partyDetails.postal_code"><label class="form-check-label">{{ __('Postal Code') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyCountry" wire:model="partyDetails.country"><label class="form-check-label">{{ __('Country') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyEmail" wire:model="partyDetails.email"><label class="form-check-label">{{ __('Email') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyAltPhone" wire:model="partyDetails.alt_phone"><label class="form-check-label">{{ __('Alternative Phone') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyPreferredShipping" wire:model="partyDetails.preferred_shipping"><label class="form-check-label">{{ __('Preferred Shipping') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyPreferredCarrier" wire:model="partyDetails.preferred_carrier"><label class="form-check-label">{{ __('Preferred Carrier') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyDefaultPort" wire:model="partyDetails.default_port"><label class="form-check-label">{{ __('Default Port') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyPaymentMethod" wire:model="partyDetails.payment_method"><label class="form-check-label">{{ __('Payment Method') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyIban" wire:model="partyDetails.iban"><label class="form-check-label">{{ __('IBAN') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partyPaymentTerms" wire:model="partyDetails.payment_terms"><label class="form-check-label">{{ __('Payment Terms') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partySalesperson" wire:model="partyDetails.salesperson"><label class="form-check-label">{{ __('Salesperson') }}</label></div></div>
                                 </div>
 
                                 <hr class="my-3">
 
-                                <h6 class="mb-3">Custom Fields</h6>
-                                <button class="btn btn-outline-primary btn-sm border-dashed fw-medium" id="addCustomFieldBtn"><i class="bi bi-plus me-1"></i> Add Custom Field</button>
+                                <h6 class="mb-3">{{ __('Custom Fields') }}</h6>
+                                <button class="btn btn-outline-primary btn-sm border-dashed fw-medium" id="addCustomFieldBtn"><i class="bi bi-plus me-1"></i> {{ __('Add Custom Field') }}</button>
                                 <div id="customFieldsList" class="mt-3 small text-muted">
-                                    <p class="mb-0">No custom fields added yet.</p>
+                                    <p class="mb-0">{{ __('No custom fields added yet.') }}</p>
                                 </div>
                             </div>
                         </div>
@@ -698,7 +698,7 @@
                     <div class="card mb-3 border-secondary border-opacity-25">
                         <div class="card-header bg-white p-3 collapsed" id="headingItemCols" data-bs-toggle="collapse" data-bs-target="#collapseItemCols" aria-expanded="false" aria-controls="collapseItemCols" style="cursor: pointer;">
                             <h6 class="mb-0 fw-bold d-flex justify-content-between align-items-center">
-                                Item Table Columns Visibility
+                                {{ __('Item Table Columns Visibility') }}
                                 <i class="bi bi-chevron-down ms-2"></i>
                             </h6>
                         </div>
@@ -708,25 +708,25 @@
                                     <div class="col-md-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" value="" id="colHsn" wire:model="hsnSac">
-                                            <label class="form-check-label" for="colHsn">HSN / SAC</label>
+                                            <label class="form-check-label" for="colHsn">{{ __('HSN / SAC') }}</label>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" value="" id="colUnit" wire:model="unit">
-                                            <label class="form-check-label" for="colUnit">Unit</label>
+                                            <label class="form-check-label" for="colUnit">{{ __('Unit') }}</label>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" value="" id="colRate" wire:model="rate">
-                                            <label class="form-check-label" for="colRate">Rate</label>
+                                            <label class="form-check-label" for="colRate">{{ __('Rate') }}</label>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-check mt-2">
                                             <input class="form-check-input" type="checkbox" value="" id="colDiscount" wire:model="discount">
-                                            <label class="form-check-label" for="colDiscount">Discount</label>
+                                            <label class="form-check-label" for="colDiscount">{{ __('Discount') }}</label>
                                         </div>
                                     </div>
                                 </div>
@@ -737,25 +737,25 @@
                     <div class="card mb-3 border-secondary border-opacity-25">
                         <div class="card-header bg-white p-3 collapsed" id="headingMisc" data-bs-toggle="collapse" data-bs-target="#collapseMisc" aria-expanded="false" aria-controls="collapseMisc" style="cursor: pointer;">
                             <h6 class="mb-0 fw-bold d-flex justify-content-between align-items-center">
-                                Miscellaneous Details <span class="badge bg-info text-dark ms-3">New</span>
+                                {{ __('Miscellaneous Details') }} <span class="badge bg-info text-dark ms-3">{{ __('New') }}</span>
                                 <i class="bi bi-chevron-down ms-2"></i>
                             </h6>
                         </div>
                         <div id="collapseMisc" class="collapse" aria-labelledby="headingMisc">
                             <div class="card-body">
                                 <div class="row">
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscInvoiceNotes" wire:model="miscDetails.invoice_notes"><label class="form-check-label">Invoice Notes</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscTermsConditions" wire:model="miscDetails.terms_conditions"><label class="form-check-label">Terms & Conditions</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscPaymentInstructions" wire:model="miscDetails.payment_instructions"><label class="form-check-label">Payment Instructions</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscDeliveryInstructions" wire:model="miscDetails.delivery_instructions"><label class="form-check-label">Delivery Instructions</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscHandlingInstructions" wire:model="miscDetails.handling_instructions"><label class="form-check-label">Special Handling</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscAdditionalContacts" wire:model="miscDetails.additional_contacts"><label class="form-check-label">Additional Contacts</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscReferenceNumbers" wire:model="miscDetails.reference_numbers"><label class="form-check-label">Reference Numbers</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscAttachments" wire:model="miscDetails.attachments"><label class="form-check-label">Attachments</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscPackingSlip" wire:model="miscDetails.packing_slip"><label class="form-check-label">Packing Slip</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscTransportInfo" wire:model="miscDetails.transport_info"><label class="form-check-label">Transport Information</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscCustomsInfo" wire:model="miscDetails.customs_info"><label class="form-check-label">Customs Information</label></div></div>
-                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscInsuranceInfo" wire:model="miscDetails.insurance_info"><label class="form-check-label">Insurance Information</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscInvoiceNotes" wire:model="miscDetails.invoice_notes"><label class="form-check-label">{{ __('Invoice Notes') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscTermsConditions" wire:model="miscDetails.terms_conditions"><label class="form-check-label">{{ __('Terms & Conditions') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscPaymentInstructions" wire:model="miscDetails.payment_instructions"><label class="form-check-label">{{ __('Payment Instructions') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscDeliveryInstructions" wire:model="miscDetails.delivery_instructions"><label class="form-check-label">{{ __('Delivery Instructions') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscHandlingInstructions" wire:model="miscDetails.handling_instructions"><label class="form-check-label">{{ __('Special Handling') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscAdditionalContacts" wire:model="miscDetails.additional_contacts"><label class="form-check-label">{{ __('Additional Contacts') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscReferenceNumbers" wire:model="miscDetails.reference_numbers"><label class="form-check-label">{{ __('Reference Numbers') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscAttachments" wire:model="miscDetails.attachments"><label class="form-check-label">{{ __('Attachments') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscPackingSlip" wire:model="miscDetails.packing_slip"><label class="form-check-label">{{ __('Packing Slip') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscTransportInfo" wire:model="miscDetails.transport_info"><label class="form-check-label">{{ __('Transport Information') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscCustomsInfo" wire:model="miscDetails.customs_info"><label class="form-check-label">{{ __('Customs Information') }}</label></div></div>
+                                    <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscInsuranceInfo" wire:model="miscDetails.insurance_info"><label class="form-check-label">{{ __('Insurance Information') }}</label></div></div>
                                 </div>
                             </div>
                         </div>
@@ -769,11 +769,11 @@
     <div id="settings-toast" class="position-fixed bottom-0 end-0 p-3" style="z-index: 5; display: none;">
         <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header" id="toast-header">
-                <strong class="me-auto" id="toast-title">Notification</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                <strong class="me-auto" id="toast-title">{{ __('Notification') }}</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="{{ __('Close') }}"></button>
             </div>
             <div class="toast-body" id="toast-message">
-                Settings updated successfully
+                {{ __('Settings updated successfully') }}
             </div>
         </div>
     </div>
@@ -790,7 +790,7 @@
                 toastHeader.classList.add('bg-success');
                 toastHeader.classList.add('text-white');
                 toastHeader.classList.remove('bg-danger');
-                toastTitle.innerText = 'Success';
+                toastTitle.innerText = '{{ __('Success') }}';
                 toastMessage.innerText = data.message;
 
                 toast.style.display = 'block';
@@ -809,7 +809,7 @@
                 toastHeader.classList.add('bg-danger');
                 toastHeader.classList.add('text-white');
                 toastHeader.classList.remove('bg-success');
-                toastTitle.innerText = 'Error';
+                toastTitle.innerText = '{{ __('Error') }}';
                 toastMessage.innerText = data.message;
 
                 toast.style.display = 'block';

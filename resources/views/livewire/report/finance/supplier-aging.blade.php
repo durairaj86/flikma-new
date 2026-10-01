@@ -1,6 +1,6 @@
 @section('js', 'supplier_aging')
-@section('page-title', 'Supplier Aging Report')
-@section('page-subtitle', 'Track outstanding payables by aging period')
+@section('page-title', __('Supplier Aging Report'))
+@section('page-subtitle', __('Track outstanding payables by aging period'))
 
 <div class="aging-wrapper min-vh-100 bg-light py-4" wire:key="supplier-aging-{{ $supplierId }}">
     <div class="container-fluid px-lg-5">
@@ -11,16 +11,16 @@
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
                     <div class="col-lg-4 col-xl-3">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Supplier</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Supplier') }}</label>
                         <select class="form-select bg-light border-0 py-2 no-ts" wire:model.live="supplierId">
-                            <option value="">Select a supplier...</option>
+                            <option value="">{{ __('Select a supplier...') }}</option>
                             @foreach($suppliers as $sup)
                                 <option value="{{ $sup['id'] }}" wire:key="sup-opt-{{ $sup['id'] }}">{{ $sup['name_en'] }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="col-lg-3 col-xl-3">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">As of Date</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('As of Date') }}</label>
                         <div wire:ignore>
                             <input type="text" id="sa-as-of-date"
                                    class="form-control bg-light border-0 py-2"
@@ -28,11 +28,11 @@
                         </div>
                     </div>
                     <div class="col-lg-5 col-xl-3">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">Search Invoice</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Search Invoice') }}</label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-0 text-muted"><i class="bi bi-search"></i></span>
                             <input type="text" class="form-control bg-light border-0 ps-0 py-2"
-                                   placeholder="Invoice no..." wire:model.live.debounce.300ms="search" />
+                                   placeholder="{{ __('Invoice no...') }}" wire:model.live.debounce.300ms="search" />
                         </div>
                     </div>
 
@@ -40,15 +40,15 @@
                         <div class="d-flex flex-wrap gap-2 justify-content-end">
                             <div class="btn-group shadow-sm">
                                 <button class="btn btn-white border border-end-0" onclick="window.print()">
-                                    <i class="bi bi-printer me-2"></i>Print
+                                    <i class="bi bi-printer me-2"></i>{{ __('Print') }}
                                 </button>
                                 <div class="btn-group">
                                     <button class="btn btn-white border dropdown-toggle" data-bs-toggle="dropdown">
-                                        <i class="bi bi-download me-2"></i>Export
+                                        <i class="bi bi-download me-2"></i>{{ __('Export') }}
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                                        <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'sa-print')"><i class="bi bi-file-pdf text-danger me-2"></i>PDF Document</a></li>
-                                        <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>Excel Sheet</a></li>
+                                        <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'sa-print')"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
+                                        <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -63,7 +63,7 @@
                 <div class="col-md-2 col-6">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body text-center py-3">
-                            <div class="small text-muted fw-bold text-uppercase mb-1">Current</div>
+                            <div class="small text-muted fw-bold text-uppercase mb-1">{{ __('Current') }}</div>
                             <div class="fw-bold tabular-nums text-success">{{ number_format($summary['current'], 2) }}</div>
                         </div>
                     </div>
@@ -71,7 +71,7 @@
                 <div class="col-md-2 col-6">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body text-center py-3">
-                            <div class="small text-muted fw-bold text-uppercase mb-1">1–30 Days</div>
+                            <div class="small text-muted fw-bold text-uppercase mb-1">{{ __('1–30 Days') }}</div>
                             <div class="fw-bold tabular-nums text-warning-emphasis">{{ number_format($summary['days_1_30'], 2) }}</div>
                         </div>
                     </div>
@@ -79,7 +79,7 @@
                 <div class="col-md-2 col-6">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body text-center py-3">
-                            <div class="small text-muted fw-bold text-uppercase mb-1">31–60 Days</div>
+                            <div class="small text-muted fw-bold text-uppercase mb-1">{{ __('31–60 Days') }}</div>
                             <div class="fw-bold tabular-nums text-orange">{{ number_format($summary['days_31_60'], 2) }}</div>
                         </div>
                     </div>
@@ -87,7 +87,7 @@
                 <div class="col-md-2 col-6">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body text-center py-3">
-                            <div class="small text-muted fw-bold text-uppercase mb-1">61–90 Days</div>
+                            <div class="small text-muted fw-bold text-uppercase mb-1">{{ __('61–90 Days') }}</div>
                             <div class="fw-bold tabular-nums text-danger">{{ number_format($summary['days_61_90'], 2) }}</div>
                         </div>
                     </div>
@@ -95,7 +95,7 @@
                 <div class="col-md-2 col-6">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body text-center py-3">
-                            <div class="small text-muted fw-bold text-uppercase mb-1">91–120 Days</div>
+                            <div class="small text-muted fw-bold text-uppercase mb-1">{{ __('91–120 Days') }}</div>
                             <div class="fw-bold tabular-nums text-danger">{{ number_format($summary['days_91_120'], 2) }}</div>
                         </div>
                     </div>
@@ -103,7 +103,7 @@
                 <div class="col-md-2 col-6">
                     <div class="card border-0 shadow-sm h-100 border-start border-3 border-supplier">
                         <div class="card-body text-center py-3">
-                            <div class="small text-muted fw-bold text-uppercase mb-1">Total Due</div>
+                            <div class="small text-muted fw-bold text-uppercase mb-1">{{ __('Total Due') }}</div>
                             <div class="fw-bold tabular-nums text-supplier fs-5">{{ number_format($summary['grand_total'], 2) }}</div>
                         </div>
                     </div>
@@ -139,11 +139,11 @@
                             @endif
 
                             <div class="mt-3 text-center">
-                                <label class="small text-uppercase text-muted d-block mb-1 fw-bold">As of {{ \Carbon\Carbon::parse($asOfDate)->format('d M Y') }}</label>
+                                <label class="small text-uppercase text-muted d-block mb-1 fw-bold">{{ __('As of') }} {{ \Carbon\Carbon::parse($asOfDate)->format('d M Y') }}</label>
                                 <h3 class="fw-bold text-supplier mb-0 tabular-nums">
                                     <small class="h6">SAR</small> {{ number_format($summary['grand_total'], 2) }}
                                 </h3>
-                                <span class="small text-muted">Total Outstanding</span>
+                                <span class="small text-muted">{{ __('Total Outstanding') }}</span>
                             </div>
 
                             {{-- Aging Bar --}}
@@ -174,7 +174,7 @@
                                         @endif
                                     </div>
                                     <div class="d-flex justify-content-between mt-2 x-small text-muted">
-                                        <span>Current</span><span>Over 120d</span>
+                                        <span>{{ __('Current') }}</span><span>{{ __('Over 120d') }}</span>
                                     </div>
                                 </div>
                             @endif
@@ -186,25 +186,25 @@
                 <div class="col-xl-9">
                     <div class="card border-0 shadow-sm overflow-hidden">
                         <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0 fw-bold"><i class="bi bi-table me-2 text-supplier"></i>Aging Detail</h6>
+                            <h6 class="mb-0 fw-bold"><i class="bi bi-table me-2 text-supplier"></i>{{ __('Aging Detail') }}</h6>
                             <span class="badge bg-supplier-subtle text-supplier border border-supplier-subtle px-3 py-2">
-                                {{ count($invoices) }} invoice(s) outstanding
+                                {{ count($invoices) }} {{ __('invoice(s) outstanding') }}
                             </span>
                         </div>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0">
                                 <thead>
                                 <tr class="bg-light text-muted small text-uppercase fw-bold ls-1">
-                                    <th class="ps-4 border-0">Invoice #</th>
-                                    <th class="border-0">Date</th>
-                                    <th class="border-0">Due Date</th>
-                                    <th class="text-end border-0">Current</th>
+                                    <th class="ps-4 border-0">{{ __('Invoice #') }}</th>
+                                    <th class="border-0">{{ __('Date') }}</th>
+                                    <th class="border-0">{{ __('Due Date') }}</th>
+                                    <th class="text-end border-0">{{ __('Current') }}</th>
                                     <th class="text-end border-0">1–30</th>
                                     <th class="text-end border-0">31–60</th>
                                     <th class="text-end border-0">61–90</th>
                                     <th class="text-end border-0">91–120</th>
                                     <th class="text-end border-0">>120</th>
-                                    <th class="text-end pe-4 border-0">Total</th>
+                                    <th class="text-end pe-4 border-0">{{ __('Total') }}</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -219,7 +219,7 @@
                                                 {{ $inv['due_date'] }}
                                             </span>
                                             @if($inv['days_overdue'] > 0)
-                                                <br><span class="x-small text-danger">{{ $inv['days_overdue'] }}d overdue</span>
+                                                <br><span class="x-small text-danger">{{ $inv['days_overdue'] }}{{ __('d overdue') }}</span>
                                             @endif
                                         </td>
                                         <td class="text-end tabular-nums text-success">
@@ -248,14 +248,14 @@
                                     <tr>
                                         <td colspan="10" class="text-center py-5 text-muted small">
                                             <i class="bi bi-inbox h3 d-block mb-2"></i>
-                                            No outstanding invoices found.
+                                            {{ __('No outstanding invoices found.') }}
                                         </td>
                                     </tr>
                                 @endforelse
                                 </tbody>
                                 <tfoot class="bg-light border-top">
                                 <tr class="fw-bold">
-                                    <td colspan="3" class="ps-4 py-3">Total</td>
+                                    <td colspan="3" class="ps-4 py-3">{{ __('Total') }}</td>
                                     <td class="text-end tabular-nums text-success">{{ number_format($summary['current'], 2) }}</td>
                                     <td class="text-end tabular-nums text-warning-emphasis">{{ number_format($summary['days_1_30'], 2) }}</td>
                                     <td class="text-end tabular-nums text-orange">{{ number_format($summary['days_31_60'], 2) }}</td>
@@ -281,9 +281,9 @@
                             <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
                         </td>
                         <td class="text-end">
-                            <div class="stmt-title">SUPPLIER AGING REPORT</div>
-                            <div class="stmt-sub">As of: {{ \Carbon\Carbon::parse($asOfDate)->format('d M Y') }}</div>
-                            <div class="stmt-sub">Generated: {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; Currency: SAR</div>
+                            <div class="stmt-title">{{ __('SUPPLIER AGING REPORT') }}</div>
+                            <div class="stmt-sub">{{ __('As of') }}: {{ \Carbon\Carbon::parse($asOfDate)->format('d M Y') }}</div>
+                            <div class="stmt-sub">{{ __('Generated') }}: {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency') }}: SAR</div>
                         </td>
                     </tr>
                 </table>
@@ -291,7 +291,7 @@
                 <table class="stmt-meta stmt-box">
                     <tr>
                         <td>
-                            <div class="stmt-sub" style="text-transform: uppercase;">Supplier</div>
+                            <div class="stmt-sub" style="text-transform: uppercase;">{{ __('Supplier') }}</div>
                             <div class="stmt-strong">{{ $supplier->name_en }} ({{ $supplier->row_no }})</div>
                             <div class="stmt-sub">
                                 @if($supplier->email) {{ $supplier->email }} @endif
@@ -300,7 +300,7 @@
                         </td>
                         <td class="text-end">
                             <table class="stmt-summary">
-                                <tr class="stmt-strong"><td>Total Outstanding</td><td class="text-end">{{ number_format($summary['grand_total'], 2) }}</td></tr>
+                                <tr class="stmt-strong"><td>{{ __('Total Outstanding') }}</td><td class="text-end">{{ number_format($summary['grand_total'], 2) }}</td></tr>
                             </table>
                         </td>
                     </tr>
@@ -309,16 +309,16 @@
                 <table class="stmt-table">
                     <thead>
                     <tr>
-                        <th>Invoice #</th>
-                        <th>Date</th>
-                        <th>Due Date</th>
-                        <th class="text-end">Current</th>
+                        <th>{{ __('Invoice #') }}</th>
+                        <th>{{ __('Date') }}</th>
+                        <th>{{ __('Due Date') }}</th>
+                        <th class="text-end">{{ __('Current') }}</th>
                         <th class="text-end">1-30</th>
                         <th class="text-end">31-60</th>
                         <th class="text-end">61-90</th>
                         <th class="text-end">91-120</th>
                         <th class="text-end">&gt;120</th>
-                        <th class="text-end">Total</th>
+                        <th class="text-end">{{ __('Total') }}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -336,12 +336,12 @@
                             <td class="text-end stmt-strong">{{ number_format($inv['total'], 2) }}</td>
                         </tr>
                     @empty
-                        <tr><td colspan="10" class="text-center">No outstanding invoices found.</td></tr>
+                        <tr><td colspan="10" class="text-center">{{ __('No outstanding invoices found.') }}</td></tr>
                     @endforelse
                     </tbody>
                     <tfoot>
                     <tr class="stmt-strong">
-                        <td colspan="3">Total</td>
+                        <td colspan="3">{{ __('Total') }}</td>
                         <td class="text-end">{{ number_format($summary['current'], 2) }}</td>
                         <td class="text-end">{{ number_format($summary['days_1_30'], 2) }}</td>
                         <td class="text-end">{{ number_format($summary['days_31_60'], 2) }}</td>
@@ -360,8 +360,8 @@
                     <div class="bg-light rounded-circle p-4 d-inline-block mb-3">
                         <i class="bi bi-building h1 text-muted"></i>
                     </div>
-                    <h5 class="fw-bold">No Supplier Selected</h5>
-                    <p class="text-muted mx-auto" style="max-width: 300px;">Select a supplier and date above to view their outstanding aging report.</p>
+                    <h5 class="fw-bold">{{ __('No Supplier Selected') }}</h5>
+                    <p class="text-muted mx-auto" style="max-width: 300px;">{{ __('Select a supplier and date above to view their outstanding aging report.') }}</p>
                 </div>
             </div>
         @endif
