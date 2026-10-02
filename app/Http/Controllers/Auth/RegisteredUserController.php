@@ -72,7 +72,7 @@ class RegisteredUserController extends Controller
             // they always have full access and are never subject to
             // department-based user rights.
             $user->role = 1;
-            $user->status = 'active';
+            $user->status = 1;
             $user->save();
 
             return $user;
