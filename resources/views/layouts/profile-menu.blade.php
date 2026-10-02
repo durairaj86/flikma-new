@@ -87,6 +87,14 @@
                 </div>
             </div>
 
+            {{-- Language toggle — one click switches to the other language. --}}
+            <a href="{{ route('locale.switch', app()->getLocale() === 'ar' ? 'en' : 'ar') }}"
+               class="profile-menu-btn profile-menu-btn-bell"
+               title="{{ app()->getLocale() === 'ar' ? 'Switch to English' : 'Switch to العربية' }}"
+               aria-label="Switch language">
+                <i class="bi bi-translate"></i>
+            </a>
+
             {{-- Header on/off shortcut. Sits in the rail while the header is hidden,
                  and in the header itself while it is showing, so one click is always
                  available to flip between the two layouts. --}}
@@ -171,6 +179,14 @@
                         User ID: {{ $authUser->id }} &nbsp;&bull;&nbsp; Organization ID: {{ $authUser->company_id }}
                     </div>
 
+                    <div class="profile-menu-lang-row">
+                        <span class="profile-menu-lang-icon"><i class="bi bi-translate"></i></span>
+                        <div class="profile-menu-lang-toggle">
+                            <a href="{{ route('locale.switch', 'en') }}" class="profile-menu-lang-btn {{ app()->getLocale() === 'en' ? 'active' : '' }}">English</a>
+                            <a href="{{ route('locale.switch', 'ar') }}" class="profile-menu-lang-btn {{ app()->getLocale() === 'ar' ? 'active' : '' }}">العربية</a>
+                        </div>
+                    </div>
+
                     <div class="profile-menu-actions-row">
                         <a href="{{ url('settings/account') }}" class="profile-menu-link">My Account</a>
                         <form method="POST" action="{{ url('logout') }}" class="m-0">
@@ -194,6 +210,14 @@
                         @endforeach
                     </div>
 
+                    <div class="profile-menu-pill-wrap">
+                        <a href="{{ route('settings.company.edit') }}" class="profile-menu-pill">
+                            <span class="profile-menu-pill-icon"><i class="bi bi-bell"></i></span>
+                            <span class="flex-grow-1">Notification Preferences</span>
+                            <i class="bi bi-chevron-right small text-muted"></i>
+                        </a>
+                    </div>
+
                     <div class="profile-menu-divider"></div>
 
                     <div class="profile-menu-more-heading">More</div>
@@ -205,6 +229,12 @@
                                 <i class="bi bi-chevron-right small"></i>
                             </a>
                         @endforeach
+                    </div>
+
+                    <div class="profile-menu-help-card">
+                        <div class="profile-menu-help-title">Need help?</div>
+                        <a href="mailto:support@flikma.com" class="profile-menu-help-link">Email support@flikma.com</a>
+                        <a href="https://wa.me/966595555343" target="_blank" rel="noopener" class="profile-menu-help-link">WhatsApp +966 59 555 5343</a>
                     </div>
                 </div>
             </div>
@@ -224,6 +254,12 @@
             padding-top: 16px;
             background: #fff;
             border-left: 1px solid #eef0f3;
+            /* Elevation shadow cast leftward — the rail sits at a higher z-index
+               than offcanvas drawers (Bootstrap's default z-index: 1045) and
+               genuinely renders on top of/overlapping them, but without this
+               shadow the flat 1px border reads as a seam beside the drawer
+               rather than a floating panel above it. */
+            box-shadow: -6px 0 16px rgba(0, 0, 0, .06);
             z-index: 1090;
         }
 
@@ -481,7 +517,7 @@
 
         /* RTL mirrors — this whole rail sits on the physical right in LTR, so in RTL it
            should sit on the physical left instead (the natural "trailing" edge either way). */
-        [dir="rtl"] .profile-menu-fixed { right: auto; left: 0; border-left: none; border-right: 1px solid #eef0f3; }
+        [dir="rtl"] .profile-menu-fixed { right: auto; left: 0; border-left: none; border-right: 1px solid #eef0f3; box-shadow: 6px 0 16px rgba(0, 0, 0, .06); }
         [dir="rtl"] .profile-menu-card { right: auto; left: 68px; }
         [dir="rtl"] body.has-top-header .profile-menu-card { right: auto; left: 20px; }
 
@@ -798,6 +834,7 @@
             text-align: center;
         }
 
+        .profile-menu-help-card {
             margin: .25rem 1rem 1rem;
             padding: 1rem;
             background: #fff;

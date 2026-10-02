@@ -840,8 +840,8 @@
         color: var(--sb-text);
         font-size: .85rem;
         font-weight: 500;
-        padding: 9px 14px;
-        margin: 1px 10px;
+        padding: 9px 5px;
+        margin: 1px 0px;
         border-radius: 8px;
         border-left: 3px solid transparent;
         transition: background-color .15s ease, color .15s ease;
@@ -909,9 +909,10 @@
         display: block;
         background: transparent;
         color: var(--sb-text-muted);
-        font-size: .8rem;
+        font-size: .82rem;
         font-weight: 500;
-        padding: 8px 14px 8px 18px;
+        line-height: 1.4;
+        padding: 11px 14px 11px 18px;
         margin: 0 10px 0 26px;
         border-radius: 0 8px 8px 0;
         border-left: 2px solid transparent;

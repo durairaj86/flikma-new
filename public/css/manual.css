@@ -1626,41 +1626,100 @@ label.required.label-error {
     height: 1.2rem;
 }
 
-/* Reserve space for Sea/Air */
-.pol-pod-select .ts-wrapper.single .ts-control {
-    padding-left: 105px !important;
-}
-
-/* Sea / Air toggle */
+/* Sea / Air toggle — a compact segmented control sitting above its POL/POD
+   select (previously absolutely-positioned on top of the select itself,
+   which forced a 105px left-padding hack on the select and made both
+   controls cramped/hard to read). */
 .shipment-toggle {
-    position: absolute;
-    left: 8px;
-    top: 50%;
-    transform: translateY(-50%);
     display: inline-flex;
-    border: 1px solid #ced4da;
+    border: 1px solid #dee2e6;
     border-radius: 6px;
     overflow: hidden;
     background: #fff;
-    z-index: 10;
 }
 
-/* Buttons */
 .shipment-toggle label {
-    padding: 0 10px;
-    font-size: 0.65rem;
+    padding: 5px 16px;
+    font-size: 0.75rem;
+    font-weight: 500;
     cursor: pointer;
-    color: #0d6efd;
-    border-right: 1px solid #ced4da;
+    color: #495057;
+    margin: 0;
+    transition: background-color .15s ease, color .15s ease;
 }
 
-.shipment-toggle label:last-child {
-    border-right: 0;
+.shipment-toggle label:first-of-type {
+    border-right: 1px solid #dee2e6;
 }
 
 .shipment-toggle input:checked + label {
     background: #0d6efd;
     color: #fff;
+}
+
+/* Advanced Filters panel */
+.filter-panel-card {
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.filter-panel-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #e7f0fe;
+    color: #0d6efd;
+    font-size: .8rem;
+    flex-shrink: 0;
+}
+
+.filter-panel-actions {
+    border-color: #eef0f2 !important;
+}
+
+/* Equal label-row height across all filter columns, whether or not that
+   column has a Sea/Air toggle beside its label — otherwise the POL/POD
+   dropdowns (which have an extra toggle row) sit visibly lower than the
+   Enquiry Date/Customer controls, staggering the whole row. */
+.filter-label-row {
+    display: flex;
+    align-items: center;
+    min-height: 42px;
+    margin-bottom: .5rem;
+}
+
+/* POL/POD's "(Port of Loading)"/"(Port of Discharge)" qualifier wraps to
+   its own line beside the Sea/Air toggle in a narrow column — drop it to
+   a block below the main label instead of fighting for horizontal space. */
+.pol-pod-select .filter-label-row label {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+}
+
+.pol-pod-select .filter-label-row label .text-muted {
+    font-size: .68rem;
+}
+
+/* Enquiry Date range — two inputs with a connecting arrow instead of two
+   bare boxes side by side. */
+.filter-date-range {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.filter-date-range .form-control {
+    min-width: 0;
+}
+
+.filter-date-range-arrow {
+    flex-shrink: 0;
+    color: #adb5bd;
+    font-size: .8rem;
 }
 
 #scanning-overlay {
