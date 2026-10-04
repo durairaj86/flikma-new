@@ -75,6 +75,7 @@ class DashboardController extends Controller
             'atdThisWeek' => $this->getAtdThisWeek(),
 
             // Job Follow-ups
+            'enquiryStats' => $this->getEnquiryStats(),
             'activeJobs' => $this->getActiveJobs(),
             'completedJobsThisMonth' => $this->getCompletedJobsThisMonth(),
 
@@ -231,6 +232,19 @@ class DashboardController extends Controller
     private function getAtdThisWeek()
     {
         return Job::whereBetween('atd', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])->count();
+    }
+
+    /** This month's enquiries: total, pending and confirmed. */
+    private function getEnquiryStats(): array
+    {
+        $q = \App\Models\Enquiry\Enquiry::whereMonth('created_at', Carbon::now()->month)->whereYear('created_at', Carbon::now()->year);
+        $byStatus = (clone $q)->selectRaw('status, COUNT(*) as c')->groupBy('status')->pluck('c', 'status');
+
+        return [
+            'total' => (int) $byStatus->sum(),
+            'pending' => (int) ($byStatus[\App\Enums\EnquiryEnum::PENDING->value] ?? 0),
+            'confirmed' => (int) ($byStatus[\App\Enums\EnquiryEnum::CONFIRMED->value] ?? 0),
+        ];
     }
 
     private function getActiveJobs()

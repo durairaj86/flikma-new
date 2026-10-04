@@ -243,10 +243,16 @@
         .wp-name { flex: 1; font-size: .85rem; font-weight: 500; color: #344054; min-width: 0; }
         .wp-size { font-size: .62rem; font-weight: 700; border-radius: 6px; padding: 1px 6px; background: #f2f4f7; color: #667085; }
         .wp-size-small { background: #ecfdf3; color: #067647; } .wp-size-medium { background: #eff8ff; color: #175cd3; } .wp-size-large { background: #fdf2fa; color: #c11574; }
+        .wp-chips { display: inline-flex; gap: 5px; flex-shrink: 0; }
+        .wp-chip { width: 28px; height: 28px; border-radius: 9px; border: 1.5px solid #d0d5dd; background: #fff; color: #667085; font-size: .72rem; font-weight: 700; padding: 0;
+            display: inline-flex; align-items: center; justify-content: center; position: relative; transition: transform .15s, background .15s, border-color .15s, color .15s; }
+        .wp-chip:not(.wp-chip-none):hover { transform: translateY(-1px); border-color: #4f46e5; color: #4f46e5; }
+        .wp-chip-none { border: 0; background: transparent; visibility: hidden; }
+        .wp-chip.added { background: #4f46e5; border-color: #4f46e5; color: #fff; }
+        .wp-chip.added::after { content: '\2713'; position: absolute; top: -6px; right: -6px; width: 14px; height: 14px; border-radius: 50%; background: #16a34a; color: #fff; font-size: .55rem; display: flex; align-items: center; justify-content: center; border: 1.5px solid #fff; }
+        .wp-chip.busy { opacity: .5; pointer-events: none; }
         .wp-btn { width: 28px; height: 28px; border-radius: 50%; border: 0; background: #4f46e5; color: #fff; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform .15s, background .15s; }
         .wp-btn:hover { transform: scale(1.1); }
-        .wp-item.added .wp-btn { background: #fee4e2; color: #b42318; }
-        .wp-item.added .wp-name::after { content: ' \2713'; color: #16a34a; font-weight: 700; }
         [dir="rtl"] .wp-panel { right: auto; left: 74px; }
         body:not(.has-top-header) .wp-panel { right: 74px; }
 
@@ -315,18 +321,26 @@
                     <div class="wp-group-title"><i class="bi {{ $module['icon'] }}"></i> {{ __($module['title']) }}
                         <span class="wp-count" data-module="{{ $mKey }}"></span>
                     </div>
-                    @foreach($module['widgets'] as $wKey => $w)
-                        <div class="wp-item" data-key="{{ $wKey }}">
-                            <span class="wp-icon"><i class="bi {{ $w['icon'] }}"></i></span>
-                            <span class="wp-name">{{ __($w['title']) }}</span>
-                            <span class="wp-size wp-size-{{ $w['size'] }}">{{ strtoupper(substr($w['size'], 0, 1)) }}</span>
-                            <button type="button" class="wp-btn" data-key="{{ $wKey }}" title="{{ __('Add to dashboard') }}"><i class="bi bi-plus-lg"></i></button>
+                    @foreach($module['groups'] as $gKey => $g)
+                        <div class="wp-item" data-group="{{ $gKey }}">
+                            <span class="wp-icon"><i class="bi {{ $g['icon'] }}"></i></span>
+                            <span class="wp-name">{{ __($g['title']) }}</span>
+                            <span class="wp-chips">
+                                @foreach(['small', 'medium', 'large'] as $size)
+                                    @if(isset($g['variants'][$size]))
+                                        <button type="button" class="wp-chip wp-chip-{{ $size }}" data-key="{{ $g['variants'][$size] }}"
+                                                title="{{ __('Add') }} {{ __(ucfirst($size)) }}">{{ strtoupper($size[0]) }}</button>
+                                    @else
+                                        <span class="wp-chip wp-chip-none"></span>
+                                    @endif
+                                @endforeach
+                            </span>
                         </div>
                     @endforeach
                 </div>
             @endforeach
         </div>
-        <div class="wp-foot text-muted small"><span class="wp-size wp-size-small">S</span> {{ __('Small') }} &nbsp; <span class="wp-size wp-size-medium">M</span> {{ __('Medium') }} &nbsp; <span class="wp-size wp-size-large">L</span> {{ __('Large') }}</div>
+        <div class="wp-foot text-muted small">{{ __('Tap a size to add it. Tap again to remove.') }}<br><span class="wp-size wp-size-small">S</span> {{ __('Small') }} &nbsp; <span class="wp-size wp-size-medium">M</span> 2&times; {{ __('Small') }} &nbsp; <span class="wp-size wp-size-large">L</span> 2&times; {{ __('Medium') }}</div>
     </div>
 
                 <footer class="small text-center mt-3 mb-0">© <span id="y"></span> {{ companyName() }} — {{ __('All rights reserved.') }}</footer>
@@ -483,19 +497,15 @@
                 }
                 function refreshPanel() {
                     var on = currentOrder();
-                    panel.querySelectorAll('.wp-item').forEach(function (item) {
-                        var added = on.indexOf(item.dataset.key) !== -1;
-                        item.classList.toggle('added', added);
-                        var b = item.querySelector('.wp-btn');
-                        b.innerHTML = '<i class="bi ' + (added ? 'bi-dash-lg' : 'bi-plus-lg') + '"></i>';
-                        b.title = added ? @json(__('Remove from dashboard')) : @json(__('Add to dashboard'));
+                    panel.querySelectorAll('.wp-chip[data-key]').forEach(function (c) {
+                        var added = on.indexOf(c.dataset.key) !== -1;
+                        c.classList.toggle('added', added);
+                        c.title = (added ? @json(__('Remove')) : @json(__('Add'))) + ' ' + c.textContent;
                     });
                     panel.querySelectorAll('.wp-count').forEach(function (c) {
-                        var items = panel.querySelectorAll('.wp-item'), total = 0, active = 0;
-                        // count per module: items belong to the nearest preceding group
-                        var group = c.closest('.wp-group');
-                        group.querySelectorAll('.wp-item').forEach(function (i) { total++; if (on.indexOf(i.dataset.key) !== -1) active++; });
-                        c.textContent = active + '/' + total;
+                        var n = 0;
+                        c.closest('.wp-group').querySelectorAll('.wp-chip.added').forEach(function () { n++; });
+                        c.textContent = n ? n + ' ' + @json(__('added')) : '';
                     });
                     emptyEl.classList.toggle('d-none', on.length > 0);
                 }
@@ -548,7 +558,7 @@
                 }
                 function addWidget(key, fromEl) {
                     if (grid.querySelector('.dash-item[data-key="' + key + '"]')) return;
-                    fromEl.disabled = true;
+                    fromEl.classList.add('busy');
                     fetch(@json(url('/dashboard/widget')) + '/' + key, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
                         .then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
                         .then(function (res) {
@@ -562,16 +572,16 @@
                             if (key === 'revenue-expenses') initRevenueExpenses();
                             if (key === 'revenue-trend') initRevenueTrend();
                             window.scrollTo({ top: Math.max(0, grid.getBoundingClientRect().top + window.scrollY - 120), behavior: 'smooth' });
-                            requestAnimationFrame(function () { fly(fromEl.closest('.wp-item') || fromEl, cell); });
+                            requestAnimationFrame(function () { fly(fromEl, cell); });
                             setTimeout(function () { cell.classList.remove('dash-entering'); cell.classList.add('dash-pulse'); }, 550);
                             setTimeout(function () { cell.classList.remove('dash-pulse'); }, 1800);
                             saveOrder(); refreshPanel();
                         })
                         .catch(function () { if (window.toastr) toastr.error(@json(__('Could not add the widget.'))); })
-                        .finally(function () { fromEl.disabled = false; });
+                        .finally(function () { fromEl.classList.remove('busy'); });
                 }
                 panel.addEventListener('click', function (e) {
-                    var b = e.target.closest('.wp-btn');
+                    var b = e.target.closest('.wp-chip[data-key]');
                     if (!b) return;
                     var key = b.dataset.key, cell = grid.querySelector('.dash-item[data-key="' + key + '"]');
                     if (cell) removeCell(cell); else addWidget(key, b);
