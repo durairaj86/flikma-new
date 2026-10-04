@@ -31,6 +31,22 @@
         .kpi-tall-foot { font-size: .75rem; color: #667085; padding-top: 8px; }
         .kpi-table thead th { position: sticky; top: 0; background: #f8fafc; font-size: .72rem; text-transform: uppercase; color: #667085; z-index: 1; }
         .kpi-table td { font-size: .8rem; }
+        .wd-loading { opacity: .6; transition: opacity .15s; }
+        .wd-month { position: relative; flex-shrink: 0; }
+        .wd-month-btn { white-space: nowrap; }
+        .kpi-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .wd-month-btn { display: inline-flex; align-items: center; gap: 6px; border: 1px solid rgba(15,23,42,.1); background: rgba(255,255,255,.8);
+            border-radius: 999px; padding: 4px 10px; font-size: .75rem; font-weight: 600; color: #344054; cursor: pointer; transition: background .15s, box-shadow .15s; }
+        .wd-month-btn:hover, .wd-month-btn.is-open { background: #fff; box-shadow: 0 2px 8px rgba(15,23,42,.1); }
+        .wd-month-btn i:first-child { color: var(--kc); }
+        .wd-month-caret { font-size: .65rem; color: #98a2b3; transition: transform .2s; }
+        .wd-month-btn.is-open .wd-month-caret { transform: rotate(180deg); }
+        .wd-month-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 30; min-width: 150px; max-height: 240px; overflow-y: auto;
+            background: #fff; border: 1px solid #eaecf0; border-radius: 14px; padding: 6px; box-shadow: 0 16px 36px rgba(15,23,42,.16); }
+        .wd-month-item { display: flex; align-items: center; justify-content: space-between; width: 100%; border: 0; background: transparent;
+            padding: 7px 10px; border-radius: 9px; font-size: .8rem; color: #344054; cursor: pointer; text-align: left; }
+        .wd-month-item:hover { background: #f2f4f7; }
+        .wd-month-item.active { background: color-mix(in srgb, var(--kc, #2563eb) 12%, #fff); color: var(--kc, #2563eb); font-weight: 600; }
         .kpi-head { display: flex; align-items: center; gap: 10px; }
         .kpi-icon { width: 34px; height: 34px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;
             color: #fff; background: var(--kc); font-size: .85rem; border-radius: 50%; width: 32px; height: 32px;
@@ -139,42 +155,19 @@
 
                             <!-- TOP: 4 stat boxes (grid) -->
                             <!-- Month summary cards -->
-                            @php
-                                $sc = $summaryCards;
-                                $short = function ($n) {
-                                    $a = abs($n);
-                                    if ($a >= 1000000) return number_format($n / 1000000, 2) . 'M';
-                                    if ($a >= 1000) return number_format($n / 1000, 2) . 'K';
-                                    return number_format($n, 2);
-                                };
-                                $chg = fn ($v) => '<span class="sc-change ' . ($v >= 0 ? 'up' : 'down') . '">(' . ($v >= 0 ? '+' : '') . number_format($v, 2) . '% ' . ($v >= 0 ? '&uarr;' : '&darr;') . ')</span>';
-                            @endphp
-                            @php
-                                $monthSelect = function () use ($summaryMonths, $sc) {
-                                    $o = '';
-                                    foreach ($summaryMonths as $val => $lbl) {
-                                        $o .= '<option value="' . $val . '"' . ($val === $sc['month'] ? ' selected' : '') . '>' . \Illuminate\Support\Carbon::createFromFormat('Y-m', $val)->format('M') . '</option>';
-                                    }
-                                    return '<select class="kpi-month" onchange="window.location=\'?month=\'+this.value">' . $o . '</select>';
-                                };
-                                $change = fn ($cur, $prev) => $prev > 0 ? round((($cur - $prev) / $prev) * 100, 2) : ($cur > 0 ? 100.0 : 0.0);
-                                $pill = fn ($v) => '<span class="kpi-pill ' . ($v >= 0 ? 'up' : 'down') . '">' . ($v >= 0 ? '&#9650;' : '&#9660;') . ' ' . number_format(abs($v), 1) . '%</span>';
-                                $series = $sc['series'];
-                            @endphp
-
                             {{-- Medium widgets (with charts) --}}
                             <div class="row g-3 mb-3">
-                                <div class="col-12 col-sm-6">@include('dashboard.widgets.sales-medium')</div>
-                                <div class="col-12 col-sm-6">@include('dashboard.widgets.invoices-medium')</div>
-                                <div class="col-12 col-sm-6">@include('dashboard.widgets.customers-medium')</div>
-                                <div class="col-12 col-sm-6">@include('dashboard.widgets.profit-medium')</div>
+                                <div class="col-12 col-sm-6"><livewire:widgets.sales size="medium" /></div>
+                                <div class="col-12 col-sm-6"><livewire:widgets.invoices size="medium" /></div>
+                                <div class="col-12 col-sm-6"><livewire:widgets.customers size="medium" /></div>
+                                <div class="col-12 col-sm-6"><livewire:widgets.profit size="medium" /></div>
                             </div>
 
                             {{-- Small widgets --}}
                             <div class="row g-3 mb-3">
-                                <div class="col-12 col-sm-4">@include('dashboard.widgets.quotation-small')</div>
-                                <div class="col-12 col-sm-4">@include('dashboard.widgets.payments-small')</div>
-                                <div class="col-12 col-sm-4">@include('dashboard.widgets.collection-small')</div>
+                                <div class="col-12 col-sm-4"><livewire:widgets.quotation size="small" /></div>
+                                <div class="col-12 col-sm-4"><livewire:widgets.payments size="small" /></div>
+                                <div class="col-12 col-sm-4"><livewire:widgets.collection size="small" /></div>
                             </div>
 
                             <div class="row g-3 mb-3">
@@ -276,7 +269,10 @@
             });
 
             // Medium widget charts (donut / area / bars) driven by data-* attributes
-            document.querySelectorAll('canvas.kpi-chart').forEach(function (cv) {
+            function initKpiCharts(root) {
+              (root || document).querySelectorAll('canvas.kpi-chart').forEach(function (cv) {
+                var existing = Chart.getChart(cv);
+                if (existing) { existing.destroy(); }
                 var type = cv.dataset.type, color = cv.dataset.color;
                 var values = JSON.parse(cv.dataset.values), labels = JSON.parse(cv.dataset.labels);
                 var base = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
@@ -301,6 +297,15 @@
                     new Chart(cv, { type: 'bar', data: { labels: labels, datasets: [{ data: values, borderRadius: 3, backgroundColor: type === 'profitbar' ? values.map(function (v) { return v >= 0 ? color : '#dc2626'; }) : color }] },
                         options: Object.assign({}, base, axes) });
                 }
+              });
+            }
+            initKpiCharts(document);
+
+            // Each Livewire widget re-renders on its own (e.g. month change): redraw only its charts.
+            document.addEventListener('livewire:init', function () {
+                Livewire.hook('commit', function (ctx) {
+                    ctx.succeed(function () { setTimeout(function () { initKpiCharts(ctx.component.el); }, 0); });
+                });
             });
         </script>
 

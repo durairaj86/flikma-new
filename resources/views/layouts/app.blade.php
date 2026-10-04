@@ -74,9 +74,8 @@
     <!-- SweetAlert2 JS -->
     <script src="{{ asset('js/sweetalert2/sweetalert2.js')}}"></script>
 
-    <!-- Alpine.js — required by the x-data/x-show bindings in the shell (mobile
-         sidebar toggle) and by the Billing page's plan picker. -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    {{-- Alpine comes from Livewire (@livewireScripts) and serves every x-data/x-show in the shell too.
+         Loading it again from a CDN makes Livewire refuse to start ("multiple instances of Alpine"). --}}
 
     <link href="{{ asset('css/tom-select/tom-select.bootstrap5.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/flatpickr/flatpickr.min.css') }}">
