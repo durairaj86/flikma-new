@@ -178,6 +178,9 @@
         .dash-item:hover .dash-handle, .dash-handle:focus { opacity: 1; }
         @media (hover: none) { .dash-handle { opacity: .7; } }
         .dash-handle:active { cursor: grabbing; }
+        .dash-handle { user-select: none; -webkit-user-select: none; touch-action: none; }
+        /* While dragging, never let the pointer select page text/cards (it highlighted everything on scroll). */
+        body.dash-dragging, body.dash-dragging * { user-select: none !important; -webkit-user-select: none !important; cursor: grabbing !important; }
         .dash-ghost { opacity: .35; }
         .dash-chosen > :not(.dash-handle) { box-shadow: 0 18px 40px rgba(15,23,42,.25); transform: scale(1.01); }
 
@@ -355,10 +358,20 @@
                 function post(url, body) {
                     return fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': token, 'X-Requested-With': 'XMLHttpRequest' }, body: JSON.stringify(body || {}) });
                 }
+                grid.addEventListener('mousedown', function (e) { if (e.target.closest('.dash-handle')) e.preventDefault(); });
+                grid.addEventListener('selectstart', function (e) { if (document.body.classList.contains('dash-dragging')) e.preventDefault(); });
+                // Safety net: whatever ends the drag, never leave the page unselectable.
+                ['pointerup', 'mouseup', 'pointercancel', 'dragend', 'blur'].forEach(function (t) {
+                    window.addEventListener(t, function () { setTimeout(function () { document.body.classList.remove('dash-dragging'); }, 0); }, true);
+                });
                 Sortable.create(grid, {
                     animation: 180, handle: '.dash-handle', draggable: '.dash-item',
-                    ghostClass: 'dash-ghost', chosenClass: 'dash-chosen', forceFallback: true, fallbackTolerance: 3,
+                    ghostClass: 'dash-ghost', chosenClass: 'dash-chosen', forceFallback: true, fallbackTolerance: 3, fallbackOnBody: true, scroll: true, scrollSensitivity: 80, scrollSpeed: 14, bubbleScroll: true,
+                    onUnchoose: function () { document.body.classList.remove('dash-dragging'); },
+                    onStart: function () { document.body.classList.add('dash-dragging'); var sel = window.getSelection && window.getSelection(); if (sel) sel.removeAllRanges(); },
                     onEnd: function () {
+                        document.body.classList.remove('dash-dragging');
+                        var sel = window.getSelection && window.getSelection(); if (sel) sel.removeAllRanges();
                         var order = Array.prototype.map.call(grid.querySelectorAll('.dash-item'), function (el) { return el.dataset.key; });
                         post(@json(route('dashboard.layout.save')), { order: order }).then(function (r) {
                             if (!r.ok) throw new Error();
