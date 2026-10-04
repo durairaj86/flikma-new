@@ -1,6 +1,11 @@
 @section('page-title', __('Opening Balance'))
+@section('hide-master-title', true)
+@section('page-subtitle', __('Maintain beginning balances for accounts and sub-ledgers.'))
 <x-app-layout>
-    <main class="gmail-content bg-white px-3">
+    <main class="gmail-content bg-white d-flex">
+        @include('includes.master-navigation')
+        <section class="flex-grow-1 px-4 d-flex flex-column">
+        @include('includes.master-page-title')
 
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show mt-2 mb-0" role="alert">
@@ -15,21 +20,21 @@
             </div>
         @endif
 
-        {{-- Header --}}
-        <div class="d-flex justify-content-between align-items-center py-3">
-            <div>
-                <h5 class="fw-bold mb-0">{{ __('Opening Balances') }}</h5>
-                <small class="text-muted">{{ __('Maintain beginning balances for accounts and sub-ledgers.') }}</small>
-            </div>
-            <a href="{{ route('finance.opening-balance.create') }}" class="btn btn-primary rounded-pill px-4">
-                <i class="bi bi-plus-lg me-1"></i> {{ __('New Entry') }}
-            </a>
-        </div>
-
         {{-- Filter Card --}}
         <div class="card border-0 shadow-sm mb-3">
-            <div class="card-header bg-white py-3">
-                <h6 class="mb-0 fw-semibold">{{ __('Filters') }}</h6>
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                @if(headerEnabledForUser())
+                    <h6 class="mb-0 fw-semibold">{{ __('Filters') }}</h6>
+                @else
+                    {{-- Header off: this card header carries the page title and description instead of "Filters". --}}
+                    <div>
+                        <h4 class="fw-bold text-dark mb-0">{{ __('Opening Balance') }}</h4>
+                        <div class="text-muted small mt-1">{{ __('Maintain beginning balances for accounts and sub-ledgers.') }}</div>
+                    </div>
+                @endif
+                <a href="{{ route('finance.opening-balance.create') }}" class="btn btn-primary btn-sm rounded-pill px-3 ms-auto">
+                    <i class="bi bi-plus-lg me-1"></i> {{ __('New Entry') }}
+                </a>
             </div>
             <div class="card-body py-3">
                 <form method="GET" action="{{ route('finance.opening-balance') }}" class="row g-2 align-items-end">
@@ -166,6 +171,7 @@
                 </div>
             @endif
         </div>
+        </section>
     </main>
 
     {{-- Delete confirmation modal --}}

@@ -4,8 +4,11 @@
 @section('page-title', __('Opening Balance Details'))
 
 @section('content')
-<div class="bg-white min-vh-100">
-    <div class="container-fluid py-4 px-5">
+<main class="gmail-content bg-white d-flex">
+    @include('includes.master-navigation')
+    <section class="flex-grow-1 px-4 d-flex flex-column">
+    @include('includes.master-page-title')
+    <div class="container-fluid py-2 px-0">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div class="d-flex align-items-center gap-3">
                 <a href="{{ route('finance.opening-balance') }}" class="btn btn-light btn-sm rounded-circle border">
@@ -125,7 +128,8 @@
             </a>
         </div>
     </div>
-</div>
+    </section>
+</main>
 @endsection
 
 @section('scripts')

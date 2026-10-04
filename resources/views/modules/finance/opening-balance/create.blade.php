@@ -1,7 +1,10 @@
 @section('page-title', __('New Opening Balance'))
 @section('page-subtitle', __('Add customer, supplier, and GL account opening balances'))
 <x-app-layout>
-    <main class="gmail-content bg-white px-3 pb-5">
+    <main class="gmail-content bg-white d-flex">
+        @include('includes.master-navigation')
+        <section class="flex-grow-1 px-4 d-flex flex-column">
+        @include('includes.master-page-title')
 
         {{-- Page actions --}}
         <div class="d-flex justify-content-end align-items-center py-3 border-bottom mb-3">
@@ -257,6 +260,7 @@
             </div>
 
         </form>
+        </section>
     </main>
 
     <script>

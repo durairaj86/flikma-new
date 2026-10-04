@@ -22,24 +22,28 @@
                         <label class="form-label required">{{ __('HS Code') }} <sup class="text-danger">*</sup></label>
                         <input type="text" name="hs_code" class="form-control" required
                                value="{{ $hsTariff->hs_code ?? '' }}">
+                        <div class="field-hint-wrap" data-full="{{ __('The customs commodity code (6 to 10 digits) from the Harmonized System, for example 8471.30 for laptops.') }}"><div class="field-hint" tabindex="0">{{ __('The customs commodity code (6 to 10 digits) from the Harmonized System, for example 8471.30 for laptops.') }}</div></div>
                     </div>
 
                     <div class="col-6 form-group">
                         <label class="form-label required">{{ __('Duty Rate (%)') }} <sup class="text-danger">*</sup></label>
                         <input type="number" name="duty_rate" class="form-control" step="0.01" min="0" max="100"
                                required value="{{ $hsTariff->duty_rate ?? '' }}">
+                        <div class="field-hint-wrap" data-full="{{ __('Customs duty as a percentage of the goods value, from 0 to 100. For example 5 means 5%.') }}"><div class="field-hint" tabindex="0">{{ __('Customs duty as a percentage of the goods value, from 0 to 100. For example 5 means 5%.') }}</div></div>
                     </div>
 
                     <div class="col-8 form-group">
                         <label class="form-label required">{{ __('Description') }} <sup class="text-danger">*</sup></label>
                         <input type="text" name="description" class="form-control" required
                                value="{{ $hsTariff->description ?? '' }}">
+                        <div class="field-hint-wrap" data-full="{{ __('What the goods are, in plain words. It is shown with the code on quotations and clearance jobs.') }}"><div class="field-hint" tabindex="0">{{ __('What the goods are, in plain words. It is shown with the code on quotations and clearance jobs.') }}</div></div>
                     </div>
 
                     <div class="col-4 form-group">
                         <label class="form-label">{{ __('Unit') }}</label>
                         <input type="text" name="unit" class="form-control" placeholder="{{ __('e.g. KG, PCS') }}"
                                value="{{ $hsTariff->unit ?? '' }}">
+                        <div class="field-hint-wrap" data-full="{{ __('The unit the duty is counted in, for example KG or PCS.') }}"><div class="field-hint" tabindex="0">{{ __('The unit the duty is counted in, for example KG or PCS.') }}</div></div>
                     </div>
 
                     <div class="col-12 form-group">
@@ -49,6 +53,7 @@
                                    @checked($hsTariff->is_active ?? true)>
                             <label class="form-check-label" for="is_active">{{ __('Active') }}</label>
                         </div>
+                        <div class="field-hint-wrap" data-full="{{ __('Switch off to hide this code from new quotations and jobs. Existing records keep it.') }}"><div class="field-hint" tabindex="0">{{ __('Switch off to hide this code from new quotations and jobs. Existing records keep it.') }}</div></div>
                     </div>
                 </div>
             </div>

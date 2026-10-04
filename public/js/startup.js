@@ -635,12 +635,15 @@ let webModal = {
         $modalEl.off('keydown');
 
         // Remove previous size & scrollable classes
-        $modalDialog.removeClass('modal-sm modal-md modal-lg modal-xl modal-xxl modal-fullscreen modal-full-wrapper modal-dialog-scrollable');
+        $modalDialog.removeClass('modal-sm modal-compact modal-md modal-lg modal-xl modal-xxl modal-fullscreen modal-full-wrapper modal-dialog-scrollable');
 
         // Add size class
         switch (settings.size) {
             case 'sm':
                 $modalDialog.addClass('modal-sm');
+                break;
+            case 'compact':
+                $modalDialog.addClass('modal-compact');
                 break;
             case 'md':
                 $modalDialog.addClass('modal-md');
@@ -3086,3 +3089,21 @@ function reportExportPdf(e, printElementId, opts) {
 
     html2pdf().set(opt).from(clone).save();
 }
+
+
+/* Empty tables: hide the "Showing 0 to 0 of 0 entries" line and the pagination when there is nothing to show.
+   Delegated on document so it covers every DataTable on every page. */
+$(document).on('draw.dt', function (e, settings) {
+    try {
+        const api = new $.fn.dataTable.Api(settings);
+        const empty = api.page.info().recordsDisplay === 0;
+        $(api.table().container()).find('.dataTables_info, .dataTables_paginate').toggleClass('d-none', empty);
+    } catch (err) { /* never block a table draw */ }
+});
+
+
+/* Field help lines: the full-text bubble only makes sense when the line is actually cut with "...". */
+$(document).on('mouseenter focusin', '.field-hint-wrap', function () {
+    const line = this.querySelector('.field-hint');
+    if (line) $(this).toggleClass('is-truncated', line.scrollWidth > line.clientWidth + 1);
+});

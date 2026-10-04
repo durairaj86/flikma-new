@@ -1,11 +1,13 @@
 @section('page-title', __('Edit Opening Balance'))
 <x-app-layout>
-    <main class="gmail-content bg-white px-3 pb-5">
+    <main class="gmail-content bg-white d-flex">
+        @include('includes.master-navigation')
+        <section class="flex-grow-1 px-4 d-flex flex-column">
+        @include('includes.master-page-title')
 
         {{-- Page header --}}
         <div class="d-flex justify-content-between align-items-center py-3 border-bottom mb-3">
             <div>
-                <h5 class="fw-bold mb-0">{{ __('Edit Opening Balance') }}</h5>
                 <small class="text-muted">{{ __('Update the beginning balance details.') }}</small>
             </div>
             <a href="{{ route('finance.opening-balance') }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
@@ -134,5 +136,6 @@
             </div>
         </div>
 
+        </section>
     </main>
 </x-app-layout>

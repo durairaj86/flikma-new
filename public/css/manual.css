@@ -1803,3 +1803,30 @@ label.required.label-error {
     text-align: center;
     z-index: 10000;
 }
+
+
+/* Compact modal (small forms, e.g. HS Tariff): narrower than md (600px). */
+@media (min-width: 576px) {
+    .modal-compact { --bs-modal-width: 460px; }
+}
+
+
+/* One-line help text under a form field. Long text is cut with "..."; hovering shows the full text in a bubble ABOVE the line, only when the text is actually cut. */
+.field-hint-wrap { position: relative; height: 1.25rem; margin-top: .2rem; }
+.field-hint {
+    font-size: .75rem; line-height: 1.25rem; color: #667085;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; outline: 0;
+}
+.field-hint-wrap.is-truncated .field-hint { cursor: help; }
+.field-hint-wrap.is-truncated:hover::after, .field-hint-wrap.is-truncated:focus-within::after {
+    content: attr(data-full);
+    position: absolute; left: 0; bottom: calc(100% + 4px); z-index: 30;
+    width: max-content; max-width: min(340px, 85vw);
+    white-space: normal; font-size: .75rem; line-height: 1.35; font-weight: 400;
+    background: #101828; color: #fff; padding: .4rem .6rem; border-radius: .5rem;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, .25); pointer-events: none;
+}
+.field-hint-wrap.is-truncated:hover::before, .field-hint-wrap.is-truncated:focus-within::before {
+    content: ''; position: absolute; left: 14px; bottom: calc(100% - 1px); z-index: 31;
+    border: 5px solid transparent; border-top-color: #101828; border-bottom: 0;
+}
