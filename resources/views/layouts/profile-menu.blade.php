@@ -87,6 +87,14 @@
                 </div>
             </div>
 
+            @if(request()->routeIs('dashboard'))
+                <button type="button" class="profile-menu-btn profile-menu-btn-bell" data-widget-panel-toggle
+                        onclick="window.dispatchEvent(new CustomEvent('open-widget-panel'))"
+                        title="{{ __('Widgets') }}" aria-label="{{ __('Widgets') }}">
+                    <i class="bi bi-grid-1x2"></i>
+                </button>
+            @endif
+
             {{-- Language toggle — one click switches to the other language. --}}
             <a href="{{ route('locale.switch', app()->getLocale() === 'ar' ? 'en' : 'ar') }}"
                class="profile-menu-btn profile-menu-btn-bell"

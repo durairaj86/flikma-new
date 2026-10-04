@@ -204,6 +204,46 @@
             .kpi-small .kpi-pill { display: none; }
         }
 
+        /* Remove button on each widget (next to the drag handle) */
+        .dash-remove { position: absolute; top: 6px; right: 6px; z-index: 6; width: 22px; height: 22px; border: 0; border-radius: 50%; padding: 0; line-height: 1;
+            background: rgba(255,255,255,.9); color: #98a2b3; font-size: .65rem; opacity: 0; transition: opacity .15s, color .15s, background .15s; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+        .dash-item:hover .dash-remove, .dash-remove:focus { opacity: 1; }
+        .dash-remove:hover { background: #dc2626; color: #fff; }
+        @media (hover: none) { .dash-remove { opacity: .7; } }
+        .dash-item.dash-removing { transition: opacity .25s, transform .25s; opacity: 0; transform: scale(.92); }
+        .dash-item.dash-entering > :not(.dash-handle):not(.dash-remove) { animation: dashEnter .5s cubic-bezier(.2,.8,.2,1); }
+        @keyframes dashEnter { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: scale(1); } }
+        .dash-item.dash-pulse > :not(.dash-handle):not(.dash-remove) { animation: dashPulse 1.1s ease-out; }
+        @keyframes dashPulse { 0% { box-shadow: 0 0 0 0 rgba(79,70,229,.55); } 100% { box-shadow: 0 0 0 18px rgba(79,70,229,0); } }
+        .dash-empty { text-align: center; padding: 60px 0; color: #98a2b3; }
+        .dash-empty > i { font-size: 2.4rem; display: block; margin-bottom: 8px; }
+        .dash-fly { position: fixed; z-index: 2000; pointer-events: none; border-radius: 14px; background: #4f46e5; color: #fff; display: flex; align-items: center; justify-content: center;
+            font-size: .8rem; font-weight: 600; box-shadow: 0 14px 34px rgba(79,70,229,.45); transition: transform .6s cubic-bezier(.2,.8,.2,1), opacity .6s, width .6s, height .6s, left .6s, top .6s; }
+
+        /* Floating widget panel */
+        .wp-panel { position: fixed; top: 70px; right: 74px; bottom: 16px; width: 330px; max-width: calc(100vw - 90px); z-index: 1060; display: flex; flex-direction: column;
+            background: #fff; border-radius: 18px; box-shadow: 0 20px 60px rgba(15,23,42,.28); border: 1px solid #eaecf0;
+            transform: translateX(24px) scale(.98); opacity: 0; visibility: hidden; transition: transform .22s ease, opacity .22s ease, visibility .22s; }
+        .wp-panel.open { transform: none; opacity: 1; visibility: visible; }
+        .wp-head { display: flex; align-items: flex-start; justify-content: space-between; padding: 16px 16px 10px; border-bottom: 1px solid #f2f4f7; }
+        .wp-body { flex: 1; overflow-y: auto; padding: 8px 12px 12px; }
+        .wp-foot { padding: 8px 16px; border-top: 1px solid #f2f4f7; font-size: .72rem; }
+        .wp-group { margin-top: 10px; }
+        .wp-group-title { font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; color: #667085; font-weight: 700; padding: 4px 4px 6px; display: flex; align-items: center; gap: 6px; }
+        .wp-count { margin-left: auto; font-weight: 600; color: #98a2b3; text-transform: none; letter-spacing: 0; }
+        .wp-item { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-radius: 12px; transition: background .15s; }
+        .wp-item:hover { background: #f8fafc; }
+        .wp-icon { width: 30px; height: 30px; border-radius: 9px; background: #eef2ff; color: #4f46e5; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .wp-name { flex: 1; font-size: .85rem; font-weight: 500; color: #344054; min-width: 0; }
+        .wp-size { font-size: .62rem; font-weight: 700; border-radius: 6px; padding: 1px 6px; background: #f2f4f7; color: #667085; }
+        .wp-size-small { background: #ecfdf3; color: #067647; } .wp-size-medium { background: #eff8ff; color: #175cd3; } .wp-size-large { background: #fdf2fa; color: #c11574; }
+        .wp-btn { width: 28px; height: 28px; border-radius: 50%; border: 0; background: #4f46e5; color: #fff; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform .15s, background .15s; }
+        .wp-btn:hover { transform: scale(1.1); }
+        .wp-item.added .wp-btn { background: #fee4e2; color: #b42318; }
+        .wp-item.added .wp-name::after { content: ' \2713'; color: #16a34a; font-weight: 700; }
+        [dir="rtl"] .wp-panel { right: auto; left: 74px; }
+        body:not(.has-top-header) .wp-panel { right: 74px; }
+
         /* Footer small text */
         footer.small { color:#8a8f98; margin-top:12px; }
     </style>
@@ -230,17 +270,21 @@
                 <div class="container-fluid">
                     <div class="d-flex justify-content-end align-items-center gap-2 mb-2 dash-toolbar">
                         <span class="text-muted small d-none d-md-inline"><i class="bi bi-arrows-move me-1"></i>{{ __('Drag widgets by the handle to arrange your dashboard') }}</span>
+                        <button type="button" class="btn btn-sm btn-primary rounded-pill" id="dash-open-panel"><i class="bi bi-plus-lg me-1"></i>{{ __('Add widget') }}</button>
                         <span class="small text-success d-none" id="dash-saved"><i class="bi bi-check2-circle me-1"></i>{{ __('Saved') }}</span>
                         <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" id="dash-reset"><i class="bi bi-arrow-counterclockwise me-1"></i>{{ __('Reset layout') }}</button>
                     </div>
                     <div class="dash-wrap"><div class="dash-grid" id="dashGrid">
                         @foreach($widgetOrder as $key)
-                            <div class="dash-item dash-{{ $widgetSizes[$key] }}" data-key="{{ $key }}">
-                                <span class="dash-handle" title="{{ __('Drag to move') }}"><i class="bi bi-grip-horizontal"></i></span>
-                                @include('dashboard._item', ['key' => $key])
-                            </div>
+                            @include('dashboard._cell', ['key' => $key])
                         @endforeach
                     </div></div>
+                    <div class="dash-empty d-none" id="dashEmpty">
+                        <i class="bi bi-grid-1x2"></i>
+                        <div class="fw-semibold">{{ __('Your dashboard is empty') }}</div>
+                        <div class="text-muted small mb-2">{{ __('Add the widgets you need.') }}</div>
+                        <button type="button" class="btn btn-sm btn-primary rounded-pill" data-open-widget-panel><i class="bi bi-plus-lg me-1"></i>{{ __('Add widget') }}</button>
+                    </div>
                 </div> <!-- /.container-fluid -->
 
 
@@ -248,6 +292,35 @@
 
 
 
+
+    {{-- Widget panel: floats over the page, grouped by module. Plus adds a widget to the dashboard, minus removes it. --}}
+    <div class="wp-panel" id="widgetPanel" aria-hidden="true">
+        <div class="wp-head">
+            <div>
+                <div class="fw-semibold"><i class="bi bi-grid-1x2 me-2 text-primary"></i>{{ __('Widgets') }}</div>
+                <div class="text-muted small">{{ __('Choose what you want on your dashboard') }}</div>
+            </div>
+            <button type="button" class="btn-close" id="wp-close" aria-label="{{ __('Close') }}"></button>
+        </div>
+        <div class="wp-body">
+            @foreach($widgetCatalog as $mKey => $module)
+                <div class="wp-group">
+                    <div class="wp-group-title"><i class="bi {{ $module['icon'] }}"></i> {{ __($module['title']) }}
+                        <span class="wp-count" data-module="{{ $mKey }}"></span>
+                    </div>
+                    @foreach($module['widgets'] as $wKey => $w)
+                        <div class="wp-item" data-key="{{ $wKey }}">
+                            <span class="wp-icon"><i class="bi {{ $w['icon'] }}"></i></span>
+                            <span class="wp-name">{{ __($w['title']) }}</span>
+                            <span class="wp-size wp-size-{{ $w['size'] }}">{{ strtoupper(substr($w['size'], 0, 1)) }}</span>
+                            <button type="button" class="wp-btn" data-key="{{ $wKey }}" title="{{ __('Add to dashboard') }}"><i class="bi bi-plus-lg"></i></button>
+                        </div>
+                    @endforeach
+                </div>
+            @endforeach
+        </div>
+        <div class="wp-foot text-muted small"><span class="wp-size wp-size-small">S</span> {{ __('Small') }} &nbsp; <span class="wp-size wp-size-medium">M</span> {{ __('Medium') }} &nbsp; <span class="wp-size wp-size-large">L</span> {{ __('Large') }}</div>
+    </div>
 
                 <footer class="small text-center mt-3 mb-0">© <span id="y"></span> {{ companyName() }} — {{ __('All rights reserved.') }}</footer>
     </div>
@@ -265,7 +338,10 @@
             var monthlyRevenue = @json($monthlyRevenue);
             var monthlyExpenses = @json($monthlyExpenses);
 
-            new Chart(document.getElementById('salesMainChart'), {
+            function initRevenueExpenses() {
+            var cv = document.getElementById('salesMainChart'); if (!cv) return;
+            var old = Chart.getChart(cv); if (old) old.destroy();
+            new Chart(cv, {
                 type: 'bar',
                 data: {
                     labels: monthlyLabels,
@@ -284,12 +360,16 @@
                     scales: { y: { beginAtZero: true, ticks: { callback: (v) => '₹' + v + 'K' } } }
                 }
             });
+            }
 
             // Main Revenue chart (line)
             var weeklyLabels = @json($weeklyLabels);
             var weeklyRevenueData = @json($weeklyRevenueData);
 
-            new Chart(document.getElementById('revenueMainChart'), {
+            function initRevenueTrend() {
+            var cv = document.getElementById('revenueMainChart'); if (!cv) return;
+            var old = Chart.getChart(cv); if (old) old.destroy();
+            new Chart(cv, {
                 type: 'line',
                 data: {
                     labels: weeklyLabels,
@@ -305,6 +385,9 @@
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
+            }
+            initRevenueExpenses();
+            initRevenueTrend();
 
             // Medium widget charts (donut / area / bars) driven by data-* attributes
             function initKpiCharts(root) {
@@ -381,6 +464,99 @@
                         }).catch(function () { if (window.toastr) toastr.error(@json(__('Could not save the layout.'))); });
                     }
                 });
+                // ---- Widget panel: add / remove widgets -------------------------------------------------------
+                var panel = document.getElementById('widgetPanel'), emptyEl = document.getElementById('dashEmpty');
+                function currentOrder() { return Array.prototype.map.call(grid.querySelectorAll('.dash-item'), function (el) { return el.dataset.key; }); }
+                function saveOrder() {
+                    return post(@json(route('dashboard.layout.save')), { order: currentOrder() }).then(function (r) {
+                        if (!r.ok) throw new Error();
+                        savedEl.classList.remove('d-none'); clearTimeout(timer);
+                        timer = setTimeout(function () { savedEl.classList.add('d-none'); }, 1800);
+                    }).catch(function () { if (window.toastr) toastr.error(@json(__('Could not save the layout.'))); });
+                }
+                function refreshPanel() {
+                    var on = currentOrder();
+                    panel.querySelectorAll('.wp-item').forEach(function (item) {
+                        var added = on.indexOf(item.dataset.key) !== -1;
+                        item.classList.toggle('added', added);
+                        var b = item.querySelector('.wp-btn');
+                        b.innerHTML = '<i class="bi ' + (added ? 'bi-dash-lg' : 'bi-plus-lg') + '"></i>';
+                        b.title = added ? @json(__('Remove from dashboard')) : @json(__('Add to dashboard'));
+                    });
+                    panel.querySelectorAll('.wp-count').forEach(function (c) {
+                        var items = panel.querySelectorAll('.wp-item'), total = 0, active = 0;
+                        // count per module: items belong to the nearest preceding group
+                        var group = c.closest('.wp-group');
+                        group.querySelectorAll('.wp-item').forEach(function (i) { total++; if (on.indexOf(i.dataset.key) !== -1) active++; });
+                        c.textContent = active + '/' + total;
+                    });
+                    emptyEl.classList.toggle('d-none', on.length > 0);
+                }
+                function openPanel() { panel.classList.add('open'); panel.setAttribute('aria-hidden', 'false'); refreshPanel(); }
+                function closePanel() { panel.classList.remove('open'); panel.setAttribute('aria-hidden', 'true'); }
+                window.addEventListener('open-widget-panel', function () { panel.classList.contains('open') ? closePanel() : openPanel(); });
+                document.getElementById('dash-open-panel').addEventListener('click', openPanel);
+                document.querySelectorAll('[data-open-widget-panel]').forEach(function (b) { b.addEventListener('click', openPanel); });
+                document.getElementById('wp-close').addEventListener('click', closePanel);
+                document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closePanel(); });
+                document.addEventListener('mousedown', function (e) {
+                    if (panel.classList.contains('open') && !e.target.closest('#widgetPanel, #dash-open-panel, [data-widget-panel-toggle]')) closePanel();
+                });
+
+                function removeCell(cell) {
+                    cell.classList.add('dash-removing');
+                    setTimeout(function () { cell.remove(); saveOrder(); refreshPanel(); }, 260);
+                }
+                grid.addEventListener('click', function (e) {
+                    var btn = e.target.closest('.dash-remove');
+                    if (btn) removeCell(btn.closest('.dash-item'));
+                });
+
+                // A card "flies" from the panel row to its place on the dashboard.
+                function fly(fromEl, toEl) {
+                    var a = fromEl.getBoundingClientRect(), b = toEl.getBoundingClientRect();
+                    var g = document.createElement('div');
+                    g.className = 'dash-fly';
+                    g.innerHTML = '<i class="bi bi-plus-lg"></i>';
+                    g.style.cssText = 'left:' + a.left + 'px;top:' + a.top + 'px;width:' + a.width + 'px;height:' + a.height + 'px;';
+                    document.body.appendChild(g);
+                    requestAnimationFrame(function () {
+                        g.style.left = b.left + 'px'; g.style.top = b.top + 'px'; g.style.width = b.width + 'px'; g.style.height = Math.min(b.height, 240) + 'px'; g.style.opacity = '.2';
+                    });
+                    setTimeout(function () { g.remove(); }, 650);
+                }
+                function addWidget(key, fromEl) {
+                    if (grid.querySelector('.dash-item[data-key="' + key + '"]')) return;
+                    fromEl.disabled = true;
+                    fetch(@json(url('/dashboard/widget')) + '/' + key, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
+                        .then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
+                        .then(function (res) {
+                            var tpl = document.createElement('template');
+                            tpl.innerHTML = res.html.trim();
+                            var cell = tpl.content.firstElementChild;
+                            cell.classList.add('dash-entering');
+                            grid.insertBefore(cell, grid.firstChild);
+                            emptyEl.classList.add('d-none');
+                            initKpiCharts(cell);
+                            if (key === 'revenue-expenses') initRevenueExpenses();
+                            if (key === 'revenue-trend') initRevenueTrend();
+                            window.scrollTo({ top: Math.max(0, grid.getBoundingClientRect().top + window.scrollY - 120), behavior: 'smooth' });
+                            requestAnimationFrame(function () { fly(fromEl.closest('.wp-item') || fromEl, cell); });
+                            setTimeout(function () { cell.classList.remove('dash-entering'); cell.classList.add('dash-pulse'); }, 550);
+                            setTimeout(function () { cell.classList.remove('dash-pulse'); }, 1800);
+                            saveOrder(); refreshPanel();
+                        })
+                        .catch(function () { if (window.toastr) toastr.error(@json(__('Could not add the widget.'))); })
+                        .finally(function () { fromEl.disabled = false; });
+                }
+                panel.addEventListener('click', function (e) {
+                    var b = e.target.closest('.wp-btn');
+                    if (!b) return;
+                    var key = b.dataset.key, cell = grid.querySelector('.dash-item[data-key="' + key + '"]');
+                    if (cell) removeCell(cell); else addWidget(key, b);
+                });
+                refreshPanel();
+
                 document.getElementById('dash-reset').addEventListener('click', function () {
                     post(@json(route('dashboard.layout.reset'))).then(function () { window.location.reload(); });
                 });

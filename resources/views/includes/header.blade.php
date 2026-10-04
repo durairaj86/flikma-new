@@ -92,6 +92,14 @@
                 </div>
             </div>
 
+            @if(request()->routeIs('dashboard'))
+                <button type="button" class="btn btn-light border-0 rounded-circle header-icon-btn" data-widget-panel-toggle
+                        onclick="window.dispatchEvent(new CustomEvent('open-widget-panel'))"
+                        title="{{ __('Widgets') }}" aria-label="{{ __('Widgets') }}">
+                    <i class="bi bi-grid-1x2 fs-5 text-secondary"></i>
+                </button>
+            @endif
+
             @include('includes.language-toggle')
 
             <a href="#" class="btn btn-light border-0 rounded-circle header-icon-btn position-relative" id="activity-feed">

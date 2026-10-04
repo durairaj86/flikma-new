@@ -22,7 +22,31 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        $data = [
+        $data = $this->dashboardData();
+
+        $data['widgetOrder'] = DashboardLayoutController::orderFor(auth()->id());
+        $data['widgetSizes'] = DashboardLayoutController::sizes();
+        $data['widgetCatalog'] = DashboardLayoutController::catalog();
+
+        return view('dashboard', $data);
+    }
+
+    /** Renders a single widget cell (used when a widget is added from the panel without reloading the page). */
+    public function widget(string $key): \Illuminate\Http\JsonResponse
+    {
+        abort_unless(isset(DashboardLayoutController::WIDGETS[$key]), 404);
+
+        $data = $this->dashboardData() + ['key' => $key, 'widgetSizes' => DashboardLayoutController::sizes()];
+
+        return response()->json([
+            'html' => view('dashboard._cell', $data)->render(),
+            'size' => DashboardLayoutController::WIDGETS[$key]['size'],
+        ]);
+    }
+
+    private function dashboardData(): array
+    {
+        return [
             'shipmentSeries' => $this->getShipmentSeries(),
             // Total Sales
             'totalSales' => $this->getTotalSales(),
@@ -86,11 +110,6 @@ class DashboardController extends Controller
             'currentMonthPending' => $this->getCurrentMonthPending(),
             'currentMonthSales' => $this->getCurrentMonthSales(),
         ];
-
-        $data['widgetOrder'] = DashboardLayoutController::orderFor(auth()->id());
-        $data['widgetSizes'] = DashboardLayoutController::WIDGETS;
-
-        return view('dashboard', $data);
     }
 
     private function getTotalSales()
