@@ -23,7 +23,7 @@
                 <div class="kpi-note">{{ __('ATD This Week') }}</div>
             </div>
         </div>
-        <div class="kpi-medium-chart" style="height:70px;">
+        <div class="kpi-medium-chart" style="height:96px;">
             <canvas class="kpi-chart" data-type="dualbar" data-color="#0891b2"
                     data-datasets='@json($sDatasets)' data-values='[]' data-labels='@json($sLabels)'></canvas>
         </div>
@@ -33,6 +33,19 @@
         <span><em style="background:#dc2626"></em>{{ __('ATD') }} <b>{{ array_sum($shipmentSeries['atd']) }}</b></span>
     </div>
 
+
+    <div class="kpi-legend" style="margin-top:8px;">
+        <span><em style="background:#16a34a"></em>{{ __('On time') }} <b>{{ $shipmentExtra['onTime'] }}</b></span>
+        <span><em style="background:#dc2626"></em>{{ __('Late') }} <b>{{ $shipmentExtra['late'] }}</b></span>
+    </div>
+    @php $modes = collect($ataAtdList)->groupBy(fn ($r) => $r['mode'] ?: 'other')->map->count(); @endphp
+    <div class="kpi-modes">
+        @foreach(['sea' => 'bi-water', 'air' => 'bi-airplane', 'road' => 'bi-truck', 'other' => 'bi-box-seam'] as $m => $ic)
+            @if(($modes[$m] ?? 0) > 0 || $m !== 'other')
+                <span><i class="bi {{ $ic }}"></i> {{ __(ucfirst($m)) }} <b>{{ $modes[$m] ?? 0 }}</b></span>
+            @endif
+        @endforeach
+    </div>
     <div class="kpi-tall-scroll">
         <table class="table table-sm table-hover mb-0 align-middle kpi-table">
             <thead><tr><th>{{ __('Job') }}</th><th>{{ __('Customer') }}</th><th>{{ __('Date') }}</th><th></th></tr></thead>

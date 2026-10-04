@@ -69,13 +69,13 @@ class DashboardController extends Controller
             // Shipping metrics
             'etaEtdList' => $this->getShipmentList(['eta' => 'ETA', 'etd' => 'ETD'], Carbon::today(), Carbon::today()->addDays(6)->endOfDay(), 'asc'),
             'ataAtdList' => $this->getShipmentList(['ata' => 'ATA', 'atd' => 'ATD'], Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek(), 'desc'),
+            'shipmentExtra' => $this->getShipmentExtra(),
             'etaToday' => $this->getEtaToday(),
             'etdTomorrow' => $this->getEtdTomorrow(),
             'ataThisWeek' => $this->getAtaThisWeek(),
             'atdThisWeek' => $this->getAtdThisWeek(),
 
             // Job Follow-ups
-            'enquiryStats' => $this->getEnquiryStats(),
             'activeJobs' => $this->getActiveJobs(),
             'completedJobsThisMonth' => $this->getCompletedJobsThisMonth(),
 
@@ -202,6 +202,7 @@ class DashboardController extends Controller
                             'job' => $job->row_no ?: $job->job_no,
                             'customer' => $job->customer->name_en ?? '-',
                             'route' => trim(($job->pol ?: $job->origin ?: '') . ' → ' . ($job->pod ?: $job->destination ?: ''), ' →') ?: '-',
+                            'mode' => strtolower((string) ($job->shipment_mode ?: '')),
                             'event' => $label,
                             'date' => $date->format('d M'),
                             'ts' => $date->timestamp,
@@ -212,6 +213,24 @@ class DashboardController extends Controller
         usort($rows, fn ($a, $b) => $dir === 'asc' ? $a['ts'] <=> $b['ts'] : $b['ts'] <=> $a['ts']);
 
         return $rows;
+    }
+
+    /** Extra shipment numbers that fill the large ETA/ETD and ATA/ATD widgets. */
+    private function getShipmentExtra(): array
+    {
+        $today = Carbon::today();
+        $pending = fn () => Job::where('status', JobEnum::PENDING->value);
+        $week = [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()];
+        $arrived = Job::whereBetween('ata', $week)->get(['eta', 'ata']);
+        $onTime = $arrived->filter(fn ($j) => !$j->eta || Carbon::parse($j->ata)->startOfDay()->lte(Carbon::parse($j->eta)->startOfDay()))->count();
+
+        return [
+            'overdueEta' => $pending()->whereDate('eta', '<', $today)->whereNull('ata')->count(),
+            'lateDeparture' => $pending()->whereDate('etd', '<', $today)->whereNull('atd')->count(),
+            'onTime' => $onTime,
+            'late' => $arrived->count() - $onTime,
+            'departedWeek' => Job::whereBetween('atd', $week)->count(),
+        ];
     }
 
     private function getEtaToday()
@@ -232,19 +251,6 @@ class DashboardController extends Controller
     private function getAtdThisWeek()
     {
         return Job::whereBetween('atd', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])->count();
-    }
-
-    /** This month's enquiries: total, pending and confirmed. */
-    private function getEnquiryStats(): array
-    {
-        $q = \App\Models\Enquiry\Enquiry::whereMonth('created_at', Carbon::now()->month)->whereYear('created_at', Carbon::now()->year);
-        $byStatus = (clone $q)->selectRaw('status, COUNT(*) as c')->groupBy('status')->pluck('c', 'status');
-
-        return [
-            'total' => (int) $byStatus->sum(),
-            'pending' => (int) ($byStatus[\App\Enums\EnquiryEnum::PENDING->value] ?? 0),
-            'confirmed' => (int) ($byStatus[\App\Enums\EnquiryEnum::CONFIRMED->value] ?? 0),
-        ];
     }
 
     private function getActiveJobs()

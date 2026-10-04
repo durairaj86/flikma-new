@@ -14,7 +14,11 @@ use App\Models\Finance\Expense\Expense;
 use App\Models\Finance\CustomerInvoice\CustomerInvoice;
 use App\Models\Finance\Payment\Payment;
 use App\Models\Finance\SupplierInvoice\SupplierInvoice;
+use App\Models\Enquiry\Enquiry;
+use App\Models\Job\Job;
 use App\Models\Quotation\Quotation;
+use App\Enums\EnquiryEnum;
+use App\Enums\JobEnum;
 use Carbon\Carbon;
 
 /**
@@ -150,6 +154,34 @@ class WidgetData
             'change' => self::change($total, (float) $base($ps, $pe)->sum('grand_total')),
             'completed' => $base($s, $e)->where('status', QuotationEnum::CONVERTED->value)->count(),
             'approved' => $base($s, $e)->where('status', QuotationEnum::ACCEPTED->value)->count(),
+        ];
+    }
+
+    public static function enquiry(Carbon $start): array
+    {
+        [$s, $e, $ps, $pe] = self::bounds($start);
+        $base = fn ($a, $b) => Enquiry::query()->whereBetween('created_at', [$a->copy()->startOfDay(), $b->copy()->endOfDay()]);
+        $total = $base($s, $e)->count();
+
+        return [
+            'total' => $total,
+            'change' => self::change($total, $base($ps, $pe)->count()),
+            'confirmed' => $base($s, $e)->where('status', EnquiryEnum::CONFIRMED->value)->count(),
+            'pending' => $base($s, $e)->where('status', EnquiryEnum::PENDING->value)->count(),
+        ];
+    }
+
+    public static function job(Carbon $start): array
+    {
+        [$s, $e, $ps, $pe] = self::bounds($start);
+        $base = fn ($a, $b) => Job::query()->whereBetween('created_at', [$a->copy()->startOfDay(), $b->copy()->endOfDay()]);
+        $total = $base($s, $e)->count();
+
+        return [
+            'total' => $total,
+            'change' => self::change($total, $base($ps, $pe)->count()),
+            'active' => $base($s, $e)->where('status', JobEnum::PENDING->value)->count(),
+            'completed' => $base($s, $e)->where('status', JobEnum::COMPLETED->value)->count(),
         ];
     }
 

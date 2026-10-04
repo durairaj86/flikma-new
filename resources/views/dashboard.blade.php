@@ -49,6 +49,9 @@
             .kpi-legend { grid-template-columns: 1fr; }
             .kpi-duo { gap: 12px; }
         }
+        .kpi-modes { display: flex; gap: 6px; margin-top: 8px; font-size: .72rem; color: #667085; }
+        .kpi-modes span { flex: 1; background: rgba(255,255,255,.75); border-radius: 10px; padding: 5px 4px; text-align: center; white-space: nowrap; }
+        .kpi-modes b { color: #101828; margin-left: 2px; }
         .kpi-tall-scroll { flex: 1; min-height: 0; overflow-y: auto; margin-top: 10px; border-radius: 12px; }
         .kpi-tall-foot { font-size: .75rem; color: #667085; padding-top: 8px; }
         .kpi-table thead th { position: sticky; top: 0; background: #f8fafc; font-size: .72rem; text-transform: uppercase; color: #667085; z-index: 1; }
