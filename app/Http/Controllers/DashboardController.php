@@ -6,7 +6,11 @@ use App\Enums\CollectionEnum;
 use App\Enums\CustomerInvoiceEnum;
 use App\Enums\JobEnum;
 use App\Enums\SupplierInvoiceEnum;
+use App\Models\Finance\Payment\Payment;
 use App\Models\Job\Job;
+use App\Models\Quotation\Quotation;
+use App\Enums\PaymentEnum;
+use App\Enums\QuotationEnum;
 use App\Models\Customer\Customer;
 use App\Models\Finance\Collection\Collection;
 use App\Models\Finance\CustomerInvoice\CustomerInvoice;
@@ -16,9 +20,11 @@ use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $data = [
+            'summaryCards' => $this->getSummaryCards($request->query('month')),
+            'summaryMonths' => $this->getSummaryMonths(),
             // Total Sales
             'totalSales' => $this->getTotalSales(),
             'salesGrowth' => $this->getSalesGrowth(),
@@ -385,5 +391,106 @@ class DashboardController extends Controller
     private function getCurrentMonthPending()
     {
         return max(0, $this->getCurrentMonthSales() - $this->getCurrentMonthCollected());
+    }
+
+    private function getSummaryMonths(): array
+    {
+        $months = [];
+        for ($i = 0; $i < 12; $i++) {
+            $m = Carbon::now()->startOfMonth()->subMonths($i);
+            $months[$m->format('Y-m')] = $m->format('M Y');
+        }
+        return $months;
+    }
+
+    /**
+     * Month-scoped totals for the Quotation / Final Invoice / Payments /
+     * Collection cards. $month is "YYYY-MM"; anything else means this month.
+     */
+    private function getSummaryCards(?string $month): array
+    {
+        $start = ($month && preg_match('/^\d{4}-\d{2}$/', $month))
+            ? Carbon::createFromFormat('Y-m-d', $month . '-01')->startOfDay()
+            : Carbon::now()->startOfMonth();
+        $end = $start->copy()->endOfMonth();
+        $prevStart = $start->copy()->subMonth()->startOfMonth();
+        $prevEnd = $prevStart->copy()->endOfMonth();
+
+        $change = fn ($cur, $prev) => $prev > 0 ? round((($cur - $prev) / $prev) * 100, 2) : ($cur > 0 ? 100.0 : 0.0);
+        $range = fn ($q, $col, $a, $b) => $q->whereBetween($col, [$a->toDateString(), $b->toDateString()]);
+
+        // Quotations
+        $qBase = fn ($a, $b) => $range(Quotation::query(), 'posted_at', $a, $b);
+        $qCount = $qBase($start, $end)->count();
+        $qTotal = (float) $qBase($start, $end)->sum('grand_total');
+        $qPrev = (float) $qBase($prevStart, $prevEnd)->sum('grand_total');
+
+        // Final invoices (customer invoices; cancelled/rejected excluded)
+        $live = [CustomerInvoiceEnum::DRAFT->value, CustomerInvoiceEnum::APPROVED->value];
+        $iBase = fn ($a, $b) => $range(CustomerInvoice::query()->whereIn('status', $live), 'invoice_date', $a, $b);
+        $iTotal = (float) $iBase($start, $end)->sum('grand_total');
+        $iPrev = (float) $iBase($prevStart, $prevEnd)->sum('grand_total');
+        $iApproved = (float) $iBase($start, $end)->where('status', CustomerInvoiceEnum::APPROVED->value)->sum('grand_total');
+        $iDraft = (float) $iBase($start, $end)->where('status', CustomerInvoiceEnum::DRAFT->value)->sum('grand_total');
+
+        // Payments / Collections
+        $money = function ($model, $col, $draft, $approved) use ($start, $end, $prevStart, $prevEnd, $range) {
+            $base = fn ($a, $b) => $range($model::query()->whereIn('status', [$draft, $approved]), $col, $a, $b);
+            return [
+                'total' => (float) $base($start, $end)->sum('base_grand_total'),
+                'prev' => (float) $base($prevStart, $prevEnd)->sum('base_grand_total'),
+                'approved' => (float) $base($start, $end)->where('status', $approved)->sum('base_grand_total'),
+                'draft' => (float) $base($start, $end)->where('status', $draft)->sum('base_grand_total'),
+                'count' => $base($start, $end)->count(),
+            ];
+        };
+        $pay = $money(Payment::class, 'payment_date', PaymentEnum::DRAFT->value, PaymentEnum::APPROVED->value);
+        $col = $money(Collection::class, 'collection_date', CollectionEnum::DRAFT->value, CollectionEnum::APPROVED->value);
+
+        // Total Sales / Profit (approved invoices vs approved supplier bills)
+        $apprInv = fn ($a, $b) => $range(CustomerInvoice::query()->where('status', CustomerInvoiceEnum::APPROVED->value), 'invoice_date', $a, $b);
+        $apprBill = fn ($a, $b) => $range(SupplierInvoice::query()->where('status', SupplierInvoiceEnum::APPROVED->value), 'invoice_date', $a, $b);
+        $sales = (float) $apprInv($start, $end)->sum('grand_total');
+        $salesPrev = (float) $apprInv($prevStart, $prevEnd)->sum('grand_total');
+        $expenses = (float) $apprBill($start, $end)->sum('grand_total');
+        $expensesPrev = (float) $apprBill($prevStart, $prevEnd)->sum('grand_total');
+        $profit = $sales - $expenses;
+        $profitPrev = $salesPrev - $expensesPrev;
+
+        $custMonth = fn ($a, $b) => Customer::query()->whereBetween('created_at', [$a->copy()->startOfDay(), $b->copy()->endOfDay()])->count();
+        $newCust = $custMonth($start, $end);
+        $newCustPrev = $custMonth($prevStart, $prevEnd);
+
+        return [
+            'month' => $start->format('Y-m'),
+            'sales' => [
+                'total' => $sales, 'count' => $apprInv($start, $end)->count(), 'change' => $change($sales, $salesPrev),
+                'collected' => $col['approved'], 'pending' => max(0, $sales - $col['approved']),
+            ],
+            'invoices' => [
+                'count' => $iBase($start, $end)->count(), 'change' => $change($iBase($start, $end)->count(), $iBase($prevStart, $prevEnd)->count()),
+                'approved' => $iBase($start, $end)->where('status', CustomerInvoiceEnum::APPROVED->value)->count(),
+                'draft' => $iBase($start, $end)->where('status', CustomerInvoiceEnum::DRAFT->value)->count(),
+            ],
+            'customers' => [
+                'total' => Customer::count(), 'new' => $newCust, 'change' => $change($newCust, $newCustPrev), 'prevNew' => $newCustPrev,
+            ],
+            'profit' => [
+                'total' => $profit, 'change' => $change($profit, $profitPrev),
+                'margin' => $sales > 0 ? round($profit / $sales * 100, 1) : 0,
+                'revenue' => $sales, 'expenses' => $expenses,
+            ],
+            'quotation' => [
+                'total' => $qTotal, 'count' => $qCount, 'change' => $change($qTotal, $qPrev),
+                'completed' => $qBase($start, $end)->where('status', QuotationEnum::CONVERTED->value)->count(),
+                'approved' => $qBase($start, $end)->where('status', QuotationEnum::ACCEPTED->value)->count(),
+            ],
+            'invoice' => [
+                'total' => $iTotal, 'count' => $iBase($start, $end)->count(), 'change' => $change($iTotal, $iPrev),
+                'approved' => $iApproved, 'draft' => $iDraft,
+            ],
+            'payment' => $pay + ['percent' => $pay['total'] > 0 ? round($pay['approved'] / $pay['total'] * 100) : 0],
+            'collection' => $col + ['percent' => $col['total'] > 0 ? round($col['approved'] / $col['total'] * 100) : 0],
+        ];
     }
 }

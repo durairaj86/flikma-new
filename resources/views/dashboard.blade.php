@@ -3,6 +3,65 @@
 <x-app-layout>
 
     <style>
+        .summary-card { height: 100%; min-height: 250px; padding: 18px 20px; border-radius: 22px; background: #fff;
+            box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.07); display: flex; flex-direction: column; }
+        .summary-card.sc-mint { background: #d6fbe8; }
+        .summary-card.sc-blue { background: #e3efff; }
+        .summary-card.sc-orange { background: #fff0d9; }
+        .summary-card.sc-green { background: #dcf7e3; }
+        .sc-orange .sc-boxes, .sc-green .sc-boxes { background: rgba(0,0,0,.06); border-radius: 14px; padding: 12px 14px; }
+        .sc-orange .sc-box, .sc-green .sc-box { background: transparent; text-align: left; padding: 0; }
+        .sc-orange .sc-box:last-child, .sc-green .sc-box:last-child { text-align: right; }
+        .sc-head { display: flex; justify-content: space-between; align-items: center; }
+        .sc-title { font-weight: 700; font-size: .95rem; letter-spacing: .02em; text-transform: uppercase; color: #111; }
+        .sc-month { border: 0; background: transparent; font-size: .85rem; font-weight: 500; color: #111; cursor: pointer; outline: 0; }
+        .sc-value { font-size: 2.4rem; white-space: nowrap; font-weight: 700; letter-spacing: -.03em; line-height: 1.1; color: #000; margin-top: auto; }
+        .sc-value-md { font-size: 2rem; margin-top: 4px; }
+        .sc-meta { font-size: .9rem; color: #333; margin-top: 4px; }
+        .sc-meta-top { margin-top: 18px; color: #6c757d; }
+        .sc-change { font-size: .75rem; margin-left: 4px; }
+        .sc-change.up { color: #1a9d4a; } .sc-change.down { color: #e5383b; }
+        .sc-boxes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: auto; padding-top: 18px; }
+        .sc-mint .sc-boxes, .sc-blue .sc-boxes { background: rgba(0,0,0,.06); border-radius: 14px; padding: 12px 14px; margin-top: auto; }
+        .sc-box { background: #f6f8fb; border-radius: 14px; text-align: center; padding: 10px 6px; display: flex; flex-direction: column; font-size: .9rem; }
+        .sc-box b { font-size: 1rem; }
+        .sc-mint .sc-box, .sc-blue .sc-box { background: transparent; text-align: left; padding: 0; }
+        .sc-mint .sc-box:last-child, .sc-blue .sc-box:last-child { text-align: right; }
+        .sc-progress { position: relative; height: 56px; margin-top: 12px; border-radius: 14px; background: #f1f3f7; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .sc-progress div { position: absolute; inset: 0 auto 0 0; background: #cfe3ff; }
+        .sc-progress span { position: relative; font-weight: 700; color: #6c757d; }
+        .sc-foot { display: flex; justify-content: space-between; margin-top: auto; padding-top: 14px; font-size: .85rem; color: #6c757d; }
+        .sc-foot div { display: flex; flex-direction: column; } .sc-foot b { color: #111; font-size: 1rem; }
+        /* Apple-style widgets: large radius, tinted glass surface, small colored
+           icon chip, big tight-tracked number, quiet secondary line. */
+        .apple-widget {
+            --aw-accent: #0a84ff; --aw-tint: rgba(10,132,255,.10);
+            position: relative; height: 100%; min-height: 128px;
+            padding: 16px 18px; border-radius: 22px;
+            background: linear-gradient(145deg, #fff 0%, var(--aw-tint) 140%);
+            border: 1px solid rgba(255,255,255,.7);
+            box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.06);
+            display: flex; flex-direction: column; justify-content: space-between;
+            transition: transform .2s ease, box-shadow .2s ease;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Inter, sans-serif;
+        }
+        .apple-widget:hover { transform: translateY(-2px); box-shadow: 0 2px 4px rgba(0,0,0,.05), 0 14px 32px rgba(0,0,0,.10); }
+        .aw-blue   { --aw-accent: #0a84ff; --aw-tint: rgba(10,132,255,.14); }
+        .aw-teal   { --aw-accent: #30b0c7; --aw-tint: rgba(48,176,199,.16); }
+        .aw-orange { --aw-accent: #ff9f0a; --aw-tint: rgba(255,159,10,.16); }
+        .aw-green  { --aw-accent: #30d158; --aw-tint: rgba(48,209,88,.16); }
+        .aw-top { display: flex; align-items: center; gap: 8px; }
+        .aw-icon {
+            width: 30px; height: 30px; border-radius: 50%;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: var(--aw-accent); color: #fff; font-size: .8rem;
+            box-shadow: 0 3px 8px color-mix(in srgb, var(--aw-accent) 45%, transparent);
+        }
+        .aw-label { font-size: .82rem; font-weight: 600; color: #6e6e73; letter-spacing: .01em; }
+        .aw-value { font-size: 2rem; font-weight: 700; letter-spacing: -.03em; line-height: 1.1; color: #1d1d1f; margin-top: 10px; }
+        .aw-sub { font-size: .8rem; font-weight: 500; color: #86868b; margin-top: 4px; }
+        .aw-sub.aw-up { color: #248a3d; }
+        .aw-sub.aw-down { color: #d70015; }
         /* Cards */
         .card { border-radius: 10px; box-shadow: 0 6px 18px rgba(20,20,50,0.04); border: 0; }
         .card-header { background: transparent; border-bottom: 1px solid rgba(0,0,0,0.04); padding: .9rem 1rem; }
@@ -62,72 +121,102 @@
                         <div class="col-lg-8 left-col">
 
                             <!-- TOP: 4 stat boxes (grid) -->
+                            <!-- Month summary cards -->
+                            @php
+                                $sc = $summaryCards;
+                                $short = function ($n) {
+                                    $a = abs($n);
+                                    if ($a >= 1000000) return number_format($n / 1000000, 2) . 'M';
+                                    if ($a >= 1000) return number_format($n / 1000, 2) . 'K';
+                                    return number_format($n, 2);
+                                };
+                                $chg = fn ($v) => '<span class="sc-change ' . ($v >= 0 ? 'up' : 'down') . '">(' . ($v >= 0 ? '+' : '') . number_format($v, 2) . '% ' . ($v >= 0 ? '&uarr;' : '&darr;') . ')</span>';
+                            @endphp
                             <div class="row g-3 mb-3">
-                                <div class="col-6 col-md-3">
-                                    <div class="card stat-box">
-                                        <div class="d-flex align-items-center">
-                                            <div class="me-3 stat-icon bg-light border">
-                                                <i class="fa-solid fa-dollar-sign text-primary"></i>
-                                            </div>
-                                            <div>
-                                                <div class="stat-label">{{ __('Total Sales') }}</div>
-                                                <div class="stat-value">{{ number_format($totalSales, 0) }}</div>
-                                                <div class="muted-sm {{ $salesGrowth >= 0 ? 'text-success' : 'text-danger' }}">
-                                                    <i class="fa fa-arrow-{{ $salesGrowth >= 0 ? 'up' : 'down' }}"></i> {{ abs($salesGrowth) }}%
+                                @php
+                                    $monthSelect = function () use ($summaryMonths, $sc) {
+                                        $o = '';
+                                        foreach ($summaryMonths as $val => $lbl) {
+                                            $o .= '<option value="' . $val . '"' . ($val === $sc['month'] ? ' selected' : '') . '>' . \Illuminate\Support\Carbon::createFromFormat('Y-m', $val)->format('M') . '</option>';
+                                        }
+                                        return '<select class="sc-month" onchange="window.location=\'?month=\'+this.value">' . $o . '</select>';
+                                    };
+                                @endphp
+
+                                {{-- Total Sales --}}
+                                <div class="col-12 col-sm-6"><div class="summary-card">
+                                    <div class="sc-head"><span class="sc-title">{{ __('Total Sales') }}</span>{!! $monthSelect() !!}</div>
+                                    <div class="sc-value">{{ number_format($sc['sales']['total'], 2) }}</div>
+                                    <div class="sc-meta"><b>{{ $sc['sales']['count'] }}</b> {{ __('Invoices') }} {!! $chg($sc['sales']['change']) !!}</div>
+                                    <div class="sc-boxes">
+                                        <div class="sc-box"><span>{{ __('Collected') }}</span><b>{{ $short($sc['sales']['collected']) }}</b></div>
+                                        <div class="sc-box"><span>{{ __('Pending') }}</span><b>{{ $short($sc['sales']['pending']) }}</b></div>
+                                    </div>
+                                </div></div>
+
+                                {{-- Invoices --}}
+                                <div class="col-12 col-sm-6"><div class="summary-card sc-mint">
+                                    <div class="sc-head"><span class="sc-title">{{ __('Invoices') }}</span>{!! $monthSelect() !!}</div>
+                                    <div class="sc-value">{{ number_format($sc['invoices']['count']) }}</div>
+                                    <div class="sc-meta">{{ __('Due') }}: <b>{{ $dueInvoices }}</b> {!! $chg($sc['invoices']['change']) !!}</div>
+                                    <div class="sc-boxes">
+                                        <div class="sc-box"><span>{{ __('Approved') }}</span><b>{{ $sc['invoices']['approved'] }}</b></div>
+                                        <div class="sc-box"><span>{{ __('Draft') }}</span><b>{{ $sc['invoices']['draft'] }}</b></div>
+                                    </div>
+                                </div></div>
+
+                                {{-- Customers --}}
+                                <div class="col-12 col-sm-6"><div class="summary-card sc-orange">
+                                    <div class="sc-head"><span class="sc-title">{{ __('Customers') }}</span>{!! $monthSelect() !!}</div>
+                                    <div class="sc-value">{{ number_format($sc['customers']['total']) }}</div>
+                                    <div class="sc-meta"><b>{{ $sc['customers']['new'] }}</b> {{ __('New') }} {!! $chg($sc['customers']['change']) !!}</div>
+                                    <div class="sc-boxes">
+                                        <div class="sc-box"><span>{{ __('This month') }}</span><b>{{ $sc['customers']['new'] }}</b></div>
+                                        <div class="sc-box"><span>{{ __('Last month') }}</span><b>{{ $sc['customers']['prevNew'] }}</b></div>
+                                    </div>
+                                </div></div>
+
+                                {{-- Profit --}}
+                                <div class="col-12 col-sm-6"><div class="summary-card sc-green">
+                                    <div class="sc-head"><span class="sc-title">{{ __('Profit') }}</span>{!! $monthSelect() !!}</div>
+                                    <div class="sc-value">{{ number_format($sc['profit']['total'], 2) }}</div>
+                                    <div class="sc-meta">{{ __('Margin') }} <b>{{ $sc['profit']['margin'] }}%</b> {!! $chg($sc['profit']['change']) !!}</div>
+                                    <div class="sc-boxes">
+                                        <div class="sc-box"><span>{{ __('Revenue') }}</span><b>{{ $short($sc['profit']['revenue']) }}</b></div>
+                                        <div class="sc-box"><span>{{ __('Expenses') }}</span><b>{{ $short($sc['profit']['expenses']) }}</b></div>
+                                    </div>
+                                </div></div>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                @foreach([
+                                    ['key' => 'quotation', 'title' => __('Quotation'), 'cls' => ''],
+                                    ['key' => 'payment', 'title' => __('Payments'), 'cls' => ''],
+                                    ['key' => 'collection', 'title' => __('Collection'), 'cls' => 'sc-blue'],
+                                ] as $card)
+                                    @php $d = $sc[$card['key']]; @endphp
+                                    <div class="col-12 col-sm-4">
+                                        <div class="summary-card {{ $card['cls'] }}">
+                                            <div class="sc-head"><span class="sc-title">{{ $card['title'] }}</span>{!! $monthSelect() !!}</div>
+                                            @if($card['key'] === 'quotation')
+                                                <div class="sc-value">{{ number_format($d['total'], 2) }}</div>
+                                                <div class="sc-meta"><b>{{ $d['count'] }}</b> {{ __('Quotations') }} {!! $chg($d['change']) !!}</div>
+                                                <div class="sc-boxes">
+                                                    <div class="sc-box"><span>{{ __('Completed') }}</span><b>{{ $d['completed'] }}</b></div>
+                                                    <div class="sc-box"><span>{{ __('Approved') }}</span><b>{{ $d['approved'] }}</b></div>
                                                 </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-6 col-md-3">
-                                    <div class="card stat-box">
-                                        <div class="d-flex align-items-center">
-                                            <div class="me-3 stat-icon bg-light border">
-                                                <i class="fa-solid fa-file-invoice text-info"></i>
-                                            </div>
-                                            <div>
-                                                <div class="stat-label">{{ __('Invoices') }}</div>
-                                                <div class="stat-value">{{ number_format($totalInvoices) }}</div>
-                                                <div class="muted-sm">{{ __('Due') }}: {{ $dueInvoices }}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-6 col-md-3">
-                                    <div class="card stat-box">
-                                        <div class="d-flex align-items-center">
-                                            <div class="me-3 stat-icon bg-light border">
-                                                <i class="fa-solid fa-users text-warning"></i>
-                                            </div>
-                                            <div>
-                                                <div class="stat-label">{{ __('Customers') }}</div>
-                                                <div class="stat-value">{{ number_format($totalCustomers) }}</div>
-                                                <div class="muted-sm">{{ __('New') }}: {{ $newCustomers }}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-6 col-md-3">
-                                    <div class="card stat-box">
-                                        <div class="d-flex align-items-center">
-                                            <div class="me-3 stat-icon bg-light border">
-                                                <i class="fa-solid fa-chart-line text-success"></i>
-                                            </div>
-                                            <div>
-                                                <div class="stat-label">{{ __('Profit') }}</div>
-                                                <div class="stat-value">{{ number_format($profit, 0) }}</div>
-                                                <div class="muted-sm {{ $profitMargin > 0 ? 'text-success' : 'text-danger' }}">
-                                                    {{ __('Margin') }} {{ $profitMargin }}%
+                                            @else
+                                                <div class="sc-meta sc-meta-top">{{ $card['key'] === 'payment' ? __('Total Payments') : __('Total Collections') }}</div>
+                                                <div class="sc-value sc-value-md">{{ $short($d['total']) }}</div>
+                                                <div class="sc-progress"><div style="width: {{ $d['percent'] }}%"></div><span>{{ $d['percent'] }}%</span></div>
+                                                <div class="sc-foot">
+                                                    <div><span>{{ __('Approved') }}</span><b>{{ number_format($d['approved'], 2) }}</b></div>
+                                                    <div class="text-end"><span>{{ __('Draft') }}</span><b>{{ $short($d['draft']) }}</b></div>
                                                 </div>
-                                            </div>
+                                            @endif
                                         </div>
                                     </div>
-                                </div>
-
-
+                                @endforeach
                             </div>
 
                             <div class="row g-3">
