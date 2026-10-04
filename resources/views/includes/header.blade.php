@@ -99,8 +99,13 @@
                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" style="font-size: 0.65rem;">3</span>
             </a>
 
-            <div class="dropdown ms-2 user-account-menu">
-                <button class="btn btn-white border-0 d-flex align-items-center p-1 rounded-pill hover-shadow" type="button" data-bs-toggle="dropdown">
+            <div class="ms-2 user-account-menu">
+                {{-- Opens the same account panel as the right rail's avatar (layouts/profile-menu.blade.php
+                     listens for this window event). stopPropagation keeps the panel's own
+                     @click.outside from treating this very click as an outside click and closing it. --}}
+                <button class="btn btn-white border-0 d-flex align-items-center p-1 rounded-pill hover-shadow" type="button"
+                        aria-label="{{ __('Account menu') }}"
+                        onclick="event.stopPropagation(); window.dispatchEvent(new CustomEvent('open-profile-panel'));">
                     @php $userName = $user->name ?? __('Guest'); @endphp
                     @if($user->profile_photo_path ?? null)
                         <img src="{{ asset($user->profile_photo_path) }}" class="rounded-circle" width="32" height="32" alt="User" style="object-fit: cover;">
@@ -114,15 +119,6 @@
                     </span>
                     <i class="bi bi-chevron-down small text-muted"></i>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" style="min-width: 240px; max-width: 90vw;">
-                    <li class="px-3 py-2 border-bottom">
-                        <div class="small text-muted">{{ __('Signed in as:') }}</div>
-                        <div class="fw-bold text-dark truncate-email" title="{{ $user->email ?? __('Guest') }}">{{ $user->email ?? __('Guest') }}</div>
-                    </li>
-                    <li><a class="dropdown-item py-2" href="{{ url('settings/account') }}"><i class="bi bi-person me-2"></i> {{ __('My Profile') }}</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item text-danger py-2" href="/logout"><i class="bi bi-box-arrow-right me-2"></i> {{ __('Logout') }}</a></li>
-                </ul>
             </div>
         </div>
     </div>
