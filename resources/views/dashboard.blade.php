@@ -20,6 +20,9 @@
         .kpi-month-static { font-size: .72rem; color: #667085; background: rgba(255,255,255,.7); border-radius: 999px; padding: 2px 8px; }
         .kpi-duo { display: flex; gap: 22px; }
         .kpi-duo .kpi-value { font-size: 2rem; }
+        .kpi-cost-row { display: flex; align-items: center; gap: 8px; font-size: .88rem; color: #475467; padding: 3px 0; }
+        .kpi-cost-row em { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+        .kpi-cost-row b { margin-left: auto; color: #101828; padding-left: 12px; }
         .kpi-head { display: flex; align-items: center; gap: 10px; }
         .kpi-icon { width: 34px; height: 34px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;
             color: #fff; background: var(--kc); font-size: .85rem; border-radius: 50%; width: 32px; height: 32px;
@@ -172,23 +175,7 @@
                             </div>
 
                             <div class="row g-3 mt-1 mb-3">
-                                <!-- Job Status -->
-                                <div class="col-md-6">
-                                    <div class="card shadow-sm border-0 p-3 h-100">
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <h6 class="fw-semibold mb-0">{{ __('Job Status') }}</h6>
-                                            <i class="fa-solid fa-truck-fast text-primary"></i>
-                                        </div>
-                                        <div class="d-flex justify-content-between mb-1">
-                                            <span>{{ __('Active Jobs') }}</span>
-                                            <span class="fw-bold text-primary">{{ $activeJobs }}</span>
-                                        </div>
-                                        <div class="d-flex justify-content-between">
-                                            <span>{{ __('Completed This Month') }}</span>
-                                            <span class="fw-bold text-success">{{ $completedJobsThisMonth }}</span>
-                                        </div>
-                                    </div>
-                                </div>
+                                <div class="col-md-6">@include('dashboard.widgets.job-status-medium')</div>
 
                                 <!-- Payments -->
                                 <div class="col-md-6">
@@ -298,49 +285,9 @@
 
                             <div class="mb-3">@include('dashboard.widgets.awaiting-approval-medium')</div>
 
-                            <!-- Cost Summary (mini-donut + stats) -->
-                            <div class="right-card">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h6>{{ __('Cost Summary') }}</h6>
-                                        <div class="muted-sm">{{ __('This month') }}</div>
-                                    </div>
-                                    <div style="width:120px;">
-                                        <canvas id="costMiniChart" class="mini-canvas"></canvas>
-                                    </div>
-                                </div>
+                            <div class="mb-3">@include('dashboard.widgets.cost-summary-medium')</div>
 
-                                <hr class="my-2" />
-                                <div class="small">
-                                    <div class="d-flex justify-content-between mb-1"><div>{{ __('Material') }}</div><div>{{ $materialPercent }}%</div></div>
-                                    <div class="d-flex justify-content-between mb-1"><div>{{ __('Labour') }}</div><div>{{ $labourPercent }}%</div></div>
-                                    <div class="d-flex justify-content-between mb-0"><div>{{ __('Transport') }}</div><div>{{ $transportPercent }}%</div></div>
-                                </div>
-                            </div>
-
-                            <!-- Revenue Summary (mini-line + totals) -->
-                            <div class="right-card">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h6>{{ __('Revenue Summary') }}</h6>
-                                        <div class="big">{{ number_format($currentMonthSales, 0) }}</div>
-                                        <div class="muted-sm mt-1">{{ __('Net revenue (MTD)') }}</div>
-                                    </div>
-                                    <div style="width:120px;">
-                                        <canvas id="revMiniChart" class="mini-canvas"></canvas>
-                                    </div>
-                                </div>
-
-                                <hr class="my-2" />
-                                <div class="d-flex justify-content-between small">
-                                    <div>{{ __('Collected') }}</div>
-                                    <div class="text-success">{{ number_format($currentMonthCollected, 0) }}</div>
-                                </div>
-                                <div class="d-flex justify-content-between small">
-                                    <div>{{ __('Pending') }}</div>
-                                    <div class="text-danger">{{ number_format($currentMonthPending, 0) }}</div>
-                                </div>
-                            </div>
+                            <div class="mb-3">@include('dashboard.widgets.revenue-summary-medium')</div>
 
                         </div> <!-- /.right-col -->
                     </div> <!-- /.row -->
@@ -406,41 +353,6 @@
                     }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
-
-            // Cost mini chart (doughnut)
-            new Chart(document.getElementById('costMiniChart'), {
-                type: 'doughnut',
-                data: {
-                    labels: [@json(__('Material')), @json(__('Labour')), @json(__('Transport'))],
-                    datasets: [{
-                        data: [@json($materialPercent), @json($labourPercent), @json($transportPercent)],
-                        backgroundColor: ['#0d6efd','#ffc107','#20c997']
-                    }]
-                },
-                options: { plugins: { legend: { display: false } }, cutout: '70%' }
-            });
-
-            // Revenue mini chart (sparkline line)
-            new Chart(document.getElementById('revMiniChart'), {
-                type: 'line',
-                data: {
-                    labels: ['D1','D2','D3','D4','D5','D6','D7'],
-                    datasets: [{
-                        data: @json($dailyRevenueData),
-                        borderColor: 'rgba(13,110,253,0.95)',
-                        tension: 0.3,
-                        fill: false,
-                        pointRadius: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { x: { display: false }, y: { display: false } },
-                    elements: { line: { borderWidth: 2 } }
-                }
             });
 
             // Medium widget charts (donut / area / bars) driven by data-* attributes
