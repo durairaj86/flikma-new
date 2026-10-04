@@ -1,5 +1,6 @@
 @section('page-title', __('Dashboard'))
-@section('page-sub-title', __('Overview of the company\'s performance'))
+@section('page-subtitle', __('Overview of the company\'s performance'))
+@section('page-icon', 'bi-speedometer2')
 <x-app-layout>
 
     <style>
@@ -229,6 +230,10 @@
         .dash-fly { position: fixed; z-index: 2000; pointer-events: none; border-radius: 14px; background: #4f46e5; color: #fff; display: flex; align-items: center; justify-content: center;
             font-size: .8rem; font-weight: 600; box-shadow: 0 14px 34px rgba(79,70,229,.45); transition: transform .6s cubic-bezier(.2,.8,.2,1), opacity .6s, width .6s, height .6s, left .6s, top .6s; }
 
+        .dash-welcome-title { font-size: 1.15rem; font-weight: 700; color: #101828; line-height: 1.2; }
+        .dash-welcome-sub { font-size: .8rem; color: #667085; margin-top: 2px; }
+        .dash-toolbar .btn { white-space: nowrap; }
+
         /* Floating widget panel */
         .wp-panel { position: fixed; top: 70px; right: 74px; bottom: 16px; width: 330px; max-width: calc(100vw - 90px); z-index: 1060; display: flex; flex-direction: column;
             background: #fff; border-radius: 18px; box-shadow: 0 20px 60px rgba(15,23,42,.28); border: 1px solid #eaecf0;
@@ -283,12 +288,22 @@
 
                 <!-- Widget grid: drag a widget by its handle to reorder; the order is saved per user -->
                 <div class="container-fluid">
-                    <div class="d-flex justify-content-end align-items-center gap-2 mb-2 dash-toolbar">
-                        <span class="text-muted small d-none d-md-inline"><i class="bi bi-arrows-move me-1"></i>{{ __('Drag widgets by the handle to arrange your dashboard') }}</span>
-                        <button type="button" class="btn btn-sm btn-primary rounded-pill" id="dash-open-panel"><i class="bi bi-plus-lg me-1"></i>{{ __('Add widget') }}</button>
-                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill" id="dash-edit-toggle" data-label-edit="{{ __('Remove widget') }}" data-label-done="{{ __('Done') }}"><i class="bi bi-dash-circle me-1"></i><span>{{ __('Remove widget') }}</span></button>
-                        <span class="small text-success d-none" id="dash-saved"><i class="bi bi-check2-circle me-1"></i>{{ __('Saved') }}</span>
-                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" id="dash-reset"><i class="bi bi-arrow-counterclockwise me-1"></i>{{ __('Reset layout') }}</button>
+                    @php
+                        $dashHour = (int) now()->format('G');
+                        $dashGreeting = $dashHour < 12 ? __('Good morning') : ($dashHour < 17 ? __('Good afternoon') : __('Good evening'));
+                        $dashName = explode(' ', trim((string) (auth()->user()->name ?? '')))[0] ?? '';
+                    @endphp
+                    <div class="dash-toolbar d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+                        <div class="dash-welcome">
+                            <div class="dash-welcome-title">{{ $dashGreeting }}{{ $dashName ? ', ' . $dashName : '' }}</div>
+                            <div class="dash-welcome-sub">{{ now()->translatedFormat('l, d F Y') }} &middot; <span class="d-none d-md-inline">{{ __('Drag widgets by the handle to arrange your dashboard') }}</span></div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <span class="small text-success d-none" id="dash-saved"><i class="bi bi-check2-circle me-1"></i>{{ __('Saved') }}</span>
+                            <button type="button" class="btn btn-sm btn-primary rounded-pill" id="dash-open-panel"><i class="bi bi-plus-lg me-1"></i>{{ __('Add widget') }}</button>
+                            <button type="button" class="btn btn-sm btn-outline-danger rounded-pill" id="dash-edit-toggle" data-label-edit="{{ __('Remove widget') }}" data-label-done="{{ __('Done') }}"><i class="bi bi-dash-circle me-1"></i><span>{{ __('Remove widget') }}</span></button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" id="dash-reset"><i class="bi bi-arrow-counterclockwise me-1"></i>{{ __('Reset layout') }}</button>
+                        </div>
                     </div>
                     <div class="dash-wrap"><div class="dash-grid" id="dashGrid">
                         @foreach($widgetOrder as $key)

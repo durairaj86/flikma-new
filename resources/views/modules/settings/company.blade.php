@@ -129,6 +129,41 @@
                                                        required value="{{ $company->postal_code }}">
                                             </div>
 
+                                <div class="col-md-6">
+                                                <label for="country" class="form-label">{{ __('Country') }}<span class="text-danger">*</span></label>
+                                                @php
+                                                    $cmpCountry = $company->country;
+                                                    $cmpCountry = countries()[$cmpCountry] ?? $cmpCountry; // old rows may hold the 2-letter code
+                                                @endphp
+                                                @if($cmpCountry)
+                                                    {{-- Chosen once: locked afterwards (ZATCA / tax setup depends on it). --}}
+                                                    <select id="country" class="tom-select" disabled>
+                                                        <option value="{{ $cmpCountry }}" selected>{{ $cmpCountry }}</option>
+                                                    </select>
+                                                    <div class="form-text"><i class="bi bi-lock-fill me-1"></i>{{ __('Country cannot be changed once saved.') }}</div>
+                                                @else
+                                                    <select id="country" name="country" class="tom-select" data-live-search="true" required>
+                                                        <option value="">{{ __('Select country') }}</option>
+                                                        @foreach(countries() as $cName)
+                                                            <option value="{{ $cName }}" @selected($cName === 'Saudi Arabia')>{{ $cName }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                    <div class="form-text">{{ __('Choose carefully: the country cannot be changed after saving.') }}</div>
+                                                @endif
+                                            </div>
+
+                                            <div class="col-md-3">
+                                                <label for="building_number" class="form-label">{{ __('Building No') }}</label>
+                                                <input type="text" class="form-control" id="building_number" name="building_number" maxlength="20"
+                                                       value="{{ $company->building_number }}" placeholder="1234">
+                                            </div>
+
+                                            <div class="col-md-3">
+                                                <label for="plot_no" class="form-label">{{ __('Plot No') }}</label>
+                                                <input type="text" class="form-control" id="plot_no" name="plot_no" maxlength="20"
+                                                       value="{{ $company->plot_no }}">
+                                            </div>
+
                                             <div class="col-md-6">
                                                 <label for="timezone" class="form-label">{{ __('Time Zone') }}</label>
                                                 <select class="tom-select" id="timezone" name="timezone"
@@ -164,10 +199,10 @@
                                             @if($company->vat_status == 1)
                                                 <div class="col-md-6">
                                                     <label class="form-label fw-medium">{{ __('Are you VAT Registered?') }}</label>
-                                                    <select id="vat_status" name="vat_status" class="tom-select"
-                                                            disabled>
+                                                    <select id="vat_status" class="tom-select" disabled>
                                                         <option value="1" selected>{{ __('Yes') }}</option>
                                                     </select>
+                                                    <div class="form-text"><i class="bi bi-lock-fill me-1"></i>{{ __('VAT registration, VAT number and CR number are locked once saved.') }}</div>
                                                 </div>
 
                                                 <div class="row g-3 px-0 mx-0 vat-compliance-group">
@@ -192,20 +227,20 @@
                                                         <option value="0" selected>{{ __('No') }}</option>
                                                         <option value="1">{{ __('Yes') }}</option>
                                                     </select>
+                                                    <div class="form-text">{{ __('Choosing Yes makes the VAT and CR numbers mandatory. It cannot be changed after saving.') }}</div>
                                                 </div>
 
-                                                <div class="row g-3 px-0 mx-0 vat-compliance-group"
-                                                     style="display: none;">
+                                                <div class="row g-3 px-0 mx-0 vat-compliance-group">
 
                                                     <div class="col-md-6">
-                                                        <label class="form-label fw-medium">{{ __('VAT Number (TRN)') }}</label>
+                                                        <label class="form-label fw-medium">{{ __('VAT Number (TRN)') }} <span class="text-danger vat-req d-none">*</span></label>
                                                         <input type="text" class="form-control" id="vatNumber"
                                                                name="vatNumber" placeholder="300XXXXXXXXXXX"
                                                                value="{{ $company->vat_number }}">
                                                     </div>
 
                                                     <div class="col-md-6">
-                                                        <label class="form-label fw-medium">{{ __('Commercial Registration (CR) Number') }}</label>
+                                                        <label class="form-label fw-medium">{{ __('Commercial Registration (CR) Number') }} <span class="text-danger vat-req d-none">*</span></label>
                                                         <input type="text" class="form-control"
                                                                id="crNumber" name="crNumber"
                                                                value="{{ $company->cr_number }}"
@@ -275,6 +310,45 @@
             </div>
         </section>
     </main>
+
+    {{-- Logo crop modal: opens when a logo file is chosen; the cropped result replaces the file in the form. --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+    <style>
+        #logoCropModal .crop-stage { height: 56vh; background: #f2f4f7; border-radius: .75rem; overflow: hidden; }
+        #logoCropModal .crop-stage img { display: block; max-width: 100%; }
+        #logoCropModal .cropper-view-box, #logoCropModal .cropper-face { border-radius: 0; }
+        #logoCropRatio .btn.active { background: #4f46e5; border-color: #4f46e5; color: #fff; }
+    </style>
+    <div class="modal fade" id="logoCropModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h6 class="modal-title fw-bold"><i class="bi bi-crop me-2 text-primary"></i><span id="logoCropTitle">{{ __('Crop your logo') }}</span></h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="crop-stage"><img id="logoCropImage" alt=""></div>
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3">
+                        <div class="btn-group btn-group-sm" id="logoCropRatio" role="group" aria-label="{{ __('Aspect ratio') }}">
+                            <button type="button" class="btn btn-outline-secondary active" data-ratio="0">{{ __('Free') }}</button>
+                            <button type="button" class="btn btn-outline-secondary" data-ratio="1">1:1</button>
+                            <button type="button" class="btn btn-outline-secondary" data-ratio="1.7778">16:9</button>
+                            <button type="button" class="btn btn-outline-secondary" data-ratio="3">3:1</button>
+                        </div>
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn btn-outline-secondary" id="logoCropRotate" title="{{ __('Rotate') }}"><i class="bi bi-arrow-clockwise"></i></button>
+                            <button type="button" class="btn btn-outline-secondary" id="logoCropReset" title="{{ __('Reset') }}"><i class="bi bi-arrow-counterclockwise"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                    <button type="button" class="btn btn-primary btn-sm px-4" id="logoCropSave"><i class="bi bi-check-lg me-1"></i>{{ __('Crop & Use') }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </x-app-layout>
 
 <style>

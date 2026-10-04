@@ -3,6 +3,8 @@ COMPANY = {
     baseUrl: 'settings/company',
     actionUrl: 'settings/company',
     load() {
+        // This page's form is #company-form (not #moduleForm), so style its selects with Tom Select explicitly.
+        if (typeof initTomSelectForm === 'function') initTomSelectForm($('#company-form'));
         let logoInput = document.getElementById('logoInput');
         let signatureInput = document.getElementById('signatureInput');
 
@@ -12,43 +14,80 @@ COMPANY = {
         $('#signatureUploadBox').on('click', function () {
             signatureInput.click();
         });
-        $(logoInput).on('change', function (event) {
-            const file = event.target.files[0];
-            if (file) {
+        // Logo and signature: choosing a file opens one shared crop modal; the cropped image replaces the file in the form.
+        const targets = {
+            logo: { input: logoInput, preview: '#logoPreview', box: '#logoUploadBox', title: 'Crop your logo', max: 1200 },
+            signature: { input: signatureInput, preview: '#signaturePreview', box: '#signatureUploadBox', title: 'Crop your signature', max: 800 },
+        };
+        let cropper = null, cropFile = null, cropTarget = null;
+        const cropModalEl = document.getElementById('logoCropModal');
+        const cropImg = document.getElementById('logoCropImage');
+        const cropModal = cropModalEl ? new bootstrap.Modal(cropModalEl) : null;
+
+        Object.keys(targets).forEach(function (name) {
+            const t = targets[name];
+            if (!t.input) return;
+            $(t.input).on('change', function (event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                if (!window.Cropper || !cropModal) { return COMPANY.setPreview(t, file); }
+                cropFile = file;
+                cropTarget = t;
+                $('#logoCropTitle').text(t.title);
                 const reader = new FileReader();
                 reader.onload = function (e) {
-                    $('#logoPreview').attr("src", e.target.result);
-                    $('#logoPreview').removeClass('d-none');
-                    $('#logoUploadBox .upload-text').addClass('d-none');
+                    cropImg.src = e.target.result;
+                    cropModal.show();
                 };
                 reader.readAsDataURL(file);
-            }
-        });
-        $(signatureInput).on('change', function (event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    $('#signaturePreview').attr("src", e.target.result);
-                    $('#signaturePreview').removeClass('d-none');
-                    $('#signatureUploadBox .upload-text').addClass('d-none');
-                };
-                reader.readAsDataURL(file);
-            }
+            });
         });
 
-        function toggleVatFields() {
-            const complianceGroup = $('.vat-compliance-group');
-            if ($('#vat_status').val() === '1') {
-                complianceGroup.slideDown(200);
-                $('#vatNumber').attr('required',true);
-                $('#crNumber').attr('required',true);
-            } else {
-                complianceGroup.slideUp(200);
-                $('#vatNumber').removeAttr('required');
-                $('#crNumber').removeAttr('required');
-            }
+        if (cropModalEl) {
+            cropModalEl.addEventListener('shown.bs.modal', function () {
+                if (cropper) cropper.destroy();
+                $('#logoCropRatio [data-ratio]').removeClass('active').first().addClass('active');
+                cropper = new Cropper(cropImg, { viewMode: 1, autoCropArea: 1, responsive: true, background: false, dragMode: 'move' });
+            });
+            cropModalEl.addEventListener('hidden.bs.modal', function () {
+                if (cropper) { cropper.destroy(); cropper = null; }
+                // Cancelled (not saved): forget the chosen file so the current image stays.
+                if (cropModalEl.dataset.saved !== '1' && cropTarget) cropTarget.input.value = '';
+                cropModalEl.dataset.saved = '';
+            });
+            $('#logoCropRatio').on('click', '[data-ratio]', function () {
+                $('#logoCropRatio [data-ratio]').removeClass('active');
+                $(this).addClass('active');
+                if (cropper) cropper.setAspectRatio(parseFloat($(this).data('ratio')) || NaN);
+            });
+            $('#logoCropRotate').on('click', function () { if (cropper) cropper.rotate(90); });
+            $('#logoCropReset').on('click', function () { if (cropper) cropper.reset(); });
+            $('#logoCropSave').on('click', function () {
+                if (!cropper || !cropTarget) return;
+                const t = cropTarget;
+                const isPng = cropFile.type === 'image/png';
+                const canvas = cropper.getCroppedCanvas({ maxWidth: t.max, maxHeight: t.max, imageSmoothingQuality: 'high', fillColor: isPng ? undefined : '#ffffff' });
+                canvas.toBlob(function (blob) {
+                    if (!blob) return;
+                    const base = cropFile.name.replace(/\.[^.]+$/, '');
+                    const out = new File([blob], base + (isPng ? '.png' : '.jpg'), { type: blob.type });
+                    const dt = new DataTransfer();
+                    dt.items.add(out);
+                    t.input.files = dt.files;
+                    COMPANY.setPreview(t, out);
+                    cropModalEl.dataset.saved = '1';
+                    cropModal.hide();
+                }, isPng ? 'image/png' : 'image/jpeg', 0.92);
+            });
         }
+
+        // CR and VAT numbers are always visible; the VAT number is only mandatory when VAT registered.
+        function toggleVatFields() {
+            const on = $('#vat_status').val() === '1';
+            $('#vatNumber, #crNumber').prop('required', on);
+            $('.vat-req').toggleClass('d-none', !on);
+        }
+        toggleVatFields();
 
         $('#vat_status').on('change', toggleVatFields);
 
@@ -92,6 +131,14 @@ COMPANY = {
                 }
             });
         })
+    },
+    setPreview(t, file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            $(t.preview).attr('src', e.target.result).removeClass('d-none');
+            $(t.box + ' .upload-text').addClass('d-none');
+        };
+        reader.readAsDataURL(file);
     },
     list: {
         load() {

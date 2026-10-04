@@ -27,5 +27,9 @@ Route::prefix('settings')->group(function () {
         Route::post('/register/save', [ZatcaDeviceRegister::class, 'zatcasave']);
         Route::post('/test/{type}/zatca', [ZatcaController::class, 'submitTestTax']);
         Route::post('/{mode}/register/zatca', [ZatcaEGSController::class, 'zatcaDeviceRegister']);
+        Route::post('/onboard/csr', [\App\Http\Controllers\Zatca\ZatcaOnboardingController::class, 'csr']);
+        Route::post('/onboard/compliance', [\App\Http\Controllers\Zatca\ZatcaOnboardingController::class, 'compliance']);
+        Route::post('/onboard/checks', [\App\Http\Controllers\Zatca\ZatcaOnboardingController::class, 'checks']);
+        Route::post('/onboard/production', [\App\Http\Controllers\Zatca\ZatcaOnboardingController::class, 'production']);
     });
 });

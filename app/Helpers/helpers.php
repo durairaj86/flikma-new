@@ -212,7 +212,7 @@ function convert($amount, $currency = 'ريال سعودي')
 
 function appVersion(): string
 {
-    return "1.0.102";
+    return "1.0.108";
 }
 
 function toArabicNumber($number)
@@ -295,6 +295,17 @@ function commonZatcaErrors($code)
     return $message[$code] ?? null;
 }
 
+/** Date from which invoices go to ZATCA: the chosen send-start date (device registration) or the legacy wave date. */
+function zatcaStartDate($company): ?Carbon
+{
+    if (!empty($company->wave)) {
+        return Carbon::parse(zatcaWave($company->wave));
+    }
+    $date = \App\Models\Zatca\ZatcaRegisterDetails::where('company_id', $company->id)->value('wave_date');
+
+    return $date ? Carbon::parse($date) : null;
+}
+
 function zatcaDateCheck($model): array
 {
     $register = false;
@@ -304,11 +315,11 @@ function zatcaDateCheck($model): array
     if ($zatcaCheck) {
         $company = authUserCompany();
         if (($company->currency == 'SAR' && !$company->zatca_registered)) {
-            if ($company->wave && (Carbon::parse($model->invoice_date) >= Carbon::parse((zatcaWave($company->wave))))) {
+            if (($zatcaStart = zatcaStartDate($company)) && Carbon::parse($model->invoice_date) >= $zatcaStart) {
                 $register = true;
                 $message = isSimulationMode($subDomain, $company);
             }
-        } elseif ($company->zatca_registered && $company->wave && (Carbon::parse($model->invoice_date) >= Carbon::parse((zatcaWave($company->wave))))) {
+        } elseif ($company->zatca_registered && ($zatcaStart = zatcaStartDate($company)) && Carbon::parse($model->invoice_date) >= $zatcaStart) {
             $register = true;
         }
     }

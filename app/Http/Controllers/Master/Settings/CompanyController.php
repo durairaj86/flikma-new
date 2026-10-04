@@ -35,7 +35,8 @@ class CompanyController extends Controller
     public function store(Request $request)
     {
         // 1. Determine the current company instance
-        $company = Auth::user()->company ?? new Company();
+        // The company being edited is always the logged-in tenant's (same lookup the page itself uses).
+        $company = Company::findOrFail(companyId());
 
         // 2. Define Validation Rules
         $rules = [
@@ -60,8 +61,11 @@ class CompanyController extends Controller
             'registrationType' => 'nullable|string|max:100',
 
             // Compliance & Banking (Saudi/Gulf Region specific)
-            'crNumber' => 'nullable|integer|max:15',
-            'vatNumber' => 'nullable|integer|max:15',
+            'crNumber' => 'nullable|digits_between:1,15',
+            'vatNumber' => 'nullable|digits_between:1,15',
+            'plot_no' => 'nullable|string|max:20',
+            'building_number' => 'nullable|string|max:20',
+            'country' => ['nullable', 'string', Rule::in(array_values(countries()))],
 
             // Invoice Footer
             'terms' => 'nullable|string|max:1000',
@@ -81,8 +85,23 @@ class CompanyController extends Controller
             ],
         ];
 
+        // VAT registration: choosing "Yes" makes the VAT number and CR number mandatory. Once a company is
+        // saved as VAT registered, the status and both numbers are locked (ignored below).
+        $vatLocked = (int) $company->vat_status === 1;
+        $rules['vat_status'] = 'nullable|in:0,1';
+        if (!$vatLocked && $request->input('vat_status') == '1') {
+            $saudi = in_array($company->country ?: $request->input('country'), ['Saudi Arabia', 'SA'], true);
+            $rules['vatNumber'] = ['required', $saudi ? 'digits:15' : 'digits_between:1,15'];
+            $rules['crNumber'] = ['required', $saudi ? 'digits:10' : 'digits_between:1,15'];
+        }
+
         // 3. Run Validation
-        $validatedData = $request->validate($rules);
+        $validatedData = $request->validate($rules, [
+            'vatNumber.required' => 'VAT number is required when you are VAT registered.',
+            'crNumber.required' => 'CR number is required when you are VAT registered.',
+            'vatNumber.digits' => 'The VAT number (TRN) must be 15 digits.',
+            'crNumber.digits' => 'The CR number must be 10 digits.',
+        ]);
 
         $company = Company::findOrFail(companyId());
 
@@ -157,11 +176,17 @@ class CompanyController extends Controller
         $company->postal_code = $request->input('pincode');
         $company->timezone = $request->input('timezone');
         $company->city_sub_division = $request->input('city_sub_division');
+        $company->plot_no = $request->input('plot_no');
+        $company->building_number = $request->input('building_number');
+        // Country is chosen once and then locked: an already-saved country is never overwritten.
+        if (blank($company->country) && $request->filled('country')) {
+            $company->country = $request->input('country');
+        }
         $company->business_type = $request->input('businessType');
         $company->industry_type = $request->input('industryType');
         $company->currency = 'SAR';
-        if ($company->vat_status != 1) {
-            $company->vat_status = $request->input('vat_status');
+        if (!$vatLocked) {
+            $company->vat_status = $request->input('vat_status') == '1' ? 1 : 0;
             $company->cr_number = $request->input('crNumber');
             $company->vat_number = $request->input('vatNumber');
         }
