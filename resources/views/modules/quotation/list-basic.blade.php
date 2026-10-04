@@ -1,4 +1,11 @@
 @section('page-title', __('Quotations'))
+@push('page-title-action')
+    <button class="btn btn-link btn-sm text-muted p-0 text-decoration-none lh-1"
+            data-bs-toggle="modal" data-bs-target="#quotationWorkflowModal"
+            title="{{ __('How quotations work') }}">
+        <i class="bi bi-info-circle fs-6"></i><span class="d-none d-md-inline ms-1" style="font-size:0.8rem;">{{ __('How it works') }}</span>
+    </button>
+@endpush
 {{--
     Temporary basic/static replacement for modules.quotation.list.
     The original dynamic, column-settings-driven list is left untouched at
@@ -149,6 +156,7 @@
     </main>
 
     @include('modules.quotation.quotation-view')
+    @include('modules.workflows.quotation')
 
     <script>
         $(function () {
