@@ -23,6 +23,7 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $data = [
+            'shipmentSeries' => $this->getShipmentSeries(),
             'summaryCards' => $this->getSummaryCards($request->query('month')),
             'summaryMonths' => $this->getSummaryMonths(),
             // Total Sales
@@ -514,6 +515,37 @@ class DashboardController extends Controller
             ],
             'payment' => $pay + ['percent' => $pay['total'] > 0 ? round($pay['approved'] / $pay['total'] * 100) : 0],
             'collection' => $col + ['percent' => $col['total'] > 0 ? round($col['approved'] / $col['total'] * 100) : 0],
+        ];
+    }
+
+    /**
+     * Per-day job counts for the ETA/ETD widget (today + next 6 days) and the
+     * ATA/ATD widget (Monday to Sunday of the current week).
+     */
+    private function getShipmentSeries(): array
+    {
+        $count = function (string $col, Carbon $from, int $days) {
+            $rows = Job::whereBetween($col, [$from->copy()->startOfDay(), $from->copy()->addDays($days - 1)->endOfDay()])->get([$col]);
+            $out = array_fill(0, $days, 0);
+            foreach ($rows as $r) {
+                $i = (int) $from->copy()->startOfDay()->diffInDays(Carbon::parse($r->{$col})->startOfDay());
+                if ($i >= 0 && $i < $days) {
+                    $out[$i]++;
+                }
+            }
+            return $out;
+        };
+        $today = Carbon::today();
+        $week = Carbon::now()->startOfWeek();
+        $dayLabels = fn (Carbon $from, int $n) => collect(range(0, $n - 1))->map(fn ($i) => $from->copy()->addDays($i)->format('D'))->all();
+
+        return [
+            'upcomingLabels' => $dayLabels($today, 7),
+            'eta' => $count('eta', $today, 7),
+            'etd' => $count('etd', $today, 7),
+            'weekLabels' => $dayLabels($week, 7),
+            'ata' => $count('ata', $week, 7),
+            'atd' => $count('atd', $week, 7),
         ];
     }
 }

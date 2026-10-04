@@ -17,6 +17,9 @@
         .kpi-list-row:last-child { border-bottom: 0; }
         .kpi-list-name { display: flex; flex-direction: column; min-width: 0; font-weight: 600; }
         .kpi-list-name small { font-weight: 400; color: #667085; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .kpi-month-static { font-size: .72rem; color: #667085; background: rgba(255,255,255,.7); border-radius: 999px; padding: 2px 8px; }
+        .kpi-duo { display: flex; gap: 22px; }
+        .kpi-duo .kpi-value { font-size: 2rem; }
         .kpi-head { display: flex; align-items: center; gap: 10px; }
         .kpi-icon { width: 34px; height: 34px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;
             color: #fff; background: var(--kc); font-size: .85rem; border-radius: 50%; width: 32px; height: 32px;
@@ -163,43 +166,11 @@
                                 <div class="col-12 col-sm-4">@include('dashboard.widgets.collection-small')</div>
                             </div>
 
-                            <div class="row g-3">
-                                <!-- ETA / ETD -->
-                                <div class="col-md-6">
-                                    <div class="card shadow-sm border-0 p-3">
-                                        <div class="row g-0 text-center">
-                                            <div class="col-6 border-end">
-                                                <i class="fa-solid fa-ship text-primary fs-3 mb-2"></i>
-                                                <h6 class="fw-normal mb-1">{{ __('ETA Today') }}</h6>
-                                                <h4 class="fw-bold text-primary mb-0">{{ $etaToday }}</h4>
-                                            </div>
-                                            <div class="col-6">
-                                                <i class="fa-solid fa-plane-departure text-success fs-3 mb-2"></i>
-                                                <h6 class="fw-normal mb-1">{{ __('ETD Tomorrow') }}</h6>
-                                                <h4 class="fw-bold text-success mb-0">{{ $etdTomorrow }}</h4>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- ATA / ATD -->
-                                <div class="col-md-6">
-                                    <div class="card shadow-sm border-0 p-3">
-                                        <div class="row g-0 text-center">
-                                            <div class="col-6 border-end">
-                                                <i class="fa-solid fa-truck text-info fs-3 mb-2"></i>
-                                                <h6 class="fw-normal mb-1">{{ __('ATA This Week') }}</h6>
-                                                <h4 class="fw-bold text-info mb-0">{{ $ataThisWeek }}</h4>
-                                            </div>
-                                            <div class="col-6">
-                                                <i class="fa-solid fa-plane-arrival text-danger fs-3 mb-2"></i>
-                                                <h6 class="fw-normal mb-1">{{ __('ATD This Week') }}</h6>
-                                                <h4 class="fw-bold text-danger mb-0">{{ $atdThisWeek }}</h4>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-12 col-sm-6">@include('dashboard.widgets.eta-etd-medium')</div>
+                                <div class="col-12 col-sm-6">@include('dashboard.widgets.ata-atd-medium')</div>
                             </div>
+
                             <div class="row g-3 mt-1 mb-3">
                                 <!-- Job Status -->
                                 <div class="col-md-6">
@@ -483,6 +454,11 @@
                     var total = values.reduce(function (a, b) { return a + b; }, 0);
                     new Chart(cv, { type: 'doughnut', data: { labels: total ? names : [''], datasets: [{ data: total ? values : [1], backgroundColor: total ? colors : ['rgba(15,23,42,.12)'], borderWidth: 0 }] },
                         options: Object.assign({}, base, { cutout: '68%' }) });
+                    return;
+                }
+                if (type === 'dualbar') {
+                    var ds = JSON.parse(cv.dataset.datasets).map(function (d) { return { label: d.label, data: d.data, backgroundColor: d.color, borderRadius: 3 }; });
+                    new Chart(cv, { type: 'bar', data: { labels: labels, datasets: ds }, options: Object.assign({}, base, { scales: { x: { display: false }, y: { display: false } } }) });
                     return;
                 }
                 var axes = { scales: { x: { display: false }, y: { display: false } } };
