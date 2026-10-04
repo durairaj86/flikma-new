@@ -22,17 +22,17 @@
             <div class="model-form-tab-div">
 
                 <div class="row">
-                    <div class="col-4 form-group">
+                    <div class="col-12 form-group">
                         <label class="form-label">{{ __('Port Name') }}</label>
                         <input type="text" name="port_name" class="form-control" required
                                value="{{ $seaport->name ?? '' }}">
                     </div>
-                    <div class="col-4 form-group">
+                    <div class="col-12 form-group mt-3">
                         <label class="form-label">{{ __('Port Code') }}</label>
                         <input type="text" name="port_code" class="form-control" required
                                value="{{ $seaport->code ?? '' }}">
                     </div>
-                    <div class="col-4 form-group">
+                    <div class="col-12 form-group mt-3">
                         <label class="form-label">{{ __('Country') }}</label>
                         <x-common.country :value="$seaport->country_name"></x-common.country>
                     </div>

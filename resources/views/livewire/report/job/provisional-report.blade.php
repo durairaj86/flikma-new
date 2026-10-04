@@ -25,7 +25,7 @@
                                wire:model.live="viewMode" autocomplete="off"
                                @checked($viewMode === 'activity') />
                         <label class="btn btn-outline-pr btn-sm px-4 fw-bold" for="vm-activity">
-                            <i class="bi bi-activity me-1"></i>{{ __('Activity Based') }}
+                            <i class="bi bi-activity me-1"></i>{{ __('Department Based') }}
                         </label>
                     </div>
                     <span class="ms-3 text-muted small">
@@ -172,7 +172,7 @@
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <h6 class="mb-0 fw-bold">
                     <i class="bi {{ $viewMode === 'activity' ? 'bi-activity' : 'bi-table' }} me-2 text-pr"></i>
-                    {{ $viewMode === 'activity' ? __('Activity Summary') : __('Job Comparison') }}
+                    {{ $viewMode === 'activity' ? __('Department Summary') : __('Job Comparison') }}
                 </h6>
                 <span class="badge bg-pr-subtle text-pr border border-pr-subtle px-3 py-2">
                     {{ count($rows) }} {{ $viewMode === 'activity' ? __(Str::plural('Activity', count($rows))) : __(Str::plural('Job', count($rows))) }}
@@ -185,7 +185,7 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead>
                     <tr class="bg-light text-muted small text-uppercase fw-bold ls-1">
-                        <th class="ps-4 border-0">{{ __('Activity (Mode)') }}</th>
+                        <th class="ps-4 border-0">{{ __('Department (Mode)') }}</th>
                         <th class="text-center border-0">{{ __('Jobs') }}</th>
                         <th class="text-end border-0">
                             <span class="d-block text-muted" style="font-size:0.65rem;">{{ __('Provisional') }}</span>{{ __('Cost') }}
@@ -501,7 +501,7 @@
                 <table class="stmt-table">
                     <thead>
                     <tr>
-                        <th>{{ __('Activity') }}</th>
+                        <th>{{ __('Department') }}</th>
                         <th class="text-end">{{ __('Jobs') }}</th>
                         <th class="text-end">{{ __('Provisional Cost') }}</th>
                         <th class="text-end">{{ __('Actual Cost') }}</th>

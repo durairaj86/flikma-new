@@ -6,13 +6,6 @@
         <section class="flex-grow-1 px-4 d-flex flex-column">
         @include('includes.master-page-title')
 
-        {{-- Page actions --}}
-        <div class="d-flex justify-content-end align-items-center py-3 border-bottom mb-3">
-            <a href="{{ route('finance.opening-balance') }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-                <i class="bi bi-arrow-left me-1"></i> {{ __('Back to List') }}
-            </a>
-        </div>
-
         @if($errors->any())
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <strong>{{ __('Please fix the following errors:') }}</strong>
@@ -46,6 +39,12 @@
                                        value="{{ old('posted_at', date('Y-m-d')) }}" required>
                                 <div class="form-text text-muted">{{ __('This date will be used for all balances.') }}</div>
                             @endif
+                        </div>
+                        {{-- Back to List: same row as Balance Date, at the right end, level with the date field --}}
+                        <div class="col-md-8 d-flex justify-content-end">
+                            <a href="{{ route('finance.opening-balance') }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 mt-4">
+                                <i class="bi bi-arrow-left me-1"></i> {{ __('Back to List') }}
+                            </a>
                         </div>
                     </div>
                 </div>

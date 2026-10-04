@@ -106,10 +106,7 @@
                     id="convertedSubmenu">
                     <li data-url="/masters/services"><a href="/masters/services"
                                                         class="nav-link py-1 {{ $page1 == 'services' ? 'active' : 'text-dark' }}"><i
-                                class="bi bi-tools me-2"></i> Logistic Services</a></li>
-                    <li data-url="/masters/activities"><a href="/masters/activities"
-                                                        class="nav-link py-1 {{ $page1 == 'activities' ? 'active' : 'text-dark' }}"><i
-                                class="bi bi-tools me-2"></i> Logistic Activities</a></li>
+                                class="bi bi-tools me-2"></i> Logistic Departments</a></li>
                     <li data-url="/masters/package/codes"><a href="/masters/package/codes"
                                                              class="nav-link py-1 {{ $page1 == 'package' ? 'active' : 'text-dark' }}"><i
                                 class="bi bi-box me-2"></i> Package Codes</a></li>

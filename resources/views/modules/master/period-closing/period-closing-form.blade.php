@@ -26,8 +26,9 @@
 
                     <div class="col-6 form-group">
                         <label class="form-label required">{{ __('Closing Date') }} <sup class="text-danger">*</sup></label>
-                        <input type="date" name="closing_date" class="form-control" required
-                               value="{{ $periodClosing->closing_date ? $periodClosing->closing_date->format('Y-m-d') : '' }}">
+                        <input type="date" name="closing_date" class="form-control datepicker" required
+                               data-min-date="01-01-2000" data-max-date="31-12-2100"
+                               value="{{ $periodClosing->closing_date ? $periodClosing->closing_date->format('d-m-Y') : '' }}">
                         <small class="text-muted">{{ __('Transactions on or before this date get locked once the period is closed.') }}</small>
                     </div>
 

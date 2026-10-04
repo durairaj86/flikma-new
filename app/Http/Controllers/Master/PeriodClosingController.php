@@ -82,7 +82,7 @@ class PeriodClosingController extends Controller
         }
 
         $periodClosing->year = $validated['year'];
-        $periodClosing->closing_date = $validated['closing_date'];
+        $periodClosing->closing_date = formDate($validated['closing_date']);
         $periodClosing->notes = $validated['notes'] ?? null;
         $periodClosing->save();
 

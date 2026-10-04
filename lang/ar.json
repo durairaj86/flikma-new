@@ -2192,5 +2192,20 @@
     "vs Last Month (Sales)": "مقارنة بالشهر الماضي (المبيعات)",
     "vs last month": "مقارنة بالشهر الماضي",
     "— Select —": "— اختر —",
-    "🔐 Security Note: OTP is Mandatory": "🔐 ملاحظة أمنية: رمز المرور إلزامي"
+    "🔐 Security Note: OTP is Mandatory": "🔐 ملاحظة أمنية: رمز المرور إلزامي",
+    "Logistic Department": "القسم اللوجستي",
+    "Logistic Departments": "الأقسام اللوجستية",
+    "New Logistic Department": "قسم لوجستي جديد",
+    "Save Logistic Department": "حفظ القسم اللوجستي",
+    "Full Logistic Department Name": "الاسم الكامل للقسم اللوجستي",
+    "--Select Logistic Department--": "-- اختر القسم اللوجستي --",
+    "General term (applies to every logistic department)": "شرط عام (ينطبق على كل قسم لوجستي)",
+    "Save Service": "حفظ الخدمة",
+    "Select Type": "اختر النوع",
+    "Department:": "القسم:",
+    "Department Based": "حسب القسم",
+    "Department Summary": "ملخص القسم",
+    "Department (Mode)": "القسم (الوسيلة)",
+    "Operational Department": "القسم التشغيلي",
+    "--Select Department--": "-- اختر القسم --"
 }

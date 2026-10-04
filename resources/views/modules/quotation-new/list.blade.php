@@ -139,7 +139,7 @@
                         <th style="min-width:100px;">{{ __('Date') }}</th>
                         <th style="min-width:90px;">{{ __('Status') }}</th>
                         <th style="min-width:120px;">{{ __('Latest Comments') }}</th>
-                        <th style="min-width:150px;">{{ __('Operational Activity') }}</th>
+                        <th style="min-width:150px;">{{ __('Operational Department') }}</th>
                         <th style="min-width:130px;">{{ __('Origin') }}</th>
                         <th style="min-width:200px;">{{ __('Destination') }}</th>
                         <th style="min-width:100px;">{{ __('Valid From') }}</th>

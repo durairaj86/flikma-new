@@ -141,7 +141,7 @@
                     <tr>
                         <th>{{ __('Quote No') }}</th>
                         <th>{{ __('Client') }}</th>
-                        <th>{{ __('Activity') }}</th>
+                        <th>{{ __('Department') }}</th>
                         <th>{{ __('Services') }}</th>
                         <th>{{ __('Origin') }} &rarr; {{ __('Destination') }}</th>
                         <th>{{ __('Salesperson') }}</th>

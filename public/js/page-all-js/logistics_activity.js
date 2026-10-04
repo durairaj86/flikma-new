@@ -1,5 +1,5 @@
 LOGISTICS_ACTIVITY = {
-    title: 'Activities',
+    title: 'Department',
     baseUrl: 'masters/activities',
     actionUrl: 'masters/activities',
     load() {
@@ -48,13 +48,13 @@ LOGISTICS_ACTIVITY = {
                         }
                     },
                     {
-                        data: 'type', render: function (data, type, row) {
-                            return row.type;
+                        data: 'mode', render: function (data, type, row) {
+                            return row.mode ? row.mode.charAt(0).toUpperCase() + row.mode.slice(1) : '';
                         }
                     },
                     {
-                        data: 'service', render: function (data, type, row) {
-                            return row.service;
+                        data: 'type', render: function (data, type, row) {
+                            return row.type;
                         }
                     },
                     // Actions column
@@ -83,7 +83,7 @@ LOGISTICS_ACTIVITY = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'Add Activity',
+                    title: 'New Department',
                     url: GLOBAL_FN.buildUrl('masters/activities/create'),
                     content: null,
                     size: 'md',

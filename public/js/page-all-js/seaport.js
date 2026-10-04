@@ -80,7 +80,8 @@ SEAPORT = {
                     title: 'Add Seaport',
                     url: GLOBAL_FN.buildUrl('masters/transport/directories/seaport/create'),
                     content: null,
-                    size: 'md',
+                    size: 'compact',
+                    minHeight: 'min-height:0;',
                     callBack: null
                 });
             })

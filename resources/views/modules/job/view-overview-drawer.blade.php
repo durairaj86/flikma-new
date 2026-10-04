@@ -63,7 +63,7 @@
             <div><strong>{{ __('Posting Date:') }}</strong><span>{{ $job->posted_at ?? '-' }}</span></div>
             <div><strong>{{ __('Phone:') }}</strong><span>{{ $job->customer->phone ?? '-' }}</span></div>
             <div><strong>{{ __('Shipment Mode:') }}</strong><span>{{ ucfirst($job->shipment_mode ?? '-') }}</span></div>
-            <div class="col-span-2"><strong>{{ __('Activity:') }}</strong><span>{{ $job->activity->name ?? '-' }}</span></div>
+            <div class="col-span-2"><strong>{{ __('Department:') }}</strong><span>{{ $job->activity->name ?? '-' }}</span></div>
         </div>
     </div>
 

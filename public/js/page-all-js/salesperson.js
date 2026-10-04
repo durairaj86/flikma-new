@@ -83,9 +83,9 @@ SALESPERSON = {
                     title: 'Add Salesperson',
                     url: GLOBAL_FN.buildUrl('masters/salesperson/create'),
                     content: null,
-                    size: 'md',
+                    size: 'compact',
                     callBack: null,
-                    minHeight:'min-height:35v;'
+                    minHeight: 'min-height:0;'
                 });
             })
         },

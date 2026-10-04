@@ -80,7 +80,8 @@ AIRPORT = {
                     title: 'Add Airport',
                     url: GLOBAL_FN.buildUrl('masters/transport/directories/airport/create'),
                     content: null,
-                    size: 'md',
+                    size: 'compact',
+                    minHeight: 'min-height:0;',
                     callBack: null
                 });
             })

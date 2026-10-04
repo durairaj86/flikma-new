@@ -160,7 +160,7 @@
                                            value="{{ $enquiry->place_of_receipt }}">
                                 </div>
                                 <div class="col-md-4">
-                                    <label for="activity_id" class="form-label">{{ __('Activity') }}</label>
+                                    <label for="activity_id" class="form-label">{{ __('Department') }}</label>
                                     <x-common.activity :value="$enquiry->activity_id"
                                                        :shipmentMode="$enquiry->shipment_mode"></x-common.activity>
                                 </div>

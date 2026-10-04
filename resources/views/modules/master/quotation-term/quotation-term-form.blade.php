@@ -30,17 +30,17 @@
                                    name="is_general" value="1"
                                    @checked($quotationTerm->is_general ?? false)>
                             <label class="form-check-label" for="is_general">
-                                {{ __('General term (applies to every activity)') }}
+                                {{ __('General term (applies to every logistic department)') }}
                             </label>
                         </div>
                     </div>
 
                     <div class="col-6 form-group" id="activityFieldWrapper"
                          style="{{ ($quotationTerm->is_general ?? false) ? 'display:none;' : '' }}">
-                        <label class="form-label required">{{ __('Activity') }} <sup class="text-danger">*</sup></label>
+                        <label class="form-label required">{{ __('Department') }} <sup class="text-danger">*</sup></label>
                         <select class="tom-select" id="activity_id" name="activity_id" data-live-search="true"
                                 @unless($quotationTerm->is_general ?? false) required @endunless>
-                            <option value="">{{ __('--Select Activity--') }}</option>
+                            <option value="">{{ __('--Select Department--') }}</option>
                             @foreach($activities as $activity)
                                 <option value="{{ $activity->id }}"
                                         @selected(($quotationTerm->activity_id ?? null) == $activity->id)>

@@ -6,7 +6,7 @@
                     <th class="ps-4 border-0">{{ __('Job No') }}</th>
                     <th class="border-0">{{ __('Date') }}</th>
                     <th class="border-0">{{ __('Customer') }}</th>
-                    <th class="border-0">{{ __('Activity') }}</th>
+                    <th class="border-0">{{ __('Department') }}</th>
                     <th class="border-0">{{ __('AWB / MBL') }}</th>
                     <th class="border-0">{{ __('HBL / HAWB') }}</th>
                     <th class="border-0">{{ __('Shipper') }}</th>
@@ -84,7 +84,7 @@
                 <th>{{ __('Job No') }}</th>
                 <th>{{ __('Date') }}</th>
                 <th>{{ __('Customer') }}</th>
-                <th>{{ __('Activity') }}</th>
+                <th>{{ __('Department') }}</th>
                 <th>{{ __('AWB/MBL') }}</th>
                 <th>{{ __('HBL/HAWB') }}</th>
                 <th>{{ __('POL') }}</th>

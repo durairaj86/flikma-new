@@ -102,7 +102,7 @@ HS_TARIFF = {
                     title: 'New HS Tariff',
                     url: GLOBAL_FN.buildUrl('masters/hs-tariff/create'),
                     content: null,
-                    size: 'compact',
+                    size: 'mid',
                     callBack: null
                 });
             })

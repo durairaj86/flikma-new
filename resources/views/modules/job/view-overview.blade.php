@@ -119,7 +119,7 @@
                     <tr><td><strong>{{ __('Posting Date:') }}</strong></td><td>{{ $job->posted_at ?? '-' }}</td></tr>
                     <tr><td><strong>{{ __('Salesperson:') }}</strong></td><td>{{ $job->salesperson->name ?? '-' }}</td></tr>
                     <tr><td><strong>{{ __('Shipment Mode:') }}</strong></td><td>{{ ucfirst($job->shipment_mode) }}</td></tr>
-                    <tr><td><strong>{{ __('Activity:') }}</strong></td><td>{{ $job->activity->name ?? '-' }}</td></tr>
+                    <tr><td><strong>{{ __('Department:') }}</strong></td><td>{{ $job->activity->name ?? '-' }}</td></tr>
                 </table>
             </div>
         </div>

@@ -190,7 +190,7 @@
                         <th>#</th>
                         <th>{{ __('Customer') }}</th>
                         <th>{{ __('Contact') }}</th>
-                        <th>{{ __('Activity') }}</th>
+                        <th>{{ __('Department') }}</th>
                         <th>{{ __('POL') }}</th>
                         <th>{{ __('POD') }}</th>
                         <th>{{ __('Pickup Date') }}</th>

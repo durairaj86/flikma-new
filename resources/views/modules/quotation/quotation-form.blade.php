@@ -161,7 +161,7 @@
                         </div>
                         <div class="row g-3">
                             <div class="col-md-4">
-                                <label for="activity_id" class="form-label">{{ __('Activity') }}</label>
+                                <label for="activity_id" class="form-label">{{ __('Department') }}</label>
                                 <x-common.activity
                                     :value="$quotation->activity_id"></x-common.activity>
                             </div>

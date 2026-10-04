@@ -20,7 +20,7 @@
             <div class="shadow bdr-r-10 py-3 flex-grow-1">
                 <!-- Table with scroll -->
                 <div class="flex-grow-1">
-                    <table class="table align-middle dataTable" id="dataTable" data-model-size="md">
+                    <table class="table align-middle dataTable" id="dataTable" data-model-size="compact">
                         <thead class="table-light sticky-top bg-white">
                         <tr>
                             <th style="width: 10px">#</th>

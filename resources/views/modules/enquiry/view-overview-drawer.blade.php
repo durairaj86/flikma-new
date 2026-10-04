@@ -53,7 +53,7 @@
         <div><strong>{{ __('Enquiry Date:') }}</strong><span>{{ showDate($enquiry->created_at) }}</span></div>
         <div><strong>{{ __('Phone:') }}</strong><span>{{ $party->phone ?? '-' }}</span></div>
         <div><strong>{{ __('Expiry Date:') }}</strong><span>{{ showDate($enquiry->expiry_date) }}</span></div>
-        <div><strong>{{ __('Activity:') }}</strong><span>{{ $enquiry->activity->name ?? '-' }}</span></div>
+        <div><strong>{{ __('Department:') }}</strong><span>{{ $enquiry->activity->name ?? '-' }}</span></div>
         <div><strong>{{ __('Status:') }}</strong><span>{{ \App\Enums\EnquiryEnum::tryFrom($enquiry->status)?->label() ?? '-' }}</span></div>
     </div>
 </div>

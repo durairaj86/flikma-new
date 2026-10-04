@@ -25,12 +25,12 @@
                         <label class="form-label">Package Code</label>
                         <input type="text" name="package_code" class="form-control" required value="{{ $packageCode->package_code ?? '' }}">
                     </div>--}}
-                    <div class="col-6 form-group">
+                    <div class="col-12 form-group">
                         <label class="form-label">{{ __('Package Name') }}</label>
                         <input type="text" name="package_name" class="form-control" required
                                value="{{ $packageCode->name ?? '' }}">
                     </div>
-                    <div class="col-6 form-group">
+                    <div class="col-12 form-group mt-3">
                         <label class="form-label">{{ __('Description') }}</label>
                         <input type="text" name="description" class="form-control"
                                value="{{ $packageCode->description ?? '' }}">

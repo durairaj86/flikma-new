@@ -1830,3 +1830,22 @@ label.required.label-error {
     content: ''; position: absolute; left: 14px; bottom: calc(100% - 1px); z-index: 31;
     border: 5px solid transparent; border-top-color: #101828; border-bottom: 0;
 }
+
+/* Near the right edge of a modal the bubble opens leftwards so it is never cut off. */
+.field-hint-wrap.is-truncated.hint-right:hover::after, .field-hint-wrap.is-truncated.hint-right:focus-within::after { left: auto; right: 0; }
+.field-hint-wrap.is-truncated.hint-right:hover::before, .field-hint-wrap.is-truncated.hint-right:focus-within::before { left: auto; right: 14px; }
+
+/* Mid modal: between small/compact (460px) and the screen-dependent medium (up to 992px). Fixed 600px. */
+@media (min-width: 576px) {
+    .modal-mid { --bs-modal-width: 600px; }
+}
+
+/* Compact / mid modals hug their form: drop the global 500px minimum body height. */
+#globalModal .modal-compact .modal-body,
+#globalModal .modal-mid .modal-body { min-height: 0; }
+
+/* Compact modal header: keep the title and the Cancel / Save buttons on one line each (no wrapping). */
+#globalModal .modal-compact .module-info span { white-space: nowrap; font-size: 1.1rem !important; }
+#globalModal .modal-compact #show-buttons { display: flex; flex-wrap: nowrap; gap: .5rem; }
+#globalModal .modal-compact #show-buttons .btn { white-space: nowrap; padding: .4rem .8rem; font-size: .85rem; display: inline-flex; align-items: center; gap: .35rem; }
+#globalModal .modal-compact #show-buttons .btn br { display: none; }

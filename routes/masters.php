@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::view('/masters/services', 'modules.master.logistics-service.list')->name('services');
+Route::view('/masters/services', 'modules.master.logistics-activity.list')->name('services');  // Department master (FCL Import, FCL Export, ...)
 Route::post('/masters/services/data', [\App\Http\Controllers\Master\LogisticServiceController::class, 'fetchAllRows'])->name('logistics-service.data');
 Route::get('/masters/services/create', [\App\Http\Controllers\Master\LogisticServiceController::class, 'modal']);
 Route::post('/masters/services/create', [\App\Http\Controllers\Master\LogisticServiceController::class, 'store']);
@@ -10,7 +10,7 @@ Route::get('/masters/services/{id}/create', [\App\Http\Controllers\Master\Logist
 Route::post('/masters/services/{id}/create', [\App\Http\Controllers\Master\LogisticServiceController::class, 'store']);
 Route::get('masters/services/{id}/actions', [\App\Http\Controllers\Master\LogisticServiceController::class, 'actions']);
 
-Route::view('/masters/activities', 'modules.master.logistics-activity.list')->name('activities');
+Route::redirect('/masters/activities', '/masters/services')->name('activities');
 Route::post('/masters/activities/data', [\App\Http\Controllers\Master\LogisticActivityController::class, 'fetchAllRows'])->name('logistics-activity.data');
 Route::get('/masters/activities/create', [\App\Http\Controllers\Master\LogisticActivityController::class, 'modal']);
 Route::post('/masters/activities/create', [\App\Http\Controllers\Master\LogisticActivityController::class, 'store']);

@@ -1,11 +1,11 @@
 <div class="container px-4 py-3 align-items-center" id="modal-buttons" data-buttons="cancel,save"
-     data-button-save="{{ __('Save Customer') }}">
+     data-button-save="{{ __('Save Service') }}">
     <!-- Meta Info -->
     <div class="row g-3 align-items-center bg-white border-bottom py-2 mb-3 small">
         <div class="d-flex justify-content-between align-items-center flex-wrap">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-4">
                 <div class="module-info">
-                    <span class="fw-semibold fs-5">{{ $logisticService->name ?? __('New Activity') }}</span>
+                    <span class="fw-semibold fs-5">{{ $logisticService->name ?? __('New Service') }}</span>
                 </div>
 
             </div>
@@ -28,7 +28,7 @@
                                 <!-- Category -->
                                 <div class="col-md-6">
                                     <label class="form-label fw-semibold">{{ __('Category') }}</label>
-                                    <select name="category" class="form-control selectpicker" required>
+                                    <select name="category" class="form-control tom-select" required>
                                         <option value="">{{ __('Select Category') }}</option>
                                         @foreach(services() as $logisticServiceId => $logisticServiceName)
                                             <option
@@ -40,7 +40,7 @@
                                 <!-- Mode -->
                                 <div class="col-md-6">
                                     <label class="form-label fw-semibold">{{ __('Mode') }}</label>
-                                    <select name="mode" class="form-control selectpicker" required>
+                                    <select name="mode" class="form-control tom-select" required>
                                         <option value="">{{ __('Select Mode') }}</option>
                                         <option value="sea" @selected($logisticService->mode == 'sea')>{{ __('Sea') }}</option>
                                         <option value="air" @selected($logisticService->mode == 'air')>{{ __('Air') }}</option>
@@ -53,8 +53,8 @@
 
                                 <div class="col-md-6">
                                     <label class="form-label fw-semibold">{{ __('Type') }}</label>
-                                    <select name="type" class="form-control selectpicker" required>
-                                        <option value="">{{ __('Select Category') }}</option>
+                                    <select name="type" class="form-control tom-select" required>
+                                        <option value="">{{ __('Select Type') }}</option>
                                         <option value="import" @selected($logisticService->type == 'import')>{{ __('Import') }}
                                         </option>
                                         <option value="export" @selected($logisticService->type == 'export')>{{ __('Export') }}

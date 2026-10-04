@@ -635,7 +635,7 @@ let webModal = {
         $modalEl.off('keydown');
 
         // Remove previous size & scrollable classes
-        $modalDialog.removeClass('modal-sm modal-compact modal-md modal-lg modal-xl modal-xxl modal-fullscreen modal-full-wrapper modal-dialog-scrollable');
+        $modalDialog.removeClass('modal-sm modal-compact modal-mid modal-md modal-lg modal-xl modal-xxl modal-fullscreen modal-full-wrapper modal-dialog-scrollable');
 
         // Add size class
         switch (settings.size) {
@@ -644,6 +644,9 @@ let webModal = {
                 break;
             case 'compact':
                 $modalDialog.addClass('modal-compact');
+                break;
+            case 'mid':
+                $modalDialog.addClass('modal-mid');
                 break;
             case 'md':
                 $modalDialog.addClass('modal-md');
@@ -1996,8 +1999,9 @@ function datepicker() {
 
         flatpickr(this, {
             dateFormat: "d-m-Y",
-            minDate: "01-01-2025",
-            maxDate: "31-12-2027",
+            // data-min-date / data-max-date (d-m-Y) override the default window for fields that need a wider one.
+            minDate: $(this).data("min-date") || "01-01-2025",
+            maxDate: $(this).data("max-date") || "31-12-2027",
             altInput: true,
             allowInput: true,
             altFormat: "d-m-Y",
@@ -3105,5 +3109,10 @@ $(document).on('draw.dt', function (e, settings) {
 /* Field help lines: the full-text bubble only makes sense when the line is actually cut with "...". */
 $(document).on('mouseenter focusin', '.field-hint-wrap', function () {
     const line = this.querySelector('.field-hint');
-    if (line) $(this).toggleClass('is-truncated', line.scrollWidth > line.clientWidth + 1);
+    if (!line) return;
+    $(this).toggleClass('is-truncated', line.scrollWidth > line.clientWidth + 1);
+    // The bubble is up to 340px wide: open it leftwards when it would run past the edge of the modal/page.
+    const box = (this.closest('.modal-content') || document.documentElement).getBoundingClientRect();
+    const r = this.getBoundingClientRect();
+    $(this).toggleClass('hint-right', r.left + Math.min(340, window.innerWidth * 0.85) > box.right - 8);
 });

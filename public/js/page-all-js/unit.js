@@ -83,9 +83,9 @@ UNIT = {
                     title: 'Add Unit',
                     url: GLOBAL_FN.buildUrl('masters/unit/create'),
                     content: null,
-                    size: 'md',
+                    size: 'compact',
                     callBack: null,
-                    minHeight: 'min-height:35v;'
+                    minHeight: 'min-height:0;'
                 });
             })
         },

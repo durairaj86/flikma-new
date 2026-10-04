@@ -172,7 +172,7 @@ PERIOD_CLOSING = {
                     title: 'New Period',
                     url: GLOBAL_FN.buildUrl('masters/period-closing/create'),
                     content: null,
-                    size: 'md',
+                    size: 'compact',
                     callBack: null
                 });
             })

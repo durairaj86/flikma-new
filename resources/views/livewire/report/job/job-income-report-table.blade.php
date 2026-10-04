@@ -7,7 +7,7 @@
                     <th class="ps-2 border-0">{{ __('Job No') }}</th>
                     <th class="border-0">{{ __('Date') }}</th>
                     <th class="border-0">{{ __('Customer') }}</th>
-                    <th class="border-0">{{ __('Activity') }}</th>
+                    <th class="border-0">{{ __('Department') }}</th>
                     <th class="text-center border-0">{{ __('Invoices') }}</th>
                     <th class="text-end border-0">{{ __('Approved Income') }}</th>
                     <th class="text-end border-0">{{ __('Draft Income') }}</th>
@@ -144,7 +144,7 @@
             <tr>
                 <th>{{ __('Job No') }}</th>
                 <th>{{ __('Customer') }}</th>
-                <th>{{ __('Activity') }}</th>
+                <th>{{ __('Department') }}</th>
                 <th class="text-end">{{ __('Invoices') }}</th>
                 <th class="text-end">{{ __('Approved Income') }}</th>
                 <th class="text-end">{{ __('Draft Income') }}</th>

@@ -12,7 +12,7 @@ class LogisticActivityController extends Controller
 {
     public function fetchAllRows()
     {
-        $rows = LogisticActivity::select('id', 'name', 'code', 'type', 'service', 'company_id')->orderBy('name', 'asc')->orderBy('id', 'asc');
+        $rows = LogisticActivity::select('id', 'name', 'code', 'mode', 'type', 'company_id')->orderBy('name', 'asc')->orderBy('id', 'asc');
         return DataTables::eloquent($rows)
             ->addIndexColumn()
             ->setRowAttr([
@@ -47,9 +47,9 @@ class LogisticActivityController extends Controller
     public function store(Request $request)
     {
         $rules = [
+            'name' => 'required|string|max:60',
             'mode' => 'required|string|max:255',
             'type' => 'required|string|max:255',
-            'service_en' => 'required|string|max:25',
             'data-id' => 'nullable|exists:logistic_activities,id',
         ];
 
@@ -60,51 +60,55 @@ class LogisticActivityController extends Controller
             ? LogisticActivity::findOrFail($request->input('data-id'))
             : new LogisticActivity();
 
-        // Only generate and check code for NEW records
         if (!$logisticActivity->exists) {
             $this->setBaseColumns($logisticActivity);
         }
 
-        // 1. Generate the Code by taking the first letter of EVERY word in each field
-        $generatedCode = strtoupper(
-            $this->getFirstLetters($request->mode) .
-            $this->getFirstLetters($request->type) .
-            $this->getFirstLetters($request->service_en)
-        );
+        $name = trim(preg_replace('/\s+/', ' ', $validated['name']));
 
-// 2. Strict Uniqueness Check (Excluding the current record if updating)
-        $exists = LogisticActivity::where('code', $generatedCode)
+        // A department name (e.g. "FCL Export") is unique within the company.
+        $sameName = LogisticActivity::whereRaw('LOWER(name) = ?', [strtolower($name)])
             ->where(function ($q) use ($companyId) {
-                $q->where('company_id', $companyId)
-                    ->orWhereNull('company_id');
+                $q->where('company_id', $companyId)->orWhereNull('company_id');
             })
-            ->when($logisticActivity->exists, function ($q) use ($logisticActivity) {
-                // If updating, don't flag the record itself as a duplicate
-                $q->where('id', '!=', $logisticActivity->id);
-            })
+            ->when($logisticActivity->exists, fn ($q) => $q->where('id', '!=', $logisticActivity->id))
             ->exists();
-
-        if ($exists) {
+        if ($sameName) {
             return response()->json([
                 'status' => 'error',
-                'message' => "The code '{$generatedCode}' is already in use for this company."
+                'message' => "A department named '{$name}' already exists.",
             ], 422);
         }
 
-        $logisticActivity->code = $generatedCode;
+        // Code: initials of the name (FCL Export -> FE); a numeric suffix keeps it unique.
+        if (!$logisticActivity->exists || blank($logisticActivity->code)) {
+            $base = strtoupper($this->getFirstLetters($name)) ?: 'DEP';
+            $code = $base;
+            $i = 1;
+            while (LogisticActivity::where('code', $code)
+                ->where(function ($q) use ($companyId) {
+                    $q->where('company_id', $companyId)->orWhereNull('company_id');
+                })
+                ->when($logisticActivity->exists, fn ($q) => $q->where('id', '!=', $logisticActivity->id))
+                ->exists()) {
+                $code = $base . (++$i);
+            }
+            $logisticActivity->code = $code;
+        }
 
-        // Assign/Update fields
-        $logisticActivity->company_id = $companyId;
-        $logisticActivity->mode = $request->mode;
-        $logisticActivity->type = $request->type;
-        $logisticActivity->service = $request->service_en;
-        $logisticActivity->name = ucfirst($request->mode) . ' ' . ucfirst($request->type) . ' ' . ucfirst($request->service_en);
-
+        $logisticActivity->company_id = $logisticActivity->exists ? $logisticActivity->company_id : $companyId;
+        $logisticActivity->name = $name;
+        $logisticActivity->mode = $validated['mode'];
+        $logisticActivity->type = $validated['type'];
+        // The old "service" column is no longer part of a department; it stays empty (NOT NULL in the table).
+        $logisticActivity->service = $logisticActivity->service ?? '';
         $logisticActivity->save();
+
+        \Illuminate\Support\Facades\Cache::forget('activities:' . cacheName());
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Activity processed successfully',
+            'message' => 'Department saved successfully',
             'activity_id' => $logisticActivity->id,
         ]);
     }

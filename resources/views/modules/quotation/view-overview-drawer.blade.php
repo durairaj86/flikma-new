@@ -61,7 +61,7 @@
             <div><strong>{{ __('Valid Until') }}:</strong><span>{{ showDate($quotation->valid_until) }}</span></div>
             <div><strong>{{ __('Prepared By') }}:</strong><span>{{ $quotation->prepared_by ?? '-' }}</span></div>
             <div><strong>{{ __('Shipment Mode') }}:</strong><span>{{ shipmentMode()[$quotation->shipment_mode] ?? '-' }}</span></div>
-            <div><strong>{{ __('Activity') }}:</strong><span>{{ $quotation->activity->name ?? '-' }}</span></div>
+            <div><strong>{{ __('Department') }}:</strong><span>{{ $quotation->activity->name ?? '-' }}</span></div>
             <div><strong>{{ __('Status') }}:</strong><span>{{ \App\Enums\QuotationEnum::tryFrom($quotation->status)?->label() ?? '-' }}</span></div>
         </div>
     </div>
