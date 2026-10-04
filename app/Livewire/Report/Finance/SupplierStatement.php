@@ -27,7 +27,11 @@ class SupplierStatement extends Component
 
         $this->loadSuppliers();
 
-        if (count($this->suppliers) > 0 && !$this->supplierId) {
+        // Deep link (?supplier=ID), like the customer statement: preselect that supplier.
+        $requested = request()->query('supplier');
+        if ($requested && collect($this->suppliers)->contains('id', (int) $requested)) {
+            $this->supplierId = (string) $requested;
+        } elseif (count($this->suppliers) > 0 && !$this->supplierId) {
             $this->supplierId = (string) $this->suppliers[0]['id'];
         }
     }

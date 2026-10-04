@@ -6,6 +6,7 @@ use App\Exports\ReportTableExport;
 use App\Models\Customer\Customer;
 use App\Models\Finance\Collection\Collection;
 use App\Models\Finance\CustomerInvoice\CustomerInvoice;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Livewire\Component;
 use Maatwebsite\Excel\Facades\Excel;
@@ -45,6 +46,17 @@ class CustomerBalanceSummary extends Component
         $this->customerId = '';
     }
 
+    /** Approved credit notes reduce what the customer owes, so they count with receipts (as in the customer statement). */
+    private function creditNotes(int $customerId, int $companyId, string $from = null, string $to = null, string $before = null): float
+    {
+        $q = DB::table('credit_notes')->where('customer_id', $customerId)->where('company_id', $companyId)
+            ->where('status', \App\Enums\CreditNoteEnum::APPROVED->value)->whereNull('deleted_at');
+        if ($before) { $q->where('posted_at', '<', $before); }
+        if ($from && $to) { $q->whereBetween('posted_at', [$from, $to]); }
+
+        return (float) $q->sum('grand_total');
+    }
+
     protected function getReportData(): array
     {
         $companyId = auth()->user()->company_id ?? 1;
@@ -79,6 +91,7 @@ class CustomerBalanceSummary extends Component
                 ->where('collection_date', '<', $this->startDate)
                 ->sum('grand_total');
 
+            $openingReceived += $this->creditNotes($customer->id, $companyId, null, null, $this->startDate);
             $opening = $openingInvoiced - $openingReceived;
 
             $invoiced = (float) CustomerInvoice::where('customer_id', $customer->id)
@@ -91,6 +104,7 @@ class CustomerBalanceSummary extends Component
                 ->whereBetween('collection_date', [$this->startDate, $this->endDate])
                 ->sum('grand_total');
 
+            $received += $this->creditNotes($customer->id, $companyId, $this->startDate, $this->endDate);
             $closing = $opening + $invoiced - $received;
 
             // Skip customers with no activity at all in this period and no

@@ -1047,15 +1047,27 @@ class CustomerInvoiceController extends Controller
                 'base_credit' => 0,
             ]);
 
-            // LINE 2: Sales Revenue (CREDIT)
-            $financeSubs[] = array_merge($commonData, [
-                'account_id' => 38,//4160
-                'description' => 'Sales Revenue - Invoice ' . $customerInvoice->row_no,
-                'debit' => 0,
-                'credit' => $customerInvoice->sub_total,
-                'base_debit' => 0,
-                'base_credit' => $customerInvoice->base_sub_total,
-            ]);
+            // LINE 2: Revenue (CREDIT) — one line per income account chosen on the invoice lines
+            // (falls back to Sales Revenue 4160 for lines without an account), so income reports split correctly.
+            $revenueByAccount = [];
+            foreach ($customerInvoice->customerInvoiceSubs as $sub) {
+                $accId = $sub->account_id ?: 38; // 4160 Sales Revenue
+                $revenueByAccount[$accId]['total'] = ($revenueByAccount[$accId]['total'] ?? 0) + (float) $sub->total;
+                $revenueByAccount[$accId]['base'] = ($revenueByAccount[$accId]['base'] ?? 0) + (float) $sub->base_total;
+            }
+            if (!$revenueByAccount) {
+                $revenueByAccount[38] = ['total' => (float) $customerInvoice->sub_total, 'base' => (float) $customerInvoice->base_sub_total];
+            }
+            foreach ($revenueByAccount as $accId => $amt) {
+                $financeSubs[] = array_merge($commonData, [
+                    'account_id' => $accId,
+                    'description' => 'Sales Revenue - Invoice ' . $customerInvoice->row_no,
+                    'debit' => 0,
+                    'credit' => round($amt['total'], 2),
+                    'base_debit' => 0,
+                    'base_credit' => round($amt['base'], 2),
+                ]);
+            }
 
             // LINE 3: VAT Payable (CREDIT)
             if ($customerInvoice->tax_total > 0) {
