@@ -3,35 +3,27 @@
 <x-app-layout>
 
     <style>
-        .summary-card { height: 100%; min-height: 250px; padding: 18px 20px; border-radius: 22px; background: #fff;
-            box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.07); display: flex; flex-direction: column; }
-        .summary-card.sc-mint { background: #d6fbe8; }
-        .summary-card.sc-blue { background: #e3efff; }
-        .summary-card.sc-orange { background: #fff0d9; }
-        .summary-card.sc-green { background: #dcf7e3; }
-        .sc-orange .sc-boxes, .sc-green .sc-boxes { background: rgba(0,0,0,.06); border-radius: 14px; padding: 12px 14px; }
-        .sc-orange .sc-box, .sc-green .sc-box { background: transparent; text-align: left; padding: 0; }
-        .sc-orange .sc-box:last-child, .sc-green .sc-box:last-child { text-align: right; }
-        .sc-head { display: flex; justify-content: space-between; align-items: center; }
-        .sc-title { font-weight: 700; font-size: .95rem; letter-spacing: .02em; text-transform: uppercase; color: #111; }
-        .sc-month { border: 0; background: transparent; font-size: .85rem; font-weight: 500; color: #111; cursor: pointer; outline: 0; }
-        .sc-value { font-size: 2.4rem; white-space: nowrap; font-weight: 700; letter-spacing: -.03em; line-height: 1.1; color: #000; margin-top: auto; }
-        .sc-value-md { font-size: 2rem; margin-top: 4px; }
-        .sc-meta { font-size: .9rem; color: #333; margin-top: 4px; }
-        .sc-meta-top { margin-top: 18px; color: #6c757d; }
-        .sc-change { font-size: .75rem; margin-left: 4px; }
-        .sc-change.up { color: #1a9d4a; } .sc-change.down { color: #e5383b; }
-        .sc-boxes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: auto; padding-top: 18px; }
-        .sc-mint .sc-boxes, .sc-blue .sc-boxes { background: rgba(0,0,0,.06); border-radius: 14px; padding: 12px 14px; margin-top: auto; }
-        .sc-box { background: #f6f8fb; border-radius: 14px; text-align: center; padding: 10px 6px; display: flex; flex-direction: column; font-size: .9rem; }
-        .sc-box b { font-size: 1rem; }
-        .sc-mint .sc-box, .sc-blue .sc-box { background: transparent; text-align: left; padding: 0; }
-        .sc-mint .sc-box:last-child, .sc-blue .sc-box:last-child { text-align: right; }
-        .sc-progress { position: relative; height: 56px; margin-top: 12px; border-radius: 14px; background: #f1f3f7; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        .sc-progress div { position: absolute; inset: 0 auto 0 0; background: #cfe3ff; }
-        .sc-progress span { position: relative; font-weight: 700; color: #6c757d; }
-        .sc-foot { display: flex; justify-content: space-between; margin-top: auto; padding-top: 14px; font-size: .85rem; color: #6c757d; }
-        .sc-foot div { display: flex; flex-direction: column; } .sc-foot b { color: #111; font-size: 1rem; }
+        .kpi { height: 100%; padding: 16px 18px 14px; border-radius: 18px; border: 0;
+            background: var(--kbg, #fff);
+            box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(15,23,42,.07); }
+        .kpi-head { display: flex; align-items: center; gap: 10px; }
+        .kpi-icon { width: 34px; height: 34px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;
+            color: #fff; background: var(--kc); font-size: .85rem; border-radius: 50%; width: 32px; height: 32px;
+            box-shadow: 0 3px 8px color-mix(in srgb, var(--kc) 40%, transparent); }
+        .kpi-title { font-weight: 600; font-size: .9rem; color: #475467; flex: 1; }
+        .kpi-month { border: 1px solid #e4e7ec; background: #f9fafb; border-radius: 999px; font-size: .75rem; padding: 2px 8px; color: #344054; cursor: pointer; outline: 0; }
+        .kpi-main { display: flex; align-items: baseline; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+        .kpi-value { font-size: 1.9rem; font-weight: 700; letter-spacing: -.02em; color: #101828; white-space: nowrap; line-height: 1.1; }
+        .kpi-pill { font-size: .7rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
+        .kpi-pill.up { background: #dcfae6; color: #067647; } .kpi-pill.down { background: #fee4e2; color: #b42318; }
+        .kpi-note { font-size: .8rem; color: #667085; margin-top: 4px; }
+        .kpi-bar { height: 8px; border-radius: 99px; background: rgba(15,23,42,.08); overflow: hidden; margin-top: 16px; }
+        .kpi-bar i { display: block; height: 100%; border-radius: 99px; background: var(--kc); }
+        .kpi-legend { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; font-size: .78rem; color: #667085; }
+        .kpi-legend span { background: rgba(255,255,255,.75); border-radius: 12px; padding: 8px 10px; display: block; line-height: 1.5; }
+        .kpi-legend b { color: #101828; font-size: .95rem; display: block; margin: 0; }
+        .kpi-legend em { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
+        .kpi-legend .dot-a { background: var(--kc); } .kpi-legend .dot-b { background: #d0d5dd; }
         /* Apple-style widgets: large radius, tinted glass surface, small colored
            icon chip, big tight-tracked number, quiet secondary line. */
         .apple-widget {
@@ -132,88 +124,77 @@
                                 };
                                 $chg = fn ($v) => '<span class="sc-change ' . ($v >= 0 ? 'up' : 'down') . '">(' . ($v >= 0 ? '+' : '') . number_format($v, 2) . '% ' . ($v >= 0 ? '&uarr;' : '&darr;') . ')</span>';
                             @endphp
+                            @php
+                                $monthSelect = function () use ($summaryMonths, $sc) {
+                                    $o = '';
+                                    foreach ($summaryMonths as $val => $lbl) {
+                                        $o .= '<option value="' . $val . '"' . ($val === $sc['month'] ? ' selected' : '') . '>' . \Illuminate\Support\Carbon::createFromFormat('Y-m', $val)->format('M') . '</option>';
+                                    }
+                                    return '<select class="kpi-month" onchange="window.location=\'?month=\'+this.value">' . $o . '</select>';
+                                };
+                                $change = fn ($cur, $prev) => $prev > 0 ? round((($cur - $prev) / $prev) * 100, 2) : ($cur > 0 ? 100.0 : 0.0);
+                                $pill = fn ($v) => '<span class="kpi-pill ' . ($v >= 0 ? 'up' : 'down') . '">' . ($v >= 0 ? '&#9650;' : '&#9660;') . ' ' . number_format(abs($v), 1) . '%</span>';
+                                $kpis = [
+                                    ['col' => 'col-sm-6', 'title' => __('Total Sales'), 'icon' => 'fa-dollar-sign', 'color' => '#2563eb',
+                                     'value' => number_format($sc['sales']['total'], 2), 'change' => $sc['sales']['change'],
+                                     'note' => $sc['sales']['count'] . ' ' . __('Invoices'),
+                                     'a' => [__('Collected'), $short($sc['sales']['collected']), $sc['sales']['collected']],
+                                     'b' => [__('Pending'), $short($sc['sales']['pending']), $sc['sales']['pending']]],
+                                    ['col' => 'col-sm-6', 'title' => __('Invoices'), 'icon' => 'fa-file-invoice', 'color' => '#0d9488',
+                                     'value' => number_format($sc['invoices']['count']), 'change' => $sc['invoices']['change'],
+                                     'note' => __('Due') . ': ' . $dueInvoices,
+                                     'a' => [__('Approved'), $sc['invoices']['approved'], $sc['invoices']['approved']],
+                                     'b' => [__('Draft'), $sc['invoices']['draft'], $sc['invoices']['draft']]],
+                                    ['col' => 'col-sm-6', 'title' => __('Customers'), 'icon' => 'fa-users', 'color' => '#ea8a0c',
+                                     'value' => number_format($sc['customers']['total']), 'change' => $sc['customers']['change'],
+                                     'note' => $sc['customers']['new'] . ' ' . __('New'),
+                                     'a' => [__('This month'), $sc['customers']['new'], $sc['customers']['new']],
+                                     'b' => [__('Last month'), $sc['customers']['prevNew'], $sc['customers']['prevNew']]],
+                                    ['col' => 'col-sm-6', 'title' => __('Profit'), 'icon' => 'fa-chart-line', 'color' => '#16a34a',
+                                     'value' => number_format($sc['profit']['total'], 2), 'change' => $sc['profit']['change'],
+                                     'note' => __('Margin') . ' ' . $sc['profit']['margin'] . '%',
+                                     'a' => [__('Revenue'), $short($sc['profit']['revenue']), $sc['profit']['revenue']],
+                                     'b' => [__('Expenses'), $short($sc['profit']['expenses']), $sc['profit']['expenses']]],
+                                    ['col' => 'col-sm-4', 'title' => __('Quotation'), 'icon' => 'fa-file-lines', 'color' => '#7c3aed',
+                                     'value' => number_format($sc['quotation']['total'], 2), 'change' => $sc['quotation']['change'],
+                                     'note' => $sc['quotation']['count'] . ' ' . __('Quotations'),
+                                     'a' => [__('Completed'), $sc['quotation']['completed'], $sc['quotation']['completed']],
+                                     'b' => [__('Approved'), $sc['quotation']['approved'], $sc['quotation']['approved']]],
+                                    ['col' => 'col-sm-4', 'title' => __('Payments'), 'icon' => 'fa-arrow-up-right-from-square', 'color' => '#dc2626',
+                                     'value' => $short($sc['payment']['total']), 'change' => $change($sc['payment']['total'], $sc['payment']['prev']),
+                                     'note' => $sc['payment']['count'] . ' ' . __('Payments'),
+                                     'a' => [__('Approved'), $short($sc['payment']['approved']), $sc['payment']['approved']],
+                                     'b' => [__('Draft'), $short($sc['payment']['draft']), $sc['payment']['draft']]],
+                                    ['col' => 'col-sm-4', 'title' => __('Collection'), 'icon' => 'fa-hand-holding-dollar', 'color' => '#0284c7',
+                                     'value' => $short($sc['collection']['total']), 'change' => $change($sc['collection']['total'], $sc['collection']['prev']),
+                                     'note' => $sc['collection']['count'] . ' ' . __('Collections'),
+                                     'a' => [__('Approved'), $short($sc['collection']['approved']), $sc['collection']['approved']],
+                                     'b' => [__('Draft'), $short($sc['collection']['draft']), $sc['collection']['draft']]],
+                                ];
+                            @endphp
                             <div class="row g-3 mb-3">
-                                @php
-                                    $monthSelect = function () use ($summaryMonths, $sc) {
-                                        $o = '';
-                                        foreach ($summaryMonths as $val => $lbl) {
-                                            $o .= '<option value="' . $val . '"' . ($val === $sc['month'] ? ' selected' : '') . '>' . \Illuminate\Support\Carbon::createFromFormat('Y-m', $val)->format('M') . '</option>';
-                                        }
-                                        return '<select class="sc-month" onchange="window.location=\'?month=\'+this.value">' . $o . '</select>';
-                                    };
-                                @endphp
-
-                                {{-- Total Sales --}}
-                                <div class="col-12 col-sm-6"><div class="summary-card">
-                                    <div class="sc-head"><span class="sc-title">{{ __('Total Sales') }}</span>{!! $monthSelect() !!}</div>
-                                    <div class="sc-value">{{ number_format($sc['sales']['total'], 2) }}</div>
-                                    <div class="sc-meta"><b>{{ $sc['sales']['count'] }}</b> {{ __('Invoices') }} {!! $chg($sc['sales']['change']) !!}</div>
-                                    <div class="sc-boxes">
-                                        <div class="sc-box"><span>{{ __('Collected') }}</span><b>{{ $short($sc['sales']['collected']) }}</b></div>
-                                        <div class="sc-box"><span>{{ __('Pending') }}</span><b>{{ $short($sc['sales']['pending']) }}</b></div>
-                                    </div>
-                                </div></div>
-
-                                {{-- Invoices --}}
-                                <div class="col-12 col-sm-6"><div class="summary-card sc-mint">
-                                    <div class="sc-head"><span class="sc-title">{{ __('Invoices') }}</span>{!! $monthSelect() !!}</div>
-                                    <div class="sc-value">{{ number_format($sc['invoices']['count']) }}</div>
-                                    <div class="sc-meta">{{ __('Due') }}: <b>{{ $dueInvoices }}</b> {!! $chg($sc['invoices']['change']) !!}</div>
-                                    <div class="sc-boxes">
-                                        <div class="sc-box"><span>{{ __('Approved') }}</span><b>{{ $sc['invoices']['approved'] }}</b></div>
-                                        <div class="sc-box"><span>{{ __('Draft') }}</span><b>{{ $sc['invoices']['draft'] }}</b></div>
-                                    </div>
-                                </div></div>
-
-                                {{-- Customers --}}
-                                <div class="col-12 col-sm-6"><div class="summary-card sc-orange">
-                                    <div class="sc-head"><span class="sc-title">{{ __('Customers') }}</span>{!! $monthSelect() !!}</div>
-                                    <div class="sc-value">{{ number_format($sc['customers']['total']) }}</div>
-                                    <div class="sc-meta"><b>{{ $sc['customers']['new'] }}</b> {{ __('New') }} {!! $chg($sc['customers']['change']) !!}</div>
-                                    <div class="sc-boxes">
-                                        <div class="sc-box"><span>{{ __('This month') }}</span><b>{{ $sc['customers']['new'] }}</b></div>
-                                        <div class="sc-box"><span>{{ __('Last month') }}</span><b>{{ $sc['customers']['prevNew'] }}</b></div>
-                                    </div>
-                                </div></div>
-
-                                {{-- Profit --}}
-                                <div class="col-12 col-sm-6"><div class="summary-card sc-green">
-                                    <div class="sc-head"><span class="sc-title">{{ __('Profit') }}</span>{!! $monthSelect() !!}</div>
-                                    <div class="sc-value">{{ number_format($sc['profit']['total'], 2) }}</div>
-                                    <div class="sc-meta">{{ __('Margin') }} <b>{{ $sc['profit']['margin'] }}%</b> {!! $chg($sc['profit']['change']) !!}</div>
-                                    <div class="sc-boxes">
-                                        <div class="sc-box"><span>{{ __('Revenue') }}</span><b>{{ $short($sc['profit']['revenue']) }}</b></div>
-                                        <div class="sc-box"><span>{{ __('Expenses') }}</span><b>{{ $short($sc['profit']['expenses']) }}</b></div>
-                                    </div>
-                                </div></div>
-                            </div>
-
-                            <div class="row g-3 mb-3">
-                                @foreach([
-                                    ['key' => 'quotation', 'title' => __('Quotation'), 'cls' => ''],
-                                    ['key' => 'payment', 'title' => __('Payments'), 'cls' => ''],
-                                    ['key' => 'collection', 'title' => __('Collection'), 'cls' => 'sc-blue'],
-                                ] as $card)
-                                    @php $d = $sc[$card['key']]; @endphp
-                                    <div class="col-12 col-sm-4">
-                                        <div class="summary-card {{ $card['cls'] }}">
-                                            <div class="sc-head"><span class="sc-title">{{ $card['title'] }}</span>{!! $monthSelect() !!}</div>
-                                            @if($card['key'] === 'quotation')
-                                                <div class="sc-value">{{ number_format($d['total'], 2) }}</div>
-                                                <div class="sc-meta"><b>{{ $d['count'] }}</b> {{ __('Quotations') }} {!! $chg($d['change']) !!}</div>
-                                                <div class="sc-boxes">
-                                                    <div class="sc-box"><span>{{ __('Completed') }}</span><b>{{ $d['completed'] }}</b></div>
-                                                    <div class="sc-box"><span>{{ __('Approved') }}</span><b>{{ $d['approved'] }}</b></div>
-                                                </div>
-                                            @else
-                                                <div class="sc-meta sc-meta-top">{{ $card['key'] === 'payment' ? __('Total Payments') : __('Total Collections') }}</div>
-                                                <div class="sc-value sc-value-md">{{ $short($d['total']) }}</div>
-                                                <div class="sc-progress"><div style="width: {{ $d['percent'] }}%"></div><span>{{ $d['percent'] }}%</span></div>
-                                                <div class="sc-foot">
-                                                    <div><span>{{ __('Approved') }}</span><b>{{ number_format($d['approved'], 2) }}</b></div>
-                                                    <div class="text-end"><span>{{ __('Draft') }}</span><b>{{ $short($d['draft']) }}</b></div>
-                                                </div>
-                                            @endif
+                                @foreach($kpis as $k)
+                                    @php
+                                        $sum = max(0.0001, (float) $k['a'][2] + (float) $k['b'][2]);
+                                        $pa = round($k['a'][2] / $sum * 100);
+                                    @endphp
+                                    <div class="col-12 {{ $k['col'] }}">
+                                        <div class="kpi" style="--kc: {{ $k['color'] }}; --kbg: {{ ['#ffffff', '#d6fbe8', '#fff0d9', '#dcf7e3', '#ffffff', '#ffffff', '#e3efff'][$loop->index] }};">
+                                            <div class="kpi-head">
+                                                <span class="kpi-icon"><i class="fa-solid {{ $k['icon'] }}"></i></span>
+                                                <span class="kpi-title">{{ $k['title'] }}</span>
+                                                {!! $monthSelect() !!}
+                                            </div>
+                                            <div class="kpi-main">
+                                                <div class="kpi-value">{{ $k['value'] }}</div>
+                                                {!! $pill($k['change']) !!}
+                                            </div>
+                                            <div class="kpi-note">{{ $k['note'] }}</div>
+                                            <div class="kpi-bar"><i style="width: {{ $pa }}%"></i></div>
+                                            <div class="kpi-legend">
+                                                <span><em class="dot-a"></em>{{ $k['a'][0] }} <b>{{ $k['a'][1] }}</b></span>
+                                                <span><em class="dot-b"></em>{{ $k['b'][0] }} <b>{{ $k['b'][1] }}</b></span>
+                                            </div>
                                         </div>
                                     </div>
                                 @endforeach

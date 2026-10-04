@@ -10,7 +10,7 @@
    id="language-toggle-btn"
    title="{{ $targetLocale === 'ar' ? 'التبديل إلى العربية' : 'Switch to English' }}"
    aria-label="{{ $targetLocale === 'ar' ? 'Switch to Arabic' : 'Switch to English' }}">
-    <span class="fw-bold small text-secondary">{{ strtoupper($currentLocale) }}</span>
+    <i class="bi bi-translate text-secondary"></i>
 </a>
 
 <style>

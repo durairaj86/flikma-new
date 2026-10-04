@@ -108,9 +108,9 @@
                         onclick="event.stopPropagation(); window.dispatchEvent(new CustomEvent('open-profile-panel'));">
                     @php $userName = $user->name ?? __('Guest'); @endphp
                     @if($user->profile_photo_path ?? null)
-                        <img src="{{ asset($user->profile_photo_path) }}" class="rounded-circle" width="32" height="32" alt="User" style="object-fit: cover;">
+                        <img src="{{ asset($user->profile_photo_path) }}" class="rounded-circle" width="38" height="38" alt="User" style="object-fit: cover;">
                     @else
-                        <div class="rounded-circle bg-primary text-white d-flex justify-content-center align-items-center fw-bold shadow-sm" style="width: 32px; height: 32px; font-size: 12px;">
+                        <div class="rounded-circle bg-primary text-white d-flex justify-content-center align-items-center fw-bold shadow-sm" style="width: 38px; height: 38px; font-size: 0.85rem;">
                             {{ getInitials($userName) }}
                         </div>
                     @endif
@@ -188,6 +188,12 @@
         align-items: center;
         justify-content: center;
         flex: 0 0 auto;
+    }
+
+    /* Match the right rail's icon size (1rem inside a 38px circle) instead of
+       the larger fs-5 glyphs, so header and rail icons look identical. */
+    .header-icon-btn i {
+        font-size: 1rem !important;
     }
 </style>
 
