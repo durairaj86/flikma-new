@@ -15,6 +15,22 @@ function cacheName()
     return companyId();
 }
 
+/**
+ * Whether the top header is shown for the logged-in user. The choice is per user (users.header_enabled);
+ * a user who never toggled it follows the company's setting, and everyone defaults to "on".
+ */
+function headerEnabledForUser(): bool
+{
+    $user = auth()->user();
+    if ($user && $user->header_enabled !== null) {
+        return (bool) $user->header_enabled;
+    }
+    $company = \App\Models\Master\Company::companies();
+    $company = $company instanceof \Illuminate\Support\Collection ? $company->first() : $company;
+
+    return $company ? (bool) $company->header_enabled : true;
+}
+
 function authUserCompany()
 {
     $companyId = session('company_id');

@@ -9,7 +9,9 @@
     Only the heading lives here on purpose: company switcher, search, profile
     and theme controls stay in the rail so the two modes don't duplicate them.
 --}}
+{{-- A page can drop the slim topbar with @section('hide-topbar', true). Every Masters page drops it too (the full header already hides itself there); their title is printed in the page content by includes/master-page-title. --}}
 @auth
+@unless(View::hasSection('hide-topbar') || request()->is('masters', 'masters/*'))
     <header class="sticky-top bg-white border-bottom shadow-sm px-3 py-2" style="z-index: 1020;">
         <div class="container-fluid d-flex align-items-center justify-content-between gap-3">
             <div class="d-flex align-items-center gap-3 overflow-hidden">
@@ -23,4 +25,5 @@
             </div>
         </div>
     </header>
+@endunless
 @endauth

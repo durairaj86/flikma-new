@@ -1,4 +1,5 @@
 @section('js','company')
+@section('hide-topbar', true)
 @section('page-title', __('Manage Business'))
 <x-app-layout>
     <main class="gmail-content bg-white d-flex ">

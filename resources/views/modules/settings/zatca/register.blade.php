@@ -1,4 +1,5 @@
 @section('js','zatca')
+@section('hide-topbar', true)
 @section('page-title', __('Zatca Integration'))
 @section('page-subtitle', __('E-Invoicing registration with ZATCA'))
 @php

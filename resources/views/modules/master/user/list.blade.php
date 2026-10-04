@@ -4,6 +4,7 @@
     <main class="gmail-content bg-white d-flex">
         @include('includes.master-navigation')
         <section class="flex-grow-1 px-4 d-flex flex-column">
+            @include('includes.master-page-title')
             <div class="align-items-center flex-shrink-0 py-3">
                 <div class="gap-4">
                     <ul class="nav align-items-center" id="listTabs" role="tablist"

@@ -5,6 +5,7 @@
         @include('includes.master-navigation')
         <!-- RIGHT CONTENT -->
         <section class="flex-grow-1 px-4 d-flex flex-column">
+            @include('includes.master-page-title')
             <!-- Top toolbar -->
             <div class="d-flex justify-content-between align-items-start mb-3">
                 <div class="align-items-center flex-shrink-0">

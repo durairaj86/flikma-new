@@ -15,7 +15,11 @@
     <meta name="app-version" content="{{ appVersion() }}">
     <meta name="turbo-visit-control" content="reload">
 
-    <title>{{ config('app.name', 'Flikma') }}</title>
+    @php
+        $tabApp = config('app.name') && config('app.name') !== 'Laravel' ? config('app.name') : 'Flikma';
+        $tabPage = trim(html_entity_decode(strip_tags($__env->yieldContent('page-title')), ENT_QUOTES));
+    @endphp
+    <title>{{ $tabPage !== '' ? $tabPage . ' | ' . $tabApp : $tabApp }}</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet"/>
@@ -201,8 +205,7 @@
 @php
     /* Mirrors components/layouts/app.blade.php. Resolved before <body> because the
        body tag carries the mode class the rail's CSS keys off. */
-    $headerCompany = \App\Models\Master\Company::companies()->first();
-    $headerEnabled = $headerCompany ? (bool) $headerCompany->header_enabled : true;
+    $headerEnabled = headerEnabledForUser();
 @endphp
 <body data-module="@yield('js')" class="@if($headerEnabled) has-top-header @endif">
 <input type="hidden" value="@yield('extra-js')" id="extra-js">
@@ -225,7 +228,11 @@
 
     <div class="main-content">
         @if($headerEnabled)
-            @include('includes.header')
+            {{-- Masters pages print the header inside their right-hand content (includes/master-page-title),
+                 so it starts beside the Master Data menu instead of spanning above it. --}}
+            @unless(request()->is('masters', 'masters/*'))
+                @include('includes.header')
+            @endunless
         @else
             {{-- Header off: the rail carries the actions, but the page keeps its
                  own breadcrumb/title/subtitle in a slim topbar. --}}

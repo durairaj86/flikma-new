@@ -4,6 +4,7 @@
     <main class="gmail-content bg-white d-flex">
         @include('includes.master-navigation')
         <section class="flex-grow-1 px-4 d-flex flex-column">
+            @include('includes.master-page-title')
             <div class="align-items-center flex-shrink-0">
                 <div class="gap-4">
                     <ul class="nav status-tabs align-items-center border-bottom m-0">

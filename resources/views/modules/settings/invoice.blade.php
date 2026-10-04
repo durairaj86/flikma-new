@@ -1,3 +1,4 @@
+@section('hide-topbar', true)
 @section('page-title', __('Invoice Settings'))
 <x-app-layout>
     <main class="gmail-content bg-white d-flex ">

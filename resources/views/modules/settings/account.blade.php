@@ -1,3 +1,4 @@
+@section('hide-topbar', true)
 @section('page-title', __('My Account Settings'))
 @section('js', 'user')
 

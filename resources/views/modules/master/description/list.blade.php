@@ -5,6 +5,7 @@
     <main class="gmail-content bg-white d-flex">
         @include('includes.master-navigation')
         <section class="flex-grow-1 px-4 d-flex flex-column">
+            @include('includes.master-page-title')
             <div class="d-flex justify-content-between pb-3">
                 <div class="align-items-center gap-2">
                     <div class="search-box position-relative me-2">
