@@ -22,7 +22,7 @@
         </div>
     </div>
     <div class="kpi-list">
-        @forelse($awaitingApproval->take(3) as $invoice)
+        @forelse($awaitingApproval->take(2) as $invoice)
             <div class="kpi-list-row">
                 <span class="kpi-list-name">{{ $invoice->invoice_number ?? $invoice->row_no }}<small>{{ $invoice->customer->name_en ?? $invoice->customer->name ?? __('N/A') }}</small></span>
                 <b>{{ number_format($invoice->grand_total, 0) }}</b>

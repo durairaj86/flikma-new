@@ -43,6 +43,8 @@ class DashboardController extends Controller
             'profitMargin' => $this->getProfitMargin(),
 
             // Shipping metrics
+            'etaEtdList' => $this->getShipmentList(['eta' => 'ETA', 'etd' => 'ETD'], Carbon::today(), Carbon::today()->addDays(6)->endOfDay(), 'asc'),
+            'ataAtdList' => $this->getShipmentList(['ata' => 'ATA', 'atd' => 'ATD'], Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek(), 'desc'),
             'etaToday' => $this->getEtaToday(),
             'etdTomorrow' => $this->getEtdTomorrow(),
             'ataThisWeek' => $this->getAtaThisWeek(),
@@ -158,6 +160,38 @@ class DashboardController extends Controller
     {
         $totalRevenue = $this->getTotalRevenue();
         return $totalRevenue > 0 ? round(($this->getProfit() / $totalRevenue) * 100) : 0;
+    }
+
+    /** Jobs with any of the given date columns inside the range, one row per (job, event), for the scrollable large widgets. */
+    private function getShipmentList(array $columns, Carbon $from, Carbon $to, string $dir): array
+    {
+        $rows = [];
+        Job::with('customer:id,name_en')
+            ->where(function ($q) use ($columns, $from, $to) {
+                foreach (array_keys($columns) as $col) {
+                    $q->orWhereBetween($col, [$from, $to]);
+                }
+            })
+            ->limit(100)
+            ->get(['id', 'job_no', 'row_no', 'customer_id', 'origin', 'destination', 'pol', 'pod', 'shipment_mode', ...array_keys($columns)])
+            ->each(function ($job) use ($columns, $from, $to, &$rows) {
+                foreach ($columns as $col => $label) {
+                    $date = $job->{$col} ? Carbon::parse($job->{$col}) : null;
+                    if ($date && $date->between($from, $to)) {
+                        $rows[] = [
+                            'job' => $job->row_no ?: $job->job_no,
+                            'customer' => $job->customer->name_en ?? '-',
+                            'route' => trim(($job->pol ?: $job->origin ?: '') . ' → ' . ($job->pod ?: $job->destination ?: ''), ' →') ?: '-',
+                            'event' => $label,
+                            'date' => $date->format('d M'),
+                            'ts' => $date->timestamp,
+                        ];
+                    }
+                }
+            });
+        usort($rows, fn ($a, $b) => $dir === 'asc' ? $a['ts'] <=> $b['ts'] : $b['ts'] <=> $a['ts']);
+
+        return $rows;
     }
 
     private function getEtaToday()

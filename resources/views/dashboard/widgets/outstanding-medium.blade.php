@@ -17,7 +17,7 @@
         <div class="kpi-medium-text">
             <div class="kpi-value">{{ number_format($oTotal, 0) }}</div>
             {!! $oPill !!}
-            <div class="kpi-note">{{ __('Total amount outstanding') }} &middot; {{ __('vs last month') }}</div>
+            <div class="kpi-note" title="{{ __('vs last month') }}">{{ __('Total outstanding') }}</div>
         </div>
         <div class="kpi-medium-chart">
             <canvas class="kpi-chart" data-type="donut"

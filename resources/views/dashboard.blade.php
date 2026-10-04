@@ -24,7 +24,8 @@
         .kpi-cost-row em { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
         .kpi-cost-row b { margin-left: auto; color: #101828; padding-left: 12px; }
         .kpi.kpi-chart-card { min-height: 236px; display: flex; flex-direction: column; }
-        .kpi-chart-wrap { position: relative; flex: 1; min-height: 150px; margin-top: 12px; }
+        .kpi-chart-wrap { position: relative; flex: 1; min-height: 120px; margin-top: 12px; }
+        .kpi-chart-wrap > canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
         /* Responsive sizing: widgets grow with their content instead of scrolling;
            each card is a size container so its inner layout adapts to its own width. */
         .kpi { container-type: inline-size; }
@@ -152,13 +153,26 @@
         }
 
 
-        /* Draggable widget grid: 12 columns, widgets flow in the user's saved order. */
-        .dash-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1rem; grid-auto-flow: row dense; align-items: stretch; }
-        .dash-item { position: relative; grid-column: span 12; min-width: 0; }
+        /* Draggable widget grid. One row unit: small = half a medium (width), medium = 1 unit tall,
+           large = 2 mediums tall (its list scrolls). Columns follow the grid's own width so every
+           widget keeps enough room to fit without scrolling at any resolution. */
+        .dash-wrap { container-type: inline-size; }
+        .dash-grid { --u: 236px; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1rem; grid-auto-flow: row dense; grid-auto-rows: var(--u); }
+        .dash-item { position: relative; min-width: 0; min-height: 0; grid-column: span 12; }
         .dash-item.dash-small { grid-column: span 6; }
-        @media (min-width: 576px) { .dash-item { grid-column: span 6; } .dash-item.dash-small { grid-column: span 3; } }
-        @media (min-width: 1200px) { .dash-item { grid-column: span 4; } .dash-item.dash-small { grid-column: span 2; } }
-        .dash-item > .livewire-root, .dash-item > div:not(.dash-handle) { height: 100%; }
+        /* Phones: a medium needs more height at this width, so the unit grows and smalls take a full row. */
+        @container (max-width: 429.98px) { .dash-grid { --u: 480px; } .dash-item.dash-small { grid-column: span 12; } }
+        @container (min-width: 720px) { .dash-item { grid-column: span 6; } .dash-item.dash-small { grid-column: span 3; } }
+        @container (min-width: 1100px) { .dash-item { grid-column: span 4; } .dash-item.dash-small { grid-column: span 2; } }
+        .dash-item > .kpi, .dash-item > [wire\:id], .dash-item > div:not(.dash-handle) { height: 100%; }
+        .dash-item .kpi-medium, .dash-item .kpi-chart-card, .dash-item .kpi-small { min-height: 0; height: 100%; overflow: hidden; }
+        /* Keep every medium inside one row unit. */
+        .dash-item .kpi-medium-chart { height: 84px; }
+        .dash-item .kpi-compare { height: 64px; }
+        .dash-item .kpi-list { margin-top: 8px; }
+        .dash-item .kpi-list-row { padding: 4px 0; }
+        .dash-item.dash-large { grid-row: span 2; }
+        .dash-large > .kpi-tall { position: absolute; inset: 0; height: auto; max-height: none; }
         .dash-handle { position: absolute; top: 4px; left: 50%; transform: translateX(-50%); z-index: 5; padding: 0 14px; line-height: 1; cursor: grab;
             color: #98a2b3; opacity: 0; transition: opacity .15s; font-size: 1.1rem; background: rgba(255,255,255,.85); border-radius: 999px; }
         .dash-item:hover .dash-handle, .dash-handle:focus { opacity: 1; }
@@ -216,14 +230,14 @@
                         <span class="small text-success d-none" id="dash-saved"><i class="bi bi-check2-circle me-1"></i>{{ __('Saved') }}</span>
                         <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" id="dash-reset"><i class="bi bi-arrow-counterclockwise me-1"></i>{{ __('Reset layout') }}</button>
                     </div>
-                    <div class="dash-grid" id="dashGrid">
+                    <div class="dash-wrap"><div class="dash-grid" id="dashGrid">
                         @foreach($widgetOrder as $key)
                             <div class="dash-item dash-{{ $widgetSizes[$key] }}" data-key="{{ $key }}">
                                 <span class="dash-handle" title="{{ __('Drag to move') }}"><i class="bi bi-grip-horizontal"></i></span>
                                 @include('dashboard._item', ['key' => $key])
                             </div>
                         @endforeach
-                    </div>
+                    </div></div>
                 </div> <!-- /.container-fluid -->
 
 
