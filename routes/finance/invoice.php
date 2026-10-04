@@ -34,6 +34,7 @@ Route::namespace('finance')->prefix('invoice')->group(function () {
         Route::get('/{id}/overview-drawer', [SupplierInvoiceController::class, 'overviewDrawer']);
         Route::get('/{id}/print', [SupplierInvoiceController::class, 'print']);
         Route::post('/ai/scan-bill', [App\Http\Controllers\Finance\AiAssistController::class, 'scanSupplierBill'])->name('invoices.supplier.ai.scan-bill');
+        Route::post('/ai/save-description', [App\Http\Controllers\Finance\AiAssistController::class, 'saveScannedDescription'])->name('invoices.supplier.ai.save-description');
         Route::post('/ai/save-supplier', [App\Http\Controllers\Finance\AiAssistController::class, 'saveScannedSupplier'])->name('invoices.supplier.ai.save-supplier');
     });
     Route::prefix('customer')->group(function () {

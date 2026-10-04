@@ -11,52 +11,16 @@
     </div>
 </div>
 
-<div id="ai-scan-view" class="container-fluid py-5 d-none text-center" style="background: #f8f9fa;">
-    <div class="mx-auto" style="max-width: 500px;">
-        <i class="bi bi-robot fs-1 text-primary"></i>
-        <h4 class="mt-3">{{ __('Scan Receipt with AI') }}</h4>
-        <p class="text-muted">{{ __('Upload a receipt image to automatically fill expense details.') }}</p>
-        <form id="aiScanForm" enctype="multipart/form-data">
-            @csrf
-            <div class="mb-3">
-                <input type="file" name="image" class="form-control" required accept="image/*,.pdf">
-            </div>
-        </form>
-        <div class="d-flex gap-2 justify-content-center">
-            <button type="button" id="start-ai-scan" class="btn btn-primary">{{ __('Start Scanning') }}</button>
-        </div>
-    </div>
-</div>
-
 <div class="container-fluid align-items-center px-0 mb-4" id="modal-buttons" data-buttons="cancel,save"
      data-button-save="{{ __('Save Expense') }}">
-
-    <!-- AI Scan Card -->
-    <div class="card mb-3 shadow-sm" id="ai-scan-card">
-        <div class="card-body p-3">
-            <h6 class="fw-bold mb-2 text-primary">{{ __('Scan Receipt with AI') }}</h6>
-            <input type="file" id="ai-scan-input" class="d-none" accept="image/*,.pdf">
-            <button type="button" class="btn btn-outline-primary btn-sm" onclick="$('#ai-scan-input').click()">
-                <i class="bi bi-robot"></i> {{ __('Upload Receipt/Bill') }}
-            </button>
-            <span id="ai-scan-loader" class="ms-2 d-none">
-                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                <span class="ms-1">{{ __('Processing with AI... Please wait') }}</span>
-            </span>
-        </div>
-    </div>
-
-    <!-- Overlay while scanning -->
-    <div id="ai-scanning-overlay" class="d-none position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-75 d-flex justify-content-center align-items-center" style="z-index: 1000;">
-        <div class="text-center">
-            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
-            <h5 class="mt-2 text-primary">{{ __('AI is Scanning...') }}</h5>
-        </div>
-    </div>
 
     <form id="moduleForm" novalidate action="{{ request()->url() }}">
         @csrf
         <input type="hidden" name="data-id" value="{{ $expense->id }}">
+
+        @if(!$expense->id)
+            @include('modules.finance.expense._ai-scan')
+        @endif
 
         <!-- Expense Header -->
         <div class="mb-4 mt-3 border-0 px-4">
@@ -302,107 +266,27 @@
     </form>
 </div>
 
-<div id="ai-scan-view" class="container-fluid py-5 d-none text-center" style="background: #f8f9fa;">
-    <div class="mx-auto" style="max-width: 500px;">
-        <i class="bi bi-robot fs-1 text-primary"></i>
-        <h4 class="mt-3">{{ __('Scan Receipt with AI') }}</h4>
-        <form id="aiScanForm" enctype="multipart/form-data">
-            @csrf
-            <div class="mb-3"><input type="file" name="image" class="form-control" required accept="image/*,.pdf"></div>
-        </form>
-        <button type="button" id="start-ai-scan" class="btn btn-primary">{{ __('Start Scanning') }}</button>
-    </div>
-</div>
-
 <script type="text/javascript">
     $(function () {
-        const $formView = $('#modal-buttons');
-        const $aiView = $('#ai-scan-view');
-        const $btnShowScan = $('#btn-show-scan');
-        const $btnShowForm = $('#btn-show-form');
+        // AI Help for account: suggests the account for a row from its comment + supplier
+        $('#EXPENSE-tbody').off('click.aiHelp').on('click.aiHelp', '.ai-help-btn', function () {
+            const $row = $(this).closest('tr');
+            const $btn = $(this).prop('disabled', true);
+            const desc = $row.find('textarea[name="comment[]"]').val();
+            const vendor = $('select[name="supplier"]').find('option:selected').text();
 
-        $btnShowScan.on('click', function () {
-            $formView.addClass('d-none');
-            $aiView.removeClass('d-none');
-            $(this).addClass('d-none');
-            $btnShowForm.removeClass('d-none');
-        });
-
-        $btnShowForm.on('click', function () {
-            $aiView.addClass('d-none');
-            $formView.removeClass('d-none');
-            $(this).addClass('d-none');
-            $btnShowScan.removeClass('d-none');
-        });
-
-        // Auto-trigger scan
-        $('#ai-scan-input').on('change', function () {
-            // Show overlay, hide scan card
-            $('#ai-scanning-overlay').removeClass('d-none');
-            $('#ai-scan-card').addClass('d-none');
-            
-            let formData = new FormData();
-            formData.append('image', this.files[0]);
-            
-            $.ajax({
-                url: '{{ route('expenses.ai.scan-receipt') }}',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function (res) {
-                    $('input[name="posted_at"]').val(res.expense_date);
-                    $('input[name="reference_number"]').val(res.description);
-                    if(res.supplier_id) $('select[name="supplier"]')[0].tomselect.setValue(res.supplier_id);
-                    
-                    let $row = $('#EXPENSE-tbody tr:first');
-                    if(res.account_id) $row.find('select[name="account[]"]')[0].tomselect.setValue(res.account_id);
-                    else {
-                        // Handle "not available" - perhaps show a prompt?
-                        // For now, let's just log it
-                        console.log('Account not matched automatically.');
-                    }
-                    $row.find('textarea[name="comment[]"]').val(res.description);
-                    $row.find('input[name="unit_price[]"]').val(res.subtotal);
-                    
-                    // Reset UI
-                    $('#ai-scanning-overlay').addClass('d-none');
-                    $('#ai-scan-card').removeClass('d-none');
-                    toastr.success("{{ __('Scan complete') }}");
-                },
-                error: function (err) {
-                    $('#ai-scanning-overlay').addClass('d-none');
-                    $('#ai-scan-card').removeClass('d-none');
-                    toastr.error(err.responseJSON?.message || "{{ __('Scan failed') }}");
-                }
-            });
-        });
-
-        });
-
-        // AI Help for account
-        $('#EXPENSE-tbody').on('click', '.ai-help-btn', function() {
-            let $row = $(this).closest('tr');
-            let desc = $row.find('textarea[name="comment[]"]').val();
-            let vendor = $('select[name="supplier"]').find('option:selected').text();
-            
-            // Show overlay only for this row
-            $('#ai-scanning-overlay').removeClass('d-none').find('h5').text("{{ __('AI is suggesting account...') }}");
-
-            $.post('{{ route('expenses.ai.suggest-category') }}', {description: desc, vendor: vendor}, function(res) {
-                $('#ai-scanning-overlay').addClass('d-none');
-                if(res.account_id) {
-                    $row.find('select[name="account[]"]')[0].tomselect.setValue(res.account_id);
+            $.post('{{ route('expenses.ai.suggest-category') }}', {description: desc, vendor: vendor, _token: '{{ csrf_token() }}'}, function (res) {
+                if (res.account_id) {
+                    $row.find('select[name="account[]"]')[0].tomselect.setValue(String(res.account_id));
                     toastr.success("{{ __('Account suggested:') }} " + res.account_name);
                 } else {
                     toastr.info("{{ __('No confident account match found — please select manually.') }}");
                 }
-            }).fail(function(){
-                $('#ai-scanning-overlay').addClass('d-none');
+            }).fail(function () {
                 toastr.error("{{ __('AI suggestion failed.') }}");
+            }).always(function () {
+                $btn.prop('disabled', false);
             });
-        });
-
         });
     });
 </script>

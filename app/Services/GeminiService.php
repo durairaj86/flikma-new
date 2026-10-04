@@ -25,7 +25,7 @@ class GeminiService
 
     protected string $apiBase = 'https://generativelanguage.googleapis.com/v1beta/models/';
 
-    protected string $defaultModel = 'gemini-2.5-flash-lite';
+    protected string $defaultModel = 'gemini-3.5-flash-lite';
 
     /**
      * Document scanning is the one call worth tuning per-deployment: a shared
@@ -36,8 +36,8 @@ class GeminiService
     protected function scanModel(): string
     {
         return match (strtolower((string) config('services.gemini.scan_quality', 'medium'))) {
-            'high' => 'gemini-2.5-flash',
-            default => 'gemini-2.5-flash',
+            'high' => 'gemini-3.8-flash',
+            default => 'gemini-3.8-flash',
         };
     }
 
@@ -98,7 +98,7 @@ class GeminiService
             // Low temperature: this is data extraction, not creative writing.
             'temperature' => 0.2,
             'topP' => 0.95,
-            'maxOutputTokens' => 2048,
+            'maxOutputTokens' => 8192,
         ];
 
         if ($isJson) {

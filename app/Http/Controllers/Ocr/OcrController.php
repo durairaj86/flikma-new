@@ -412,7 +412,7 @@ Detect the currency (e.g., SAR, USD, INR, EUR). Use standard 3-letter ISO codes.
 
         $geminiKey = env('GEMINI_API_KEY');
         // Ensure you are using v1beta for 'response_mime_type' support
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$geminiKey}";
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key={$geminiKey}";
 
         // Attempt 1: Primary Model (Gemini 2.5 Flash)
         $response = Http::post($url, [
@@ -429,7 +429,7 @@ Detect the currency (e.g., SAR, USD, INR, EUR). Use standard 3-letter ISO codes.
             if ($data['error']['status'] === 'RESOURCE_EXHAUSTED') {
                 $message = $data['error']['message'] ?? 'No message provided';
 
-                $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key={$geminiKey}";
+                $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key={$geminiKey}";
                 $response = Http::post($url, [
                     'contents' => [['parts' => [['text' => $prompt]]]],
                     'generationConfig' => [

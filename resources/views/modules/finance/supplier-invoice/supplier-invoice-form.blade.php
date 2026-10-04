@@ -30,6 +30,10 @@
         @csrf
         <input type="hidden" name="data-id" value="{{ $supplier->id }}">
 
+        @if(!$supplier->id)
+            @include('modules.finance.supplier-invoice._ai-scan')
+        @endif
+
         <!-- Invoice Header -->
         <div class="mb-4 mt-3 border-0 px-4">
             <div class="card-body">

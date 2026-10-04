@@ -373,7 +373,7 @@ class SupplierInvoiceController extends Controller
 
         // 🔹 Prepare items
         $supplierSub = [];
-        $descriptions = Description::descriptions();
+        $descriptions = Description::descriptions()->keyBy("id");
         foreach ($request->description_id as $i => $desc) {
             $qty = $request->quantity[$i] ?? 0;
             $price = $request->unit_price[$i] ?? 0;
@@ -387,7 +387,7 @@ class SupplierInvoiceController extends Controller
                 'account_id' => $request->account[$i],
                 'company_id' => $companyId,
                 'description_id' => $desc,
-                'description' => $descriptions[$desc]->description,
+                'description' => $descriptions[$desc]->description ?? '',
                 'comment' => $request->comment[$i] ?? null,
                 'unit_id' => $request->unit_id[$i],
                 'quantity' => $qty,

@@ -215,10 +215,47 @@
                     </ul>
                 </li>
 
-                <!-- Invoices & Finance -->
+                <!-- Invoices -->
+                <li class="nav-item {{ in_array($menu,['invoice','adjustment']) ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon bi bi-receipt"></i>
+                        <p>
+                            {{ __('Invoices') }}
+                            <i class="nav-arrow bi bi-chevron-right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/invoice/proforma"
+                               class="nav-link {{ $submenu == 'proforma' ? 'active' : '' }}">
+                                <p>{{ __('Proforma Invoice') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/invoice/supplier"
+                               class="nav-link {{ $submenu == 'supplier' ? 'active' : '' }}">
+                                <p>{{ __('Supplier Invoice') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/invoice/customer"
+                               class="nav-link {{ $submenu == 'customer' ? 'active' : '' }}">
+                                <p>{{ __('Customer Invoice') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/adjustment/credit-note"
+                               class="nav-link {{ $submenu == 'credit-note' ? 'active' : '' }}">
+                                <p>{{ __('Credit Note') }}</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Finance -->
 
 
-                <li class="nav-item {{ in_array($menu,['invoice','adjustment','finance']) ? 'menu-open' : '' }}">
+                <li class="nav-item {{ in_array($menu,['finance']) ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link">
                         <i class="nav-icon bi bi-wallet2"></i>
                         <p>
@@ -227,50 +264,6 @@
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
-                        <li class="nav-item {{ $menu == 'invoice' ? 'menu-open' : '' }}">
-                            <a href="#" class="nav-link">
-                                <p>
-                                    {{ __('Invoices') }}
-                                    <i class="nav-arrow bi bi-chevron-right"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview ms-3">
-                                <li class="nav-item">
-                                    <a href="/invoice/proforma"
-                                       class="nav-link {{ $submenu == 'proforma' ? 'active' : '' }}">
-                                        <p>{{ __('Proforma Invoice') }}</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/invoice/supplier"
-                                       class="nav-link {{ $submenu == 'supplier' ? 'active' : '' }}">
-                                        <p>{{ __('Supplier Invoice') }}</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/invoice/customer"
-                                       class="nav-link {{ $submenu == 'customer' ? 'active' : '' }}">
-                                        <p>{{ __('Customer Invoice') }}</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="nav-item {{ $menu == 'adjustment' ? 'menu-open' : '' }}">
-                            <a href="#" class="nav-link">
-                                <p>
-                                    {{ __('Adjustments') }}
-                                    <i class="nav-arrow bi bi-chevron-right"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview ms-3">
-                                <li class="nav-item">
-                                    <a href="/adjustment/credit-note"
-                                       class="nav-link {{ $submenu == 'credit-note' ? 'active' : '' }}">
-                                        <p>{{ __('Credit Notes') }}</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
                         {{--<li class="nav-item {{ $menu == 'voucher' ? 'menu-open' : '' }}">
                             <a href="#" class="nav-link">
                                 <p>
