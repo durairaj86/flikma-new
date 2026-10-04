@@ -1,6 +1,7 @@
 @section('page-title', __('Dashboard'))
 @section('page-subtitle', __('Overview of the company\'s performance'))
 @section('page-icon', 'bi-speedometer2')
+@section('hide-topbar', true)
 <x-app-layout>
 
     <style>
