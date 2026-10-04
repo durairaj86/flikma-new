@@ -139,6 +139,7 @@
                         </div>
                     </div>
                 </div>
+                <button class="btn btn-outline-primary rounded-pill px-3 me-2" id="btn-import-accounts" type="button"><i class="bi bi-upload me-1"></i> {{ __('Import') }}</button>
                 <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Account') }}</button>
             </div>
         </div>
@@ -187,6 +188,8 @@
             </div>
         </div>
     </main>
+
+    @include('modules.finance.accounts._import')
 
     @push('scripts')
         <script>

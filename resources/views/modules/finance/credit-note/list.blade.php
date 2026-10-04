@@ -273,6 +273,7 @@
     </div>
 
     @include('modules.email.send-email')
+    @include('modules.workflows.credit-note')
     @include('modules.finance.credit-note.credit-note-view')
 
     {{-- Print frame --}}

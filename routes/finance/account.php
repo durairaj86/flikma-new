@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::namespace('finance')->prefix('finance')->group(function () {
     Route::get('/accounts', [AccountController::class, 'index']);
+    Route::post('/account/import/preview', [App\Http\Controllers\Finance\Account\AccountImportController::class, 'preview']);
+    Route::post('/account/import', [App\Http\Controllers\Finance\Account\AccountImportController::class, 'import']);
     Route::post('/account/data', [AccountController::class, 'fetchAllRows']);
     Route::get('/account/create', [AccountController::class, 'modal']);
     Route::post('/account/create', [AccountController::class, 'store']);

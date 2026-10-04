@@ -1202,6 +1202,48 @@ div.dataTables_wrapper div.dt-row div.col-sm-12, div.dataTables_wrapper div.data
     color: #fff;
 }
 
+/* Chart of Accounts type tabs */
+#listTabs .status-btn[id="asset"] {
+    background: #e7f1ff;
+    color: #0a58ca;
+}
+#listTabs .status-btn[id="asset"].active {
+    background: #0d6efd;
+    color: #fff;
+}
+#listTabs .status-btn[id="liability"] {
+    background: #fff3e0;
+    color: #b45309;
+}
+#listTabs .status-btn[id="liability"].active {
+    background: #f59e0b;
+    color: #fff;
+}
+#listTabs .status-btn[id="equity"] {
+    background: #f3e8ff;
+    color: #6b21a8;
+}
+#listTabs .status-btn[id="equity"].active {
+    background: #8b5cf6;
+    color: #fff;
+}
+#listTabs .status-btn[id="income"] {
+    background: #e6f7ee;
+    color: #0f6b3e;
+}
+#listTabs .status-btn[id="income"].active {
+    background: #198754;
+    color: #fff;
+}
+#listTabs .status-btn[id="expense"] {
+    background: #fde8ea;
+    color: #b02a37;
+}
+#listTabs .status-btn[id="expense"].active {
+    background: #dc3545;
+    color: #fff;
+}
+
 .table {
     border-radius: 10px;
 }

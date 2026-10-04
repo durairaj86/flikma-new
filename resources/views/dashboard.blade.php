@@ -151,6 +151,42 @@
             .right-col { padding-left: 12px; /*max-width: 370px;*/ }
         }
 
+
+        /* Draggable widget grid: 12 columns, widgets flow in the user's saved order. */
+        .dash-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1rem; grid-auto-flow: row dense; align-items: stretch; }
+        .dash-item { position: relative; grid-column: span 12; min-width: 0; }
+        .dash-item.dash-small { grid-column: span 6; }
+        @media (min-width: 576px) { .dash-item { grid-column: span 6; } .dash-item.dash-small { grid-column: span 3; } }
+        @media (min-width: 1200px) { .dash-item { grid-column: span 4; } .dash-item.dash-small { grid-column: span 2; } }
+        .dash-item > .livewire-root, .dash-item > div:not(.dash-handle) { height: 100%; }
+        .dash-handle { position: absolute; top: 4px; left: 50%; transform: translateX(-50%); z-index: 5; padding: 0 14px; line-height: 1; cursor: grab;
+            color: #98a2b3; opacity: 0; transition: opacity .15s; font-size: 1.1rem; background: rgba(255,255,255,.85); border-radius: 999px; }
+        .dash-item:hover .dash-handle, .dash-handle:focus { opacity: 1; }
+        @media (hover: none) { .dash-handle { opacity: .7; } }
+        .dash-handle:active { cursor: grabbing; }
+        .dash-ghost { opacity: .35; }
+        .dash-chosen > :not(.dash-handle) { box-shadow: 0 18px 40px rgba(15,23,42,.25); transform: scale(1.01); }
+
+        /* Small widgets: two fit in the width of one medium widget, so everything inside stays compact. */
+        .kpi.kpi-small { min-height: 0; padding: 12px 13px 11px; }
+        .kpi-small .kpi-head { gap: 6px; flex-wrap: wrap; }
+        .kpi-small .kpi-title { flex: 1 1 auto; font-size: .82rem; }
+        .kpi-small .kpi-main { margin-top: 8px; gap: 6px; }
+        .kpi-small .kpi-value { font-size: 1.45rem; }
+        .kpi-small .kpi-note { margin-top: 2px; }
+        .kpi-small .kpi-bar { margin-top: 10px; }
+        .kpi-small .kpi-legend { grid-template-columns: 1fr; gap: 5px; margin-top: 9px; font-size: .72rem; }
+        .kpi-small .kpi-legend span { padding: 5px 8px; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+        .kpi-small .kpi-legend b { font-size: .8rem; display: inline; }
+        .kpi-small .wd-month-btn { padding: 2px 8px; font-size: .68rem; }
+        .kpi-small .wd-month-btn > i:first-child { display: none; }
+        @container (max-width: 190px) {
+            .kpi-small .kpi-icon { display: none; }
+            .kpi-small .kpi-value { font-size: 1.25rem; }
+            .kpi-small .wd-month-caret { display: none; }
+            .kpi-small .kpi-pill { display: none; }
+        }
+
         /* Footer small text */
         footer.small { color:#8a8f98; margin-top:12px; }
     </style>
@@ -173,66 +209,21 @@
                     </div>
                 </div>
 
-                <!-- Main two-column layout -->
+                <!-- Widget grid: drag a widget by its handle to reorder; the order is saved per user -->
                 <div class="container-fluid">
-                    <div class="row">
-                        <!-- LEFT: Main analytics (8/12) -->
-                        <div class="col-lg-8 left-col">
-
-                            <!-- TOP: 4 stat boxes (grid) -->
-                            <!-- Month summary cards -->
-                            {{-- Medium widgets (with charts) --}}
-                            <div class="row g-3 mb-3">
-                                <div class="col-12 col-sm-6"><livewire:widgets.sales size="medium" /></div>
-                                <div class="col-12 col-sm-6"><livewire:widgets.invoices size="medium" /></div>
-                                <div class="col-12 col-sm-6"><livewire:widgets.customers size="medium" /></div>
-                                <div class="col-12 col-sm-6"><livewire:widgets.profit size="medium" /></div>
+                    <div class="d-flex justify-content-end align-items-center gap-2 mb-2 dash-toolbar">
+                        <span class="text-muted small d-none d-md-inline"><i class="bi bi-arrows-move me-1"></i>{{ __('Drag widgets by the handle to arrange your dashboard') }}</span>
+                        <span class="small text-success d-none" id="dash-saved"><i class="bi bi-check2-circle me-1"></i>{{ __('Saved') }}</span>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" id="dash-reset"><i class="bi bi-arrow-counterclockwise me-1"></i>{{ __('Reset layout') }}</button>
+                    </div>
+                    <div class="dash-grid" id="dashGrid">
+                        @foreach($widgetOrder as $key)
+                            <div class="dash-item dash-{{ $widgetSizes[$key] }}" data-key="{{ $key }}">
+                                <span class="dash-handle" title="{{ __('Drag to move') }}"><i class="bi bi-grip-horizontal"></i></span>
+                                @include('dashboard._item', ['key' => $key])
                             </div>
-
-                            <div class="row g-3 mb-3">
-                                <div class="col-12 col-sm-6"><livewire:widgets.expenses size="medium" /></div>
-                                <div class="col-12 col-sm-6">@include('dashboard.widgets.revenue-summary-medium')</div>
-                            </div>
-
-                            {{-- Small widgets --}}
-                            <div class="row g-3 mb-3">
-                                <div class="col-12 col-sm-6 col-xxl-4"><livewire:widgets.quotation size="small" /></div>
-                                <div class="col-12 col-sm-6 col-xxl-4"><livewire:widgets.payments size="small" /></div>
-                                <div class="col-12 col-sm-6 col-xxl-4"><livewire:widgets.collection size="small" /></div>
-                            </div>
-
-                            <div class="row g-3 mb-3">
-                                <div class="col-12 col-sm-6">@include('dashboard.widgets.eta-etd-medium')</div>
-                                <div class="col-12 col-sm-6">@include('dashboard.widgets.ata-atd-medium')</div>
-                            </div>
-
-                            <div class="row g-3 mt-1 mb-3">
-                                <div class="col-12 col-sm-6">@include('dashboard.widgets.recent-transactions-tall')</div>
-                                <div class="col-12 col-sm-6 d-flex flex-column gap-3">
-                                    @include('dashboard.widgets.job-status-medium')
-                                    @include('dashboard.widgets.to-collect-pay-medium')
-                                </div>
-                            </div>
-
-                            <!-- Middle: Two charts side-by-side -->
-                            <div class="row g-3 mb-3">
-                                <div class="col-12 col-sm-6">@include('dashboard.widgets.revenue-expenses-medium')</div>
-                                <div class="col-12 col-sm-6">@include('dashboard.widgets.revenue-trend-medium')</div>
-                            </div>
-
-                        </div> <!-- /.left-col -->
-
-                        <!-- RIGHT: summary / mini panels (4/12) -->
-                        <div class="col-lg-4 right-col">
-                            <!-- Outstanding -->
-                            <div class="mb-3">@include('dashboard.widgets.outstanding-medium')</div>
-
-                            <div class="mb-3">@include('dashboard.widgets.awaiting-approval-medium')</div>
-
-                            <div class="mb-3">@include('dashboard.widgets.cost-summary-medium')</div>
-
-                        </div> <!-- /.right-col -->
-                    </div> <!-- /.row -->
+                        @endforeach
+                    </div>
                 </div> <!-- /.container-fluid -->
 
 
@@ -246,6 +237,7 @@
 
         <!-- Scripts -->
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 
         <script>
             // footer year
@@ -339,6 +331,33 @@
                 }
               });
             }
+
+            // Drag & drop: reorder widgets, save the order per user.
+            (function () {
+                var grid = document.getElementById('dashGrid');
+                if (!grid || !window.Sortable) return;
+                var token = document.querySelector('meta[name="csrf-token"]').content;
+                var savedEl = document.getElementById('dash-saved'), timer;
+                function post(url, body) {
+                    return fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': token, 'X-Requested-With': 'XMLHttpRequest' }, body: JSON.stringify(body || {}) });
+                }
+                Sortable.create(grid, {
+                    animation: 180, handle: '.dash-handle', draggable: '.dash-item',
+                    ghostClass: 'dash-ghost', chosenClass: 'dash-chosen', forceFallback: true, fallbackTolerance: 3,
+                    onEnd: function () {
+                        var order = Array.prototype.map.call(grid.querySelectorAll('.dash-item'), function (el) { return el.dataset.key; });
+                        post(@json(route('dashboard.layout.save')), { order: order }).then(function (r) {
+                            if (!r.ok) throw new Error();
+                            savedEl.classList.remove('d-none');
+                            clearTimeout(timer);
+                            timer = setTimeout(function () { savedEl.classList.add('d-none'); }, 1800);
+                        }).catch(function () { if (window.toastr) toastr.error(@json(__('Could not save the layout.'))); });
+                    }
+                });
+                document.getElementById('dash-reset').addEventListener('click', function () {
+                    post(@json(route('dashboard.layout.reset'))).then(function () { window.location.reload(); });
+                });
+            })();
             initKpiCharts(document);
 
             // Each Livewire widget re-renders on its own (e.g. month change): redraw only its charts.

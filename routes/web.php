@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Route;
 Route::domain('flikma.com')->group(base_path('routes/website.php'));
 Route::domain('flikma-new.test')->group(base_path('routes/website.php'));
 
+Route::post('/dashboard/layout', [\App\Http\Controllers\DashboardLayoutController::class, 'save'])->middleware(['auth', 'verified'])->name('dashboard.layout.save');
+Route::post('/dashboard/layout/reset', [\App\Http\Controllers\DashboardLayoutController::class, 'reset'])->middleware(['auth', 'verified'])->name('dashboard.layout.reset');
 Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/welcome', function () {

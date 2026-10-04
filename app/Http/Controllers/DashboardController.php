@@ -85,6 +85,9 @@ class DashboardController extends Controller
             'currentMonthSales' => $this->getCurrentMonthSales(),
         ];
 
+        $data['widgetOrder'] = DashboardLayoutController::orderFor(auth()->id());
+        $data['widgetSizes'] = DashboardLayoutController::WIDGETS;
+
         return view('dashboard', $data);
     }
 
