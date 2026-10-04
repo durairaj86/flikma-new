@@ -219,136 +219,168 @@
     @include('modules.finance.customer-invoice.customer-invoice-view')
 
     <style>
-        /* Workflow flowchart */
-        .wf-box {
-            border: 2px solid;
-            border-radius: 10px;
-            padding: 10px 20px;
-            text-align: center;
-            min-width: 170px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            line-height: 1.4;
-        }
-        .wf-box.wf-neutral  { border-color: #6c757d; background: #f8f9fa;  color: #495057; }
-        .wf-box.wf-pending  { border-color: #ffc107; background: #fffbf0;  color: #856404; }
-        .wf-box.wf-action   { border-color: #0d6efd; background: #f0f7ff;  color: #084298; }
-        .wf-box.wf-success  { border-color: #198754; background: #f0fff4;  color: #0f5132; }
-        .wf-box.wf-danger   { border-color: #dc3545; background: #fff5f5;  color: #842029; }
-        .wf-box.wf-job      { border-color: #0dcaf0; background: #f0fdff;  color: #055160; }
-        .wf-box.wf-decision { border-color: #6f42c1; background: #f8f0ff;  color: #432874; }
-        .wf-arrow { color: #adb5bd; font-size: 1.3rem; line-height: 1.3; text-align: center; }
-        .wf-badge { font-size: 0.7rem; border-radius: 20px; padding: 2px 8px; display: inline-block; margin-top: 4px; }
+        /* Workflow flowchart (customer invoice) */
+        .fc { display: flex; flex-direction: column; align-items: center; font-size: .85rem; }
+        .fc-node { position: relative; text-align: center; padding: 10px 16px; border: 2px solid; border-radius: 12px; min-width: 190px; max-width: 260px; line-height: 1.35; background: #fff; }
+        .fc-node small { display: block; font-weight: 400; opacity: .8; font-size: .72rem; margin-top: 2px; }
+        .fc-node .fc-step { display: block; font-size: .65rem; letter-spacing: .06em; text-transform: uppercase; opacity: .65; }
+        .fc-start, .fc-end { border-radius: 999px; }
+        .fc-draft    { border-color: #f59e0b; background: #fffbeb; color: #92400e; }
+        .fc-process  { border-color: #3b82f6; background: #eff6ff; color: #1e40af; }
+        .fc-system   { border-color: #8b5cf6; background: #f5f3ff; color: #5b21b6; }
+        .fc-ok       { border-color: #16a34a; background: #f0fdf4; color: #166534; }
+        .fc-bad      { border-color: #dc2626; background: #fef2f2; color: #991b1b; }
+        .fc-money    { border-color: #0891b2; background: #ecfeff; color: #155e75; }
+        .fc-decision { width: 210px; min-height: 96px; padding: 0 34px; border: 0; background: #ede9fe; color: #4c1d95; display: flex; align-items: center; justify-content: center; font-weight: 600;
+            clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
+        .fc-line { width: 2px; height: 22px; background: #94a3b8; position: relative; margin: 0 auto; }
+        .fc-line::after { content: ''; position: absolute; bottom: -1px; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top: 7px solid #94a3b8; border-bottom: 0; }
+        .fc-label { position: absolute; top: 2px; left: calc(50% + 8px); font-size: .68rem; font-weight: 700; padding: 0 6px; border-radius: 6px; background: #fff; }
+        .fc-label.yes { color: #16a34a; } .fc-label.no { color: #dc2626; }
+        .fc-branches { display: flex; justify-content: center; gap: 20px; width: 100%; }
+        .fc-branch { position: relative; display: flex; flex-direction: column; align-items: center; padding-top: 22px; flex: 1 1 0; min-width: 0; }
+        .fc-branch::before { content: ''; position: absolute; top: 0; left: 0; right: 0; border-top: 2px solid #94a3b8; }
+        .fc-branch:first-child::before { left: 50%; }
+        .fc-branch:last-child::before { right: 50%; }
+        .fc-branch:only-child::before { display: none; }
+        .fc-branch::after { content: ''; position: absolute; top: 0; left: 50%; width: 2px; height: 22px; background: #94a3b8; transform: translateX(-1px); }
+        .fc-branch > .fc-tag { position: absolute; top: 2px; left: calc(50% + 8px); z-index: 1; }
+        .fc-note { font-size: .75rem; color: #64748b; max-width: 330px; text-align: center; margin-top: 6px; }
+        .fc-side { margin-top: 14px; padding: 8px 12px; border: 1px dashed #cbd5e1; border-radius: 10px; font-size: .78rem; color: #475569; background: #f8fafc; text-align: center; }
+        @media (max-width: 575.98px) { .fc-branches { flex-direction: column; align-items: center; gap: 0; } .fc-branch::before { display: none; } .fc-branch { padding-top: 22px; } }
     </style>
 
     <!-- Customer Invoice Workflow Modal -->
     <div class="modal fade" id="customerInvoiceWorkflowModal" tabindex="-1" aria-labelledby="customerInvoiceWorkflowModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header border-0 pb-0">
                     <div>
                         <h5 class="modal-title fw-semibold" id="customerInvoiceWorkflowModalLabel">
                             <i class="bi bi-diagram-3 text-primary me-2"></i>{{ __('Customer Invoice Workflow') }}
                         </h5>
-                        <p class="text-muted small mb-0">{{ __('How customer invoices move through your system') }}</p>
+                        <p class="text-muted small mb-0">{{ __('How a customer invoice moves from draft to payment') }}</p>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body pt-3 pb-4">
+                    <div class="fc">
 
-                    <!-- Flowchart -->
-                    <div class="d-flex flex-column align-items-center gap-0">
-
-                        <div class="wf-box wf-pending">
-                            <div class="text-muted" style="font-size:0.7rem;font-weight:400;">{{ __('STEP 1') }}</div>
-                            <i class="bi bi-file-earmark-plus me-1"></i> {{ __('Create Customer Invoice') }}
-                            <div class="wf-badge bg-secondary text-white">{{ __('Draft') }}</div>
+                        <div class="fc-node fc-draft fc-start">
+                            <span class="fc-step">{{ __('Start') }}</span>
+                            <i class="bi bi-file-earmark-plus me-1"></i>{{ __('Create customer invoice') }}
+                            <small>{{ __('From a job or directly') }} &middot; {{ __('number') }} DR-YY-0001</small>
                         </div>
-                        <div class="wf-arrow">↓</div>
+                        <div class="fc-line"></div>
 
-                        <div class="wf-box wf-action">
-                            <div class="text-muted" style="font-size:0.7rem;font-weight:400;">{{ __('STEP 2') }}</div>
-                            <i class="bi bi-send me-1"></i> {{ __('Send to Customer') }}
-                            <div class="wf-badge bg-info text-white">{{ __('Sent') }}</div>
+                        <div class="fc-node fc-draft">
+                            <span class="badge bg-secondary mb-1">{{ __('Draft') }}</span><br>
+                            <i class="bi bi-pencil-square me-1"></i>{{ __('Add charges, tax and terms') }}
+                            <small>{{ __('Editable and deletable while in draft') }}</small>
                         </div>
-                        <div class="wf-arrow">↓</div>
+                        <div class="fc-line"></div>
 
-                        <!-- Decision -->
-                        <div class="wf-box wf-decision">
-                            <i class="bi bi-question-circle me-1"></i> {{ __('Approval Decision') }}
-                        </div>
+                        <div class="fc-node fc-decision">{{ __('Review outcome?') }}</div>
 
-                        <div class="d-flex justify-content-center gap-5 w-100 mt-0">
-
-                            <!-- Left: Approved path -->
-                            <div class="d-flex flex-column align-items-center">
-                                <div class="wf-arrow">↓</div>
-                                <div class="wf-box wf-success">
-                                    <i class="bi bi-check-circle me-1"></i> {{ __('Approved') }}
-                                    <div class="wf-badge bg-success text-white">{{ __('Approved') }}</div>
-                                </div>
-                                <div class="wf-arrow">↓</div>
-                                <div class="wf-box wf-job">
-                                    <i class="bi bi-cash-coin me-1"></i> {{ __('Ready for Collection') }}
-                                    <div class="wf-badge text-white" style="background:#0dcaf0;">{{ __('Collections Module') }}</div>
+                        <div class="fc-branches">
+                            <!-- Cancel -->
+                            <div class="fc-branch">
+                                <span class="fc-label no fc-tag">{{ __('Cancel') }}</span>
+                                <div class="fc-node fc-bad fc-end">
+                                    <i class="bi bi-slash-circle me-1"></i>{{ __('Cancelled') }}
+                                    <small>{{ __('Invoice withdrawn, no ledger entries') }}</small>
                                 </div>
                             </div>
 
-                            <!-- Right: Rejected path -->
-                            <div class="d-flex flex-column align-items-center">
-                                <div class="wf-arrow">↓</div>
-                                <div class="wf-box wf-danger">
-                                    <i class="bi bi-x-circle me-1"></i> {{ __('Rejected') }}
-                                    <div class="wf-badge bg-danger text-white">{{ __('Rejected') }}</div>
+                            <!-- Approve -->
+                            <div class="fc-branch" style="flex: 2 1 0;">
+                                <span class="fc-label yes fc-tag">{{ __('Approve') }}</span>
+                                <div class="fc-node fc-decision">{{ __('ZATCA registered?') }}</div>
+
+                                <div class="fc-branches">
+                                    <div class="fc-branch">
+                                        <span class="fc-label no fc-tag">{{ __('No') }}</span>
+                                        <div class="fc-node fc-system">
+                                            <span class="fc-step">{{ __('System') }}</span>
+                                            {{ __('Assign invoice number') }} IN/YY/0001
+                                            <small>{{ __('Draft number is kept for reference') }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="fc-branch">
+                                        <span class="fc-label yes fc-tag">{{ __('Yes') }}</span>
+                                        <div class="fc-node fc-system">
+                                            <span class="fc-step">{{ __('System') }}</span>
+                                            {{ __('Date set to today, number assigned') }}
+                                            <small>{{ __('ZATCA date rule is checked first') }}</small>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="wf-arrow">↓</div>
-                                <div class="wf-box wf-danger">
-                                    <i class="bi bi-slash-circle me-1"></i> {{ __('Cancelled') }}
-                                    <div class="wf-badge bg-danger text-white">{{ __('Cancelled') }}</div>
+
+                                <div class="fc-line"></div>
+                                <div class="fc-node fc-system">
+                                    <span class="fc-step">{{ __('System') }}</span>
+                                    <i class="bi bi-journal-check me-1"></i>{{ __('Post ledger entries') }}
+                                    <small>{{ __('Debit receivable, credit revenue and output VAT') }}</small>
+                                </div>
+                                <div class="fc-line"></div>
+                                <div class="fc-node fc-decision">{{ __('ZATCA result?') }}</div>
+                                <div class="fc-note">{{ __('Submitted only when ZATCA is registered; otherwise the invoice goes straight to Approved') }}</div>
+
+                                <div class="fc-branches">
+                                    <div class="fc-branch">
+                                        <span class="fc-label no fc-tag">{{ __('Error') }}</span>
+                                        <div class="fc-node fc-bad">
+                                            <i class="bi bi-arrow-counterclockwise me-1"></i>{{ __('Rolled back') }}
+                                            <small>{{ __('Stays in draft; fix and retry') }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="fc-branch">
+                                        <span class="fc-label yes fc-tag">{{ __('Cleared / warning / skipped') }}</span>
+                                        <div class="fc-node fc-ok">
+                                            <span class="badge bg-success mb-1">{{ __('Approved') }}</span><br>
+                                            <i class="bi bi-check-circle me-1"></i>{{ __('Invoice is final') }}
+                                            <small>{{ __('QR code stored; ready to print or email') }}</small>
+                                        </div>
+                                        <div class="fc-line"></div>
+                                        <div class="fc-node fc-money">
+                                            <i class="bi bi-cash-coin me-1"></i>{{ __('Receive payment') }}
+                                            <small>{{ __('Record it in the Collection module') }}</small>
+                                        </div>
+                                        <div class="fc-line"></div>
+                                        <div class="fc-node fc-ok fc-end">
+                                            <i class="bi bi-patch-check me-1"></i>{{ __('Fully collected') }}
+                                            <small>{{ __('Part payments keep a balance due') }}</small>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
+                        <div class="fc-side">
+                            <i class="bi bi-printer me-1"></i>{{ __('Print and email are available at any stage.') }}
+                            {{ __('Changing an approved invoice to any other status removes its ledger entries.') }}
+                        </div>
                     </div>
 
-                    <!-- Status legend -->
                     <hr class="mt-4">
                     <h6 class="fw-semibold text-muted mb-3 small text-uppercase">{{ __('Status Guide') }}</h6>
                     <div class="row g-2">
                         <div class="col-sm-6 col-md-4">
-                            <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#f8f9fa;border:1px solid #6c757d;">
+                            <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#fffbeb;border:1px solid #f59e0b;">
                                 <span class="badge bg-secondary">{{ __('Draft') }}</span>
-                                <small class="text-muted">{{ __('Being prepared') }}</small>
+                                <small class="text-muted">{{ __('Being prepared, can be edited or deleted') }}</small>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-4">
-                            <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#f0f7ff;border:1px solid #0d6efd;">
-                                <span class="badge bg-info text-white">{{ __('Sent') }}</span>
-                                <small class="text-muted">{{ __('Awaiting customer response') }}</small>
-                            </div>
-                        </div>
-                        <div class="col-sm-6 col-md-4">
-                            <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#f0fff4;border:1px solid #198754;">
+                            <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#f0fdf4;border:1px solid #16a34a;">
                                 <span class="badge bg-success">{{ __('Approved') }}</span>
-                                <small class="text-muted">{{ __('Ready for collection') }}</small>
+                                <small class="text-muted">{{ __('Numbered, posted to the ledger, ready for collection') }}</small>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-4">
-                            <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#fff5f5;border:1px solid #dc3545;">
-                                <span class="badge bg-danger">{{ __('Rejected') }}</span>
-                                <small class="text-muted">{{ __('Customer declined') }}</small>
-                            </div>
-                        </div>
-                        <div class="col-sm-6 col-md-4">
-                            <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#fff5f5;border:1px solid #dc3545;">
+                            <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#fef2f2;border:1px solid #dc2626;">
                                 <span class="badge bg-danger">{{ __('Cancelled') }}</span>
-                                <small class="text-muted">{{ __('Withdrawn') }}</small>
-                            </div>
-                        </div>
-                        <div class="col-sm-6 col-md-4">
-                            <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#f0fdff;border:1px solid #0dcaf0;">
-                                <span class="badge" style="background:#0dcaf0;">{{ __('Converted') }}</span>
-                                <small class="text-muted">{{ __('Turned into a collection') }}</small>
+                                <small class="text-muted">{{ __('Withdrawn before approval') }}</small>
                             </div>
                         </div>
                     </div>

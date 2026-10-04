@@ -1224,6 +1224,11 @@
             if (sectionState === null) {
                 sectionState = AUTO_SECTION ? true : localStorage.getItem(STORAGE_KEY) === '1';
             }
+            /* Phones: default to the slim 70px rail (unless the user chose otherwise) so the page
+               content keeps enough width instead of being squeezed beside a 250px menu. */
+            if (! AUTO_SECTION && localStorage.getItem(STORAGE_KEY) === null && window.matchMedia('(max-width: 767.98px)').matches) {
+                sectionState = true;
+            }
             applyState(sectionState);
 
             toggleBtn.addEventListener('click', function () {

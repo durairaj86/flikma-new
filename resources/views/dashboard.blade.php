@@ -23,10 +23,31 @@
         .kpi-cost-row { display: flex; align-items: center; gap: 8px; font-size: .88rem; color: #475467; padding: 3px 0; }
         .kpi-cost-row em { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
         .kpi-cost-row b { margin-left: auto; color: #101828; padding-left: 12px; }
-        .kpi.kpi-chart-card { height: 236px; display: flex; flex-direction: column; overflow: hidden; }
-        .kpi-chart-wrap { position: relative; flex: 1; min-height: 0; margin-top: 12px; }
-        .kpi-medium { height: 236px; overflow-y: auto; }
-        .kpi-tall { height: calc(2 * 236px + 1rem); display: flex; flex-direction: column; overflow: hidden; }
+        .kpi.kpi-chart-card { min-height: 236px; display: flex; flex-direction: column; }
+        .kpi-chart-wrap { position: relative; flex: 1; min-height: 150px; margin-top: 12px; }
+        /* Responsive sizing: widgets grow with their content instead of scrolling;
+           each card is a size container so its inner layout adapts to its own width. */
+        .kpi { container-type: inline-size; }
+        .kpi-medium { height: auto; min-height: 236px; }
+        .kpi-tall { height: auto; max-height: 460px; display: flex; flex-direction: column; overflow: hidden; }
+        @media (min-width: 576px) { .kpi-tall { height: calc(2 * 236px + 1rem); max-height: none; } }
+        @container (max-width: 340px) {
+            .kpi-medium-body { flex-direction: column; align-items: stretch; }
+            .kpi-medium-chart { width: 100%; height: 90px; }
+            .kpi-value { font-size: 1.6rem; }
+            .kpi-duo .kpi-value { font-size: 1.6rem; }
+            .kpi-legend.kpi-legend-3 { grid-template-columns: 1fr; }
+        }
+        @container (max-width: 300px) {
+            .kpi-icon { display: none; }
+            .wd-month-btn > i { display: none; }
+        }
+        @container (max-width: 250px) {
+            .kpi-head { gap: 6px; }
+            .kpi-icon { display: none; }
+            .kpi-legend { grid-template-columns: 1fr; }
+            .kpi-duo { gap: 12px; }
+        }
         .kpi-tall-scroll { flex: 1; min-height: 0; overflow-y: auto; margin-top: 10px; border-radius: 12px; }
         .kpi-tall-foot { font-size: .75rem; color: #667085; padding-top: 8px; }
         .kpi-table thead th { position: sticky; top: 0; background: #f8fafc; font-size: .72rem; text-transform: uppercase; color: #667085; z-index: 1; }
@@ -47,6 +68,11 @@
             padding: 7px 10px; border-radius: 9px; font-size: .8rem; color: #344054; cursor: pointer; text-align: left; }
         .wd-month-item:hover { background: #f2f4f7; }
         .wd-month-item.active { background: color-mix(in srgb, var(--kc, #2563eb) 12%, #fff); color: var(--kc, #2563eb); font-weight: 600; }
+        .kpi-compare { position: relative; height: 78px; margin-top: 6px; }
+        .kpi-legend.kpi-legend-line { grid-template-columns: 1fr 1fr; margin-top: 6px; }
+        .kpi-legend-line span { background: none; padding: 0; }
+        .kpi-legend-line i { display: inline-block; width: 18px; height: 0; vertical-align: middle; margin-right: 6px; border-top: 2px solid var(--kc); }
+        .kpi-legend-line i.line-dotted { border-top: 2px dotted #98a2b3; }
         .kpi-head { display: flex; align-items: center; gap: 10px; }
         .kpi-icon { width: 34px; height: 34px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;
             color: #fff; background: var(--kc); font-size: .85rem; border-radius: 50%; width: 32px; height: 32px;
@@ -163,11 +189,16 @@
                                 <div class="col-12 col-sm-6"><livewire:widgets.profit size="medium" /></div>
                             </div>
 
+                            <div class="row g-3 mb-3">
+                                <div class="col-12 col-sm-6"><livewire:widgets.expenses size="medium" /></div>
+                                <div class="col-12 col-sm-6">@include('dashboard.widgets.revenue-summary-medium')</div>
+                            </div>
+
                             {{-- Small widgets --}}
                             <div class="row g-3 mb-3">
-                                <div class="col-12 col-sm-4"><livewire:widgets.quotation size="small" /></div>
-                                <div class="col-12 col-sm-4"><livewire:widgets.payments size="small" /></div>
-                                <div class="col-12 col-sm-4"><livewire:widgets.collection size="small" /></div>
+                                <div class="col-12 col-sm-6 col-xxl-4"><livewire:widgets.quotation size="small" /></div>
+                                <div class="col-12 col-sm-6 col-xxl-4"><livewire:widgets.payments size="small" /></div>
+                                <div class="col-12 col-sm-6 col-xxl-4"><livewire:widgets.collection size="small" /></div>
                             </div>
 
                             <div class="row g-3 mb-3">
@@ -199,8 +230,6 @@
                             <div class="mb-3">@include('dashboard.widgets.awaiting-approval-medium')</div>
 
                             <div class="mb-3">@include('dashboard.widgets.cost-summary-medium')</div>
-
-                            <div class="mb-3">@include('dashboard.widgets.revenue-summary-medium')</div>
 
                         </div> <!-- /.right-col -->
                     </div> <!-- /.row -->
@@ -282,6 +311,17 @@
                     var total = values.reduce(function (a, b) { return a + b; }, 0);
                     new Chart(cv, { type: 'doughnut', data: { labels: total ? names : [''], datasets: [{ data: total ? values : [1], backgroundColor: total ? colors : ['rgba(15,23,42,.12)'], borderWidth: 0 }] },
                         options: Object.assign({}, base, { cutout: '68%' }) });
+                    return;
+                }
+                if (type === 'compare') {
+                    var cds = JSON.parse(cv.dataset.datasets).map(function (d) {
+                        return { label: d.label, data: d.data, borderColor: d.color, backgroundColor: d.color + '22', borderWidth: 2, borderDash: d.dashed ? [4, 4] : [],
+                                 pointRadius: 0, pointHoverRadius: 4, tension: .3, spanGaps: false, fill: !d.dashed };
+                    });
+                    new Chart(cv, { type: 'line', data: { labels: labels, datasets: cds }, options: {
+                        responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+                        plugins: { legend: { display: false } },
+                        scales: { x: { display: false }, y: { display: false, beginAtZero: true } } } });
                     return;
                 }
                 if (type === 'dualbar') {

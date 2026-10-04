@@ -8,7 +8,9 @@ use App\Enums\PaymentEnum;
 use App\Enums\QuotationEnum;
 use App\Enums\SupplierInvoiceEnum;
 use App\Models\Customer\Customer;
+use App\Enums\ExpenseEnum;
 use App\Models\Finance\Collection\Collection;
+use App\Models\Finance\Expense\Expense;
 use App\Models\Finance\CustomerInvoice\CustomerInvoice;
 use App\Models\Finance\Payment\Payment;
 use App\Models\Finance\SupplierInvoice\SupplierInvoice;
@@ -174,5 +176,43 @@ class WidgetData
     public static function collection(Carbon $start): array
     {
         return self::money(Collection::class, 'collection_date', CollectionEnum::DRAFT->value, CollectionEnum::APPROVED->value, $start);
+    }
+
+    /**
+     * Expenses for the selected month against the month before it, as running
+     * totals per day so the two lines can be compared like Google Analytics.
+     * The selected month stops at today when it is the current month.
+     */
+    public static function expense(Carbon $start): array
+    {
+        [$s, $e, $ps, $pe] = self::bounds($start);
+        $base = fn ($a, $b) => self::between(Expense::query()->where('status', '!=', ExpenseEnum::CANCELLED->value), 'posted_at', $a, $b);
+        $cumulative = function (Carbon $from, int $limitDay) use ($base) {
+            $rows = $base($from, $from->copy()->endOfMonth())->get(['posted_at', 'grand_total']);
+            $daily = self::daily($from, $rows, 'posted_at', 'grand_total');
+            $out = [];
+            $run = 0.0;
+            foreach ($daily as $i => $v) {
+                $run += $v;
+                $out[] = ($i + 1) <= $limitDay ? round($run, 2) : null;
+            }
+            return $out;
+        };
+        $today = Carbon::today();
+        $thisLimit = $start->isSameMonth($today) ? (int) $today->format('j') : $start->daysInMonth;
+        $thisTotal = (float) $base($s, $e)->sum('grand_total');
+        $lastTotal = (float) $base($ps, $pe)->sum('grand_total');
+
+        return [
+            'total' => $thisTotal,
+            'last' => $lastTotal,
+            'count' => $base($s, $e)->count(),
+            'change' => self::change($thisTotal, $lastTotal),
+            'labels' => range(1, max($start->daysInMonth, $ps->daysInMonth)),
+            'this' => $cumulative($s, $thisLimit),
+            'prev' => $cumulative($ps, $ps->daysInMonth),
+            'thisLabel' => $start->format('M'),
+            'prevLabel' => $ps->format('M'),
+        ];
     }
 }
