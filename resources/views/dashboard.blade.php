@@ -23,7 +23,14 @@
         .kpi-cost-row { display: flex; align-items: center; gap: 8px; font-size: .88rem; color: #475467; padding: 3px 0; }
         .kpi-cost-row em { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
         .kpi-cost-row b { margin-left: auto; color: #101828; padding-left: 12px; }
-        .kpi-chart-wrap { position: relative; height: 230px; margin-top: 12px; }
+        .kpi.kpi-chart-card { height: 236px; display: flex; flex-direction: column; overflow: hidden; }
+        .kpi-chart-wrap { position: relative; flex: 1; min-height: 0; margin-top: 12px; }
+        .kpi-medium { height: 236px; overflow-y: auto; }
+        .kpi-tall { height: calc(2 * 236px + 1rem); display: flex; flex-direction: column; overflow: hidden; }
+        .kpi-tall-scroll { flex: 1; min-height: 0; overflow-y: auto; margin-top: 10px; border-radius: 12px; }
+        .kpi-tall-foot { font-size: .75rem; color: #667085; padding-top: 8px; }
+        .kpi-table thead th { position: sticky; top: 0; background: #f8fafc; font-size: .72rem; text-transform: uppercase; color: #667085; z-index: 1; }
+        .kpi-table td { font-size: .8rem; }
         .kpi-head { display: flex; align-items: center; gap: 10px; }
         .kpi-icon { width: 34px; height: 34px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;
             color: #fff; background: var(--kc); font-size: .85rem; border-radius: 50%; width: 32px; height: 32px;
@@ -176,68 +183,17 @@
                             </div>
 
                             <div class="row g-3 mt-1 mb-3">
-                                <div class="col-md-6">@include('dashboard.widgets.job-status-medium')</div>
-
-                                <div class="col-md-6">@include('dashboard.widgets.to-collect-pay-medium')</div>
+                                <div class="col-12 col-sm-6">@include('dashboard.widgets.recent-transactions-tall')</div>
+                                <div class="col-12 col-sm-6 d-flex flex-column gap-3">
+                                    @include('dashboard.widgets.job-status-medium')
+                                    @include('dashboard.widgets.to-collect-pay-medium')
+                                </div>
                             </div>
 
                             <!-- Middle: Two charts side-by-side -->
                             <div class="row g-3 mb-3">
-                                <div class="col-md-7">@include('dashboard.widgets.revenue-expenses-medium')</div>
-                                <div class="col-md-5">@include('dashboard.widgets.revenue-trend-medium')</div>
-                            </div>
-
-                            <!-- Bottom: Recent transactions (wide) -->
-                            <div class="card">
-                                <div class="card-header d-flex flex-row justify-content-between align-items-center w-100">
-                                    <h6 class="mb-0 me-2">{{ __('Recent Transactions') }}</h6>
-                                    <a href="{{ route('invoices.customer') }}" class="btn btn-sm btn-outline-secondary ms-auto flex-shrink-0">{{ __('View All') }}</a>
-                                </div>
-                                <div class="card-body p-0">
-                                    <div class="table-responsive">
-                                        <table class="table table-hover mb-0 align-middle">
-                                            <thead class="table-light">
-                                            <tr>
-                                                <th>#</th>
-                                                <th>{{ __('Invoice') }}</th>
-                                                <th>{{ __('Customer') }}</th>
-                                                <th>{{ __('Date') }}</th>
-                                                <th class="text-end">{{ __('Amount') }}</th>
-                                                <th>{{ __('Status') }}</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            @forelse($recentTransactions as $transaction)
-                                                <tr>
-                                                    <td>{{ $transaction->id }}</td>
-                                                    <td>{{ $transaction->invoice_number ?? $transaction->row_no }}</td>
-                                                    <td>{{ $transaction->customer->name ?? __('N/A') }}</td>
-                                                    <td>{{ $transaction->invoice_date }}</td>
-                                                    <td class="text-end">{{ number_format($transaction->grand_total, 0) }}</td>
-                                                    <td>
-                                                        @if($transaction->status == 'approved')
-                                                            <span class="badge bg-success">{{ __('Paid') }}</span>
-                                                        @elseif($transaction->status == 'draft')
-                                                            <span class="badge bg-warning text-dark">{{ __('Pending') }}</span>
-                                                        @elseif($transaction->status == 'overdue')
-                                                            <span class="badge bg-danger">{{ __('Overdue') }}</span>
-                                                        @elseif($transaction->status == 'partial')
-                                                            <span class="badge bg-info text-dark">{{ __('Part Paid') }}</span>
-                                                        @else
-                                                            <span class="badge bg-secondary">{{ $transaction->status }}</span>
-                                                        @endif
-                                                    </td>
-                                                </tr>
-                                            @empty
-                                                <tr>
-                                                    <td colspan="6" class="text-center">{{ __('No recent transactions found') }}</td>
-                                                </tr>
-                                            @endforelse
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                                <div class="card-footer text-muted small">{{ __('Showing :shown of :total transactions', ['shown' => count($recentTransactions), 'total' => $totalInvoices]) }}</div>
+                                <div class="col-12 col-sm-6">@include('dashboard.widgets.revenue-expenses-medium')</div>
+                                <div class="col-12 col-sm-6">@include('dashboard.widgets.revenue-trend-medium')</div>
                             </div>
 
                         </div> <!-- /.left-col -->

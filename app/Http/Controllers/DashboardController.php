@@ -259,7 +259,7 @@ class DashboardController extends Controller
     {
         return CustomerInvoice::with('customer', 'job')
             ->orderBy('created_at', 'desc')
-            ->take(5)
+            ->take(10)
             ->get();
     }
 
