@@ -23,6 +23,7 @@
         .kpi-cost-row { display: flex; align-items: center; gap: 8px; font-size: .88rem; color: #475467; padding: 3px 0; }
         .kpi-cost-row em { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
         .kpi-cost-row b { margin-left: auto; color: #101828; padding-left: 12px; }
+        .kpi-chart-wrap { position: relative; height: 230px; margin-top: 12px; }
         .kpi-head { display: flex; align-items: center; gap: 10px; }
         .kpi-icon { width: 34px; height: 34px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;
             color: #fff; background: var(--kc); font-size: .85rem; border-radius: 50%; width: 32px; height: 32px;
@@ -177,50 +178,13 @@
                             <div class="row g-3 mt-1 mb-3">
                                 <div class="col-md-6">@include('dashboard.widgets.job-status-medium')</div>
 
-                                <!-- Payments -->
-                                <div class="col-md-6">
-                                    <div class="card shadow-sm border-0 p-3 h-100">
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <h6 class="fw-semibold mb-0">{{ __('Payments') }}</h6>
-                                            <i class="fa-solid fa-money-bill-transfer text-success"></i>
-                                        </div>
-                                        <div class="d-flex justify-content-between mb-1">
-                                            <span>{{ __('To Collect') }}</span>
-                                            <span class="fw-bold text-warning">₹{{ number_format($toCollect, 0) }}</span>
-                                        </div>
-                                        <div class="d-flex justify-content-between">
-                                            <span>{{ __('To Pay') }}</span>
-                                            <span class="fw-bold text-danger">₹{{ number_format($toPay, 0) }}</span>
-                                        </div>
-                                    </div>
-                                </div>
+                                <div class="col-md-6">@include('dashboard.widgets.to-collect-pay-medium')</div>
                             </div>
 
                             <!-- Middle: Two charts side-by-side -->
                             <div class="row g-3 mb-3">
-                                <div class="col-md-7">
-                                    <div class="card">
-                                        <div class="card-header d-flex justify-content-between align-items-center">
-                                            <h6 class="mb-0">{{ __('Revenue vs Expenses') }}</h6>
-                                            <div class="text-muted small">{{ __('Monthly') }}</div>
-                                        </div>
-                                        <div class="card-body" style="min-height:220px;">
-                                            <canvas id="salesMainChart" style="height:220px;"></canvas>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-5">
-                                    <div class="card">
-                                        <div class="card-header d-flex justify-content-between align-items-center">
-                                            <h6 class="mb-0">{{ __('Revenue Trend') }}</h6>
-                                            <div class="text-muted small">{{ __('This month') }}</div>
-                                        </div>
-                                        <div class="card-body" style="min-height:220px;">
-                                            <canvas id="revenueMainChart" style="height:220px;"></canvas>
-                                        </div>
-                                    </div>
-                                </div>
+                                <div class="col-md-7">@include('dashboard.widgets.revenue-expenses-medium')</div>
+                                <div class="col-md-5">@include('dashboard.widgets.revenue-trend-medium')</div>
                             </div>
 
                             <!-- Bottom: Recent transactions (wide) -->
