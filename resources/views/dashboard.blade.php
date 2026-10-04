@@ -205,11 +205,17 @@
         }
 
         /* Remove button on each widget (next to the drag handle) */
-        .dash-remove { position: absolute; top: 6px; right: 6px; z-index: 6; width: 22px; height: 22px; border: 0; border-radius: 50%; padding: 0; line-height: 1;
-            background: rgba(255,255,255,.9); color: #98a2b3; font-size: .65rem; opacity: 0; transition: opacity .15s, color .15s, background .15s; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
-        .dash-item:hover .dash-remove, .dash-remove:focus { opacity: 1; }
-        .dash-remove:hover { background: #dc2626; color: #fff; }
-        @media (hover: none) { .dash-remove { opacity: .7; } }
+        /* Remove (x) badges only exist in edit mode, like arranging apps on a phone. */
+        .dash-remove { display: none; position: absolute; top: -8px; left: -8px; z-index: 7; width: 26px; height: 26px; border: 2px solid #fff; border-radius: 50%; padding: 0; line-height: 1;
+            background: #dc2626; color: #fff; font-size: .7rem; align-items: center; justify-content: center; box-shadow: 0 3px 8px rgba(220,38,38,.45); }
+        .dash-remove:hover { background: #b91c1c; transform: scale(1.1); }
+        .dash-editing .dash-remove { display: inline-flex; animation: dashPop .2s ease-out; }
+        .dash-editing .dash-handle { opacity: 0 !important; pointer-events: none; }
+        .dash-editing .dash-item > :not(.dash-handle):not(.dash-remove) { animation: dashJiggle .32s ease-in-out infinite alternate; }
+        .dash-editing .dash-item:nth-child(even) > :not(.dash-handle):not(.dash-remove) { animation-delay: -.16s; }
+        @keyframes dashJiggle { from { transform: rotate(-.6deg); } to { transform: rotate(.6deg); } }
+        @keyframes dashPop { from { transform: scale(0); } to { transform: scale(1); } }
+        @media (prefers-reduced-motion: reduce) { .dash-editing .dash-item > * { animation: none !important; } }
         .dash-item.dash-removing { transition: opacity .25s, transform .25s; opacity: 0; transform: scale(.92); }
         .dash-item.dash-entering > :not(.dash-handle):not(.dash-remove) { animation: dashEnter .5s cubic-bezier(.2,.8,.2,1); }
         @keyframes dashEnter { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: scale(1); } }
@@ -271,6 +277,7 @@
                     <div class="d-flex justify-content-end align-items-center gap-2 mb-2 dash-toolbar">
                         <span class="text-muted small d-none d-md-inline"><i class="bi bi-arrows-move me-1"></i>{{ __('Drag widgets by the handle to arrange your dashboard') }}</span>
                         <button type="button" class="btn btn-sm btn-primary rounded-pill" id="dash-open-panel"><i class="bi bi-plus-lg me-1"></i>{{ __('Add widget') }}</button>
+                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill" id="dash-edit-toggle" data-label-edit="{{ __('Remove widget') }}" data-label-done="{{ __('Done') }}"><i class="bi bi-dash-circle me-1"></i><span>{{ __('Remove widget') }}</span></button>
                         <span class="small text-success d-none" id="dash-saved"><i class="bi bi-check2-circle me-1"></i>{{ __('Saved') }}</span>
                         <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" id="dash-reset"><i class="bi bi-arrow-counterclockwise me-1"></i>{{ __('Reset layout') }}</button>
                     </div>
@@ -492,7 +499,7 @@
                     });
                     emptyEl.classList.toggle('d-none', on.length > 0);
                 }
-                function openPanel() { panel.classList.add('open'); panel.setAttribute('aria-hidden', 'false'); refreshPanel(); }
+                function openPanel() { if (typeof setEditing === 'function') setEditing(false); panel.classList.add('open'); panel.setAttribute('aria-hidden', 'false'); refreshPanel(); }
                 function closePanel() { panel.classList.remove('open'); panel.setAttribute('aria-hidden', 'true'); }
                 window.addEventListener('open-widget-panel', function () { panel.classList.contains('open') ? closePanel() : openPanel(); });
                 document.getElementById('dash-open-panel').addEventListener('click', openPanel);
@@ -502,6 +509,20 @@
                 document.addEventListener('mousedown', function (e) {
                     if (panel.classList.contains('open') && !e.target.closest('#widgetPanel, #dash-open-panel, [data-widget-panel-toggle]')) closePanel();
                 });
+
+                // Edit mode: the "Remove widget" button shows the x badges on every widget; "Done" hides them again.
+                var editBtn = document.getElementById('dash-edit-toggle'), dashWrap = document.getElementById('dashGrid').parentElement;
+                function setEditing(on) {
+                    dashWrap.classList.toggle('dash-editing', on);
+                    editBtn.classList.toggle('btn-outline-danger', !on);
+                    editBtn.classList.toggle('btn-danger', on);
+                    editBtn.querySelector('span').textContent = on ? editBtn.dataset.labelDone : editBtn.dataset.labelEdit;
+                    editBtn.querySelector('i').className = 'bi me-1 ' + (on ? 'bi-check-lg' : 'bi-dash-circle');
+                    if (on) closePanel();
+                    if (Sortable.get(grid)) Sortable.get(grid).option('disabled', on);
+                }
+                editBtn.addEventListener('click', function () { setEditing(!dashWrap.classList.contains('dash-editing')); });
+                document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setEditing(false); });
 
                 function removeCell(cell) {
                     cell.classList.add('dash-removing');
