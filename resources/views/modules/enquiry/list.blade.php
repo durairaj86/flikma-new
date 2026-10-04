@@ -1,4 +1,5 @@
 @section('page-title', __('Enquiries'))
+@section('hide-topbar', true)
 @section('js','enquiry')
 @section('extra-js','customer,prospect')
 @push('page-title-action')
@@ -10,6 +11,8 @@
 @endpush
 <x-app-layout>
     <main class="gmail-content bg-white px-3">
+        @include('includes.inline-page-title')
+        @include('includes.master-field-hints')
 
         <div id="filterPanel" class="card shadow-sm border-0 d-none filter-panel-card">
 

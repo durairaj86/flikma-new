@@ -1,9 +1,11 @@
 @section('js', 'customer_aging_summary')
 @section('page-title', __('Customer Aging Summary'))
 @section('page-subtitle', __('Outstanding receivables across all customers, by aging period'))
+@section('hide-topbar', true)
 
 <div class="aging-wrapper min-vh-100 bg-light py-4">
     <div class="container-fluid px-lg-5">
+        @include('includes.inline-page-title')
 
         @php
             $bucketColor = function (int $i) use ($bucketDefs) {

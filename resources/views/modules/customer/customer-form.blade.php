@@ -335,6 +335,12 @@
                                 </ul>
                             @endif
 
+                            <style>
+                                /* The field hints make the input cells taller: pin the row to the top and level the +/delete icons with the input line. */
+                                #documentTable > tbody > tr > td { vertical-align: top; }
+                                #documentTable > tbody > tr > td.doc-actions { padding-top: calc(.5rem + 9px); }
+                                #documentTable .doc-actions .action-icons { align-items: center; }
+                            </style>
                             <table class="table align-middle mb-0" id="documentTable">
                                 <thead>
                                 <tr>
@@ -352,7 +358,7 @@
                                     <td>
                                         <input type="file" name="document_file[]" class="form-control">
                                     </td>
-                                    <td class="align-content-center">
+                                    <td class="doc-actions">
                                         <div class="d-flex justify-content-between gap-3 action-icons">
                                             <div class="add-document-row">
                                                 <i class="bi bi-plus-circle text-muted"></i>

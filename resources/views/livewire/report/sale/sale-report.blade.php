@@ -1,9 +1,11 @@
 @section('js', 'sale_report')
 @section('page-title', __('Sales Report'))
+@section('hide-topbar', true)
 @section('page-subtitle', __('Daily, weekly, and monthly sales transaction summaries'))
 
 <div class="provisional-wrapper min-vh-100 bg-light py-4">
     <div class="container-fluid px-lg-5">
+        @include('includes.inline-page-title')
 
         {{-- Page Header --}}
                 {{-- Filters --}}

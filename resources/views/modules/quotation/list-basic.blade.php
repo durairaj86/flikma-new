@@ -1,4 +1,5 @@
 @section('page-title', __('Quotations'))
+@section('hide-topbar', true)
 @push('page-title-action')
     <button class="btn btn-link btn-sm text-muted p-0 text-decoration-none lh-1"
             data-bs-toggle="modal" data-bs-target="#quotationWorkflowModal"
@@ -24,6 +25,8 @@
 --}}
 <x-app-layout>
     <main class="gmail-content bg-white px-3">
+        @include('includes.inline-page-title')
+        @include('includes.master-field-hints')
 
         <div id="filterPanel" class="card shadow-sm border-0 d-none">
             <div class="card-header bg-light border-0 py-3">

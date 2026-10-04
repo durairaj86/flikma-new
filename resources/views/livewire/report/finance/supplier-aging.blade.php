@@ -1,9 +1,11 @@
 @section('js', 'supplier_aging')
 @section('page-title', __('Supplier Aging Report'))
 @section('page-subtitle', __('Track outstanding payables by aging period'))
+@section('hide-topbar', true)
 
 <div class="aging-wrapper min-vh-100 bg-light py-4" wire:key="supplier-aging-{{ $supplierId }}">
     <div class="container-fluid px-lg-5">
+        @include('includes.inline-page-title')
 
         {{-- Header --}}
                 {{-- Filter Bar --}}

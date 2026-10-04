@@ -1,9 +1,11 @@
 @section('js', 'customer_balance_summary')
 @section('page-title', __('Customer Balance Summary'))
 @section('page-subtitle', __('Opening balance, invoiced, received and closing balance for every customer'))
+@section('hide-topbar', true)
 
 <div class="provisional-wrapper min-vh-100 bg-light py-4">
     <div class="container-fluid px-lg-5">
+        @include('includes.inline-page-title')
 
         {{-- Page Header --}}
                 {{-- Filters --}}

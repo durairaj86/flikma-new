@@ -1,9 +1,11 @@
 @section('js', 'supplier_balance_summary')
 @section('page-title', __('Supplier Balance Summary'))
 @section('page-subtitle', __('Opening balance, invoiced, paid and closing balance for every supplier'))
+@section('hide-topbar', true)
 
 <div class="provisional-wrapper min-vh-100 bg-light py-4">
     <div class="container-fluid px-lg-5">
+        @include('includes.inline-page-title')
 
         {{-- Page Header --}}
                 {{-- Filters --}}

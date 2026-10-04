@@ -1,9 +1,11 @@
 @section('js', 'customer_statement')
 @section('page-title', __('Customer Statement'))
 @section('page-subtitle', __('Manage and track account transaction history'))
+@section('hide-topbar', true)
 
 <div class="statement-wrapper min-vh-100 bg-light py-4">
     <div class="container-fluid px-lg-5">
+        @include('includes.inline-page-title')
         {{-- Debug info --}}
         @if(isset($debug) && $debug)
             <div class="alert alert-info d-print-none mb-3 py-1 px-2 small">

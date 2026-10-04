@@ -1,9 +1,11 @@
 @section('js', 'customer_activity_report')
 @section('page-title', __('Customer Activity Report'))
 @section('page-subtitle', __('Job activity, revenue, and profitability grouped by customer'))
+@section('hide-topbar', true)
 
 <div class="provisional-wrapper min-vh-100 bg-light py-4">
     <div class="container-fluid px-lg-5">
+        @include('includes.inline-page-title')
 
         {{-- Page Header --}}
                 {{-- Filters --}}

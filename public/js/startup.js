@@ -3116,3 +3116,25 @@ $(document).on('mouseenter focusin', '.field-hint-wrap', function () {
     const r = this.getBoundingClientRect();
     $(this).toggleClass('hint-right', r.left + Math.min(340, window.innerWidth * 0.85) > box.right - 8);
 });
+
+
+/* Table cells whose text is cut with "..." show the full text in a tooltip on hover (every DataTable). */
+$(document).on('mouseover', 'table.dataTable tbody td', function (e) {
+    if (!window.bootstrap) return;
+    const td = this;
+    let el = e.target;
+    let cut = null;
+    while (el) {
+        if (el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).textOverflow === 'ellipsis') { cut = el; break; }
+        if (el === td) break;
+        el = el.parentElement;
+    }
+    if (!cut) return;
+    const text = (cut.innerText || cut.textContent || '').replace(/\s+/g, ' ').trim();
+    if (!text) return;
+    let tip = bootstrap.Tooltip.getInstance(cut);
+    if (!tip) {
+        tip = new bootstrap.Tooltip(cut, { title: text, placement: 'top', container: 'body', trigger: 'hover', delay: { show: 100, hide: 0 } });
+        tip.show();
+    }
+});
