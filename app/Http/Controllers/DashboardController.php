@@ -461,8 +461,31 @@ class DashboardController extends Controller
         $newCust = $custMonth($start, $end);
         $newCustPrev = $custMonth($prevStart, $prevEnd);
 
+        // Daily series for the selected month (medium widget charts)
+        $days = $start->daysInMonth;
+        $series = fn () => array_fill(1, $days, 0.0);
+        $fill = function (array $arr, $rows, string $dateCol, string $valCol = null) use ($days) {
+            foreach ($rows as $r) {
+                $d = (int) Carbon::parse($r->{$dateCol})->format('j');
+                if ($d >= 1 && $d <= $days) {
+                    $arr[$d] += $valCol ? (float) $r->{$valCol} : 1;
+                }
+            }
+            return array_values($arr);
+        };
+        $salesDaily = $fill($series(), $apprInv($start, $end)->get(['invoice_date', 'grand_total']), 'invoice_date', 'grand_total');
+        $billsDaily = $fill($series(), $apprBill($start, $end)->get(['invoice_date', 'grand_total']), 'invoice_date', 'grand_total');
+        $profitDaily = array_map(fn ($a, $b) => round($a - $b, 2), $salesDaily, $billsDaily);
+        $custDaily = $fill($series(), Customer::query()->whereBetween('created_at', [$start->copy()->startOfDay(), $end->copy()->endOfDay()])->get(['created_at']), 'created_at');
+
         return [
             'month' => $start->format('Y-m'),
+            'series' => [
+                'labels' => range(1, $days),
+                'sales' => $salesDaily,
+                'profit' => $profitDaily,
+                'customers' => $custDaily,
+            ],
             'sales' => [
                 'total' => $sales, 'count' => $apprInv($start, $end)->count(), 'change' => $change($sales, $salesPrev),
                 'collected' => $col['approved'], 'pending' => max(0, $sales - $col['approved']),

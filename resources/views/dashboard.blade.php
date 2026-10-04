@@ -6,6 +6,11 @@
         .kpi { height: 100%; padding: 16px 18px 14px; border-radius: 18px; border: 0;
             background: var(--kbg, #fff);
             box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(15,23,42,.07); }
+        .kpi-medium-body { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; }
+        .kpi-medium-text { min-width: 0; }
+        .kpi-medium-chart { position: relative; width: 48%; height: 96px; flex-shrink: 0; }
+        .kpi-medium .kpi-main, .kpi-medium .kpi-value { margin-top: 0; }
+        .kpi-medium .kpi-legend { margin-top: 10px; }
         .kpi-head { display: flex; align-items: center; gap: 10px; }
         .kpi-icon { width: 34px; height: 34px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;
             color: #fff; background: var(--kc); font-size: .85rem; border-radius: 50%; width: 32px; height: 32px;
@@ -134,70 +139,22 @@
                                 };
                                 $change = fn ($cur, $prev) => $prev > 0 ? round((($cur - $prev) / $prev) * 100, 2) : ($cur > 0 ? 100.0 : 0.0);
                                 $pill = fn ($v) => '<span class="kpi-pill ' . ($v >= 0 ? 'up' : 'down') . '">' . ($v >= 0 ? '&#9650;' : '&#9660;') . ' ' . number_format(abs($v), 1) . '%</span>';
-                                $kpis = [
-                                    ['col' => 'col-sm-6', 'title' => __('Total Sales'), 'icon' => 'fa-dollar-sign', 'color' => '#2563eb',
-                                     'value' => number_format($sc['sales']['total'], 2), 'change' => $sc['sales']['change'],
-                                     'note' => $sc['sales']['count'] . ' ' . __('Invoices'),
-                                     'a' => [__('Collected'), $short($sc['sales']['collected']), $sc['sales']['collected']],
-                                     'b' => [__('Pending'), $short($sc['sales']['pending']), $sc['sales']['pending']]],
-                                    ['col' => 'col-sm-6', 'title' => __('Invoices'), 'icon' => 'fa-file-invoice', 'color' => '#0d9488',
-                                     'value' => number_format($sc['invoices']['count']), 'change' => $sc['invoices']['change'],
-                                     'note' => __('Due') . ': ' . $dueInvoices,
-                                     'a' => [__('Approved'), $sc['invoices']['approved'], $sc['invoices']['approved']],
-                                     'b' => [__('Draft'), $sc['invoices']['draft'], $sc['invoices']['draft']]],
-                                    ['col' => 'col-sm-6', 'title' => __('Customers'), 'icon' => 'fa-users', 'color' => '#ea8a0c',
-                                     'value' => number_format($sc['customers']['total']), 'change' => $sc['customers']['change'],
-                                     'note' => $sc['customers']['new'] . ' ' . __('New'),
-                                     'a' => [__('This month'), $sc['customers']['new'], $sc['customers']['new']],
-                                     'b' => [__('Last month'), $sc['customers']['prevNew'], $sc['customers']['prevNew']]],
-                                    ['col' => 'col-sm-6', 'title' => __('Profit'), 'icon' => 'fa-chart-line', 'color' => '#16a34a',
-                                     'value' => number_format($sc['profit']['total'], 2), 'change' => $sc['profit']['change'],
-                                     'note' => __('Margin') . ' ' . $sc['profit']['margin'] . '%',
-                                     'a' => [__('Revenue'), $short($sc['profit']['revenue']), $sc['profit']['revenue']],
-                                     'b' => [__('Expenses'), $short($sc['profit']['expenses']), $sc['profit']['expenses']]],
-                                    ['col' => 'col-sm-4', 'title' => __('Quotation'), 'icon' => 'fa-file-lines', 'color' => '#7c3aed',
-                                     'value' => number_format($sc['quotation']['total'], 2), 'change' => $sc['quotation']['change'],
-                                     'note' => $sc['quotation']['count'] . ' ' . __('Quotations'),
-                                     'a' => [__('Completed'), $sc['quotation']['completed'], $sc['quotation']['completed']],
-                                     'b' => [__('Approved'), $sc['quotation']['approved'], $sc['quotation']['approved']]],
-                                    ['col' => 'col-sm-4', 'title' => __('Payments'), 'icon' => 'fa-arrow-up-right-from-square', 'color' => '#dc2626',
-                                     'value' => $short($sc['payment']['total']), 'change' => $change($sc['payment']['total'], $sc['payment']['prev']),
-                                     'note' => $sc['payment']['count'] . ' ' . __('Payments'),
-                                     'a' => [__('Approved'), $short($sc['payment']['approved']), $sc['payment']['approved']],
-                                     'b' => [__('Draft'), $short($sc['payment']['draft']), $sc['payment']['draft']]],
-                                    ['col' => 'col-sm-4', 'title' => __('Collection'), 'icon' => 'fa-hand-holding-dollar', 'color' => '#0284c7',
-                                     'value' => $short($sc['collection']['total']), 'change' => $change($sc['collection']['total'], $sc['collection']['prev']),
-                                     'note' => $sc['collection']['count'] . ' ' . __('Collections'),
-                                     'a' => [__('Approved'), $short($sc['collection']['approved']), $sc['collection']['approved']],
-                                     'b' => [__('Draft'), $short($sc['collection']['draft']), $sc['collection']['draft']]],
-                                ];
+                                $series = $sc['series'];
                             @endphp
+
+                            {{-- Medium widgets (with charts) --}}
                             <div class="row g-3 mb-3">
-                                @foreach($kpis as $k)
-                                    @php
-                                        $sum = max(0.0001, (float) $k['a'][2] + (float) $k['b'][2]);
-                                        $pa = round($k['a'][2] / $sum * 100);
-                                    @endphp
-                                    <div class="col-12 {{ $k['col'] }}">
-                                        <div class="kpi" style="--kc: {{ $k['color'] }}; --kbg: {{ ['#ffffff', '#d6fbe8', '#fff0d9', '#dcf7e3', '#ffffff', '#ffffff', '#e3efff'][$loop->index] }};">
-                                            <div class="kpi-head">
-                                                <span class="kpi-icon"><i class="fa-solid {{ $k['icon'] }}"></i></span>
-                                                <span class="kpi-title">{{ $k['title'] }}</span>
-                                                {!! $monthSelect() !!}
-                                            </div>
-                                            <div class="kpi-main">
-                                                <div class="kpi-value">{{ $k['value'] }}</div>
-                                                {!! $pill($k['change']) !!}
-                                            </div>
-                                            <div class="kpi-note">{{ $k['note'] }}</div>
-                                            <div class="kpi-bar"><i style="width: {{ $pa }}%"></i></div>
-                                            <div class="kpi-legend">
-                                                <span><em class="dot-a"></em>{{ $k['a'][0] }} <b>{{ $k['a'][1] }}</b></span>
-                                                <span><em class="dot-b"></em>{{ $k['b'][0] }} <b>{{ $k['b'][1] }}</b></span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endforeach
+                                <div class="col-12 col-sm-6">@include('dashboard.widgets.sales-medium')</div>
+                                <div class="col-12 col-sm-6">@include('dashboard.widgets.invoices-medium')</div>
+                                <div class="col-12 col-sm-6">@include('dashboard.widgets.customers-medium')</div>
+                                <div class="col-12 col-sm-6">@include('dashboard.widgets.profit-medium')</div>
+                            </div>
+
+                            {{-- Small widgets --}}
+                            <div class="row g-3 mb-3">
+                                <div class="col-12 col-sm-4">@include('dashboard.widgets.quotation-small')</div>
+                                <div class="col-12 col-sm-4">@include('dashboard.widgets.payments-small')</div>
+                                <div class="col-12 col-sm-4">@include('dashboard.widgets.collection-small')</div>
                             </div>
 
                             <div class="row g-3">
@@ -569,6 +526,26 @@
                     plugins: { legend: { display: false } },
                     scales: { x: { display: false }, y: { display: false } },
                     elements: { line: { borderWidth: 2 } }
+                }
+            });
+
+            // Medium widget charts (donut / area / bars) driven by data-* attributes
+            document.querySelectorAll('canvas.kpi-chart').forEach(function (cv) {
+                var type = cv.dataset.type, color = cv.dataset.color;
+                var values = JSON.parse(cv.dataset.values), labels = JSON.parse(cv.dataset.labels);
+                var base = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
+                if (type === 'donut') {
+                    new Chart(cv, { type: 'doughnut', data: { labels: ['Approved', 'Draft'], datasets: [{ data: (values[0] + values[1]) ? values : [0, 1], backgroundColor: [color, 'rgba(15,23,42,.12)'], borderWidth: 0 }] },
+                        options: Object.assign({}, base, { cutout: '68%' }) });
+                    return;
+                }
+                var axes = { scales: { x: { display: false }, y: { display: false } } };
+                if (type === 'line') {
+                    new Chart(cv, { type: 'line', data: { labels: labels, datasets: [{ data: values, borderColor: color, backgroundColor: color + '33', fill: true, tension: .4, pointRadius: 0, borderWidth: 2 }] },
+                        options: Object.assign({}, base, axes) });
+                } else {
+                    new Chart(cv, { type: 'bar', data: { labels: labels, datasets: [{ data: values, borderRadius: 3, backgroundColor: type === 'profitbar' ? values.map(function (v) { return v >= 0 ? color : '#dc2626'; }) : color }] },
+                        options: Object.assign({}, base, axes) });
                 }
             });
         </script>
