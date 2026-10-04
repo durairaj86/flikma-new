@@ -275,5 +275,9 @@
     @include('activity.feed-view')
 
     @livewireScripts
+{{-- One-line help under confusing form fields (texts live in includes/master-field-hints) --}}
+@auth
+    @include('includes.master-field-hints')
+@endauth
 </body>
 </html>

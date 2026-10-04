@@ -5,7 +5,6 @@
     <!-- Main Content -->
     <main class="gmail-content bg-white px-3">
         @include('includes.inline-page-title')
-        @include('includes.master-field-hints')
         <!-- Tabs -->
         <div class="d-flex justify-content-between align-items-start py-3">
             <div class="align-items-center flex-shrink-0">
