@@ -11,6 +11,12 @@
         .kpi-medium-chart { position: relative; width: 48%; height: 96px; flex-shrink: 0; }
         .kpi-medium .kpi-main, .kpi-medium .kpi-value { margin-top: 0; }
         .kpi-medium .kpi-legend { margin-top: 10px; }
+        .kpi-legend.kpi-legend-3 { grid-template-columns: repeat(3, 1fr); font-size: .72rem; }
+        .kpi-list { margin-top: 10px; background: rgba(255,255,255,.75); border-radius: 12px; padding: 4px 10px; }
+        .kpi-list-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 7px 0; font-size: .8rem; color: #101828; border-bottom: 1px solid rgba(15,23,42,.06); }
+        .kpi-list-row:last-child { border-bottom: 0; }
+        .kpi-list-name { display: flex; flex-direction: column; min-width: 0; font-weight: 600; }
+        .kpi-list-name small { font-weight: 400; color: #667085; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .kpi-head { display: flex; align-items: center; gap: 10px; }
         .kpi-icon { width: 34px; height: 34px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;
             color: #fff; background: var(--kc); font-size: .85rem; border-radius: 50%; width: 32px; height: 32px;
@@ -317,72 +323,9 @@
                         <!-- RIGHT: summary / mini panels (4/12) -->
                         <div class="col-lg-4 right-col">
                             <!-- Outstanding -->
-                            <div class="right-card">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <h6>{{ __('Outstanding') }}</h6>
-                                        <div class="big">{{ number_format($outstanding, 0) }}</div>
-                                        <div class="muted-sm mt-1">{{ __('Total amount outstanding') }}</div>
-                                    </div>
-                                    <div class="text-end">
-                                        <span class="badge bg-danger">{{ __('Overdue') }}</span>
-                                        <div class="muted-sm mt-2">
-                                            {{ $outstandingChange >= 0 ? '+' : '' }}{{ $outstandingChange }}% {{ __('vs last month') }}
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="mb-3">@include('dashboard.widgets.outstanding-medium')</div>
 
-                                <hr class="my-2" />
-                                <div>
-                                    <div class="d-flex justify-content-between small mb-1"><div>{{ __('Due') }} <small class="text-muted">{{ __('0-30d') }}</small></div><div>{{ number_format($outstanding30d, 0) }}</div></div>
-                                    <div class="progress mb-2" style="height:8px;">
-                                        <div class="progress-bar bg-warning" style="width:{{ $outstanding > 0 ? ($outstanding30d / $outstanding) * 100 : 0 }}%"></div>
-                                    </div>
-
-                                    <div class="d-flex justify-content-between small mb-1"><div>{{ __('Due') }} <small class="text-muted">{{ __('31-60d') }}</small></div><div>{{ number_format($outstanding60d, 0) }}</div></div>
-                                    <div class="progress mb-2" style="height:8px;">
-                                        <div class="progress-bar bg-danger" style="width:{{ $outstanding > 0 ? ($outstanding60d / $outstanding) * 100 : 0 }}%"></div>
-                                    </div>
-
-                                    <div class="d-flex justify-content-between small mb-1"><div>{{ __('Due') }} <small class="text-muted">{{ __('60+d') }}</small></div><div>{{ number_format($outstanding60Plus, 0) }}</div></div>
-                                    <div class="progress mb-0" style="height:8px;">
-                                        <div class="progress-bar bg-secondary" style="width:{{ $outstanding > 0 ? ($outstanding60Plus / $outstanding) * 100 : 0 }}%"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Awaiting Approval -->
-                            <div class="right-card">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h6>{{ __('Awaiting Approval') }}</h6>
-                                        <div class="big">{{ $awaitingApproval->count() }} {{ __('Invoices') }}</div>
-                                        <div class="muted-sm mt-1">{{ __('Total') }} {{ number_format($awaitingApprovalTotal, 0) }}</div>
-                                    </div>
-                                    <div>
-                                        <a href="{{ route('invoices.customer') }}" class="btn btn-sm btn-outline-primary"><i class="fa fa-check"></i> {{ __('Review') }}</a>
-                                    </div>
-                                </div>
-
-                                <hr class="my-2" />
-                                <!-- small list of invoices -->
-                                <div class="list-group list-group-flush small">
-                                    @forelse($awaitingApproval->take(3) as $invoice)
-                                        <div class="list-group-item px-0">
-                                            <div class="d-flex justify-content-between">
-                                                <div>{{ $invoice->invoice_number ?? $invoice->row_no }}</div>
-                                                <div class="text-end">{{ number_format($invoice->grand_total, 0) }}
-                                                    <span class="text-muted d-block">{{ $invoice->customer->name ?? __('N/A') }}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @empty
-                                        <div class="list-group-item px-0">
-                                            <div class="text-center">{{ __('No invoices awaiting approval') }}</div>
-                                        </div>
-                                    @endforelse
-                                </div>
-                            </div>
+                            <div class="mb-3">@include('dashboard.widgets.awaiting-approval-medium')</div>
 
                             <!-- Cost Summary (mini-donut + stats) -->
                             <div class="right-card">
@@ -535,7 +478,10 @@
                 var values = JSON.parse(cv.dataset.values), labels = JSON.parse(cv.dataset.labels);
                 var base = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
                 if (type === 'donut') {
-                    new Chart(cv, { type: 'doughnut', data: { labels: ['Approved', 'Draft'], datasets: [{ data: (values[0] + values[1]) ? values : [0, 1], backgroundColor: [color, 'rgba(15,23,42,.12)'], borderWidth: 0 }] },
+                    var colors = cv.dataset.colors ? JSON.parse(cv.dataset.colors) : [color, 'rgba(15,23,42,.12)'];
+                    var names = cv.dataset.names ? JSON.parse(cv.dataset.names) : ['Approved', 'Draft'];
+                    var total = values.reduce(function (a, b) { return a + b; }, 0);
+                    new Chart(cv, { type: 'doughnut', data: { labels: total ? names : [''], datasets: [{ data: total ? values : [1], backgroundColor: total ? colors : ['rgba(15,23,42,.12)'], borderWidth: 0 }] },
                         options: Object.assign({}, base, { cutout: '68%' }) });
                     return;
                 }
