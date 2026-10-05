@@ -61,11 +61,14 @@
 
     /* Force the inner container to scroll and take full height */
     #activity-feed-scroll-container {
-        height: calc(100vh - 60px); /* Use viewport height minus header height */
+        height: 100%; /* fill the drawer body so only this container scrolls */
         overflow-y: auto; /* THIS FORCES THE SCROLLBAR HERE */
         -webkit-overflow-scrolling: touch;
         padding: 1rem; /* Re-apply the padding lost from offcanvas-body p-0 */
     }
+
+    /* Only the inner container scrolls — the drawer body must not add a second scrollbar. */
+    #moduleFeedViewDrawer .offcanvas-body { overflow: hidden; }
 
     /* Ensure the offcanvas body takes full height */
     /*.offcanvas-body {

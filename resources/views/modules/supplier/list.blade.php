@@ -33,7 +33,7 @@
             </div>
             <div class="d-flex justify-content-between">
                 <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Supplier') }}</button>
-                <button class="btn btn-outline-primary rounded-pill px-4 ms-2" id="import">{{ __('Import') }}</button>
+                <button class="btn btn-icon-search rounded-circle ms-2" id="import" title="{{ __('Import') }}" aria-label="{{ __('Import') }}"><i class="bi bi-upload"></i></button>
             </div>
         </div>
         {{-- min-height guarantees room for a fully-expanded row action dropdown

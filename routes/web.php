@@ -84,6 +84,8 @@ Route::middleware(['auth', 'module.permission'])->group(function () {
     Route::post('/prospect/create/quick', [\App\Http\Controllers\Prospect\ProspectController::class, 'quickStore']);
 
     Route::view('/suppliers', 'modules.supplier.list')->name('suppliers');
+    Route::get('/suppliers/{id}', [\App\Http\Controllers\Supplier\SupplierDetailController::class, 'show'])->whereNumber('id')->name('suppliers.show');
+    Route::get('/suppliers/{id}/tab/{tab}', [\App\Http\Controllers\Supplier\SupplierDetailController::class, 'tab'])->whereNumber('id')->name('suppliers.tab');
     Route::post('/supplier/data', [\App\Http\Controllers\Supplier\SupplierController::class, 'fetchAllRows'])->name('suppliers.data');
     Route::post('/supplier/import/upload', [\App\Http\Controllers\Supplier\SupplierController::class, 'importUpload']);
     Route::post('/supplier/import/process', [\App\Http\Controllers\Supplier\SupplierController::class, 'importProcess']);
