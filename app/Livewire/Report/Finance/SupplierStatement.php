@@ -168,7 +168,7 @@ class SupplierStatement extends Component
         }
 
         // ── Opening balance: AP entries before the start date ──
-        $openingQuery = DB::table('finance_sub as fs')
+        $openingQuery = DB::table('finance_subs as fs')
             ->join('finance as f', 'fs.finance_id', '=', 'f.id')
             ->where('fs.supplier_id', $this->supplierId)
             ->where('fs.company_id', $companyId)

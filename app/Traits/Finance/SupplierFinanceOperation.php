@@ -142,7 +142,7 @@ trait SupplierFinanceOperation
                 'updated_at' => now(),
             ];
 
-            DB::table('finance_sub')->insert($financeSubs);
+            DB::table('finance_subs')->insert($financeSubs);
             DB::commit();
         } catch (\Exception $ex) {
             DB::rollBack();
@@ -185,7 +185,7 @@ trait SupplierFinanceOperation
 
             $userId = Auth::id();
 
-            DB::table('finance_sub')->insert([
+            DB::table('finance_subs')->insert([
                 [
                     'finance_id' => $financeId,
                     'account_id' => 1300, // Advance to Supplier
@@ -268,7 +268,7 @@ trait SupplierFinanceOperation
 
             $userId = Auth::id();
 
-            DB::table('finance_sub')->insert([
+            DB::table('finance_subs')->insert([
                 [
                     'finance_id' => $financeId,
                     'account_id' => 2100, // Accounts Payable
@@ -330,7 +330,7 @@ trait SupplierFinanceOperation
                 ->first();
 
             if ($finance) {
-                DB::table('finance_sub')->where('finance_id', $finance->id)->delete();
+                DB::table('finance_subs')->where('finance_id', $finance->id)->delete();
                 DB::table('finance')->where('id', $finance->id)->delete();
             }
         } catch (\Exception $ex) {

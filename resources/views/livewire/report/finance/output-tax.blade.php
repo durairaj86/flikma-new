@@ -2,8 +2,8 @@
 @section('page-title', __('Output Tax Report'))
 @section('page-subtitle'){{ __('VAT collected on sales for') }} {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} &mdash; {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}@endsection
 
-<div class="provisional-wrapper min-vh-100 bg-light py-4">
-    <div class="container-fluid px-lg-5">
+<div class="provisional-wrapper min-vh-100 bg-light pt-3 pb-4">
+    <div class="container-fluid px-3">
 
         {{-- Page Header --}}
                 {{-- Filters --}}

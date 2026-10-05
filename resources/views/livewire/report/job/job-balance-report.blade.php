@@ -2,8 +2,8 @@
 @section('page-title', __('Job Balance Report'))
 @section('page-subtitle', __('Income vs expense per job with profit / loss and margin'))
 
-<div class="provisional-wrapper min-vh-100 bg-light py-4">
-    <div class="container-fluid px-lg-5">
+<div class="provisional-wrapper min-vh-100 bg-light pt-3 pb-4">
+    <div class="container-fluid px-3">
 
         {{-- Page Header --}}
                 {{-- Filters --}}

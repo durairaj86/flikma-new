@@ -10,6 +10,66 @@ CUSTOMER = {
         load(activeTab) {
             CUSTOMER.list.dataTable(activeTab);
         },
+        filters() {
+            return {
+                salesperson_id: $('#filter-salesman').val() || '',
+                joined_from: $('#filter-joined-from').val() || '',
+                joined_to: $('#filter-joined-to').val() || ''
+            };
+        },
+        resetFilterInputs(only = null) {
+            if (!only || only === 'salesman') {
+                const el = document.getElementById('filter-salesman');
+                if (el.tomselect) el.tomselect.clear(); else $(el).val('');
+            }
+            if (!only || only === 'joined') {
+                $('#filter-joined-from, #filter-joined-to').each(function () {
+                    if (this._flatpickr) this._flatpickr.clear(); else $(this).val('');
+                });
+            }
+        },
+        chips() {
+            const f = CUSTOMER.list.filters();
+            const items = [];
+            const chip = (label, value, key) => '<div class="d-inline-flex align-items-center bg-light border rounded-pill px-2 py-1 me-2 mb-2 small" style="font-size:0.8rem;">' +
+                '<span class="me-2">' + label + ' :&nbsp;<b>' + $('<span>').text(value).html() + '</b></span>' +
+                '<button type="button" class="btn btn-sm btn-light p-0 border-0 d-flex align-items-center justify-content-center customer-chip-remove" style="width:16px;height:16px;line-height:1;" data-key="' + key + '" aria-label="Close">&times;</button></div>';
+            if (f.salesperson_id) items.push(chip('Salesman', $('#filter-salesman option:selected').text(), 'salesman'));
+            if (f.joined_from || f.joined_to) items.push(chip('Joined', (f.joined_from || '…') + ' / ' + (f.joined_to || '…'), 'joined'));
+            $('#customerFilterChips').html(items.join(''));
+            $('.customer-chip-remove').off().on('click', function () {
+                CUSTOMER.list.resetFilterInputs($(this).data('key'));
+                $('#customer-filter-apply').trigger('click');
+            });
+        },
+        bindFilter() {
+            const panel = $('#customerFilterForm');
+            if (!panel.data('ready')) {
+                panel.data('ready', true);
+                initTomSelectForm(panel);
+                datepicker();
+                // Pickers/dropdowns render outside the menu; don't let clicks on them close it.
+                document.getElementById('customerFilterBtn').addEventListener('hide.bs.dropdown', function (e) {
+                    const t = e.clickEvent && e.clickEvent.target;
+                    if (t && $(t).closest('.flatpickr-calendar, .ts-dropdown').length) e.preventDefault();
+                });
+            }
+            const refresh = () => {
+                const n = Object.values(CUSTOMER.list.filters()).filter(v => v).length;
+                $('#customerFilterBadge').text(n).toggleClass('d-none', n === 0);
+                CUSTOMER.list.chips();
+                CUSTOMER.list.load();
+            };
+            $('#customer-filter-apply').off().on('click', function () {
+                refresh();
+                bootstrap.Dropdown.getOrCreateInstance(document.getElementById('customerFilterBtn')).hide();
+            });
+            $('#customer-filter-clear').off().on('click', function () {
+                $('#filter-salesman').val('');
+                CUSTOMER.list.resetFilterInputs();
+                refresh();
+            });
+        },
         dataTable(activeTab = null) {
             // ⚠️ CRUCIAL: Destroy the old instance before creating a new one
             GLOBAL_FN.destroyDataTable();
@@ -33,6 +93,10 @@ CUSTOMER = {
                         data: {
                             'tab': activeTab
                         },
+                        beforeSend: function (xhr, settings) {
+                            const f = CUSTOMER.list.filters();
+                            settings.data += '&' + $.param(f);
+                        },
                         dataSrc: function (json) {
                             // Remove loader rows when data arrives
                             $('#dataTable tbody').find('.loading-row').remove();
@@ -42,6 +106,7 @@ CUSTOMER = {
                     },
                     columnDefs: [
                         {targets: [0], searchable: false},
+                        {targets: [7], searchable: false, orderable: false},
                         {targets: [0], orderable: false},
                         /*{targets: [1], class: 'hide', visible: false},*/
                     ],
@@ -125,6 +190,7 @@ CUSTOMER = {
                     initComplete: function () {
                         CUSTOMER.form.open();
                         webDataTable.actions.menu();
+                        CUSTOMER.list.bindFilter();
                     }
                 });
 

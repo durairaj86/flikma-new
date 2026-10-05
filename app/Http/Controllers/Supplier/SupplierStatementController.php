@@ -47,14 +47,14 @@ class SupplierStatementController extends Controller
         $supplierAccountIds = [2100];
 
         // --- Opening Balance before from_date ---
-        $openingDebit = DB::table('finance_sub')
+        $openingDebit = DB::table('finance_subs')
             ->where('supplier_id', $selectedSupplier->id)
             ->where('company_id', $companyId)
             ->whereIn('account_id', $supplierAccountIds)
             ->where('reference_date', '<', $fromDate)
             ->sum('base_debit');
 
-        $openingCredit = DB::table('finance_sub')
+        $openingCredit = DB::table('finance_subs')
             ->where('supplier_id', $selectedSupplier->id)
             ->where('company_id', $companyId)
             ->whereIn('account_id', $supplierAccountIds)

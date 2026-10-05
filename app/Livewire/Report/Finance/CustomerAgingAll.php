@@ -11,6 +11,8 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class CustomerAgingAll extends Component
 {
+    use \App\Traits\Finance\AgingAsOf;
+
     use BuildsAgingBuckets;
 
     public string $asOfDate = '';
@@ -27,9 +29,7 @@ class CustomerAgingAll extends Component
 
         $invoices = CustomerInvoice::with('customer:id,name_en,row_no')
             ->where('status', 3)
-            ->where(function ($q) {
-                $q->whereRaw('COALESCE(paid_amount, 0) < grand_total');
-            })
+            ->whereDate('invoice_date', '<=', Carbon::parse($this->asOfDate))
             ->whereHas('customer', function ($q) {
                 if (!empty($this->search)) {
                     $q->where(function ($inner) {
@@ -44,8 +44,11 @@ class CustomerAgingAll extends Component
         $byCustomer = [];
         $totals = array_merge($this->emptyAgingBuckets(), ['grand_total' => 0.0]);
 
+        $settled = $this->settledAsOf('customer', Carbon::parse($this->asOfDate));
+
+
         foreach ($invoices as $invoice) {
-            $balance = (float)$invoice->grand_total - (float)($invoice->paid_amount ?? 0);
+            $balance = (float)$invoice->grand_total - ($settled[$invoice->id] ?? 0.0);
 
             if ($balance <= 0 || !$invoice->customer) {
                 continue;

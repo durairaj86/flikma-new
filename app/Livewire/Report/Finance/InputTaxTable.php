@@ -39,7 +39,7 @@ class InputTaxTable extends Component
     {
         // Input VAT account ID = 7 (code 1150 — "Input VAT", type Asset)
         // Input tax lines are DEBITS on the supplier invoice (DR Input VAT / CR AP)
-        // We filter directly on finance_sub.reference_date (the actual transaction date)
+        // We filter directly on finance_subs.reference_date (the actual transaction date)
 
         $inputVatAccountId = 7; // 1150 Input VAT
 
@@ -81,8 +81,8 @@ class InputTaxTable extends Component
                 'voucher_no'     => $transaction->voucher_no,
                 'voucher_type'   => $transaction->voucher_type,
                 'reference_no'   => $transaction->reference_no,
-                'reference_date' => $transaction->reference_date, // from finance_sub
-                'description'    => $transaction->description,    // from finance_sub
+                'reference_date' => $transaction->reference_date, // from finance_subs
+                'description'    => $transaction->description,    // from finance_subs
                 'amount'         => $amount,
             ];
 

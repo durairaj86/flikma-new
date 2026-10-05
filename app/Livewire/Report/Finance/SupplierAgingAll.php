@@ -11,6 +11,8 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class SupplierAgingAll extends Component
 {
+    use \App\Traits\Finance\AgingAsOf;
+
     use BuildsAgingBuckets;
 
     public string $asOfDate = '';
@@ -27,9 +29,7 @@ class SupplierAgingAll extends Component
 
         $invoices = SupplierInvoice::with('supplier:id,name_en,row_no')
             ->where('status', 3)
-            ->where(function ($q) {
-                $q->whereRaw('COALESCE(paid_amount, 0) < grand_total');
-            })
+            ->whereDate('invoice_date', '<=', Carbon::parse($this->asOfDate))
             ->whereHas('supplier', function ($q) {
                 if (!empty($this->search)) {
                     $q->where(function ($inner) {
@@ -44,8 +44,11 @@ class SupplierAgingAll extends Component
         $bySupplier = [];
         $totals = array_merge($this->emptyAgingBuckets(), ['grand_total' => 0.0]);
 
+        $settled = $this->settledAsOf('supplier', Carbon::parse($this->asOfDate));
+
+
         foreach ($invoices as $invoice) {
-            $balance = (float)$invoice->grand_total - (float)($invoice->paid_amount ?? 0);
+            $balance = (float)$invoice->grand_total - ($settled[$invoice->id] ?? 0.0);
 
             if ($balance <= 0 || !$invoice->supplier) {
                 continue;

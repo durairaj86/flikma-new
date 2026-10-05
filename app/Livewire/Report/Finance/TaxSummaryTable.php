@@ -43,7 +43,7 @@ class TaxSummaryTable extends Component
         //
         // VAT payable to authority = Output VAT collected − Input VAT reclaimable
         //
-        // Date filter is on finance_sub.reference_date (actual transaction date)
+        // Date filter is on finance_subs.reference_date (actual transaction date)
 
         $inputVatAccountId  = 7;
         $outputVatAccountId = 20;

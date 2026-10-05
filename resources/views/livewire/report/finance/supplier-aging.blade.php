@@ -3,8 +3,8 @@
 @section('page-subtitle', __('Track outstanding payables by aging period'))
 @section('hide-topbar', true)
 
-<div class="aging-wrapper min-vh-100 bg-light py-4" wire:key="supplier-aging-{{ $supplierId }}">
-    <div class="container-fluid px-lg-5">
+<div class="aging-wrapper min-vh-100 bg-light pb-4" wire:key="supplier-aging-{{ $supplierId }}">
+    <div class="container-fluid px-3">
         @include('includes.inline-page-title')
 
         {{-- Header --}}

@@ -39,7 +39,7 @@ class OutputTaxTable extends Component
     {
         // Output VAT account ID = 20 (code 2130 — "Output VAT Payable", type Liability)
         // Output tax lines are CREDITS on the customer invoice (DR AR / CR Sales / CR Output VAT)
-        // We filter directly on finance_sub.reference_date (the actual transaction date)
+        // We filter directly on finance_subs.reference_date (the actual transaction date)
 
         $outputVatAccountId = 20; // 2130 Output VAT Payable
 
@@ -81,8 +81,8 @@ class OutputTaxTable extends Component
                 'voucher_no'     => $transaction->voucher_no,
                 'voucher_type'   => $transaction->voucher_type,
                 'reference_no'   => $transaction->reference_no,
-                'reference_date' => $transaction->reference_date, // from finance_sub
-                'description'    => $transaction->description,    // from finance_sub
+                'reference_date' => $transaction->reference_date, // from finance_subs
+                'description'    => $transaction->description,    // from finance_subs
                 'amount'         => $amount,
             ];
 

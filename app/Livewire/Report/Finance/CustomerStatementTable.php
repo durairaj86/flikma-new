@@ -114,7 +114,7 @@ class CustomerStatementTable extends Component
         $customerAccountIds = DB::table('accounts')->where('code', '1130')->pluck('id')->all() ?: [5];
 
         // Opening Balance before from_date
-        $openingQuery = DB::table('finance_sub as fs')
+        $openingQuery = DB::table('finance_subs as fs')
             ->join('finance as f', 'fs.finance_id', '=', 'f.id')
             ->where('fs.customer_id', $this->customerId)
             ->where('fs.company_id', $companyId)
@@ -130,7 +130,7 @@ class CustomerStatementTable extends Component
         // Transactions in date range — taken from the AR sub-ledger lines.
         // (Finance headers always have total_debit == total_credit, so they
         // can never move a running balance.)
-        $transactions = DB::table('finance_sub as fs')
+        $transactions = DB::table('finance_subs as fs')
             ->join('finance as f', 'fs.finance_id', '=', 'f.id')
             ->leftJoin('jobs as j', 'fs.job_id', '=', 'j.id')
             ->where('fs.company_id', $companyId)

@@ -4,7 +4,15 @@
 <x-app-layout>
     <!-- Main Content -->
     <main class="gmail-content bg-white px-3">
-        @include('includes.inline-page-title')
+        <style>
+            .cust-title { display: none; }
+            body:not(.has-top-header) .cust-title { display: block; }
+        </style>
+        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap pt-2 pb-0">
+            <h4 class="fw-bold text-dark mb-0 cust-title">@yield('page-title')</h4>
+            <div class="d-flex align-items-center gap-2 ms-auto">
+            </div>
+        </div>
         <!-- Tabs -->
         <div class="d-flex justify-content-between align-items-start py-3">
             <div class="align-items-center flex-shrink-0">
@@ -34,6 +42,13 @@
                                 <span class="status-count ms-2" id="blockedCount">0</span>
                             </button>
                         </li>
+                        <li class="nav-item me-2">
+                            <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
+                                    data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="overdue">
+                                <span><i class="bi bi-exclamation-triangle text-warning me-1"></i> {{ __('Overdue') }} -</span>
+                                <span class="status-count ms-2" id="overdueCount">0</span>
+                            </button>
+                        </li>
                         <li class="nav-item">
                             <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                     data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="rejected">
@@ -47,7 +62,7 @@
             <div class="d-flex justify-content-between">
                 <div>
                     <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Customer') }}</button>
-                    <button class="btn btn-outline-primary rounded-pill px-4 ms-2" id="import">{{ __('Import') }}</button>
+                    <button class="btn btn-icon-search rounded-circle ms-2" id="import" title="{{ __('Import') }}" aria-label="{{ __('Import') }}"><i class="bi bi-upload"></i></button>
                 </div>
             </div>
         </div>
@@ -66,13 +81,42 @@
                         &times;
                     </button>
                 </div>--}}
-                <div></div>
-                <div class="align-items-center gap-2">
-                    <div class="search-box position-relative me-2">
+                <div class="d-flex flex-wrap align-items-center" id="customerFilterChips"></div>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="search-box position-relative">
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
 
                         <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
                                placeholder="{{ __('Search customers...') }}" aria-label="{{ __('Search customers...') }}">
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-icon-search rounded-circle position-relative" title="{{ __('Filter') }}" aria-label="{{ __('Filter') }}" type="button" id="customerFilterBtn"
+                                data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                            <i class="bi bi-funnel"></i>
+                            <span class="badge bg-primary rounded-pill d-none position-absolute top-0 start-100 translate-middle" id="customerFilterBadge">0</span>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end p-3 shadow" id="customerFilterForm" style="width:320px;">
+                            <div class="mb-2">
+                                <label class="form-label small text-muted mb-1">{{ __('Salesman') }}</label>
+                                <select class="tom-select avoid-filter" id="filter-salesman" placeholder="{{ __('All Salesmen') }}">
+                                    <option value="">{{ __('All Salesmen') }}</option>
+                                    @foreach(\App\Models\Master\Salesperson\Salesperson::orderBy('name')->get(['id', 'name']) as $sp)
+                                        <option value="{{ $sp->id }}">{{ $sp->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small text-muted mb-1">{{ __('Joined Date') }}</label>
+                                <div class="d-flex gap-2">
+                                    <input type="text" class="form-control datepicker" id="filter-joined-from" data-min-date="01-01-2000" data-max-date="31-12-2099" aria-label="{{ __('From') }}">
+                                    <input type="text" class="form-control datepicker" id="filter-joined-to" data-min-date="01-01-2000" data-max-date="31-12-2099" aria-label="{{ __('To') }}">
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-sm btn-light" id="customer-filter-clear">{{ __('Clear') }}</button>
+                                <button type="button" class="btn btn-sm btn-primary" id="customer-filter-apply">{{ __('Apply') }}</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

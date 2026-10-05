@@ -2,8 +2,8 @@
 @section('page-title', __('Trial Balance'))
 @section('page-subtitle', __('Double-entry verification — total debits must equal total credits'))
 
-<div class="tb-wrapper min-vh-100 bg-light py-4">
-    <div class="container-fluid px-lg-5">
+<div class="tb-wrapper min-vh-100 bg-light pt-3 pb-4">
+    <div class="container-fluid px-3">
 
         {{-- Page Header --}}
                 {{-- Filters --}}

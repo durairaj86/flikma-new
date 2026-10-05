@@ -2,8 +2,8 @@
 @section('page-title', __('Provisional Report'))
 @section('page-subtitle', __('Compare provisional vs actual cost & sales — per job or by activity'))
 
-<div class="provisional-wrapper min-vh-100 bg-light py-4">
-    <div class="container-fluid px-lg-5">
+<div class="provisional-wrapper min-vh-100 bg-light pt-3 pb-4">
+    <div class="container-fluid px-3">
 
         {{-- Page Header --}}
                 {{-- Filters --}}

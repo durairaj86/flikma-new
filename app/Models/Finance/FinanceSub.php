@@ -14,7 +14,7 @@ class FinanceSub extends Model
 {
     use CompanyScopeTrait;
 
-    protected $table = 'finance_sub';
+    protected $table = 'finance_subs';
 
     protected $fillable = [
         'finance_id',

@@ -68,7 +68,7 @@ class BalanceSheetTable extends Component
         $totalEquity = 0;
 
         foreach ($accounts as $account) {
-            // Cumulative balance up to endDate using reference_date on finance_sub
+            // Cumulative balance up to endDate using reference_date on finance_subs
             $financeSub = FinanceSub::where('account_id', $account->id)
                 ->where('reference_date', '<=', $this->endDate)
                 ->whereHas('finance', function ($query) {

@@ -20,7 +20,7 @@ class OpeningBalanceController extends Controller
     private int $apAccountId = 18;
 
     // ──────────────────────────────────────────────────────────────
-    // INDEX  — list individual finance_sub entries
+    // INDEX  — list individual finance_subs entries
     // ──────────────────────────────────────────────────────────────
     public function index(Request $request)
     {
@@ -188,7 +188,7 @@ class OpeningBalanceController extends Controller
     }
 
     // ──────────────────────────────────────────────────────────────
-    // EDIT  — single finance_sub entry
+    // EDIT  — single finance_subs entry
     // ──────────────────────────────────────────────────────────────
     public function edit($id)
     {
@@ -216,7 +216,7 @@ class OpeningBalanceController extends Controller
     }
 
     // ──────────────────────────────────────────────────────────────
-    // UPDATE  — single finance_sub entry
+    // UPDATE  — single finance_subs entry
     // ──────────────────────────────────────────────────────────────
     public function update(Request $request, $id)
     {
@@ -295,7 +295,7 @@ class OpeningBalanceController extends Controller
     }
 
     // ──────────────────────────────────────────────────────────────
-    // DELETE  — single finance_sub entry
+    // DELETE  — single finance_subs entry
     // ──────────────────────────────────────────────────────────────
     public function delete($id)
     {

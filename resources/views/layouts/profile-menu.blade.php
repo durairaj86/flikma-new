@@ -95,6 +95,13 @@
                 <i class="bi bi-translate"></i>
             </a>
 
+            {{-- Notifications / activity feed — the header's bell (same #activity-feed trigger, wired in startup.js).
+                 The header and rail are never both rendered, so the id stays unique. --}}
+            <a href="#" id="activity-feed" class="profile-menu-btn profile-menu-btn-bell position-relative"
+               title="{{ __('Notifications') }}" aria-label="{{ __('Notifications') }}">
+                <i class="bi bi-bell"></i>
+            </a>
+
             {{-- Header on/off shortcut. Sits in the rail while the header is hidden,
                  and in the header itself while it is showing, so one click is always
                  available to flip between the two layouts. --}}

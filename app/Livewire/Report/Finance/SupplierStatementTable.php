@@ -106,7 +106,7 @@ class SupplierStatementTable extends Component
         $supplierAccountIds = DB::table('accounts')->where('code', '2110')->pluck('id')->all() ?: [18];
 
         // Opening Balance before from_date (AP sub-ledger entries before period)
-        $openingQuery = DB::table('finance_sub as fs')
+        $openingQuery = DB::table('finance_subs as fs')
             ->join('finance as f', 'fs.finance_id', '=', 'f.id')
             ->where('fs.supplier_id', $this->supplierId)
             ->where('fs.company_id', $companyId)
@@ -122,7 +122,7 @@ class SupplierStatementTable extends Component
         // Transactions in date range — taken from the AP sub-ledger lines.
         // (Finance headers always have total_debit == total_credit, so they
         // can never move a running balance.)
-        $transactions = DB::table('finance_sub as fs')
+        $transactions = DB::table('finance_subs as fs')
             ->join('finance as f', 'fs.finance_id', '=', 'f.id')
             ->leftJoin('jobs as j', 'fs.job_id', '=', 'j.id')
             ->where('fs.company_id', $companyId)

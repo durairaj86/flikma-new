@@ -2,8 +2,8 @@
 @section('page-title', __('Supplier Ledger'))
 @section('page-subtitle', __('Complete transaction history per supplier with running balance'))
 
-<div class="gl-wrapper min-vh-100 bg-light py-4">
-    <div class="container-fluid px-lg-5">
+<div class="gl-wrapper min-vh-100 bg-light pt-3 pb-4">
+    <div class="container-fluid px-3">
 
         {{-- Page Header --}}
                 {{-- Filters --}}

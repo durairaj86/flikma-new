@@ -3,8 +3,8 @@
 @section('page-subtitle', __('Manage and track account transaction history'))
 @section('hide-topbar', true)
 
-<div class="statement-wrapper min-vh-100 bg-light py-4">
-    <div class="container-fluid px-lg-5">
+<div class="statement-wrapper min-vh-100 bg-light pb-4">
+    <div class="container-fluid px-3">
         @include('includes.inline-page-title')
         {{-- Debug info --}}
         @if(isset($debug) && $debug)

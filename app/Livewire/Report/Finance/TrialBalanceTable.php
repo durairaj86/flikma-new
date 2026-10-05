@@ -59,7 +59,7 @@ class TrialBalanceTable extends Component
 
         foreach ($accounts as $account) {
             // Get opening balance (all approved transactions before the start date)
-            // reference_date on finance_sub holds the actual transaction date
+            // reference_date on finance_subs holds the actual transaction date
             $openingBalanceData = FinanceSub::where('account_id', $account->id)
                 ->where('reference_date', '<', $this->startDate)
                 ->whereHas('finance', function ($query) {

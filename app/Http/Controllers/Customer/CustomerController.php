@@ -153,7 +153,28 @@ class CustomerController extends Controller
                 $dueInvoiceQuery($query);
                 $query->where('due_at', '<', now())->selectRaw('COUNT(*)');
             }, 'overdue_count')
-            ->where('status', CustomerStatusEnum::fromName($request->tab))->orderBy('name_en');
+            ->orderBy('name_en');
+
+        if (strtolower((string) $request->tab) === 'overdue') {
+            // Confirmed customers holding at least one approved, unpaid invoice past its due date.
+            $rows->where('status', CustomerStatusEnum::CONFIRMED->value)
+                ->whereExists(function ($query) use ($dueInvoiceQuery) {
+                    $dueInvoiceQuery($query);
+                    $query->where('due_at', '<', now())->selectRaw('1');
+                });
+        } else {
+            $rows->where('status', CustomerStatusEnum::fromName($request->tab));
+        }
+
+        if ($request->filled('salesperson_id')) {
+            $rows->where('salesperson_id', (int) $request->salesperson_id);
+        }
+        if ($request->filled('joined_from')) {
+            $rows->whereDate('created_at', '>=', formDate($request->joined_from));
+        }
+        if ($request->filled('joined_to')) {
+            $rows->whereDate('created_at', '<=', formDate($request->joined_to));
+        }
 
         // Get counts per status in one query
         $statusCounts = Customer::select('status', DB::raw('COUNT(*) as total'))
@@ -167,8 +188,18 @@ class CustomerController extends Controller
             $allCounts[$status->name] = $statusCounts[$status->value] ?? 0;
         }
 
+        $allCounts['overdue'] = Customer::where('status', CustomerStatusEnum::CONFIRMED->value)
+            ->whereExists(function ($query) use ($dueInvoiceQuery) {
+                $dueInvoiceQuery($query);
+                $query->where('due_at', '<', now())->selectRaw('1');
+            })->count();
+
         return DataTables::eloquent($rows)
             ->addIndexColumn()
+            // due_amount / overdue_count are computed subselect aliases, not real columns,
+            // so they can't appear in the search WHERE clause.
+            ->filterColumn('due_amount', fn() => null)
+            ->filterColumn('overdue_count', fn() => null)
             ->setRowAttr([
                 'data-id' => fn($model) => $model->id,
                 'data-name' => fn($model) => htmlspecialchars($model->name_en, ENT_QUOTES, 'UTF-8'),

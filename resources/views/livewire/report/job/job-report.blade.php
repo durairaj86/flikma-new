@@ -1,8 +1,8 @@
 @section('js', 'job_report')
 @section('page-title', __('Job Report'))
 
-<div class="provisional-wrapper min-vh-100 bg-light py-4">
-    <div class="container-fluid px-lg-5">
+<div class="provisional-wrapper min-vh-100 bg-light pt-3 pb-4">
+    <div class="container-fluid px-3">
 
         {{-- Page Header --}}
         <div class="row align-items-center mb-4 d-print-none">

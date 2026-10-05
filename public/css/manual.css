@@ -858,6 +858,22 @@ div.dataTables_wrapper div.dt-row div.col-sm-12, div.dataTables_wrapper div.data
 }
 
 
+/* Bootstrap-5 DataTables markup nests an <a class="page-link"> inside each <li class="paginate_button">;
+   make the inner link fill the pill so prev / numbers / next render as one flat button. */
+.dataTables_wrapper .dataTables_paginate .paginate_button .page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: none !important;
+    border-radius: inherit !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: inherit;
+}
+
 /*datatable end*/
 .btn-round {
     border-radius: 30px;
@@ -1849,3 +1865,26 @@ label.required.label-error {
 #globalModal .modal-compact #show-buttons { display: flex; flex-wrap: nowrap; gap: .5rem; }
 #globalModal .modal-compact #show-buttons .btn { white-space: nowrap; padding: .4rem .8rem; font-size: .85rem; display: inline-flex; align-items: center; gap: .35rem; }
 #globalModal .modal-compact #show-buttons .btn br { display: none; }
+
+/* Right-hand drawers slide in behind the floating rail (the rail has the higher z-index);
+   the extra right padding keeps the close button and form edge clear of the rail. */
+body:not(.has-top-header) .offcanvas.offcanvas-end {
+    padding-right: 60px;
+}
+
+/* Icon buttons beside a list search box: same border/shadow as the search input, brand colour only on hover. */
+.btn-icon-search {
+    width: 38px; height: 38px; padding: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid #dadce0; background: #fff; color: #495057;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .05);
+}
+.btn-icon-search:hover, .btn-icon-search:focus, .btn-icon-search.show {
+    background-color: var(--bs-primary); border-color: var(--bs-primary); color: #fff;
+}
+
+/* Send Email drawer sits above the floating rail (covers it) and uses the full drawer width. */
+body:not(.has-top-header) #sendEmailDrawer.offcanvas.offcanvas-end {
+    z-index: 1100;
+    padding-right: 0;
+}

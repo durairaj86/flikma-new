@@ -6,13 +6,13 @@
     .inline-page-title { display: none; }
     body:not(.has-top-header) .inline-page-title { display: block; }
 </style>
-<div class="inline-page-title container-fluid px-0 pt-4 pb-0">
+<div class="inline-page-title container-fluid px-0 pt-2 pb-2">
     <div class="d-flex align-items-center gap-2 flex-wrap">
         <h4 class="fw-bold text-dark mb-0">@yield('page-title')</h4>
         {{-- the page's own title action (e.g. "How it works"), which normally sits next to the title in the bar --}}
         @stack('page-title-action')
     </div>
     @hasSection('page-subtitle')
-        <div class="text-muted small mt-1">@yield('page-subtitle')</div>
+        <div class="text-muted small">@yield('page-subtitle')</div>
     @endif
 </div>

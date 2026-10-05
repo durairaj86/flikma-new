@@ -122,14 +122,22 @@ class WidgetData
         ];
     }
 
+    private static function approvedCreditNotes(Carbon $a, Carbon $b)
+    {
+        return self::between(\App\Models\Finance\Adjustment\CreditNote::query()->where('status', \App\Enums\CreditNoteEnum::APPROVED->value), 'posted_at', $a, $b);
+    }
+
+    /** Net profit excludes VAT and nets approved credit notes against revenue. */
     public static function profit(Carbon $start): array
     {
         [$s, $e, $ps, $pe] = self::bounds($start);
-        $revenue = (float) self::approvedInvoices($s, $e)->sum('grand_total');
-        $expenses = (float) self::approvedBills($s, $e)->sum('grand_total');
-        $prev = (float) self::approvedInvoices($ps, $pe)->sum('grand_total') - (float) self::approvedBills($ps, $pe)->sum('grand_total');
-        $sales = self::daily($start, self::approvedInvoices($s, $e)->get(['invoice_date', 'grand_total']), 'invoice_date', 'grand_total');
-        $bills = self::daily($start, self::approvedBills($s, $e)->get(['invoice_date', 'grand_total']), 'invoice_date', 'grand_total');
+        $net = fn ($a, $b) => (float) self::approvedInvoices($a, $b)->sum('base_sub_total') - (float) self::approvedCreditNotes($a, $b)->sum('base_sub_total');
+        $revenue = $net($s, $e);
+        $expenses = (float) self::approvedBills($s, $e)->sum('base_sub_total');
+        $prev = $net($ps, $pe) - (float) self::approvedBills($ps, $pe)->sum('base_sub_total');
+        $sales = self::daily($start, self::approvedInvoices($s, $e)->get(['invoice_date', 'base_sub_total']), 'invoice_date', 'base_sub_total');
+        $credits = self::daily($start, self::approvedCreditNotes($s, $e)->get(['posted_at', 'base_sub_total']), 'posted_at', 'base_sub_total');
+        $bills = self::daily($start, self::approvedBills($s, $e)->get(['invoice_date', 'base_sub_total']), 'invoice_date', 'base_sub_total');
 
         return [
             'total' => $revenue - $expenses,
@@ -138,7 +146,7 @@ class WidgetData
             'revenue' => $revenue,
             'expenses' => $expenses,
             'labels' => range(1, $start->daysInMonth),
-            'series' => array_map(fn ($a, $b) => round($a - $b, 2), $sales, $bills),
+            'series' => array_map(fn ($a, $c, $b) => round($a - $c - $b, 2), $sales, $credits, $bills),
         ];
     }
 
