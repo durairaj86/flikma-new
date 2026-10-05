@@ -50,6 +50,8 @@ Route::middleware(['auth', 'module.permission'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::view('/customers', 'modules.customer.list')->name('customers');
+    Route::get('/customers/{id}', [\App\Http\Controllers\Customer\CustomerDetailController::class, 'show'])->whereNumber('id')->name('customers.show');
+    Route::get('/customers/{id}/tab/{tab}', [\App\Http\Controllers\Customer\CustomerDetailController::class, 'tab'])->whereNumber('id')->name('customers.tab');
     Route::post('/customer/data', [\App\Http\Controllers\Customer\CustomerController::class, 'fetchAllRows'])->name('customers.data');
     Route::post('/customer/import/upload', [\App\Http\Controllers\Customer\CustomerController::class, 'importUpload']);
     Route::post('/customer/import/process', [\App\Http\Controllers\Customer\CustomerController::class, 'importProcess']);

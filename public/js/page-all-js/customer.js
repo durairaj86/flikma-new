@@ -114,7 +114,7 @@ CUSTOMER = {
                         {data: 'DT_RowIndex', class: 'ps-4 text-muted small'},
                         {
                             data: 'name_en', render: function (data, type, row) {
-                                return '<div class="fw-bold text-dark">' + row.name_en + '</div><div class="text-primary x-small fw-semibold">' + row.row_no + '</div>';
+                                return '<a href="' + GLOBAL_FN.buildUrl('customers/' + row.id) + '" class="fw-bold text-dark text-decoration-none d-block">' + $('<span>').text(row.name_en).html() + '</a><div class="text-primary x-small fw-semibold">' + row.row_no + '</div>';
                             }
                         },
                         {
@@ -227,22 +227,7 @@ CUSTOMER = {
             },
             view(row) {
                 $('#row_view').off().on('click', function () {
-                    let customerId = row.attr('data-id');
-
-                    // Open drawer
-
-                    let drawer = new bootstrap.Offcanvas(document.getElementById('customerDrawer'));
-                    drawer.show();
-
-                    // Load Overview
-                    $('#customerOverview').html('<p>Loading...</p>');
-                    $.get('/customer/' + customerId + '/overview', function (data) {
-                        $('#customerOverview').html(data);
-                    });
-
-                    // Clear other tabs
-                    $('#customerInvoices').html('');
-                    $('#customerTransactions').html('');
+                    window.location.href = GLOBAL_FN.buildUrl('customers/' + row.attr('data-id'));
                 });
             },
             email(row) {
