@@ -167,8 +167,7 @@
         .dash-item.dash-small { grid-column: span 6; }
         /* Phones: a medium needs more height at this width, so the unit grows and smalls take a full row. */
         @container (max-width: 429.98px) { .dash-grid { --u: 480px; } .dash-item.dash-small { grid-column: span 12; } }
-        @container (min-width: 720px) { .dash-item { grid-column: span 6; } .dash-item.dash-small { grid-column: span 3; } }
-        @container (min-width: 1100px) { .dash-item { grid-column: span 4; } .dash-item.dash-small { grid-column: span 2; } }
+        @container (min-width: 900px) { .dash-item { grid-column: span 4; } .dash-item.dash-small { grid-column: span 2; } }
         .dash-item > .kpi, .dash-item > [wire\:id], .dash-item > div:not(.dash-handle) { height: 100%; }
         .dash-item .kpi-medium, .dash-item .kpi-chart-card, .dash-item .kpi-small { min-height: 0; height: 100%; overflow: hidden; }
         /* Keep every medium inside one row unit. */
@@ -267,6 +266,46 @@
 
         /* Footer small text */
         footer.small { color:#8a8f98; margin-top:12px; }
+
+        /* ---- Responsive sizing (ported from fatoora-invoice) ---- */
+        /* Square small = one grid unit. Row unit (--u) equals a small card's width at each breakpoint, so
+           2 small = 1 medium (side by side) and 2 medium = 1 large (stacked). */
+        .dash-item.dash-small { align-self: stretch; }
+        @container (min-width: 430px) { .dash-grid { --u: calc((100cqw - 1rem) / 2); } }
+        @container (min-width: 900px) { .dash-grid { --u: calc((100cqw - 5rem) / 6); } }
+
+        /* Scale card content with the card itself (card width via container units, height via the row unit --u)
+           so everything stays inside the square small / 2:1 medium / 2:2 large cards at any screen size. */
+        .dash-item .kpi { padding: clamp(10px, 3.2cqw, 18px) clamp(11px, 3.6cqw, 18px) clamp(9px, 2.8cqw, 14px); }
+        .dash-item .kpi-head { gap: 8px; }
+        .dash-item .kpi-title { font-size: clamp(.74rem, 2.9cqw, .9rem); }
+        .dash-item .kpi-icon { width: clamp(24px, 7cqw, 32px); height: clamp(24px, 7cqw, 32px); font-size: clamp(.68rem, 2.6cqw, .85rem); }
+        .dash-item .kpi-value { font-size: clamp(1.15rem, 6.2cqw, 1.9rem); }
+        .dash-item .kpi-small .kpi-value, .dash-item .kpi-small.kpi .kpi-value { font-size: clamp(1.05rem, 10cqw, 1.45rem); }
+        .dash-item .kpi-note { font-size: clamp(.68rem, 2.4cqw, .8rem); }
+        .dash-item .kpi-legend { font-size: clamp(.64rem, 2.3cqw, .78rem); gap: 6px; margin-top: 8px; }
+        .dash-item .kpi-legend span { padding: 5px 8px; }
+        .dash-item .kpi-legend b { font-size: clamp(.74rem, 2.9cqw, .95rem); }
+        .dash-item .kpi-small .kpi-legend span { padding: 4px 7px; }
+        .dash-item .kpi-small .kpi-bar { margin-top: 8px; }
+        .dash-item .kpi-medium-chart { height: 80px; }
+        .dash-item .kpi-compare { height: 62px; }
+        .dash-item .kpi-list-row { font-size: clamp(.7rem, 2.6cqw, .8rem); padding: 3px 0; }
+        .dash-item .kpi-month-static, .dash-item .wd-month-btn { font-size: clamp(.62rem, 2.3cqw, .75rem); }
+        .dash-item .kpi-cost-row { font-size: clamp(.68rem, 2.4cqw, .76rem); }
+        .dash-item .kpi-chart-wrap { min-height: 0; margin-top: 6px; }
+
+        /* Medium cards stay side-by-side (text left, chart right) even when 3 fit per row; never stack. */
+        .dash-item .kpi-medium-body { flex-direction: row; align-items: center; gap: 8px; }
+        .dash-item .kpi-medium-chart { width: 44%; }
+        .dash-item .kpi-legend.kpi-legend-3 { grid-template-columns: repeat(3, 1fr); }
+        .dash-item .kpi-medium-text { flex: 1; }
+
+        /* Small cards are always square (height = width); when the row unit is taller they sit at the top of their slot. */
+        .dash-item.dash-small { aspect-ratio: 1 / 1; align-self: start; }
+
+        /* Small cards keep all their data: when the square gets narrow, its contents are scaled down (--zs set by dashboard JS). */
+        .kpi-small > *, .kpi-medium > * { zoom: var(--zs, 1); }
     </style>
 
     <div class="p-3">
@@ -612,6 +651,20 @@
                 });
             })();
             initKpiCharts(document);
+
+        // Small = square (one unit), medium = same height, large = two mediums. Content is scaled to fit, never hidden.
+        function fitSmallCards() {
+            document.querySelectorAll('.kpi-small, .kpi-medium').forEach(function (k) {
+                k.style.setProperty('--zs', '1');
+                var small = k.classList.contains('kpi-small');
+                var z = Math.min(1, k.clientHeight / (small ? 215 : 232), k.clientWidth / (small ? 215 : 330));
+                k.style.setProperty('--zs', z.toFixed(3));
+            });
+        }
+        fitSmallCards();
+        window.addEventListener('resize', fitSmallCards);
+        var dashGridEl = document.getElementById('dashGrid');
+        if (dashGridEl) new MutationObserver(function () { fitSmallCards(); }).observe(dashGridEl, { childList: true, subtree: true });
 
             // Each Livewire widget re-renders on its own (e.g. month change): redraw only its charts.
             document.addEventListener('livewire:init', function () {
