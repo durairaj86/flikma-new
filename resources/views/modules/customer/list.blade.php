@@ -5,6 +5,17 @@
     <!-- Main Content -->
     <main class="gmail-content bg-white px-3">
         <style>
+            /* Inactive status tabs all use the Pending tab's colour; the active tab keeps its own. */
+            #listTabs .status-btn:not(.active) > span:first-child > i { color: var(--bs-warning) !important; }
+            /* Active tab: icon turns white so it stays visible on the filled background. */
+            #listTabs .status-btn.active > span:first-child > i { color: #fff !important; }
+            /* Confirmed / Blocked / Overdue / Rejected look like the inactive Pending tab (same background and text). */
+            #listTabs .status-btn[id="confirmed"]:not(.active),
+            #listTabs .status-btn[id="blocked"]:not(.active),
+            #listTabs .status-btn[id="overdue"]:not(.active),
+            #listTabs .status-btn[id="rejected"]:not(.active) { background: #f1f3f5; color: #495057; }
+        </style>
+        <style>
             .cust-title { display: none; }
             body:not(.has-top-header) .cust-title { display: block; }
         </style>

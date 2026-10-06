@@ -9,6 +9,7 @@ use App\Models\Supplier\Supplier;
 use App\Models\Finance\SupplierInvoice\SupplierInvoice;
 use App\Traits\Finance\AgingAsOf;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -30,15 +31,40 @@ class SupplierDetailController extends Controller
     {
         $supplier = Supplier::findOrFail($id);
 
-        $suppliers = Supplier::select('id', 'name_en', 'email')
-            ->orderBy('name_en')
-            ->get();
+        $suppliers = $this->listItems(null);
+
+        return view('modules.supplier.show', compact('supplier', 'suppliers'));
+    }
+
+    /** Live search for the left-hand list (server side); returns the rendered list items. */
+    public function search(Request $request)
+    {
+        $suppliers = $this->listItems(trim((string) $request->query('q')));
+
+        return view('modules.supplier.partials.split-items', [
+            'suppliers' => $suppliers,
+            'activeId' => (int) $request->query('active'),
+        ]);
+    }
+
+    private function listItems(?string $q)
+    {
+        $query = Supplier::select('id', 'name_en', 'name_ar', 'email', 'phone', 'row_no', 'vat_number')->orderBy('name_en');
+        if ($q !== null && $q !== '') {
+            $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $q) . '%';
+            $query->where(function ($w) use ($like) {
+                foreach (['name_en', 'name_ar', 'email', 'phone', 'row_no', 'vat_number'] as $col) {
+                    $w->orWhere($col, 'like', $like);
+                }
+            });
+        }
+        $items = $query->limit(200)->get();
         $balances = $this->ledgerBalances();
-        foreach ($suppliers as $c) {
+        foreach ($items as $c) {
             $c->balance = (float) ($balances[$c->id] ?? 0);
         }
 
-        return view('modules.supplier.show', compact('supplier', 'suppliers'));
+        return $items;
     }
 
     public function tab($id, string $tab)

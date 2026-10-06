@@ -50,6 +50,7 @@ Route::middleware(['auth', 'module.permission'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::view('/customers', 'modules.customer.list')->name('customers');
+    Route::get('/customers/search', [\App\Http\Controllers\Customer\CustomerDetailController::class, 'search']);
     Route::get('/customers/{id}', [\App\Http\Controllers\Customer\CustomerDetailController::class, 'show'])->whereNumber('id')->name('customers.show');
     Route::get('/customers/{id}/tab/{tab}', [\App\Http\Controllers\Customer\CustomerDetailController::class, 'tab'])->whereNumber('id')->name('customers.tab');
     Route::post('/customer/data', [\App\Http\Controllers\Customer\CustomerController::class, 'fetchAllRows'])->name('customers.data');
@@ -84,6 +85,7 @@ Route::middleware(['auth', 'module.permission'])->group(function () {
     Route::post('/prospect/create/quick', [\App\Http\Controllers\Prospect\ProspectController::class, 'quickStore']);
 
     Route::view('/suppliers', 'modules.supplier.list')->name('suppliers');
+    Route::get('/suppliers/search', [\App\Http\Controllers\Supplier\SupplierDetailController::class, 'search']);
     Route::get('/suppliers/{id}', [\App\Http\Controllers\Supplier\SupplierDetailController::class, 'show'])->whereNumber('id')->name('suppliers.show');
     Route::get('/suppliers/{id}/tab/{tab}', [\App\Http\Controllers\Supplier\SupplierDetailController::class, 'tab'])->whereNumber('id')->name('suppliers.tab');
     Route::post('/supplier/data', [\App\Http\Controllers\Supplier\SupplierController::class, 'fetchAllRows'])->name('suppliers.data');
