@@ -2910,5 +2910,11 @@
     "You are not allowed to edit this account": "غير مسموح لك بتعديل هذا الحساب",
     "You cannot delete this prospect. It is linked with other modules!": "لا يمكنك حذف هذا العميل المحتمل. إنه مرتبط بوحدات أخرى!",
     "You must map at least one of the following fields: Name (English), Name (Arabic), Email, Phone, or Currency.": "يجب مطابقة أحد الحقول التالية على الأقل: الاسم (بالإنجليزية)، الاسم (بالعربية)، البريد الإلكتروني، الهاتف، أو العملة.",
-    "ZATCA device registered.": "تم تسجيل الجهاز لدى هيئة الزكاة والضريبة والجمارك."
+    "ZATCA device registered.": "تم تسجيل الجهاز لدى هيئة الزكاة والضريبة والجمارك.",
+    "Mark as Accepted": "تحديد كمقبول",
+    "Time Frame": "الإطار الزمني",
+    "Posted": "تم الإصدار",
+    "Moved to Pending": "أُعيد إلى قيد الانتظار",
+    "Converted to Job": "تم التحويل إلى مهمة",
+    "by": "بواسطة"
 }

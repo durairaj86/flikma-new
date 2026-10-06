@@ -698,7 +698,39 @@ class QuotationController extends Controller
     {
         $quotation = Quotation::with(['containers', 'packages', 'charges', 'customer', 'prospect', 'activity'])->findOrFail($id);
         $quotation->party = $quotation->customer_id ? $quotation->customer : $quotation->prospect;
-        return view('modules.quotation.view-overview-drawer', compact('quotation'));
+
+        // Linked document numbers shown at the top of the drawer.
+        $enquiryNo = $quotation->enquiry_id ? \App\Models\Enquiry\Enquiry::whereKey($quotation->enquiry_id)->value('row_no') : null;
+        $jobNo = $quotation->job_id ? \App\Models\Job\Job::whereKey($quotation->job_id)->value('row_no') : null;
+
+        // Time frame: who posted it, and when each status change happened (from the change log).
+        $statusLabels = [
+            QuotationEnum::PENDING->value => __('Moved to Pending'),
+            QuotationEnum::ACCEPTED->value => __('Accepted'),
+            QuotationEnum::CANCELLED->value => __('Cancelled'),
+            QuotationEnum::EXPIRED->value => __('Expired'),
+            QuotationEnum::CONVERTED->value => __('Converted to Job'),
+        ];
+        $timeline = [];
+        $logs = \App\Models\Log\LogHistory::where('loggable_type', Quotation::class)
+            ->where('loggable_id', $quotation->id)->orderBy('id')->get();
+        foreach ($logs as $log) {
+            $by = $log->user_id['name'] ?? null;
+            if ($log->action === 'created') {
+                $timeline[] = ['label' => __('Posted'), 'at' => $log->created_at, 'by' => $by, 'icon' => 'bi-send'];
+            } elseif ($log->action === 'updated' && isset($log->changes['new']['status'])) {
+                $st = (int) $log->changes['new']['status'];
+                if (isset($statusLabels[$st])) {
+                    $timeline[] = ['label' => $statusLabels[$st], 'at' => $log->created_at, 'by' => $by,
+                        'icon' => $st === QuotationEnum::ACCEPTED->value ? 'bi-check-circle' : ($st === QuotationEnum::CONVERTED->value ? 'bi-arrow-repeat' : ($st === QuotationEnum::CANCELLED->value ? 'bi-x-circle' : 'bi-clock'))];
+                }
+            }
+        }
+        if (!$timeline) {
+            $timeline[] = ['label' => __('Posted'), 'at' => $quotation->created_at, 'by' => null, 'icon' => 'bi-send'];
+        }
+
+        return view('modules.quotation.view-overview-drawer', compact('quotation', 'enquiryNo', 'jobNo', 'timeline'));
     }
 
     public function print($id)

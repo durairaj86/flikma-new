@@ -45,10 +45,31 @@
     .info-grid .col-span-2 {
         grid-column: span 2;
     }
+    .qtn-refs { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; align-items: center; padding: .75rem 1rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 1rem; font-size: 13.5px; }
+    .qtn-refs .ref-label { color: #64748b; margin-right: .35rem; }
+    .qtn-refs .ref-value { font-weight: 700; color: #0f172a; }
+    .qtn-timeline { list-style: none; margin: 0; padding: 0 0 0 .25rem; }
+    .qtn-timeline li { position: relative; padding: 0 0 .85rem 2rem; font-size: 13.5px; }
+    .qtn-timeline li:last-child { padding-bottom: 0; }
+    .qtn-timeline li::before { content: ''; position: absolute; left: .7rem; top: 1.5rem; bottom: 0; width: 2px; background: #e2e8f0; }
+    .qtn-timeline li:last-child::before { display: none; }
+    .qtn-timeline .dot { position: absolute; left: 0; top: 0; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: #e7f0fe; color: #0d6efd; display: inline-flex; align-items: center; justify-content: center; font-size: .75rem; }
+    .qtn-timeline .t-label { font-weight: 600; color: #0f172a; }
+    .qtn-timeline .t-meta { color: #64748b; font-size: 12.5px; }
 </style>
 
 <!-- General Tab -->
 <div class="tab-pane fade show active" id="quotationGeneralTab" role="tabpanel">
+
+    <div class="qtn-refs">
+        <span><span class="ref-label">{{ __('Quote No') }}:</span><span class="ref-value">{{ $quotation->row_no }}</span></span>
+        @if($enquiryNo)
+            <span><span class="ref-label">{{ __('Enquiry') }}:</span><span class="ref-value">{{ $enquiryNo }}</span></span>
+        @endif
+        @if($jobNo)
+            <span><span class="ref-label">{{ __('Job') }}:</span><span class="ref-value">{{ $jobNo }}</span></span>
+        @endif
+    </div>
 
     <div class="section">
         <h6>{{ __('Party & Quotation Information') }}</h6>
@@ -90,6 +111,22 @@
             @endif
         </div>
     @endif
+
+    <div class="section">
+        <h6>{{ __('Time Frame') }}</h6>
+        <ul class="qtn-timeline">
+            @foreach($timeline as $step)
+                <li>
+                    <span class="dot"><i class="bi {{ $step['icon'] }}"></i></span>
+                    <div class="t-label">{{ $step['label'] }}</div>
+                    <div class="t-meta">
+                        {{ $step['at'] ? \Carbon\Carbon::parse($step['at'])->format('d-m-Y H:i') : '-' }}
+                        @if($step['by']) &middot; {{ __('by') }} {{ $step['by'] }} @endif
+                    </div>
+                </li>
+            @endforeach
+        </ul>
+    </div>
 
 </div>
 

@@ -1,10 +1,13 @@
 <div class="offcanvas offcanvas-end customer-drawer" tabindex="-1" id="moduleDrawer" style="width: 55%;">
     <div class="offcanvas-header border-bottom bg-light px-4 py-3 d-flex justify-content-between align-items-center">
-        <div>
+        <div class="flex-grow-1">
             <h5 id="moduleDrawerLabel" class="mb-0 fw-bold">{{ __('Quotation Details') }}</h5>
             <small class="text-muted" id="drawerSubtitle"></small>
         </div>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="{{ __('Close') }}"></button>
+        <div class="d-flex align-items-center gap-3 ms-auto flex-shrink-0">
+            <div class="d-flex align-items-center gap-2" id="drawerActions"></div>
+            <button type="button" class="btn-close m-0" data-bs-dismiss="offcanvas" aria-label="{{ __('Close') }}"></button>
+        </div>
     </div>
 
     <div class="offcanvas-body p-0">

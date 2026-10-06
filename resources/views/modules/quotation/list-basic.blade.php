@@ -398,10 +398,38 @@
                 $('#drawerSubtitle').text(name || '');
                 $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2"></div> {{ __('Loading...') }}</div>');
                 bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer')).show();
+                loadDrawerActions(id);
                 $.get('/sales/quotation/' + id + '/overview-drawer', function (data) {
                     $('#moduleOverview').html(data);
                 }).fail(function () {
                     $('#moduleOverview').html('<div class="alert alert-danger m-3">{{ __('Failed to load quotation details.') }}</div>');
+                });
+            }
+
+            // The next-step actions for this quotation's status (same ones the row menu offers):
+            // pending → Accepted / Cancelled, accepted → Move to Pending / Convert To Job.
+            const DRAWER_ACTIONS = {
+                row_accepted: {cls: 'btn-primary', icon: 'bi-check-circle', label: {{ Illuminate\Support\Js::from(__('Mark as Accepted')) }}},
+                row_convert_to_job: {cls: 'btn-primary', icon: 'bi-arrow-repeat'},
+                row_pending: {cls: 'btn-outline-secondary', icon: 'bi-arrow-counterclockwise'},
+                row_rejected: {cls: 'btn-outline-danger', icon: 'bi-x-circle', label: {{ Illuminate\Support\Js::from(__('Mark as Cancelled')) }}},
+            };
+
+            function loadDrawerActions(id) {
+                const $box = $('#drawerActions').empty();
+                $.get('/sales/quotation/' + id + '/actions', function (items) {
+                    const flat = [];
+                    items.forEach(i => { if (i.items) i.items.forEach(s => flat.push(s)); else flat.push(i); });
+                    // Accepted / Move to Pending / Convert To Job first, Cancelled last.
+                    const order = ['row_accepted', 'row_pending', 'row_convert_to_job', 'row_rejected'];
+                    order.forEach(key => {
+                        const a = flat.find(x => x.id === key);
+                        if (!a || !DRAWER_ACTIONS[key]) return;
+                        const d = DRAWER_ACTIONS[key];
+                        $box.append(`<button type="button" class="btn btn-sm rounded-pill px-3 ${d.cls} drawer-action" data-id="${a['data-id']}" data-value="${a['data-value']}" data-action="${key}"><i class="bi ${d.icon} me-1"></i>${d.label || a.label}</button>`);
+                    });
+                    // Print is available at every status.
+                    $box.append(`<button type="button" class="btn btn-sm rounded-pill px-3 btn-outline-secondary drawer-print" data-id="${id}"><i class="bi bi-printer me-1"></i>{{ __('Print') }}</button>`);
                 });
             }
 
@@ -428,6 +456,8 @@
                     // before calling this — just refresh the table here.
                     callBack: function () {
                         table.ajax.reload(null, false);
+                        const dr = bootstrap.Offcanvas.getInstance(document.getElementById('moduleDrawer'));
+                        if (dr) dr.hide();
                     },
                 }, String(newStatus));
             }
@@ -498,6 +528,23 @@
                     },
                 });
             });
+            function statusConfirmMessage(action) {
+                if (action === 'row_convert_to_job') return {{ Illuminate\Support\Js::from(__('Are you sure you want to convert this quotation to a job?')) }};
+                if (action === 'row_accepted') return {{ Illuminate\Support\Js::from(__('Are you sure you want to mark this quotation as Accepted?')) }};
+                if (action === 'row_pending') return {{ Illuminate\Support\Js::from(__('Are you sure you want to move this quotation back to Pending?')) }};
+                if (action === 'row_rejected') return {{ Illuminate\Support\Js::from(__('Are you sure you want to cancel this quotation?')) }};
+                return {{ Illuminate\Support\Js::from(__('Are you sure you want to change status?')) }};
+            }
+
+            $('#moduleDrawer').on('click', '.drawer-print', function () {
+                printQuotation($(this).data('id'));
+            });
+
+            // Buttons in the view drawer's header
+            $('#moduleDrawer').on('click', '.drawer-action', function () {
+                changeStatus($(this).data('id'), $(this).data('value'), statusConfirmMessage($(this).data('action')));
+            });
+
             $('#basicQuotationTable tbody').on('click', '#row_accepted,#row_pending,#row_rejected,#row_convert_to_job', function () {
                 const id = $(this).data('id');
                 const value = $(this).data('value');
