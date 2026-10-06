@@ -50,7 +50,7 @@ class CustomerExcelImport implements ToModel, WithStartRow
             $data['company_id'] = companyId();
             $data['user_id'] = auth()->id();
             $data['currency'] = 'SAR';
-            $data['status'] = CustomerStatusEnum::PENDING->value;
+            $data['status'] = CustomerStatusEnum::CONFIRMED->value;
             $data['business_type'] = 'unregistered';
 
             if (!empty($data['vat_number'])) {

@@ -334,45 +334,8 @@ class SupplierController extends Controller
         $supplier = Supplier::select('id', 'row_no', 'name_en', 'name_ar', 'status')->findOrFail($id);
         $contextMenu = collect([]);
         $edit = $delete = [];
-        if ($supplier->status === SupplierStatusEnum::fromName('confirmed')) {
-            $contextMenu->push([
-                'label' => __('Move to'),
-                'type' => 'submenu',
-                'separator' => 'after',
-                'icon' => 'move_to',
-                'items' => [
-                    [
-                        'label' => __('Blocked'),
-                        'code' => '01CSBK',
-                        'id' => 'row_blocked',
-                        'class' => 'row_blocked',
-                        'data-id' => $supplier->id,
-                        'data-value' => SupplierStatusEnum::fromName('blocked'),
-                        'icon' => 'blocked'
-                    ]
-                ]
-            ]);
-        } elseif ($supplier->status === SupplierStatusEnum::fromName('blocked')) {
-            $contextMenu->push([
-                'label' => __('Move to'),
-                'type' => 'submenu',
-                'separator' => 'after',
-                'icon' => 'move_to',
-                'items' => [
-                    [
-                        'label' => __('Confirmed'),
-                        'code' => '01CSCN',
-                        'id' => 'row_confirm',
-                        'class' => 'row_confirm',
-                        'data-id' => $supplier->id,
-                        'data-value' => SupplierStatusEnum::fromName('confirmed'),
-                        'icon' => 'confirmed'
-                    ]
-                ]
-            ]);
-        }
         $contextMenu->push([
-            'label' => __('Statement for ' . $supplier->name_en),
+            'label' => __('Statement'),
             'code' => '01INLI',
             'id' => 'row_statement',
             'data-id' => $supplier->id,
@@ -380,7 +343,7 @@ class SupplierController extends Controller
             'icon' => 'statement',
         ]);
         $contextMenu->push([
-            'label' => __('Find invoices from ' . $supplier->name_en),
+            'label' => __('Invoices'),
             'code' => '01INLI',
             'id' => 'row_search',
             'data-id' => $supplier->id,
@@ -388,6 +351,31 @@ class SupplierController extends Controller
             'icon' => 'search',
         ]);
 
+        if ($supplier->status === SupplierStatusEnum::fromName('confirmed')) {
+            $contextMenu->push([
+                'label' => __('Block Supplier'),
+                'code' => '01CSBK',
+                'id' => 'row_blocked',
+                'class' => 'row_blocked',
+                'data-id' => $supplier->id,
+                'data-value' => SupplierStatusEnum::fromName('blocked'),
+                'type' => 'item',
+                'icon' => 'blocked',
+                'separator' => 'before',
+            ]);
+        } elseif ($supplier->status === SupplierStatusEnum::fromName('blocked')) {
+            $contextMenu->push([
+                'label' => __('Unblock Supplier'),
+                'code' => '01CSCN',
+                'id' => 'row_confirm',
+                'class' => 'row_confirm',
+                'data-id' => $supplier->id,
+                'data-value' => SupplierStatusEnum::fromName('confirmed'),
+                'type' => 'item',
+                'icon' => 'confirmed',
+                'separator' => 'before',
+            ]);
+        }
         $contextMenu->push([
             'label' => __('View'),
             'code' => '01CSVW',

@@ -9,11 +9,12 @@
             #listTabs .status-btn:not(.active) > span:first-child > i { color: var(--bs-warning) !important; }
             /* Active tab: icon turns white so it stays visible on the filled background. */
             #listTabs .status-btn.active > span:first-child > i { color: #fff !important; }
-            /* Confirmed / Blocked / Overdue / Rejected look like the inactive Pending tab (same background and text). */
+            /* Selected "Active" tab uses blue instead of the default green. */
+            #listTabs .status-btn[id="confirmed"].active { background: rgb(13, 110, 253) !important; color: #fff !important; }
+            /* Active / Blocked / Overdue look like the inactive Pending tab (same background and text). */
             #listTabs .status-btn[id="confirmed"]:not(.active),
             #listTabs .status-btn[id="blocked"]:not(.active),
-            #listTabs .status-btn[id="overdue"]:not(.active),
-            #listTabs .status-btn[id="rejected"]:not(.active) { background: #f1f3f5; color: #495057; }
+            #listTabs .status-btn[id="overdue"]:not(.active) { background: #f1f3f5; color: #495057; }
         </style>
         <style>
             .cust-title { display: none; }
@@ -32,17 +33,9 @@
                         aria-label="Navigation 13">
                         <li class="nav-item me-2">
                             <button
-                                class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn"
-                                data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="pending">
-                                <span><i class="bi bi-clock text-warning me-1"></i> {{ __('Pending') }} -</span>
-                                <span class="status-count ms-2" id="pendingCount">0</span>
-                            </button>
-                        </li>
-                        <li class="nav-item me-2">
-                            <button
                                 class="nav-link py-2 d-flex align-items-center justify-content-between active status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="confirmed">
-                                <span><i class="bi bi-check-circle text-success me-1"></i> {{ __('Confirmed') }} -</span>
+                                <span><i class="bi bi-check-circle text-success me-1"></i> {{ __('Active') }} -</span>
                                 <span class="status-count ms-2" id="confirmedCount">0</span>
                             </button>
                         </li>
@@ -58,13 +51,6 @@
                                     data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="overdue">
                                 <span><i class="bi bi-exclamation-triangle text-warning me-1"></i> {{ __('Overdue') }} -</span>
                                 <span class="status-count ms-2" id="overdueCount">0</span>
-                            </button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
-                                    data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="rejected">
-                                <span><i class="bi bi-x-circle text-danger me-1"></i> {{ __('Rejected') }} -</span>
-                                <span class="status-count ms-2" id="rejectedCount">0</span>
                             </button>
                         </li>
                     </ul>

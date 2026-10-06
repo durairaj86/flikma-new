@@ -365,6 +365,7 @@ class CustomerController extends Controller
             $customer = new Customer();
             $customer->unique_row_no = sprintf("%03d", (Customer::max('unique_row_no') ?? 0) + 1);
             $customer->row_no = 'CS' . $customer->unique_row_no;
+            $customer->status = CustomerStatusEnum::CONFIRMED->value; // new customers are active straight away
 
             $this->setBaseColumns($customer);
         }
@@ -467,89 +468,6 @@ class CustomerController extends Controller
         $customer = Customer::select('id', 'row_no', 'name_en', 'name_ar', 'status')->findOrFail($id);
         $contextMenu = collect([]);
         $edit = $delete = [];
-        if ($customer->status === CustomerStatusEnum::fromName('pending')) {
-            $contextMenu->push([
-                'label' => __('Move to'),
-                'type' => 'submenu',
-                'separator' => 'after',
-                'icon' => 'move_to',
-                'items' => [
-                    [
-                        'label' => __('Confirmed'),
-                        'code' => '01CSCN',
-                        'id' => 'row_confirm',
-                        'class' => 'row_confirm',
-                        'data-id' => $customer->id,
-                        'data-value' => CustomerStatusEnum::fromName('confirmed'),
-                        'icon' => 'confirmed'
-                    ],
-                    [
-                        'label' => __('Rejected'),
-                        'code' => '01CSRJ',
-                        'id' => 'row_rejected',
-                        'class' => 'row_rejected',
-                        'data-id' => $customer->id,
-                        'data-value' => CustomerStatusEnum::fromName('rejected'),
-                        'icon' => 'rejected'
-                    ]
-                ]
-            ]);
-        } elseif ($customer->status === CustomerStatusEnum::fromName('confirmed')) {
-            $contextMenu->push([
-                'label' => __('Move to'),
-                'type' => 'submenu',
-                'separator' => 'after',
-                'icon' => 'move_to',
-                'items' => [
-                    [
-                        'label' => __('Blocked'),
-                        'code' => '01CSBK',
-                        'id' => 'row_blocked',
-                        'class' => 'row_blocked',
-                        'data-id' => $customer->id,
-                        'data-value' => CustomerStatusEnum::fromName('blocked'),
-                        'icon' => 'blocked'
-                    ]
-                ]
-            ]);
-        } elseif ($customer->status === CustomerStatusEnum::fromName('blocked')) {
-            $contextMenu->push([
-                'label' => __('Move to'),
-                'type' => 'submenu',
-                'separator' => 'after',
-                'icon' => 'move_to',
-                'items' => [
-                    [
-                        'label' => __('Confirmed'),
-                        'code' => '01CSCN',
-                        'id' => 'row_confirm',
-                        'class' => 'row_confirm',
-                        'data-id' => $customer->id,
-                        'data-value' => CustomerStatusEnum::fromName('confirmed'),
-                        'icon' => 'confirmed'
-                    ]
-                ]
-            ]);
-        } elseif ($customer->status === CustomerStatusEnum::fromName('rejected')) {
-            $contextMenu->push([
-                'label' => __('Move to'),
-                'type' => 'submenu',
-                'separator' => 'after',
-                'icon' => 'move_to',
-                'items' => [
-                    [
-                        'label' => __('Pending'),
-                        'code' => '01CSCN',
-                        'id' => 'row_pending',
-                        'class' => 'row_pending',
-                        'data-id' => $customer->id,
-                        'data-value' => CustomerStatusEnum::fromName('pending'),
-                        'icon' => 'pending'
-                    ]
-                ]
-            ]);
-        }
-
         if ($customer->status !== CustomerStatusEnum::fromName('rejected')) {
             $edit = [
                 'label' => __('Edit'),
@@ -595,6 +513,32 @@ class CustomerController extends Controller
                 'data-id' => $customer->id,
                 'type' => 'item',
                 'icon' => 'search',
+            ]);
+        }
+
+        if ($customer->status === CustomerStatusEnum::fromName('confirmed')) {
+            $contextMenu->push([
+                'label' => __('Block Customer'),
+                'code' => '01CSBK',
+                'id' => 'row_blocked',
+                'class' => 'row_blocked',
+                'data-id' => $customer->id,
+                'data-value' => CustomerStatusEnum::fromName('blocked'),
+                'type' => 'item',
+                'icon' => 'blocked',
+                'separator' => 'before',
+            ]);
+        } elseif ($customer->status === CustomerStatusEnum::fromName('blocked')) {
+            $contextMenu->push([
+                'label' => __('Unblock Customer'),
+                'code' => '01CSCN',
+                'id' => 'row_confirm',
+                'class' => 'row_confirm',
+                'data-id' => $customer->id,
+                'data-value' => CustomerStatusEnum::fromName('confirmed'),
+                'type' => 'item',
+                'icon' => 'confirmed',
+                'separator' => 'before',
             ]);
         }
 

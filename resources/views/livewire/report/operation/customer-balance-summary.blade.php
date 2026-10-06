@@ -12,6 +12,17 @@
         <div class="card border-0 shadow-sm mb-4 d-print-none">
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
+                    <div class="col-lg-4 col-md-4 col-xl-3" id="cbs-customer-wrap" wire:ignore>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Customer') }}</label>
+                        <select class="tom-select bg-light border-0" id="cbs-customer" wire:model="customerId" data-live-search="true">
+                            <option value="">{{ __('All Customers') }}</option>
+                            @foreach($customers as $customer)
+                                <option value="{{ $customer['id'] }}" @selected($customerId == $customer['id'])>
+                                    {{ $customer['row_no'] }} — {{ $customer['name_en'] }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
                     <div class="col-lg-2 col-md-4" wire:ignore>
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('From Date') }}</label>
                         <input type="hidden" id="cbs-start-date-hidden" wire:model="startDate" value="{{ $startDate }}" />
@@ -27,17 +38,6 @@
                                class="form-control bg-light border-0 py-2"
                                placeholder="dd-mm-yyyy"
                                value="{{ $endDate }}" />
-                    </div>
-                    <div class="col-lg-4 col-md-4 col-xl-2 col-xxl-3">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Customer') }}</label>
-                        <select class="form-select bg-light border-0 py-2 no-ts" wire:model="customerId">
-                            <option value="">{{ __('All Customers') }}</option>
-                            @foreach($customers as $customer)
-                                <option value="{{ $customer['id'] }}" @selected($customerId == $customer['id'])>
-                                    {{ $customer['row_no'] }} — {{ $customer['name_en'] }}
-                                </option>
-                            @endforeach
-                        </select>
                     </div>
                     <div class="col-lg-12 col-xl-6 col-xxl-5">
                         <div class="d-flex flex-wrap gap-2 justify-content-end align-items-center">
@@ -56,7 +56,7 @@
                                 <i class="bi bi-download me-2"></i>{{ __('Export') }}
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                                <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'cbs-print', {orientation: 'landscape'})"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
+                                <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'cbs-print', {orientation: 'portrait'})"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
                                 <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
                                 </ul>
                                 </div>
@@ -204,18 +204,27 @@
         <div id="cbs-print" class="stmt-print d-none d-print-block"
              data-pdf-filename="CustomerBalanceSummary-{{ $startDate ?? '' }}-{{ $endDate ?? '' }}.pdf">
 
-            <table class="stmt-meta">
-                <tr>
-                    <td>
-                        <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
-                    </td>
-                    <td class="text-end">
-                        <div class="stmt-title">{{ __('CUSTOMER BALANCE SUMMARY') }}</div>
-                        <div class="stmt-sub">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
-                        <div class="stmt-sub">{{ __('Generated:') }} {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency:') }} SAR</div>
-                    </td>
-                </tr>
-            </table>
+            <div class="stmt-head">
+                <div class="stmt-title">{{ __('CUSTOMER BALANCE SUMMARY') }}</div>
+                <div class="stmt-period">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->format('d-m-Y') }} {{ __('to') }} {{ \Carbon\Carbon::parse($endDate)->format('d-m-Y') }}</div>
+            </div>
+
+            <div class="stmt-band">
+                <div class="stmt-band-left">
+                    <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
+                </div>
+                <div class="stmt-band-right">
+                    <div class="stmt-sub">{{ __('Currency:') }} SAR</div>
+                    <div class="stmt-sub">{{ __('Generated:') }} {{ now()->format('d-m-Y H:i') }}</div>
+                </div>
+            </div>
+
+            <div class="stmt-cards">
+                <div class="stmt-card"><div class="stmt-card-label">{{ __('Opening Balance') }}</div><div class="stmt-card-value">{{ number_format($totals['opening'], 2) }}</div></div>
+                <div class="stmt-card"><div class="stmt-card-label">{{ __('Invoiced') }}</div><div class="stmt-card-value">{{ number_format($totals['invoiced'], 2) }}</div></div>
+                <div class="stmt-card"><div class="stmt-card-label">{{ __('Received') }}</div><div class="stmt-card-value">{{ number_format($totals['received'], 2) }}</div></div>
+                <div class="stmt-card"><div class="stmt-card-label">{{ __('Closing Balance') }}</div><div class="stmt-card-value">{{ number_format($totals['closing'], 2) }}</div></div>
+            </div>
 
             <table class="stmt-table">
                 <thead>
@@ -265,7 +274,8 @@
             </div>
         </div>
 
-        @include('includes.report-print-css', ['orientation' => 'landscape'])
+        @include('includes.report-print-css', ['orientation' => 'portrait'])
+        @include('includes.statement-print-css', ['id' => 'cbs-print'])
 
     </div>
 
@@ -317,6 +327,18 @@
             }
 
             initFlatpickr();
+
+            // Customer picker: searchable tom-select. Its wrapper is wire:ignore'd so Livewire
+            // commits can't wipe it; the native <select> still fires change -> wire:model.
+            var custEl = document.getElementById('cbs-customer');
+            if (custEl && !custEl.tomselect) { initTomSelectForm($('#cbs-customer-wrap')); }
+            $wire.on('cbs-filter-reset', function () {
+                if (custEl && custEl.tomselect) { custEl.tomselect.clear(true); }
+                var s = document.getElementById('cbs-start-date'), e = document.getElementById('cbs-end-date');
+                var $c = $wire.get('startDate'), $d = $wire.get('endDate');
+                if (s && s._flatpickr) s._flatpickr.setDate($c, false);
+                if (e && e._flatpickr) e._flatpickr.setDate($d, false);
+            });
 
             Livewire.hook('commit', function (ref) {
                 ref.succeed(function () {

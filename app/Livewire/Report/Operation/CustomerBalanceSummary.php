@@ -44,6 +44,7 @@ class CustomerBalanceSummary extends Component
         $this->startDate  = now()->startOfMonth()->format('Y-m-d');
         $this->endDate    = now()->endOfMonth()->format('Y-m-d');
         $this->customerId = '';
+        $this->dispatch('cbs-filter-reset');
     }
 
     /** Approved credit notes reduce what the customer owes, so they count with receipts (as in the customer statement). */

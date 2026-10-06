@@ -189,6 +189,12 @@ SUPPLIER = {
         extraActions(row) {
             SUPPLIER.list.actions.statusChange(row);
             SUPPLIER.list.actions.view(row);
+            $('#row_statement').off().on('click', function () {
+                window.location.href = GLOBAL_FN.buildUrl('reports/supplier-statement', {supplier: row.attr('data-id')});
+            });
+            $('#row_search').off().on('click', function () {
+                window.location.href = GLOBAL_FN.buildUrl('invoice/supplier', {supplier: row.attr('data-id')});
+            });
         },
         actions: {
             statusChange(row) {
