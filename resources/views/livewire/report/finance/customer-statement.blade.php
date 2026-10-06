@@ -58,11 +58,11 @@
                                 <button class="btn btn-white border border-end-0" onclick="window.print()" title="{{ __('Print') }}">
                                     <i class="bi bi-printer me-2"></i>{{ __('Print') }}
                                 </button>
-                                <div class="btn-group">
-                                    <button class="btn btn-white border dropdown-toggle" data-bs-toggle="dropdown">
+                                <div class="btn-group position-relative" x-data="{ open: false, pos: '', toggle() { this.open = !this.open; if (this.open) { const r = this.$refs.btn.getBoundingClientRect(); this.pos = 'position:fixed;left:auto;bottom:auto;right:' + (window.innerWidth - r.right) + 'px;top:' + (r.bottom + 4) + 'px;'; } } }" @click.outside="open = false" @keydown.escape.window="open = false" @scroll.window="open = false" @resize.window="open = false">
+                                    <button type="button" class="btn btn-white border dropdown-toggle" x-ref="btn" @click="toggle()" :aria-expanded="open">
                                         <i class="bi bi-download me-2"></i>{{ __('Export') }}
                                     </button>
-                                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
+                                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow" :class="{ show: open }" x-cloak :style="pos" @click="open = false">
                                         <li><a class="dropdown-item py-2" href="#" onclick="csExportPdf(event)"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
                                         <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
                                     </ul>
@@ -230,53 +230,49 @@
             <div id="statement-print" class="d-none d-print-block"
                  data-pdf-filename="CustomerStatement-{{ $selectedCustomer->code }}-{{ $startDate }}_{{ $endDate }}.pdf">
 
-                <table class="stmt-meta">
-                    <tr>
-                        <td>
-                            <div class="stmt-company">{{ $company->name ?? config('app.name') }}</div>
-                            @if(!empty($company->address) || !empty($company->city))
-                                <div class="stmt-sub">{{ trim(($company->address ?? '') . ' ' . ($company->city ?? '')) }}</div>
-                            @endif
-                            <div class="stmt-sub">
-                                @if(!empty($company->phone)) {{ __('Phone') }}: {{ $company->phone }} @endif
-                                @if(!empty($company->email)) &nbsp;|&nbsp; {{ $company->email }} @endif
-                            </div>
-                            @if(!empty($company->vat_number))
-                                <div class="stmt-sub">{{ __('VAT No') }}: {{ $company->vat_number }}</div>
-                            @endif
-                        </td>
-                        <td class="text-end">
-                            <div class="stmt-title">{{ __('STATEMENT OF ACCOUNT') }}</div>
-                            <div class="stmt-sub">{{ __('Period') }}: {{ \Carbon\Carbon::parse($startDate)->format('d-m-Y') }} {{ __('to') }} {{ \Carbon\Carbon::parse($endDate)->format('d-m-Y') }}</div>
-                            <div class="stmt-sub">{{ __('Generated') }}: {{ now()->format('d-m-Y H:i') }}</div>
-                            <div class="stmt-sub">{{ __('Currency') }}: {{ $company->base_currency ?? 'SAR' }}</div>
-                        </td>
-                    </tr>
-                </table>
+                <div class="stmt-head">
+                    <div class="stmt-title">{{ __('STATEMENT OF ACCOUNT') }}</div>
+                    <div class="stmt-period">{{ __('Period') }}: {{ \Carbon\Carbon::parse($startDate)->format('d-m-Y') }} {{ __('to') }} {{ \Carbon\Carbon::parse($endDate)->format('d-m-Y') }}</div>
+                </div>
 
-                <table class="stmt-meta stmt-box">
-                    <tr>
-                        <td>
-                            <div class="stmt-sub" style="text-transform: uppercase;">{{ __('Account Holder') }}</div>
-                            <div class="stmt-strong">{{ $selectedCustomer->name }} ({{ $selectedCustomer->code }})</div>
-                            @if($selectedCustomer->address !== 'N/A')
-                                <div class="stmt-sub">{{ $selectedCustomer->address }}</div>
-                            @endif
-                            <div class="stmt-sub">
-                                @if($selectedCustomer->email) {{ $selectedCustomer->email }} @endif
-                                @if($selectedCustomer->phone) &nbsp;|&nbsp; {{ $selectedCustomer->phone }} @endif
-                            </div>
-                        </td>
-                        <td class="text-end">
-                            <table class="stmt-summary">
-                                <tr><td>{{ __('Opening Balance') }}</td><td class="text-end">{{ number_format($openingBalance, 2) }}</td></tr>
-                                <tr><td>{{ __('Total Debits') }}</td><td class="text-end">{{ number_format($totalDebit, 2) }}</td></tr>
-                                <tr><td>{{ __('Total Credits') }}</td><td class="text-end">{{ number_format($totalCredit, 2) }}</td></tr>
-                                <tr class="stmt-strong"><td>{{ __('Closing Balance') }}</td><td class="text-end">{{ number_format($closingBalance, 2) }}</td></tr>
-                            </table>
-                        </td>
-                    </tr>
-                </table>
+                <div class="stmt-band">
+                    <div class="stmt-band-left">
+                        <div class="stmt-company">{{ $company->name ?? config('app.name') }}</div>
+                        @if(!empty($company->address) || !empty($company->city))
+                            <div class="stmt-sub">{{ trim(($company->address ?? '') . ' ' . ($company->city ?? '')) }}</div>
+                        @endif
+                        <div class="stmt-sub">
+                            @if(!empty($company->phone)) {{ __('Phone') }}: {{ $company->phone }} @endif
+                            @if(!empty($company->email)) &nbsp;|&nbsp; {{ $company->email }} @endif
+                        </div>
+                        @if(!empty($company->vat_number))
+                            <div class="stmt-sub">{{ __('VAT No') }}: {{ $company->vat_number }}</div>
+                        @endif
+                    </div>
+                    <div class="stmt-band-right">
+                        <div class="stmt-sub">{{ __('Currency') }}: {{ $company->base_currency ?? 'SAR' }}</div>
+                        <div class="stmt-sub">{{ __('Generated') }}: {{ now()->format('d-m-Y H:i') }}</div>
+                    </div>
+                </div>
+
+                <div class="stmt-holder">
+                    <div class="stmt-holder-label">{{ __('Account Holder') }}</div>
+                    <div class="stmt-holder-name">{{ $selectedCustomer->name }} <span>({{ $selectedCustomer->code }})</span></div>
+                    @if($selectedCustomer->address !== 'N/A')
+                        <div class="stmt-holder-line">{{ $selectedCustomer->address }}</div>
+                    @endif
+                    <div class="stmt-holder-line">
+                        @if($selectedCustomer->email) {{ $selectedCustomer->email }} @endif
+                        @if($selectedCustomer->phone) &nbsp;|&nbsp; {{ $selectedCustomer->phone }} @endif
+                    </div>
+                </div>
+
+                <div class="stmt-cards">
+                    <div class="stmt-card"><div class="stmt-card-label">{{ __('Opening Balance') }}</div><div class="stmt-card-value">{{ number_format($openingBalance, 2) }}</div></div>
+                    <div class="stmt-card stmt-card-dr"><div class="stmt-card-label">{{ __('Total Debits') }}</div><div class="stmt-card-value">{{ number_format($totalDebit, 2) }}</div></div>
+                    <div class="stmt-card stmt-card-cr"><div class="stmt-card-label">{{ __('Total Credits') }}</div><div class="stmt-card-value">{{ number_format($totalCredit, 2) }}</div></div>
+                    <div class="stmt-card stmt-card-close"><div class="stmt-card-label">{{ __('Closing Balance') }}</div><div class="stmt-card-value">{{ number_format($closingBalance, 2) }}</div></div>
+                </div>
 
                 <table class="stmt-table">
                     <thead>
@@ -291,7 +287,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr class="stmt-strong">
+                    <tr class="stmt-strong stmt-bf">
                         <td colspan="6">{{ __('Balance Brought Forward') }}</td>
                         <td class="text-end">{{ number_format($openingBalance, 2) }}</td>
                     </tr>
@@ -302,7 +298,7 @@
                             <td>
                                 {{ $txn->display_date }}
                                 @if(($txn->days_overdue ?? 0) > 0)
-                                    <br><span style="color:#dc3545;font-size:10px;font-weight:bold;">{{ __('O.Due') }} {{ $txn->days_overdue }} {{ __(Str::plural('day', $txn->days_overdue)) }}</span>
+                                    <br><span style="color:#374151;font-size:9px;font-style:italic;">{{ __('O.Due') }} {{ $txn->days_overdue }} {{ __(Str::plural('day', $txn->days_overdue)) }}</span>
                                 @endif
                             </td>
                             <td>{{ $txn->reference }}</td>
@@ -313,9 +309,9 @@
                                     <span style="font-size:10px;color:#666;">{{ $company->base_currency ?? 'SAR' }} {{ number_format($txn->currency_rate, 4) }}</span>
                                 @endif
                             </td>
-                            <td class="text-end">{{ (float)$txn->debit > 0 ? number_format((float)$txn->debit, 2) : '' }}</td>
-                            <td class="text-end">{{ (float)$txn->credit > 0 ? number_format((float)$txn->credit, 2) : '' }}</td>
-                            <td class="text-end">{{ number_format($printRunning, 2) }}</td>
+                            <td class="text-end stmt-dr">{{ (float)$txn->debit > 0 ? number_format((float)$txn->debit, 2) : '' }}</td>
+                            <td class="text-end stmt-cr">{{ (float)$txn->credit > 0 ? number_format((float)$txn->credit, 2) : '' }}</td>
+                            <td class="text-end stmt-bal">{{ number_format($printRunning, 2) }}</td>
                         </tr>
                     @empty
                         <tr>
@@ -480,49 +476,65 @@
         }
 
         /* Bank-statement layout (print + PDF export). Styles live outside
-           @media print so html2pdf can render the same markup. */
+           @media print so html2pdf can render the same markup.
+           Deliberately restrained: black/grey text, one dark navy accent, no coloured amounts —
+           this document goes to the customer. */
         #statement-print {
+            --ink: #111827; --muted: #6b7280; --line: #d1d5db; --accent: #1f2d4d;
             font-family: Arial, Helvetica, sans-serif;
             font-size: 11px;
             line-height: 1.5;
-            color: #000;
+            color: var(--ink);
             background: #fff;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
         }
         #statement-print table { width: 100%; border-collapse: collapse; }
         #statement-print .text-end { text-align: right; }
         #statement-print .text-center { text-align: center; }
-        #statement-print .stmt-company { font-size: 16px; font-weight: 700; letter-spacing: 0.02em; }
-        #statement-print .stmt-title { font-size: 14px; font-weight: 700; letter-spacing: 0.08em; }
-        #statement-print .stmt-sub { font-size: 10px; color: #333; }
+        #statement-print .stmt-band { display: flex; justify-content: space-between; gap: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--accent); }
+        #statement-print .stmt-band-right { text-align: right; }
+        #statement-print .stmt-company { font-size: 17px; font-weight: 700; color: var(--accent); }
+        #statement-print .stmt-head { text-align: center; margin-bottom: 10px; }
+        #statement-print .stmt-period { font-size: 11px; color: var(--muted); margin-top: 2px; }
+        #statement-print .stmt-title { font-size: 15px; font-weight: 700; letter-spacing: .08em; color: var(--accent); }
+        #statement-print .stmt-sub { font-size: 10px; color: var(--muted); }
         #statement-print .stmt-strong { font-weight: 700; }
-        #statement-print .stmt-meta td { vertical-align: top; padding: 2px 0; }
-        #statement-print .stmt-box {
-            margin-top: 10px;
-            border: 1px solid #000;
-        }
-        #statement-print .stmt-box > tbody > tr > td { padding: 8px 10px; }
-        #statement-print .stmt-summary { width: auto; margin-left: auto; }
-        #statement-print .stmt-summary td { padding: 1px 0 1px 24px; font-size: 11px; }
-        #statement-print .stmt-table { margin-top: 12px; }
+        #statement-print .stmt-holder { padding: 10px 0 8px; }
+        #statement-print .stmt-holder-label { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+        #statement-print .stmt-holder-name { font-size: 13px; font-weight: 700; }
+        #statement-print .stmt-holder-name span { font-weight: 400; color: var(--muted); font-size: 11px; }
+        #statement-print .stmt-holder-line { font-size: 10px; color: var(--muted); }
+        #statement-print .stmt-cards { display: flex; margin: 6px 0 14px; border: 1px solid var(--line); }
+        #statement-print .stmt-card { flex: 1; padding: 7px 12px; border-right: 1px solid var(--line); }
+        #statement-print .stmt-card:last-child { border-right: 0; background: #f3f4f6; }
+        #statement-print .stmt-card-label { font-size: 9px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+        #statement-print .stmt-card-value { font-size: 13px; font-weight: 700; }
+        #statement-print .stmt-table { margin-top: 4px; }
         #statement-print .stmt-table th {
-            border: 1px solid #000;
-            background: #efefef;
-            padding: 5px 8px;
-            font-size: 10px;
+            padding: 6px 8px;
+            font-size: 9.5px;
+            letter-spacing: .05em;
             text-transform: uppercase;
             text-align: left;
+            color: var(--ink);
+            background: #f3f4f6;
+            border-top: 1px solid var(--ink);
+            border-bottom: 1px solid var(--ink);
         }
         #statement-print .stmt-table th.text-end { text-align: right; }
-        #statement-print .stmt-table td { border: 1px solid #999; padding: 5px 8px; }
-        #statement-print .stmt-table tfoot td { background: #efefef; border: 1px solid #000; }
-        #statement-print .stmt-footnote { margin-top: 10px; font-size: 9px; color: #444; font-style: italic; }
-        #statement-print .stmt-signatures { margin-top: 36px; font-size: 10px; }
+        #statement-print .stmt-table td { border: 0; border-bottom: 1px solid #e5e7eb; padding: 6px 8px; vertical-align: top; }
+        #statement-print .stmt-table tr.stmt-bf td { font-weight: 700; background: #fafafa; border-bottom: 1px solid var(--line); }
+        #statement-print .stmt-bal { font-weight: 700; }
+        #statement-print .stmt-table tfoot td { font-weight: 700; padding: 7px 8px; border-top: 1px solid var(--ink); border-bottom: 2px solid var(--ink); background: #f3f4f6; }
+        #statement-print .stmt-footnote { margin-top: 12px; font-size: 9px; color: var(--muted); font-style: italic; }
+        #statement-print .stmt-signatures { margin-top: 34px; font-size: 10px; color: #374151; }
+        #statement-print .stmt-meta td { vertical-align: top; padding: 2px 0; }
 
         @media print {
             @page { size: A4 portrait; margin: 12mm; }
             body { background: white !important; }
             body, html { overflow: visible !important; height: auto !important; }
-            .d-print-none { display: none !important; }
+            .d-print-none, .inline-page-title { display: none !important; }
             .statement-wrapper { padding: 0 !important; background: white !important; }
             .container-fluid { padding: 0 !important; }
             #statement-print .stmt-table thead { display: table-header-group; }

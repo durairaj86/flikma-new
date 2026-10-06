@@ -142,8 +142,25 @@ class SupplierController extends Controller
                 $dueInvoiceQuery($query);
                 $query->where('due_at', '<', now())->selectRaw('COUNT(*)');
             }, 'overdue_count')
-            ->where('status', SupplierStatusEnum::fromName($request->tab))
             ->orderBy('name_en');
+
+        if (strtolower((string) $request->tab) === 'overdue') {
+            // Active suppliers with at least one approved, unpaid bill past its due date.
+            $rows->where('status', SupplierStatusEnum::CONFIRMED->value)
+                ->whereExists(function ($query) use ($dueInvoiceQuery) {
+                    $dueInvoiceQuery($query);
+                    $query->where('due_at', '<', now())->selectRaw('1');
+                });
+        } else {
+            $rows->where('status', SupplierStatusEnum::fromName($request->tab));
+        }
+
+        if ($request->filled('joined_from')) {
+            $rows->whereDate('created_at', '>=', formDate($request->joined_from));
+        }
+        if ($request->filled('joined_to')) {
+            $rows->whereDate('created_at', '<=', formDate($request->joined_to));
+        }
 
         // Get counts per status in one query
         $statusCounts = Supplier::select('status', DB::raw('COUNT(*) as total'))
@@ -157,8 +174,18 @@ class SupplierController extends Controller
             $allCounts[$status->name] = $statusCounts[$status->value] ?? 0;
         }
 
+        $allCounts['overdue'] = Supplier::where('status', SupplierStatusEnum::CONFIRMED->value)
+            ->whereExists(function ($query) use ($dueInvoiceQuery) {
+                $dueInvoiceQuery($query);
+                $query->where('due_at', '<', now())->selectRaw('1');
+            })->count();
+
         return DataTables::eloquent($rows)
             ->addIndexColumn()
+            // due_amount / overdue_count are computed subselect aliases, not real columns,
+            // so they can't appear in the search WHERE clause.
+            ->filterColumn('due_amount', fn() => null)
+            ->filterColumn('overdue_count', fn() => null)
             ->setRowAttr([
                 'data-id' => fn($model) => $model->id,
                 'data-name' => fn($model) => htmlspecialchars($model->name_en, ENT_QUOTES, 'UTF-8'),

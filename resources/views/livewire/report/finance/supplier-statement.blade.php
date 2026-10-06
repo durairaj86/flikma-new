@@ -48,11 +48,11 @@
                                 <button class="btn btn-white border border-end-0" onclick="window.print()">
                                     <i class="bi bi-printer me-2"></i>{{ __('Print') }}
                                 </button>
-                                <div class="btn-group">
-                                    <button class="btn btn-white border dropdown-toggle" data-bs-toggle="dropdown">
+                                <div class="btn-group position-relative" x-data="{ open: false, pos: '', toggle() { this.open = !this.open; if (this.open) { const r = this.$refs.btn.getBoundingClientRect(); this.pos = 'position:fixed;left:auto;bottom:auto;right:' + (window.innerWidth - r.right) + 'px;top:' + (r.bottom + 4) + 'px;'; } } }" @click.outside="open = false" @keydown.escape.window="open = false" @scroll.window="open = false" @resize.window="open = false">
+                                    <button type="button" class="btn btn-white border dropdown-toggle" x-ref="btn" @click="toggle()" :aria-expanded="open">
                                         <i class="bi bi-download me-2"></i>{{ __('Export') }}
                                     </button>
-                                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
+                                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow" :class="{ show: open }" x-cloak :style="pos" @click="open = false">
                                         <li><a class="dropdown-item py-2" href="#" onclick="ssExportPdf(event)"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
                                         <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
                                     </ul>
@@ -210,47 +210,43 @@
             <div id="supplier-statement-print" class="stmt-print d-none d-print-block"
                  data-pdf-filename="SupplierStatement-{{ $supplier->row_no }}-{{ $startDate }}_{{ $endDate }}.pdf">
 
-                <table class="stmt-meta">
-                    <tr>
-                        <td>
-                            <div class="stmt-company">{{ $company->name ?? config('app.name') }}</div>
-                            <div class="stmt-sub">
-                                @if(!empty($company->phone)) {{ __('Phone:') }} {{ $company->phone }} @endif
-                                @if(!empty($company->email)) &nbsp;|&nbsp; {{ $company->email }} @endif
-                            </div>
-                            @if(!empty($company->vat_number))
-                                <div class="stmt-sub">{{ __('VAT No:') }} {{ $company->vat_number }}</div>
-                            @endif
-                        </td>
-                        <td class="text-end">
-                            <div class="stmt-title">{{ __('SUPPLIER STATEMENT OF ACCOUNT') }}</div>
-                            <div class="stmt-sub">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} {{ __('to') }} {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
-                            <div class="stmt-sub">{{ __('Generated:') }} {{ now()->format('d M Y H:i') }}</div>
-                            <div class="stmt-sub">{{ __('Currency:') }} {{ $company->base_currency ?? 'SAR' }}</div>
-                        </td>
-                    </tr>
-                </table>
+                <div class="stmt-head">
+                    <div class="stmt-title">{{ __('SUPPLIER STATEMENT OF ACCOUNT') }}</div>
+                    <div class="stmt-period">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->format('d-m-Y') }} {{ __('to') }} {{ \Carbon\Carbon::parse($endDate)->format('d-m-Y') }}</div>
+                </div>
 
-                <table class="stmt-meta stmt-box">
-                    <tr>
-                        <td>
-                            <div class="stmt-sub" style="text-transform: uppercase;">{{ __('Supplier') }}</div>
-                            <div class="stmt-strong">{{ $supplier->name_en }} ({{ $supplier->row_no }})</div>
-                            <div class="stmt-sub">
-                                @if($supplier->email) {{ $supplier->email }} @endif
-                                @if($supplier->phone) &nbsp;|&nbsp; {{ $supplier->phone }} @endif
-                            </div>
-                        </td>
-                        <td class="text-end">
-                            <table class="stmt-summary">
-                                <tr><td>{{ __('Opening Balance') }}</td><td class="text-end">{{ number_format($openingBalance, 2) }}</td></tr>
-                                <tr><td>{{ __('Invoiced (+)') }}</td><td class="text-end">{{ number_format($invoicedAmount, 2) }}</td></tr>
-                                <tr><td>{{ __('Paid (-)') }}</td><td class="text-end">{{ number_format($paidAmount, 2) }}</td></tr>
-                                <tr class="stmt-strong"><td>{{ __('Closing Balance') }}</td><td class="text-end">{{ number_format($closingBalance, 2) }}</td></tr>
-                            </table>
-                        </td>
-                    </tr>
-                </table>
+                <div class="stmt-band">
+                    <div class="stmt-band-left">
+                        <div class="stmt-company">{{ $company->name ?? config('app.name') }}</div>
+                        <div class="stmt-sub">
+                            @if(!empty($company->phone)) {{ __('Phone:') }} {{ $company->phone }} @endif
+                            @if(!empty($company->email)) &nbsp;|&nbsp; {{ $company->email }} @endif
+                        </div>
+                        @if(!empty($company->vat_number))
+                            <div class="stmt-sub">{{ __('VAT No:') }} {{ $company->vat_number }}</div>
+                        @endif
+                    </div>
+                    <div class="stmt-band-right">
+                        <div class="stmt-sub">{{ __('Currency:') }} {{ $company->base_currency ?? 'SAR' }}</div>
+                        <div class="stmt-sub">{{ __('Generated:') }} {{ now()->format('d-m-Y H:i') }}</div>
+                    </div>
+                </div>
+
+                <div class="stmt-holder">
+                    <div class="stmt-holder-label">{{ __('Supplier') }}</div>
+                    <div class="stmt-holder-name">{{ $supplier->name_en }} <span>({{ $supplier->row_no }})</span></div>
+                    <div class="stmt-holder-line">
+                        @if($supplier->email) {{ $supplier->email }} @endif
+                        @if($supplier->phone) &nbsp;|&nbsp; {{ $supplier->phone }} @endif
+                    </div>
+                </div>
+
+                <div class="stmt-cards">
+                    <div class="stmt-card"><div class="stmt-card-label">{{ __('Opening Balance') }}</div><div class="stmt-card-value">{{ number_format($openingBalance, 2) }}</div></div>
+                    <div class="stmt-card"><div class="stmt-card-label">{{ __('Invoiced (+)') }}</div><div class="stmt-card-value">{{ number_format($invoicedAmount, 2) }}</div></div>
+                    <div class="stmt-card"><div class="stmt-card-label">{{ __('Paid (-)') }}</div><div class="stmt-card-value">{{ number_format($paidAmount, 2) }}</div></div>
+                    <div class="stmt-card"><div class="stmt-card-label">{{ __('Closing Balance') }}</div><div class="stmt-card-value">{{ number_format($closingBalance, 2) }}</div></div>
+                </div>
 
                 <table class="stmt-table">
                     <thead>
@@ -266,7 +262,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr class="stmt-strong">
+                    <tr class="stmt-strong stmt-bf">
                         <td colspan="7">{{ __('Balance Brought Forward') }}</td>
                         <td class="text-end">{{ number_format($openingBalance, 2) }}</td>
                     </tr>
@@ -284,7 +280,7 @@
                             </td>
                             <td class="text-end">{{ $txn->voucher_type === 'SI' && (float)$txn->base_credit > 0 ? number_format((float)$txn->base_credit, 2) : '' }}</td>
                             <td class="text-end">{{ $txn->voucher_type === 'PV' && (float)$txn->base_debit > 0 ? number_format((float)$txn->base_debit, 2) : '' }}</td>
-                            <td class="text-end">{{ number_format((float)$txn->balance, 2) }}</td>
+                            <td class="text-end stmt-bal">{{ number_format((float)$txn->balance, 2) }}</td>
                         </tr>
                     @empty
                         <tr>
@@ -426,8 +422,64 @@
             border-color: var(--supplier-primary);
         }
 
+        /* Bank-statement layout (print + PDF export). Styles live outside
+           @media print so html2pdf can render the same markup.
+           Deliberately restrained: black/grey text, one dark navy accent, no coloured amounts —
+           this document goes to the customer. */
+        #supplier-statement-print {
+            --ink: #111827; --muted: #6b7280; --line: #d1d5db; --accent: #1f2d4d;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11px;
+            line-height: 1.5;
+            color: var(--ink);
+            background: #fff;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+        #supplier-statement-print table { width: 100%; border-collapse: collapse; }
+        #supplier-statement-print .text-end { text-align: right; }
+        #supplier-statement-print .text-center { text-align: center; }
+        #supplier-statement-print .stmt-band { display: flex; justify-content: space-between; gap: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--accent); }
+        #supplier-statement-print .stmt-band-right { text-align: right; }
+        #supplier-statement-print .stmt-company { font-size: 17px; font-weight: 700; color: var(--accent); }
+        #supplier-statement-print .stmt-head { text-align: center; margin-bottom: 10px; }
+        #supplier-statement-print .stmt-period { font-size: 11px; color: var(--muted); margin-top: 2px; }
+        #supplier-statement-print .stmt-title { font-size: 15px; font-weight: 700; letter-spacing: .08em; color: var(--accent); }
+        #supplier-statement-print .stmt-sub { font-size: 10px; color: var(--muted); }
+        #supplier-statement-print .stmt-strong { font-weight: 700; }
+        #supplier-statement-print .stmt-holder { padding: 10px 0 8px; }
+        #supplier-statement-print .stmt-holder-label { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+        #supplier-statement-print .stmt-holder-name { font-size: 13px; font-weight: 700; }
+        #supplier-statement-print .stmt-holder-name span { font-weight: 400; color: var(--muted); font-size: 11px; }
+        #supplier-statement-print .stmt-holder-line { font-size: 10px; color: var(--muted); }
+        #supplier-statement-print .stmt-cards { display: flex; margin: 6px 0 14px; border: 1px solid var(--line); }
+        #supplier-statement-print .stmt-card { flex: 1; padding: 7px 12px; border-right: 1px solid var(--line); }
+        #supplier-statement-print .stmt-card:last-child { border-right: 0; background: #f3f4f6; }
+        #supplier-statement-print .stmt-card-label { font-size: 9px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+        #supplier-statement-print .stmt-card-value { font-size: 13px; font-weight: 700; }
+        #supplier-statement-print .stmt-table { margin-top: 4px; }
+        #supplier-statement-print .stmt-table th {
+            padding: 6px 8px;
+            font-size: 9.5px;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+            text-align: left;
+            color: var(--ink);
+            background: #f3f4f6;
+            border-top: 1px solid var(--ink);
+            border-bottom: 1px solid var(--ink);
+        }
+        #supplier-statement-print .stmt-table th.text-end { text-align: right; }
+        #supplier-statement-print .stmt-table td { border: 0; border-bottom: 1px solid #e5e7eb; padding: 6px 8px; vertical-align: top; }
+        #supplier-statement-print .stmt-table tr.stmt-bf td { font-weight: 700; background: #fafafa; border-bottom: 1px solid var(--line); }
+        #supplier-statement-print .stmt-bal { font-weight: 700; }
+        #supplier-statement-print .stmt-table tfoot td { font-weight: 700; padding: 7px 8px; border-top: 1px solid var(--ink); border-bottom: 2px solid var(--ink); background: #f3f4f6; }
+        #supplier-statement-print .stmt-footnote { margin-top: 12px; font-size: 9px; color: var(--muted); font-style: italic; }
+        #supplier-statement-print .stmt-signatures { margin-top: 34px; font-size: 10px; color: #374151; }
+        #supplier-statement-print .stmt-meta td { vertical-align: top; padding: 2px 0; }
+
         @media print {
             body { background: white !important; }
+            .inline-page-title { display: none !important; }
             .d-print-none { display: none !important; }
             .statement-wrapper { padding: 0 !important; background: white !important; }
             .container-fluid { padding: 0 !important; }

@@ -10,6 +10,57 @@ SUPPLIER = {
         load(activeTab) {
             SUPPLIER.list.dataTable(activeTab);
         },
+        filters() {
+            return {
+                joined_from: $('#filter-joined-from').val() || '',
+                joined_to: $('#filter-joined-to').val() || ''
+            };
+        },
+        resetFilterInputs() {
+            $('#filter-joined-from, #filter-joined-to').each(function () {
+                if (this._flatpickr) this._flatpickr.clear(); else $(this).val('');
+            });
+        },
+        chips() {
+            const f = SUPPLIER.list.filters();
+            let html = '';
+            if (f.joined_from || f.joined_to) {
+                html = '<div class="d-inline-flex align-items-center bg-light border rounded-pill px-2 py-1 me-2 mb-2 small" style="font-size:0.8rem;">' +
+                    '<span class="me-2">Joined :&nbsp;<b>' + (f.joined_from || '…') + ' / ' + (f.joined_to || '…') + '</b></span>' +
+                    '<button type="button" class="btn btn-sm btn-light p-0 border-0 d-flex align-items-center justify-content-center supplier-chip-remove" style="width:16px;height:16px;line-height:1;" aria-label="Close">&times;</button></div>';
+            }
+            $('#supplierFilterChips').html(html);
+            $('.supplier-chip-remove').off().on('click', function () {
+                SUPPLIER.list.resetFilterInputs();
+                $('#supplier-filter-apply').trigger('click');
+            });
+        },
+        bindFilter() {
+            const panel = $('#supplierFilterForm');
+            if (!panel.data('ready')) {
+                panel.data('ready', true);
+                datepicker();
+                // The calendar renders outside the menu; don't let clicks on it close the menu.
+                document.getElementById('supplierFilterBtn').addEventListener('hide.bs.dropdown', function (e) {
+                    const t = e.clickEvent && e.clickEvent.target;
+                    if (t && $(t).closest('.flatpickr-calendar').length) e.preventDefault();
+                });
+            }
+            const refresh = () => {
+                const n = Object.values(SUPPLIER.list.filters()).filter(v => v).length;
+                $('#supplierFilterBadge').text(n).toggleClass('d-none', n === 0);
+                SUPPLIER.list.chips();
+                SUPPLIER.list.load();
+            };
+            $('#supplier-filter-apply').off().on('click', function () {
+                refresh();
+                bootstrap.Dropdown.getOrCreateInstance(document.getElementById('supplierFilterBtn')).hide();
+            });
+            $('#supplier-filter-clear').off().on('click', function () {
+                SUPPLIER.list.resetFilterInputs();
+                refresh();
+            });
+        },
         dataTable(activeTab = null) {
             GLOBAL_FN.destroyDataTable();
             activeTab = (activeTab && (typeof activeTab !== 'object')) ? activeTab : $("#listTabs").find('li button.active').attr('id');
@@ -27,6 +78,9 @@ SUPPLIER = {
                     data: {
                         'tab': activeTab
                     },
+                    beforeSend: function (xhr, settings) {
+                        settings.data += '&' + $.param(SUPPLIER.list.filters());
+                    },
                     dataSrc: function (json) {
                         // Remove loader rows when data arrives
                         $('#dataTable tbody').find('.loading-row').remove();
@@ -36,6 +90,7 @@ SUPPLIER = {
                 },
                 columnDefs: [
                     {targets: [0], searchable: false},
+                    {targets: [7], searchable: false, orderable: false},
                     {targets: [0], orderable: false},
                     /*{targets: [1], class: 'hide', visible: false},*/
                 ],
@@ -120,6 +175,7 @@ SUPPLIER = {
                 initComplete: function () {
                     SUPPLIER.form.open();
                     webDataTable.actions.menu();
+                    SUPPLIER.list.bindFilter();
                 }
             });
             $('#customSearch').on('keyup', function () {

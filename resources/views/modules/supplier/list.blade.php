@@ -2,6 +2,14 @@
 @section('page-title', __('Suppliers'))
 @section('hide-topbar', true)
 <x-app-layout>
+    <style>
+        /* Inactive status tabs share the Pending tab's look; the active tab keeps its own colour with a white icon. */
+        #listTabs .status-btn:not(.active) > span:first-child > i { color: var(--bs-warning) !important; }
+        #listTabs .status-btn[id="confirmed"]:not(.active),
+        #listTabs .status-btn[id="blocked"]:not(.active),
+        #listTabs .status-btn[id="overdue"]:not(.active) { background: #f1f3f5; color: #495057; }
+        #listTabs .status-btn.active > span:first-child > i { color: #fff !important; }
+    </style>
     <main class="gmail-content bg-white px-3">
         @include('includes.inline-page-title')
         <!-- Tabs -->
@@ -17,6 +25,15 @@
                                 <span><i class="bi bi-check-circle me-1"></i> {{ __('Active') }} -</span>
                                 <span class="status-count ms-2"
                                       id="confirmedCount">0</span>
+                            </button>
+                        </li>
+                        <li class="nav-item me-2">
+                            <button
+                                class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn"
+                                data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="overdue">
+                                <span><i class="bi bi-exclamation-triangle me-1"></i> {{ __('Overdue') }} -</span>
+                                <span class="status-count ms-2"
+                                      id="overdueCount">0</span>
                             </button>
                         </li>
                         <li class="nav-item">
@@ -42,32 +59,43 @@
              rendered height exceeds the card's natural content height. --}}
         <div class="shadow bdr-r-10 py-3 flex-grow-1" style="overflow: hidden;min-height:320px;">
             <!-- Search & New -->
-            <div class="d-flex justify-content-between px-3 flex-shrink-0">
+            <div class="d-flex justify-content-between align-items-center px-3 pt-1 pb-1 flex-shrink-0">
                 {{--<div id="searchLabels" class="mb-3 d-flex flex-wrap gap-2"></div>--}}
 
-                <!-- Example static label -->
-                <div class="d-inline-flex align-items-center bg-light border rounded-pill px-2 py-1 me-2 mb-2 small"
-                     style="font-size: 0.8rem;">
-                    <span class="me-2">{{ __('Date') }}: 10-12-2024 / 10-12-2025</span>
-                    <button type="button"
-                            class="btn btn-sm btn-light p-0 border-0 d-flex align-items-center justify-content-center"
-                            style="width: 16px; height: 16px; line-height: 1;" aria-label="Close"
-                            onclick="clearDateLabel()">
-                        &times;
-                    </button>
-                </div>
-                <div class="align-items-center gap-2">
-                    <div class="search-box position-relative me-2">
+                <div class="d-flex flex-wrap align-items-center" id="supplierFilterChips"></div>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="search-box position-relative">
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
 
                         <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
                                placeholder="{{ __('Search suppliers...') }}" aria-label="{{ __('Search suppliers...') }}">
                     </div>
+                    <div class="dropdown">
+                        <button class="btn btn-icon-search rounded-circle position-relative" type="button" id="supplierFilterBtn"
+                                data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false"
+                                title="{{ __('Filter') }}" aria-label="{{ __('Filter') }}">
+                            <i class="bi bi-funnel"></i>
+                            <span class="badge bg-primary rounded-pill d-none position-absolute top-0 start-100 translate-middle" id="supplierFilterBadge">0</span>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end p-3 shadow" id="supplierFilterForm" style="width:320px;">
+                            <div class="mb-3">
+                                <label class="form-label small text-muted mb-1">{{ __('Joined Date') }}</label>
+                                <div class="d-flex gap-2">
+                                    <input type="text" class="form-control datepicker" id="filter-joined-from" data-min-date="01-01-2000" data-max-date="31-12-2099" aria-label="{{ __('From') }}">
+                                    <input type="text" class="form-control datepicker" id="filter-joined-to" data-min-date="01-01-2000" data-max-date="31-12-2099" aria-label="{{ __('To') }}">
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-sm btn-light" id="supplier-filter-clear">{{ __('Clear') }}</button>
+                                <button type="button" class="btn btn-sm btn-primary" id="supplier-filter-apply">{{ __('Apply') }}</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Table with scroll -->
-            <div class="flex-grow-1 <!--overflow-auto-->">
+            <div class="flex-grow-1 mt-2">
                 <table class="table align-middle dataTable" id="dataTable" data-title="Supplier" data-model-size="md" data-min-height="min-height:51vh;">
                     <thead class="table-light bg-white">
                     <tr>
