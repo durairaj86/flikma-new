@@ -1,4 +1,5 @@
 @section('page-title', __('Sales Overview'))
+@section('hide-topbar', true)
 @section('page-subtitle', __('Real-time sales performance dashboard'))
 @section('print-footer')
 <script>
@@ -49,6 +50,28 @@
             .sales-table th { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: #64748b; background: #f8fafc; border-bottom-width: 1px; }
             .sales-table td { font-size: .82rem; vertical-align: middle; color: #1e293b; }
             .badge-sales { background: rgba(11,106,160,0.1); color: #0b6aa0; font-weight: 600; font-size: .7rem; padding: .25em .7em; border-radius: 20px; }
+            /* Dashboard-widget look for the KPI and chart cards. */
+            .sales-kpi-card.wd {
+                --kbg: color-mix(in srgb, var(--kc) 9%, #fff);
+                background: var(--kbg); border: 0; border-radius: 18px; padding: 16px 18px 14px;
+                box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(15,23,42,.07);
+                display: block; height: 100%;
+            }
+            .sales-kpi-card.wd:hover { box-shadow: 0 1px 2px rgba(0,0,0,.05), 0 12px 30px rgba(15,23,42,.11); }
+            .wd-head { display: flex; align-items: center; gap: 10px; }
+            .wd-icon { width: 32px; height: 32px; border-radius: 50%; background: var(--kc); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: .85rem; flex-shrink: 0;
+                       box-shadow: 0 3px 8px color-mix(in srgb, var(--kc) 40%, transparent); }
+            .wd-title { font-weight: 600; font-size: .9rem; color: #475467; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .wd-value { font-size: 1.9rem; font-weight: 700; letter-spacing: -.02em; color: #101828; line-height: 1.1; margin-top: 14px; white-space: nowrap; }
+            .wd-note { font-size: .8rem; color: #667085; margin-top: 4px; }
+            .sales-kpi-card.wd-sm { padding: 12px 14px 12px; }
+            .sales-kpi-card.wd-sm .wd-value { font-size: 1.35rem; margin-top: 8px; }
+            .sales-kpi-card.wd-sm .wd-title { font-size: .78rem; }
+            .sales-kpi-card.wd-sm .wd-icon { width: 26px; height: 26px; font-size: .72rem; }
+            .sales-card { border: 0; border-radius: 18px; box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(15,23,42,.07); overflow: hidden; }
+            .sales-card-header { border-bottom: 0; padding: 16px 18px 6px; }
+            .sales-card-header h6 { font-size: .9rem; font-weight: 600; color: #475467; }
+            .sales-card-body { padding: 8px 18px 18px; }
             .trend-up { color: #16a34a; }
             .trend-down { color: #dc2626; }
             .sales-filter-card {
@@ -62,14 +85,22 @@
 
         <div class="container-fluid px-lg-5">
 
-            {{-- Header --}}
-            <div class="d-flex flex-wrap justify-content-end align-items-center mb-3">
-                <div class="d-flex align-items-center gap-2">
-                    <select id="dateRange" class="form-select form-select-sm" style="width:auto;min-width:140px;">
+            {{-- Title row: title on the left (when the header is off), period filter at the right end --}}
+            <style>
+                .so-title { display: none; }
+                body:not(.has-top-header) .so-title { display: block; }
+            </style>
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                <div class="so-title">
+                    <h4 class="fw-bold text-dark mb-0">@yield('page-title')</h4>
+                    <div class="text-muted small mt-1">@yield('page-subtitle')</div>
+                </div>
+                <div class="d-flex align-items-center gap-2 ms-auto">
+                    <div id="dateRangeWrap" style="min-width:170px;"><select id="dateRange" class="tom-select" data-placeholder="{{ __('This Month') }}">
                         <option value="this_month" {{ $range==='this_month' ? 'selected' : '' }}>{{ __('This Month') }}</option>
                         <option value="last_month" {{ $range==='last_month' ? 'selected' : '' }}>{{ __('Last Month') }}</option>
                         <option value="this_year" {{ $range==='this_year' ? 'selected' : '' }}>{{ __('This Year') }}</option>
-                    </select>
+                    </select></div>
                     <button class="btn btn-primary btn-sm px-3" id="btn-apply">
                         <i class="bi bi-arrow-repeat me-1"></i> {{ __('Apply') }}
                     </button>
@@ -79,51 +110,31 @@
             {{-- KPI Cards --}}
             <div class="row g-3 mb-4">
                 <div class="col-lg-3 col-md-6">
-                    <div class="sales-kpi-card d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="kpi-label">{{ __('Total Sales') }}</div>
-                            <div class="kpi-value" id="kpiSales">SAR 0</div>
-                            <div class="kpi-sub">{{ __('Invoiced this period') }}</div>
-                        </div>
-                        <div class="sales-icon-circle" style="background:rgba(11,106,160,0.1);color:#0b6aa0;">
-                            <i class="bi bi-cart-check"></i>
-                        </div>
+                    <div class="sales-kpi-card wd" style="--kc: #0b6aa0;">
+                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-cart-check"></i></span><span class="wd-title">{{ __('Total Sales') }}</span></div>
+                        <div class="wd-value" id="kpiSales">SAR 0</div>
+                        <div class="wd-note">{{ __('Invoiced this period') }}</div>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6">
-                    <div class="sales-kpi-card d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="kpi-label">{{ __('Pending Approval') }}</div>
-                            <div class="kpi-value" id="kpiPendingApproval">SAR 0</div>
-                            <div class="kpi-sub">{{ __('Draft & sent invoices') }}</div>
-                        </div>
-                        <div class="sales-icon-circle" style="background:rgba(22,163,74,0.1);color:#16a34a;">
-                            <i class="bi bi-wallet2"></i>
-                        </div>
+                    <div class="sales-kpi-card wd" style="--kc: #16a34a;">
+                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-wallet2"></i></span><span class="wd-title">{{ __('Pending Approval') }}</span></div>
+                        <div class="wd-value" id="kpiPendingApproval">SAR 0</div>
+                        <div class="wd-note">{{ __('Draft & sent invoices') }}</div>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6">
-                    <div class="sales-kpi-card d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="kpi-label">{{ __('Outstanding') }}</div>
-                            <div class="kpi-value" id="kpiOutstanding" style="color:#dc2626;">SAR 0</div>
-                            <div class="kpi-sub">{{ __('Balance due') }}</div>
-                        </div>
-                        <div class="sales-icon-circle" style="background:rgba(220,38,38,0.1);color:#dc2626;">
-                            <i class="bi bi-exclamation-triangle"></i>
-                        </div>
+                    <div class="sales-kpi-card wd" style="--kc: #dc2626;">
+                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-exclamation-triangle"></i></span><span class="wd-title">{{ __('Outstanding') }}</span></div>
+                        <div class="wd-value" id="kpiOutstanding" style="color:#dc2626;">SAR 0</div>
+                        <div class="wd-note">{{ __('Balance due') }}</div>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6">
-                    <div class="sales-kpi-card d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="kpi-label">{{ __('Avg Invoice') }}</div>
-                            <div class="kpi-value" id="kpiAvgInvoice">SAR 0</div>
-                            <div class="kpi-sub">{{ __('Avg value per invoice') }}</div>
-                        </div>
-                        <div class="sales-icon-circle" style="background:rgba(91,87,174,0.1);color:#5b57ae;">
-                            <i class="bi bi-bar-chart-line"></i>
-                        </div>
+                    <div class="sales-kpi-card wd" style="--kc: #5b57ae;">
+                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-bar-chart-line"></i></span><span class="wd-title">{{ __('Avg Invoice') }}</span></div>
+                        <div class="wd-value" id="kpiAvgInvoice">SAR 0</div>
+                        <div class="wd-note">{{ __('Avg value per invoice') }}</div>
                     </div>
                 </div>
             </div>
@@ -131,33 +142,33 @@
             {{-- Secondary KPIs --}}
             <div class="row g-3 mb-4">
                 <div class="col-lg-2 col-md-4 col-6">
-                    <div class="sales-kpi-card text-center py-2">
-                        <div class="kpi-label">{{ __('Invoices') }}</div>
-                        <div class="kpi-value" id="kpiInvoiceCount" style="font-size:1.3rem;">0</div>
+                    <div class="sales-kpi-card wd wd-sm" style="--kc: #0b6aa0;">
+                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-receipt"></i></span><span class="wd-title">{{ __('Invoices') }}</span></div>
+                        <div class="wd-value" id="kpiInvoiceCount">0</div>
                     </div>
                 </div>
                 <div class="col-lg-2 col-md-4 col-6">
-                    <div class="sales-kpi-card text-center py-2">
-                        <div class="kpi-label">{{ __('Customers') }}</div>
-                        <div class="kpi-value" id="kpiCustomerCount" style="font-size:1.3rem;">0</div>
+                    <div class="sales-kpi-card wd wd-sm" style="--kc: #5b57ae;">
+                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-people"></i></span><span class="wd-title">{{ __('Customers') }}</span></div>
+                        <div class="wd-value" id="kpiCustomerCount">0</div>
                     </div>
                 </div>
                 <div class="col-lg-2 col-md-4 col-6">
-                    <div class="sales-kpi-card text-center py-2">
-                        <div class="kpi-label">{{ __('Recurring') }}</div>
-                        <div class="kpi-value" id="kpiRecurring" style="font-size:1.3rem;">0%</div>
+                    <div class="sales-kpi-card wd wd-sm" style="--kc: #16a34a;">
+                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-arrow-repeat"></i></span><span class="wd-title">{{ __('Recurring') }}</span></div>
+                        <div class="wd-value" id="kpiRecurring">0%</div>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 col-6">
-                    <div class="sales-kpi-card text-center py-2">
-                        <div class="kpi-label">{{ __('vs Last Month (Sales)') }}</div>
-                        <div class="kpi-value" id="kpiSalesChange" style="font-size:1.1rem;">0%</div>
+                    <div class="sales-kpi-card wd wd-sm" style="--kc: #f59e0b;">
+                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-graph-up"></i></span><span class="wd-title">{{ __('vs Last Month (Sales)') }}</span></div>
+                        <div class="wd-value" id="kpiSalesChange">0%</div>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 col-6">
-                    <div class="sales-kpi-card text-center py-2">
-                        <div class="kpi-label">{{ __('Approval Rate') }}</div>
-                        <div class="kpi-value" id="kpiApprovalRate" style="font-size:1.1rem;">0%</div>
+                    <div class="sales-kpi-card wd wd-sm" style="--kc: #0891b2;">
+                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-patch-check"></i></span><span class="wd-title">{{ __('Approval Rate') }}</span></div>
+                        <div class="wd-value" id="kpiApprovalRate">0%</div>
                     </div>
                 </div>
             </div>
@@ -328,7 +339,7 @@
         const salesChange = prevSales > 0 ? ((d.sales - prevSales) / prevSales) * 100 : 0;
         const chgEl = document.getElementById('kpiSalesChange');
         chgEl.innerText = (salesChange >= 0 ? '+' : '') + salesChange.toFixed(1) + '%';
-        chgEl.className = 'kpi-value' + (salesChange >= 0 ? ' trend-up' : ' trend-down');
+        chgEl.className = 'wd-value' + (salesChange >= 0 ? ' trend-up' : ' trend-down');
 
         // Approval rate
         document.getElementById('kpiApprovalRate').innerText = pct(d.approvalRate);
@@ -508,6 +519,10 @@
     }
 
     document.addEventListener('DOMContentLoaded', render);
+    // Period dropdown: shared tom-select styling (the underlying <select> still holds the value).
+    document.addEventListener('DOMContentLoaded', function () {
+        if (window.initTomSelectForm && window.jQuery) { initTomSelectForm($('#dateRangeWrap')); }
+    });
 
     document.getElementById('btn-apply').addEventListener('click', () => {
         const range = document.getElementById('dateRange').value;

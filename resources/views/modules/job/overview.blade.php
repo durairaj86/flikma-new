@@ -1,4 +1,5 @@
 @section('page-title', __('Job Overview'))
+@section('hide-topbar', true)
 @section('page-subtitle', __('Real-time operations performance dashboard'))
 @section('print-footer')
 <script>
@@ -49,20 +50,50 @@
             .job-table th { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: #64748b; background: #f8fafc; border-bottom-width: 1px; }
             .job-table td { font-size: .82rem; vertical-align: middle; color: #1e293b; }
             .badge-job { background: rgba(11,106,160,0.1); color: #0b6aa0; font-weight: 600; font-size: .7rem; padding: .25em .7em; border-radius: 20px; }
+            /* Dashboard-widget look for the KPI and chart cards (matches the dashboard's rounded, soft-tinted widgets). */
+            .job-kpi-card.wd {
+                --kbg: color-mix(in srgb, var(--kc) 9%, #fff);
+                background: var(--kbg); border: 0; border-radius: 18px; padding: 16px 18px 14px;
+                box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(15,23,42,.07);
+                display: block; height: 100%;
+            }
+            .job-kpi-card.wd:hover { box-shadow: 0 1px 2px rgba(0,0,0,.05), 0 12px 30px rgba(15,23,42,.11); }
+            .wd-head { display: flex; align-items: center; gap: 10px; }
+            .wd-icon { width: 32px; height: 32px; border-radius: 50%; background: var(--kc); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: .85rem; flex-shrink: 0;
+                       box-shadow: 0 3px 8px color-mix(in srgb, var(--kc) 40%, transparent); }
+            .wd-title { font-weight: 600; font-size: .9rem; color: #475467; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .wd-value { font-size: 1.9rem; font-weight: 700; letter-spacing: -.02em; color: #101828; line-height: 1.1; margin-top: 14px; white-space: nowrap; }
+            .wd-note { font-size: .8rem; color: #667085; margin-top: 4px; }
+            .job-kpi-card.wd-sm { padding: 12px 14px 12px; }
+            .job-kpi-card.wd-sm .wd-value { font-size: 1.35rem; margin-top: 8px; }
+            .job-kpi-card.wd-sm .wd-title { font-size: .78rem; }
+            .job-kpi-card.wd-sm .wd-icon { width: 26px; height: 26px; font-size: .72rem; }
+            .job-card { border: 0; border-radius: 18px; box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(15,23,42,.07); overflow: hidden; }
+            .job-card-header { border-bottom: 0; padding: 16px 18px 6px; }
+            .job-card-header h6 { font-size: .9rem; font-weight: 600; color: #475467; }
+            .job-card-body { padding: 8px 18px 18px; }
             .trend-up { color: #16a34a; }
             .trend-down { color: #dc2626; }
         </style>
 
         <div class="container-fluid px-lg-5">
 
-            {{-- Header --}}
-            <div class="d-flex flex-wrap justify-content-end align-items-center mb-3">
-                <div class="d-flex align-items-center gap-2">
-                    <select id="dateRange" class="form-select form-select-sm" style="width:auto;min-width:140px;">
+            {{-- Title row: title on the left (when the header is off), period filter at the right end --}}
+            <style>
+                .jo-title { display: none; }
+                body:not(.has-top-header) .jo-title { display: block; }
+            </style>
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                <div class="jo-title">
+                    <h4 class="fw-bold text-dark mb-0">@yield('page-title')</h4>
+                    <div class="text-muted small mt-1">@yield('page-subtitle')</div>
+                </div>
+                <div class="d-flex align-items-center gap-2 ms-auto">
+                    <div id="dateRangeWrap" style="min-width:170px;"><select id="dateRange" class="tom-select" data-placeholder="{{ __('This Month') }}">
                         <option value="this_month" {{ $range==='this_month' ? 'selected' : '' }}>{{ __('This Month') }}</option>
                         <option value="last_month" {{ $range==='last_month' ? 'selected' : '' }}>{{ __('Last Month') }}</option>
                         <option value="this_year" {{ $range==='this_year' ? 'selected' : '' }}>{{ __('This Year') }}</option>
-                    </select>
+                    </select></div>
                     <button class="btn btn-primary btn-sm px-3" id="btn-apply">
                         <i class="bi bi-arrow-repeat me-1"></i> {{ __('Apply') }}
                     </button>
@@ -72,51 +103,31 @@
             {{-- KPI Cards --}}
             <div class="row g-3 mb-4">
                 <div class="col-lg-3 col-md-6">
-                    <div class="job-kpi-card d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="kpi-label">{{ __('Total Jobs') }}</div>
-                            <div class="kpi-value" id="kpiTotalJobs">0</div>
-                            <div class="kpi-sub">{{ __('Created this period') }}</div>
-                        </div>
-                        <div class="job-icon-circle" style="background:rgba(11,106,160,0.1);color:#0b6aa0;">
-                            <i class="bi bi-briefcase"></i>
-                        </div>
+                    <div class="job-kpi-card wd" style="--kc: #0b6aa0;">
+                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-briefcase"></i></span><span class="wd-title">{{ __('Total Jobs') }}</span></div>
+                        <div class="wd-value" id="kpiTotalJobs">0</div>
+                        <div class="wd-note">{{ __('Created this period') }}</div>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6">
-                    <div class="job-kpi-card d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="kpi-label">{{ __('Completed') }}</div>
-                            <div class="kpi-value" id="kpiCompletedJobs">0</div>
-                            <div class="kpi-sub">{{ __('Finished this period') }}</div>
-                        </div>
-                        <div class="job-icon-circle" style="background:rgba(22,163,74,0.1);color:#16a34a;">
-                            <i class="bi bi-check-circle"></i>
-                        </div>
+                    <div class="job-kpi-card wd" style="--kc: #16a34a;">
+                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-check-circle"></i></span><span class="wd-title">{{ __('Completed') }}</span></div>
+                        <div class="wd-value" id="kpiCompletedJobs">0</div>
+                        <div class="wd-note">{{ __('Finished this period') }}</div>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6">
-                    <div class="job-kpi-card d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="kpi-label">{{ __('Pending') }}</div>
-                            <div class="kpi-value" id="kpiPendingJobs" style="color:#dc2626;">0</div>
-                            <div class="kpi-sub">{{ __('Currently in progress') }}</div>
-                        </div>
-                        <div class="job-icon-circle" style="background:rgba(220,38,38,0.1);color:#dc2626;">
-                            <i class="bi bi-hourglass-split"></i>
-                        </div>
+                    <div class="job-kpi-card wd" style="--kc: #dc2626;">
+                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-hourglass-split"></i></span><span class="wd-title">{{ __('Pending') }}</span></div>
+                        <div class="wd-value" id="kpiPendingJobs" style="color:#dc2626;">0</div>
+                        <div class="wd-note">{{ __('Currently in progress') }}</div>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6">
-                    <div class="job-kpi-card d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="kpi-label">{{ __('Invoiced Jobs') }}</div>
-                            <div class="kpi-value" id="kpiInvoicedJobs">0</div>
-                            <div class="kpi-sub">{{ __('Have a customer invoice') }}</div>
-                        </div>
-                        <div class="job-icon-circle" style="background:rgba(91,87,174,0.1);color:#5b57ae;">
-                            <i class="bi bi-receipt"></i>
-                        </div>
+                    <div class="job-kpi-card wd" style="--kc: #5b57ae;">
+                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-receipt"></i></span><span class="wd-title">{{ __('Invoiced Jobs') }}</span></div>
+                        <div class="wd-value" id="kpiInvoicedJobs">0</div>
+                        <div class="wd-note">{{ __('Have a customer invoice') }}</div>
                     </div>
                 </div>
             </div>
@@ -124,39 +135,39 @@
             {{-- Secondary KPIs --}}
             <div class="row g-3 mb-4">
                 <div class="col-lg-2 col-md-4 col-6">
-                    <div class="job-kpi-card text-center py-2">
-                        <div class="kpi-label">{{ __('Cancelled') }}</div>
-                        <div class="kpi-value" id="kpiCancelledJobs" style="font-size:1.3rem;">0</div>
+                    <div class="job-kpi-card wd wd-sm" style="--kc: #dc2626;">
+                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-x-circle"></i></span><span class="wd-title">{{ __('Cancelled') }}</span></div>
+                        <div class="wd-value" id="kpiCancelledJobs">0</div>
                     </div>
                 </div>
                 <div class="col-lg-2 col-md-4 col-6">
-                    <div class="job-kpi-card text-center py-2">
-                        <div class="kpi-label">{{ __('Customers') }}</div>
-                        <div class="kpi-value" id="kpiCustomerCount" style="font-size:1.3rem;">0</div>
+                    <div class="job-kpi-card wd wd-sm" style="--kc: #0b6aa0;">
+                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-people"></i></span><span class="wd-title">{{ __('Customers') }}</span></div>
+                        <div class="wd-value" id="kpiCustomerCount">0</div>
                     </div>
                 </div>
                 <div class="col-lg-2 col-md-4 col-6">
-                    <div class="job-kpi-card text-center py-2">
-                        <div class="kpi-label">{{ __('From Quotations') }}</div>
-                        <div class="kpi-value" id="kpiFromQuotations" style="font-size:1.3rem;">0</div>
+                    <div class="job-kpi-card wd wd-sm" style="--kc: #5b57ae;">
+                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-file-earmark-text"></i></span><span class="wd-title">{{ __('From Quotations') }}</span></div>
+                        <div class="wd-value" id="kpiFromQuotations">0</div>
                     </div>
                 </div>
                 <div class="col-lg-2 col-md-4 col-6">
-                    <div class="job-kpi-card text-center py-2">
-                        <div class="kpi-label">{{ __('Repeat Customers') }}</div>
-                        <div class="kpi-value" id="kpiRepeat" style="font-size:1.3rem;">0%</div>
+                    <div class="job-kpi-card wd wd-sm" style="--kc: #16a34a;">
+                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-arrow-repeat"></i></span><span class="wd-title">{{ __('Repeat Customers') }}</span></div>
+                        <div class="wd-value" id="kpiRepeat">0%</div>
                     </div>
                 </div>
                 <div class="col-lg-2 col-md-4 col-6">
-                    <div class="job-kpi-card text-center py-2">
-                        <div class="kpi-label">{{ __('Avg Containers/Job') }}</div>
-                        <div class="kpi-value" id="kpiAvgContainers" style="font-size:1.3rem;">0</div>
+                    <div class="job-kpi-card wd wd-sm" style="--kc: #0891b2;">
+                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-box-seam"></i></span><span class="wd-title">{{ __('Avg Containers/Job') }}</span></div>
+                        <div class="wd-value" id="kpiAvgContainers">0</div>
                     </div>
                 </div>
                 <div class="col-lg-2 col-md-4 col-6">
-                    <div class="job-kpi-card text-center py-2">
-                        <div class="kpi-label">{{ __('vs Last Month') }}</div>
-                        <div class="kpi-value" id="kpiJobsChange" style="font-size:1.1rem;">0%</div>
+                    <div class="job-kpi-card wd wd-sm" style="--kc: #f59e0b;">
+                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-graph-up"></i></span><span class="wd-title">{{ __('vs Last Month') }}</span></div>
+                        <div class="wd-value" id="kpiJobsChange">0%</div>
                     </div>
                 </div>
             </div>
@@ -336,7 +347,7 @@
         const jobsChange = prevJobs > 0 ? ((d.totalJobs - prevJobs) / prevJobs) * 100 : 0;
         const chgEl = document.getElementById('kpiJobsChange');
         chgEl.innerText = (jobsChange >= 0 ? '+' : '') + jobsChange.toFixed(1) + '%';
-        chgEl.className = 'kpi-value' + (jobsChange >= 0 ? ' trend-up' : ' trend-down');
+        chgEl.className = 'wd-value' + (jobsChange >= 0 ? ' trend-up' : ' trend-down');
 
         // Top customers table
         const custHtml = (d.customers || []).map((c, i) => {
@@ -537,6 +548,10 @@
     }
 
     document.addEventListener('DOMContentLoaded', render);
+    // Period dropdown: shared tom-select styling (the underlying <select> still holds the value).
+    document.addEventListener('DOMContentLoaded', function () {
+        if (window.initTomSelectForm && window.jQuery) { initTomSelectForm($('#dateRangeWrap')); }
+    });
 
     document.getElementById('btn-apply').addEventListener('click', () => {
         const range = document.getElementById('dateRange').value;

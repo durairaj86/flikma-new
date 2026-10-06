@@ -1,4 +1,5 @@
 @section('page-title', __('Jobs'))
+@section('hide-topbar', true)
 @section('js','job')
 @section('extra-js','customer')
 @push('page-title-action')
@@ -10,136 +11,109 @@
 @endpush
 <x-app-layout>
     <main class="gmail-content bg-white px-3">
+        <style>
+            .job-title { display: none; }
+            body:not(.has-top-header) .job-title { display: block; }
+            #listTabs .status-btn:not(.active) { background: #f1f3f5; color: #495057; }
+            #listTabs .status-btn:not(.active) > span:first-child > i { color: var(--bs-warning) !important; }
+            #listTabs .status-btn.active { background: rgb(13, 110, 253) !important; color: #fff !important; }
+            #listTabs .status-btn.active > span:first-child > i { color: #fff !important; }
+        </style>
+        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap pt-2 pb-0">
+            <div class="d-flex align-items-center gap-2 job-title">
+                <h4 class="fw-bold text-dark mb-0">@yield('page-title')</h4>
+                @stack('page-title-action')
+            </div>
+            <div class="d-flex align-items-center gap-2 ms-auto">
+                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Job') }}</button>
+            </div>
+        </div>
 
-        <div id="filterPanel" class="card shadow-sm border-0 d-none">
+        <div id="filterPanel" class="card shadow-sm border-0 d-none filter-panel-card">
 
             <!-- Header -->
-            <div class="card-header bg-light border-0 py-3">
+            <div class="card-header bg-white border-0 pt-3 pb-0">
                 <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-funnel-fill text-primary"></i>
+                    <span class="filter-panel-icon"><i class="bi bi-funnel-fill"></i></span>
                     <h6 class="mb-0 fw-semibold">{{ __('Filters') }}</h6>
                 </div>
             </div>
 
-            <div class="card-body">
-
+            <div class="card-body pt-3">
                 <form id="list-filter" method="post" novalidate="novalidate">
                     @csrf
-                    <!-- Date Range Section -->
-                    <div class="bg-light rounded p-3 mb-4">
-                        <div class="row g-3 align-items-end">
+                    <div class="row g-4">
 
-                            {{--<div class="col-md-2">
-                                <label class="form-label fw-medium">Date Range</label>
-                                <select class="tom-select avoid-filter" id="presetDateRange">
-                                    <option value="">Custom</option>
-                                    <option value="today">Today</option>
-                                    <option value="yesterday">Yesterday</option>
-                                    <option value="thisMonth">This Month</option>
-                                    <option value="lastMonth">Last Month</option>
-                                    <option value="thisQuarter">This Quarter</option>
-                                    <option value="lastQuarter">Last Quarter</option>
-                                    <option value="thisYear">This Year</option>
-                                    <option value="lastYear">Last Year</option>
-                                </select>
-                            </div>--}}
-
-                            <div class="col-md-2 form-filter">
-                                <label class="form-label fw-medium">{{ __('Job Date') }}</label>
-                                <div class="d-flex input-group-filter gap-2">
-                                    <input type="date" class="form-control datepicker from-date default-filter" id="filter-from-date" name="filter-from-date"
-                                           value="{{ \Carbon\Carbon::today()->subMonth(6)->startOfMonth()->format('d-m-Y') }}">
-                                    <input type="date" class="form-control datepicker to-date default-filter" id="filter-to-date" name="filter-to-date"
-                                           value="{{ \Carbon\Carbon::today()->format('d-m-Y') }}">
-                                </div>
+                        <div class="col-md-6 col-xl-2 form-filter">
+                            <label class="form-label fw-medium filter-label-row">{{ __('Job Date') }}</label>
+                            <div class="filter-date-range">
+                                <input type="date" class="form-control datepicker from-date default-filter" id="filter-from-date" name="filter-from-date"
+                                       value="{{ \Carbon\Carbon::today()->subMonth(6)->startOfMonth()->format('d-m-Y') }}">
+                                <i class="bi bi-arrow-right filter-date-range-arrow"></i>
+                                <input type="date" class="form-control datepicker to-date default-filter" id="filter-to-date" name="filter-to-date"
+                                       value="{{ \Carbon\Carbon::today()->format('d-m-Y') }}">
                             </div>
-
-                            <div class="col-md-2 form-filter">
-                                <label class="form-label fw-medium">{{ __('Customer') }}</label>
-                                <x-common.customers multiple></x-common.customers>
-                            </div>
-
-                            <div class="col-md-2 form-filter">
-                                <label class="form-label fw-medium">{{ __('Carrier') }}</label>
-                                <input type="text" class="form-control" id="filter-carrier" name="filter_carrier" placeholder="{{ __('Search carrier') }}">
-                            </div>
-
-
-                            <div class="col-md-3 form-filter pol-pod-select">
-                                <label class="form-label fw-medium">
-                                    {{ __('POL') }} <small class="text-muted">({{ __('Port of Loading') }})</small>
-                                </label>
-
-                                <div class="position-relative">
-
-                                    <!-- Sea / Air toggle -->
-                                    <div class="shipment-toggle">
-                                        <input type="radio" class="btn-check sync-sea avoid-filter" name="shipment_mode" id="polSea"
-                                               value="sea" checked>
-                                        <label for="polSea">{{ __('Sea') }}</label>
-
-                                        <input type="radio" class="btn-check sync-air avoid-filter" name="shipment_mode" id="polAir"
-                                               value="air">
-                                        <label for="polAir">{{ __('Air') }}</label>
-                                    </div>
-
-                                    <!-- POL -->
-                                    <select id="filter-pol" name="filter-pol"
-                                            class="tom-select-search"
-                                            data-placeholder="{{ __('Select Port of Loading') }}">
-                                        <option value=""></option>
-                                    </select>
-
-                                </div>
-                            </div>
-
-
-                            <div class="col-md-3 pol-pod-select">
-                                <label class="form-label fw-medium">
-                                    {{ __('POD') }} <small class="text-muted">({{ __('Port of Discharge') }})</small>
-                                </label>
-
-                                <div class="position-relative">
-
-                                    <!-- Sea / Air toggle -->
-                                    <div class="shipment-toggle">
-                                        <input type="radio" class="btn-check sync-sea avoid-filter" name="shipment_mode_2" id="polSea2"
-                                               checked
-                                               value="sea">
-                                        <label for="polSea2">{{ __('Sea') }}</label>
-
-                                        <input type="radio" class="btn-check sync-air avoid-filter" name="shipment_mode_2" id="polAir2"
-                                               value="air">
-                                        <label for="polAir2">{{ __('Air') }}</label>
-                                    </div>
-
-                                    <!-- POD -->
-                                    <select id="filter-pod" name="filter-pod"
-                                            class="tom-select-search"
-                                            data-placeholder="{{ __('Select Port of Discharge') }}">
-                                        <option value=""></option>
-                                    </select>
-
-                                </div>
-                            </div>
-
                         </div>
 
-                        <!-- Action Buttons -->
-                        <div class="text-center mt-4">
-                            {{--<button class="btn btn-outline-secondary me-2 px-4">Reset</button>--}}
-                            <button class="btn btn-primary btn-round px-4" type="button" id="apply-filter">
-                                <i class="bi bi-search me-1"></i> {{ __('Search') }}
-                            </button>
+                        <div class="col-md-6 col-xl-2 form-filter">
+                            <label class="form-label fw-medium filter-label-row">{{ __('Customer') }}</label>
+                            <x-common.customers multiple></x-common.customers>
+                        </div>
+
+                        <div class="col-md-6 col-xl-2 form-filter">
+                            <label class="form-label fw-medium filter-label-row">{{ __('Carrier') }}</label>
+                            <input type="text" class="form-control" id="filter-carrier" name="filter_carrier" placeholder="{{ __('Search carrier') }}">
+                        </div>
+
+                        <div class="col-md-6 col-xl-3 form-filter pol-pod-select">
+                            <div class="d-flex align-items-center justify-content-between filter-label-row">
+                                <label class="form-label fw-medium mb-0">
+                                    {{ __('POL') }} <span class="text-muted fw-normal">({{ __('Port of Loading') }})</span>
+                                </label>
+                                <div class="shipment-toggle">
+                                    <input type="radio" class="btn-check sync-sea avoid-filter" name="shipment_mode" id="polSea" value="sea" checked>
+                                    <label for="polSea">{{ __('Sea') }}</label>
+                                    <input type="radio" class="btn-check sync-air avoid-filter" name="shipment_mode" id="polAir" value="air">
+                                    <label for="polAir">{{ __('Air') }}</label>
+                                </div>
+                            </div>
+                            <select id="filter-pol" name="filter-pol" class="tom-select-search" data-placeholder="{{ __('Select Port of Loading') }}">
+                                <option value=""></option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 col-xl-3 pol-pod-select">
+                            <div class="d-flex align-items-center justify-content-between filter-label-row">
+                                <label class="form-label fw-medium mb-0">
+                                    {{ __('POD') }} <span class="text-muted fw-normal">({{ __('Port of Discharge') }})</span>
+                                </label>
+                                <div class="shipment-toggle">
+                                    <input type="radio" class="btn-check sync-sea avoid-filter" name="shipment_mode_2" id="polSea2" checked value="sea">
+                                    <label for="polSea2">{{ __('Sea') }}</label>
+                                    <input type="radio" class="btn-check sync-air avoid-filter" name="shipment_mode_2" id="polAir2" value="air">
+                                    <label for="polAir2">{{ __('Air') }}</label>
+                                </div>
+                            </div>
+                            <select id="filter-pod" name="filter-pod" class="tom-select-search" data-placeholder="{{ __('Select Port of Discharge') }}">
+                                <option value=""></option>
+                            </select>
                         </div>
 
                     </div>
+
+                    <!-- Action Buttons -->
+                    <div class="text-center mt-4 pt-2 border-top filter-panel-actions">
+                        <button class="btn btn-primary btn-round px-4" type="button" id="apply-filter">
+                            <i class="bi bi-search me-1"></i> {{ __('Search') }}
+                        </button>
+                    </div>
+
                 </form>
             </div>
         </div>
 
         <!-- Tabs -->
-        <div class="d-flex justify-content-between align-items-start py-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 py-3">
             <div class="align-items-center flex-shrink-0">
                 <div class="gap-4">
                     <ul class="nav align-items-center" id="listTabs" role="tablist"
@@ -177,14 +151,16 @@
                     </ul>
                 </div>
             </div>
-            <div class="d-flex justify-content-between align-items-center gap-2">
-                <button class="btn btn-outline-primary btn-round me-2" id="filter-box">
-                    <i class="bi bi-funnel"></i> {{ __('Filter') }}
-                </button>
-                <button class="btn btn-outline-secondary btn-round" id="columnSettingsBtn" title="{{ __('Column Settings') }}">
-                    <i class="bi bi-columns-gap"></i> {{ __('Columns') }}
-                </button>
-                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Job') }}</button>
+            <div class="d-flex align-items-center gap-2">
+                <div class="search-box position-relative">
+                    <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                    <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
+                           placeholder="{{ __('Search jobs...') }}" aria-label="{{ __('Search jobs...') }}">
+                </div>
+                <button class="btn btn-icon-search rounded-circle" id="filter-box" type="button"
+                        title="{{ __('Filter') }}" aria-label="{{ __('Filter') }}"><i class="bi bi-funnel"></i></button>
+                <button class="btn btn-icon-search rounded-circle" id="columnSettingsBtn" type="button"
+                        title="{{ __('Column Settings') }}" aria-label="{{ __('Column Settings') }}"><i class="bi bi-columns-gap"></i></button>
             </div>
         </div>
 
@@ -277,12 +253,6 @@
                 </div>
                 -->
                 <div class="d-flex align-items-center gap-2">
-                    <div class="search-box position-relative me-2">
-                        <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-
-                        <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="{{ __('Search jobs...') }}" aria-label="{{ __('Search jobs...') }}">
-                    </div>
                     <select id="pageLength" class="form-select form-select-sm w-auto" aria-label="{{ __('Rows per page') }}">
                         <option value="25" selected>25</option>
                         <option value="50">50</option>
