@@ -9,7 +9,7 @@
             <div class="card-header bg-light border-0 py-3">
                 <div class="d-flex align-items-center gap-2">
                     <i class="bi bi-funnel-fill text-primary"></i>
-                    <h6 class="mb-0 fw-semibold">{{ __('Advanced Filters') }}</h6>
+                    <h6 class="mb-0 fw-semibold">{{ __('Filters') }}</h6>
                 </div>
             </div>
 

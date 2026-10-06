@@ -18,7 +18,19 @@
         #listTabs .status-btn.active > span:first-child > i { color: #fff !important; }
     </style>
     <main class="gmail-content bg-white px-3">
-        @include('includes.inline-page-title')
+        <style>
+            .enq-title { display: none; }
+            body:not(.has-top-header) .enq-title { display: block; }
+        </style>
+        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap pt-2 pb-0">
+            <div class="d-flex align-items-center gap-2 enq-title">
+                <h4 class="fw-bold text-dark mb-0">@yield('page-title')</h4>
+                @stack('page-title-action')
+            </div>
+            <div class="d-flex align-items-center gap-2 ms-auto">
+                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Enquiry') }}</button>
+            </div>
+        </div>
 
         <div id="filterPanel" class="card shadow-sm border-0 d-none filter-panel-card">
 
@@ -26,7 +38,7 @@
             <div class="card-header bg-white border-0 pt-3 pb-0">
                 <div class="d-flex align-items-center gap-2">
                     <span class="filter-panel-icon"><i class="bi bi-funnel-fill"></i></span>
-                    <h6 class="mb-0 fw-semibold">{{ __('Advanced Filters') }}</h6>
+                    <h6 class="mb-0 fw-semibold">{{ __('Filters') }}</h6>
                 </div>
             </div>
 
@@ -119,7 +131,7 @@
             </div>
         </div>
 
-        <div class="d-flex justify-content-between align-items-start py-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 py-3">
             <div class="align-items-center flex-shrink-0">
                 <div class="gap-4">
                     <ul class="nav align-items-center" id="listTabs" role="tablist"
@@ -158,14 +170,14 @@
                     </ul>
                 </div>
             </div>
-            <div class="d-flex justify-content-between">
-                <div class="position-relative">
-                    <!-- Compact Filter button -->
-                    <button class="btn btn-outline-primary btn-round me-2" id="filter-box"><i class="bi bi-funnel"></i>
-                        {{ __('Filter') }}
-                    </button>
+            <div class="d-flex align-items-center gap-2">
+                <div class="search-box position-relative">
+                    <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                    <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
+                           placeholder="{{ __('Search enquiries...') }}" aria-label="{{ __('Search enquiries...') }}">
                 </div>
-                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Enquiry') }}</button>
+                <button class="btn btn-icon-search rounded-circle" id="filter-box" type="button"
+                        title="{{ __('Filter') }}" aria-label="{{ __('Filter') }}"><i class="bi bi-funnel"></i></button>
             </div>
         </div>
         <!-- Table Section. min-height guarantees room for a fully-expanded row
@@ -180,14 +192,6 @@
 
                 <!-- Example static label -->
                 <div id="filtered-data"></div>
-                <div class="align-items-center gap-2">
-                    <div class="search-box position-relative me-2">
-                        <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-
-                        <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="{{ __('Search enquiries...') }}" aria-label="{{ __('Search enquiries...') }}">
-                    </div>
-                </div>
             </div>
 
             <!-- Table with scroll -->
