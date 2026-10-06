@@ -38,11 +38,18 @@ class SupplierBalanceSummary extends Component
         // Triggers re-render
     }
 
+    /** The shared supplier dropdown posts hashed ids; keep the property as the plain id. */
+    public function updatedSupplierId($value)
+    {
+        $this->supplierId = $value ? (string) decodeId($value) : '';
+    }
+
     public function resetFilter()
     {
         $this->startDate  = now()->startOfMonth()->format('Y-m-d');
         $this->endDate    = now()->endOfMonth()->format('Y-m-d');
         $this->supplierId = '';
+        $this->dispatch('sbs-filter-reset');
     }
 
     protected function getReportData(): array

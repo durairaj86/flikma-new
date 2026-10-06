@@ -20,6 +20,14 @@
         <div class="card border-0 shadow-sm mb-4 d-print-none">
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
+                    <div class="col-lg-4 col-xl-3" id="saa-supplier-wrap" wire:ignore>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Supplier') }}</label>
+                        <x-common.suppliers wire:model.live="supplierId" id="saa-supplier" name="saa-supplier"
+                                            :value="$supplierId ? [(int) $supplierId] : null"
+                                            :suppliers="\App\Models\Supplier\Supplier::orderBy('name_en')->get()"
+                                            all-label="{{ __('All Suppliers') }}"
+                                            placeholder="{{ __('All Suppliers') }}"></x-common.suppliers>
+                    </div>
                     <div class="col-lg-2 col-md-4">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('As of Date') }}</label>
                         <div wire:ignore>
@@ -43,14 +51,6 @@
                                 <option value="{{ $n }}">{{ $n }} {{ __(Str::plural('Column', $n)) }}</option>
                             @endforeach
                         </select>
-                    </div>
-                    <div class="col-lg-6 col-xl-3">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Search Supplier') }}</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-0 text-muted"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control bg-light border-0 ps-0 py-2"
-                                   placeholder="{{ __('Supplier name or code...') }}" wire:model.live.debounce.300ms="search" />
-                        </div>
                     </div>
 
                     <div class="col-lg-12 col-xl-3">
@@ -230,6 +230,9 @@
     @script
     <script>
         (function () {
+            // Supplier picker: shared tom-select component, wire:ignore'd so Livewire commits can't wipe it.
+            var supEl = document.getElementById('saa-supplier');
+            if (supEl && !supEl.tomselect) { initTomSelectForm($('#saa-supplier-wrap')); }
             function initFlatpickr() {
                 var el = document.getElementById('sas-as-of-date');
                 if (!el || el._flatpickr) return;

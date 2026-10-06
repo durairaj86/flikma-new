@@ -12,14 +12,12 @@
         <div class="card border-0 shadow-sm mb-4 d-print-none">
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
-                    <div class="col-lg-4 col-xl-3">
+                    <div class="col-lg-4 col-xl-3" id="sa-supplier-wrap" wire:ignore>
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Supplier') }}</label>
-                        <select class="form-select bg-light border-0 py-2 no-ts" wire:model.live="supplierId">
-                            <option value="">{{ __('Select a supplier...') }}</option>
-                            @foreach($suppliers as $sup)
-                                <option value="{{ $sup['id'] }}" wire:key="sup-opt-{{ $sup['id'] }}">{{ $sup['name_en'] }}</option>
-                            @endforeach
-                        </select>
+                        <x-common.suppliers wire:model.live="supplierId" id="sa-supplier" name="sa-supplier"
+                                            :value="$supplierId ? [(int) $supplierId] : null"
+                                            :suppliers="\App\Models\Supplier\Supplier::orderBy('name_en')->get()"
+                                            placeholder="{{ __('Select a supplier...') }}"></x-common.suppliers>
                     </div>
                     <div class="col-lg-3 col-xl-3">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('As of Date') }}</label>
@@ -373,6 +371,9 @@
     @script
     <script>
         (function () {
+            // Supplier picker: shared tom-select component, wire:ignore'd so Livewire commits can't wipe it.
+            var supEl = document.getElementById('sa-supplier');
+            if (supEl && !supEl.tomselect) { initTomSelectForm($('#sa-supplier-wrap')); }
             var el = document.getElementById('sa-as-of-date');
             if (el && !el._flatpickr) {
                 flatpickr(el, {

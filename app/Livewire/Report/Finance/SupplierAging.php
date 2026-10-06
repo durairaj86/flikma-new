@@ -48,6 +48,12 @@ class SupplierAging extends Component
         $this->suppliers = $query->get()->toArray();
     }
 
+    /** The shared supplier dropdown posts hashed ids; keep the property as the plain id. */
+    public function updatedSupplierId($value): void
+    {
+        $this->supplierId = $value ? (string) decodeId((string) $value) : '';
+    }
+
     public function updatedSearch(): void
     {
         $this->loadSuppliers();

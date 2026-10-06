@@ -22,7 +22,7 @@
     @foreach(($suppliers ?? \App\Models\Supplier\Supplier::suppliers()) as $supplierData)
         <option
             value="{{ encodeId($supplierData->id) }}" @selected(in_array($supplierData->id, $value))
-            data-subtext="{{ $supplierData->row_no }}" data-credit-days="{{ $supplierData->credit_days }}"
-            data-currency="{{ $supplierData->currency }}">{{ $supplierData->name_en }}</option>
+            data-subtext="{{ $supplierData->row_no ?? '' }}" data-credit-days="{{ $supplierData->credit_days ?? '' }}"
+            data-currency="{{ $supplierData->currency ?? '' }}">{{ $supplierData->name_en }}</option>
     @endforeach
 </select>

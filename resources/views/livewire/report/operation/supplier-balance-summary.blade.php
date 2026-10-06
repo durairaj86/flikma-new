@@ -12,6 +12,13 @@
         <div class="card border-0 shadow-sm mb-4 d-print-none">
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
+                    <div class="col-lg-4 col-md-4 col-xl-3" id="sbs-supplier-wrap" wire:ignore>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Supplier') }}</label>
+                        <x-common.suppliers wire:model="supplierId" id="sbs-supplier" name="sbs-supplier"
+                                            :value="$supplierId ? [(int) $supplierId] : null"
+                                            all-label="{{ __('All Suppliers') }}"
+                                            placeholder="{{ __('All Suppliers') }}"></x-common.suppliers>
+                    </div>
                     <div class="col-lg-2 col-md-4" wire:ignore>
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('From Date') }}</label>
                         <input type="hidden" id="sbs-start-date-hidden" wire:model="startDate" value="{{ $startDate }}" />
@@ -27,17 +34,6 @@
                                class="form-control bg-light border-0 py-2"
                                placeholder="dd-mm-yyyy"
                                value="{{ $endDate }}" />
-                    </div>
-                    <div class="col-lg-4 col-xl-2 col-xxl-3">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Supplier') }}</label>
-                        <select class="form-select bg-light border-0 py-2 no-ts" wire:model="supplierId">
-                            <option value="">{{ __('All Suppliers') }}</option>
-                            @foreach($suppliers as $supplier)
-                                <option value="{{ $supplier['id'] }}" @selected($supplierId == $supplier['id'])>
-                                    {{ $supplier['row_no'] }} — {{ $supplier['name_en'] }}
-                                </option>
-                            @endforeach
-                        </select>
                     </div>
                     <div class="col-lg-12 col-xl-6 col-xxl-5">
                         <div class="d-flex flex-wrap gap-2 justify-content-end align-items-center">
@@ -56,7 +52,7 @@
                                         <i class="bi bi-download me-2"></i>{{ __('Export') }}
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                                        <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'sbs-print', {orientation: 'landscape'})"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
+                                        <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'sbs-print', {orientation: 'portrait'})"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
                                         <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
                                     </ul>
                                 </div>
@@ -191,18 +187,27 @@
         <div id="sbs-print" class="stmt-print d-none d-print-block"
              data-pdf-filename="SupplierBalanceSummary-{{ $startDate ?? '' }}-{{ $endDate ?? '' }}.pdf">
 
-            <table class="stmt-meta">
-                <tr>
-                    <td>
-                        <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
-                    </td>
-                    <td class="text-end">
-                        <div class="stmt-title">{{ __('SUPPLIER BALANCE SUMMARY') }}</div>
-                        <div class="stmt-sub">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
-                        <div class="stmt-sub">{{ __('Generated:') }} {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency:') }} {{ optional(authUserCompany())->base_currency ?? 'SAR' }}</div>
-                    </td>
-                </tr>
-            </table>
+            <div class="stmt-head">
+                <div class="stmt-title">{{ __('SUPPLIER BALANCE SUMMARY') }}</div>
+                <div class="stmt-period">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->format('d-m-Y') }} {{ __('to') }} {{ \Carbon\Carbon::parse($endDate)->format('d-m-Y') }}</div>
+            </div>
+
+            <div class="stmt-band">
+                <div class="stmt-band-left">
+                    <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
+                </div>
+                <div class="stmt-band-right">
+                    <div class="stmt-sub">{{ __('Currency:') }} {{ optional(authUserCompany())->base_currency ?? 'SAR' }}</div>
+                    <div class="stmt-sub">{{ __('Generated:') }} {{ now()->format('d-m-Y H:i') }}</div>
+                </div>
+            </div>
+
+            <div class="stmt-cards">
+                <div class="stmt-card"><div class="stmt-card-label">{{ __('Opening Balance') }}</div><div class="stmt-card-value">{{ number_format($totals['opening'], 2) }}</div></div>
+                <div class="stmt-card"><div class="stmt-card-label">{{ __('Invoiced') }}</div><div class="stmt-card-value">{{ number_format($totals['invoiced'], 2) }}</div></div>
+                <div class="stmt-card"><div class="stmt-card-label">{{ __('Paid') }}</div><div class="stmt-card-value">{{ number_format($totals['paid'], 2) }}</div></div>
+                <div class="stmt-card"><div class="stmt-card-label">{{ __('Closing Balance') }}</div><div class="stmt-card-value">{{ number_format($totals['closing'], 2) }}</div></div>
+            </div>
 
             <table class="stmt-table">
                 <thead>
@@ -249,7 +254,8 @@
             </div>
         </div>
 
-        @include('includes.report-print-css', ['orientation' => 'landscape'])
+        @include('includes.report-print-css', ['orientation' => 'portrait'])
+        @include('includes.statement-print-css', ['id' => 'sbs-print'])
 
     </div>
 
@@ -301,6 +307,16 @@
             }
 
             initFlatpickr();
+
+            // Supplier picker: shared tom-select component, wire:ignore'd so Livewire commits can't wipe it.
+            var sbsSup = document.getElementById('sbs-supplier');
+            if (sbsSup && !sbsSup.tomselect) { initTomSelectForm($('#sbs-supplier-wrap')); }
+            $wire.on('sbs-filter-reset', function () {
+                if (sbsSup && sbsSup.tomselect) { sbsSup.tomselect.clear(true); }
+                var s = document.getElementById('sbs-start-date'), e = document.getElementById('sbs-end-date');
+                if (s && s._flatpickr) s._flatpickr.setDate($wire.get('startDate'), false);
+                if (e && e._flatpickr) e._flatpickr.setDate($wire.get('endDate'), false);
+            });
 
             Livewire.hook('commit', function (ref) {
                 ref.succeed(function () {

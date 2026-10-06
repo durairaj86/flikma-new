@@ -16,11 +16,17 @@ class SupplierAgingAll extends Component
     use BuildsAgingBuckets;
 
     public string $asOfDate = '';
-    public string $search = '';
+    public string|int $supplierId = '';
 
     public function mount(): void
     {
         $this->asOfDate = now()->format('Y-m-d');
+    }
+
+    /** The shared supplier dropdown posts hashed ids; keep the property as the plain id. */
+    public function updatedSupplierId($value): void
+    {
+        $this->supplierId = $value ? (string) decodeId((string) $value) : '';
     }
 
     public function getAgingData(): array
@@ -30,14 +36,8 @@ class SupplierAgingAll extends Component
         $invoices = SupplierInvoice::with('supplier:id,name_en,row_no')
             ->where('status', 3)
             ->whereDate('invoice_date', '<=', Carbon::parse($this->asOfDate))
-            ->whereHas('supplier', function ($q) {
-                if (!empty($this->search)) {
-                    $q->where(function ($inner) {
-                        $inner->where('name_en', 'like', '%' . $this->search . '%')
-                            ->orWhere('row_no', 'like', '%' . $this->search . '%');
-                    });
-                }
-            })
+            ->whereHas('supplier')
+            ->when(!empty($this->supplierId), fn ($q) => $q->where('supplier_id', $this->supplierId))
             ->orderBy('invoice_date')
             ->get();
 
