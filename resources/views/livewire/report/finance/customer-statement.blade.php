@@ -5,7 +5,30 @@
 
 <div class="statement-wrapper min-vh-100 bg-light pb-4">
     <div class="container-fluid px-3">
-        @include('includes.inline-page-title')
+        <style>
+            .rpt-title { display: none; }
+            body:not(.has-top-header) .rpt-title { display: block; }
+        </style>
+        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap pt-2 pb-2 d-print-none">
+            <div class="rpt-title">
+                <h4 class="fw-bold text-dark mb-0">@yield('page-title')</h4>
+                @hasSection('page-subtitle')<div class="text-muted small mt-1">@yield('page-subtitle')</div>@endif
+            </div>
+            <div class="btn-group shadow-sm ms-auto position-relative">
+                                <button class="btn btn-white border border-end-0" onclick="window.print()" title="{{ __('Print') }}">
+                                    <i class="bi bi-printer me-2"></i>{{ __('Print') }}
+                                </button>
+                                <div class="btn-group position-relative" x-data="{ open: false, pos: '', toggle() { this.open = !this.open; if (this.open) { const r = this.$refs.btn.getBoundingClientRect(); this.pos = 'position:fixed;left:auto;bottom:auto;right:' + (window.innerWidth - r.right) + 'px;top:' + (r.bottom + 4) + 'px;'; } } }" @click.outside="open = false" @keydown.escape.window="open = false" @scroll.window="open = false" @resize.window="open = false">
+                                    <button type="button" class="btn btn-white border dropdown-toggle" x-ref="btn" @click="toggle()" :aria-expanded="open">
+                                        <i class="bi bi-download me-2"></i>{{ __('Export') }}
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow" :class="{ show: open }" x-cloak :style="pos" @click="open = false">
+                                        <li><a class="dropdown-item py-2" href="#" onclick="csExportPdf(event)"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
+                                        <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+        </div>
         {{-- Debug info --}}
         @if(isset($debug) && $debug)
             <div class="alert alert-info d-print-none mb-3 py-1 px-2 small">
@@ -52,21 +75,6 @@
 
                             {{-- Print/Export sit beside Generate rather than in the shell header,
                                  because wire:click only binds inside the Livewire root. --}}
-                            <div class="btn-group shadow-sm">
-                                <button class="btn btn-white border border-end-0" onclick="window.print()" title="{{ __('Print') }}">
-                                    <i class="bi bi-printer me-2"></i>{{ __('Print') }}
-                                </button>
-                                <div class="btn-group position-relative" x-data="{ open: false, pos: '', toggle() { this.open = !this.open; if (this.open) { const r = this.$refs.btn.getBoundingClientRect(); this.pos = 'position:fixed;left:auto;bottom:auto;right:' + (window.innerWidth - r.right) + 'px;top:' + (r.bottom + 4) + 'px;'; } } }" @click.outside="open = false" @keydown.escape.window="open = false" @scroll.window="open = false" @resize.window="open = false">
-                                    <button type="button" class="btn btn-white border dropdown-toggle" x-ref="btn" @click="toggle()" :aria-expanded="open">
-                                        <i class="bi bi-download me-2"></i>{{ __('Export') }}
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow" :class="{ show: open }" x-cloak :style="pos" @click="open = false">
-                                        <li><a class="dropdown-item py-2" href="#" onclick="csExportPdf(event)"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
-                                        <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-
                             <button type="button" class="btn btn-outline-secondary border-0 bg-light py-2 px-3" wire:click="resetFilter">
                                 <i class="bi bi-arrow-counterclockwise"></i>
                             </button>
@@ -138,8 +146,8 @@
                 <div class="col-xl-9">
                     <div class="card border-0 shadow-sm overflow-hidden">
                         <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
-                            <h6 class="mb-0 fw-bold"><i class="bi bi-journal-text me-2 text-primary"></i>{{ __('Transaction Ledger') }}</h6>
-                            <div class="d-flex align-items-center gap-2">
+                            <h6 class="mb-0 fw-bold flex-grow-1"><i class="bi bi-journal-text me-2 text-primary"></i>{{ __('Transaction Ledger') }}</h6>
+                            <div class="d-flex align-items-center gap-2 ms-auto flex-shrink-0">
                                 <span class="badge bg-light text-dark border px-3 py-2">
                                     {{ __('Period') }}: {{ \Carbon\Carbon::parse($startDate)->format('d-m-Y') }} &mdash; {{ \Carbon\Carbon::parse($endDate)->format('d-m-Y') }}
                                 </span>

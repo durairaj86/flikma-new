@@ -24,6 +24,13 @@
     module-agnostic pieces that don't need quotation.js loaded.
 --}}
 <x-app-layout>
+    <style>
+        /* Same tab look as the Customers list: inactive = soft grey with amber icon, active = blue with white icon. */
+        #basicListTabs .status-btn:not(.active) { background: #f1f3f5; color: #495057; }
+        #basicListTabs .status-btn:not(.active) > span:first-child > i { color: var(--bs-warning) !important; }
+        #basicListTabs .status-btn.active { background: rgb(13, 110, 253) !important; color: #fff !important; }
+        #basicListTabs .status-btn.active > span:first-child > i { color: #fff !important; }
+    </style>
     <main class="gmail-content bg-white px-3">
         @include('includes.inline-page-title')
 
@@ -137,7 +144,7 @@
 
         <!-- Table Section -->
         <div class="shadow bdr-r-10 py-3 flex-grow-1">
-            <div class="flex-grow-1 overflow-auto" style="min-height:320px;">
+            <div class="flex-grow-1">
                 <table class="table align-middle" id="basicQuotationTable">
                     <thead class="table-light sticky-top">
                     <tr>

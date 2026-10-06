@@ -338,29 +338,25 @@ class EnquiryController extends Controller
         $edit = $delete = [];
         if ($enquiry->status === EnquiryEnum::PENDING->value) {
             $contextMenu->push([
-                'label' => __('Move to'),
-                'type' => 'submenu',
+                'label' => __('Confirmed'),
+                'code' => '01CSBK',
+                'id' => 'row_confirmed',
+                'class' => 'row_confirmed',
+                'data-id' => $enquiry->id,
+                'data-value' => EnquiryEnum::CONFIRMED->value,
+                'type' => 'item',
+                'icon' => 'confirmed',
+            ]);
+            $contextMenu->push([
+                'label' => __('Cancelled'),
+                'code' => '01CSRJ',
+                'id' => 'row_rejected',
+                'class' => 'row_rejected',
+                'data-id' => $enquiry->id,
+                'data-value' => EnquiryEnum::CANCELLED->value,
+                'type' => 'item',
+                'icon' => 'rejected',
                 'separator' => 'after',
-                'icon' => 'move_to',
-                'items' => [
-                    [
-                        'label' => __('Confirmed'),
-                        'code' => '01CSBK',
-                        'id' => 'row_confirmed',
-                        'data-id' => $enquiry->id,
-                        'data-value' => EnquiryEnum::CONFIRMED->value,
-                        'icon' => 'confirmed'
-                    ],
-                    [
-                        'label' => __('Cancelled'),
-                        'code' => '01CSRJ',
-                        'id' => 'row_rejected',
-                        'class' => 'row_rejected',
-                        'data-id' => $enquiry->id,
-                        'data-value' => EnquiryEnum::CANCELLED->value,
-                        'icon' => 'rejected'
-                    ]
-                ]
             ]);
         } elseif ($enquiry->status === EnquiryEnum::fromName('confirmed')) {
             $contextMenu->push([

@@ -50,8 +50,8 @@
 
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
-                    <h6 class="mb-0 fw-bold text-dark ls-sm"><i class="bi bi-journals me-2"></i>{{ __('SUPPLIER LEDGER') }}</h6>
-                    <span class="badge bg-secondary-subtle text-secondary border px-3 py-2 rounded-pill font-mono">{{ __('CURRENCY') }}: {{ $supplierStatementData['supplier']->currency }}</span>
+                    <h6 class="mb-0 fw-bold text-dark ls-sm flex-grow-1"><i class="bi bi-journals me-2"></i>{{ __('SUPPLIER LEDGER') }}</h6>
+                    <span class="badge bg-secondary-subtle text-secondary border px-3 py-2 rounded-pill font-mono ms-auto flex-shrink-0">{{ __('CURRENCY') }}: {{ $supplierStatementData['supplier']->currency }}</span>
                 </div>
                 <div class="table-responsive" style="max-height: 60vh; overflow-y: auto;">
                     <table class="table table-sm align-middle mb-0">

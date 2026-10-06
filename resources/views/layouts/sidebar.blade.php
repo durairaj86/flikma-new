@@ -1,7 +1,7 @@
 <aside class="app-sidebar sidebar-themed">
     <!-- Sidebar Brand -->
     <div class="sidebar-brand d-flex align-items-center justify-content-between">
-        <a class="navbar-brand d-flex align-items-center me-2" href="{{ route('dashboard') }}">
+        <a class="navbar-brand d-flex align-items-center me-2 mx-3" href="{{ route('dashboard') }}">
             <span class="sidebar-logo-chip d-inline-flex align-items-center justify-content-center flex-shrink-0">
                 <img src="{{ asset('img/logos/Flikma_logo.svg') }}" alt="Flikma" class="sidebar-logo-img">
             </span>

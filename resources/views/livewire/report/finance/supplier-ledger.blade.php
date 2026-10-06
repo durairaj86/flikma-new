@@ -95,10 +95,10 @@
         {{-- Ledger content --}}
         <div class="card border-0 shadow-sm overflow-hidden">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center d-print-none">
-                <h6 class="mb-0 fw-bold">
+                <h6 class="mb-0 fw-bold flex-grow-1">
                     <i class="bi bi-journal-text me-2 text-gl"></i>{{ __('Supplier Transaction Ledger') }}
                 </h6>
-                <span class="badge bg-gl-subtle text-gl border border-gl-subtle px-3 py-2">
+                <span class="badge bg-gl-subtle text-gl border border-gl-subtle px-3 py-2 ms-auto flex-shrink-0">
                     <i class="bi bi-currency-exchange me-1"></i>{{ __('Currency') }}: {{ optional(authUserCompany())->base_currency ?? 'SAR' }}
                 </span>
             </div>

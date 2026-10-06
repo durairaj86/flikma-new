@@ -10,6 +10,13 @@
     </button>
 @endpush
 <x-app-layout>
+    <style>
+        /* Same tab look as the Customers list: inactive = soft grey with amber icon, active = blue with white icon. */
+        #listTabs .status-btn:not(.active) { background: #f1f3f5; color: #495057; }
+        #listTabs .status-btn:not(.active) > span:first-child > i { color: var(--bs-warning) !important; }
+        #listTabs .status-btn.active { background: rgb(13, 110, 253) !important; color: #fff !important; }
+        #listTabs .status-btn.active > span:first-child > i { color: #fff !important; }
+    </style>
     <main class="gmail-content bg-white px-3">
         @include('includes.inline-page-title')
 
@@ -166,7 +173,7 @@
              clips the menu (a DOM descendant of this card) at its bottom edge
              once the menu's rendered height exceeds the card's natural
              content height. See quotation/list.blade.php for the same fix. -->
-        <div class="shadow bdr-r-10 py-3 flex-grow-1" style="overflow: hidden;min-height:320px;">
+        <div class="shadow bdr-r-10 py-3 flex-grow-1">
             <!-- Search & New -->
             <div class="d-flex justify-content-between px-3 flex-shrink-0">
                 {{--<div id="searchLabels" class="mb-3 d-flex flex-wrap gap-2"></div>--}}

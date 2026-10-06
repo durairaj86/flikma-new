@@ -88,11 +88,11 @@
         {{-- Table --}}
         <div class="card border-0 shadow-sm overflow-hidden">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center d-print-none">
-                <h6 class="mb-0 fw-bold">
+                <h6 class="mb-0 fw-bold flex-grow-1">
                     <i class="bi bi-journal-arrow-up me-2 text-pr"></i>
                     {{ __('Output VAT Transactions') }}
                 </h6>
-                <span class="badge bg-pr-subtle text-pr border border-pr-subtle px-3 py-2">
+                <span class="badge bg-pr-subtle text-pr border border-pr-subtle px-3 py-2 ms-auto flex-shrink-0">
                     {{ $summary['transaction_count'] }} {{ __(Str::plural('Entry', $summary['transaction_count'])) }}
                 </span>
             </div>

@@ -5,7 +5,30 @@
 
 <div class="provisional-wrapper min-vh-100 bg-light pb-4">
     <div class="container-fluid px-3">
-        @include('includes.inline-page-title')
+        <style>
+            .rpt-title { display: none; }
+            body:not(.has-top-header) .rpt-title { display: block; }
+        </style>
+        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap pt-2 pb-2 d-print-none">
+            <div class="rpt-title">
+                <h4 class="fw-bold text-dark mb-0">@yield('page-title')</h4>
+                @hasSection('page-subtitle')<div class="text-muted small mt-1">@yield('page-subtitle')</div>@endif
+            </div>
+            <div class="btn-group shadow-sm ms-auto position-relative">
+                                <button class="btn btn-white border border-end-0" onclick="window.print()">
+                                    <i class="bi bi-printer me-2"></i>{{ __('Print') }}
+                                </button>
+                                <div class="btn-group position-relative" x-data="{ open: false, pos: '', toggle() { this.open = !this.open; if (this.open) { const r = this.$refs.btn.getBoundingClientRect(); this.pos = 'position:fixed;left:auto;bottom:auto;right:' + (window.innerWidth - r.right) + 'px;top:' + (r.bottom + 4) + 'px;'; } } }" @click.outside="open = false" @keydown.escape.window="open = false" @scroll.window="open = false" @resize.window="open = false">
+                                    <button type="button" class="btn btn-white border dropdown-toggle" x-ref="btn" @click="toggle()" :aria-expanded="open">
+                                        <i class="bi bi-download me-2"></i>{{ __('Export') }}
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow" :class="{ show: open }" x-cloak :style="pos" @click="open = false">
+                                        <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'sbs-print', {orientation: 'portrait'})"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
+                                        <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+        </div>
 
         {{-- Page Header --}}
                 {{-- Filters --}}
@@ -43,20 +66,6 @@
                                 <span wire:loading.remove>{{ __('Generate') }}</span>
                                 <span wire:loading><span class="spinner-border spinner-border-sm me-1"></span>{{ __('Loading...') }}</span>
                             </button>
-                                                        <div class="btn-group shadow-sm">
-                                <button class="btn btn-white border border-end-0" onclick="window.print()">
-                                    <i class="bi bi-printer me-2"></i>{{ __('Print') }}
-                                </button>
-                                <div class="btn-group">
-                                    <button class="btn btn-white border dropdown-toggle" data-bs-toggle="dropdown">
-                                        <i class="bi bi-download me-2"></i>{{ __('Export') }}
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                                        <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'sbs-print', {orientation: 'portrait'})"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
-                                        <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
-                                    </ul>
-                                </div>
-                            </div>
 <button type="button" class="btn btn-outline-secondary border-0 bg-light py-2 px-3"
                                     wire:click="resetFilter">
                                 <i class="bi bi-arrow-counterclockwise"></i>
@@ -90,7 +99,7 @@
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-3 text-center">
                         <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">{{ __('Invoiced') }}</div>
-                        <div class="h5 fw-bold text-primary mb-0 tabular-nums">{{ number_format($totals['invoiced'], 2) }}</div>
+                        <div class="h5 fw-bold text-pr mb-0 tabular-nums">{{ number_format($totals['invoiced'], 2) }}</div>
                     </div>
                 </div>
             </div>
@@ -118,11 +127,11 @@
         {{-- Table --}}
         <div class="card border-0 shadow-sm overflow-hidden d-print-none">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                <h6 class="mb-0 fw-bold">
+                <h6 class="mb-0 fw-bold flex-grow-1">
                     <i class="bi bi-wallet2 me-2 text-pr"></i>
                     {{ __('Supplier Balance Breakdown') }}
                 </h6>
-                <span class="badge bg-pr-subtle text-pr border border-pr-subtle px-3 py-2">
+                <span class="badge bg-pr-subtle text-pr border border-pr-subtle px-3 py-2 ms-auto flex-shrink-0">
                     {{ count($rows) }} {{ __(Str::plural('Supplier', count($rows))) }}
                 </span>
             </div>
@@ -147,7 +156,7 @@
                             <td class="text-end tabular-nums">
                                 {{ number_format($row['opening'], 2) }}
                             </td>
-                            <td class="text-end tabular-nums text-primary">
+                            <td class="text-end tabular-nums text-pr">
                                 {{ $row['invoiced'] > 0 ? number_format($row['invoiced'], 2) : '—' }}
                             </td>
                             <td class="text-end tabular-nums text-success">
@@ -173,7 +182,7 @@
                     <tr class="fw-bold">
                         <td class="ps-4 py-3">{{ count($rows) }} {{ __('Suppliers') }}</td>
                         <td class="text-end tabular-nums">{{ number_format($totals['opening'], 2) }}</td>
-                        <td class="text-end tabular-nums text-primary">{{ number_format($totals['invoiced'], 2) }}</td>
+                        <td class="text-end tabular-nums text-pr">{{ number_format($totals['invoiced'], 2) }}</td>
                         <td class="text-end tabular-nums text-success">{{ number_format($totals['paid'], 2) }}</td>
                         <td class="text-end pe-4 tabular-nums {{ $totals['closing'] >= 0 ? 'text-dark' : 'text-danger' }}">{{ number_format($totals['closing'], 2) }}</td>
                     </tr>
@@ -329,16 +338,16 @@
 
     <style>
         :root {
-            --car-primary: #0ea5e9;
-            --car-dark:    #0369a1;
-            --car-light:   #f0f9ff;
+            --car-primary: #d97706;
+            --car-dark:    #92400e;
+            --car-light:   #fffbeb;
         }
 
         .btn-pr { background-color: var(--car-primary); border-color: var(--car-primary); color: #fff; }
-        .btn-pr:hover { background-color: var(--car-dark); border-color: var(--car-dark); color: #fff; }
+        .btn-pr:hover { background-color: #b45309; border-color: #b45309; color: #fff; }
         .text-pr { color: var(--car-primary) !important; }
-        .bg-pr-subtle { background-color: #e0f2fe !important; }
-        .border-pr-subtle { border-color: #bae6fd !important; }
+        .bg-pr-subtle { background-color: #fef3c7 !important; }
+        .border-pr-subtle { border-color: #fde68a !important; }
 
         .ls-1 { letter-spacing: 0.05em; }
         .x-small { font-size: 0.7rem; }
@@ -346,7 +355,7 @@
 
         .card { border-radius: 1rem; }
         .form-control:focus, .form-select:focus {
-            box-shadow: 0 0 0 0.25rem rgba(14, 165, 233, 0.1);
+            box-shadow: 0 0 0 0.25rem rgba(217, 119, 6, 0.1);
             border-color: var(--car-primary);
         }
 

@@ -76,10 +76,10 @@
         {{-- Table card --}}
         <div class="card border-0 shadow-sm overflow-hidden">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center d-print-none">
-                <h6 class="mb-0 fw-bold">
+                <h6 class="mb-0 fw-bold flex-grow-1">
                     <i class="bi bi-list-columns me-2 text-tb"></i>{{ __('Account Balances') }}
                 </h6>
-                <span class="badge bg-tb-subtle text-tb border border-tb-subtle px-3 py-2">
+                <span class="badge bg-tb-subtle text-tb border border-tb-subtle px-3 py-2 ms-auto flex-shrink-0">
                     <i class="bi bi-currency-exchange me-1"></i>{{ __('Currency:') }} SAR
                 </span>
             </div>

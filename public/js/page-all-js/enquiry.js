@@ -286,7 +286,7 @@ ENQUIRY = {
                     content: null,
                     size: 'md',
                     scroll: false,
-                    minHeight: '650px',
+                    // No fixed minimum height: the modal fits its content, like the New Quotation modal.
                 });
             })
         },

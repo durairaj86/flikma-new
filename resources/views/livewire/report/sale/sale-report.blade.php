@@ -5,13 +5,43 @@
 
 <div class="provisional-wrapper min-vh-100 bg-light pb-4">
     <div class="container-fluid px-3">
-        @include('includes.inline-page-title')
+        <style>
+            .rpt-title { display: none; }
+            body:not(.has-top-header) .rpt-title { display: block; }
+        </style>
+        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap pt-2 pb-2 d-print-none">
+            <div class="rpt-title">
+                <h4 class="fw-bold text-dark mb-0">@yield('page-title')</h4>
+                @hasSection('page-subtitle')<div class="text-muted small mt-1">@yield('page-subtitle')</div>@endif
+            </div>
+            <div class="btn-group shadow-sm ms-auto position-relative">
+                <button class="btn btn-white border border-end-0 py-2" onclick="window.print()">
+                    <i class="bi bi-printer me-2"></i>{{ __('Print') }}
+                </button>
+                <div class="btn-group position-relative" x-data="{ open: false, pos: '', toggle() { this.open = !this.open; if (this.open) { const r = this.$refs.btn.getBoundingClientRect(); this.pos = 'position:fixed;left:auto;bottom:auto;right:' + (window.innerWidth - r.right) + 'px;top:' + (r.bottom + 4) + 'px;'; } } }" @click.outside="open = false" @keydown.escape.window="open = false" @scroll.window="open = false" @resize.window="open = false">
+                    <button type="button" class="btn btn-white border dropdown-toggle py-2" x-ref="btn" @click="toggle()" :aria-expanded="open">
+                        <i class="bi bi-download me-2"></i>{{ __('Export') }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow" :class="{ show: open }" x-cloak :style="pos" @click="open = false">
+                        <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'sr-print', {orientation: 'landscape'})"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
+                        <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
 
         {{-- Page Header --}}
                 {{-- Filters --}}
         <div class="card border-0 shadow-sm mb-4 d-print-none">
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
+                    <div class="col-lg-2 col-md-4" id="sr-customer-wrap" wire:ignore>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Customer') }}</label>
+                        <x-common.customers wire:model="customerId" id="sr-customer" name="sr-customer"
+                                            :value="$customerId ? [(int) $customerId] : null" :new="false"
+                                            all-label="{{ __('All Customers') }}"
+                                            placeholder="{{ __('All Customers') }}"></x-common.customers>
+                    </div>
                     <div class="col-lg-2 col-md-4">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('From Date') }}</label>
                         <input type="hidden" id="sr-start-date-hidden" wire:model="startDate" value="{{ $startDate }}" />
@@ -28,46 +58,9 @@
                                placeholder="dd-mm-yyyy"
                                value="{{ $endDate }}" />
                     </div>
-                    <div class="col-lg-2 col-md-4">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Customer') }}</label>
-                        <select class="form-select bg-light border-0 py-2" wire:model="customerId">
-                            <option value="">{{ __('All Customers') }}</option>
-                            @foreach($customers as $customer)
-                                <option value="{{ $customer['id'] }}">{{ $customer['name_en'] }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-lg-12 col-xl-6">
-                        <div class="d-flex flex-wrap gap-2 justify-content-end align-items-center">
-                            <button type="button" class="btn btn-pr fw-bold py-2 shadow-sm"
-                                    wire:click="applyFilter" wire:loading.attr="disabled">
-                                <i class="bi bi-filter-left me-2"></i>
-                                <span wire:loading.remove>{{ __('Generate') }}</span>
-                                <span wire:loading><span class="spinner-border spinner-border-sm me-1"></span>{{ __('Loading...') }}</span>
-                            </button>
-                            <div class="btn-group shadow-sm">
-                                <button class="btn btn-white border border-end-0 py-2" onclick="window.print()">
-                                    <i class="bi bi-printer me-2"></i>{{ __('Print') }}
-                                </button>
-                                <div class="btn-group">
-                                    <button class="btn btn-white border dropdown-toggle py-2" data-bs-toggle="dropdown">
-                                        <i class="bi bi-download me-2"></i>{{ __('Export') }}
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                                        <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'sr-print', {orientation: 'landscape'})"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
-                                        <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <button type="button" class="btn btn-outline-secondary border-0 bg-light py-2 px-3"
-                                    wire:click="resetFilter">
-                                <i class="bi bi-arrow-counterclockwise"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="col-lg-2 col-md-4">
+                    <div class="col-lg-2 col-md-4" id="sr-status-wrap" wire:ignore>
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Status') }}</label>
-                        <select class="form-select bg-light border-0 py-2" wire:model="status">
+                        <select class="tom-select" id="sr-status" wire:model="status" data-placeholder="{{ __('All Statuses') }}">
                             <option value="">{{ __('All Statuses') }}</option>
                             <option value="1">{{ __('Draft') }}</option>
                             <option value="3">{{ __('Approved') }}</option>
@@ -79,6 +72,16 @@
                         <input type="text" class="form-control bg-light border-0 py-2"
                                wire:model.debounce.400ms="search"
                                placeholder="{{ __('Invoice no...') }}" />
+                    </div>
+                    <div class="col-lg-auto col-md-4 ms-lg-auto">
+                        <div class="d-flex flex-wrap gap-2 justify-content-end align-items-center">
+                            <button type="button" class="btn btn-pr fw-bold py-2 shadow-sm"
+                                    wire:click="applyFilter" wire:loading.attr="disabled">
+                                <i class="bi bi-filter-left me-2"></i>
+                                <span wire:loading.remove>{{ __('Generate') }}</span>
+                                <span wire:loading><span class="spinner-border spinner-border-sm me-1"></span>{{ __('Loading...') }}</span>
+                            </button>
+                            </div>
                     </div>
 
                 </div>
@@ -142,11 +145,11 @@
         {{-- Table --}}
         <div class="card border-0 shadow-sm overflow-hidden">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center d-print-none">
-                <h6 class="mb-0 fw-bold">
+                <h6 class="mb-0 fw-bold flex-grow-1">
                     <i class="bi bi-receipt me-2 text-pr"></i>
                     {{ __('Sales Transactions') }}
                 </h6>
-                <span class="badge bg-pr-subtle text-pr border border-pr-subtle px-3 py-2">
+                <span class="badge bg-pr-subtle text-pr border border-pr-subtle px-3 py-2 ms-auto flex-shrink-0">
                     {{ $summary['total_count'] }} {{ __(Str::plural('Invoice', $summary['total_count'])) }}
                 </span>
             </div>
@@ -205,6 +208,19 @@
             }
 
             initFlatpickr();
+
+            // Customer picker: shared tom-select component, wire:ignore'd so Livewire commits can't wipe it.
+            var srStatus = document.getElementById('sr-status');
+            if (srStatus && !srStatus.tomselect) { initTomSelectForm($('#sr-status-wrap')); }
+            var srCust = document.getElementById('sr-customer');
+            if (srCust && !srCust.tomselect) { initTomSelectForm($('#sr-customer-wrap')); }
+            $wire.on('sr-filter-reset', function () {
+                if (srCust && srCust.tomselect) { srCust.tomselect.clear(true); }
+                if (srStatus && srStatus.tomselect) { srStatus.tomselect.setValue('', true); }
+                var s = document.getElementById('sr-start-date'), e = document.getElementById('sr-end-date');
+                if (s && s._flatpickr) s._flatpickr.setDate($wire.get('startDate'), false);
+                if (e && e._flatpickr) e._flatpickr.setDate($wire.get('endDate'), false);
+            });
 
             Livewire.hook('commit', function (ref) {
                 ref.succeed(function () {

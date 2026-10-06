@@ -5,7 +5,30 @@
 
 <div class="aging-wrapper min-vh-100 bg-light pb-4">
     <div class="container-fluid px-3">
-        @include('includes.inline-page-title')
+        <style>
+            .rpt-title { display: none; }
+            body:not(.has-top-header) .rpt-title { display: block; }
+        </style>
+        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap pt-2 pb-2 d-print-none">
+            <div class="rpt-title">
+                <h4 class="fw-bold text-dark mb-0">@yield('page-title')</h4>
+                @hasSection('page-subtitle')<div class="text-muted small mt-1">@yield('page-subtitle')</div>@endif
+            </div>
+            <div class="btn-group shadow-sm ms-auto position-relative">
+                                <button class="btn btn-white border border-end-0" onclick="window.print()">
+                                    <i class="bi bi-printer me-2"></i>{{ __('Print') }}
+                                </button>
+                                <div class="btn-group position-relative" x-data="{ open: false, pos: '', toggle() { this.open = !this.open; if (this.open) { const r = this.$refs.btn.getBoundingClientRect(); this.pos = 'position:fixed;left:auto;bottom:auto;right:' + (window.innerWidth - r.right) + 'px;top:' + (r.bottom + 4) + 'px;'; } } }" @click.outside="open = false" @keydown.escape.window="open = false" @scroll.window="open = false" @resize.window="open = false">
+                                    <button type="button" class="btn btn-white border dropdown-toggle" x-ref="btn" @click="toggle()" :aria-expanded="open">
+                                        <i class="bi bi-download me-2"></i>{{ __('Export') }}
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow" :class="{ show: open }" x-cloak :style="pos" @click="open = false">
+                                        <li><a class="dropdown-item py-2" href="#" onclick="sasExportPdf(event)"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
+                                        <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+        </div>
 
         @php
             $bucketColor = function (int $i) use ($bucketDefs) {
@@ -55,20 +78,6 @@
 
                     <div class="col-lg-12 col-xl-3">
                         <div class="d-flex flex-wrap gap-2 justify-content-end">
-                            <div class="btn-group shadow-sm">
-                                <button class="btn btn-white border border-end-0" onclick="window.print()">
-                                    <i class="bi bi-printer me-2"></i>{{ __('Print') }}
-                                </button>
-                                <div class="btn-group">
-                                    <button class="btn btn-white border dropdown-toggle" data-bs-toggle="dropdown">
-                                        <i class="bi bi-download me-2"></i>{{ __('Export') }}
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                                        <li><a class="dropdown-item py-2" href="#" onclick="sasExportPdf(event)"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
-                                        <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
-                                    </ul>
-                                </div>
-                            </div>
                         </div>
                     </div></div>
             </div>
@@ -99,8 +108,8 @@
         {{-- Aging Table --}}
         <div class="card border-0 shadow-sm overflow-hidden">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap gap-2 d-print-none">
-                <h6 class="mb-0 fw-bold"><i class="bi bi-table me-2 text-supplier"></i>{{ __('Supplier Aging Summary') }}</h6>
-                <div class="d-flex align-items-center gap-2">
+                <h6 class="mb-0 fw-bold flex-grow-1"><i class="bi bi-table me-2 text-supplier"></i>{{ __('Supplier Aging Summary') }}</h6>
+                <div class="d-flex align-items-center gap-2 ms-auto flex-shrink-0">
                     <span class="badge bg-light text-dark border px-3 py-2">{{ $agingInterval }}-{{ __('day buckets') }}</span>
                     <span class="badge bg-supplier-subtle text-supplier border border-supplier-subtle px-3 py-2">
                         {{ count($suppliers) }} {{ __(Str::plural('supplier', count($suppliers))) }}
@@ -111,8 +120,7 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead>
                     <tr class="bg-light text-muted small text-uppercase fw-bold ls-1">
-                        <th class="ps-4 border-0">{{ __('Supplier Code') }}</th>
-                        <th class="border-0">{{ __('Supplier Name') }}</th>
+                        <th class="ps-4 border-0">{{ __('Supplier') }}</th>
                         @foreach($bucketDefs as $def)
                             <th class="text-end border-0" wire:key="th-{{ $def['key'] }}">{{ $def['short'] }}</th>
                         @endforeach
@@ -122,10 +130,7 @@
                     <tbody>
                     @forelse($suppliers as $supp)
                         <tr wire:key="supp-row-{{ $supp['supplier_id'] }}">
-                            <td class="ps-4">
-                                <span class="fw-medium">{{ $supp['supplier_code'] }}</span>
-                            </td>
-                            <td class="small">{{ $supp['supplier_name'] }}</td>
+                            <td class="ps-4"><div class="fw-medium">{{ $supp['supplier_name'] }}</div><div class="small text-muted">{{ $supp['supplier_code'] }}</div></td>
                             @foreach($bucketDefs as $i => $def)
                                 <td class="text-end tabular-nums" style="color: {{ $bucketColor($i) }};" wire:key="cell-{{ $supp['supplier_id'] }}-{{ $def['key'] }}">
                                     {{ $supp[$def['key']] > 0 ? number_format($supp[$def['key']], 2) : '—' }}
@@ -137,7 +142,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ 3 + count($bucketDefs) }}" class="text-center py-5 text-muted small">
+                            <td colspan="{{ 2 + count($bucketDefs) }}" class="text-center py-5 text-muted small">
                                 <i class="bi bi-inbox h3 d-block mb-2"></i>
                                 {{ __('No suppliers with outstanding invoices found.') }}
                             </td>
@@ -146,7 +151,7 @@
                     </tbody>
                     <tfoot class="bg-light border-top">
                     <tr class="fw-bold">
-                        <td colspan="2" class="ps-4 py-3">{{ __('Total') }}</td>
+                        <td class="ps-4 py-3">{{ __('Total') }}</td>
                         @foreach($bucketDefs as $i => $def)
                             <td class="text-end tabular-nums" style="color: {{ $bucketColor($i) }};" wire:key="tf-{{ $def['key'] }}">{{ number_format($totals[$def['key']], 2) }}</td>
                         @endforeach
@@ -185,8 +190,7 @@
             <table class="stmt-table">
                 <thead>
                 <tr>
-                    <th>{{ __('Supplier ID') }}</th>
-                    <th>{{ __('Supplier Name') }}</th>
+                    <th>{{ __('Supplier') }}</th>
                     @foreach($bucketDefs as $def)
                         <th class="text-end">{{ $def['label'] }}</th>
                     @endforeach
@@ -196,8 +200,7 @@
                 <tbody>
                 @forelse($suppliers as $supp)
                     <tr>
-                        <td>{{ $supp['supplier_code'] }}</td>
-                        <td>{{ $supp['supplier_name'] }}</td>
+                        <td>{{ $supp['supplier_name'] }}<br><span style="font-size:10px;color:#6b7280;">{{ $supp['supplier_code'] }}</span></td>
                         @foreach($bucketDefs as $def)
                             <td class="text-end">{{ $supp[$def['key']] > 0 ? number_format($supp[$def['key']], 2) : '' }}</td>
                         @endforeach
@@ -205,13 +208,13 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="{{ 3 + count($bucketDefs) }}" class="text-center">{{ __('No suppliers with outstanding invoices found') }}</td>
+                        <td colspan="{{ 2 + count($bucketDefs) }}" class="text-center">{{ __('No suppliers with outstanding invoices found') }}</td>
                     </tr>
                 @endforelse
                 </tbody>
                 <tfoot>
                 <tr class="stmt-strong">
-                    <td colspan="2">{{ __('Total') }}</td>
+                    <td>{{ __('Total') }}</td>
                     @foreach($bucketDefs as $def)
                         <td class="text-end">{{ number_format($totals[$def['key']], 2) }}</td>
                     @endforeach
@@ -265,7 +268,7 @@
                     margin: 0.4,
                     filename: area.dataset.pdfFilename || 'SupplierAgingSummary.pdf',
                     html2canvas: { scale: 2, useCORS: true },
-                    jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
+                    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
                     pagebreak: { mode: ['avoid-all', 'css'] }
                 };
                 html2pdf().set(opt).from(clone).save();
@@ -280,7 +283,7 @@
     </script>
     @endscript
 
-    @include('includes.report-print-css')
+    @include('includes.report-print-css', ['orientation' => 'portrait'])
 
     <style>
         :root {

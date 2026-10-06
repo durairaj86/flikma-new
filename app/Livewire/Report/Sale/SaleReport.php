@@ -49,6 +49,7 @@ class SaleReport extends Component
         $this->dispatch('searchChanged', '');
         $this->dispatch('statusChanged', '');
         $this->dispatch('customerChanged', '');
+        $this->dispatch('sr-filter-reset');
     }
 
     public function updatedStartDate($value)
@@ -77,9 +78,11 @@ class SaleReport extends Component
         $this->dispatch('statusChanged', $value);
     }
 
+    /** The shared customer dropdown posts hashed ids; keep the property as the plain id. */
     public function updatedCustomerId($value)
     {
-        $this->dispatch('customerChanged', $value);
+        $this->customerId = $value ? (string) decodeId($value) : '';
+        $this->dispatch('customerChanged', $this->customerId);
     }
 
     public function getSaleReportSummary()
