@@ -212,6 +212,9 @@ CUSTOMER = {
             CUSTOMER.list.actions.email(row);
             CUSTOMER.list.actions.statement(row);
             CUSTOMER.list.actions.search(row);
+            $('#row_delete').off().on('click', function () {
+                deleteRecord(GLOBAL_FN.buildUrl('customer/' + row.attr('data-id')), function () { CUSTOMER.list.load(); });
+            });
         },
         actions: {
             statusChange(row) {

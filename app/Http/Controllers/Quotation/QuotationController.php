@@ -161,8 +161,14 @@ class QuotationController extends Controller
             $quotation->company_id = companyId();
         }
 
+        // A quotation is the point where a prospect becomes a real customer.
+        $customerId = $request->customer ?: null;
+        if (!$customerId && $request->prospect) {
+            $customerId = $this->convertProspectToCustomer((int) $request->prospect)->id;
+        }
+
         $services = $request->services;
-        $quotation->customer_id = $request->customer;
+        $quotation->customer_id = $customerId;
         $quotation->prospect_id = $request->prospect;
         $quotation->posted_at = $request->posted_at;
         $quotation->valid_until = $request->valid_until;
@@ -189,6 +195,11 @@ class QuotationController extends Controller
         }
 
         $quotation->save();
+
+        // Enquiries raised for the converted prospect now belong to the new customer.
+        if ($customerId && $request->prospect) {
+            Enquiry::where('prospect_id', $request->prospect)->whereNull('customer_id')->update(['customer_id' => $customerId]);
+        }
 
         // Mark the source enquiry as converted to quotation
         if ($quotation->enquiry_id) {
@@ -445,22 +456,14 @@ class QuotationController extends Controller
                 if ($field == "customer_id" && $quotation->customer_id == null) {
                     continue;
                 } elseif ($field == "prospect_id" && $quotation->prospect_id != null) {
-                    $prospectData = Prospect::findOrFail($quotation->$field);
-                    $customer = new Customer();
-                    $customer->name_en = $prospectData->name;
-                    $customer->name_ar = $prospectData->name;
-                    $customer->email = $prospectData->email;
-                    $customer->phone = $prospectData->phone;
-                    $customer->address1_en = $prospectData->address;
-                    $customer->salesperson_id = $prospectData->salesperson_id;
-                    $customer->currency = 'SAR';
-
-                    $customer->unique_row_no = sprintf("%03d", (Customer::max('unique_row_no') ?? 0) + 1);
-                    $customer->row_no = 'CS' . $customer->unique_row_no;
-
-                    $this->setBaseColumns($customer);
-                    $customer->save();
-                    $job->customer_id = $customer->id;
+                    // The prospect already became a customer when the quotation was saved; legacy
+                    // quotations that still only have a prospect are converted now.
+                    if (!$quotation->customer_id) {
+                        $quotation->customer_id = $this->convertProspectToCustomer((int) $quotation->prospect_id)->id;
+                        $quotation->save();
+                    }
+                    $job->customer_id = $quotation->customer_id;
+                    $job->prospect_id = $quotation->prospect_id;
                 } elseif (in_array($field, ['pol', 'pod'])) {
                     // Quotation (and Enquiry, which it's often copied from) stores
                     // pol/pod as a raw port id, but Job::pol_name/pol_code expect
@@ -804,5 +807,62 @@ class QuotationController extends Controller
             'success' => true,
             'message' => __('Email has been queued for sending.')
         ]);
+    }
+
+    /** Turn a prospect into an active customer (once) and remember the link on the prospect. */
+    public function convertProspectToCustomer(int $prospectId): Customer
+    {
+        $prospect = Prospect::findOrFail($prospectId);
+        if ($prospect->customer_id && ($existing = Customer::find($prospect->customer_id))) {
+            return $existing;
+        }
+
+        $customer = new Customer();
+        $customer->name_en = $prospect->name;
+        $customer->name_ar = $prospect->name;
+        $customer->email = $prospect->email;
+        $customer->phone = $prospect->phone;
+        $customer->address1_en = $prospect->address;
+        $customer->city_en = $prospect->city;
+        $customer->country = $prospect->country ?: 'SA';
+        $customer->salesperson_id = $prospect->salesperson_id;
+        $customer->currency = 'SAR';
+        $customer->business_type = 'unregistered';
+        $customer->status = \App\Enums\CustomerStatusEnum::CONFIRMED->value;
+        $customer->unique_row_no = sprintf("%03d", (Customer::max('unique_row_no') ?? 0) + 1);
+        $customer->row_no = 'CS' . $customer->unique_row_no;
+        $this->setBaseColumns($customer);
+        $customer->save();
+
+        $prospect->customer_id = $customer->id;
+        $prospect->save();
+
+        return $customer;
+    }
+
+    /** Delete is allowed only when nothing else points at this record (see DeletionGuard). */
+    public function delete($id)
+    {
+        $model = Quotation::findOrFail($id);
+        $guard = app(\App\Services\DeletionGuard::class);
+        $why = $guard->blockers('quotation', (int) $id);
+        if ($why) {
+            return $guard->refusal(__('quotation'), $why);
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($model, $id) {
+            foreach (['quotation_containers', 'quotation_packages', 'quotation_charges', 'quotation_subs'] as $child) {
+                if (\Illuminate\Support\Facades\Schema::hasTable($child)) {
+                    \Illuminate\Support\Facades\DB::table($child)->where('quotation_id', $id)->delete();
+                }
+            }
+            if ($model->enquiry_id) {
+                // the enquiry is open again once its quotation is gone
+                \Illuminate\Support\Facades\DB::table('enquiries')->where('id', $model->enquiry_id)->where('status', \App\Enums\EnquiryEnum::QUOTATION->value)->update(['status' => \App\Enums\EnquiryEnum::CONFIRMED->value]);
+            }
+            $model->delete();
+        });
+
+        return response()->json(['status' => 'success', 'message' => __('Quotation deleted successfully')]);
     }
 }

@@ -34,6 +34,14 @@
                         </select>
                     </div>
 
+                    <!-- Job cost: supplier invoices booked against the chosen job; picking one adds its lines below -->
+                    <div class="col-md-4 d-none" id="jobCostWrap">
+                        <label class="form-label">{{ __('Job Cost') }}
+                            <small class="text-muted fw-normal">({{ __('supplier invoices of this job') }})</small>
+                        </label>
+                        <select id="jobCostSelect" class="tom-select avoid-filter" data-placeholder="{{ __('Pick a supplier invoice to add its lines') }}"></select>
+                    </div>
+
                     <!-- Customer -->
                     <div class="col-md-4">
                         <label class="form-label required">{{ __('Customer') }} <sup class="text-danger">*</sup></label>

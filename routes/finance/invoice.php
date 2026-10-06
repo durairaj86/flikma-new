@@ -30,6 +30,7 @@ Route::namespace('finance')->prefix('invoice')->group(function () {
         Route::post('/{id}/create', [SupplierInvoiceController::class, 'store']);
         Route::get('/{id}/actions', [SupplierInvoiceController::class, 'actions']);
         Route::post('/{id}/status/{status}', [SupplierInvoiceController::class, 'updateStatus']);
+        Route::delete('/{id}', [SupplierInvoiceController::class, 'delete'])->whereNumber('id');
         Route::get('/{id}/overview', [SupplierInvoiceController::class, 'overview']);
         Route::get('/{id}/overview-drawer', [SupplierInvoiceController::class, 'overviewDrawer']);
         Route::get('/{id}/print', [SupplierInvoiceController::class, 'print']);
@@ -40,6 +41,7 @@ Route::namespace('finance')->prefix('invoice')->group(function () {
     Route::prefix('customer')->group(function () {
         Route::view('/', 'modules.finance.customer-invoice.list')->name('invoices.customer');
         Route::get('/list/{job_id}', [CustomerInvoiceController::class, 'listBasedOnJob'])->name('invoices.customer-with-job');
+        Route::get('/job/{job}/costs', [CustomerInvoiceController::class, 'jobCosts'])->whereNumber('job')->name('invoices.customer.job-costs');
         Route::post('/data/{job_id}', [CustomerInvoiceController::class, 'fetchAllRows'])->name('invoices.customer.data');
         Route::get('/create', [CustomerInvoiceController::class, 'modal']);
         Route::post('/create', [CustomerInvoiceController::class, 'store']);
@@ -47,6 +49,7 @@ Route::namespace('finance')->prefix('invoice')->group(function () {
         Route::post('/{id}/create', [CustomerInvoiceController::class, 'store']);
         Route::get('/{id}/actions', [CustomerInvoiceController::class, 'actions']);
         Route::post('/{id}/status/{status}', [CustomerInvoiceController::class, 'updateStatus']);
+        Route::delete('/{id}', [CustomerInvoiceController::class, 'delete'])->whereNumber('id');
         Route::get('/{id}/overview', [CustomerInvoiceController::class, 'overview']);
         Route::get('/{id}/overview-drawer', [CustomerInvoiceController::class, 'overviewDrawer']);
         Route::get('/{id}/print', [CustomerInvoiceController::class, 'print']);

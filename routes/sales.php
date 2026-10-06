@@ -11,6 +11,7 @@ Route::namespace('sales')->prefix('sales')->group(function () {
     Route::get('/enquiry/create', [\App\Http\Controllers\Enquiry\EnquiryController::class, 'modal']);
     Route::post('/enquiry/create', [\App\Http\Controllers\Enquiry\EnquiryController::class, 'store']);
     Route::get('/enquiry/{id}/create', [\App\Http\Controllers\Enquiry\EnquiryController::class, 'edit']);
+    Route::delete('/enquiry/{id}', [\App\Http\Controllers\Enquiry\EnquiryController::class, 'delete'])->whereNumber('id');
     Route::post('/enquiry/{id}/create', [\App\Http\Controllers\Enquiry\EnquiryController::class, 'store']);
     Route::get('/enquiry/{id}/actions', [\App\Http\Controllers\Enquiry\EnquiryController::class, 'actions']);
     Route::post('/enquiry/{id}/status/{status}', [\App\Http\Controllers\Enquiry\EnquiryController::class, 'updateStatus']);
@@ -28,6 +29,7 @@ Route::namespace('sales')->prefix('sales')->group(function () {
     Route::get('/quotation/create/from-enquiry/{enquiry_id}', [\App\Http\Controllers\Quotation\QuotationController::class, 'createFromEnquiry']);
     Route::post('/quotation/create', [\App\Http\Controllers\Quotation\QuotationController::class, 'store']);
     Route::get('/quotation/{id}/create', [\App\Http\Controllers\Quotation\QuotationController::class, 'edit']);
+    Route::delete('/quotation/{id}', [\App\Http\Controllers\Quotation\QuotationController::class, 'delete'])->whereNumber('id');
     Route::post('/quotation/{id}/create', [\App\Http\Controllers\Quotation\QuotationController::class, 'store']);
     Route::get('/quotation/{id}/actions', [\App\Http\Controllers\Quotation\QuotationController::class, 'actions']);
     Route::post('/quotation/{id}/status/{status}', [\App\Http\Controllers\Quotation\QuotationController::class, 'updateStatus']);

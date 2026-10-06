@@ -767,4 +767,22 @@ class CreditNoteController extends Controller
     {
         return CreditNote::with('creditNoteSubs', 'customer', 'job')->findOrFail($id);
     }
+
+    /** Delete is allowed only when nothing else points at this record (see DeletionGuard). */
+    public function delete($id)
+    {
+        $model = CreditNote::findOrFail($id);
+        $guard = app(\App\Services\DeletionGuard::class);
+        $why = $guard->blockers('credit_note', (int) $id);
+        if ($why) {
+            return $guard->refusal(__('credit note'), $why);
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($model, $id) {
+            \Illuminate\Support\Facades\DB::table('credit_note_subs')->where('credit_note_id', $id)->delete();
+            $model->delete();
+        });
+
+        return response()->json(['status' => 'success', 'message' => __('Credit note deleted successfully')]);
+    }
 }

@@ -736,6 +736,11 @@ class JobController extends Controller
     public function delete($id)
     {
         $job = Job::findOrFail($id);
+        $guard = app(\App\Services\DeletionGuard::class);
+        $why = $guard->blockers('job', (int) $id);
+        if ($why) {
+            return $guard->refusal(__('job'), $why);
+        }
         $job->update(['status' => 4]);
         $job->delete();
 

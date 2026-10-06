@@ -667,6 +667,11 @@ class CollectionController extends Controller
     public function destroy($id)
     {
         $collection = Collection::findOrFail($id);
+        $guard = app(\App\Services\DeletionGuard::class);
+        $why = $guard->blockers('collection', (int) $id);
+        if ($why) {
+            return $guard->refusal(__('collection'), $why);
+        }
 
         if ($collection->status !== CollectionEnum::DRAFT->value) {
             return response()->json([

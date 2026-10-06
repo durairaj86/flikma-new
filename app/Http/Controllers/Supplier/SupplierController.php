@@ -421,4 +421,20 @@ class SupplierController extends Controller
         return view('modules.supplier.view-overview', compact('supplier'));
     }
 
+    /** Delete is allowed only when nothing else points at this record (see DeletionGuard). */
+    public function delete($id)
+    {
+        $model = Supplier::findOrFail($id);
+        $guard = app(\App\Services\DeletionGuard::class);
+        $why = $guard->blockers('supplier', (int) $id);
+        if ($why) {
+            return $guard->refusal(__('supplier'), $why);
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($model, $id) {
+            $model->delete();
+        });
+
+        return response()->json(['status' => 'success', 'message' => __('Supplier deleted successfully')]);
+    }
 }

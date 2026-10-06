@@ -60,6 +60,7 @@ Route::middleware(['auth', 'module.permission'])->group(function () {
     Route::post('/customer/create', [\App\Http\Controllers\Customer\CustomerController::class, 'store']);
     Route::get('/customer/{id}/create', [\App\Http\Controllers\Customer\CustomerController::class, 'edit']);
     Route::post('/customer/{id}/create', [\App\Http\Controllers\Customer\CustomerController::class, 'store']);
+    Route::delete('/customer/{id}', [\App\Http\Controllers\Customer\CustomerController::class, 'delete'])->whereNumber('id');
     Route::get('/customer/create/quick', [\App\Http\Controllers\Customer\CustomerController::class, 'quickModal']);
     Route::post('/customer/create/quick', [\App\Http\Controllers\Customer\CustomerController::class, 'quickStore']);
     Route::get('customer/{id}/actions', [\App\Http\Controllers\Customer\CustomerController::class, 'actions']);
@@ -95,6 +96,7 @@ Route::middleware(['auth', 'module.permission'])->group(function () {
     Route::post('/supplier/create', [\App\Http\Controllers\Supplier\SupplierController::class, 'store']);
     Route::get('/supplier/{id}/create', [\App\Http\Controllers\Supplier\SupplierController::class, 'edit']);
     Route::post('/supplier/{id}/create', [\App\Http\Controllers\Supplier\SupplierController::class, 'store']);
+    Route::delete('/supplier/{id}', [\App\Http\Controllers\Supplier\SupplierController::class, 'delete'])->whereNumber('id');
     Route::get('supplier/{id}/actions', [\App\Http\Controllers\Supplier\SupplierController::class, 'actions']);
     Route::post('supplier/{id}/status/{status}', [\App\Http\Controllers\Supplier\SupplierController::class, 'updateStatus']);
     Route::get('supplier/{id}/overview', [\App\Http\Controllers\Supplier\SupplierController::class, 'overview']);
@@ -227,4 +229,14 @@ Route::get('/test-ocr-enum', function () {
             'message' => $e->getMessage()
         ], 500);
     }
+});
+
+
+// Local-only end-to-end checker (headless + live "head" mode). 404s outside the local environment.
+Route::middleware(['auth'])->prefix('autocheck')->name('autocheck.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\AutocheckController::class, 'index'])->name('index');
+    Route::post('/headless', [\App\Http\Controllers\AutocheckController::class, 'headless'])->name('headless');
+    Route::post('/step', [\App\Http\Controllers\AutocheckController::class, 'step'])->name('step');
+    Route::post('/cleanup', [\App\Http\Controllers\AutocheckController::class, 'cleanup'])->name('cleanup');
+    Route::post('/reset', [\App\Http\Controllers\AutocheckController::class, 'reset'])->name('reset');
 });

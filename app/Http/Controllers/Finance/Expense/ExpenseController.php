@@ -490,6 +490,11 @@ class ExpenseController extends Controller
     {
         try {
             $expense = Expense::findOrFail($id);
+            $guard = app(\App\Services\DeletionGuard::class);
+            $why = $guard->blockers('expense', (int) $id);
+            if ($why) {
+                return $guard->refusal(__('expense'), $why);
+            }
 
             // Delete related documents
             foreach ($expense->documents as $document) {

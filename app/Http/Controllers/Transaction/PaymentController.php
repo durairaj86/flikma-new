@@ -701,6 +701,11 @@ class PaymentController extends Controller
     public function destroy($id)
     {
         $payment = Payment::findOrFail($id);
+        $guard = app(\App\Services\DeletionGuard::class);
+        $why = $guard->blockers('payment', (int) $id);
+        if ($why) {
+            return $guard->refusal(__('payment'), $why);
+        }
 
         if ($payment->status !== PaymentEnum::DRAFT->value) {
             return response()->json([

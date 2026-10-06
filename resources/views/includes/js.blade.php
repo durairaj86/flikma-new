@@ -83,6 +83,11 @@
         'Server error',
         'Success!',
         'Terms & Conditions text is required.',
+        'Confirm Delete',
+        'Are you sure you want to delete this record?',
+        'Delete',
+        'This supplier invoice is already added.',
+        'added to the invoice lines.',
     ];
     $i18nMap = collect($i18nKeys)->mapWithKeys(fn($key) => [$key => __($key)]);
 @endphp

@@ -497,4 +497,22 @@ class EnquiryController extends Controller
 
         return Response::json($data);
     }
+
+    /** Delete is allowed only when nothing else points at this record (see DeletionGuard). */
+    public function delete($id)
+    {
+        $model = Enquiry::findOrFail($id);
+        $guard = app(\App\Services\DeletionGuard::class);
+        $why = $guard->blockers('enquiry', (int) $id);
+        if ($why) {
+            return $guard->refusal(__('enquiry'), $why);
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($model, $id) {
+            \Illuminate\Support\Facades\DB::table('enquiry_subs')->where('enquiry_id', $id)->delete();
+            $model->delete();
+        });
+
+        return response()->json(['status' => 'success', 'message' => __('Enquiry deleted successfully')]);
+    }
 }

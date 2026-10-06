@@ -1120,4 +1120,59 @@ class CustomerInvoiceController extends Controller
         }
     }
 
+    /**
+     * Supplier invoices booked against a job (its "job cost"), with their lines, so the customer
+     * invoice form can re-bill any of them. Revenue account = the description's sale account,
+     * falling back to Freight Income.
+     */
+    public function jobCosts($jobId)
+    {
+        $bills = \App\Models\Finance\SupplierInvoice\SupplierInvoice::where('job_id', $jobId)
+            ->whereIn('status', [\App\Enums\SupplierInvoiceEnum::DRAFT->value, \App\Enums\SupplierInvoiceEnum::APPROVED->value])
+            ->with(['supplier:id,name_en', 'supplierInvoiceSubs'])
+            ->orderBy('id')->get();
+
+        $descriptions = \Illuminate\Support\Facades\DB::table('descriptions')
+            ->whereIn('id', $bills->flatMap(fn ($b) => $b->supplierInvoiceSubs->pluck('description_id'))->filter()->unique())
+            ->get(['id', 'sale_account_id'])->keyBy('id');
+
+        return response()->json($bills->map(function ($b) use ($descriptions) {
+            return [
+                'id' => $b->id,
+                'row_no' => $b->row_no,
+                'invoice_number' => $b->invoice_number,
+                'supplier' => $b->supplier?->name_en,
+                'status' => (int) ($b->status instanceof \BackedEnum ? $b->status->value : $b->status),
+                'grand_total' => round((float) $b->grand_total, 2),
+                'currency' => $b->currency,
+                'lines' => $b->supplierInvoiceSubs->map(fn ($l) => [
+                    'description_id' => $l->description_id,
+                    'comment' => $l->comment,
+                    'unit_id' => $l->unit_id,
+                    'quantity' => (float) $l->quantity,
+                    'unit_price' => round((float) $l->unit_price, 2),
+                    'tax_code' => $l->tax_code,
+                    'account_id' => ($descriptions[$l->description_id]->sale_account_id ?? null) ?: 32,
+                ])->values(),
+            ];
+        })->values());
+    }
+
+    /** Delete is allowed only when nothing else points at this record (see DeletionGuard). */
+    public function delete($id)
+    {
+        $model = CustomerInvoice::findOrFail($id);
+        $guard = app(\App\Services\DeletionGuard::class);
+        $why = $guard->blockers('customer_invoice', (int) $id);
+        if ($why) {
+            return $guard->refusal(__('invoice'), $why);
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($model, $id) {
+            \Illuminate\Support\Facades\DB::table('customer_invoice_subs')->where('customer_invoice_id', $id)->delete();
+            $model->delete();
+        });
+
+        return response()->json(['status' => 'success', 'message' => __('Invoice deleted successfully')]);
+    }
 }

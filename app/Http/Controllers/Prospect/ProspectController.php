@@ -154,14 +154,10 @@ class ProspectController extends Controller
     public function delete($id)
     {
         $prospect = Prospect::findOrFail($id);
-        if (Enquiry::where('prospect_id', $id)->exists() ||
-            Quotation::where('prospect_id', $id)->exists()) {
-
-            return response()->json([
-                'status' => 'warning',
-                'message' => __('You cannot delete this prospect. It is linked with other modules!'),
-                'data' => ['id' => $prospect->id],
-            ]);
+        $guard = app(\App\Services\DeletionGuard::class);
+        $why = $guard->blockers('prospect', (int) $id);
+        if ($why) {
+            return $guard->refusal(__('prospect'), $why);
         }
 
         $prospect->delete();

@@ -189,6 +189,9 @@ SUPPLIER = {
         extraActions(row) {
             SUPPLIER.list.actions.statusChange(row);
             SUPPLIER.list.actions.view(row);
+            $('#row_delete').off().on('click', function () {
+                deleteRecord(GLOBAL_FN.buildUrl('supplier/' + row.attr('data-id')), function () { SUPPLIER.list.load(); });
+            });
             $('#row_statement').off().on('click', function () {
                 window.location.href = GLOBAL_FN.buildUrl('reports/supplier-statement', {supplier: row.attr('data-id')});
             });

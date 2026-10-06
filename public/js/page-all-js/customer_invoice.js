@@ -355,6 +355,7 @@ CUSTOMER_INVOICE = {
             CUSTOMER_INVOICE.form.removeRow();
             CUSTOMER_INVOICE.form.customer.change();
             CUSTOMER_INVOICE.form.customer.invoiceDateChange();
+            CUSTOMER_INVOICE.form.jobCost.bind();
             CALCULATION.load();
             CALCULATION.finalTotals();
         },
@@ -394,6 +395,90 @@ CUSTOMER_INVOICE = {
                 }
                 CALCULATION.finalTotals();
             })
+        },
+        // Job cost: the supplier invoices raised against the selected job. Choosing one copies its
+        // lines into the invoice rows (editable — add your margin on the price).
+        jobCost: {
+            bills: {},
+            added: new Set(),
+            bind() {
+                const self = CUSTOMER_INVOICE.form.jobCost;
+                const $job = $('select[name=job_id]');
+                self.added = new Set();
+                $job.off('change.jobCost').on('change.jobCost', function () {
+                    self.added = new Set();
+                    self.load($(this).val());
+                });
+                $('#jobCostSelect').off('change.jobCost').on('change.jobCost', function () {
+                    const id = $(this).val();
+                    if (!id) return;
+                    self.addBill(id);
+                    const ts = this.tomselect;
+                    if (ts) ts.clear(true);
+                });
+                if ($job.val()) self.load($job.val());
+            },
+            load(jobId) {
+                const self = CUSTOMER_INVOICE.form.jobCost;
+                const wrap = $('#jobCostWrap');
+                const sel = document.getElementById('jobCostSelect');
+                self.bills = {};
+                if (sel && sel.tomselect) { sel.tomselect.clear(true); sel.tomselect.clearOptions(); }
+                if (!jobId) { wrap.addClass('d-none'); return; }
+                $.get(GLOBAL_FN.buildUrl('invoice/customer/job/' + jobId + '/costs'), function (list) {
+                    if (!list.length) { wrap.addClass('d-none'); return; }
+                    list.forEach(b => { self.bills[b.id] = b; });
+                    if (sel && sel.tomselect) {
+                        list.forEach(b => {
+                            sel.tomselect.addOption({
+                                value: String(b.id),
+                                text: b.row_no + ' — ' + (b.supplier || '') + ' — ' + b.grand_total.toFixed(2) + ' ' + (b.currency || '') + (b.status === 1 ? ' (draft)' : '')
+                            });
+                        });
+                        sel.tomselect.refreshOptions(false);
+                    }
+                    wrap.removeClass('d-none');
+                });
+            },
+            addBill(id) {
+                const self = CUSTOMER_INVOICE.form.jobCost;
+                const bill = self.bills[id];
+                if (!bill) return;
+                if (self.added.has(String(id))) {
+                    toastr.warning(trans('This supplier invoice is already added.'));
+                    return;
+                }
+                const $tbody = $('#' + MODULE + '-tbody');
+                const blank = ($tr) => !$tr.find('select[name="description_id[]"]').val() && !(parseFloat(String($tr.find('.unit_price').val() || '').replace(/,/g, '')) > 0);
+                bill.lines.forEach(line => {
+                    let $row;
+                    const $first = $tbody.find('tr:first');
+                    if ($tbody.find('tr').length === 1 && blank($first)) {
+                        $row = $first;                       // reuse the empty starter row
+                    } else {
+                        $row = $first.clone();
+                        $row.find('input, select, textarea').val('');
+                        $row.find('select').removeClass('tomselected').removeClass('ts-hidden-accessible');
+                        $row.find('div.ts-wrapper').remove();
+                        initTomSelectForm($row);
+                        $tbody.append($row);
+                    }
+                    const setSel = (name, val) => {
+                        const el = $row.find('select[name="' + name + '"]')[0];
+                        if (el && el.tomselect && val !== null && val !== undefined) el.tomselect.setValue(String(val), false);
+                    };
+                    setSel('description_id[]', line.description_id);
+                    setSel('account[]', line.account_id);
+                    setSel('unit_id[]', line.unit_id);
+                    setSel('tax[]', line.tax_code);
+                    $row.find('textarea[name="comment[]"]').val((bill.row_no + (line.comment ? ' — ' + line.comment : '')));
+                    $row.find('.quantity').val(line.quantity).trigger('input');
+                    $row.find('.unit_price').val(line.unit_price).trigger('input');
+                });
+                self.added.add(String(id));
+                CALCULATION.finalTotals();
+                toastr.success(bill.row_no + ' ' + trans('added to the invoice lines.'));
+            },
         },
         customer: {
             // Recomputes Due Date = Invoice Date + (selected customer's credit

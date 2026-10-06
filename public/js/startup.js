@@ -3150,3 +3150,32 @@ window.debounceSearch = function (fn, ms) {
         timer = setTimeout(function () { fn.apply(ctx, args); }, ms);
     };
 };
+
+
+/* Confirm, then DELETE a record. The server refuses (HTTP 422 + message) when other records still point at it. */
+window.deleteRecord = function (url, onSuccess) {
+    $.confirm({
+        title: trans('Confirm Delete'),
+        content: trans('Are you sure you want to delete this record?'),
+        type: 'red',
+        buttons: {
+            cancel: function () {},
+            delete: {
+                text: trans('Delete'),
+                btnClass: 'btn-red',
+                action: function () {
+                    $.ajax({
+                        url: url, type: 'DELETE', dataType: 'json',
+                        success: function (res) {
+                            toastr.success((res && res.message) || trans('Deleted!'));
+                            if (onSuccess) onSuccess();
+                        },
+                        error: function (xhr) {
+                            toastr.error((xhr.responseJSON && xhr.responseJSON.message) || trans('Server error'));
+                        }
+                    });
+                }
+            }
+        }
+    });
+};

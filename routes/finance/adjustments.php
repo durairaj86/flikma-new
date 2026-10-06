@@ -13,6 +13,7 @@ Route::namespace('finance')->prefix('adjustment')->group(function () {
         Route::post('/{id}/create', [CreditNoteController::class, 'store']);
         Route::get('/{id}/actions', [CreditNoteController::class, 'actions']);
         Route::post('/{id}/status/{status}', [CreditNoteController::class, 'updateStatus']);
+        Route::delete('/{id}', [CreditNoteController::class, 'delete'])->whereNumber('id');
         Route::get('/{id}/overview', [CreditNoteController::class, 'overview']);
         Route::get('/{id}/print', [CreditNoteController::class, 'print']);
     });

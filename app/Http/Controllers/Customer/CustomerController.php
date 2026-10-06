@@ -645,4 +645,21 @@ class CustomerController extends Controller
         return view('customers.ajax.transactions', compact('transactions'));
     }*/
 
+    /** Delete is allowed only when nothing else points at this record (see DeletionGuard). */
+    public function delete($id)
+    {
+        $model = Customer::findOrFail($id);
+        $guard = app(\App\Services\DeletionGuard::class);
+        $why = $guard->blockers('customer', (int) $id);
+        if ($why) {
+            return $guard->refusal(__('customer'), $why);
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($model, $id) {
+            \Illuminate\Support\Facades\DB::table('prospects')->where('customer_id', $id)->update(['customer_id' => null]);
+            $model->delete();
+        });
+
+        return response()->json(['status' => 'success', 'message' => __('Customer deleted successfully')]);
+    }
 }

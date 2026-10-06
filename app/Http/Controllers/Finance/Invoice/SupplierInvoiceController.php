@@ -668,4 +668,21 @@ class SupplierInvoiceController extends Controller
         return SupplierInvoice::with('supplierInvoiceSubs', 'supplier')->findOrFail($id);
     }
 
+    /** Delete is allowed only when nothing else points at this record (see DeletionGuard). */
+    public function delete($id)
+    {
+        $model = SupplierInvoice::findOrFail($id);
+        $guard = app(\App\Services\DeletionGuard::class);
+        $why = $guard->blockers('supplier_invoice', (int) $id);
+        if ($why) {
+            return $guard->refusal(__('invoice'), $why);
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($model, $id) {
+            \Illuminate\Support\Facades\DB::table('supplier_invoice_subs')->where('supplier_invoice_id', $id)->delete();
+            $model->delete();
+        });
+
+        return response()->json(['status' => 'success', 'message' => __('Invoice deleted successfully')]);
+    }
 }
