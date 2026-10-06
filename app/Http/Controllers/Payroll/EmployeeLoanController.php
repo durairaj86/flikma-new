@@ -127,7 +127,7 @@ class EmployeeLoanController extends Controller
             DB::rollBack();
             return response()->json([
                 'status' => 'error',
-                'message' => 'Error saving employee loan: ' . $e->getMessage()
+                'message' => __('Error saving employee loan: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -282,7 +282,7 @@ class EmployeeLoanController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Loan status updated successfully!',
+                'message' => __('Loan status updated successfully!'),
                 'data' => [
                     'id' => $employeeLoan->id,
                     'status' => $employeeLoan->status,
@@ -292,7 +292,7 @@ class EmployeeLoanController extends Controller
             DB::rollBack();
             return response()->json([
                 'status' => 'error',
-                'message' => 'Error updating loan status: ' . $e->getMessage(),
+                'message' => __('Error updating loan status: ') . $e->getMessage(),
             ], 500);
         }
     }
@@ -423,9 +423,9 @@ class EmployeeLoanController extends Controller
             $employeeLoan = EmployeeLoan::findOrFail($id);
             $employeeLoan->delete();
 
-            return response()->json(['success' => true, 'message' => 'Employee loan deleted successfully']);
+            return response()->json(['success' => true, 'message' => __('Employee loan deleted successfully')]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
 

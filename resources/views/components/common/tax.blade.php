@@ -1,5 +1,5 @@
 <select name="tax[]" class="tom-select tax" required data-live-search="true" placeholder="Select Tax" data-max-width="{{ $width ?? '300' }}" data-dropdown-width="{{ $dropdownWidth ?? '300' }}">
-    <option value="">Select Tax</option>
+    <option value="">{{ __('Select Tax') }}</option>
     @foreach(vat() as $vat)
         <option value="{{ $vat['code'] }}"
                 data-subtext="{{ $vat['description'] }}"

@@ -250,7 +250,7 @@ class QuotationNewController extends Controller
 
         return response()->json([
             'status'  => 'success',
-            'message' => 'Quotation submitted successfully.',
+            'message' => __('Quotation submitted successfully.'),
         ]);
     }
 
@@ -292,7 +292,7 @@ class QuotationNewController extends Controller
         $quotation->remarks        = $request->remarks;
         $quotation->save();
 
-        return response()->json(['status' => 'success', 'message' => 'Quotation updated successfully.']);
+        return response()->json(['status' => 'success', 'message' => __('Quotation updated successfully.')]);
     }
 
     // ─── Costing Modal ───────────────────────────────────────────────────────
@@ -338,7 +338,7 @@ class QuotationNewController extends Controller
         $charge->cost_amount        = $request->cost_amount;
         $charge->save();
 
-        return response()->json(['status' => 'success', 'message' => 'Charge saved.', 'charge_id' => $charge->id]);
+        return response()->json(['status' => 'success', 'message' => __('Charge saved.'), 'charge_id' => $charge->id]);
     }
 
     public function deleteCharge(int $chargeId)
@@ -355,7 +355,7 @@ class QuotationNewController extends Controller
         $quotation->status = $status;
         $quotation->save();
 
-        return response()->json(['status' => 'success', 'message' => 'Status updated.']);
+        return response()->json(['status' => 'success', 'message' => __('Status updated.')]);
     }
 
     // ─── Actions Context Menu ────────────────────────────────────────────────

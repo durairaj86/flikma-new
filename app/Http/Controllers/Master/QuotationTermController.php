@@ -109,7 +109,7 @@ class QuotationTermController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Quotation term saved successfully',
+            'message' => __('Quotation term saved successfully'),
             'module_id' => $quotationTerm->id,
         ]);
     }
@@ -146,7 +146,7 @@ class QuotationTermController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Quotation term deleted successfully',
+            'message' => __('Quotation term deleted successfully'),
         ]);
     }
 

@@ -411,7 +411,7 @@ class JobController extends Controller
         return response()->json([
             'status' => 'success',
             'job_id' => $job->id,
-            'message' => 'Job saved successfully'
+            'message' => __('Job saved successfully')
         ]);
         /*} catch (\Exception $e) {
             DB::rollBack();
@@ -710,7 +710,7 @@ class JobController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Job status updated successfully!',
+            'message' => __('Job status updated successfully!'),
             'data' => [
                 'id' => $job->id,
                 'status' => $job->status,
@@ -741,7 +741,7 @@ class JobController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Job deleted successfully!',
+            'message' => __('Job deleted successfully!'),
         ]);
     }
 

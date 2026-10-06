@@ -117,7 +117,7 @@ class AccountController extends Controller
                 if ($account->company_id !== companyId()) {
                     return response()->json([
                         'status' => 'error',
-                        'message' => 'You are not allowed to edit this account',
+                        'message' => __('You are not allowed to edit this account'),
                     ]);
                 }
             } else {
@@ -158,13 +158,13 @@ class AccountController extends Controller
             DB::commit();
             return response()->json([
                 'status' => 'success',
-                'message' => 'Account added successfully',
+                'message' => __('Account added successfully'),
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
             return response()->json([
                 'status' => 'error',
-                'message' => 'Validation failed.',
+                'message' => __('Validation failed.'),
                 'errors' => $e->errors(),
             ], 422);
 
@@ -258,7 +258,7 @@ class AccountController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Account status updated successfully!',
+            'message' => __('Account status updated successfully!'),
             'data' => [
                 'id' => $account->id,
                 'status' => $account->status,

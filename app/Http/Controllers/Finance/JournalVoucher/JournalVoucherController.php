@@ -175,14 +175,14 @@ class JournalVoucherController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Journal voucher saved successfully',
+                'message' => __('Journal voucher saved successfully'),
                 'journal_voucher_id' => $journalVoucher->id,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
                 'status' => 'error',
-                'message' => 'Error saving journal voucher: ' . $e->getMessage(),
+                'message' => __('Error saving journal voucher: ') . $e->getMessage(),
             ], 500);
         }
     }
@@ -239,7 +239,7 @@ class JournalVoucherController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Journal voucher status updated successfully',
+            'message' => __('Journal voucher status updated successfully'),
             'data' => [
                 'id' => $journalVoucher->id,
                 'status' => $journalVoucher->status,
@@ -263,7 +263,7 @@ class JournalVoucherController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Journal voucher disapproved successfully',
+            'message' => __('Journal voucher disapproved successfully'),
             'data' => [
                 'id' => $journalVoucher->id,
                 'status' => $journalVoucher->status,
@@ -479,7 +479,7 @@ class JournalVoucherController extends Controller
         if ($journalVoucher->status !== JournalVoucherStatusEnum::DRAFT->value) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Only draft journal vouchers can be deleted',
+                'message' => __('Only draft journal vouchers can be deleted'),
             ], 400);
         }
 
@@ -487,7 +487,7 @@ class JournalVoucherController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Journal voucher deleted successfully',
+            'message' => __('Journal voucher deleted successfully'),
         ]);
     }
 }

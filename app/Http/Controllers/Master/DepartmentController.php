@@ -203,7 +203,7 @@ class DepartmentController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Department status updated successfully!',
+            'message' => __('Department status updated successfully!'),
             'data' => ['id' => $department->id, 'is_active' => $department->is_active],
         ]);
     }

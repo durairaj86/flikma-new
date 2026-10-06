@@ -65,7 +65,7 @@ class SupplierController extends Controller
         // Get the file path from the session
         $path = session('import_file_path');
         if (!$path) {
-            return response()->json(['message' => 'No file uploaded. Please upload a file first.'], 400);
+            return response()->json(['message' => __('No file uploaded. Please upload a file first.')], 400);
         }
 
         // No need to validate specific mapping fields as we'll check for non-empty values later
@@ -306,7 +306,7 @@ class SupplierController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Supplier created successfully',
+            'message' => __('Supplier created successfully'),
             'customer_id' => $supplier->id,
         ]);
     }
@@ -319,7 +319,7 @@ class SupplierController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Supplier status updated successfully!',
+            'message' => __('Supplier status updated successfully!'),
             'data' => [
                 'id' => $supplier->id,
                 'status' => $supplier->status, // numeric (0,1,2..)

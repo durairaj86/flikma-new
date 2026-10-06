@@ -74,7 +74,7 @@ class HsTariffController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'HS Tariff saved successfully',
+            'message' => __('HS Tariff saved successfully'),
             'module_id' => $hsTariff->id,
         ]);
     }
@@ -111,7 +111,7 @@ class HsTariffController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'HS Tariff deleted successfully',
+            'message' => __('HS Tariff deleted successfully'),
         ]);
     }
 }

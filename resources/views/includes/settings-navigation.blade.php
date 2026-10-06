@@ -12,7 +12,7 @@
     <div class="pt-3 px-3">
         <a href="{{ url('/dashboard') }}" id="back-to-dashboard"
            class="d-flex align-items-center text-decoration-none text-secondary fw-medium py-2 mb-3">
-            <i class="bi bi-arrow-left me-2"></i> Back to Dashboard
+            <i class="bi bi-arrow-left me-2"></i> {{ __('Back to Dashboard') }}
         </a>
 
         <h5 class="fw-semibold mb-3 text-secondary">Settings</h5>

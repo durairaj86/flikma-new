@@ -13,7 +13,7 @@
 
     @empty($activities)
         <div id="no-more-activities" class="alert alert-info text-center mt-5" role="alert">
-            No recent activity to display.
+            {{ __('No recent activity to display.') }}
         </div>
     @else
         {{-- Loader/Message for Scrolling --}}
@@ -23,7 +23,7 @@
             </div>
         </div>
         <div id="end-of-feed" class="text-center text-muted small my-3" style="display: none;">
-            End of activity log.
+            {{ __('End of activity log.') }}
         </div>
     @endempty
 

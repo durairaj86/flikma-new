@@ -94,7 +94,7 @@ class SupplierImport
         if (!$hasRequiredField) {
             return [
                 'success' => false,
-                'message' => 'You must map at least one of the following fields: Name (English), Name (Arabic), Email, Phone, or Currency.',
+                'message' => __('You must map at least one of the following fields: Name (English), Name (Arabic), Email, Phone, or Currency.'),
             ];
         }
 
@@ -112,7 +112,7 @@ class SupplierImport
         if (!empty($errors)) {
             return [
                 'success' => false,
-                'message' => 'Import completed with errors.',
+                'message' => __('Import completed with errors.'),
                 'imported' => $imported,
                 'errors' => $errors,
             ];
@@ -120,7 +120,7 @@ class SupplierImport
 
         return [
             'success' => true,
-            'message' => 'Import completed successfully.',
+            'message' => __('Import completed successfully.'),
             'imported' => $imported,
         ];
     }

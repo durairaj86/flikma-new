@@ -321,7 +321,7 @@ class OpeningBalanceController extends Controller
             }
 
             DB::commit();
-            return response()->json(['status' => 'success', 'message' => 'Deleted successfully.']);
+            return response()->json(['status' => 'success', 'message' => __('Deleted successfully.')]);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);

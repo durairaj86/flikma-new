@@ -12,7 +12,7 @@
                     <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-finance-subtle text-finance mb-3" style="width: 64px; height: 64px;">
                         <i class="bi bi-envelope-paper fs-2"></i>
                     </div>
-                    <h3 class="fw-bold text-dark mb-2">Verify Your Email</h3>
+                    <h3 class="fw-bold text-dark mb-2">{{ __('Verify Your Email') }}</h3>
                     <p class="text-muted mb-4">
                         {{ __("Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn't receive the email, we will gladly send you another.") }}
                     </p>
@@ -30,14 +30,14 @@
                     <form method="POST" action="{{ route('verification.send') }}">
                         @csrf
                         <button type="submit" class="btn btn-finance w-100 py-3 fw-bold mb-3 shadow-sm text-uppercase tracking-wider">
-                            Resend Verification Email
+                            {{ __('Resend Verification Email') }}
                         </button>
                     </form>
 
                     <form method="POST" action="{{ route('logout') }}" class="pt-3 mt-2 border-top">
                         @csrf
                         <button type="submit" class="btn btn-link text-muted small text-decoration-none">
-                            Log Out
+                            {{ __('Log Out') }}
                         </button>
                     </form>
                 </div>

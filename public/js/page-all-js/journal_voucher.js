@@ -185,7 +185,7 @@ JOURNAL_VOUCHER = {
             const reason = $('#reason').val();
 
             if (!reason) {
-                toastr.error('Please provide a reason for disapproval');
+                toastr.error(trans('Please provide a reason for disapproval'));
                 return;
             }
 

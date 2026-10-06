@@ -77,7 +77,7 @@ class AccountImportController extends Controller
         // Re-run the same normalisation on what the customer approved: never trust the browser.
         $rows = collect($this->normalise($data['rows']))->where('status', 'new')->values();
         if ($rows->isEmpty()) {
-            return response()->json(['status' => 'error', 'message' => 'Nothing to import.'], 422);
+            return response()->json(['status' => 'error', 'message' => __('Nothing to import.')], 422);
         }
 
         $created = 0;
@@ -118,7 +118,7 @@ class AccountImportController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
             report($e);
-            return response()->json(['status' => 'error', 'message' => 'Import failed, nothing was saved: ' . $e->getMessage()], 500);
+            return response()->json(['status' => 'error', 'message' => __('Import failed, nothing was saved: ') . $e->getMessage()], 500);
         }
 
         return response()->json(['status' => 'success', 'message' => "{$created} accounts imported.", 'created' => $created]);

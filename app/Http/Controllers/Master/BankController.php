@@ -82,7 +82,7 @@ class BankController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Bank created successfully',
+            'message' => __('Bank created successfully'),
             'module_id' => $bank->id,
         ]);
     }

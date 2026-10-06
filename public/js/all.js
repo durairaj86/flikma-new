@@ -1538,11 +1538,11 @@ DESCRIPTION = {
                       } else if (response.status === 'warning') {
                         toastr.warning(response.message);
                       } else {
-                        toastr.error('Error deleting record.');
+                        toastr.error(trans('Error deleting record.'));
                       }
                     },
                     error: function error() {
-                      toastr.error('Server error');
+                      toastr.error(trans('Server error'));
                     }
                   });
                 }
@@ -1891,7 +1891,7 @@ ENQUIRY = {
     addItem: function addItem() {
       $('#addItem').off().on('click', function () {
         var category = $('#shipment_category').val();
-        if (!category) return alert("Select Shipment Category first!");
+        if (!category) return alert(trans('Select Shipment Category first!'));
 
         // Find the first visible template row for the category
         var $template = $('#enquiry-row tr.' + category + '-fields:visible:first');
@@ -2121,7 +2121,7 @@ EXPENSE = {
                 }
               },
               error: function error(xhr) {
-                toastr.error('Error deleting expense');
+                toastr.error(trans('Error deleting expense'));
               }
             });
           }
@@ -3224,11 +3224,11 @@ PROSPECT = {
                       } else if (response.status === 'warning') {
                         toastr.warning(response.message);
                       } else {
-                        toastr.error('Error deleting record.');
+                        toastr.error(trans('Error deleting record.'));
                       }
                     },
                     error: function error() {
-                      toastr.error('Server error');
+                      toastr.error(trans('Server error'));
                     }
                   });
                 }
@@ -3568,7 +3568,7 @@ QUOTATION = {
                   if (xhr.responseJSON && xhr.responseJSON.message) {
                     toastr.error(xhr.responseJSON.message);
                   } else {
-                    toastr.error('An error occurred while sending the email.');
+                    toastr.error(trans('An error occurred while sending the email.'));
                   }
                 },
                 complete: function complete() {
@@ -4658,7 +4658,7 @@ ZATCA = {
           });
         }
       } else {
-        alert("Enter valid otp");
+        alert(trans('Enter valid otp'));
         //showToastr('Invalid', 'Enter valid otp', 'error');
       }
     });
@@ -4684,7 +4684,7 @@ ZATCA = {
           });
         }
       } else {
-        alert("Enter valid otp");
+        alert(trans('Enter valid otp'));
         //showToastr('Invalid', 'Enter valid otp', 'error');
       }
     });

@@ -6,17 +6,17 @@
                     <div class="mb-4">
                         <i class="bi bi-bank2 display-1 opacity-50"></i>
                     </div>
-                    <h1 class="display-5 fw-bold mb-3">Join Our Platform.</h1>
+                    <h1 class="display-5 fw-bold mb-3">{{ __('Join Our Platform.') }}</h1>
                     <p class="lead opacity-75">Create your account to access ZATCA-integrated financial reporting and real-time analytics.</p>
 
                     <div class="mt-5 d-flex gap-4 justify-content-center">
                         <div class="text-center">
-                            <h4 class="mb-0 fw-bold">Secure</h4>
-                            <small class="opacity-50">Data Storage</small>
+                            <h4 class="mb-0 fw-bold">{{ __('Secure') }}</h4>
+                            <small class="opacity-50">{{ __('Data Storage') }}</small>
                         </div>
                         <div class="vr"></div>
                         <div class="text-center">
-                            <h4 class="mb-0 fw-bold">Real-time</h4>
+                            <h4 class="mb-0 fw-bold">{{ __('Real-time') }}</h4>
                             <small class="opacity-50">Reports</small>
                         </div>
                     </div>
@@ -27,8 +27,8 @@
                 <div class="w-100 p-4 p-md-5" style="max-width: 450px;">
 
                     <div class="mb-5">
-                        <h3 class="fw-bold text-dark mb-1">Create Account</h3>
-                        <p class="text-muted">Enter your details to get started.</p>
+                        <h3 class="fw-bold text-dark mb-1">{{ __('Create Account') }}</h3>
+                        <p class="text-muted">{{ __('Enter your details to get started.') }}</p>
                     </div>
 
                     <x-auth-session-status class="mb-4 alert alert-success border-0 shadow-sm small" :status="session('status')" />
@@ -127,13 +127,13 @@
                         </div>
 
                         <button type="submit" class="btn btn-finance w-100 py-3 fw-bold mb-4 shadow-sm text-uppercase tracking-wider">
-                            Create Account
+                            {{ __('Create Account') }}
                         </button>
 
                         <div class="text-center pt-3 border-top">
                             <p class="small text-muted mb-0">
                                 Already have an account?
-                                <a href="{{ route('login') }}" class="text-finance text-decoration-none fw-medium">Sign In</a>
+                                <a href="{{ route('login') }}" class="text-finance text-decoration-none fw-medium">{{ __('Sign In') }}</a>
                             </p>
                         </div>
                     </form>

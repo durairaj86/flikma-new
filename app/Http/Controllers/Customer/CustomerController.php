@@ -70,7 +70,7 @@ class CustomerController extends Controller
         // Get the file path from the session
         $path = session('import_file_path');
         if (!$path) {
-            return response()->json(['message' => 'No file uploaded. Please upload a file first.'], 400);
+            return response()->json(['message' => __('No file uploaded. Please upload a file first.')], 400);
         }
 
         // No need to validate specific mapping fields as we'll check for non-empty values later
@@ -243,7 +243,7 @@ class CustomerController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Validation failed',
+                'message' => __('Validation failed'),
                 'errors' => $validator->errors()
             ], 422);
         }
@@ -271,7 +271,7 @@ class CustomerController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Customer created successfully',
+            'message' => __('Customer created successfully'),
             'id' => encodeId($customer->id),
             'name' => $customer->name_en,
             'code' => $customer->row_no,
@@ -399,7 +399,7 @@ class CustomerController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Customer created successfully',
+            'message' => __('Customer created successfully'),
             'customer_id' => $customer->id,
         ]);
     }
@@ -440,7 +440,7 @@ class CustomerController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Document deleted successfully',
+            'message' => __('Document deleted successfully'),
         ]);
     }
 
@@ -453,7 +453,7 @@ class CustomerController extends Controller
         Cache::forget(self::$cache . cacheName());
         return response()->json([
             'status' => 'success',
-            'message' => 'Customer status updated successfully!',
+            'message' => __('Customer status updated successfully!'),
             'data' => [
                 'id' => $customer->id,
                 'status' => $customer->status, // numeric (0,1,2..)

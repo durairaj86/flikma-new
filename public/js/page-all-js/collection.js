@@ -210,7 +210,7 @@ COLLECTION = {
             const reason = $('#reason').val();
 
             if (!reason) {
-                toastr.error('Please provide a reason for disapproval');
+                toastr.error(trans('Please provide a reason for disapproval'));
                 return;
             }
 
@@ -238,7 +238,7 @@ COLLECTION = {
     before: {
         submit() {
             if ($('input[name="customer_invoice_ids[]"]:checked').length === 0) {
-                toastr.error('Please select at least one invoice');
+                toastr.error(trans('Please select at least one invoice'));
                 return false;
             }
             return true;
@@ -404,7 +404,7 @@ COLLECTION = {
             // Ensure amount doesn't exceed the balance amount
             if (amount > balanceAmount) {
                 $input.val(balanceAmount);
-                toastr.error('Collection amount cannot exceed the balance amount');
+                toastr.error(trans('Collection amount cannot exceed the balance amount'));
                 return;
             }
 
@@ -443,12 +443,12 @@ COLLECTION = {
         /*prepareFormData($form) {
             // Validate form
             if (!$('#customer').val()) {
-                toastr.error('Please select a customer');
+                toastr.error(trans('Please select a customer'));
                 return false;
             }
 
             if ($('input[name="customer_invoice_ids[]"]:checked').length === 0) {
-                toastr.error('Please select at least one invoice');
+                toastr.error(trans('Please select at least one invoice'));
                 return false;
             }
 

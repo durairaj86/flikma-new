@@ -1888,3 +1888,14 @@ body:not(.has-top-header) #sendEmailDrawer.offcanvas.offcanvas-end {
     z-index: 1100;
     padding-right: 0;
 }
+
+/* RTL: the actions column sits at the far left, so the row menu must open towards the page (to the right of
+   its button) — opening leftwards pushed the labels outside the card, leaving only the icons visible. */
+[dir="rtl"] td div.dropdown ul.dropdown-menu {
+    inset: -34px auto auto 34px !important;
+    text-align: right;
+}
+[dir="rtl"] ul.dropdown-menu li.dropdown-submenu ul.dropdown-menu {
+    inset: 0 auto auto 100% !important;
+    margin-left: 0;
+}

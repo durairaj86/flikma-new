@@ -82,7 +82,7 @@ class AttendanceController extends Controller
                 if ($existingRecord) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'An attendance record already exists for this employee on the selected date'
+                        'message' => __('An attendance record already exists for this employee on the selected date')
                     ], 422);
                 }
 
@@ -103,7 +103,7 @@ class AttendanceController extends Controller
             DB::rollBack();
             return response()->json([
                 'status' => 'error',
-                'message' => 'Error saving waybill: ' . $e->getMessage()
+                'message' => __('Error saving waybill: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -231,9 +231,9 @@ class AttendanceController extends Controller
             $attendance = Attendance::findOrFail($id);
             $attendance->delete();
 
-            return response()->json(['success' => true, 'message' => 'Attendance record deleted successfully']);
+            return response()->json(['success' => true, 'message' => __('Attendance record deleted successfully')]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
 

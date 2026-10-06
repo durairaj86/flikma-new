@@ -70,7 +70,7 @@ class AirportController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Port created successfully',
+            'message' => __('Port created successfully'),
             'module_id' => $airport->id,
         ]);
     }

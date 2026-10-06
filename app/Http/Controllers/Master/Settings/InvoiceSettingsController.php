@@ -82,7 +82,7 @@ class InvoiceSettingsController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Invoice settings updated successfully',
+                'message' => __('Invoice settings updated successfully'),
             ]);
         } catch (\Exception $e) {
             // Log the error and return a user-friendly message
@@ -90,7 +90,7 @@ class InvoiceSettingsController extends Controller
 
             return response()->json([
                 'status' => 'error',
-                'message' => 'An error occurred while saving the invoice settings.',
+                'message' => __('An error occurred while saving the invoice settings.'),
             ], 500);
         }
     }

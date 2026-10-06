@@ -158,7 +158,7 @@ class EnquiryController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Enquiry created successfully',
+            'message' => __('Enquiry created successfully'),
             'customer_id' => $enquiry->id,
         ]);
 
@@ -166,7 +166,7 @@ class EnquiryController extends Controller
             DB::rollBack();
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to save enquiry: ' . $e->getMessage()
+                'message' => __('Failed to save enquiry: ') . $e->getMessage()
             ]);
         }*/
     }
@@ -309,7 +309,7 @@ class EnquiryController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Enquiry status updated successfully!',
+            'message' => __('Enquiry status updated successfully!'),
             'data' => [
                 'id' => $enquiry->id,
                 'status' => $enquiry->status, // numeric (0,1,2..)

@@ -257,7 +257,7 @@ MONTHLY_SALARY = {
             $('#fetch-basic-salary').off().on('click', function () {
                 let employeeId = $('#employee_id').val();
                 if (!employeeId) {
-                    toastr.error("Please select an employee");
+                    toastr.error(trans('Please select an employee'));
                 }
                 GLOBAL_FN.ajaxData.sendData(
                     '/payroll/monthly/salary/get-employee-basic-salary',

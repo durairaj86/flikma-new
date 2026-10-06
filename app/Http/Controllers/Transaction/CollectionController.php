@@ -281,14 +281,14 @@ class CollectionController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Collection saved successfully',
+                'message' => __('Collection saved successfully'),
                 'collection_id' => $collection->id,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
                 'status' => 'error',
-                'message' => 'Error saving collection: ' . $e->getMessage(),
+                'message' => __('Error saving collection: ') . $e->getMessage(),
             ], 500);
         }
     }
@@ -405,7 +405,7 @@ class CollectionController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Collection status updated successfully',
+                'message' => __('Collection status updated successfully'),
                 'data' => [
                     'id' => $collection->id,
                     'status' => $collection->status,
@@ -415,7 +415,7 @@ class CollectionController extends Controller
             DB::rollBack();
             return response()->json([
                 'status' => 'error',
-                'message' => 'Error updating collection status: ' . $e->getMessage(),
+                'message' => __('Error updating collection status: ') . $e->getMessage(),
             ], 500);
         } finally {
             DB::commit();
@@ -454,7 +454,7 @@ class CollectionController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Collection cancelled successfully',
+            'message' => __('Collection cancelled successfully'),
             'data' => [
                 'id' => $collection->id,
                 'status' => $collection->status,
@@ -671,7 +671,7 @@ class CollectionController extends Controller
         if ($collection->status !== CollectionEnum::DRAFT->value) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Only draft collections can be deleted',
+                'message' => __('Only draft collections can be deleted'),
             ], 400);
         }
 
@@ -679,7 +679,7 @@ class CollectionController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Collection deleted successfully',
+            'message' => __('Collection deleted successfully'),
         ]);
     }
 

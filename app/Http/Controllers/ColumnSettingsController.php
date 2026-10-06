@@ -46,7 +46,7 @@ class ColumnSettingsController extends Controller
             ['column_json' => $request->input('columns')]
         );
 
-        return response()->json(['message' => 'Column settings saved.']);
+        return response()->json(['message' => __('Column settings saved.')]);
     }
 
     public function reset(string $page): JsonResponse
@@ -60,7 +60,7 @@ class ColumnSettingsController extends Controller
         $defaults = ModuleDefaultColumns::get($page);
 
         return response()->json([
-            'message' => 'Reset to defaults.',
+            'message' => __('Reset to defaults.'),
             'columns' => $defaults['columns'],
         ]);
     }

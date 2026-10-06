@@ -242,7 +242,7 @@ PAYMENT = {
             const reason = $('#reason').val();
 
             if (!reason) {
-                toastr.error('Please provide a reason for disapproval');
+                toastr.error(trans('Please provide a reason for disapproval'));
                 return;
             }
 
@@ -270,7 +270,7 @@ PAYMENT = {
     before: {
         submit() {
             if ($('input[name="supplier_invoice_ids[]"]:checked').length === 0) {
-                toastr.error('Please select at least one invoice');
+                toastr.error(trans('Please select at least one invoice'));
                 return false;
             }
             return true;
@@ -523,7 +523,7 @@ PAYMENT = {
             // Ensure amount doesn't exceed the balance amount
             if (amount > balanceAmount) {
                 $input.val(balanceAmount);
-                toastr.error('Payment amount cannot exceed the balance amount');
+                toastr.error(trans('Payment amount cannot exceed the balance amount'));
                 return;
             }
 
@@ -573,12 +573,12 @@ PAYMENT = {
         /* prepareFormData($form) {
              // Validate form
              if (!$('#supplier').val()) {
-                 toastr.error('Please select a supplier');
+                 toastr.error(trans('Please select a supplier'));
                  return false;
              }
 
              if (PAYMENT.form.selectedInvoices.length === 0) {
-                 toastr.error('Please select at least one invoice');
+                 toastr.error(trans('Please select at least one invoice'));
                  return false;
              }
 

@@ -195,11 +195,11 @@
                     </div>
 
                     <div class="profile-menu-actions-row">
-                        <a href="{{ url('settings/account') }}" class="profile-menu-link">My Account</a>
+                        <a href="{{ url('settings/account') }}" class="profile-menu-link">{{ __('My Account') }}</a>
                         <form method="POST" action="{{ url('logout') }}" class="m-0">
                             @csrf
                             <button type="submit" class="profile-menu-link text-danger border-0 bg-transparent">
-                                <i class="bi bi-box-arrow-right"></i> Sign Out
+                                <i class="bi bi-box-arrow-right"></i> {{ __('Sign Out') }}
                             </button>
                         </form>
                     </div>
@@ -220,7 +220,7 @@
                     <div class="profile-menu-pill-wrap">
                         <a href="{{ route('settings.company.edit') }}" class="profile-menu-pill">
                             <span class="profile-menu-pill-icon"><i class="bi bi-bell"></i></span>
-                            <span class="flex-grow-1">Notification Preferences</span>
+                            <span class="flex-grow-1">{{ __('Notification Preferences') }}</span>
                             <i class="bi bi-chevron-right small text-muted"></i>
                         </a>
                     </div>

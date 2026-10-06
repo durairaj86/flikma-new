@@ -396,7 +396,7 @@
                         </li>
                         <li class="nav-item {{ $menu == 'invoice' ? 'menu-open' : '' }}">
                             <a href="#" class="nav-link">
-                                <p>Operations Report <i class="nav-arrow bi bi-chevron-right"></i></p>
+                                <p>{{ __('Operations Report') }} <i class="nav-arrow bi bi-chevron-right"></i></p>
                             </a>
                             <ul class="nav nav-treeview ms-3">
                                 <li class="nav-item">
@@ -445,7 +445,7 @@
                                 <li class="nav-item">
                                     <a href="/reports/general-ledger"
                                        class="nav-link {{ $submenu == 'general-ledger' ? 'active' : '' }}">
-                                        <p>General Ledger</p>
+                                        <p>{{ __('General Ledger') }}</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">

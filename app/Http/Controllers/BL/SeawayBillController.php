@@ -215,7 +215,7 @@ class SeawayBillController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Seaway Bill saved successfully',
+                'message' => __('Seaway Bill saved successfully'),
                 'redirect' => '/bl/seaway'
             ]);
         } catch (\Exception $e) {
@@ -224,7 +224,7 @@ class SeawayBillController extends Controller
 
             return response()->json([
                 'status' => 'error',
-                'message' => 'Error saving seaway bill: ' . $e->getMessage()
+                'message' => __('Error saving seaway bill: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -479,7 +479,7 @@ class SeawayBillController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Sea Waybill status updated successfully!',
+            'message' => __('Sea Waybill status updated successfully!'),
             'data' => [
                 'id' => $waybill->id,
                 'status' => $waybill->status,

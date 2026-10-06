@@ -293,7 +293,7 @@ class ProformaInvoiceController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Proforma invoice created successfully',
+                'message' => __('Proforma invoice created successfully'),
                 'customer_id' => $proforma->id,
             ]);
 
@@ -304,7 +304,7 @@ class ProformaInvoiceController extends Controller
             // that JS and the modal just silently does nothing on error.
             return response()->json([
                 'status' => 'error',
-                'message' => 'Error saving Proforma Invoice: ' . $e->getMessage(),
+                'message' => __('Error saving Proforma Invoice: ') . $e->getMessage(),
             ], 500);
         }
     }
@@ -443,7 +443,7 @@ class ProformaInvoiceController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Proforma status updated successfully!',
+            'message' => __('Proforma status updated successfully!'),
             'data' => [
                 'id' => $proforma->id,
                 'status' => $proforma->status,

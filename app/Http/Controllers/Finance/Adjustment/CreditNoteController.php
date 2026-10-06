@@ -412,7 +412,7 @@ class CreditNoteController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Credit note created successfully',
+            'message' => __('Credit note created successfully'),
             'credit_note_id' => $creditNote->id,
         ]);
 
@@ -420,7 +420,7 @@ class CreditNoteController extends Controller
             DB::rollBack();
             return response()->json([
                 'status' => 'error',
-                'message' => 'Error saving credit note: ' . $e->getMessage(),
+                'message' => __('Error saving credit note: ') . $e->getMessage(),
             ], 500);
         }
     }

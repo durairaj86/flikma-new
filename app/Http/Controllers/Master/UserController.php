@@ -126,7 +126,7 @@ class UserController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'User created successfully',
+            'message' => __('User created successfully'),
             'module_id' => $user->id,
         ]);
     }
@@ -216,7 +216,7 @@ class UserController extends Controller
                 // Return a user-friendly error response
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'File upload failed: ' . $e->getMessage(),
+                    'message' => __('File upload failed: ') . $e->getMessage(),
                 ], 500);
             }
         }
@@ -225,7 +225,7 @@ class UserController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Profile updated successfully',
+            'message' => __('Profile updated successfully'),
             'module_id' => $user->id,
         ]);
     }

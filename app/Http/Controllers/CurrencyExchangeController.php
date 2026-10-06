@@ -26,7 +26,7 @@ class CurrencyExchangeController extends Controller
         $response = Http::get($url);
 
         if ($response->failed()) {
-            return ['error' => true, 'message' => 'API request failed'];
+            return ['error' => true, 'message' => __('API request failed')];
         }
         return $response->json();
 

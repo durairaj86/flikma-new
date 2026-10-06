@@ -149,7 +149,7 @@ class MonthlySalaryController extends Controller
                 if ($existingRecord) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'A salary record already exists for this employee in the selected month and year'
+                        'message' => __('A salary record already exists for this employee in the selected month and year')
                     ], 422);
                 }
 
@@ -174,7 +174,7 @@ class MonthlySalaryController extends Controller
             DB::rollBack();
             return response()->json([
                 'status' => 'error',
-                'message' => 'Error saving waybill: ' . $e->getMessage()
+                'message' => __('Error saving waybill: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -216,9 +216,9 @@ class MonthlySalaryController extends Controller
             $monthlySalary = MonthlySalary::findOrFail($id);
             $monthlySalary->delete();
 
-            return response()->json(['success' => true, 'message' => 'Monthly salary deleted successfully']);
+            return response()->json(['success' => true, 'message' => __('Monthly salary deleted successfully')]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
 
@@ -230,7 +230,7 @@ class MonthlySalaryController extends Controller
         $employeeId = $request->input('employee_id');
 
         if (!$employeeId) {
-            return response()->json(['success' => false, 'message' => 'Employee ID is required'], 422);
+            return response()->json(['success' => false, 'message' => __('Employee ID is required')], 422);
         }
 
         $basicSalary = BasicSalary::where('employee_id', $employeeId)
@@ -239,12 +239,12 @@ class MonthlySalaryController extends Controller
             ->first();
 
         if (!$basicSalary) {
-            return response()->json(['success' => false, 'message' => 'No basic salary record found for this employee'], 404);
+            return response()->json(['success' => false, 'message' => __('No basic salary record found for this employee')], 404);
         }
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Employee basic salary fetched successfully',
+            'message' => __('Employee basic salary fetched successfully'),
             'data' => $basicSalary
         ]);
     }
@@ -378,7 +378,7 @@ class MonthlySalaryController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Monthly salary status updated successfully!',
+                'message' => __('Monthly salary status updated successfully!'),
                 'data' => [
                     'id' => $monthlySalary->id,
                     'status' => $monthlySalary->status,
@@ -388,7 +388,7 @@ class MonthlySalaryController extends Controller
             DB::rollBack();
             return response()->json([
                 'status' => 'error',
-                'message' => 'Error updating monthly salary status: ' . $e->getMessage(),
+                'message' => __('Error updating monthly salary status: ') . $e->getMessage(),
             ], 500);
         }
     }

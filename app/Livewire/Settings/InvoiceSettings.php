@@ -184,10 +184,10 @@ class InvoiceSettings extends Component
             Cache::forget(self::$cache . cacheName());
 
             // Show success message
-            $this->dispatch('settings-saved', ['message' => 'Invoice settings updated successfully']);
+            $this->dispatch('settings-saved', ['message' => __('Invoice settings updated successfully')]);
         } catch (\Exception $e) {
             // Show error message
-            $this->dispatch('settings-error', ['message' => 'Error saving settings: ' . $e->getMessage()]);
+            $this->dispatch('settings-error', ['message' => __('Error saving settings: ') . $e->getMessage()]);
         }
     }
 

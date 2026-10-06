@@ -27,7 +27,7 @@ ASSET = {
                 }
                 if (!id) {
                     console.error('Asset ID not found for generating schedule');
-                    toastr && toastr.error('Asset not identified');
+                    toastr && toastr.error(trans('Asset not identified'));
                     return;
                 }
                 const url = '/finance/asset/' + id + '/generate-schedule';
@@ -214,7 +214,7 @@ ASSET = {
                 $('#row_generate_schedule').off().on('click', function () {
                     const id = row.attr('data-id');
                     if (!id) {
-                        toastr && toastr.error('Asset not identified');
+                        toastr && toastr.error(trans('Asset not identified'));
                         return;
                     }
                     const url = '/finance/asset/' + id + '/generate-schedule';

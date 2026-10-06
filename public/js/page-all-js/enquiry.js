@@ -394,7 +394,7 @@ ENQUIRY = {
         addItem() {
             $('#addItem').off().on('click', function () {
                 const category = $('#shipment_category').val();
-                if (!category) return alert("Select Shipment Category first!");
+                if (!category) return alert(trans('Select Shipment Category first!'));
 
                 // Find the first visible template row for the category
                 const $template = $('#enquiry-row tr.' + category + '-fields:visible:first');

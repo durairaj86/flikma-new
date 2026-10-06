@@ -322,14 +322,14 @@ class PaymentController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Payment saved successfully',
+                'message' => __('Payment saved successfully'),
                 'payment_id' => $payment->id,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
                 'status' => 'error',
-                'message' => 'Error saving payment: ' . $e->getMessage(),
+                'message' => __('Error saving payment: ') . $e->getMessage(),
             ], 500);
         }
     }
@@ -446,7 +446,7 @@ class PaymentController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Payment status updated successfully',
+                'message' => __('Payment status updated successfully'),
                 'data' => [
                     'id' => $payment->id,
                     'status' => $payment->status,
@@ -456,7 +456,7 @@ class PaymentController extends Controller
             DB::rollBack();
             return response()->json([
                 'status' => 'error',
-                'message' => 'Error updating payment status: ' . $e->getMessage(),
+                'message' => __('Error updating payment status: ') . $e->getMessage(),
             ], 500);
         } finally {
             DB::commit();
@@ -497,7 +497,7 @@ class PaymentController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Payment disapproved successfully',
+            'message' => __('Payment disapproved successfully'),
             'data' => [
                 'id' => $payment->id,
                 'status' => $payment->status,
@@ -705,7 +705,7 @@ class PaymentController extends Controller
         if ($payment->status !== PaymentEnum::DRAFT->value) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Only draft payments can be deleted',
+                'message' => __('Only draft payments can be deleted'),
             ], 400);
         }
 
@@ -728,7 +728,7 @@ class PaymentController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Payment deleted successfully',
+            'message' => __('Payment deleted successfully'),
         ]);
     }
 

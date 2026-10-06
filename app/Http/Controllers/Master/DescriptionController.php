@@ -120,7 +120,7 @@ class DescriptionController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Description created successfully',
+            'message' => __('Description created successfully'),
             'module_id' => $description->id,
         ]);
     }

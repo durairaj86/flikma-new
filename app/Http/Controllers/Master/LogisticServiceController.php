@@ -104,7 +104,7 @@ class LogisticServiceController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Customer created successfully',
+            'message' => __('Customer created successfully'),
             'customer_id' => $logisticService->id,
         ]);
     }

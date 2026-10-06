@@ -92,7 +92,7 @@ class ProspectController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Validation failed',
+                'message' => __('Validation failed'),
                 'errors' => $validator->errors()
             ], 422);
         }
@@ -119,7 +119,7 @@ class ProspectController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Prospect created successfully',
+            'message' => __('Prospect created successfully'),
             'id' => encodeId($prospect->id),
             'name' => $prospect->name,
             'code' => $prospect->row_no,
@@ -159,7 +159,7 @@ class ProspectController extends Controller
 
             return response()->json([
                 'status' => 'warning',
-                'message' => 'You cannot delete this prospect. It is linked with other modules!',
+                'message' => __('You cannot delete this prospect. It is linked with other modules!'),
                 'data' => ['id' => $prospect->id],
             ]);
         }
@@ -168,7 +168,7 @@ class ProspectController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Prospect deleted successfully.',
+            'message' => __('Prospect deleted successfully.'),
         ]);
 
     }

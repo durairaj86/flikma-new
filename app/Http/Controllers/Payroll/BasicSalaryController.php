@@ -116,7 +116,7 @@ class BasicSalaryController extends Controller
             DB::rollBack();
             return response()->json([
                 'status' => 'error',
-                'message' => 'Error saving waybill: ' . $e->getMessage()
+                'message' => __('Error saving waybill: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -246,7 +246,7 @@ class BasicSalaryController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Basic salary status updated successfully!',
+            'message' => __('Basic salary status updated successfully!'),
             'data' => [
                 'id' => $basicSalary->id,
                 'status' => $basicSalary->status,
@@ -285,9 +285,9 @@ class BasicSalaryController extends Controller
             $basicSalary = BasicSalary::findOrFail($id);
             $basicSalary->delete();
 
-            return response()->json(['success' => true, 'message' => 'Basic salary deleted successfully']);
+            return response()->json(['success' => true, 'message' => __('Basic salary deleted successfully')]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
 }

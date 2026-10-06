@@ -315,7 +315,7 @@ JOB = {
                     bootstrap.Modal.getInstance(document.getElementById('columnSettingsModal')).hide();
                     JOB.list.dataTable();
                 },
-                error: () => toastr.error('Could not save column settings.'),
+                error: () => toastr.error(trans('Could not save column settings.')),
             });
         },
 
@@ -332,7 +332,7 @@ JOB = {
                     this.renderFieldList(); this.renderColumnOrder(); this.renderPreview();
                     toastr.success(res.message || 'Reset to defaults.');
                 },
-                error: () => toastr.error('Could not reset column settings.'),
+                error: () => toastr.error(trans('Could not reset column settings.')),
             });
         },
     },

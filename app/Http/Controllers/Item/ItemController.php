@@ -138,7 +138,7 @@ class ItemController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Validation failed',
+                'message' => __('Validation failed'),
                 'errors' => $validator->errors()
             ], 422);
         }
@@ -243,7 +243,7 @@ class ItemController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Item deleted successfully',
+            'message' => __('Item deleted successfully'),
         ]);
     }
 

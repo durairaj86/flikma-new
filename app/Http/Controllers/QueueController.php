@@ -29,7 +29,7 @@ class QueueController extends Controller
             '--tries' => 3,
         ]);
 
-        return response()->json(['message' => 'Queued emails processed successfully']);
+        return response()->json(['message' => __('Queued emails processed successfully')]);
     }
 
     /**
@@ -50,7 +50,7 @@ class QueueController extends Controller
         $failedJobs = DB::table('failed_jobs')->pluck('id')->toArray();
 
         if (empty($failedJobs)) {
-            return response()->json(['message' => 'No failed jobs found']);
+            return response()->json(['message' => __('No failed jobs found')]);
         }
 
         $count = count($failedJobs);

@@ -471,7 +471,7 @@ class CustomerInvoiceController extends Controller
             DB::rollBack();
             return response()->json([
                 'status' => 'error',
-                'message' => 'Error saving customer Invoice: ' . $e->getMessage(),
+                'message' => __('Error saving customer Invoice: ') . $e->getMessage(),
             ], 500);
         }
 
@@ -490,7 +490,7 @@ class CustomerInvoiceController extends Controller
         $this->deleteCustomerFinanceByRef($customer->invoice_number, 'SI');
         $customer->delete();
 
-        return response()->json(['status' => 'success', 'message' => 'Deleted successfully']);
+        return response()->json(['status' => 'success', 'message' => __('Deleted successfully')]);
     }
 
     public function actions($id)
@@ -727,7 +727,7 @@ class CustomerInvoiceController extends Controller
             DB::rollBack();
             return response()->json([
                 'status' => 'error',
-                'message' => 'Error updating customer invoice status: ' . $e->getMessage(),
+                'message' => __('Error updating customer invoice status: ') . $e->getMessage(),
             ], 500);
         }
     }

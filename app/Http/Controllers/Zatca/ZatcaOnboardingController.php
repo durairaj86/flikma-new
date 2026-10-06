@@ -244,6 +244,6 @@ class ZatcaOnboardingController extends ZatcaEGSController
         Cache::forget('company:' . cacheName());
         session()->forget(self::SESSION);
 
-        return response()->json(['type' => 'success', 'status' => 'success', 'step' => 'production', 'message' => 'ZATCA device registered.']);
+        return response()->json(['type' => 'success', 'status' => 'success', 'step' => 'production', 'message' => __('ZATCA device registered.')]);
     }
 }

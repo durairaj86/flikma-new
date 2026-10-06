@@ -56,7 +56,7 @@ class PeriodClosingController extends Controller
         if ($id && PeriodClosing::findOrFail($id)->is_closed) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'This period is closed. Reopen it first to make changes.',
+                'message' => __('This period is closed. Reopen it first to make changes.'),
             ], 422);
         }
 
@@ -88,7 +88,7 @@ class PeriodClosingController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Period saved successfully',
+            'message' => __('Period saved successfully'),
             'module_id' => $periodClosing->id,
         ]);
     }
@@ -175,7 +175,7 @@ class PeriodClosingController extends Controller
         if ($periodClosing->is_closed) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Cannot delete a closed period. Reopen it first.',
+                'message' => __('Cannot delete a closed period. Reopen it first.'),
             ], 422);
         }
 
@@ -183,7 +183,7 @@ class PeriodClosingController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Period deleted successfully',
+            'message' => __('Period deleted successfully'),
         ]);
     }
 }

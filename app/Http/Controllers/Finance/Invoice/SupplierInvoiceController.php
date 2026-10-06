@@ -418,7 +418,7 @@ class SupplierInvoiceController extends Controller
             DB::rollBack();
             return response()->json([
                 'status' => 'error',
-                'message' => 'Error saving Supplier Invoice: ' . $e->getMessage(),
+                'message' => __('Error saving Supplier Invoice: ') . $e->getMessage(),
             ], 500);
         }
 
@@ -426,7 +426,7 @@ class SupplierInvoiceController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Supplier invoice created successfully',
+            'message' => __('Supplier invoice created successfully'),
             'customer_id' => $supplier->id,
         ]);
     }
@@ -437,7 +437,7 @@ class SupplierInvoiceController extends Controller
         $this->deleteSupplierFinanceByRef($supplier->invoice_number, 'SI');
         $supplier->delete();
 
-        return response()->json(['status' => 'success', 'message' => 'Deleted successfully']);
+        return response()->json(['status' => 'success', 'message' => __('Deleted successfully')]);
     }
 
     public function actions($id)
@@ -599,7 +599,7 @@ class SupplierInvoiceController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Supplier invoice status updated successfully!',
+                'message' => __('Supplier invoice status updated successfully!'),
                 'data' => [
                     'id' => $supplier->id,
                     'status' => $supplier->status,
@@ -609,7 +609,7 @@ class SupplierInvoiceController extends Controller
             DB::rollBack();
             return response()->json([
                 'status' => 'error',
-                'message' => 'Error updating supplier invoice status: ' . $e->getMessage(),
+                'message' => __('Error updating supplier invoice status: ') . $e->getMessage(),
             ], 500);
         }
     }

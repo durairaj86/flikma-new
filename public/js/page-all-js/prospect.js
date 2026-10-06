@@ -192,11 +192,11 @@ PROSPECT = {
                                             } else if (response.status === 'warning') {
                                                 toastr.warning(response.message);
                                             } else {
-                                                toastr.error('Error deleting record.');
+                                                toastr.error(trans('Error deleting record.'));
                                             }
                                         },
                                         error: function () {
-                                            toastr.error('Server error');
+                                            toastr.error(trans('Server error'));
                                         }
                                     });
 

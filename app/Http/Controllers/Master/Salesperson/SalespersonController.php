@@ -79,7 +79,7 @@ class SalespersonController extends Controller
         Cache::forget(self::$cache . cacheName());
         return response()->json([
             'status' => 'success',
-            'message' => 'Salesperson created successfully',
+            'message' => __('Salesperson created successfully'),
             'module_id' => $salesperson->id,
         ]);
     }

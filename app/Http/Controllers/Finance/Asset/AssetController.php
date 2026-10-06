@@ -218,11 +218,11 @@ class AssetController extends Controller
         $asset = Asset::findOrFail($id);
         $val = AssetStatusEnum::fromName($status);
         if (!$val) {
-            return response()->json(['status' => 'error', 'message' => 'Invalid status'], 422);
+            return response()->json(['status' => 'error', 'message' => __('Invalid status')], 422);
         }
         $asset->status = $val;
         $asset->save();
-        return response()->json(['status' => 'success', 'message' => 'Status updated']);
+        return response()->json(['status' => 'success', 'message' => __('Status updated')]);
     }
 
     public function overview($id)
@@ -249,7 +249,7 @@ class AssetController extends Controller
 
         $base = (float)$asset->cost - (float)$asset->residual_value;
         if ($base <= 0) {
-            return response()->json(['status' => 'error', 'message' => 'Invalid base amount for depreciation']);
+            return response()->json(['status' => 'error', 'message' => __('Invalid base amount for depreciation')]);
         }
 
         $months = $asset->useful_life_months
@@ -260,14 +260,14 @@ class AssetController extends Controller
             // Derive months from annual rate (approx): depreciate until residual using monthly rate
             $monthlyRate = ($asset->category->annual_rate_percent / 100) / 12.0;
             if ($monthlyRate <= 0) {
-                return response()->json(['status' => 'error', 'message' => 'Invalid depreciation rate']);
+                return response()->json(['status' => 'error', 'message' => __('Invalid depreciation rate')]);
             }
             // Fallback to 10 years cap if rate provided without life; still use SL by distributing base over 120 months
             $months = 120;
         }
 
         if (!$months) {
-            return response()->json(['status' => 'error', 'message' => 'Useful life (months) or category rate required']);
+            return response()->json(['status' => 'error', 'message' => __('Useful life (months) or category rate required')]);
         }
 
         // Wipe future schedule (optional): for simplicity, delete all and regenerate
@@ -304,7 +304,7 @@ class AssetController extends Controller
         $asset->status = $remaining <= 0.0 ? AssetStatusEnum::CLOSED->value : AssetStatusEnum::RUNNING->value;
         $asset->save();
 
-        return response()->json(['status' => 'success', 'message' => 'Depreciation schedule generated']);
+        return response()->json(['status' => 'success', 'message' => __('Depreciation schedule generated')]);
     }
 
     public function destroy($id)
@@ -312,6 +312,6 @@ class AssetController extends Controller
         $asset = Asset::findOrFail($id);
         $asset->depreciations()->delete();
         $asset->delete();
-        return response()->json(['status' => 'success', 'message' => 'Asset deleted']);
+        return response()->json(['status' => 'success', 'message' => __('Asset deleted')]);
     }
 }

@@ -83,7 +83,7 @@ QUOTATION_TERM = {
                                             $('#dataTable').DataTable().ajax.reload(null, false);
                                         },
                                         error: function () {
-                                            $.alert('Failed to delete this quotation term.');
+                                            $.alert(trans('Failed to delete this quotation term.'));
                                         }
                                     });
                                 }
@@ -161,7 +161,7 @@ QUOTATION_TERM = {
             if (quill) {
                 document.getElementById('terms-hidden').value = quill.root.innerHTML;
                 if (quill.getText().trim().length === 0) {
-                    toastr.error('Terms & Conditions text is required.');
+                    toastr.error(trans('Terms & Conditions text is required.'));
                     return false;
                 }
             }

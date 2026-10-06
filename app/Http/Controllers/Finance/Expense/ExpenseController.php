@@ -296,12 +296,12 @@ class ExpenseController extends Controller
             DB::commit();
             return response()->json([
                 'status' => 'success',
-                'message' => 'Expense created successfully',
+                'message' => __('Expense created successfully'),
                 'customer_id' => $expense->id,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
 
@@ -445,7 +445,7 @@ class ExpenseController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Expense status updated successfully!',
+                'message' => __('Expense status updated successfully!'),
                 'data' => [
                     'id' => $expense->id,
                     'status' => $expense->status,
@@ -455,7 +455,7 @@ class ExpenseController extends Controller
             DB::rollBack();
             return response()->json([
                 'status' => 'error',
-                'message' => 'Error updating expense status: ' . $e->getMessage(),
+                'message' => __('Error updating expense status: ') . $e->getMessage(),
             ], 500);
         }
     }
@@ -505,9 +505,9 @@ class ExpenseController extends Controller
             // Delete the expense
             $expense->delete();
 
-            return response()->json(['success' => true, 'message' => 'Expense deleted successfully']);
+            return response()->json(['success' => true, 'message' => __('Expense deleted successfully')]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
 

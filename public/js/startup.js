@@ -509,7 +509,7 @@ function changeCustomerStatus(url, settings, newStatus, clickElement = null) {
                     if (requireReason) {
                         reason = this.$content.find('#reasonInput').val();
                         if (!reason) {
-                            $.alert("Please provide a reason before proceeding.");
+                            $.alert(trans('Please provide a reason before proceeding.'));
                             return false; // prevent closing
                         }
                         settings.data.append('reason', reason);
@@ -2603,7 +2603,7 @@ function callCustomerListLoadTomSelect(id) {
             customerSelect.refreshOptions(false);
         },
         error: function () {
-            alert('Failed to fetch customer list');
+            alert(trans('Failed to fetch customer list'));
         },
         complete: function () {
             loader.addClass('d-none');
@@ -2628,7 +2628,7 @@ CURRENCY = {
                     $('#currency-rate').val(response.conversion_rate).trigger('input');
                 },
                 error: function () {
-                    alert('Failed to fetch exchange rate');
+                    alert(trans('Failed to fetch exchange rate'));
                 },
                 complete: function () {
                     loader.addClass('d-none');
@@ -3072,9 +3072,9 @@ function reportExportPdf(e, printElementId, opts) {
     var area = document.getElementById(printElementId);
     if (!area) {
         if (typeof toastr !== 'undefined') {
-            toastr.error('Nothing to export yet — apply filters to load the report first.');
+            toastr.error(trans('Nothing to export yet — apply filters to load the report first.'));
         } else {
-            alert('Nothing to export yet — apply filters to load the report first.');
+            alert(trans('Nothing to export yet — apply filters to load the report first.'));
         }
         return;
     }

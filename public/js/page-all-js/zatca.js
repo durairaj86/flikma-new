@@ -191,7 +191,7 @@ ZATCA = {
                     });
                 }
             } else {
-                alert("Enter valid otp");
+                alert(trans('Enter valid otp'));
                 //showToastr('Invalid', 'Enter valid otp', 'error');
             }
 
@@ -218,7 +218,7 @@ ZATCA = {
                     });
                 }
             } else {
-                alert("Enter valid otp");
+                alert(trans('Enter valid otp'));
                 //showToastr('Invalid', 'Enter valid otp', 'error');
             }
 

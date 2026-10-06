@@ -415,7 +415,7 @@ function changeCustomerStatus(url, settings, newStatus, clickElement = null) {
                     if (requireReason) {
                         reason = this.$content.find('#reasonInput').val();
                         if (!reason) {
-                            $.alert("Please provide a reason before proceeding.");
+                            $.alert(trans('Please provide a reason before proceeding.'));
                             return false; // prevent closing
                         }
                         settings.data.append('reason', reason);
@@ -2098,7 +2098,7 @@ CURRENCY = {
                     $('#currency-rate').val(response.conversion_rate);
                 },
                 error: function () {
-                    alert('Failed to fetch exchange rate');
+                    alert(trans('Failed to fetch exchange rate'));
                 },
                 complete: function () {
                     loader.addClass('d-none');

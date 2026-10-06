@@ -210,7 +210,7 @@ EXPENSE = {
                                 }
                             },
                             error: function (xhr) {
-                                toastr.error('Error deleting expense');
+                                toastr.error(trans('Error deleting expense'));
                             }
                         });
                     }

@@ -280,7 +280,7 @@ class QuotationController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Quotation created successfully',
+            'message' => __('Quotation created successfully'),
             'quotation_id' => $quotation->id,
         ]);
     }
@@ -401,7 +401,7 @@ class QuotationController extends Controller
             DB::rollBack();
             return response()->json([
                 'status' => 'error',
-                'message' => 'Validation failed.',
+                'message' => __('Validation failed.'),
                 'errors' => $e->errors(),
             ], 422);
 
@@ -416,7 +416,7 @@ class QuotationController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Quotation status updated successfully!',
+            'message' => __('Quotation status updated successfully!'),
             'data' => [
                 'id' => $quotation->id,
                 'status' => $quotation->status,
@@ -763,7 +763,7 @@ class QuotationController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Email has been queued for sending.'
+            'message' => __('Email has been queued for sending.')
         ]);
     }
 }

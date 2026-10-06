@@ -122,7 +122,7 @@ class SupplierStatement extends Component
         ];
 
         $meta = [
-            'title' => 'SUPPLIER STATEMENT',
+            'title' => __('SUPPLIER STATEMENT'),
             'lines' => [
                 'Supplier: ' . $data['supplier']->name_en . ' (' . $data['supplier']->row_no . ')',
                 'Statement Period: ' . Carbon::parse($this->startDate)->format('d M Y')

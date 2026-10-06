@@ -250,7 +250,7 @@ SUPPLIER = {
 
                 const fileInput = $('#excelFile')[0];
                 if (fileInput.files.length === 0) {
-                    alert('Please select a file to upload');
+                    alert(trans('Please select a file to upload'));
                     return;
                 }
 
@@ -341,7 +341,7 @@ SUPPLIER = {
                 });
 
                 if (!hasMapping) {
-                    alert('Please map at least one column.');
+                    alert(trans('Please map at least one column.'));
                     submitBtn.prop('disabled', false).text(originalText);
                     return;
                 }

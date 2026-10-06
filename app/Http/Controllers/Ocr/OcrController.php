@@ -55,7 +55,7 @@ class OcrController extends Controller
         if (!$fileType) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Unable to recognize the file type'
+                'message' => __('Unable to recognize the file type')
             ], 400);
         }
 
@@ -265,7 +265,7 @@ Detect the currency (e.g., SAR, USD, INR, EUR). Use standard 3-letter ISO codes.
         $executed = RateLimiter::attempt('ocr:' . auth()->id(), 5, function () {
         });
         if (!$executed) {
-            return response()->json(['status' => 'error', 'message' => 'Too many requests.'], 429);
+            return response()->json(['status' => 'error', 'message' => __('Too many requests.')], 429);
         }
 
         $request->validate(['file' => 'required|mimes:pdf,jpg,jpeg,png|max:20480']);

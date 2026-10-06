@@ -302,7 +302,7 @@ QUOTATION_NEW = {
                         }
                     },
                     error() {
-                        toastr.error('Failed to finalise quotation.');
+                        toastr.error(trans('Failed to finalise quotation.'));
                     }
                 });
             });
@@ -349,7 +349,7 @@ QUOTATION_NEW = {
             $('#deleteSelectedCharges').off().on('click', function () {
                 let $checked = $('#chargesBody .charge-select:checked');
                 if ($checked.length === 0) {
-                    toastr.warning('Please select at least one row to delete.');
+                    toastr.warning(trans('Please select at least one row to delete.'));
                     return;
                 }
                 $checked.each(function () {
@@ -469,7 +469,7 @@ QUOTATION_NEW = {
                         data: {_token: $('meta[name="csrf-token"]').attr('content')},
                         success() {
                             webModal.closeGlobalModal();
-                            toastr.success('Charge deleted.');
+                            toastr.success(trans('Charge deleted.'));
                         }
                     });
                 }

@@ -108,7 +108,7 @@ class LogisticActivityController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Department saved successfully',
+            'message' => __('Department saved successfully'),
             'activity_id' => $logisticActivity->id,
         ]);
     }

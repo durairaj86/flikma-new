@@ -71,7 +71,7 @@ class PackageCodeController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Package created successfully',
+            'message' => __('Package created successfully'),
             'module_id' => $packageCode->id,
         ]);
     }

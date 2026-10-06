@@ -94,7 +94,7 @@ ATTENDANCE = {
                 },
                 error: function () {
                     Swal.fire(
-                        'Error!',
+                        trans('Error!'),
                         'Failed to load the form.',
                         'error'
                     );
@@ -193,7 +193,7 @@ ATTENDANCE = {
                                 success: function (response) {
                                     if (response.success) {
                                         Swal.fire(
-                                            'Deleted!',
+                                            trans('Deleted!'),
                                             response.message,
                                             'success'
                                         );
@@ -201,7 +201,7 @@ ATTENDANCE = {
                                         ATTENDANCE.calendar.update();
                                     } else {
                                         Swal.fire(
-                                            'Error!',
+                                            trans('Error!'),
                                             response.message,
                                             'error'
                                         );
@@ -209,7 +209,7 @@ ATTENDANCE = {
                                 },
                                 error: function (xhr) {
                                     Swal.fire(
-                                        'Error!',
+                                        trans('Error!'),
                                         'Something went wrong.',
                                         'error'
                                     );
@@ -243,7 +243,7 @@ ATTENDANCE = {
                             if (response.success) {
                                 $('#modal-default').modal('hide');
                                 Swal.fire(
-                                    'Success!',
+                                    trans('Success!'),
                                     response.message,
                                     'success'
                                 );
@@ -251,7 +251,7 @@ ATTENDANCE = {
                                 ATTENDANCE.calendar.update();
                             } else {
                                 Swal.fire(
-                                    'Error!',
+                                    trans('Error!'),
                                     response.message,
                                     'error'
                                 );
@@ -263,7 +263,7 @@ ATTENDANCE = {
                                 errorMessage = xhr.responseJSON.message;
                             }
                             Swal.fire(
-                                'Error!',
+                                trans('Error!'),
                                 errorMessage,
                                 'error'
                             );

@@ -278,7 +278,7 @@ BASIC_SALARY = {
                                 }
                             },
                             error: function (xhr) {
-                                toastr.error('An error occurred while deleting the record.');
+                                toastr.error(trans('An error occurred while deleting the record.'));
                             }
                         });
                     }

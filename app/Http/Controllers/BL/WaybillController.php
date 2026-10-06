@@ -187,7 +187,7 @@ class WaybillController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Waybill saved successfully',
+                'message' => __('Waybill saved successfully'),
                 //'redirect' => '/bl/waybill'
             ]);
         } catch (\Exception $e) {
@@ -196,7 +196,7 @@ class WaybillController extends Controller
 
             return response()->json([
                 'status' => 'error',
-                'message' => 'Error saving waybill: ' . $e->getMessage()
+                'message' => __('Error saving waybill: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -407,7 +407,7 @@ class WaybillController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Waybill status updated successfully!',
+            'message' => __('Waybill status updated successfully!'),
             'data' => [
                 'id' => $waybill->id,
                 'status' => $waybill->status,

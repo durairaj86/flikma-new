@@ -84,7 +84,7 @@ HS_TARIFF = {
                                             $('#dataTable').DataTable().ajax.reload(null, false);
                                         },
                                         error: function () {
-                                            $.alert('Failed to delete this HS Tariff.');
+                                            $.alert(trans('Failed to delete this HS Tariff.'));
                                         }
                                     });
                                 }

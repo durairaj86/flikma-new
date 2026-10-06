@@ -206,7 +206,7 @@ class CompanyController extends Controller
             Cache::forget(self::$cache . cacheName());
             return response()->json([
                 'status' => 'success',
-                'message' => 'Company details updated successfully',
+                'message' => __('Company details updated successfully'),
             ]);
 
         } catch (\Exception $e) {

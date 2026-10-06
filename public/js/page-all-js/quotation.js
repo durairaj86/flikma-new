@@ -505,7 +505,7 @@ QUOTATION = {
                     bootstrap.Modal.getInstance(document.getElementById('columnSettingsModal')).hide();
                     QUOTATION.list.dataTable();
                 },
-                error: () => toastr.error('Could not save column settings.'),
+                error: () => toastr.error(trans('Could not save column settings.')),
             });
         },
 
@@ -524,7 +524,7 @@ QUOTATION = {
                     this.renderPreview();
                     toastr.success(res.message || 'Reset to defaults.');
                 },
-                error: () => toastr.error('Could not reset column settings.'),
+                error: () => toastr.error(trans('Could not reset column settings.')),
             });
         },
     },

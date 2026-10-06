@@ -215,7 +215,7 @@ class AirwayBillController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Airway Bill saved successfully',
+                'message' => __('Airway Bill saved successfully'),
                 'redirect' => '/bl/airway-bill'
             ]);
         } catch (\Exception $e) {
@@ -224,7 +224,7 @@ class AirwayBillController extends Controller
 
             return response()->json([
                 'status' => 'error',
-                'message' => 'Error saving airway bill: ' . $e->getMessage()
+                'message' => __('Error saving airway bill: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -479,7 +479,7 @@ class AirwayBillController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Waybill status updated successfully!',
+            'message' => __('Waybill status updated successfully!'),
             'data' => [
                 'id' => $waybill->id,
                 'status' => $waybill->status,

@@ -6,7 +6,7 @@
                     <div class="mb-4">
                         <i class="bi bi-bank2 display-1 opacity-50"></i>
                     </div>
-                    <h1 class="display-5 fw-bold mb-3">Master Your Ledger.</h1>
+                    <h1 class="display-5 fw-bold mb-3">{{ __('Master Your Ledger.') }}</h1>
                     <p class="lead opacity-75">Streamlined ZATCA integration and real-time financial reporting at your fingertips.</p>
 
                     <div class="mt-5 d-flex gap-4 justify-content-center">
@@ -17,7 +17,7 @@
                         <div class="vr"></div>
                         <div class="text-center">
                             <h4 class="mb-0 fw-bold">AES-256</h4>
-                            <small class="opacity-50">Security</small>
+                            <small class="opacity-50">{{ __('Security') }}</small>
                         </div>
                     </div>
                 </div>
@@ -27,8 +27,8 @@
                 <div class="w-100 p-4 p-md-5" style="max-width: 450px;">
 
                     <div class="mb-5">
-                        <h3 class="fw-bold text-dark mb-1">Welcome Back</h3>
-                        <p class="text-muted">Enter your credentials to access the portal.</p>
+                        <h3 class="fw-bold text-dark mb-1">{{ __('Welcome Back') }}</h3>
+                        <p class="text-muted">{{ __('Enter your credentials to access the portal.') }}</p>
                     </div>
 
                     <x-auth-session-status class="mb-4 alert alert-success border-0 shadow-sm small" :status="session('status')" />
@@ -67,7 +67,7 @@
                             <div class="form-check m-0">
                                 <input class="form-check-input custom-check" type="checkbox" name="remember" id="remember_me">
                                 <label class="form-check-label small text-muted" for="remember_me">
-                                    Remember device
+                                    {{ __('Remember device') }}
                                 </label>
                             </div>
                             @if (Route::has('password.request'))
@@ -78,7 +78,7 @@
                         </div>
 
                         <button type="submit" class="btn btn-finance w-100 py-3 fw-bold mb-4 shadow-sm text-uppercase tracking-wider">
-                            Authorize Login
+                            {{ __('Authorize Login') }}
                         </button>
 
                         <div class="text-center pt-3 border-top">
