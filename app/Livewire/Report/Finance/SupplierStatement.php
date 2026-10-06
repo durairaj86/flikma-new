@@ -57,6 +57,12 @@ class SupplierStatement extends Component
         $this->loadSuppliers();
     }
 
+    /** The shared supplier dropdown posts hashed ids; keep the property as the plain id. */
+    public function updatedSupplierId($value)
+    {
+        $this->supplierId = $value ? (string) decodeId((string) $value) : '';
+    }
+
     public function applyFilter()
     {
         // date fields are wire:model.live — triggers re-render automatically
@@ -73,7 +79,8 @@ class SupplierStatement extends Component
             $this->supplierId = (string)$this->suppliers[0]['id'];
         }
 
-        $this->dispatch('statement-dates-reset', startDate: $this->startDate, endDate: $this->endDate);
+        $this->dispatch('statement-dates-reset', startDate: $this->startDate, endDate: $this->endDate,
+            supplier: $this->supplierId ? encodeId((int) $this->supplierId) : '');
     }
 
     public function exportExcel()

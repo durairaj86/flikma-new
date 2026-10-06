@@ -28,6 +28,16 @@ class ProspectController extends Controller
             'company_id'
         )->with('salesperson:id,name');
 
+        if ($request->filled('salesperson_id')) {
+            $rows->where('salesperson_id', (int) $request->salesperson_id);
+        }
+        if ($request->filled('joined_from')) {
+            $rows->whereDate('created_at', '>=', formDate($request->joined_from));
+        }
+        if ($request->filled('joined_to')) {
+            $rows->whereDate('created_at', '<=', formDate($request->joined_to));
+        }
+
         // Normalize counts for all statuses (so missing ones appear as 0)
         $allCounts = ['all' => $rows->count()];
 

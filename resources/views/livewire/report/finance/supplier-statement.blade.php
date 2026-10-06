@@ -10,14 +10,12 @@
                 <div class="card border-0 shadow-sm mb-4 d-print-none">
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
-                    <div class="col-lg-4 col-xl-2 col-xxl-3">
+                    <div class="col-lg-4 col-xl-2 col-xxl-3" id="ss-supplier-wrap" wire:ignore>
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Supplier') }}</label>
-                        <select class="form-select bg-light border-0 py-2 no-ts" wire:model.live="supplierId">
-                            <option value="">{{ __('Select a supplier...') }}</option>
-                            @foreach($suppliers as $sup)
-                                <option value="{{ $sup['id'] }}" wire:key="sup-opt-{{ $sup['id'] }}">{{ $sup['name_en'] }}</option>
-                            @endforeach
-                        </select>
+                        <x-common.suppliers wire:model.live="supplierId" id="ss-supplier" name="ss-supplier"
+                                            :value="$supplierId ? [(int) $supplierId] : null"
+                                            :suppliers="\App\Models\Supplier\Supplier::orderBy('name_en')->get()"
+                                            placeholder="{{ __('Select a supplier...') }}"></x-common.suppliers>
                     </div>
                     <div class="col-lg-2 col-md-4">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('From Date') }}</label>
@@ -359,12 +357,17 @@
                 $wire.call('applyFilter');
             };
 
-            // Reset: the server chose new dates — reflect them in the pickers.
+            // Supplier picker: shared tom-select component, wire:ignore'd so Livewire commits can't wipe it.
+            var ssSup = document.getElementById('ss-supplier');
+            if (ssSup && !ssSup.tomselect) { initTomSelectForm($('#ss-supplier-wrap')); }
+
+            // Reset: the server chose new dates/supplier — reflect them in the pickers.
             $wire.on('statement-dates-reset', function (event) {
                 var s = document.getElementById('ss-start-date');
                 var e = document.getElementById('ss-end-date');
                 if (s && s._flatpickr) s._flatpickr.setDate(event.startDate, false);
                 if (e && e._flatpickr) e._flatpickr.setDate(event.endDate, false);
+                if (ssSup && ssSup.tomselect) { ssSup.tomselect.setValue(event.supplier || '', true); }
             });
 
             window.ssExportPdf = function (e) {
