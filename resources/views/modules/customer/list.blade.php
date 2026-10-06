@@ -23,6 +23,8 @@
         <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap pt-2 pb-0">
             <h4 class="fw-bold text-dark mb-0 cust-title">@yield('page-title')</h4>
             <div class="d-flex align-items-center gap-2 ms-auto">
+                <button class="btn btn-icon-search rounded-circle" id="import" title="{{ __('Import') }}" aria-label="{{ __('Import') }}"><i class="bi bi-upload"></i></button>
+                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Customer') }}</button>
             </div>
         </div>
         <!-- Tabs -->
@@ -54,12 +56,6 @@
                             </button>
                         </li>
                     </ul>
-                </div>
-            </div>
-            <div class="d-flex justify-content-between">
-                <div>
-                    <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Customer') }}</button>
-                    <button class="btn btn-icon-search rounded-circle ms-2" id="import" title="{{ __('Import') }}" aria-label="{{ __('Import') }}"><i class="bi bi-upload"></i></button>
                 </div>
             </div>
         </div>
