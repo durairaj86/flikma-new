@@ -1930,10 +1930,9 @@ label.required.label-error {
 #globalModal .modal-compact #show-buttons .btn { white-space: nowrap; padding: .4rem .8rem; font-size: .85rem; display: inline-flex; align-items: center; gap: .35rem; }
 #globalModal .modal-compact #show-buttons .btn br { display: none; }
 
-/* Right-hand drawers slide in behind the floating rail (the rail has the higher z-index);
-   the extra right padding keeps the close button and form edge clear of the rail. */
+/* Right-hand drawers (view / detail / email / activity) open on top of the floating rail and use the full width. */
 body:not(.has-top-header) .offcanvas.offcanvas-end {
-    padding-right: 60px;
+    z-index: 1100;
 }
 
 /* Icon buttons beside a list search box: same border/shadow as the search input, brand colour only on hover. */
@@ -1962,4 +1961,19 @@ body:not(.has-top-header) #sendEmailDrawer.offcanvas.offcanvas-end {
 [dir="rtl"] ul.dropdown-menu li.dropdown-submenu ul.dropdown-menu {
     inset: 0 auto auto 100% !important;
     margin-left: 0;
+}
+
+/* Search / apply buttons everywhere share the "Generate" button colour from the Customer Balance Summary. */
+#apply-filter,
+#customer-filter-apply, #supplier-filter-apply, #prospect-filter-apply,
+.filter-panel-actions .btn-primary {
+    background-color: #0ea5e9 !important;
+    border-color: #0ea5e9 !important;
+    color: #fff !important;
+}
+#apply-filter:hover, #apply-filter:focus,
+#customer-filter-apply:hover, #supplier-filter-apply:hover, #prospect-filter-apply:hover,
+.filter-panel-actions .btn-primary:hover {
+    background-color: #0369a1 !important;
+    border-color: #0369a1 !important;
 }
