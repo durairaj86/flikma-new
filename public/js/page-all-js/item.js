@@ -92,9 +92,9 @@ ITEM = {
                     }
                 });
 
-                $('#customSearch').on('keyup', function () {
+                $('#customSearch').on('keyup input', window.debounceSearch(function () {
                     table.search(this.value).draw();
-                });
+                }));
                 // Assuming webDataTable object is defined elsewhere
                 webDataTable.loader(table);
                 webDataTable.search(table);

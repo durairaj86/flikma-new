@@ -206,9 +206,9 @@ BASIC_SALARY = {
                 }
             });
 
-            $('#customSearch').on('keyup', function () {
+            $('#customSearch').on('keyup input', window.debounceSearch(function () {
                 table.search(this.value).draw();
-            });
+            }));
         },
         extraActions(row) {
             BASIC_SALARY.list.actions.statusChange(row);

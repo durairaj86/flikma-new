@@ -224,9 +224,9 @@ ENQUIRY = {
                     webDataTable.actions.menu();
                 }
             });
-            $('#customSearch').on('keyup', function () {
+            $('#customSearch').on('keyup input', window.debounceSearch(function () {
                 table.search(this.value).draw();
-            });
+            }));
             $('#dataTable_filter').closest('div.row').remove();
             webDataTable.loader(table);
             webDataTable.search(table);

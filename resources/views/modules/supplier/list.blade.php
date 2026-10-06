@@ -9,11 +9,27 @@
         #listTabs .status-btn[id="blocked"]:not(.active),
         #listTabs .status-btn[id="overdue"]:not(.active) { background: #f1f3f5; color: #495057; }
         #listTabs .status-btn.active > span:first-child > i { color: #fff !important; }
+        /* Selected tab uses the same blue as the Customers "Active" tab. */
+        #listTabs .status-btn[id="confirmed"].active { background: rgb(13, 110, 253) !important; color: #fff !important; }
     </style>
     <main class="gmail-content bg-white px-3">
-        @include('includes.inline-page-title')
+        <style>
+            .sup-title { display: none; }
+            body:not(.has-top-header) .sup-title { display: block; }
+            /* Table header sits flush at the top of the card; the chips row only takes space when filters are applied. */
+            .sup-chips-row:has(#supplierFilterChips:empty) { display: none !important; }
+            #dataTable thead th:first-child { border-top-left-radius: 10px; }
+            #dataTable thead th:last-child { border-top-right-radius: 10px; }
+        </style>
+        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap pt-2 pb-0">
+            <h4 class="fw-bold text-dark mb-0 sup-title">@yield('page-title')</h4>
+            <div class="d-flex align-items-center gap-2 ms-auto">
+                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Supplier') }}</button>
+                <button class="btn btn-icon-search rounded-circle" id="import" title="{{ __('Import') }}" aria-label="{{ __('Import') }}"><i class="bi bi-upload"></i></button>
+            </div>
+        </div>
         <!-- Tabs -->
-        <div class="d-flex justify-content-between align-items-start py-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 py-3">
             <div class="align-items-center flex-shrink-0">
                 <div class="gap-4">
                     <ul class="nav align-items-center" id="listTabs" role="tablist"
@@ -48,21 +64,6 @@
                     </ul>
                 </div>
             </div>
-            <div class="d-flex justify-content-between">
-                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Supplier') }}</button>
-                <button class="btn btn-icon-search rounded-circle ms-2" id="import" title="{{ __('Import') }}" aria-label="{{ __('Import') }}"><i class="bi bi-upload"></i></button>
-            </div>
-        </div>
-        {{-- min-height guarantees room for a fully-expanded row action dropdown
-             even with very few rows — overflow:hidden here clips the menu (a
-             DOM descendant of this card) at its bottom edge once the menu's
-             rendered height exceeds the card's natural content height. --}}
-        <div class="shadow bdr-r-10 py-3 flex-grow-1">
-            <!-- Search & New -->
-            <div class="d-flex justify-content-between align-items-center px-3 pt-1 pb-1 flex-shrink-0">
-                {{--<div id="searchLabels" class="mb-3 d-flex flex-wrap gap-2"></div>--}}
-
-                <div class="d-flex flex-wrap align-items-center" id="supplierFilterChips"></div>
                 <div class="d-flex align-items-center gap-2">
                     <div class="search-box position-relative">
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
@@ -92,10 +93,21 @@
                         </div>
                     </div>
                 </div>
+        </div>
+        {{-- min-height guarantees room for a fully-expanded row action dropdown
+             even with very few rows — overflow:hidden here clips the menu (a
+             DOM descendant of this card) at its bottom edge once the menu's
+             rendered height exceeds the card's natural content height. --}}
+        <div class="shadow bdr-r-10 pb-3 flex-grow-1">
+            <!-- Search & New -->
+            <div class="d-flex justify-content-between align-items-center px-3 pt-3 flex-shrink-0 sup-chips-row">
+                {{--<div id="searchLabels" class="mb-3 d-flex flex-wrap gap-2"></div>--}}
+
+                <div class="d-flex flex-wrap align-items-center" id="supplierFilterChips"></div>
             </div>
 
             <!-- Table with scroll -->
-            <div class="flex-grow-1 mt-2">
+            <div class="flex-grow-1">
                 <table class="table align-middle dataTable" id="dataTable" data-title="Supplier" data-model-size="md" data-min-height="min-height:51vh;">
                     <thead class="table-light bg-white">
                     <tr>

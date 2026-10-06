@@ -65,9 +65,9 @@ SEAPORT = {
                     webDataTable.actions.menu();
                 }
             });
-            $('#customSearch').on('keyup', function() {
+            $('#customSearch').on('keyup input', window.debounceSearch(function() {
                 table.search(this.value).draw();
-            });
+            }));
             webDataTable.loader(table);
             webDataTable.search(table);
             //webDataTable.actions.menu();

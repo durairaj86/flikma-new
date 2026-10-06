@@ -3138,3 +3138,15 @@ $(document).on('mouseover', 'table.dataTable tbody td', function (e) {
         tip.show();
     }
 });
+
+
+/* List search boxes: wait until the user stops typing before sending the ajax request. */
+window.debounceSearch = function (fn, ms) {
+    var timer = null;
+    ms = ms || 600;
+    return function () {
+        var ctx = this, args = arguments;
+        clearTimeout(timer);
+        timer = setTimeout(function () { fn.apply(ctx, args); }, ms);
+    };
+};

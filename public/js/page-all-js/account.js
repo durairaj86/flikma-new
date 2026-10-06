@@ -61,9 +61,9 @@ ACCOUNT = {
                     ACCOUNT.list.actions.statusChange();
                 },
             });
-            $('#customSearch').on('keyup', function () {
+            $('#customSearch').on('keyup input', window.debounceSearch(function () {
                 table.search(this.value).draw();
-            });
+            }));
             //webDataTable.loader(table);
             webDataTable.search(table);
         },

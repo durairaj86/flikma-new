@@ -631,9 +631,9 @@ JOB = {
                     }
                 });
 
-                $('#customSearch').on('keyup', function () {
+                $('#customSearch').on('keyup input', window.debounceSearch(function () {
                     table.search(this.value).draw();
-                });
+                }));
                 $('#pageLength').off('change').on('change', function () {
                     table.page.len(parseInt(this.value, 10) || 25).draw();
                 });

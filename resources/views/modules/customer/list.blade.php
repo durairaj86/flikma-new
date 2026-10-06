@@ -17,18 +17,22 @@
             #listTabs .status-btn[id="overdue"]:not(.active) { background: #f1f3f5; color: #495057; }
         </style>
         <style>
+        /* Table header sits flush at the top of the card; the chips row only takes space when filters are applied. */
+        .cust-chips-row:has(#customerFilterChips:empty) { display: none !important; }
+        #dataTable thead th:first-child { border-top-left-radius: 10px; }
+        #dataTable thead th:last-child { border-top-right-radius: 10px; }
             .cust-title { display: none; }
             body:not(.has-top-header) .cust-title { display: block; }
         </style>
         <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap pt-2 pb-0">
             <h4 class="fw-bold text-dark mb-0 cust-title">@yield('page-title')</h4>
             <div class="d-flex align-items-center gap-2 ms-auto">
-                <button class="btn btn-icon-search rounded-circle" id="import" title="{{ __('Import') }}" aria-label="{{ __('Import') }}"><i class="bi bi-upload"></i></button>
                 <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Customer') }}</button>
+                <button class="btn btn-icon-search rounded-circle" id="import" title="{{ __('Import') }}" aria-label="{{ __('Import') }}"><i class="bi bi-upload"></i></button>
             </div>
         </div>
         <!-- Tabs -->
-        <div class="d-flex justify-content-between align-items-start py-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 py-3">
             <div class="align-items-center flex-shrink-0">
                 <div class="gap-4">
                     <ul class="nav align-items-center" id="listTabs" role="tablist"
@@ -58,23 +62,6 @@
                     </ul>
                 </div>
             </div>
-        </div>
-
-        <!-- Table Section -->
-        <div class="shadow bdr-r-10 py-3 ">
-            <!-- Search & New -->
-            <div class="d-flex justify-content-between px-3 flex-shrink-0">
-                {{--<div id="searchLabels" class="mb-3 d-flex flex-wrap gap-2"></div>--}}
-
-                <!-- Example static label -->
-                {{--<div class="d-inline-flex align-items-center bg-light border rounded-pill px-2 py-1 me-2 mb-2 small" style="font-size: 0.8rem;">
-                    <span class="me-2">Date: 10-12-2024 / 10-12-2025</span>
-                    <button type="button" class="btn btn-sm btn-light p-0 border-0 d-flex align-items-center justify-content-center"
-                            style="width: 16px; height: 16px; line-height: 1;" aria-label="Close" onclick="clearDateLabel()">
-                        &times;
-                    </button>
-                </div>--}}
-                <div class="d-flex flex-wrap align-items-center" id="customerFilterChips"></div>
                 <div class="d-flex align-items-center gap-2">
                     <div class="search-box position-relative">
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
@@ -112,6 +99,23 @@
                         </div>
                     </div>
                 </div>
+        </div>
+
+        <!-- Table Section -->
+        <div class="shadow bdr-r-10 pb-3">
+            <!-- Search & New -->
+            <div class="d-flex justify-content-between px-3 pt-3 flex-shrink-0 cust-chips-row">
+                {{--<div id="searchLabels" class="mb-3 d-flex flex-wrap gap-2"></div>--}}
+
+                <!-- Example static label -->
+                {{--<div class="d-inline-flex align-items-center bg-light border rounded-pill px-2 py-1 me-2 mb-2 small" style="font-size: 0.8rem;">
+                    <span class="me-2">Date: 10-12-2024 / 10-12-2025</span>
+                    <button type="button" class="btn btn-sm btn-light p-0 border-0 d-flex align-items-center justify-content-center"
+                            style="width: 16px; height: 16px; line-height: 1;" aria-label="Close" onclick="clearDateLabel()">
+                        &times;
+                    </button>
+                </div>--}}
+                <div class="d-flex flex-wrap align-items-center" id="customerFilterChips"></div>
             </div>
 
             <!-- Table with scroll -->
@@ -135,7 +139,7 @@
                     </tbody>
                 </table>
             </div>--}}
-            <div class="mt-2">
+            <div>
                 {{--<div class="card-header bg-white py-3">
                     <div class="row align-items-center">
                         <div class="col">
