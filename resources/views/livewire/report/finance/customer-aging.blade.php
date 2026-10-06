@@ -20,14 +20,12 @@
         <div class="card border-0 shadow-sm mb-4 d-print-none">
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
-                    <div class="col-lg-3 col-xxl-2">
+                    <div class="col-lg-3 col-xxl-2" id="ca-customer-wrap" wire:ignore>
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Customer') }}</label>
-                        <select class="form-select bg-light border-0 py-2 no-ts" wire:model.live="customerId">
-                            <option value="">{{ __('Select a customer...') }}</option>
-                            @foreach($customers as $cust)
-                                <option value="{{ $cust['id'] }}" wire:key="cust-opt-{{ $cust['id'] }}">{{ $cust['name_en'] }}</option>
-                            @endforeach
-                        </select>
+                        <x-common.customers wire:model.live="customerId" id="ca-customer" name="ca-customer"
+                                            :value="$customerId ? [(int) $customerId] : null" :new="false"
+                                            :customers="\App\Models\Customer\Customer::whereIn('status', [3, 4])->orderBy('name_en')->get()"
+                                            placeholder="{{ __('Select a customer...') }}"></x-common.customers>
                     </div>
                     <div class="col-lg-2 col-md-4 col-xxl-2">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('As of Date') }}</label>
@@ -418,4 +416,14 @@
             .container-fluid { padding: 0 !important; }
         }
     </style>
+
+    @script
+    <script>
+        // Customer picker: shared tom-select component, wire:ignore'd so Livewire commits can't wipe it.
+        (function () {
+            var el = document.getElementById('ca-customer');
+            if (el && !el.tomselect) { initTomSelectForm($('#ca-customer-wrap')); }
+        })();
+    </script>
+    @endscript
 </div>

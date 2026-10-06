@@ -16,11 +16,17 @@ class CustomerAgingAll extends Component
     use BuildsAgingBuckets;
 
     public string $asOfDate = '';
-    public string $search = '';
+    public string|int $customerId = '';
 
     public function mount(): void
     {
         $this->asOfDate = now()->format('Y-m-d');
+    }
+
+    /** The shared customer dropdown posts hashed ids; keep the property as the plain id. */
+    public function updatedCustomerId($value): void
+    {
+        $this->customerId = $value ? (string) decodeId((string) $value) : '';
     }
 
     public function getAgingData(): array
@@ -30,14 +36,8 @@ class CustomerAgingAll extends Component
         $invoices = CustomerInvoice::with('customer:id,name_en,row_no')
             ->where('status', 3)
             ->whereDate('invoice_date', '<=', Carbon::parse($this->asOfDate))
-            ->whereHas('customer', function ($q) {
-                if (!empty($this->search)) {
-                    $q->where(function ($inner) {
-                        $inner->where('name_en', 'like', '%' . $this->search . '%')
-                            ->orWhere('row_no', 'like', '%' . $this->search . '%');
-                    });
-                }
-            })
+            ->whereHas('customer')
+            ->when(!empty($this->customerId), fn ($q) => $q->where('customer_id', $this->customerId))
             ->orderBy('invoice_date')
             ->get();
 

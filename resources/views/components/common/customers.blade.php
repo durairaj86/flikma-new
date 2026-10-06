@@ -1,3 +1,5 @@
+@props(['value' => null, 'required' => false, 'new' => true, 'customers' => null, 'multiple' => null, 'disabled' => false,
+        'id' => null, 'name' => null, 'placeholder' => null, 'allLabel' => null])
 @php
     $multipleCustomers = $multiple ?? null;
     $required = isset($required) && $required ? 'required' : '';
@@ -22,16 +24,17 @@
     <option value="__new__" data-type="new">+ Add New Customer</option>
 </select>--}}
 <select
-    class="tom-select" data-placeholder="Select Customer" data-live-search="true" data-summary-label="customers"
+    class="tom-select" data-placeholder="{{ $placeholder ?? 'Select Customer' }}" data-live-search="true" data-summary-label="customers"
     @disabled($disabled ?? false)
-    id="{{ $multipleCustomers ? 'customers' : 'customer' }}"
-    name="{{ $multipleCustomers ? 'customers' : 'customer' }}"
+    id="{{ $id ?? ($multipleCustomers ? 'customers' : 'customer') }}"
+    name="{{ $name ?? ($multipleCustomers ? 'customers' : 'customer') }}"
+    {{ $attributes }}
     {{--{{ $multipleCustomers ? 'multiple' : '' }}--}}
     {{ $required }}
 
 >
     @unless($multipleCustomers)
-        <option value="">--Select--</option>
+        <option value="">{{ $allLabel ?? '--Select--' }}</option>
     @else
         {{-- Empty option first so the browser never auto-selects a real
              customer (a bare single-select silently filters every list). --}}

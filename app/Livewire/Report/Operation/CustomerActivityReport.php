@@ -39,11 +39,18 @@ class CustomerActivityReport extends Component
         // Triggers re-render
     }
 
+    /** The shared customer dropdown posts hashed ids; keep the property as the plain id. */
+    public function updatedCustomerId($value)
+    {
+        $this->customerId = $value ? (string) decodeId($value) : '';
+    }
+
     public function resetFilter()
     {
         $this->startDate  = now()->startOfMonth()->format('Y-m-d');
         $this->endDate    = now()->endOfMonth()->format('Y-m-d');
         $this->customerId = '';
+        $this->dispatch('car-filter-reset');
     }
 
     protected function getReportData()

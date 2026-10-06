@@ -95,6 +95,12 @@ class CustomerStatement extends Component
         $this->loadCustomers();
     }
 
+    /** The shared customer dropdown posts hashed ids; keep the property as the plain id. */
+    public function updatedCustomerId($value)
+    {
+        $this->customerId = $value ? (string) decodeId((string) $value) : '';
+    }
+
     public function applyFilter()
     {
         // Triggers re-render with current filter values
@@ -110,7 +116,8 @@ class CustomerStatement extends Component
             $this->customerId = $this->customers[0]['id'];
         }
 
-        $this->dispatch('statement-dates-reset', startDate: $this->startDate, endDate: $this->endDate);
+        $this->dispatch('statement-dates-reset', startDate: $this->startDate, endDate: $this->endDate,
+            customer: $this->customerId ? encodeId((int) $this->customerId) : '');
     }
 
     public function exportExcel()

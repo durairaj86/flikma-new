@@ -14,14 +14,10 @@
                 <div class="row g-3 align-items-end">
                     <div class="col-lg-4 col-md-4 col-xl-3" id="cbs-customer-wrap" wire:ignore>
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Customer') }}</label>
-                        <select class="tom-select bg-light border-0" id="cbs-customer" wire:model="customerId" data-live-search="true">
-                            <option value="">{{ __('All Customers') }}</option>
-                            @foreach($customers as $customer)
-                                <option value="{{ $customer['id'] }}" @selected($customerId == $customer['id'])>
-                                    {{ $customer['row_no'] }} — {{ $customer['name_en'] }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <x-common.customers wire:model="customerId" id="cbs-customer" name="cbs-customer"
+                                            :value="$customerId ? [(int) $customerId] : null" :new="false"
+                                            all-label="{{ __('All Customers') }}"
+                                            placeholder="{{ __('All Customers') }}"></x-common.customers>
                     </div>
                     <div class="col-lg-2 col-md-4" wire:ignore>
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('From Date') }}</label>

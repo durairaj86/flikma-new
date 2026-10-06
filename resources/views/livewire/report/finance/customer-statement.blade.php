@@ -17,14 +17,12 @@
         <div class="card border-0 shadow-sm mb-4 d-print-none" id="list-filter">
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
-                    <div class="col-lg-4 col-xl-2 col-xxl-3">
+                    <div class="col-lg-4 col-xl-2 col-xxl-3" id="cs-customer-wrap" wire:ignore>
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Customer') }}</label>
-                        <select class="tom-select bg-light border-0 no-ts" wire:model="customerId" data-live-search="true">
-                            <option value="">{{ __('Select a customer...') }}</option>
-                            @foreach($customers as $customer)
-                                <option value="{{ $customer['id'] }}" wire:key="cust-opt-{{ $customer['id'] }}">{{ $customer['name_en'] }}</option>
-                            @endforeach
-                        </select>
+                        <x-common.customers wire:model="customerId" id="cs-customer" name="cs-customer"
+                                            :value="$customerId ? [(int) $customerId] : null" :new="false"
+                                            :customers="\App\Models\Customer\Customer::whereIn('status', [3, 4])->orderBy('name_en')->get()"
+                                            placeholder="{{ __('Select a customer...') }}"></x-common.customers>
                     </div>
                     <div class="col-lg-2 col-md-4">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('From Date') }}</label>
@@ -381,29 +379,10 @@
 
             initFlatpickr();
 
-            // Livewire's wire:model.live morph replaces the <select> markup
-            // on every commit (customer change, Generate, Reset), which
-            // destroys TomSelect's injected wrapper and reverts it to a
-            // plain unstyled select. `Livewire.hook('commit', ...)`'s
-            // succeed callback fires too early — before the DOM morph is
-            // actually applied — so re-initializing there is a no-op; the
-            // morph runs afterward and destroys it anyway. `morph.updated`
-            // fires per-element once the patch for that element is really
-            // applied, so re-init there instead, scoped to #list-filter.
-            Livewire.hook('morph.updated', function (data) {
-                if (data.el && data.el.id === 'list-filter') {
-                    // Deferred to the next frame: morphdom patches this
-                    // element's descendants (including the <select> itself)
-                    // synchronously AFTER this hook fires for the container,
-                    // so re-initializing immediately here would run before
-                    // the <select> is actually replaced and get clobbered a
-                    // moment later. requestAnimationFrame runs after that
-                    // whole synchronous patch pass completes.
-                    requestAnimationFrame(function () {
-                        initTomSelectForm($('#list-filter'));
-                    });
-                }
-            });
+            // Customer picker: shared tom-select component. Its wrapper is wire:ignore'd so Livewire
+            // commits can't wipe it; the native <select> still fires change -> wire:model.
+            var csCust = document.getElementById('cs-customer');
+            if (csCust && !csCust.tomselect) { initTomSelectForm($('#cs-customer-wrap')); }
 
             // Generate: push whatever is in the pickers, then run the filter in one request.
             window.csApplyFilter = function () {
@@ -420,6 +399,7 @@
                 var e = document.getElementById('cs-end-date');
                 if (s && s._flatpickr) s._flatpickr.setDate(event.startDate, false);
                 if (e && e._flatpickr) e._flatpickr.setDate(event.endDate, false);
+                if (csCust && csCust.tomselect) { csCust.tomselect.setValue(event.customer || '', true); }
             });
 
             window.csExportPdf = function (e) {

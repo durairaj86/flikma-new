@@ -50,6 +50,12 @@ class CustomerAging extends Component
         $this->customers = $query->get()->toArray();
     }
 
+    /** The shared customer dropdown posts hashed ids; keep the property as the plain id. */
+    public function updatedCustomerId($value): void
+    {
+        $this->customerId = $value ? (string) decodeId((string) $value) : '';
+    }
+
     public function updatedSearch(): void
     {
         $this->loadCustomers();

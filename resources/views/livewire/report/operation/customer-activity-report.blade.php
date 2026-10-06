@@ -12,6 +12,13 @@
         <div class="card border-0 shadow-sm mb-4 d-print-none">
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
+                    <div class="col-lg-4 col-md-4 col-xl-3" id="car-customer-wrap" wire:ignore>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Customer') }}</label>
+                        <x-common.customers wire:model="customerId" id="car-customer" name="car-customer"
+                                            :value="$customerId ? [(int) $customerId] : null" :new="false"
+                                            all-label="{{ __('All Customers') }}"
+                                            placeholder="{{ __('All Customers') }}"></x-common.customers>
+                    </div>
                     <div class="col-lg-2 col-md-4">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('From Date') }}</label>
                         <input type="hidden" id="car-start-date-hidden" wire:model="startDate" value="{{ $startDate }}" />
@@ -27,17 +34,6 @@
                                class="form-control bg-light border-0 py-2"
                                placeholder="dd-mm-yyyy"
                                value="{{ $endDate }}" />
-                    </div>
-                    <div class="col-lg-4 col-md-4 col-xl-2 col-xxl-3">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Customer') }}</label>
-                        <select class="form-select bg-light border-0 py-2 no-ts" wire:model="customerId">
-                            <option value="">{{ __('All Customers') }}</option>
-                            @foreach($customers as $customer)
-                                <option value="{{ $customer['id'] }}" @selected($customerId == $customer['id'])>
-                                    {{ $customer['row_no'] }} — {{ $customer['name_en'] }}
-                                </option>
-                            @endforeach
-                        </select>
                     </div>
                     <div class="col-lg-12 col-xl-6 col-xxl-5">
                         <div class="d-flex flex-wrap gap-2 justify-content-end align-items-center">
@@ -328,6 +324,16 @@
             }
 
             initFlatpickr();
+
+            // Customer picker: shared tom-select component, wire:ignore'd so Livewire commits can't wipe it.
+            var carCust = document.getElementById('car-customer');
+            if (carCust && !carCust.tomselect) { initTomSelectForm($('#car-customer-wrap')); }
+            $wire.on('car-filter-reset', function () {
+                if (carCust && carCust.tomselect) { carCust.tomselect.clear(true); }
+                var s = document.getElementById('car-start-date'), e = document.getElementById('car-end-date');
+                if (s && s._flatpickr) s._flatpickr.setDate($wire.get('startDate'), false);
+                if (e && e._flatpickr) e._flatpickr.setDate($wire.get('endDate'), false);
+            });
 
             // ref.succeed()'s callback fires before the DOM morph for this
             // commit is actually applied — re-running initFlatpickr() there

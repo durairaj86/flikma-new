@@ -20,6 +20,14 @@
         <div class="card border-0 shadow-sm mb-4 d-print-none">
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
+                    <div class="col-lg-4 col-xl-3" id="caa-customer-wrap" wire:ignore>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Customer') }}</label>
+                        <x-common.customers wire:model.live="customerId" id="caa-customer" name="caa-customer"
+                                            :value="$customerId ? [(int) $customerId] : null" :new="false"
+                                            :customers="\App\Models\Customer\Customer::whereIn('status', [3, 4])->orderBy('name_en')->get()"
+                                            all-label="{{ __('All Customers') }}"
+                                            placeholder="{{ __('All Customers') }}"></x-common.customers>
+                    </div>
                     <div class="col-lg-2 col-md-4">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('As of Date') }}</label>
                         <div wire:ignore>
@@ -43,14 +51,6 @@
                                 <option value="{{ $n }}">{{ $n }} {{ __(Str::plural('Column', $n)) }}</option>
                             @endforeach
                         </select>
-                    </div>
-                    <div class="col-lg-6 col-xl-3">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Search Customer') }}</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-0 text-muted"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control bg-light border-0 ps-0 py-2"
-                                   placeholder="{{ __('Customer name or code...') }}" wire:model.live.debounce.300ms="search" />
-                        </div>
                     </div>
             <div class="col-lg-12 col-xl-3">
                         <div class="d-flex flex-wrap gap-2 justify-content-end">
@@ -302,4 +302,14 @@
             .container-fluid { padding: 0 !important; }
         }
     </style>
+
+    @script
+    <script>
+        // Customer picker: shared tom-select component, wire:ignore'd so Livewire commits can't wipe it.
+        (function () {
+            var el = document.getElementById('caa-customer');
+            if (el && !el.tomselect) { initTomSelectForm($('#caa-customer-wrap')); }
+        })();
+    </script>
+    @endscript
 </div>
