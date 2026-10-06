@@ -374,6 +374,13 @@ class QuotationController extends Controller
 
         return DataTables::eloquent($rows)
             ->addIndexColumn()
+            // client_name / activity_name / salesperson_name are select aliases over joined tables,
+            // so a search has to target the real columns behind them.
+            ->filterColumn('client_name', fn ($q, $kw) => $q->whereRaw('LOWER(COALESCE(customers.name_en, prospects.name)) like ?', ['%' . strtolower($kw) . '%']))
+            ->filterColumn('activity_name', fn ($q, $kw) => $q->whereRaw('LOWER(logistic_activities.name) like ?', ['%' . strtolower($kw) . '%']))
+            ->filterColumn('salesperson_name', fn ($q, $kw) => $q->whereRaw('LOWER(sales_persons.name) like ?', ['%' . strtolower($kw) . '%']))
+            ->filterColumn('linked_job_no', fn ($q, $kw) => $q->whereRaw('LOWER(jobs.row_no) like ?', ['%' . strtolower($kw) . '%']))
+            ->filterColumn('linked_enquiry_no', fn ($q, $kw) => $q->whereRaw('LOWER(source_enquiries.row_no) like ?', ['%' . strtolower($kw) . '%']))
             ->setRowAttr([
                 'data-id' => fn($model) => $model->id,
                 'data-name' => fn($model) => $model->row_no,

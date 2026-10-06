@@ -32,76 +32,98 @@
         #basicListTabs .status-btn.active > span:first-child > i { color: #fff !important; }
     </style>
     <main class="gmail-content bg-white px-3">
-        @include('includes.inline-page-title')
+        <style>
+            .quo-title { display: none; }
+            body:not(.has-top-header) .quo-title { display: block; }
+        </style>
+        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap pt-2 pb-0">
+            <div class="d-flex align-items-center gap-2 quo-title">
+                <h4 class="fw-bold text-dark mb-0">@yield('page-title')</h4>
+                @stack('page-title-action')
+            </div>
+            <div class="d-flex align-items-center gap-2 ms-auto">
+                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Quotation') }}</button>
+            </div>
+        </div>
 
-        <div id="filterPanel" class="card shadow-sm border-0 d-none">
-            <div class="card-header bg-light border-0 py-3">
+        <div id="filterPanel" class="card shadow-sm border-0 d-none filter-panel-card">
+
+            <!-- Header -->
+            <div class="card-header bg-white border-0 pt-3 pb-0">
                 <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-funnel-fill text-primary"></i>
+                    <span class="filter-panel-icon"><i class="bi bi-funnel-fill"></i></span>
                     <h6 class="mb-0 fw-semibold">{{ __('Filters') }}</h6>
                 </div>
             </div>
-            <div class="card-body">
+
+            <div class="card-body pt-3">
                 <form id="list-filter" method="post" novalidate="novalidate">
                     @csrf
-                    <div class="bg-light rounded p-3 mb-4">
-                        <div class="row g-3 align-items-end">
-                            <div class="col-md-3 form-filter">
-                                <label class="form-label fw-medium">{{ __('Quotation Date') }}</label>
-                                <div class="d-flex input-group-filter gap-2">
-                                    <input type="date" class="form-control" id="filter-from-date" name="filter-from-date">
-                                    <input type="date" class="form-control" id="filter-to-date" name="filter-to-date">
-                                </div>
-                            </div>
+                    <div class="row g-4">
 
-                            <div class="col-md-3 form-filter">
-                                <label class="form-label fw-medium">{{ __('Customer') }}</label>
-                                <x-common.customers multiple></x-common.customers>
-                            </div>
-
-                            <div class="col-md-3 form-filter pol-pod-select">
-                                <label class="form-label fw-medium">POL <small class="text-muted">({{ __('Port of Loading') }})</small></label>
-                                <div class="position-relative">
-                                    <div class="shipment-toggle">
-                                        <input type="radio" class="btn-check basic-sync-sea" name="basic_shipment_mode" id="basicPolSea" value="sea" checked>
-                                        <label for="basicPolSea">{{ __('Sea') }}</label>
-                                        <input type="radio" class="btn-check basic-sync-air" name="basic_shipment_mode" id="basicPolAir" value="air">
-                                        <label for="basicPolAir">{{ __('Air') }}</label>
-                                    </div>
-                                    <select id="filter-pol" name="filter-pol" class="tom-select-search" data-placeholder="{{ __('Select Port of Loading') }}">
-                                        <option value=""></option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="col-md-3 pol-pod-select">
-                                <label class="form-label fw-medium">POD <small class="text-muted">({{ __('Port of Discharge') }})</small></label>
-                                <div class="position-relative">
-                                    <div class="shipment-toggle">
-                                        <input type="radio" class="btn-check basic-sync-sea" name="basic_shipment_mode_2" id="basicPodSea" value="sea" checked>
-                                        <label for="basicPodSea">{{ __('Sea') }}</label>
-                                        <input type="radio" class="btn-check basic-sync-air" name="basic_shipment_mode_2" id="basicPodAir" value="air">
-                                        <label for="basicPodAir">{{ __('Air') }}</label>
-                                    </div>
-                                    <select id="filter-pod" name="filter-pod" class="tom-select-search" data-placeholder="{{ __('Select Port of Discharge') }}">
-                                        <option value=""></option>
-                                    </select>
-                                </div>
+                        <div class="col-md-3 form-filter">
+                            <label class="form-label fw-medium filter-label-row">{{ __('Quotation Date') }}</label>
+                            <div class="filter-date-range">
+                                <input type="date" class="form-control" id="filter-from-date" name="filter-from-date">
+                                <i class="bi bi-arrow-right filter-date-range-arrow"></i>
+                                <input type="date" class="form-control" id="filter-to-date" name="filter-to-date">
                             </div>
                         </div>
 
-                        <div class="text-center mt-4">
-                            <button class="btn btn-primary btn-round px-4" type="button" id="apply-filter">
-                                <i class="bi bi-search me-1"></i> {{ __('Search') }}
-                            </button>
+                        <div class="col-md-3 form-filter">
+                            <label class="form-label fw-medium filter-label-row">{{ __('Customer') }}</label>
+                            <x-common.customers multiple></x-common.customers>
                         </div>
+
+                        <div class="col-md-3 form-filter pol-pod-select">
+                            <div class="d-flex align-items-center justify-content-between filter-label-row">
+                                <label class="form-label fw-medium mb-0">
+                                    {{ __('POL') }} <span class="text-muted fw-normal">({{ __('Port of Loading') }})</span>
+                                </label>
+                                <div class="shipment-toggle">
+                                    <input type="radio" class="btn-check basic-sync-sea" name="basic_shipment_mode" id="basicPolSea" value="sea" checked>
+                                    <label for="basicPolSea">{{ __('Sea') }}</label>
+                                    <input type="radio" class="btn-check basic-sync-air" name="basic_shipment_mode" id="basicPolAir" value="air">
+                                    <label for="basicPolAir">{{ __('Air') }}</label>
+                                </div>
+                            </div>
+                            <select id="filter-pol" name="filter-pol" class="tom-select-search" data-placeholder="{{ __('Select Port of Loading') }}">
+                                <option value=""></option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3 form-filter pol-pod-select">
+                            <div class="d-flex align-items-center justify-content-between filter-label-row">
+                                <label class="form-label fw-medium mb-0">
+                                    {{ __('POD') }} <span class="text-muted fw-normal">({{ __('Port of Discharge') }})</span>
+                                </label>
+                                <div class="shipment-toggle">
+                                    <input type="radio" class="btn-check basic-sync-sea" name="basic_shipment_mode_2" id="basicPodSea" value="sea" checked>
+                                    <label for="basicPodSea">{{ __('Sea') }}</label>
+                                    <input type="radio" class="btn-check basic-sync-air" name="basic_shipment_mode_2" id="basicPodAir" value="air">
+                                    <label for="basicPodAir">{{ __('Air') }}</label>
+                                </div>
+                            </div>
+                            <select id="filter-pod" name="filter-pod" class="tom-select-search" data-placeholder="{{ __('Select Port of Discharge') }}">
+                                <option value=""></option>
+                            </select>
+                        </div>
+
                     </div>
+
+                    <!-- Action Buttons -->
+                    <div class="text-center mt-4 pt-2 border-top filter-panel-actions">
+                        <button class="btn btn-primary btn-round px-4" type="button" id="apply-filter">
+                            <i class="bi bi-search me-1"></i> {{ __('Search') }}
+                        </button>
+                    </div>
+
                 </form>
             </div>
         </div>
 
         <!-- Tabs -->
-        <div class="d-flex justify-content-between align-items-start py-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 py-3">
             <div class="align-items-center flex-shrink-0">
                 <ul class="nav align-items-center" id="basicListTabs" role="tablist">
                     <li class="nav-item me-2">
@@ -134,11 +156,14 @@
                     </li>
                 </ul>
             </div>
-            <div class="d-flex justify-content-between align-items-center gap-2">
-                <button class="btn btn-outline-secondary btn-round" id="filter-box">
-                    <i class="bi bi-funnel"></i> {{ __('Filter') }}
-                </button>
-                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Quotation') }}</button>
+            <div class="d-flex align-items-center gap-2">
+                <div class="search-box position-relative">
+                    <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                    <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
+                           placeholder="{{ __('Search quotations...') }}" aria-label="{{ __('Search quotations...') }}">
+                </div>
+                <button class="btn btn-icon-search rounded-circle" id="filter-box" type="button"
+                        title="{{ __('Filter') }}" aria-label="{{ __('Filter') }}"><i class="bi bi-funnel"></i></button>
             </div>
         </div>
 
@@ -296,6 +321,11 @@
             $('#apply-filter').on('click', function () {
                 loadTab(currentTab);
             });
+
+            // Search box: wait until typing stops, then ask the server.
+            $('#customSearch').on('keyup input', window.debounceSearch(function () {
+                if (table) { table.search(this.value).draw(); }
+            }));
 
             // Same customer/prospect mutual-exclusion as ENQUIRY.form.customerProspectToggle()
             // in enquiry.js — picking one disables the other. Normally wired up by
