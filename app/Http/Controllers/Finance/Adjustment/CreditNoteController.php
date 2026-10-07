@@ -790,7 +790,7 @@ class CreditNoteController extends Controller
         if ($inv) {
             $add(__('Invoice created') . ' · ' . $inv->row_no, $inv->created_at, 'bi-receipt', 'invoice', null, number_format((float) $inv->grand_total, decimals()), ['invoice', $inv->id, $inv->row_no]);
             $logs = \App\Models\Log\LogHistory::where('loggable_type', \App\Models\Finance\CustomerInvoice\CustomerInvoice::class)
-                ->where('loggable_id', $inv->id)->orderBy('id')->get();
+                ->where('loggable_id', $inv->id)->where('created_at', '>=', $inv->created_at->copy()->subSeconds(5))->orderBy('id')->get();
             foreach ($logs as $log) {
                 $st = (int) ($log->changes['new']['status'] ?? 0);
                 if ($log->action === 'updated' && $st === \App\Enums\CustomerInvoiceEnum::APPROVED->value) {
@@ -804,7 +804,7 @@ class CreditNoteController extends Controller
         $grand = $inv ? (float) $inv->grand_total : 0;
         $kind = $grand > 0 && (float) $cn->grand_total >= $grand - 0.005 ? __('Full credit note') : __('Partial credit note');
         $logs = \App\Models\Log\LogHistory::where('loggable_type', CreditNote::class)
-            ->where('loggable_id', $cn->id)->orderBy('id')->get();
+            ->where('loggable_id', $cn->id)->where('created_at', '>=', $cn->created_at->copy()->subSeconds(5))->orderBy('id')->get();
         $ignore = ['status', 'updated_at', 'posted_at'];
         $seenCreate = false;
         foreach ($logs as $log) {

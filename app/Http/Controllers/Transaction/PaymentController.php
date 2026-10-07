@@ -353,7 +353,72 @@ class PaymentController extends Controller
         $payment = Payment::with(['supplier', 'job', 'paymentInvoices.supplierInvoice', 'additionalTransactions.account', 'documents', 'createdBy', 'approvedBy'])
             ->findOrFail($id);
 
-        return view('modules.transaction.payment.view-overview-drawer', compact('payment'));
+        [$origin, $timeline] = $this->paymentTimeline($payment);
+
+        return view('modules.transaction.payment.view-overview-drawer', compact('payment', 'origin', 'timeline'));
+    }
+
+    /**
+     * Time frame for the payment drawer: where the job came from
+     * (enquiry -> quotation -> job), the supplier invoice(s) being paid,
+     * then the payment's own life (created / updated / approved / cancelled).
+     */
+    private function paymentTimeline(Payment $payment): array
+    {
+        $events = [];
+        $rank = 0;
+        $add = function ($label, $at, $icon, $module, $by = null, $meta = null, $link = null) use (&$events, &$rank) {
+            if (!$at) return;
+            $events[] = ['label' => $label, 'at' => $at, 'icon' => $icon, 'module' => $module, 'by' => $by, 'meta' => $meta, 'link' => $link,
+                'rank' => $rank, 'key' => \Illuminate\Support\Carbon::parse($at)->timestamp, 'seq' => count($events)];
+        };
+
+        $invoices = $payment->paymentInvoices->map->supplierInvoice->filter();
+        $jobId = $payment->job_id ?: $invoices->pluck('job_id')->filter()->first();
+        $job = $jobId ? \App\Models\Job\Job::find($jobId) : null;
+        $quotation = $job && $job->quotation_id ? \App\Models\Quotation\Quotation::find($job->quotation_id) : null;
+        $enquiry = $quotation && $quotation->enquiry_id ? \App\Models\Enquiry\Enquiry::find($quotation->enquiry_id) : null;
+
+        if ($enquiry) $add(__('Enquiry created') . ' · ' . $enquiry->row_no, $enquiry->created_at, 'bi-chat-left-text', 'enquiry', null, null, ['enquiry', $enquiry->id, $enquiry->row_no]);
+        if ($quotation) $add(__('Quotation posted') . ' · ' . $quotation->row_no, $quotation->created_at, 'bi-file-earmark-text', 'quotation', null, null, ['quotation', $quotation->id, $quotation->row_no]);
+        if ($job) $add(($quotation ? __('Converted to job') : __('Job created')) . ' · ' . $job->row_no, $job->created_at, 'bi-briefcase', 'job', null, null, ['job', $job->id, $job->row_no]);
+
+        $rank = 1;
+        $origin = $quotation
+            ? ($enquiry ? __('Enquiry') . ' → ' : '') . __('Quotation') . ' → ' . __('Job') . ' → ' . __('Supplier Invoice') . ' → ' . __('Payment')
+            : ($job ? __('Job') . ' → ' . __('Supplier Invoice') . ' → ' . __('Payment') : ($invoices->count() ? __('Supplier Invoice') . ' → ' . __('Payment') : __('Payment created directly')));
+
+        foreach ($invoices as $inv) {
+            $add(__('Supplier invoice created') . ' · ' . $inv->row_no, $inv->created_at, 'bi-receipt', 'supplier_invoice', null,
+                number_format((float) $inv->grand_total, decimals()), ['supplier_invoice', $inv->id, $inv->row_no]);
+        }
+
+        $labels = [PaymentEnum::DRAFT->value => __('Moved to Draft'), PaymentEnum::APPROVED->value => __('Approved'), PaymentEnum::CANCELLED->value => __('Cancelled')];
+        $ignore = ['status', 'updated_at', 'approved_by', 'approved_at', 'disapproval_reason'];
+        $seenCreate = false;
+        $logs = \App\Models\Log\LogHistory::where('loggable_type', Payment::class)
+            ->where('loggable_id', $payment->id)->where('created_at', '>=', $payment->created_at->copy()->subSeconds(5))->orderBy('id')->get();
+        foreach ($logs as $log) {
+            $by = $log->user_id['name'] ?? null;
+            if ($log->action === 'created') {
+                $seenCreate = true;
+                $add(__('Payment created') . ' · ' . $payment->row_no, $log->created_at, 'bi-cash-coin', 'payment', $by, number_format((float) $payment->grand_total, decimals()));
+            } elseif ($log->action === 'updated') {
+                $new = $log->changes['new'] ?? [];
+                if (isset($new['status'])) {
+                    $st = (int) $new['status'];
+                    $add($labels[$st] ?? __('Status changed'), $log->created_at,
+                        $st === PaymentEnum::APPROVED->value ? 'bi-check-circle' : ($st === PaymentEnum::CANCELLED->value ? 'bi-x-circle' : 'bi-clock'), 'payment', $by);
+                } elseif (array_diff(array_keys($new), $ignore)) {
+                    $add(__('Payment updated'), $log->created_at, 'bi-pencil-square', 'payment', $by);
+                }
+            }
+        }
+        if (!$seenCreate) $add(__('Payment created') . ' · ' . $payment->row_no, $payment->created_at, 'bi-cash-coin', 'payment', null, number_format((float) $payment->grand_total, decimals()));
+
+        usort($events, fn($a, $b) => [$a['rank'], $a['rank'] ? $a['key'] : $a['seq'], $a['seq']] <=> [$b['rank'], $b['rank'] ? $b['key'] : $b['seq'], $b['seq']]);
+
+        return [$origin, $events];
     }
 
     /**
@@ -535,15 +600,23 @@ class PaymentController extends Controller
      */
     public function fetchAllRows(Request $request)
     {
+        $filter = $request->filterData ?? [];
+
+        // Shared filters so the tab counts and summary cards match the visible list.
+        $applyFilters = function ($q) use ($filter) {
+            $q->when(isset($filter['filter-from-date'], $filter['filter-to-date']), function ($q) use ($filter) {
+                $q->whereBetween('payment_date', [formDate($filter['filter-from-date']), formDate($filter['filter-to-date'])]);
+            })->when(!empty($filter['suppliers']), function ($q) use ($filter) {
+                $q->whereIn('supplier_id', decodeIds($filter['suppliers']));
+            });
+        };
+
         $query = Payment::with(['supplier:id,name_en,name_ar', 'job:id,row_no'])
             ->select([
                 'payments.id',
                 'row_no',
                 'supplier_id',
-                //'job_id',
-                //'job_no',
                 'payment_date',
-                //'payment_method',
                 'account',
                 'reference_no',
                 'currency',
@@ -557,10 +630,12 @@ class PaymentController extends Controller
                     $q->where('status', PaymentEnum::fromName($request->tab));
                 }
             })
+            ->tap($applyFilters)
             ->orderBy('payments.id', 'desc');
 
         // Get counts per status
         $statusCounts = Payment::select('status', DB::raw('COUNT(*) as total'))
+            ->tap($applyFilters)
             ->groupBy('status')
             ->pluck('total', 'status')
             ->toArray();
@@ -571,6 +646,18 @@ class PaymentController extends Controller
             $allCounts[$status->name] = $statusCounts[$status->value] ?? 0;
         }
         $allCounts['all'] = array_sum($allCounts);
+
+        // Summary card totals (Draft / Approved) in company currency.
+        $draft = PaymentEnum::DRAFT->value;
+        $approved = PaymentEnum::APPROVED->value;
+        $salesSummary = Payment::select([
+            DB::raw("SUM(CASE WHEN status = {$draft} THEN base_grand_total ELSE 0 END) as total_draft_grand"),
+            DB::raw("SUM(CASE WHEN status = {$draft} THEN base_sub_total ELSE 0 END) as total_draft_sub"),
+            DB::raw("SUM(CASE WHEN status = {$draft} THEN base_tax_total ELSE 0 END) as total_draft_tax"),
+            DB::raw("SUM(CASE WHEN status = {$approved} THEN base_grand_total ELSE 0 END) as total_approved_grand"),
+            DB::raw("SUM(CASE WHEN status = {$approved} THEN base_sub_total ELSE 0 END) as total_approved_sub"),
+            DB::raw("SUM(CASE WHEN status = {$approved} THEN base_tax_total ELSE 0 END) as total_approved_tax"),
+        ])->tap($applyFilters)->first();
 
         return DataTables::eloquent($query)
             ->addIndexColumn()
@@ -587,6 +674,7 @@ class PaymentController extends Controller
             ->editColumn('status', fn($model) => PaymentEnum::from($model->status)->label())
             ->with([
                 'statusCounts' => $allCounts,
+                'salesSummary' => $salesSummary,
             ])
             ->toJson();
     }

@@ -662,7 +662,7 @@ class SupplierInvoiceController extends Controller
             : ($job ? __('Job') . ' → ' . __('Supplier Invoice') : __('Supplier invoice created directly'));
 
         $logs = \App\Models\Log\LogHistory::where('loggable_type', SupplierInvoice::class)
-            ->where('loggable_id', $inv->id)->orderBy('id')->get();
+            ->where('loggable_id', $inv->id)->where('created_at', '>=', $inv->created_at->copy()->subSeconds(5))->orderBy('id')->get();
         $ignore = ['status', 'paid_amount', 'base_paid_amount', 'updated_at', 'posted_at', 'tax_submit_status', 'tax_submitted_at'];
         $seenCreate = false;
         foreach ($logs as $log) {

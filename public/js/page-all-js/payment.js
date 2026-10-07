@@ -5,6 +5,24 @@ PAYMENT = {
     currentTab: 'all',
     load() {
         PAYMENT.form.load();
+        datepicker();
+        PAYMENT.filter.load();
+        FILTER.filteredColumn();
+    },
+    filter: {
+        load() {
+            $('#apply-filter').off().on('click', function () {
+                PAYMENT.list.dataTable();
+                FILTER.filteredColumn();
+            });
+        },
+        default() {
+            let data = {};
+            new URLSearchParams($('#list-filter').serialize()).forEach((value, key) => {
+                data[key] = data[key] ? [].concat(data[key], value) : value;
+            });
+            return data;
+        },
     },
 
     /*load() {
@@ -65,13 +83,15 @@ PAYMENT = {
                 ajax: {
                     url: GLOBAL_FN.buildUrl('transaction/payments/data'),
                     type: 'POST',
-                    data: {
-                        'tab': activeTab
+                    data: function (d) {
+                        d.tab = activeTab;
+                        d.filterData = PAYMENT.filter.default();
                     },
                     dataSrc: function (json) {
                         // Update status counts
                         $('#dataTable tbody').find('.loading-row').remove();
                         GLOBAL_FN.setStatusCounts(json.statusCounts);
+                        PAYMENT.list.cardSummary(json.salesSummary, json.statusCounts);
                         return json.data;
                     }
                 },
@@ -128,6 +148,19 @@ PAYMENT = {
                 let $row = $(this).closest('tr');
                 PAYMENT.list.openDrawer($row.attr('data-id'), $row.attr('data-name'));
             });
+        },
+
+        cardSummary(data, counts) {
+            if (data) {
+                ['draft', 'approved'].forEach(k => {
+                    ['grand', 'sub', 'tax'].forEach(t => $('#total_' + k + '_' + t).text(amountFormat(data['total_' + k + '_' + t] || 0)));
+                });
+            }
+            if (counts) {
+                $('#cardAllCount').text(counts.all ?? 0);
+                $('#cardApprovedCount').text(counts.APPROVED ?? 0);
+                $('#cardDraftCount').text(counts.DRAFT ?? 0);
+            }
         },
 
         openDrawer(paymentId, paymentNo) {

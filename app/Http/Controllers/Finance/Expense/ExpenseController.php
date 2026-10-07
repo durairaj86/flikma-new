@@ -535,7 +535,7 @@ class ExpenseController extends Controller
         $ignore = ['status', 'paid_amount', 'payment_status', 'updated_at', 'approved_by', 'approved_at'];
         $seenCreate = false;
         $logs = \App\Models\Log\LogHistory::where('loggable_type', Expense::class)
-            ->where('loggable_id', $expense->id)->orderBy('id')->get();
+            ->where('loggable_id', $expense->id)->where('created_at', '>=', $expense->created_at->copy()->subSeconds(5))->orderBy('id')->get();
         foreach ($logs as $log) {
             $by = $log->user_id['name'] ?? null;
             if ($log->action === 'created') {

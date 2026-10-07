@@ -50,6 +50,7 @@
             },
             invoice: {title: @json(__('Customer Invoice Details')), url: id => '/invoice/customer/' + id + '/overview-drawer'},
             supplier: {narrow: true, title: @json(__('Supplier Details')), url: id => '/supplier/' + id + '/overview'},
+            supplier_invoice: {title: @json(__('Supplier Invoice Details')), url: id => '/invoice/supplier/' + id + '/overview-drawer'},
             customer: {narrow: true, title: @json(__('Customer Details')), url: id => '/customer/' + id + '/overview'},
             job: {
                 title: @json(__('Job Details')), url: id => '/operation/job/' + id + '/overview-drawer',
@@ -87,6 +88,7 @@
             if (!def) return;
             // The main drawer is already showing a customer invoice: its tab ids would clash, so don't open a second copy.
             if (a.type === 'invoice' && mainEl.querySelector('#ciDetailsTab')) return;
+            if (a.type === 'supplier_invoice' && mainEl.querySelector('#siDetailsTab')) return;
 
             // Short content (customer) keeps the default width; long content (job, collection, credit note) fills the rest of the screen.
             if (window.matchMedia('(min-width: 992px)').matches) {
