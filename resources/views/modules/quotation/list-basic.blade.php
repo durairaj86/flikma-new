@@ -627,11 +627,16 @@
                 });
             });
 
-            // Closing the quotation (main) drawer also closes the enquiry slide beside it.
+            // Closing the quotation (main) drawer: the enquiry slide closes first, then the quotation closes by itself.
             document.getElementById('moduleDrawer').addEventListener('hide.bs.offcanvas', function (e) {
                 if (e.target !== this) return;
-                const linked = bootstrap.Offcanvas.getInstance(document.getElementById('linkedEnquiryDrawer'));
-                if (linked) linked.hide();
+                const linkedEl = document.getElementById('linkedEnquiryDrawer');
+                if (!linkedEl.classList.contains('show')) return;
+                e.preventDefault();
+                linkedEl.addEventListener('hidden.bs.offcanvas', function () {
+                    bootstrap.Offcanvas.getInstance(document.getElementById('moduleDrawer'))?.hide();
+                }, {once: true});
+                bootstrap.Offcanvas.getInstance(linkedEl).hide();
             });
 
             $('#moduleDrawer').on('click', '.drawer-print', function () {
