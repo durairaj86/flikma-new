@@ -6,6 +6,9 @@ use App\Http\Controllers\BL\SeawayBillController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('bl')->group(function () {
+    // Containers of a job (container picker on the bill forms)
+    Route::get('/job-containers/{job}', [\App\Http\Controllers\BL\BillContainerController::class, 'forJob'])->whereNumber('job');
+
     // Waybill routes
     Route::view('/waybill', 'modules.bl.waybill.list')->name('bl.waybill');
     Route::post('/waybill/data', [WaybillController::class, 'fetchAllRows'])->name('bl.waybill.data');

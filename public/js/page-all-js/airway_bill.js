@@ -268,10 +268,12 @@ AIRWAY_BILL = {
             AIRWAY_BILL.form.removeRow();
             AIRWAY_BILL.form.customer.change();
             AIRWAY_BILL.form.jobChange();
+            BillContainers.init();
             AIRWAY_BILL.form.polPodLoad();
         },
         jobChange() {
             $('#job_id').off('change').on('change', function () {
+                BillContainers.load();
                 let customerId = $(this).find('option:selected').attr('data-customer-id') || '';
                 let customerEl = document.getElementById('customer');
                 if (customerEl && customerEl.tomselect) {

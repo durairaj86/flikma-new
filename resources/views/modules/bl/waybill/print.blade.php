@@ -110,6 +110,39 @@
             </div>
         </div>
 
+@php
+    $blContainers = !empty($waybill->container_ids)
+        ? \Illuminate\Support\Facades\DB::table('job_containers')->whereIn('id', $waybill->container_ids)->orderBy('id')->get()
+        : collect();
+@endphp
+@if($blContainers->count())
+    <div class="fw-bold text-uppercase small mb-1">{{ __('Containers') }}</div>
+    <table class="table-invoice table-bordered w-100 mb-3">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>{{ __('Container No') }}</th>
+            <th>{{ __('Size') }}</th>
+            <th>{{ __('Type') }}</th>
+            <th>{{ __('Seal No') }}</th>
+            <th>{{ __('Weight') }}</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach($blContainers as $bc)
+            <tr>
+                <td>{{ $loop->iteration }}</td>
+                <td>{{ $bc->container_number ?: ($bc->container_no ?: '-') }}</td>
+                <td>{{ $bc->container_size ? containerSize($bc->container_size) : '-' }}</td>
+                <td>{{ $bc->container_type ?: '-' }}</td>
+                <td>{{ $bc->seal_number ?: ($bc->seal_no ?: '-') }}</td>
+                <td>{{ $bc->gross_weight ?: ($bc->weight ?: '-') }}</td>
+            </tr>
+        @endforeach
+        </tbody>
+    </table>
+@endif
+
         <!-- Goods table -->
         <table class="table-invoice table-bordered w-100 mb-3">
             <thead>

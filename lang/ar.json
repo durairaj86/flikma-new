@@ -2975,5 +2975,9 @@
     "Show": "عرض",
     "entries": "إدخالات",
     "Hide Summary": "إخفاء الملخص",
-    "Show Summary": "إظهار الملخص"
+    "Show Summary": "إظهار الملخص",
+    "selected": "محدد",
+    "Select a job to choose its containers.": "اختر مهمة لاختيار حاويتها.",
+    "This job has no containers.": "لا توجد حاويات لهذه المهمة.",
+    "Select all": "تحديد الكل"
 }

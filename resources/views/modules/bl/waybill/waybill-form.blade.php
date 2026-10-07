@@ -102,6 +102,8 @@
                     </div>
                 </div>
 
+                @include('modules.bl.partials.container-picker', ['bill' => $waybill])
+
                 <!-- Shipment Details Section -->
                 <div class="row g-3 mt-3">
                     <div class="col-12">

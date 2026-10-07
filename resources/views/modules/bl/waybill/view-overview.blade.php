@@ -242,6 +242,46 @@
         </div>
     </div>
 </div>
+
+@php
+    $blContainers = !empty($waybill->container_ids)
+        ? \Illuminate\Support\Facades\DB::table('job_containers')->whereIn('id', $waybill->container_ids)->orderBy('id')->get()
+        : collect();
+@endphp
+<div class="section">
+    <h6>{{ __('Containers') }}</h6>
+    @if($blContainers->count())
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm align-middle">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>{{ __('Container No') }}</th>
+                    <th>{{ __('Size') }}</th>
+                    <th>{{ __('Type') }}</th>
+                    <th>{{ __('Seal No') }}</th>
+                    <th class="text-end">{{ __('Weight') }}</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach($blContainers as $bc)
+                    <tr>
+                        <td>{{ $loop->iteration }}</td>
+                        <td class="fw-semibold">{{ $bc->container_number ?: ($bc->container_no ?: '-') }}</td>
+                        <td>{{ $bc->container_size ? containerSize($bc->container_size) : '-' }}</td>
+                        <td>{{ $bc->container_type ?: '-' }}</td>
+                        <td>{{ $bc->seal_number ?: ($bc->seal_no ?: '-') }}</td>
+                        <td class="text-end">{{ $bc->gross_weight ?: ($bc->weight ?: '-') }}</td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+        </div>
+    @else
+        <div class="text-center py-3 text-muted">{{ __('No containers selected for this bill.') }}</div>
+    @endif
+</div>
+
 </div>
 
 <div class="tab-pane fade" id="blTimeFrameTab" role="tabpanel">

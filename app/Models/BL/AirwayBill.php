@@ -14,6 +14,8 @@ class AirwayBill extends Model
 {
     use CompanyScopeTrait, LogHistoryTrait, HasFactory, SoftDeletes;
 
+    protected $casts = ['container_ids' => 'array'];
+
     protected $table = 'airway_bills';
 
     protected $fillable = [

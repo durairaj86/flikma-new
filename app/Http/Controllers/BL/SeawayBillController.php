@@ -195,6 +195,13 @@ class SeawayBillController extends Controller
                 ]);
             }
 
+            // Containers picked from the job (only ones that really belong to the selected job)
+            $waybill->container_ids = \Illuminate\Support\Facades\DB::table('job_containers')
+                ->where('job_id', $waybill->job_id)
+                ->whereIn('id', array_map('intval', (array) $request->input('container_ids', [])))
+                ->orderBy('id')->pluck('id')->all();
+            $waybill->save();
+
             // Handle file uploads if any
             if ($request->hasFile('attachments')) {
                 foreach ($request->file('attachments') as $file) {

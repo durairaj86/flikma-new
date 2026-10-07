@@ -3160,6 +3160,61 @@ window.debounceSearch = function (fn, ms) {
 
 
 /* Confirm, then DELETE a record. The server refuses (HTTP 422 + message) when other records still point at it. */
+/**
+ * Container picker on the waybill / airway bill / seaway bill forms.
+ * Loads the containers of the selected job (#job_id) into #bl-containers and keeps the saved selection ticked.
+ */
+window.BillContainers = {
+    init() {
+        $(document).off('change.blc', '#bl-containers-all').on('change.blc', '#bl-containers-all', function () {
+            $('#bl-containers-body input.bl-container').prop('checked', this.checked);
+            BillContainers.count();
+        });
+        $(document).off('change.blc2', '#bl-containers-body input.bl-container').on('change.blc2', '#bl-containers-body input.bl-container', function () {
+            BillContainers.count();
+        });
+        BillContainers.load();
+    },
+    selected() {
+        const box = document.getElementById('bl-containers');
+        let ids = [];
+        try { ids = JSON.parse(box.getAttribute('data-selected') || '[]'); } catch (e) {}
+        // After the first render the live ticks are the source of truth.
+        const live = $('#bl-containers-body input.bl-container:checked').map(function () { return parseInt(this.value); }).get();
+        return $('#bl-containers-body input.bl-container').length ? live : ids.map(Number);
+    },
+    count() {
+        const all = $('#bl-containers-body input.bl-container');
+        const on = all.filter(':checked').length;
+        $('#bl-containers-count').text(all.length ? on + ' / ' + all.length + ' ' + trans('selected') : '');
+        $('#bl-containers-all').prop('checked', all.length > 0 && on === all.length);
+    },
+    load() {
+        const box = document.getElementById('bl-containers');
+        if (!box) return;
+        const jobId = $('#job_id').val();
+        const $body = $('#bl-containers-body');
+        const keep = BillContainers.selected();
+        if (!jobId) {
+            $body.html('<tr><td colspan="6" class="text-center text-muted py-3">' + trans('Select a job to choose its containers.') + '</td></tr>');
+            BillContainers.count();
+            return;
+        }
+        $.get(GLOBAL_FN.buildUrl('bl/job-containers/' + jobId), function (rows) {
+            if (!rows.length) {
+                $body.html('<tr><td colspan="6" class="text-center text-muted py-3">' + trans('This job has no containers.') + '</td></tr>');
+                BillContainers.count();
+                return;
+            }
+            const esc = v => (v === null || v === undefined || v === '') ? '-' : $('<div>').text(v).html();
+            $body.html(rows.map(r => '<tr><td><input type="checkbox" class="form-check-input bl-container" name="container_ids[]" value="' + r.id + '"' + (keep.indexOf(r.id) > -1 ? ' checked' : '') + '></td>'
+                + '<td class="fw-semibold">' + esc(r.no) + '</td><td>' + esc(r.size) + '</td><td>' + esc(r.type) + '</td><td>' + esc(r.seal) + '</td>'
+                + '<td class="text-end">' + esc(r.weight) + '</td></tr>').join(''));
+            BillContainers.count();
+        });
+    },
+};
+
 window.deleteRecord = function (url, onSuccess) {
     $.confirm({
         title: trans('Confirm Delete'),

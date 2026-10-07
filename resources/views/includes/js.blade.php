@@ -27,6 +27,9 @@
 @endif--}}
 @php
     $i18nKeys = [
+        'selected',
+        'Select a job to choose its containers.',
+        'This job has no containers.',
         'Are you sure you want to change status?',
         'Are you sure you want to convert this customer to Confirmed?',
         'Why do you want to reject this customer?',

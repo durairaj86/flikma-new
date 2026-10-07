@@ -172,6 +172,39 @@
     </div>
 
     <div class="section">
+@php
+    $blContainers = !empty($airwayBill->container_ids)
+        ? \Illuminate\Support\Facades\DB::table('job_containers')->whereIn('id', $airwayBill->container_ids)->orderBy('id')->get()
+        : collect();
+@endphp
+@if($blContainers->count())
+    <div class="section-title">{{ __('Containers') }}</div>
+    <table>
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>{{ __('Container No') }}</th>
+            <th>{{ __('Size') }}</th>
+            <th>{{ __('Type') }}</th>
+            <th>{{ __('Seal No') }}</th>
+            <th>{{ __('Weight') }}</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach($blContainers as $bc)
+            <tr>
+                <td>{{ $loop->iteration }}</td>
+                <td>{{ $bc->container_number ?: ($bc->container_no ?: '-') }}</td>
+                <td>{{ $bc->container_size ? containerSize($bc->container_size) : '-' }}</td>
+                <td>{{ $bc->container_type ?: '-' }}</td>
+                <td>{{ $bc->seal_number ?: ($bc->seal_no ?: '-') }}</td>
+                <td>{{ $bc->gross_weight ?: ($bc->weight ?: '-') }}</td>
+            </tr>
+        @endforeach
+        </tbody>
+    </table>
+@endif
+
         <div class="section-title">{{ __('Items') }}</div>
         <table>
             <thead>

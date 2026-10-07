@@ -14,6 +14,8 @@ class SeawayBill extends Model
 {
     use CompanyScopeTrait, LogHistoryTrait, HasFactory, SoftDeletes;
 
+    protected $casts = ['container_ids' => 'array'];
+
     protected $table = 'seaway_bills';
 
     protected $fillable = [

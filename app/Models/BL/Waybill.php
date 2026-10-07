@@ -14,6 +14,8 @@ class Waybill extends Model
 {
     use CompanyScopeTrait, LogHistoryTrait, HasFactory, SoftDeletes;
 
+    protected $casts = ['container_ids' => 'array'];
+
     //protected $table = 'waybills';
 
     protected $fillable = [

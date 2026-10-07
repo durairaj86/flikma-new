@@ -268,9 +268,11 @@ WAYBILL = {
             WAYBILL.form.removeRow();
             WAYBILL.form.customer.change();
             WAYBILL.form.jobChange();
+            BillContainers.init();
         },
         jobChange() {
             $('#job_id').off('change').on('change', function () {
+                BillContainers.load();
                 let customerId = $(this).find('option:selected').attr('data-customer-id') || '';
                 let customerEl = document.getElementById('customer');
                 if (customerEl && customerEl.tomselect) {

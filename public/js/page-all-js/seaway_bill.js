@@ -268,10 +268,12 @@ SEAWAY_BILL = {
             SEAWAY_BILL.form.removeRow();
             SEAWAY_BILL.form.customer.change();
             SEAWAY_BILL.form.jobChange();
+            BillContainers.init();
             SEAWAY_BILL.form.polPodLoad();
         },
         jobChange() {
             $('#job_id').off('change').on('change', function () {
+                BillContainers.load();
                 let customerId = $(this).find('option:selected').attr('data-customer-id') || '';
                 let customerEl = document.getElementById('customer');
                 if (customerEl && customerEl.tomselect) {
