@@ -752,7 +752,8 @@ class CreditNoteController extends Controller
     {
         $creditNote = CreditNote::with(['creditNoteSubs', 'customer', 'job', 'invoice', 'documents'])->findOrFail($id);
         $descriptions = Description::descriptions()->pluck('description', 'id')->toArray();
-        return view('modules.finance.credit-note.view-overview', compact('creditNote', 'descriptions'));
+        [$origin, $timeline] = $this->creditNoteTimeline($creditNote);
+        return view('modules.finance.credit-note.view-overview', compact('creditNote', 'descriptions', 'origin', 'timeline'));
     }
 
     /**
@@ -760,17 +761,16 @@ class CreditNoteController extends Controller
      * to exist (enquiry -> quotation -> job -> invoice), then the credit
      * note's own life (created / updated / approved / cancelled).
      */
-    public function timeline($id)
+    private function creditNoteTimeline(CreditNote $cn): array
     {
-        $cn = CreditNote::findOrFail($id);
         $inv = $cn->invoice_id ? \App\Models\Finance\CustomerInvoice\CustomerInvoice::find($cn->invoice_id) : null;
         $jobId = $cn->job_id ?: $inv?->job_id;
 
         $events = [];
         $rank = 0;
-        $add = function ($label, $at, $icon, $module, $by = null, $meta = null) use (&$events, &$rank) {
+        $add = function ($label, $at, $icon, $module, $by = null, $meta = null, $link = null) use (&$events, &$rank) {
             if (!$at) return;
-            $events[] = ['label' => $label, 'at' => $at, 'icon' => $icon, 'module' => $module, 'by' => $by, 'meta' => $meta,
+            $events[] = ['label' => $label, 'at' => $at, 'icon' => $icon, 'module' => $module, 'by' => $by, 'meta' => $meta, 'link' => $link,
                 'rank' => $rank, 'key' => \Illuminate\Support\Carbon::parse($at)->timestamp, 'seq' => count($events)];
         };
 
@@ -778,9 +778,9 @@ class CreditNoteController extends Controller
         $quotation = $job && $job->quotation_id ? \App\Models\Quotation\Quotation::find($job->quotation_id) : null;
         $enquiry = $quotation && $quotation->enquiry_id ? \App\Models\Enquiry\Enquiry::find($quotation->enquiry_id) : null;
 
-        if ($enquiry) $add(__('Enquiry created') . ' · ' . $enquiry->row_no, $enquiry->created_at, 'bi-chat-left-text', 'enquiry');
-        if ($quotation) $add(__('Quotation posted') . ' · ' . $quotation->row_no, $quotation->created_at, 'bi-file-earmark-text', 'quotation');
-        if ($job) $add(($quotation ? __('Converted to job') : __('Job created')) . ' · ' . $job->row_no, $job->created_at, 'bi-briefcase', 'job');
+        if ($enquiry) $add(__('Enquiry created') . ' · ' . $enquiry->row_no, $enquiry->created_at, 'bi-chat-left-text', 'enquiry', null, null, ['enquiry', $enquiry->id, $enquiry->row_no]);
+        if ($quotation) $add(__('Quotation posted') . ' · ' . $quotation->row_no, $quotation->created_at, 'bi-file-earmark-text', 'quotation', null, null, ['quotation', $quotation->id, $quotation->row_no]);
+        if ($job) $add(($quotation ? __('Converted to job') : __('Job created')) . ' · ' . $job->row_no, $job->created_at, 'bi-briefcase', 'job', null, null, ['job', $job->id, $job->row_no]);
 
         $rank = 1;
         $origin = $quotation
@@ -788,13 +788,13 @@ class CreditNoteController extends Controller
             : ($job ? __('Job') . ' → ' . __('Invoice') . ' → ' . __('Credit Note') : ($inv ? __('Invoice') . ' → ' . __('Credit Note') : __('Credit note created directly')));
 
         if ($inv) {
-            $add(__('Invoice created') . ' · ' . $inv->row_no, $inv->created_at, 'bi-receipt', 'invoice', null, number_format((float) $inv->grand_total, decimals()));
+            $add(__('Invoice created') . ' · ' . $inv->row_no, $inv->created_at, 'bi-receipt', 'invoice', null, number_format((float) $inv->grand_total, decimals()), ['invoice', $inv->id, $inv->row_no]);
             $logs = \App\Models\Log\LogHistory::where('loggable_type', \App\Models\Finance\CustomerInvoice\CustomerInvoice::class)
                 ->where('loggable_id', $inv->id)->orderBy('id')->get();
             foreach ($logs as $log) {
                 $st = (int) ($log->changes['new']['status'] ?? 0);
                 if ($log->action === 'updated' && $st === \App\Enums\CustomerInvoiceEnum::APPROVED->value) {
-                    $add(__('Invoice approved') . ' · ' . $inv->row_no, $log->created_at, 'bi-check-circle', 'invoice', $log->user_id['name'] ?? null);
+                    $add(__('Invoice approved') . ' · ' . $inv->row_no, $log->created_at, 'bi-check-circle', 'invoice', $log->user_id['name'] ?? null, null, ['invoice', $inv->id, $inv->row_no]);
                     break;
                 }
             }
@@ -827,7 +827,7 @@ class CreditNoteController extends Controller
 
         usort($events, fn($a, $b) => [$a['rank'], $a['rank'] ? $a['key'] : $a['seq'], $a['seq']] <=> [$b['rank'], $b['rank'] ? $b['key'] : $b['seq'], $b['seq']]);
 
-        return view('modules.finance.credit-note.timeline', ['origin' => $origin, 'timeline' => $events]);
+        return [$origin, $events];
     }
 
     public function print($id)

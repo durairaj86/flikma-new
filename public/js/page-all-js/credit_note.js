@@ -228,23 +228,8 @@ CREDIT_NOTE = {
                     // Update drawer subtitle
                     $('#drawerSubtitle').text(recordName);
 
-                    // Reset to overview tab
-                    let overviewTab = document.getElementById('cn-overview-tab');
-                    if (overviewTab) {
-                        bootstrap.Tab.getOrCreateInstance(overviewTab).show();
-                    }
-
-                    // Clear other tabs
-                    $('#cnItemsContent, #cnDocumentsContent').html('');
-                    $('#cnTimeFrameContent').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div></div>');
-                    $.get('/adjustment/credit-note/' + recordId + '/timeline', function (data) {
-                        $('#cnTimeFrameContent').html(data);
-                    }).fail(function () {
-                        $('#cnTimeFrameContent').html('<div class="alert alert-danger m-3">Failed to load time frame.</div>');
-                    });
-
                     // Show drawer
-                    let drawer = new bootstrap.Offcanvas(document.getElementById('moduleDrawer'));
+                    let drawer = bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer'));
                     drawer.show();
 
                     // Load overview content

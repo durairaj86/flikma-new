@@ -5,183 +5,226 @@
         3 => ['label' => __('Cancelled'), 'class' => 'bg-danger-subtle text-danger'],
     ];
     $statusInfo = $statusMap[$creditNote->status] ?? ['label' => __('Unknown'), 'class' => 'bg-secondary-subtle text-secondary'];
+    $cnCurrency = strtoupper($creditNote->currency ?? 'SAR');
 @endphp
 
 <style>
-    .cn-overview-label { font-size: .78rem; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; color: #64748b; }
-    .cn-overview-value { font-size: .9rem; color: #1e293b; font-weight: 500; }
-    .cn-section-title { font-size: .74rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #94a3b8; border-bottom: 1px solid #f1f5f9; padding-bottom: .4rem; margin-bottom: .75rem; }
-    .cn-detail-row { display: flex; justify-content: space-between; align-items: baseline; padding: .35rem 0; border-bottom: 1px solid #f8fafc; }
-    .cn-detail-row:last-child { border-bottom: none; }
-    .cn-amount-row { display: flex; justify-content: space-between; align-items: center; padding: .3rem 0; }
-    .cn-grand-row { background: #f8fafc; margin: 0 -1rem; padding: .5rem 1rem; border-radius: 8px; }
+    .section {
+        margin-bottom: 1.5rem;
+    }
+    .section h6 {
+        font-size: 14px;
+        font-weight: 600;
+        background: #f7f7f9;
+        padding: 8px 10px;
+        border-radius: 4px;
+        /*border-left: 4px solid #0d6efd;*/
+        margin-bottom: 1rem;
+    }
+    table.table {
+        font-size: 13px;
+    }
+    table.table th {
+        background: #f8f9fa;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.6rem 1.5rem;
+        font-size: 13.5px;
+        line-height: 1.6;
+    }
+    .info-grid div {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px dotted #eee;
+        padding-bottom: 3px;
+    }
+    .info-grid strong {
+        color: #333;
+        min-width: 140px;
+        font-weight: 600;
+    }
+    .info-grid span {
+        color: #555;
+        flex: 1;
+        text-align: left;
+        margin-left: 8px;
+    }
+    .total-table td {
+        padding: 4px 10px;
+        font-size: 13.5px;
+    }
+    .invoice-no-heading {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 1rem;
+    }
+    /* two-sided time frame: Enquiry / Job / Credit Note on the right, Quotation / Invoice on the left */
+    .cn-timeline { list-style: none; margin: 0; padding: 0; position: relative; }
+    .cn-timeline::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: #e2e8f0; }
+    .cn-timeline li { position: relative; width: 50%; padding: 0 2rem .9rem 0; font-size: 13.5px; text-align: right; }
+    .cn-timeline li.side-r { margin-left: 50%; padding: 0 0 .9rem 2rem; text-align: left; }
+    .cn-timeline .dot { position: absolute; top: 0; right: -.75rem; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: #e7f0fe; color: #0d6efd; display: inline-flex; align-items: center; justify-content: center; font-size: .75rem; z-index: 1; }
+    .cn-timeline li.side-r .dot { right: auto; left: -.75rem; }
+    .cn-timeline .t-mod { display: inline-block; font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; color: #0d6efd; background: #e7f0fe; border-radius: 10px; padding: 0 .5rem; margin-bottom: .15rem; }
+    .cn-timeline .t-label { font-weight: 600; color: #0f172a; }
+    .cn-timeline .t-meta { color: #64748b; font-size: 12.5px; }
     .x-small { font-size: .75rem; }
-    .tabular-nums { font-variant-numeric: tabular-nums; }
 </style>
 
-{{-- Action buttons --}}
-<div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
-    <div>
-        <span class="badge {{ $statusInfo['class'] }} rounded-pill px-3 py-1 fw-semibold">
-            {{ $statusInfo['label'] }}
-        </span>
-    </div>
-    <div class="d-flex gap-2">
-        <button type="button" class="btn btn-outline-secondary btn-sm linked-print"
-                data-print-url="{{ url('adjustment/credit-note/' . $creditNote->id . '/print') }}"
-                onclick="if (window.CREDIT_NOTE && CREDIT_NOTE.printPreview) { CREDIT_NOTE.printPreview('{{ $creditNote->id }}'); }">
-            <i class="bi bi-printer me-1"></i> {{ __('Print') }}
+<ul class="nav nav-tabs mb-3" role="tablist">
+    <li class="nav-item">
+        <button class="nav-link active fw-semibold" data-bs-toggle="tab" data-bs-target="#cnDetailsTab" type="button" role="tab">
+            <i class="bi bi-receipt-cutoff me-1"></i> {{ __('Details') }}
         </button>
+    </li>
+    <li class="nav-item ms-auto">
+        <button class="nav-link fw-semibold" data-bs-toggle="tab" data-bs-target="#cnTimeFrameTab" type="button" role="tab"
+                title="{{ __('Time Frame') }}" aria-label="{{ __('Time Frame') }}">
+            <i class="bi bi-clock-history fs-5"></i>
+        </button>
+    </li>
+</ul>
+<div class="tab-content">
+<div class="tab-pane fade show active" id="cnDetailsTab" role="tabpanel">
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div class="invoice-no-heading mb-0">#{{ $creditNote->row_no }}
+        <span class="badge {{ $statusInfo['class'] }} rounded-pill px-3 py-1 fw-semibold fs-6 align-middle ms-2">{{ $statusInfo['label'] }}</span>
     </div>
+    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 linked-print"
+            data-print-url="{{ url('adjustment/credit-note/' . $creditNote->id . '/print') }}"
+            onclick="if (window.CREDIT_NOTE && CREDIT_NOTE.printPreview) { CREDIT_NOTE.printPreview('{{ $creditNote->id }}'); }">
+        <i class="bi bi-printer me-1"></i> {{ __('Print') }}
+    </button>
 </div>
 
-{{-- Header card --}}
-<div class="card border-0 shadow-sm mb-3" style="border-radius: .75rem; overflow: hidden;">
-    <div class="card-body p-3">
-
-        <div class="d-flex justify-content-between align-items-start mb-3">
-            <div>
-                <div class="fw-bold fs-5 text-dark">#{{ $creditNote->row_no }}</div>
-                <div class="text-muted small">{{ __('Credit Note') }}</div>
-            </div>
-            <div class="text-end">
-                <div class="fw-bold fs-5" style="color: #0b6aa0;">
-                    {{ number_format($creditNote->grand_total, decimals()) }}
-                    <small class="text-muted fw-normal fs-6">{{ strtoupper($creditNote->currency ?? 'SAR') }}</small>
-                </div>
-                <div class="text-muted small">{{ __('Grand Total') }}</div>
-            </div>
-        </div>
-
-        {{-- Basic Info --}}
-        <div class="cn-section-title">{{ __('Basic Information') }}</div>
-
-        <div class="cn-detail-row">
-            <span class="cn-overview-label">{{ __('Date') }}</span>
-            <span class="cn-overview-value">{{ \Carbon\Carbon::parse($creditNote->posted_at)->format('d M Y') }}</span>
-        </div>
-        <div class="cn-detail-row">
-            <span class="cn-overview-label">{{ __('Customer') }}</span>
-            <span class="cn-overview-value">{{ $creditNote->customer->name_en ?? '-' }}</span>
-        </div>
-        <div class="cn-detail-row">
-            <span class="cn-overview-label">{{ __('Job') }}</span>
-            <span class="cn-overview-value">{{ $creditNote->job_no ?? '-' }}</span>
-        </div>
-        <div class="cn-detail-row">
-            <span class="cn-overview-label">{{ __('Invoice Ref') }}</span>
-            <span class="cn-overview-value">{{ $creditNote->invoice->row_no ?? '-' }}</span>
-        </div>
-        <div class="cn-detail-row">
-            <span class="cn-overview-label">{{ __('Type') }}</span>
-            <span class="cn-overview-value">{{ ucfirst(str_replace('_', ' ', $creditNote->credit_note_type ?? '-')) }}</span>
-        </div>
+<div class="section">
+    <h6>{{ __('Customer & Credit Note Information') }}</h6>
+    <div class="info-grid">
+        <div><strong>{{ __('Customer') }}:</strong><span>@if($creditNote->customer_id)<a href="#" class="open-linked text-primary text-decoration-none" data-type="customer" data-id="{{ $creditNote->customer_id }}" data-title="{{ $creditNote->customer->name_en ?? '' }}">{{ $creditNote->customer->name_en ?? '-' }}</a>@else - @endif</span></div>
+        <div><strong>{{ __('Email') }}:</strong><span>{{ $creditNote->customer->email ?? '-' }}</span></div>
+        <div><strong>{{ __('Credit Note Date') }}:</strong><span>{{ $creditNote->posted_at ? \Carbon\Carbon::parse($creditNote->posted_at)->format('d-m-Y') : '-' }}</span></div>
+        <div><strong>{{ __('Phone') }}:</strong><span>{{ $creditNote->customer->phone ?? '-' }}</span></div>
+        <div><strong>{{ __('Invoice') }}:</strong><span>@if($creditNote->invoice_id)<a href="#" class="open-linked text-primary text-decoration-none" data-type="invoice" data-id="{{ $creditNote->invoice_id }}" data-title="{{ $creditNote->invoice->row_no ?? '' }}">{{ $creditNote->invoice->row_no ?? '-' }}</a>@else - @endif</span></div>
+        <div><strong>{{ __('Job') }}:</strong><span>@if($creditNote->job_id)<a href="#" class="open-linked text-primary text-decoration-none" data-type="job" data-id="{{ $creditNote->job_id }}" data-title="{{ $creditNote->job_no }}">{{ $creditNote->job_no }}</a>@else{{ $creditNote->job_no ?? '-' }}@endif</span></div>
+        <div><strong>{{ __('Currency') }}:</strong><span>{{ $cnCurrency }} ({{ __('rate') }} {{ number_format($creditNote->currency_rate ?? 1, decimals()) }})</span></div>
+        <div><strong>{{ __('Type') }}:</strong><span>{{ ucfirst(str_replace('_', ' ', $creditNote->credit_note_type ?? '-')) }}</span></div>
         @if($creditNote->reason)
-        <div class="cn-detail-row">
-            <span class="cn-overview-label">{{ __('Reason') }}</span>
-            <span class="cn-overview-value text-end" style="max-width: 65%;">{{ $creditNote->reason }}</span>
-        </div>
+            <div style="grid-column: 1 / -1;"><strong>{{ __('Reason') }}:</strong><span>{{ $creditNote->reason }}</span></div>
         @endif
-
     </div>
 </div>
 
-{{-- Totals card --}}
-<div class="card border-0 shadow-sm mb-3" style="border-radius: .75rem;">
-    <div class="card-body p-3">
-        <div class="cn-section-title">{{ __('Amounts') }}</div>
-
-        <div class="cn-amount-row">
-            <span class="cn-overview-label">{{ __('Subtotal') }}</span>
-            <span class="cn-overview-value tabular-nums">{{ number_format($creditNote->sub_total, decimals()) }}</span>
-        </div>
-        <div class="cn-amount-row">
-            <span class="cn-overview-label">{{ __('Tax') }}</span>
-            <span class="cn-overview-value tabular-nums">{{ number_format($creditNote->tax_total, decimals()) }}</span>
-        </div>
-        <hr class="my-2">
-        <div class="cn-amount-row cn-grand-row">
-            <span class="fw-bold text-dark">{{ __('Grand Total') }}</span>
-            <span class="fw-bold fs-6 tabular-nums" style="color: #0b6aa0;">
-                {{ number_format($creditNote->grand_total, decimals()) }}
-                <small class="text-muted fw-normal">{{ strtoupper($creditNote->currency ?? 'SAR') }}</small>
-            </span>
-        </div>
-    </div>
-</div>
-
-{{-- Line items card --}}
-@if($creditNote->creditNoteSubs && $creditNote->creditNoteSubs->count())
-<div class="card border-0 shadow-sm mb-3" style="border-radius: .75rem; overflow: hidden;">
-    <div class="card-header bg-white border-bottom py-2 px-3">
-        <span class="fw-semibold small text-dark">
-            <i class="bi bi-list-ul me-1 text-muted"></i>
-            {{ __('Line Items') }} ({{ $creditNote->creditNoteSubs->count() }})
-        </span>
-    </div>
-    <div class="p-0">
-        <table class="table table-sm align-middle mb-0" style="font-size: .82rem;">
-            <thead style="background: #f8fafc;">
+<div class="section">
+    <h6>{{ __('Line Items') }}</h6>
+    @if($creditNote->creditNoteSubs && $creditNote->creditNoteSubs->count())
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm align-middle">
+                <thead>
                 <tr>
-                    <th class="px-3 py-2 fw-semibold text-muted border-0" style="font-size:.72rem;">{{ __('Description') }}</th>
-                    <th class="px-3 py-2 fw-semibold text-muted border-0 text-end" style="font-size:.72rem;">{{ __('Qty') }}</th>
-                    <th class="px-3 py-2 fw-semibold text-muted border-0 text-end" style="font-size:.72rem;">{{ __('Price') }}</th>
-                    <th class="px-3 py-2 fw-semibold text-muted border-0 text-end" style="font-size:.72rem;">{{ __('Total') }}</th>
+                    <th>#</th>
+                    <th>{{ __('Description') }}</th>
+                    <th>{{ __('Comment') }}</th>
+                    <th class="text-end">{{ __('Qty') }}</th>
+                    <th class="text-end">{{ __('Unit Price') }}</th>
+                    <th class="text-end">{{ __('Line Total') }}</th>
+                    <th>{{ __('Tax Code') }}</th>
+                    <th class="text-end">{{ __('Tax %') }}</th>
+                    <th class="text-end">{{ __('Tax Amount') }}</th>
+                    <th class="text-end">{{ __('Total (Incl. Tax)') }}</th>
                 </tr>
-            </thead>
-            <tbody>
+                </thead>
+                <tbody>
                 @foreach($creditNote->creditNoteSubs as $item)
-                <tr>
-                    <td class="px-3 py-2">
-                        <div class="fw-medium">{{ $descriptions[$item->description_id] ?? $item->description ?? '-' }}</div>
-                        @if($item->comment)
-                            <div class="text-muted x-small">{{ $item->comment }}</div>
-                        @endif
-                    </td>
-                    <td class="px-3 py-2 text-end">{{ $item->quantity }}</td>
-                    <td class="px-3 py-2 text-end">{{ number_format($item->unit_price, decimals()) }}</td>
-                    <td class="px-3 py-2 text-end fw-semibold">{{ number_format($item->total, decimals()) }}</td>
-                </tr>
+                    <tr>
+                        <td>{{ $loop->iteration }}</td>
+                        <td>{{ $descriptions[$item->description_id] ?? $item->description ?? '-' }}</td>
+                        <td>{{ $item->comment ?? '-' }}</td>
+                        <td class="text-end">{{ $item->quantity }}</td>
+                        <td class="text-end">{{ number_format($item->unit_price, decimals()) }}</td>
+                        <td class="text-end">{{ number_format($item->line_total, decimals()) }}</td>
+                        <td>{{ $item->tax_code ?? '-' }}</td>
+                        <td class="text-end">{{ $item->tax_percent }}%</td>
+                        <td class="text-end">{{ number_format($item->tax_amount, decimals()) }}</td>
+                        <td class="text-end">{{ number_format($item->total_with_tax ?? $item->total, decimals()) }}</td>
+                    </tr>
                 @endforeach
-            </tbody>
-        </table>
-    </div>
-</div>
-@endif
-
-{{-- Terms --}}
-@if($creditNote->terms)
-<div class="card border-0 shadow-sm mb-3" style="border-radius: .75rem;">
-    <div class="card-body p-3">
-        <div class="cn-section-title">{{ __('Terms & Conditions') }}</div>
-        <p class="mb-0 small text-secondary">{{ $creditNote->terms }}</p>
-    </div>
-</div>
-@endif
-
-{{-- Documents --}}
-@if($creditNote->documents && $creditNote->documents->count())
-<div class="card border-0 shadow-sm mb-3" style="border-radius: .75rem;">
-    <div class="card-header bg-white border-bottom py-2 px-3">
-        <span class="fw-semibold small text-dark">
-            <i class="bi bi-paperclip me-1 text-muted"></i>
-            {{ __('Documents') }} ({{ $creditNote->documents->count() }})
-        </span>
-    </div>
-    <div class="card-body p-3">
-        <div class="row g-2">
-            @foreach($creditNote->documents as $doc)
-            <div class="col-12">
-                <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank"
-                   class="d-flex align-items-center gap-2 text-decoration-none p-2 rounded"
-                   style="background: #f8fafc; border: 1px solid #e2e8f0;">
-                    <i class="bi bi-file-earmark-text text-primary"></i>
-                    <span class="small text-dark fw-medium">{{ $doc->file_name }}</span>
-                    <i class="bi bi-box-arrow-up-right ms-auto text-muted" style="font-size: .75rem;"></i>
-                </a>
-            </div>
-            @endforeach
+                </tbody>
+            </table>
         </div>
+    @else
+        <div class="text-center py-4 text-muted">{{ __('No line items on this credit note.') }}</div>
+    @endif
+</div>
+
+<div class="section">
+    <h6>{{ __('Totals') }}</h6>
+    <table class="table table-sm total-table w-auto ms-auto">
+        <tr>
+            <td><strong>{{ __('Subtotal') }}</strong></td>
+            <td class="text-end">{{ amountFormat($creditNote->sub_total) }}</td>
+        </tr>
+        <tr>
+            <td><strong>{{ __('Tax') }}</strong></td>
+            <td class="text-end">{{ amountFormat($creditNote->tax_total) }}</td>
+        </tr>
+        <tr class="table-secondary">
+            <td><strong>{{ __('Grand Total') }}</strong></td>
+            <td class="text-end text-primary fw-bold">{{ amountFormat($creditNote->grand_total) }} {{ $cnCurrency }}</td>
+        </tr>
+    </table>
+</div>
+
+@if($creditNote->terms)
+    <div class="section">
+        <h6>{{ __('Terms & Conditions') }}</h6>
+        <p class="mb-0">{{ $creditNote->terms }}</p>
+    </div>
+@endif
+
+@if($creditNote->documents && $creditNote->documents->count())
+    <div class="section">
+        <h6>{{ __('Documents') }} ({{ $creditNote->documents->count() }})</h6>
+        @foreach($creditNote->documents as $doc)
+            <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank"
+               class="d-flex align-items-center gap-2 text-decoration-none p-2 rounded mb-2"
+               style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                <i class="bi bi-file-earmark-text text-primary"></i>
+                <span class="small text-dark fw-medium">{{ $doc->file_name }}</span>
+                <i class="bi bi-box-arrow-up-right ms-auto text-muted x-small"></i>
+            </a>
+        @endforeach
+    </div>
+@endif
+
+</div>
+
+<div class="tab-pane fade" id="cnTimeFrameTab" role="tabpanel">
+    <div class="section">
+        <h6>{{ __('Time Frame') }}</h6>
+        <div class="text-muted small mb-3"><i class="bi bi-diagram-3 me-1"></i>{{ $origin }}</div>
+        @php
+            $sideRight = ['enquiry', 'job', 'credit_note'];
+            $modLabel = ['enquiry' => __('Enquiry'), 'quotation' => __('Quotation'), 'job' => __('Job'), 'invoice' => __('Invoice'), 'credit_note' => __('Credit Note')];
+        @endphp
+        <ul class="cn-timeline">
+            @foreach($timeline as $step)
+                <li class="{{ in_array($step['module'], $sideRight) ? 'side-r' : 'side-l' }}">
+                    <span class="dot"><i class="bi {{ $step['icon'] }}"></i></span>
+                    <div class="t-mod">{{ $modLabel[$step['module']] ?? '' }}</div>
+                    <div class="t-label">@if(!empty($step['link']))<a href="#" class="open-linked text-primary text-decoration-none" data-type="{{ $step['link'][0] }}" data-id="{{ $step['link'][1] }}" data-title="{{ $step['link'][2] }}">{{ $step['label'] }}</a>@else{{ $step['label'] }}@endif @if($step['meta'])<span class="text-muted fw-normal">· {{ $step['meta'] }}</span>@endif</div>
+                    <div class="t-meta">
+                        {{ \Carbon\Carbon::parse($step['at'])->format('d-m-Y H:i') }}
+                        @if($step['by']) &middot; {{ __('by') }} {{ $step['by'] }} @endif
+                    </div>
+                </li>
+            @endforeach
+        </ul>
     </div>
 </div>
-@endif
+</div>

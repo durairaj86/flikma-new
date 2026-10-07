@@ -303,6 +303,7 @@
     @include('modules.email.send-email')
     @include('modules.workflows.credit-note')
     @include('modules.finance.credit-note.credit-note-view')
+    @include('modules.common.linked-drawer', ['mainWidth' => 60, 'subWidth' => 35])
 
     {{-- Print frame --}}
     <iframe id="print-frame" style="display:none;"></iframe>

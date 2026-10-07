@@ -15,7 +15,6 @@ Route::namespace('finance')->prefix('adjustment')->group(function () {
         Route::post('/{id}/status/{status}', [CreditNoteController::class, 'updateStatus']);
         Route::delete('/{id}', [CreditNoteController::class, 'delete'])->whereNumber('id');
         Route::get('/{id}/overview', [CreditNoteController::class, 'overview']);
-        Route::get('/{id}/timeline', [CreditNoteController::class, 'timeline']);
         Route::get('/{id}/print', [CreditNoteController::class, 'print']);
     });
 });
