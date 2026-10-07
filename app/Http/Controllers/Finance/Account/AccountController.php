@@ -183,7 +183,10 @@ class AccountController extends Controller
         $rows = Account::select('id', 'code', 'name', 'parent_id', 'is_level', 'is_active', 'is_grouped', 'account_number', 'is_last', 'type', 'company_id')
             ->when($request->type, function ($q) use ($request) {
                 $q->where('type', ucfirst($request->type));
-            });
+            })
+            ->when(($request->filterData['status'] ?? 'all') === 'active', fn($q) => $q->where('is_active', 1))
+            ->when(($request->filterData['status'] ?? 'all') === 'inactive', fn($q) => $q->where('is_active', 0))
+            ->when(!empty($request->filterData['parent']), fn($q) => $q->where('parent_id', (int) $request->filterData['parent']));
 
         $allAccounts = $rows->get()->pluck('name', 'id')->toArray();
         // Get counts per status in one query

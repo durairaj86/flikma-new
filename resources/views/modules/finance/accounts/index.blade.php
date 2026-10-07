@@ -1,8 +1,61 @@
 @section('page-title', __('Chart of Accounts'))
+@section('hide-topbar', true)
 @section('js','account')
 <x-app-layout>
     <main class="gmail-content bg-white px-3">
-        <div class="d-flex justify-content-between align-items-start py-3">
+        <style>
+            .acc-title { display: none; }
+            body:not(.has-top-header) .acc-title { display: block; }
+            #dataTable thead th { background-color: #f8f9fa !important; }
+            #dataTable thead th:first-child { border-top-left-radius: 8px; }
+            #dataTable thead th:last-child { border-top-right-radius: 8px; }
+        </style>
+        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap pt-2 pb-0">
+            <h4 class="fw-bold text-dark mb-0 acc-title">@yield('page-title')</h4>
+            <div class="d-flex align-items-center gap-2 ms-auto">
+                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Account') }}</button>
+                <button class="btn btn-icon-search rounded-circle" id="btn-import-accounts" type="button" title="{{ __('Import') }}" aria-label="{{ __('Import') }}"><i class="bi bi-upload"></i></button>
+            </div>
+        </div>
+
+        <div id="filterPanel" class="card shadow-sm border-0 d-none filter-panel-card mt-3">
+            <div class="card-header bg-white border-0 pt-3 pb-0">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="filter-panel-icon"><i class="bi bi-funnel-fill"></i></span>
+                    <h6 class="mb-0 fw-semibold">{{ __('Filters') }}</h6>
+                </div>
+            </div>
+            <div class="card-body pt-3">
+                <form id="list-filter" method="post" novalidate="novalidate">
+                    @csrf
+                    <div class="row g-4">
+                        <div class="col-md-6 col-xl-4 form-filter">
+                            <label class="form-label fw-medium filter-label-row">{{ __('Status') }}</label>
+                            <select class="tom-select avoid-filter" name="filter-status" id="filter-status">
+                                <option value="all" selected>{{ __('All') }}</option>
+                                <option value="active">{{ __('Active') }}</option>
+                                <option value="inactive">{{ __('Inactive') }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 col-xl-4 form-filter">
+                            <label class="form-label fw-medium filter-label-row">{{ __('Parent Account') }}</label>
+                            <select class="tom-select avoid-filter" name="filter-parent" id="filter-parent" placeholder="{{ __('All') }}">
+                                <option value="">{{ __('All') }}</option>
+                                @foreach(\App\Models\Finance\Account\Account::whereIn('id', \App\Models\Finance\Account\Account::whereNotNull('parent_id')->select('parent_id'))->orderBy('code')->get(['id', 'code', 'name']) as $parent)
+                                    <option value="{{ $parent->id }}">{{ $parent->code }} - {{ $parent->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="text-center mt-4 pt-2 border-top filter-panel-actions">
+                        <button class="btn btn-primary btn-round px-4" type="button" id="apply-filter">
+                            <i class="bi bi-search me-1"></i> {{ __('Search') }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 py-3">
             <div class="align-items-center flex-shrink-0">
                 <div class="gap-4">
                     <ul class="nav align-items-center" id="listTabs" role="tablist"
@@ -27,7 +80,7 @@
 
                         <li class="nav-item me-2">
                             <button
-                                class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
+                                class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="liability">
                                 <span><i class="bi bi-journal-minus me-1"></i> {{ __('Liability') }} -</span>
                                 <span class="status-count ms-2" id="liabilityCount">0</span>
@@ -35,25 +88,25 @@
                         </li>
 
                         <li class="nav-item me-2">
-                            <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
+                            <button class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn"
                                     data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="equity">
                                 <span><i class="bi bi-diagram-3 me-1"></i> {{ __('Equity') }} -</span>
                                 <span class="status-count ms-2" id="equityCount">0</span>
                             </button>
                         </li>
 
-                        <li class="nav-item">
-                            <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
+                        <li class="nav-item me-2">
+                            <button class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn"
                                     data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="income">
-                                <span><i class="bi bi-graph-up-arrow"></i> {{ __('Income') }} -</span>
+                                <span><i class="bi bi-graph-up-arrow me-1"></i> {{ __('Income') }} -</span>
                                 <span class="status-count ms-2" id="incomeCount">0</span>
                             </button>
                         </li>
 
                         <li class="nav-item">
-                            <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
+                            <button class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn"
                                     data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="expense">
-                                <span><i class="bi bi-graph-down-arrow"></i> {{ __('Expense') }} -</span>
+                                <span><i class="bi bi-graph-down-arrow me-1"></i> {{ __('Expense') }} -</span>
                                 <span class="status-count ms-2" id="expenseCount">0</span>
                             </button>
                         </li>
@@ -61,111 +114,20 @@
                     </ul>
                 </div>
             </div>
-            <div class="d-flex justify-content-between">
-                <div class="position-relative">
-                    <!-- Compact Filter button -->
-                    <button class="btn btn-outline-secondary me-2" onclick="toggleFilter()"><i class="bi bi-funnel"></i>
-                        {{ __('Filter') }}
-                    </button>
-
-                    <!-- Filter panel (dropdown style) -->
-                    <div id="filterPanel" class="card p-3 d-none"
-                         style="position: absolute; top: 100%; right: 0; width: 20rem; z-index: 1000; box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);">
-                        <!-- Date range -->
-                        <div class="mb-3">
-                            {{--<div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">Date range</span>
-                                <button class="btn btn-link btn-sm p-0" onclick="resetField('date')">Reset</button>
-                            </div>
-
-                            <!-- Predefined date ranges -->
-                            <select class="form-control selectpicker mb-2" id="presetDateRange"
-                                    onchange="setPresetDateRange()">
-                                <option value="">Custom</option>
-                                <option value="today">Today</option>
-                                <option value="yesterday">Yesterday</option>
-                                <option value="thisMonth">This Month</option>
-                                <option value="lastMonth">Last Month</option>
-                                <option value="thisQuarter">This Quarter</option>
-                                <option value="lastQuarter">Last Quarter</option>
-                                <option value="thisYear">This Year</option>
-                                <option value="lastYear">Last Year</option>
-                            </select>--}}
-
-                            <div class="d-flex gap-2">
-                                <input type="date" class="form-control datepicker" id="fromDate">
-                                <input type="date" class="form-control datepicker" id="toDate">
-                            </div>
-                        </div>
-
-                        <!-- Activity type -->
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">{{ __('Activity type') }}</span>
-                                <button class="btn btn-link btn-sm p-0" onclick="resetField('activity')">{{ __('Reset') }}</button>
-                            </div>
-                            <select class="form-select" id="activityType">
-                                <option>{{ __('All warehouses') }}</option>
-                                <option>{{ __('Warehouse 1') }}</option>
-                                <option>{{ __('Warehouse 2') }}</option>
-                            </select>
-                        </div>
-
-                        <!-- Status -->
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">{{ __('Status') }}</span>
-                                <button class="btn btn-link btn-sm p-0" onclick="resetField('status')">{{ __('Reset') }}</button>
-                            </div>
-                            <select class="form-select" id="status">
-                                <option>{{ __('Active') }}</option>
-                                <option>{{ __('Inactive') }}</option>
-                            </select>
-                        </div>
-
-                        <!-- Keyword search -->
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">{{ __('Keyword search') }}</span>
-                                <button class="btn btn-link btn-sm p-0" onclick="resetField('keyword')">{{ __('Reset') }}</button>
-                            </div>
-                            <input type="text" class="form-control" placeholder="{{ __('Search...') }}" id="keyword">
-                        </div>
-
-                        <!-- Buttons -->
-                        <div class="d-flex justify-content-between">
-                            <button class="btn btn-outline-secondary" onclick="resetAll()">{{ __('Reset all') }}</button>
-                            <button class="btn btn-success">{{ __('Apply now') }}</button>
-                        </div>
-                    </div>
+            <div class="d-flex align-items-center gap-2">
+                <div class="search-box position-relative">
+                    <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                    <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
+                           placeholder="{{ __('Search...') }}" aria-label="{{ __('Search...') }}">
                 </div>
-                <button class="btn btn-outline-primary rounded-pill px-3 me-2" id="btn-import-accounts" type="button"><i class="bi bi-upload me-1"></i> {{ __('Import') }}</button>
-                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Account') }}</button>
+                <button class="btn btn-icon-search rounded-circle" id="filter-box" type="button"
+                        title="{{ __('Filter') }}" aria-label="{{ __('Filter') }}"><i class="bi bi-funnel"></i></button>
             </div>
         </div>
+
         <div class="shadow bdr-r-10 py-3 flex-grow-1">
             <div class="d-flex justify-content-between px-3 flex-shrink-0">
-                {{--<div id="searchLabels" class="mb-3 d-flex flex-wrap gap-2"></div>--}}
-
-                <!-- Example static label -->
-                <div class="d-inline-flex align-items-center bg-light border rounded-pill px-2 py-1 me-2 mb-2 small"
-                     style="font-size: 0.8rem;">
-                    <span class="me-2">{{ __('Date') }}: 10-12-2024 / 10-12-2025</span>
-                    <button type="button"
-                            class="btn btn-sm btn-light p-0 border-0 d-flex align-items-center justify-content-center"
-                            style="width: 16px; height: 16px; line-height: 1;" aria-label="{{ __('Close') }}"
-                            onclick="clearDateLabel()">
-                        &times;
-                    </button>
-                </div>
-                <div class="align-items-center gap-2">
-                    <div class="search-box position-relative me-2">
-                        <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-
-                        <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="{{ __('Search...') }}" aria-label="{{ __('Search...') }}">
-                    </div>
-                </div>
+                <div id="filtered-data"></div>
             </div>
             <div class="flex-grow-1">
                 <div>

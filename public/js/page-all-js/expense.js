@@ -92,6 +92,7 @@ EXPENSE = {
                     dataSrc: function (json) {
                         $('#dataTable tbody').find('.loading-row').remove();
                         GLOBAL_FN.setStatusCounts(json.statusCounts);
+                        EXPENSE.list.cardSummary(json.salesSummary, json.statusCounts);
                         return json.data;
                     }
                 },
@@ -157,6 +158,18 @@ EXPENSE = {
                 let $row = $(this).closest('tr');
                 EXPENSE.list.openDrawer($row.attr('data-id'), $row.attr('data-name'));
             });
+        },
+        cardSummary(data, counts) {
+            if (data) {
+                ['draft', 'approved'].forEach(k => {
+                    ['grand', 'sub', 'tax'].forEach(t => $('#total_' + k + '_' + t).text(amountFormat(data['total_' + k + '_' + t] || 0)));
+                });
+            }
+            if (counts) {
+                $('#cardAllCount').text(counts.all ?? 0);
+                $('#cardApprovedCount').text(counts.APPROVED ?? 0);
+                $('#cardDraftCount').text(counts.PENDING ?? 0);
+            }
         },
         openDrawer(expenseId, expenseNo) {
             $('#drawerSubtitle').text(expenseNo || '');

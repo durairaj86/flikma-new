@@ -62,6 +62,29 @@ class ExpenseController extends Controller
         foreach (ExpenseEnum::cases() as $status) {
             $allCounts[$status->name] = $statusCounts[$status->value] ?? 0;
         }
+        $allCounts['all'] = array_sum($allCounts);
+
+        // Summary card totals (Pending / Approved) in company currency, same filters as the list.
+        $pending = ExpenseEnum::PENDING->value;
+        $approved = ExpenseEnum::APPROVED->value;
+        $salesSummary = Expense::select([
+            DB::raw("SUM(CASE WHEN status = {$pending} THEN base_sub_total + base_tax_total ELSE 0 END) as total_draft_grand"),
+            DB::raw("SUM(CASE WHEN status = {$pending} THEN base_sub_total ELSE 0 END) as total_draft_sub"),
+            DB::raw("SUM(CASE WHEN status = {$pending} THEN base_tax_total ELSE 0 END) as total_draft_tax"),
+            DB::raw("SUM(CASE WHEN status = {$approved} THEN base_sub_total + base_tax_total ELSE 0 END) as total_approved_grand"),
+            DB::raw("SUM(CASE WHEN status = {$approved} THEN base_sub_total ELSE 0 END) as total_approved_sub"),
+            DB::raw("SUM(CASE WHEN status = {$approved} THEN base_tax_total ELSE 0 END) as total_approved_tax"),
+        ])
+            ->when(isset($filter['filter-from-date']) && isset($filter['filter-to-date']), function ($query) use ($filter) {
+                $query->whereBetween('posted_at', [formDate($filter['filter-from-date']), formDate($filter['filter-to-date'])]);
+            })
+            ->when(isset($filter['customers']) && !empty($filter['customers']), function ($query) use ($filter) {
+                $query->whereIn('customer_id', decodeIds($filter['customers']));
+            })
+            ->when(isset($filter['suppliers']) && !empty($filter['suppliers']), function ($query) use ($filter) {
+                $query->whereIn('vendor_id', decodeIds($filter['suppliers']));
+            })
+            ->first();
 
         $decimals = decimals();
         // ✅ Return formatted DataTable
@@ -79,6 +102,7 @@ class ExpenseController extends Controller
             ->editColumn('grand_total', fn($model) => number_format($model->grand_total, $decimals))
             ->with([
                 'statusCounts' => $allCounts,
+                'salesSummary' => $salesSummary,
             ])
             ->toJson();
     }
@@ -474,8 +498,65 @@ class ExpenseController extends Controller
             ->findOrFail($id);
 
         $employees = \App\Models\User::pluck('name', 'id')->toArray();
+        [$origin, $timeline] = $this->expenseTimeline($expense);
 
-        return view('modules.finance.expense.view-overview-drawer', compact('expense', 'employees'));
+        return view('modules.finance.expense.view-overview-drawer', compact('expense', 'employees', 'origin', 'timeline'));
+    }
+
+    /**
+     * Time frame for the expense drawer: how the job it belongs to came about
+     * (enquiry -> quotation -> job), then the expense's own life
+     * (created / updated / approved / cancelled), oldest first.
+     */
+    private function expenseTimeline(Expense $expense): array
+    {
+        $events = [];
+        $rank = 0;
+        $add = function ($label, $at, $icon, $module, $by = null, $meta = null, $link = null) use (&$events, &$rank) {
+            if (!$at) return;
+            $events[] = ['label' => $label, 'at' => $at, 'icon' => $icon, 'module' => $module, 'by' => $by, 'meta' => $meta, 'link' => $link,
+                'rank' => $rank, 'key' => \Illuminate\Support\Carbon::parse($at)->timestamp, 'seq' => count($events)];
+        };
+
+        $job = $expense->job_id ? \App\Models\Job\Job::find($expense->job_id) : null;
+        $quotation = $job && $job->quotation_id ? \App\Models\Quotation\Quotation::find($job->quotation_id) : null;
+        $enquiry = $quotation && $quotation->enquiry_id ? \App\Models\Enquiry\Enquiry::find($quotation->enquiry_id) : null;
+
+        if ($enquiry) $add(__('Enquiry created') . ' · ' . $enquiry->row_no, $enquiry->created_at, 'bi-chat-left-text', 'enquiry', null, null, ['enquiry', $enquiry->id, $enquiry->row_no]);
+        if ($quotation) $add(__('Quotation posted') . ' · ' . $quotation->row_no, $quotation->created_at, 'bi-file-earmark-text', 'quotation', null, null, ['quotation', $quotation->id, $quotation->row_no]);
+        if ($job) $add(($quotation ? __('Converted to job') : __('Job created')) . ' · ' . $job->row_no, $job->created_at, 'bi-briefcase', 'job', null, null, ['job', $job->id, $job->row_no]);
+
+        $rank = 1;
+        $origin = $quotation
+            ? ($enquiry ? __('Enquiry') . ' → ' : '') . __('Quotation') . ' → ' . __('Job') . ' → ' . __('Expense')
+            : ($job ? __('Job') . ' → ' . __('Expense') : __('Expense created directly'));
+
+        $labels = [ExpenseEnum::PENDING->value => __('Moved to Pending'), ExpenseEnum::APPROVED->value => __('Approved'), ExpenseEnum::CANCELLED->value => __('Cancelled')];
+        $ignore = ['status', 'paid_amount', 'payment_status', 'updated_at', 'approved_by', 'approved_at'];
+        $seenCreate = false;
+        $logs = \App\Models\Log\LogHistory::where('loggable_type', Expense::class)
+            ->where('loggable_id', $expense->id)->orderBy('id')->get();
+        foreach ($logs as $log) {
+            $by = $log->user_id['name'] ?? null;
+            if ($log->action === 'created') {
+                $seenCreate = true;
+                $add(__('Expense created') . ' · ' . $expense->row_no, $log->created_at, 'bi-wallet2', 'expense', $by, number_format((float) $expense->grand_total, decimals()));
+            } elseif ($log->action === 'updated') {
+                $new = $log->changes['new'] ?? [];
+                if (isset($new['status'])) {
+                    $st = (int) $new['status'];
+                    $add($labels[$st] ?? __('Status changed'), $log->created_at,
+                        $st === ExpenseEnum::APPROVED->value ? 'bi-check-circle' : ($st === ExpenseEnum::CANCELLED->value ? 'bi-x-circle' : 'bi-clock'), 'expense', $by);
+                } elseif (array_diff(array_keys($new), $ignore)) {
+                    $add(__('Expense updated'), $log->created_at, 'bi-pencil-square', 'expense', $by);
+                }
+            }
+        }
+        if (!$seenCreate) $add(__('Expense created') . ' · ' . $expense->row_no, $expense->created_at, 'bi-wallet2', 'expense', null, number_format((float) $expense->grand_total, decimals()));
+
+        usort($events, fn($a, $b) => [$a['rank'], $a['rank'] ? $a['key'] : $a['seq'], $a['seq']] <=> [$b['rank'], $b['rank'] ? $b['key'] : $b['seq'], $b['seq']]);
+
+        return [$origin, $events];
     }
 
     public function print($id)

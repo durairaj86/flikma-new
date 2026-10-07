@@ -5,7 +5,22 @@ ACCOUNT = {
     load() {
         //ACCOUNT.form.load();
         this.list.bindTabs();
+        ACCOUNT.filter.load();
         //this.list.dataTable('asset');
+    },
+    filter: {
+        load() {
+            $('#apply-filter').off().on('click', function () {
+                ACCOUNT.list.dataTable();
+                FILTER.filteredColumn();
+            });
+        },
+        default() {
+            return {
+                status: $('#filter-status').val() || 'all',
+                parent: $('#filter-parent').val() || '',
+            };
+        },
     },
     list: {
         load(activeTab) {
@@ -30,7 +45,10 @@ ACCOUNT = {
                 ajax: {
                     url: GLOBAL_FN.buildUrl('finance/account/data'),
                     type: 'POST',
-                    data: {type: activeTab},
+                    data: function (d) {
+                        d.type = activeTab;
+                        d.filterData = ACCOUNT.filter.default();
+                    },
                     dataSrc: function (json) {
                         $('#dataTable tbody .loading-row').remove();
                         GLOBAL_FN.setStatusCounts(json.statusCounts);
