@@ -208,6 +208,7 @@
     </main>
 
     @include('modules.quotation.quotation-view')
+    @include('modules.quotation.linked-enquiry-drawer')
     @include('modules.email.send-email')
     @include('modules.workflows.quotation')
 
@@ -604,6 +605,34 @@
                 if (action === 'row_rejected') return {{ Illuminate\Support\Js::from(__('Are you sure you want to cancel this quotation?')) }};
                 return {{ Illuminate\Support\Js::from(__('Are you sure you want to change status?')) }};
             }
+
+            // Enquiry no. in the quotation view: slide the enquiry over the quotation drawer; closing it returns to the quotation.
+            $('#moduleDrawer').on('click', '.open-linked-enquiry', function (e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                const qEl = document.getElementById('moduleDrawer');
+                const eEl = document.getElementById('linkedEnquiryDrawer');
+                $('#linkedEnquirySubtitle').text($(this).data('no') || '');
+                $('#linkedEnquiryOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> {{ __('Loading...') }}</div>');
+                bootstrap.Tab.getOrCreateInstance(document.getElementById('linked-enquiry-general-tab')).show();
+                // Two open drawers would fight over keyboard focus; pause the quotation drawer's trap while the enquiry is on top.
+                const qFocus = bootstrap.Offcanvas.getInstance(qEl)?._focustrap;
+                qFocus?.deactivate();
+                eEl.addEventListener('hidden.bs.offcanvas', function () { qFocus?.activate(); }, {once: true});
+                bootstrap.Offcanvas.getOrCreateInstance(eEl).show();
+                $.get('/sales/enquiry/' + id + '/overview-drawer', function (data) {
+                    $('#linkedEnquiryOverview').html(data);
+                }).fail(function () {
+                    $('#linkedEnquiryOverview').html('<div class="alert alert-danger m-3">{{ __('Failed to load enquiry details.') }}</div>');
+                });
+            });
+
+            // Closing the quotation (main) drawer also closes the enquiry slide beside it.
+            document.getElementById('moduleDrawer').addEventListener('hide.bs.offcanvas', function (e) {
+                if (e.target !== this) return;
+                const linked = bootstrap.Offcanvas.getInstance(document.getElementById('linkedEnquiryDrawer'));
+                if (linked) linked.hide();
+            });
 
             $('#moduleDrawer').on('click', '.drawer-print', function () {
                 printQuotation($(this).data('id'));
