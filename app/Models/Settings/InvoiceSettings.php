@@ -66,7 +66,7 @@ class InvoiceSettings extends Model
                 [
                     'company_id' => session('company_id'),
                     'theme' => 'stylish',
-                    'primary_color' => '#0b6aa0',
+                    'primary_color' => '#16a34a',
                     'party_balance' => false,
                     'free_item_qty' => false,
                     'item_description' => true,

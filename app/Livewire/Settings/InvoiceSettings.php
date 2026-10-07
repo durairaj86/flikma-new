@@ -13,7 +13,7 @@ class InvoiceSettings extends Component
 {
     // Settings properties
     public $theme = 'stylish';
-    public $primaryColor = '#0b6aa0';
+    public $primaryColor = '#16a34a';
     public $partyBalance = false;
     public $freeItemQty = false;
     public $itemDescription = true;

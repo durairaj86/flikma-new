@@ -2979,5 +2979,15 @@
     "selected": "محدد",
     "Select a job to choose its containers.": "اختر مهمة لاختيار حاويتها.",
     "This job has no containers.": "لا توجد حاويات لهذه المهمة.",
-    "Select all": "تحديد الكل"
+    "Select all": "تحديد الكل",
+    "Default": "افتراضي",
+    "Blue": "أزرق",
+    "Slate": "رمادي داكن",
+    "Emerald": "أخضر زمردي",
+    "Violet": "بنفسجي",
+    "Red": "أحمر",
+    "Amber": "كهرماني",
+    "Orange": "برتقالي",
+    "Teal": "أزرق مخضر",
+    "Pink": "وردي"
 }

@@ -41,7 +41,7 @@ class InvoiceSettingsController extends Controller
 
         // Update the settings from the request
         $settings->theme = $request->input('theme', 'stylish');
-        $settings->primary_color = $request->input('primary_color', '#0b6aa0');
+        $settings->primary_color = $request->input('primary_color', '#16a34a');
 
         // Update boolean settings
         $settings->party_balance = $request->has('party_balance');

@@ -16,8 +16,10 @@
                                         <i class="bi bi-eye me-2"></i> {{ __('Invoice Preview') }}
                                         <span id="preview-loading" class="spinner-border spinner-border-sm text-primary ms-2" style="display:none;"></span>
                                     </h5>
-                                    <div id="invoice-preview" class="border rounded" style="height: 75vh; overflow: hidden;">
-                                        <iframe id="preview-frame" title="{{ __('Invoice preview') }}" style="width:100%; height:100%; border:0;"></iframe>
+                                    <div id="invoice-preview" class="border rounded bg-light position-relative" style="height: 75vh; overflow-x: hidden; overflow-y: auto;">
+                                        <div id="preview-spacer" class="position-relative" style="width:100%;">
+                                        <iframe id="preview-frame" title="{{ __('Invoice preview') }}" scrolling="no" style="width:794px; height:1123px; border:0; background:#fff; position:absolute; top:0; left:0; transform-origin: top left;"></iframe>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -190,16 +192,20 @@
 
                                 <div class="select-color pt-3">
                                     <div class="fw-bold fs-6 mb-3">{{ __('Select Primary Accent Color') }}</div>
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="color-show rounded-circle border border-dark border-opacity-25 selected" data-color="#0b6aa0" style="background:#0b6aa0; width: 32px; height: 32px; cursor:pointer; outline: 3px solid rgba(13,110,253,0.3);"></div>
-                                        <div class="color-show rounded-circle border border-dark border-opacity-25" data-color="#000000" style="background:#000; width: 32px; height: 32px; cursor:pointer;"></div>
-                                        <div class="color-show rounded-circle border border-dark border-opacity-25" data-color="#407400" style="background:#407400; width: 32px; height: 32px; cursor:pointer;"></div>
-                                        <div class="color-show rounded-circle border border-dark border-opacity-25" data-color="#840bb2" style="background:#840bb2; width: 32px; height: 32px; cursor:pointer;"></div>
-                                        <div class="color-show rounded-circle border border-dark border-opacity-25" data-color="#c11111" style="background:#c11111; width: 32px; height: 32px; cursor:pointer;"></div>
-                                        <div class="color-show rounded-circle border border-dark border-opacity-25" data-color="#5b57ae" style="background:#5b57ae; width: 32px; height: 32px; cursor:pointer;"></div>
-                                        <div class="color-show rounded-circle border border-dark border-opacity-25" data-color="#cd9d23" style="background:#cd9d23; width: 32px; height: 32px; cursor:pointer;"></div>
-                                        <div class="color-show rounded-circle border border-dark border-opacity-25" data-color="#bf6200" style="background:#bf6200; width: 32px; height: 32px; cursor:pointer;"></div>
-                                        <button class="btn btn-outline-secondary btn-sm ms-3"><i class="bi bi-eyedropper me-1"></i> {{ __('Custom') }}</button>
+                                    @php
+                                        // Tailwind palette (600 shades; slate-900 for black). The first one is the default.
+                                        $accentColors = [
+                                            '#16a34a' => 'Green', '#2563eb' => 'Blue', '#0f172a' => 'Slate', '#7c3aed' => 'Violet',
+                                            '#dc2626' => 'Red', '#4f46e5' => 'Indigo', '#d97706' => 'Amber', '#ea580c' => 'Orange',
+                                            '#0d9488' => 'Teal', '#db2777' => 'Pink',
+                                        ];
+                                    @endphp
+                                    <div class="d-flex align-items-center flex-wrap gap-3">
+                                        @foreach($accentColors as $hex => $name)
+                                            <div class="color-show rounded-circle {{ $loop->first ? 'selected' : '' }}" data-color="{{ $hex }}" title="{{ __($name) }}"
+                                                 style="background:{{ $hex }}; width: 32px; height: 32px; cursor:pointer; {{ $loop->first ? 'outline: 3px solid '.$hex.'55; outline-offset: 2px;' : '' }}"></div>
+                                        @endforeach
+                                        <button type="button" class="btn btn-outline-secondary btn-sm ms-3" id="accentDefaultBtn"><i class="bi bi-arrow-counterclockwise me-1"></i> {{ __('Default') }}</button>
                                     </div>
                                 </div>
                             </div>
@@ -321,7 +327,7 @@
                                 <div class="card mb-3 border-secondary border-opacity-25">
                                     <div class="card-header bg-white p-3" id="headingPartyDetails" data-bs-toggle="collapse" data-bs-target="#collapsePartyDetails" aria-expanded="true" aria-controls="collapsePartyDetails" style="cursor: pointer;">
                                         <h6 class="mb-0 fw-bold d-flex justify-content-between align-items-center">
-                                            {{ __('Party Details: Custom Fields') }}
+                                            {{ __('Party Details') }}
                                             <i class="bi bi-chevron-up ms-2"></i>
                                         </h6>
                                     </div>
@@ -350,13 +356,6 @@
                                                 <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="partySalesperson" data-party-detail="salesperson"><label class="form-check-label">{{ __('Salesperson') }}</label></div></div>
                                             </div>
 
-                                            <hr class="my-3">
-
-                                            <h6 class="mb-3">{{ __('Custom Fields') }}</h6>
-                                            <button class="btn btn-outline-primary btn-sm border-dashed fw-medium" id="addCustomFieldBtn"><i class="bi bi-plus me-1"></i> {{ __('Add Custom Field') }}</button>
-                                            <div id="customFieldsList" class="mt-3 small text-muted">
-                                                <p class="mb-0">{{ __('No custom fields added yet.') }}</p>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -400,32 +399,6 @@
                                     </div>
                                 </div>
 
-                                <div class="card mb-3 border-secondary border-opacity-25">
-                                    <div class="card-header bg-white p-3 collapsed" id="headingMisc" data-bs-toggle="collapse" data-bs-target="#collapseMisc" aria-expanded="false" aria-controls="collapseMisc" style="cursor: pointer;">
-                                        <h6 class="mb-0 fw-bold d-flex justify-content-between align-items-center">
-                                            {{ __('Miscellaneous Details') }} <span class="badge bg-info text-dark ms-3">{{ __('New') }}</span>
-                                            <i class="bi bi-chevron-down ms-2"></i>
-                                        </h6>
-                                    </div>
-                                    <div id="collapseMisc" class="collapse" aria-labelledby="headingMisc">
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscInvoiceNotes" data-misc-detail="invoice_notes"><label class="form-check-label">{{ __('Invoice Notes') }}</label></div></div>
-                                                <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscTermsConditions" data-misc-detail="terms_conditions"><label class="form-check-label">{{ __('Terms & Conditions') }}</label></div></div>
-                                                <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscPaymentInstructions" data-misc-detail="payment_instructions"><label class="form-check-label">{{ __('Payment Instructions') }}</label></div></div>
-                                                <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscDeliveryInstructions" data-misc-detail="delivery_instructions"><label class="form-check-label">{{ __('Delivery Instructions') }}</label></div></div>
-                                                <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscHandlingInstructions" data-misc-detail="handling_instructions"><label class="form-check-label">{{ __('Special Handling') }}</label></div></div>
-                                                <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscAdditionalContacts" data-misc-detail="additional_contacts"><label class="form-check-label">{{ __('Additional Contacts') }}</label></div></div>
-                                                <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscReferenceNumbers" data-misc-detail="reference_numbers"><label class="form-check-label">{{ __('Reference Numbers') }}</label></div></div>
-                                                <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscAttachments" data-misc-detail="attachments"><label class="form-check-label">{{ __('Attachments') }}</label></div></div>
-                                                <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscPackingSlip" data-misc-detail="packing_slip"><label class="form-check-label">{{ __('Packing Slip') }}</label></div></div>
-                                                <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscTransportInfo" data-misc-detail="transport_info"><label class="form-check-label">{{ __('Transport Information') }}</label></div></div>
-                                                <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscCustomsInfo" data-misc-detail="customs_info"><label class="form-check-label">{{ __('Customs Information') }}</label></div></div>
-                                                <div class="col-md-4 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="miscInsuranceInfo" data-misc-detail="insurance_info"><label class="form-check-label">{{ __('Insurance Information') }}</label></div></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
 
                                 </div>
@@ -486,10 +459,16 @@
                                 c.style.outline = '';
                             });
                             this.classList.add('selected');
-                            this.style.outline = '3px solid rgba(13,110,253,0.3)';
+                            this.style.outline = '3px solid ' + this.dataset.color + '55';
+                            this.style.outlineOffset = '2px';
                             applyLocalColor(this.dataset.color);
                             markUnsaved();
                         });
+                    });
+
+                    // "Default" puts the default accent colour back (the first swatch).
+                    document.getElementById('accentDefaultBtn')?.addEventListener('click', function () {
+                        document.querySelector('.color-show')?.click();
                     });
 
                     // Item table column checkboxes — patch matching data-toggle cells
@@ -512,12 +491,6 @@
                             applyLocalToggle(toggleKey, this.checked);
                             markUnsaved();
                         });
-                    });
-
-                    // Miscellaneous Details has no backing column in any template
-                    // (see memory note) — nothing to patch locally, just tracks unsaved.
-                    document.querySelectorAll('#collapseMisc input[type="checkbox"]').forEach(function(checkbox) {
-                        checkbox.addEventListener('change', markUnsaved);
                     });
 
                     document.getElementById('saveSettingsBtn').addEventListener('click', function() {
@@ -601,11 +574,14 @@
                         });
 
                         // Set color
-                        const color = '{{ $settings->primary_color }}';
+                        // The old defaults count as "default" -> the first (green) swatch.
+                        let color = '{{ $settings->primary_color }}';
+                        if (!color || ['#0b6aa0', '#2563eb'].includes(color.toLowerCase())) color = '#16a34a';
                         document.querySelectorAll('.color-show').forEach(function(c) {
                             if (c.dataset.color === color) {
                                 c.classList.add('selected');
-                                c.style.outline = '3px solid rgba(13,110,253,0.3)';
+                                c.style.outline = '3px solid ' + c.dataset.color + '55';
+                                c.style.outlineOffset = '2px';
                             } else {
                                 c.classList.remove('selected');
                                 c.style.outline = '';
@@ -658,16 +634,6 @@
                                         }
                                     });
                                 }
-
-                                // Initialize miscellaneous details checkboxes
-                                if (customFields.misc_details) {
-                                    Object.keys(customFields.misc_details).forEach(function(key) {
-                                        const checkbox = document.querySelector(`#collapseMisc input[data-misc-detail="${key}"]`);
-                                        if (checkbox) {
-                                            checkbox.checked = customFields.misc_details[key];
-                                        }
-                                    });
-                                }
                             } catch (e) {
                                 console.error('Error parsing custom fields:', e);
                             }
@@ -681,7 +647,7 @@
                     let theme = 'stylish';
                     document.querySelectorAll('.theme.active').forEach(function(t) { theme = t.dataset.theme; });
 
-                    let color = '#0b6aa0';
+                    let color = '#16a34a';
                     document.querySelectorAll('.color-show.selected').forEach(function(c) { color = c.dataset.color; });
 
                     const invoiceDetails = {};
@@ -692,11 +658,6 @@
                     const partyDetails = {};
                     document.querySelectorAll('#collapsePartyDetails input[type="checkbox"][data-party-detail]').forEach(function(checkbox) {
                         partyDetails[checkbox.dataset.partyDetail] = checkbox.checked;
-                    });
-
-                    const miscDetails = {};
-                    document.querySelectorAll('#collapseMisc input[type="checkbox"][data-misc-detail]').forEach(function(checkbox) {
-                        miscDetails[checkbox.dataset.miscDetail] = checkbox.checked;
                     });
 
                     return {
@@ -720,7 +681,6 @@
                         discount: document.getElementById('colDiscount').checked ? 1 : 0,
                         invoice_details: invoiceDetails,
                         party_details: partyDetails,
-                        misc_details: miscDetails,
                         _token: '{{ csrf_token() }}'
                     };
                 }
@@ -728,6 +688,35 @@
                 // Renders the ACTUAL template (chosen theme + current toggles) against
                 // a real invoice via the server, so the preview pane matches the real print/PDF output.
                 let previewRequestSeq = 0;
+
+                // Scale the A4 preview to the pane width (no horizontal scroll); the pane scrolls vertically.
+                function fitPreview() {
+                    const frame = document.getElementById('preview-frame');
+                    const box = document.getElementById('invoice-preview');
+                    const spacer = document.getElementById('preview-spacer');
+                    if (!frame || !box || !spacer) return;
+                    const W = 794; // A4 width at 96dpi
+                    let H = 1123;
+                    try {
+                        const d = frame.contentDocument;
+                        if (d && d.documentElement) {
+                            frame.style.width = W + 'px';
+                            frame.style.height = '10px';
+                            H = Math.max(d.documentElement.scrollHeight, d.body ? d.body.scrollHeight : 0, 600);
+                        }
+                    } catch (e) {}
+                    frame.style.height = H + 'px';
+                    const scale = Math.min(1, box.clientWidth / W);
+                    frame.style.transform = 'scale(' + scale + ')';
+                    frame.style.left = Math.max(0, (box.clientWidth - W * scale) / 2) + 'px';
+                    frame.style.top = '0px';
+                    spacer.style.height = Math.ceil(H * scale) + 'px';
+                }
+                (function () {
+                    const frame = document.getElementById('preview-frame');
+                    if (frame) frame.addEventListener('load', fitPreview);
+                    window.addEventListener('resize', fitPreview);
+                })();
                 function updatePreview() {
                     const seq = ++previewRequestSeq;
                     const loadingEl = document.getElementById('preview-loading');
@@ -770,30 +759,15 @@
                     .then(data => {
                         if (data.status === 'success') {
                             markSaved();
-                            const toast = document.createElement('div');
-                            toast.className = 'position-fixed bottom-0 end-0 p-3';
-                            toast.style.zIndex = '5';
-                            toast.innerHTML = `
-                                <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
-                                    <div class="toast-header bg-success text-white">
-                                        <strong class="me-auto">{{ __('Success') }}</strong>
-                                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                                    </div>
-                                    <div class="toast-body">
-                                        ${data.message}
-                                    </div>
-                                </div>
-                            `;
-                            document.body.appendChild(toast);
-                            setTimeout(() => {
-                                toast.remove();
-                            }, 3000);
+                            toastr.success(data.message || @json(__('Invoice settings saved successfully.')));
                         } else {
                             console.error('Error saving settings:', data.message);
+                            toastr.error(data.message || @json(__('Could not save the settings.')));
                         }
                     })
                     .catch(error => {
                         console.error('Error saving settings:', error);
+                        toastr.error(@json(__('Could not save the settings.')));
                     })
                     .finally(() => {
                         btn.disabled = false;

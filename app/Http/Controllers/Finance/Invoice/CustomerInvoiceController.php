@@ -1050,7 +1050,8 @@ class CustomerInvoiceController extends Controller
         // Each cloned theme ships its own brand colour. A company only overrides it
         // by deliberately picking a different swatch; the untouched app default
         // ($appDefaultColor) is treated as "no choice" so the clone stays faithful.
-        $appDefaultColor = '#0b6aa0';
+        $appDefaultColor = '#16a34a';
+        $legacyDefaultColors = ['#0b6aa0', '#2563eb'];
         $themeAccents = [
             'bilingual' => '#2FA36B',
             'fastfatoora' => '#15803d',
@@ -1058,11 +1059,18 @@ class CustomerInvoiceController extends Controller
             'fastfatoora-classic' => '#111827',
         ];
         $chosen = $settings->primary_color ?: null;
-        $accentColor = ($chosen && strcasecmp($chosen, $appDefaultColor) !== 0)
+        $isDefaultChoice = !$chosen || strcasecmp($chosen, $appDefaultColor) === 0
+            || in_array(strtolower($chosen), $legacyDefaultColors, true);
+        $accentColor = (!$isDefaultChoice)
             ? $chosen
             : ($themeAccents[$settings->theme] ?? $appDefaultColor);
 
         $template = $themeTemplates[$settings->theme] ?? $themeTemplates['stylish'];
+
+        // The due date is stored in due_at; the print templates read due_date.
+        if (empty($customerInvoice->due_date) && !empty($customerInvoice->due_at)) {
+            $customerInvoice->due_date = $customerInvoice->due_at;
+        }
 
         return [$template, compact(
             'customerInvoice', 'descriptions', 'bank', 'company', 'jobContainers', 'jobPackages',

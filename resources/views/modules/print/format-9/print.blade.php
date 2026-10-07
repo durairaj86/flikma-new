@@ -47,7 +47,8 @@
 
         .ar { direction: rtl; text-align: right; unicode-bidi: bidi-override; }
         .muted { color: #4b5563; }
-        .dark-text { color: var(--accent); }
+        /* Body text stays neutral dark whatever accent is chosen; the accent is only for the logo mark, title, rules and section headings. */
+        .dark-text { color: #111827; }
         .accent-color { color: #0d9488; }
         table { border-collapse: collapse; width: 100%; table-layout: fixed; word-wrap: break-word; }
 
@@ -58,7 +59,7 @@
         }
 
         /* Clean Modern Minimalist Line Items with enforced padding */
-        table.items th { font-size: 8pt; font-weight: bold; padding: 8px 4px; border-bottom: 2px solid var(--accent); color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; background: transparent; }
+        table.items th { font-size: 8pt; font-weight: bold; padding: 8px 4px; border-bottom: 2px solid var(--accent); color: #374151; text-transform: uppercase; letter-spacing: 0.5px; background: transparent; }
 
         /* Enforced cell padding for row height spacing */
         table.items td { font-size: 9pt; padding: 8px 4px; border-bottom: 1px solid #f3f4f6; vertical-align: middle; background: transparent; }
