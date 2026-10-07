@@ -70,7 +70,7 @@
     <div class="section">
         <h6>{{ __('General Info') }}</h6>
         <div class="info-grid">
-            <div class="col-span-2"><strong>{{ __('Services:') }}</strong><span>{{ services($job->services) }}</span></div>
+            <div class="col-span-2"><strong>{{ __('Services:') }}</strong><span>{{ $job->services ? services($job->services) : "-" }}</span></div>
             <div><strong>{{ __('Reference No:') }}</strong><span>{{ $job->client_reference_no ?? '-' }}</span></div>
             <div class="col-span-2"><strong>{{ __('Remarks:') }}</strong><span>{{ $job->remarks ?? '-' }}</span></div>
         </div>

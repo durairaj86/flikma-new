@@ -86,12 +86,12 @@
 <div class="section">
     <h6>{{ __('Customer & Invoice Information') }}</h6>
     <div class="info-grid">
-        <div><strong>{{ __('Customer') }}:</strong><span>{{ $customerInvoice->customer->name ?? '-' }}</span></div>
+        <div><strong>{{ __('Customer') }}:</strong><span>@if($customerInvoice->customer_id)<a href="#" class="open-linked text-primary text-decoration-none" data-type="customer" data-id="{{ $customerInvoice->customer_id }}" data-title="{{ $customerInvoice->customer->name ?? '' }}">{{ $customerInvoice->customer->name ?? '-' }}</a>@else - @endif</span></div>
         <div><strong>{{ __('Email') }}:</strong><span>{{ $customerInvoice->customer->email ?? '-' }}</span></div>
         <div><strong>{{ __('Invoice Date') }}:</strong><span>{{ $customerInvoice->invoice_date }}</span></div>
         <div><strong>{{ __('Phone') }}:</strong><span>{{ $customerInvoice->customer->phone ?? '-' }}</span></div>
         <div><strong>{{ __('Due Date') }}:</strong><span>{{ $customerInvoice->due_at }}</span></div>
-        <div><strong>{{ __('Job') }}:</strong><span>{{ $customerInvoice->job_no }}</span></div>
+        <div><strong>{{ __('Job') }}:</strong><span>@if($customerInvoice->job_id)<a href="#" class="open-linked text-primary text-decoration-none" data-type="job" data-id="{{ $customerInvoice->job_id }}" data-title="{{ $customerInvoice->job_no }}">{{ $customerInvoice->job_no }}</a>@else{{ $customerInvoice->job_no }}@endif</span></div>
         <div><strong>{{ __('Currency') }}:</strong><span>{{ $customerInvoice->currency }} ({{ __('rate') }} {{ number_format($customerInvoice->currency_rate, decimals()) }})</span></div>
         <div><strong>{{ __('Status') }}:</strong><span>{{ \App\Enums\CustomerInvoiceEnum::tryFrom($customerInvoice->status)?->label() ?? '-' }}</span></div>
     </div>
@@ -222,7 +222,9 @@
                 <tr>
                     <td><span class="badge bg-{{ $tx['type_color'] }}-subtle text-{{ $tx['type_color'] }}-emphasis">{{ $tx['type'] }}</span></td>
                     <td>
-                        @if($tx['url'])
+                        @if(!empty($tx['id']))
+                            <a href="#" class="open-linked text-primary text-decoration-none" data-type="{{ $tx['kind'] }}" data-id="{{ $tx['id'] }}" data-title="{{ $tx['reference'] }}">{{ $tx['reference'] }}</a>
+                        @elseif($tx['url'])
                             <a href="{{ $tx['url'] }}" target="_blank">{{ $tx['reference'] }}</a>
                         @else
                             {{ $tx['reference'] }}

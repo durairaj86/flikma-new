@@ -27,8 +27,9 @@
         </span>
     </div>
     <div class="d-flex gap-2">
-        <button type="button" class="btn btn-outline-secondary btn-sm"
-                onclick="CREDIT_NOTE.printPreview('{{ $creditNote->id }}')">
+        <button type="button" class="btn btn-outline-secondary btn-sm linked-print"
+                data-print-url="{{ url('adjustment/credit-note/' . $creditNote->id . '/print') }}"
+                onclick="if (window.CREDIT_NOTE && CREDIT_NOTE.printPreview) { CREDIT_NOTE.printPreview('{{ $creditNote->id }}'); }">
             <i class="bi bi-printer me-1"></i> {{ __('Print') }}
         </button>
     </div>

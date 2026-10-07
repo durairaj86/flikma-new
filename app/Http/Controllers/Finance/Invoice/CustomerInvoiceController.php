@@ -865,6 +865,8 @@ class CustomerInvoiceController extends Controller
             $label = $collectionStatusLabels[$ci->collection->status ?? 0] ?? ['Unknown', 'secondary'];
             $transactions->push([
                 'type' => 'Collection',
+                'kind' => 'collection',
+                'id' => $ci->collection_id,
                 'type_color' => 'primary',
                 'reference' => $ci->collection->row_no ?? '—',
                 'url' => $ci->collection_id ? url('transaction/collections/' . $ci->collection_id) : null,
@@ -879,6 +881,8 @@ class CustomerInvoiceController extends Controller
             $label = $creditNoteStatusLabels[$cn->status] ?? ['Unknown', 'secondary'];
             $transactions->push([
                 'type' => 'Credit Note',
+                'kind' => 'credit_note',
+                'id' => $cn->id,
                 'type_color' => 'info',
                 'reference' => $cn->row_no ?? '—',
                 'url' => url('adjustment/credit-note/' . $cn->id . '/create'),

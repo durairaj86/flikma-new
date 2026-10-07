@@ -304,6 +304,7 @@
     </script>
     @include('modules.email.send-email')
     @include('modules.finance.customer-invoice.customer-invoice-view')
+    @include('modules.common.linked-drawer', ['mainWidth' => 60, 'subWidth' => 35])
 
 
 
