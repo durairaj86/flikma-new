@@ -16,6 +16,8 @@
         #listTabs .status-btn:not(.active) > span:first-child > i { color: var(--bs-warning) !important; }
         #listTabs .status-btn.active { background: rgb(13, 110, 253) !important; color: #fff !important; }
         #listTabs .status-btn.active > span:first-child > i { color: #fff !important; }
+        /* Header row background only (same light grey as the other lists); text styling unchanged. */
+        #dataTable thead th { background-color: #f8f9fa !important; }
     </style>
     <main class="gmail-content bg-white px-3">
         <style>

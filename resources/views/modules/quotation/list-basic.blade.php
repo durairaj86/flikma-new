@@ -30,6 +30,8 @@
         #basicListTabs .status-btn:not(.active) > span:first-child > i { color: var(--bs-warning) !important; }
         #basicListTabs .status-btn.active { background: rgb(13, 110, 253) !important; color: #fff !important; }
         #basicListTabs .status-btn.active > span:first-child > i { color: #fff !important; }
+        /* Header row background only (same light grey as the other lists); text styling unchanged. */
+        #basicQuotationTable thead th { background-color: #f8f9fa !important; }
     </style>
     <main class="gmail-content bg-white px-3">
         <style>
