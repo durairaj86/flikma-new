@@ -61,29 +61,31 @@
                     @csrf
                     <div class="row g-4">
 
-                        <div class="col-md-3 form-filter">
+                        <div class="col-md-6 col-xl-4 form-filter">
                             <label class="form-label fw-medium filter-label-row">{{ __('Quotation Date') }}</label>
                             <div class="filter-date-range">
-                                <input type="date" class="form-control" id="filter-from-date" name="filter-from-date">
+                                <input type="text" class="form-control datepicker from-date default-filter" id="filter-from-date" name="filter-from-date" autocomplete="off" data-min-date="01-01-2000" data-max-date="31-12-2099"
+                                       value="{{ \Carbon\Carbon::today()->subMonths(3)->startOfMonth()->format('d-m-Y') }}">
                                 <i class="bi bi-arrow-right filter-date-range-arrow"></i>
-                                <input type="date" class="form-control" id="filter-to-date" name="filter-to-date">
+                                <input type="text" class="form-control datepicker to-date default-filter" id="filter-to-date" name="filter-to-date" autocomplete="off" data-min-date="01-01-2000" data-max-date="31-12-2099"
+                                       value="{{ \Carbon\Carbon::today()->format('d-m-Y') }}">
                             </div>
                         </div>
 
-                        <div class="col-md-3 form-filter">
+                        <div class="col-md-6 col-xl-2 form-filter">
                             <label class="form-label fw-medium filter-label-row">{{ __('Customer') }}</label>
                             <x-common.customers multiple></x-common.customers>
                         </div>
 
-                        <div class="col-md-3 form-filter pol-pod-select">
+                        <div class="col-md-6 col-xl-3 form-filter pol-pod-select">
                             <div class="d-flex align-items-center justify-content-between filter-label-row">
                                 <label class="form-label fw-medium mb-0">
                                     {{ __('POL') }} <span class="text-muted fw-normal">({{ __('Port of Loading') }})</span>
                                 </label>
                                 <div class="shipment-toggle">
-                                    <input type="radio" class="btn-check basic-sync-sea" name="basic_shipment_mode" id="basicPolSea" value="sea" checked>
+                                    <input type="radio" class="btn-check basic-sync-sea avoid-filter" name="basic_shipment_mode" id="basicPolSea" value="sea" checked>
                                     <label for="basicPolSea">{{ __('Sea') }}</label>
-                                    <input type="radio" class="btn-check basic-sync-air" name="basic_shipment_mode" id="basicPolAir" value="air">
+                                    <input type="radio" class="btn-check basic-sync-air avoid-filter" name="basic_shipment_mode" id="basicPolAir" value="air">
                                     <label for="basicPolAir">{{ __('Air') }}</label>
                                 </div>
                             </div>
@@ -92,15 +94,15 @@
                             </select>
                         </div>
 
-                        <div class="col-md-3 form-filter pol-pod-select">
+                        <div class="col-md-6 col-xl-3 form-filter pol-pod-select">
                             <div class="d-flex align-items-center justify-content-between filter-label-row">
                                 <label class="form-label fw-medium mb-0">
                                     {{ __('POD') }} <span class="text-muted fw-normal">({{ __('Port of Discharge') }})</span>
                                 </label>
                                 <div class="shipment-toggle">
-                                    <input type="radio" class="btn-check basic-sync-sea" name="basic_shipment_mode_2" id="basicPodSea" value="sea" checked>
+                                    <input type="radio" class="btn-check basic-sync-sea avoid-filter" name="basic_shipment_mode_2" id="basicPodSea" value="sea" checked>
                                     <label for="basicPodSea">{{ __('Sea') }}</label>
-                                    <input type="radio" class="btn-check basic-sync-air" name="basic_shipment_mode_2" id="basicPodAir" value="air">
+                                    <input type="radio" class="btn-check basic-sync-air avoid-filter" name="basic_shipment_mode_2" id="basicPodAir" value="air">
                                     <label for="basicPodAir">{{ __('Air') }}</label>
                                 </div>
                             </div>
@@ -169,6 +171,20 @@
 
         <!-- Table Section -->
         <div class="shadow bdr-r-10 py-3 flex-grow-1">
+            <!-- Applied filters appear here as removable chips (filled by FILTER.filteredColumn in startup.js) -->
+            <div class="d-flex justify-content-between align-items-start gap-2 px-3 flex-shrink-0">
+                <div id="filtered-data" class="d-flex flex-wrap align-items-center"></div>
+                <div class="d-flex align-items-center gap-2 ms-auto mb-2 flex-shrink-0">
+                    <label for="qtnPageLength" class="small text-muted mb-0">{{ __('Show') }}</label>
+                    <select id="qtnPageLength" class="form-select form-select-sm w-auto" aria-label="{{ __('Rows per page') }}">
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span class="small text-muted">{{ __('entries') }}</span>
+                </div>
+            </div>
             <div class="flex-grow-1">
                 <table class="table align-middle" id="basicQuotationTable">
                     <thead class="table-light sticky-top">
@@ -288,6 +304,8 @@
                 }
 
                 table = $('#basicQuotationTable').DataTable({
+                    lengthChange: false,                       // the "Show N entries" selector lives in the chips row
+                    pageLength: parseInt($('#qtnPageLength').val(), 10) || 10,
                     serverSide: true,
                     processing: true,
                     order: [],
@@ -323,7 +341,12 @@
             });
 
             $('#apply-filter').on('click', function () {
+                if (window.FILTER && FILTER.filteredColumn) { FILTER.filteredColumn(); }   // show the applied filters as chips
                 loadTab(currentTab);
+            });
+
+            $('#qtnPageLength').on('change', function () {
+                if (table) { table.page.len(parseInt(this.value, 10)).draw(); }
             });
 
             // Search box: wait until typing stops, then ask the server.
@@ -600,6 +623,8 @@
                 changeStatus(id, value, confirmMessage);
             });
 
+            if (typeof datepicker === 'function') { datepicker(); }                     // calendar pickers for the date range
+            if (window.FILTER && FILTER.filteredColumn) { FILTER.filteredColumn(); }   // default date range shows as a chip
             loadTab('pending');
         });
     </script>

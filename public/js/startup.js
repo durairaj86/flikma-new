@@ -2766,7 +2766,7 @@ FILTER = {
                     if (!e.hasClass('default-filter')) {
                         removeIcon = '<button type="button" class="btn btn-sm btn-light p-0 border-0 d-flex align-items-center justify-content-center remove-label" style="width: 16px; height: 16px; line-height: 1;" data-id="' + id + '" aria-label="Close">&times;</button>';
                     }
-                    if (singleVal && e.parent().hasClass('input-group-filter')) {
+                    if (singleVal && e.parent().is('.input-group-filter, .filter-date-range')) {
                         i++;
                         e2 = filterInputs.eq(i);
                         if (e2.val() !== undefined) {
@@ -2775,7 +2775,7 @@ FILTER = {
 
                     }
                     //filteredLabel += '<small class="badge filter-items badge-pill m-1 d-flex align-items-center">' + (multipleVal ? multipleVal : (e.closest('.form-group').find('label:' + labelText).text() + ' :&nbsp;<b>' + singleVal + '</b>')) + removeIcon + '</small>';
-                    filteredLabel += '<div class="d-inline-flex align-items-center bg-light border rounded-pill px-2 py-1 me-2 mb-2 small" style="font-size: 0.8rem;"><span class="me-2">' + (multipleVal ? multipleVal : (e.closest('.form-filter').find('label:' + labelText).text() + ' :&nbsp;<b>' + singleVal + '</b>')) + '</span>' + removeIcon + '</div>';
+                    filteredLabel += '<div class="filter-items d-inline-flex align-items-center bg-light border rounded-pill px-2 py-1 me-2 mb-2 small" style="font-size: 0.8rem;"><span class="me-2">' + (multipleVal ? multipleVal : (e.closest('.form-filter').find('label:' + labelText).text() + ' :&nbsp;<b>' + singleVal + '</b>')) + '</span>' + removeIcon + '</div>';
                 }
             }
         }
@@ -2797,12 +2797,9 @@ FILTER = {
                     //removeId[0].tomselect.clearOptions();   // optional: clears loaded options
                     removeId[0].tomselect.refreshOptions(false);
                 }
+                // drop just this chip (keep the container so later filters can still show their chips)
+                $(this).closest('.filter-items').remove();
                 $('#apply-filter').click();
-                if ($('#filtered-data .filter-items').length === 1) {
-                    $('#filtered-data').remove();
-                } else {
-                    $(this).closest('.filter-items').remove();
-                }
             }
         })
     },

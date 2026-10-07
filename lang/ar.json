@@ -2971,5 +2971,9 @@
     "Are you sure you want to cancel this enquiry?": "هل أنت متأكد من إلغاء هذا الاستفسار؟",
     "Are you sure you want to move this enquiry back to Pending?": "هل أنت متأكد من إعادة هذا الاستفسار إلى قيد الانتظار؟",
     "Please fill in the required field": "يرجى تعبئة الحقل المطلوب",
-    "Could not load the email details.": "تعذر تحميل بيانات البريد الإلكتروني."
+    "Could not load the email details.": "تعذر تحميل بيانات البريد الإلكتروني.",
+    "Show": "عرض",
+    "entries": "إدخالات",
+    "Hide Summary": "إخفاء الملخص",
+    "Show Summary": "إظهار الملخص"
 }

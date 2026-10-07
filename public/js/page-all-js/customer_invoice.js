@@ -118,6 +118,7 @@ CUSTOMER_INVOICE = {
                     dataSrc: function (json) {
                         $('#dataTable tbody').find('.loading-row').remove();
                         GLOBAL_FN.setStatusCounts(json.statusCounts);
+                        CUSTOMER_INVOICE.list.cardSummary(json.salesSummary, json.statusCounts);
                         return json.data;
                     }
                 },
@@ -201,6 +202,18 @@ CUSTOMER_INVOICE = {
             }).fail(function () {
                 $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load invoice details.</div>');
             });
+        },
+        cardSummary(data, counts) {
+            if (data) {
+                ['draft', 'approved'].forEach(k => {
+                    ['grand', 'sub', 'tax'].forEach(t => $('#total_' + k + '_' + t).text(amountFormat(data['total_' + k + '_' + t] || 0)));
+                });
+            }
+            if (counts) {
+                $('#cardAllCount').text(counts.all ?? 0);
+                $('#cardApprovedCount').text(counts.approved ?? 0);
+                $('#cardDraftCount').text(counts.draft ?? 0);
+            }
         },
         templates: {
             // Every cell below follows the same 2-line convention: a bold
