@@ -760,7 +760,87 @@ class CustomerInvoiceController extends Controller
         $balance = (float) $customerInvoice->grand_total - (float) ($customerInvoice->paid_amount ?? 0);
         $transactions = $this->invoiceTransactions($id);
 
-        return view('modules.finance.customer-invoice.view-overview-drawer', compact('customerInvoice', 'descriptions', 'balance', 'transactions'));
+        [$origin, $timeline] = $this->invoiceTimeline($customerInvoice);
+
+        return view('modules.finance.customer-invoice.view-overview-drawer', compact('customerInvoice', 'descriptions', 'balance', 'transactions', 'origin', 'timeline'));
+    }
+
+    /**
+     * Time frame for the invoice drawer: how the invoice came to exist
+     * (enquiry -> quotation -> job, or straight from a job), then its own
+     * life (created / updated / approved / cancelled), credit notes
+     * (partial or full) and collections, oldest first.
+     */
+    private function invoiceTimeline(CustomerInvoice $inv): array
+    {
+        $events = [];
+        $rank = 0; // origin chain (enquiry -> quotation -> job) always comes first, in order
+        $add = function ($label, $at, $icon, $by = null, $meta = null, $module = 'invoice') use (&$events, &$rank) {
+            if (!$at) return;
+            $ts = \Carbon\Carbon::parse($at);
+            // Date-only values (credit note / collection dates) carry no time:
+            // treat them as end of day so they follow same-day invoice events.
+            $key = $ts->format('H:i:s') === '00:00:00' ? $ts->copy()->endOfDay()->timestamp : $ts->timestamp;
+            $events[] = ['label' => $label, 'at' => $at, 'icon' => $icon, 'by' => $by, 'meta' => $meta, 'module' => $module, 'rank' => $rank, 'key' => $key, 'seq' => count($events)];
+        };
+
+        $job = $inv->job_id ? \App\Models\Job\Job::find($inv->job_id) : null;
+        $quotation = $job && $job->quotation_id ? \App\Models\Quotation\Quotation::find($job->quotation_id) : null;
+        $enquiry = $quotation && $quotation->enquiry_id ? \App\Models\Enquiry\Enquiry::find($quotation->enquiry_id) : null;
+
+        if ($enquiry) $add(__('Enquiry created') . ' · ' . $enquiry->row_no, $enquiry->created_at, 'bi-chat-left-text', null, null, 'enquiry');
+        if ($quotation) $add(__('Quotation posted') . ' · ' . $quotation->row_no, $quotation->posted_at ?? $quotation->created_at, 'bi-file-earmark-text', null, null, 'quotation');
+        if ($job) $add(($quotation ? __('Converted to job') : __('Job created')) . ' · ' . $job->row_no, $job->posted_at ?? $job->created_at, 'bi-briefcase', null, null, 'job');
+
+        $rank = 1;
+        $origin = $quotation
+            ? ($enquiry ? __('Enquiry') . ' → ' : '') . __('Quotation') . ' → ' . __('Job') . ' → ' . __('Invoice')
+            : ($job ? __('Job') . ' → ' . __('Invoice') : __('Invoice created directly'));
+
+        $logs = \App\Models\Log\LogHistory::where('loggable_type', CustomerInvoice::class)
+            ->where('loggable_id', $inv->id)->orderBy('id')->get();
+        $ignore = ['status', 'paid_amount', 'updated_at', 'posted_at', 'tax_submit_status', 'tax_submitted_at'];
+        $seenCreate = false;
+        foreach ($logs as $log) {
+            $by = $log->user_id['name'] ?? null;
+            if ($log->action === 'created') {
+                $seenCreate = true;
+                $add(__('Invoice created') . ' · ' . $inv->row_no, $log->created_at, 'bi-receipt', $by);
+            } elseif ($log->action === 'updated') {
+                $new = $log->changes['new'] ?? [];
+                if (isset($new['status'])) {
+                    $st = (int) $new['status'];
+                    $label = \App\Enums\CustomerInvoiceEnum::tryFrom($st)?->label() ?? __('Status changed');
+                    $icon = $st === \App\Enums\CustomerInvoiceEnum::APPROVED->value ? 'bi-check-circle'
+                        : ($st === \App\Enums\CustomerInvoiceEnum::CANCELLED->value ? 'bi-x-circle' : 'bi-clock');
+                    $add($label, $log->created_at, $icon, $by);
+                } elseif (array_diff(array_keys($new), $ignore)) {
+                    $add(__('Invoice updated'), $log->created_at, 'bi-pencil-square', $by);
+                }
+            }
+        }
+        if (!$seenCreate) $add(__('Invoice created') . ' · ' . $inv->row_no, $inv->created_at, 'bi-receipt');
+
+        $grand = (float) $inv->grand_total;
+        $dec = decimals();
+        foreach (\App\Models\Finance\Adjustment\CreditNote::where('invoice_id', $inv->id)->orderBy('id')->get() as $cn) {
+            $kind = $grand > 0 && (float) $cn->grand_total >= $grand - 0.005 ? __('Full credit note') : __('Partial credit note');
+            $add($kind . ' · ' . $cn->row_no, $cn->posted_at ?? $cn->created_at, 'bi-receipt-cutoff', null, number_format((float) $cn->grand_total, $dec), 'credit_note');
+        }
+
+        $cumulative = 0.0;
+        $cis = \App\Models\Finance\Collection\CollectionInvoice::where('customer_invoice_id', $inv->id)
+            ->with('collection:id,row_no,collection_date,status,created_at')->orderBy('id')->get();
+        foreach ($cis as $ci) {
+            if (($ci->collection->status ?? 0) == 3) continue; // cancelled
+            $cumulative += (float) $ci->amount;
+            $kind = $grand > 0 && $cumulative >= $grand - 0.005 ? __('Full collection') : __('Partial collection');
+            $add($kind . ' · ' . ($ci->collection->row_no ?? ''), $ci->collection->collection_date ?? $ci->collection->created_at ?? null, 'bi-cash-coin', null, number_format((float) $ci->amount, $dec), 'collection');
+        }
+
+        usort($events, fn($a, $b) => [$a['rank'], $a['rank'] ? $a['key'] : $a['seq'], $a['seq']] <=> [$b['rank'], $b['rank'] ? $b['key'] : $b['seq'], $b['seq']]);
+
+        return [$origin, $events];
     }
 
     /**

@@ -53,8 +53,34 @@
         color: #1a1a1a;
         margin-bottom: 1rem;
     }
+    /* two-sided time frame: Enquiry / Job / Credit Note on the right, Quotation / Invoice / Collection on the left */
+    .ci-timeline { list-style: none; margin: 0; padding: 0; position: relative; }
+    .ci-timeline::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: #e2e8f0; }
+    .ci-timeline li { position: relative; width: 50%; padding: 0 2rem .9rem 0; font-size: 13.5px; text-align: right; }
+    .ci-timeline li.side-r { margin-left: 50%; padding: 0 0 .9rem 2rem; text-align: left; }
+    .ci-timeline .dot { position: absolute; top: 0; right: -.75rem; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: #e7f0fe; color: #0d6efd; display: inline-flex; align-items: center; justify-content: center; font-size: .75rem; z-index: 1; }
+    .ci-timeline li.side-r .dot { right: auto; left: -.75rem; }
+    .ci-timeline .t-mod { display: inline-block; font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; color: #0d6efd; background: #e7f0fe; border-radius: 10px; padding: 0 .5rem; margin-bottom: .15rem; }
+    .ci-timeline .t-label { font-weight: 600; color: #0f172a; }
+    .ci-timeline .t-meta { color: #64748b; font-size: 12.5px; }
 </style>
 
+
+<ul class="nav nav-tabs mb-3" role="tablist">
+    <li class="nav-item">
+        <button class="nav-link active fw-semibold" data-bs-toggle="tab" data-bs-target="#ciDetailsTab" type="button" role="tab">
+            <i class="bi bi-receipt me-1"></i> {{ __('Details') }}
+        </button>
+    </li>
+    <li class="nav-item ms-auto">
+        <button class="nav-link fw-semibold" data-bs-toggle="tab" data-bs-target="#ciTimeFrameTab" type="button" role="tab"
+                title="{{ __('Time Frame') }}" aria-label="{{ __('Time Frame') }}">
+            <i class="bi bi-clock-history fs-5"></i>
+        </button>
+    </li>
+</ul>
+<div class="tab-content">
+<div class="tab-pane fade show active" id="ciDetailsTab" role="tabpanel">
 <div class="invoice-no-heading">#{{ $customerInvoice->row_no }}</div>
 
 <div class="section">
@@ -222,3 +248,30 @@
         <p class="mb-0">{{ $customerInvoice->terms }}</p>
     </div>
 @endif
+
+</div>
+
+<div class="tab-pane fade" id="ciTimeFrameTab" role="tabpanel">
+    <div class="section">
+        <h6>{{ __('Time Frame') }}</h6>
+        <div class="text-muted small mb-3"><i class="bi bi-diagram-3 me-1"></i>{{ $origin }}</div>
+        <ul class="ci-timeline">
+            @php
+                $sideRight = ['enquiry', 'job', 'credit_note'];
+                $modLabel = ['enquiry' => __('Enquiry'), 'quotation' => __('Quotation'), 'job' => __('Job'), 'invoice' => __('Invoice'), 'credit_note' => __('Credit Note'), 'collection' => __('Collection')];
+            @endphp
+            @foreach($timeline as $step)
+                <li class="{{ in_array($step['module'], $sideRight) ? 'side-r' : 'side-l' }}">
+                    <span class="dot"><i class="bi {{ $step['icon'] }}"></i></span>
+                    <div class="t-mod">{{ $modLabel[$step['module']] ?? '' }}</div>
+                    <div class="t-label">{{ $step['label'] }}@if($step['meta']) <span class="text-muted fw-normal">· {{ $step['meta'] }}</span>@endif</div>
+                    <div class="t-meta">
+                        {{ \Carbon\Carbon::parse($step['at'])->format('d-m-Y H:i') }}
+                        @if($step['by']) &middot; {{ __('by') }} {{ $step['by'] }} @endif
+                    </div>
+                </li>
+            @endforeach
+        </ul>
+    </div>
+</div>
+</div>
