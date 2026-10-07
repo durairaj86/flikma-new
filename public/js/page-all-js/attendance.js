@@ -8,6 +8,7 @@ ATTENDANCE = {
     load() {
         ATTENDANCE.form.load();
         ATTENDANCE.filter.load();
+        datepicker();
         //ATTENDANCE.utils.initializeTomSelect();
         ATTENDANCE.calendar.load();
         initTomSelectForm($('#content-wrapper'));//due to livewire delay load. it use here
@@ -21,6 +22,7 @@ ATTENDANCE = {
             $('#apply-filter').off().on({
                 click: function () {
                     ATTENDANCE.list.dataTable();
+                    FILTER.filteredColumn();
                 }
             });
         },
@@ -30,11 +32,11 @@ ATTENDANCE = {
             });
         },*/
         default: function () {
+            // The list filter panel (date range / employee / status); the calendar above has its own month / year / employee selects.
             let data = {};
-            data['month'] = $('#filter-month').val();
-            data['year'] = $('#filter-year').val();
-            data['employee_id'] = $('#filter-employee').val();
-            //data['_token'] = $('meta[name="csrf-token"]').attr('content');
+            new URLSearchParams($('#list-filter').serialize()).forEach((value, key) => {
+                data[key] = data[key] ? [].concat(data[key], value) : value;
+            });
             return data;
         }
     },
@@ -111,6 +113,9 @@ ATTENDANCE = {
             let table = $('#dataTable').DataTable({
                 processing: true,
                 serverSide: true,
+                lengthChange: false,
+                pageLength: 25,
+                dom: 'rt<"row mt-2"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7 d-flex justify-content-end"p>>',
                 ajax: {
                     url: GLOBAL_FN.buildUrl('payroll/attendance/data'),
                     type: 'POST',
@@ -162,6 +167,9 @@ ATTENDANCE = {
                     webDataTable.actions.menu();
                 }
             });
+            $('#customSearch').off('keyup input').on('keyup input', window.debounceSearch(function () {
+                table.search(this.value).draw();
+            }));
         },
         actions: {
             edit() {

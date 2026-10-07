@@ -115,17 +115,28 @@ class AttendanceController extends Controller
     {
         $query = Attendance::with('employee')->select('attendances.*');
 
-        // Apply filters if provided
-        if ($request->has('month') && $request->input('month')) {
-            $query->whereMonth('date', $request->input('month'));
+        // Filters arrive as filterData (list filter panel); top-level keys are kept for older callers.
+        $filter = $request->input('filterData', []);
+        $get = fn($key) => $filter[$key] ?? $request->input($key);
+
+        if ($get('month')) {
+            $query->whereMonth('date', $get('month'));
         }
 
-        if ($request->has('year') && $request->input('year')) {
-            $query->whereYear('date', $request->input('year'));
+        if ($get('year')) {
+            $query->whereYear('date', $get('year'));
         }
 
-        if ($request->has('employee_id') && $request->input('employee_id')) {
-            $query->where('employee_id', $request->input('employee_id'));
+        if ($get('employee_id')) {
+            $query->where('employee_id', $get('employee_id'));
+        }
+
+        if ($get('status')) {
+            $query->where('status', $get('status'));
+        }
+
+        if ($get('filter-from-date') && $get('filter-to-date')) {
+            $query->whereBetween('date', [formDate($get('filter-from-date')), formDate($get('filter-to-date'))]);
         }
 
         return DataTables::of($query)

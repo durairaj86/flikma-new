@@ -73,6 +73,9 @@ MONTHLY_SALARY = {
             let table = $('#dataTable').DataTable({
                 processing: true,
                 serverSide: true,
+                lengthChange: false,
+                pageLength: 25,
+                dom: 'rt<"row mt-2"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7 d-flex justify-content-end"p>>',
                 ajax: {
                     url: GLOBAL_FN.buildUrl('payroll/monthly/salary/data'),
                     type: 'POST',
