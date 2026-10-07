@@ -1977,3 +1977,6 @@ body:not(.has-top-header) #sendEmailDrawer.offcanvas.offcanvas-end {
     background-color: #0369a1 !important;
     border-color: #0369a1 !important;
 }
+
+/* Invalid tom-select: the real <select> is hidden, so highlight its visible control. */
+.ts-wrapper.is-invalid .ts-control { border-color: #dc3545 !important; box-shadow: 0 0 0 .2rem rgba(220, 53, 69, .15); }

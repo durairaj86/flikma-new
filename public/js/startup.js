@@ -774,7 +774,9 @@ let webModal = {
             }*/
             if ($(this).valid()) {
 
-                if (loadJs('before.submit')) {
+                // A module's before.submit hook may cancel the save by returning false; pages without a
+                // module (e.g. the basic quotation list) simply have no hook, so they must still submit.
+                if (loadJs('before.submit') !== false) {
 
                     const formElement = this;
                     const disabledElements = formElement.querySelectorAll(':disabled');
@@ -805,16 +807,21 @@ let webModal = {
                                 const finish = function () {
                                     toastr.success(response.message);
 
-                                    // Reload DataTable
-                                    $('#dataTable').DataTable().ajax.reload(null, false);
+                                    // Reload the list: a page can provide its own reload hook, otherwise #dataTable
+                                    if (typeof window.afterModalSave === 'function') {
+                                        window.afterModalSave(response);
+                                    } else if ($.fn.DataTable.isDataTable('#dataTable')) {
+                                        $('#dataTable').DataTable().ajax.reload(null, false);
+                                    }
 
                                     // Close modal
                                     modal.hide();
 
                                     // Reset form
-                                    $('#customerForm')[0].reset();
-                                    console.log(response, callback);
-                                    if (callback) callback(response);
+                                    const legacyForm = $('#customerForm')[0];
+                                    if (legacyForm) legacyForm.reset();
+                                    // optional post-save hook (the old code referenced an undefined `callback` here and threw)
+                                    if (typeof modal.afterSave === 'function') modal.afterSave(response);
                                 };
 
                                 // "Save and Approve": chain a second call to the
@@ -848,7 +855,10 @@ let webModal = {
                             }
                         },
                         error: function (xhr) {
-                            let error = xhr.responseJSON.message;
+                            let error = xhr.responseJSON ? xhr.responseJSON.message : null;
+                            if (!error && xhr.responseJSON && xhr.responseJSON.errors) {
+                                error = Object.values(xhr.responseJSON.errors).flat().join(' | ');
+                            }
                             if (error) {
                                 toastr.error(error);
                                 /*$.each(errors, function (key, value) {

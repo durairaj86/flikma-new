@@ -95,6 +95,7 @@
         'Are you sure you want to mark this enquiry as Confirmed?',
         'Are you sure you want to cancel this enquiry?',
         'Are you sure you want to move this enquiry back to Pending?',
+        'Please fill in the required field',
     ];
     $i18nMap = collect($i18nKeys)->mapWithKeys(fn($key) => [$key => __($key)]);
 @endphp
@@ -111,7 +112,7 @@
 </script>
 <script type="text/javascript" src="{{ asset('js/startup.js?v='.appVersion()) }}" defer></script>
 <script src="{{ asset('js/toastr.min.js') }}"></script>
-<script type="text/javascript" src="{{ asset('js/form-validation.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/form-validation.js?v='.appVersion()) }}"></script>
 <script type="text/javascript" src="{{ asset('js/jquery-confirm.js') }}"></script>
 <script src="{{ asset('js/bootstrap-select.js') }}"></script>
 <script src="{{ asset('js/flatpickr/flatpickr.js') }}"></script>

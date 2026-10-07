@@ -38,6 +38,26 @@
             }
         });
 
+        // Tom-select hides the real <select>, so an invalid one gave no visible sign. Mark its visible
+        // wrapper, tell the user which field is missing and bring it into view.
+        if (!isValid) {
+            let $firstBad = null;
+            $(form).find("select.is-invalid").each(function () {
+                const $wrap = $(this).siblings(".ts-wrapper");
+                if ($wrap.length) {
+                    $wrap.addClass("is-invalid");
+                    if (!$firstBad) $firstBad = $wrap;
+                }
+            });
+            $(form).find("input.is-invalid, textarea.is-invalid").first().each(function () { if (!$firstBad) $firstBad = $(this); });
+            if ($firstBad && $firstBad.length) {
+                const label = ($firstBad.closest("[class*='col-'], .form-group, td").find("label").first().text() || "").replace(/\*/g, "").trim();
+                const msg = (window.trans ? trans("Please fill in the required field") : "Please fill in the required field") + (label ? ": " + label : "");
+                if (window.toastr) toastr.error(msg);
+                try { $firstBad[0].scrollIntoView({block: "center", behavior: "smooth"}); } catch (e) {}
+            }
+        }
+
         // Open first error tab
         if (!isValid) {
             let firstErrorTab = $modalTabs.find("button.tab-has-error").first();
@@ -58,6 +78,7 @@
 
         if (this.checkValidity()) {
             $field.removeClass("is-invalid");
+            $field.siblings(".ts-wrapper").removeClass("is-invalid");
             $field.next(".error-tooltip-top").remove();
 
             // Remove label error state

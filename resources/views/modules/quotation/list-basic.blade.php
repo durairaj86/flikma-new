@@ -190,6 +190,7 @@
     </main>
 
     @include('modules.quotation.quotation-view')
+    @include('modules.email.send-email')
     @include('modules.workflows.quotation')
 
     <script>
@@ -275,6 +276,9 @@
 
             let table = null;
             let currentTab = 'pending';
+
+            // Shared modal-save code calls this to refresh the list after a quotation is saved.
+            window.afterModalSave = function () { if (table) { table.ajax.reload(null, false); } };
 
             function loadTab(tab) {
                 currentTab = tab;
@@ -513,6 +517,46 @@
                 const row = $(this).closest('tr');
                 openDrawer(row.data('id'), row.data('name'));
             });
+            // Send Email (row menu) — mirrors QUOTATION.list.actions.email in quotation.js, which this page doesn't load.
+            $('#basicQuotationTable tbody').on('click', '#row_email', function () {
+                const id = $(this).data('id');
+                $.get('/sales/quotation/' + id + '/email-data', function (data) {
+                    $('#emailTo').val(data.to);
+                    $('#emailCc').val(data.cc);
+                    $('#emailSubject').val('Quotation #' + data.id);
+                    bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('sendEmailDrawer')).show();
+                    $('#sendEmailForm').off('submit').on('submit', function (e) {
+                        e.preventDefault();
+                        const formData = new FormData(this);
+                        const submitBtn = $(this).find('button[type="submit"]');
+                        const originalBtnText = submitBtn.html();
+                        submitBtn.html('<span class="spinner-border spinner-border-sm"></span> ' + {{ Illuminate\Support\Js::from(__('Sending...')) }});
+                        submitBtn.prop('disabled', true);
+                        $.ajax({
+                            url: '/sales/quotation/send-email',
+                            type: 'POST',
+                            data: formData,
+                            processData: false,
+                            contentType: false,
+                            success(response) {
+                                bootstrap.Offcanvas.getInstance(document.getElementById('sendEmailDrawer')).hide();
+                                toastr.success(response.message);
+                                $('#sendEmailForm')[0].reset();
+                            },
+                            error(xhr) {
+                                toastr.error((xhr.responseJSON && xhr.responseJSON.message) || {{ Illuminate\Support\Js::from(__('An error occurred while sending the email.')) }});
+                            },
+                            complete() {
+                                submitBtn.html(originalBtnText);
+                                submitBtn.prop('disabled', false);
+                            }
+                        });
+                    });
+                }).fail(function () {
+                    toastr.error({{ Illuminate\Support\Js::from(__('Could not load the email details.')) }});
+                });
+            });
+
             $('#basicQuotationTable tbody').on('click', '#row_print', function () {
                 printQuotation($(this).closest('tr').data('id'));
             });

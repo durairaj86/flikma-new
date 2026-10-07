@@ -2969,5 +2969,7 @@
     "added to the invoice lines.": "تمت إضافتها إلى بنود الفاتورة.",
     "Are you sure you want to mark this enquiry as Confirmed?": "هل أنت متأكد من تحديد هذا الاستفسار كمؤكد؟",
     "Are you sure you want to cancel this enquiry?": "هل أنت متأكد من إلغاء هذا الاستفسار؟",
-    "Are you sure you want to move this enquiry back to Pending?": "هل أنت متأكد من إعادة هذا الاستفسار إلى قيد الانتظار؟"
+    "Are you sure you want to move this enquiry back to Pending?": "هل أنت متأكد من إعادة هذا الاستفسار إلى قيد الانتظار؟",
+    "Please fill in the required field": "يرجى تعبئة الحقل المطلوب",
+    "Could not load the email details.": "تعذر تحميل بيانات البريد الإلكتروني."
 }
