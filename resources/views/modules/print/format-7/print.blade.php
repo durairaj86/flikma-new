@@ -201,6 +201,8 @@
             </tr>
         </table>
 
+        @include('modules.print.partials.extra-details')
+
         {{-- Line Items --}}
         <table width="100%" cellpadding="0" cellspacing="0" border="0" class="items" style="margin-top: 10px;">
             <thead>
