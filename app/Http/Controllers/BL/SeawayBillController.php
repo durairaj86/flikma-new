@@ -13,6 +13,8 @@ use Yajra\DataTables\Facades\DataTables;
 
 class SeawayBillController extends Controller
 {
+    use \App\Http\Controllers\Concerns\BuildsBillTimeline;
+
     /**
      * Display the seaway bill form in a modal
      */
@@ -493,7 +495,8 @@ class SeawayBillController extends Controller
     public function overview($id)
     {
         $seawayBill = SeawayBill::with('seawayBillSubs', 'documents', 'job', 'customer')->findOrFail($id);
-        return view('modules.bl.seaway.seaway-view', compact('seawayBill'));
+        [$origin, $timeline] = $this->billTimeline($seawayBill, __('Seaway Bill'));
+        return view('modules.bl.seaway.view-overview', compact('seawayBill', 'origin', 'timeline'));
     }
 
     /**

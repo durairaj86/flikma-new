@@ -312,7 +312,72 @@ class CollectionController extends Controller
         $collection = Collection::with(['customer', 'job', 'collectionInvoices.customerInvoice', 'documents', 'createdBy', 'approvedBy'])
             ->findOrFail($id);
 
-        return view('modules.transaction.collection.view-overview-drawer', compact('collection'));
+        [$origin, $timeline] = $this->collectionTimeline($collection);
+
+        return view('modules.transaction.collection.view-overview-drawer', compact('collection', 'origin', 'timeline'));
+    }
+
+    /**
+     * Time frame for the collection drawer: where the job came from
+     * (enquiry -> quotation -> job), the customer invoice(s) being collected,
+     * then the collection's own life (created / updated / approved / cancelled).
+     */
+    private function collectionTimeline(Collection $collection): array
+    {
+        $events = [];
+        $rank = 0;
+        $add = function ($label, $at, $icon, $module, $by = null, $meta = null, $link = null) use (&$events, &$rank) {
+            if (!$at) return;
+            $events[] = ['label' => $label, 'at' => $at, 'icon' => $icon, 'module' => $module, 'by' => $by, 'meta' => $meta, 'link' => $link,
+                'rank' => $rank, 'key' => \Illuminate\Support\Carbon::parse($at)->timestamp, 'seq' => count($events)];
+        };
+
+        $invoices = $collection->collectionInvoices->map->customerInvoice->filter();
+        $jobId = $collection->job_id ?: $invoices->pluck('job_id')->filter()->first();
+        $job = $jobId ? \App\Models\Job\Job::find($jobId) : null;
+        $quotation = $job && $job->quotation_id ? \App\Models\Quotation\Quotation::find($job->quotation_id) : null;
+        $enquiry = $quotation && $quotation->enquiry_id ? \App\Models\Enquiry\Enquiry::find($quotation->enquiry_id) : null;
+
+        if ($enquiry) $add(__('Enquiry created') . ' · ' . $enquiry->row_no, $enquiry->created_at, 'bi-chat-left-text', 'enquiry', null, null, ['enquiry', $enquiry->id, $enquiry->row_no]);
+        if ($quotation) $add(__('Quotation posted') . ' · ' . $quotation->row_no, $quotation->created_at, 'bi-file-earmark-text', 'quotation', null, null, ['quotation', $quotation->id, $quotation->row_no]);
+        if ($job) $add(($quotation ? __('Converted to job') : __('Job created')) . ' · ' . $job->row_no, $job->created_at, 'bi-briefcase', 'job', null, null, ['job', $job->id, $job->row_no]);
+
+        $rank = 1;
+        $origin = $quotation
+            ? ($enquiry ? __('Enquiry') . ' → ' : '') . __('Quotation') . ' → ' . __('Job') . ' → ' . __('Invoice') . ' → ' . __('Collection')
+            : ($job ? __('Job') . ' → ' . __('Invoice') . ' → ' . __('Collection') : ($invoices->count() ? __('Invoice') . ' → ' . __('Collection') : __('Collection created directly')));
+
+        foreach ($invoices as $inv) {
+            $add(__('Invoice created') . ' · ' . $inv->row_no, $inv->created_at, 'bi-receipt', 'invoice', null,
+                number_format((float) $inv->grand_total, decimals()), ['invoice', $inv->id, $inv->row_no]);
+        }
+
+        $labels = [CollectionEnum::DRAFT->value => __('Moved to Draft'), CollectionEnum::APPROVED->value => __('Approved'), CollectionEnum::CANCELLED->value => __('Cancelled')];
+        $ignore = ['status', 'updated_at', 'approved_by', 'approved_at', 'approval_status', 'disapproval_reason'];
+        $seenCreate = false;
+        $logs = \App\Models\Log\LogHistory::where('loggable_type', Collection::class)
+            ->where('loggable_id', $collection->id)->where('created_at', '>=', $collection->created_at->copy()->subSeconds(5))->orderBy('id')->get();
+        foreach ($logs as $log) {
+            $by = $log->user_id['name'] ?? null;
+            if ($log->action === 'created') {
+                $seenCreate = true;
+                $add(__('Collection created') . ' · ' . $collection->row_no, $log->created_at, 'bi-cash-coin', 'collection', $by, number_format((float) $collection->grand_total, decimals()));
+            } elseif ($log->action === 'updated') {
+                $new = $log->changes['new'] ?? [];
+                if (isset($new['status'])) {
+                    $st = (int) $new['status'];
+                    $add($labels[$st] ?? __('Status changed'), $log->created_at,
+                        $st === CollectionEnum::APPROVED->value ? 'bi-check-circle' : ($st === CollectionEnum::CANCELLED->value ? 'bi-x-circle' : 'bi-clock'), 'collection', $by);
+                } elseif (array_diff(array_keys($new), $ignore)) {
+                    $add(__('Collection updated'), $log->created_at, 'bi-pencil-square', 'collection', $by);
+                }
+            }
+        }
+        if (!$seenCreate) $add(__('Collection created') . ' · ' . $collection->row_no, $collection->created_at, 'bi-cash-coin', 'collection', null, number_format((float) $collection->grand_total, decimals()));
+
+        usort($events, fn($a, $b) => [$a['rank'], $a['rank'] ? $a['key'] : $a['seq'], $a['seq']] <=> [$b['rank'], $b['rank'] ? $b['key'] : $b['seq'], $b['seq']]);
+
+        return [$origin, $events];
     }
 
     /**
@@ -492,16 +557,24 @@ class CollectionController extends Controller
      */
     public function fetchAllRows(Request $request)
     {
+        $filter = $request->filterData ?? [];
+
+        // Shared filters so the tab counts and summary cards match the visible list.
+        $applyFilters = function ($q) use ($filter) {
+            $q->when(isset($filter['filter-from-date'], $filter['filter-to-date']), function ($q) use ($filter) {
+                $q->whereBetween('collection_date', [formDate($filter['filter-from-date']), formDate($filter['filter-to-date'])]);
+            })->when(!empty($filter['customers']), function ($q) use ($filter) {
+                $q->whereIn('customer_id', decodeIds($filter['customers']));
+            });
+        };
+
         $query = Collection::with(['customer:id,name_en,name_ar', 'job:id,row_no'])
             ->select([
                 'collections.id',
                 'row_no',
                 'customer_id',
                 'account',
-                //'job_id',
-                //'job_no',
                 'collection_date',
-                //'collection_method',
                 'reference_no',
                 'currency',
                 'grand_total',
@@ -514,10 +587,12 @@ class CollectionController extends Controller
                     $q->where('status', CollectionEnum::fromName($request->tab));
                 }
             })
+            ->tap($applyFilters)
             ->orderBy('collections.id', 'desc');
 
         // Get counts per status
         $statusCounts = Collection::select('status', DB::raw('COUNT(*) as total'))
+            ->tap($applyFilters)
             ->groupBy('status')
             ->pluck('total', 'status')
             ->toArray();
@@ -528,6 +603,18 @@ class CollectionController extends Controller
             $allCounts[$status->name] = $statusCounts[$status->value] ?? 0;
         }
         $allCounts['all'] = array_sum($allCounts);
+
+        // Summary card totals (Draft / Approved) in company currency.
+        $draft = CollectionEnum::DRAFT->value;
+        $approved = CollectionEnum::APPROVED->value;
+        $salesSummary = Collection::select([
+            DB::raw("SUM(CASE WHEN status = {$draft} THEN base_grand_total ELSE 0 END) as total_draft_grand"),
+            DB::raw("SUM(CASE WHEN status = {$draft} THEN base_sub_total ELSE 0 END) as total_draft_sub"),
+            DB::raw("SUM(CASE WHEN status = {$draft} THEN base_tax_total ELSE 0 END) as total_draft_tax"),
+            DB::raw("SUM(CASE WHEN status = {$approved} THEN base_grand_total ELSE 0 END) as total_approved_grand"),
+            DB::raw("SUM(CASE WHEN status = {$approved} THEN base_sub_total ELSE 0 END) as total_approved_sub"),
+            DB::raw("SUM(CASE WHEN status = {$approved} THEN base_tax_total ELSE 0 END) as total_approved_tax"),
+        ])->tap($applyFilters)->first();
 
         return DataTables::eloquent($query)
             ->addIndexColumn()
@@ -544,6 +631,7 @@ class CollectionController extends Controller
             ->editColumn('status', fn($model) => CollectionEnum::from($model->status)->label())
             ->with([
                 'statusCounts' => $allCounts,
+                'salesSummary' => $salesSummary,
             ])
             ->toJson();
     }

@@ -5,6 +5,24 @@ COLLECTION = {
     currentTab: 'all',
     load() {
         COLLECTION.form.load();
+        datepicker();
+        COLLECTION.filter.load();
+        FILTER.filteredColumn();
+    },
+    filter: {
+        load() {
+            $('#apply-filter').off().on('click', function () {
+                COLLECTION.list.dataTable();
+                FILTER.filteredColumn();
+            });
+        },
+        default() {
+            let data = {};
+            new URLSearchParams($('#list-filter').serialize()).forEach((value, key) => {
+                data[key] = data[key] ? [].concat(data[key], value) : value;
+            });
+            return data;
+        },
     },
 
     list: {
@@ -33,13 +51,15 @@ COLLECTION = {
                 ajax: {
                     url: GLOBAL_FN.buildUrl('transaction/collections/data'),
                     type: 'POST',
-                    data: {
-                        'tab': activeTab
+                    data: function (d) {
+                        d.tab = activeTab;
+                        d.filterData = COLLECTION.filter.default();
                     },
                     dataSrc: function (json) {
                         // Update status counts
                         $('#dataTable tbody').find('.loading-row').remove();
                         GLOBAL_FN.setStatusCounts(json.statusCounts);
+                        COLLECTION.list.cardSummary(json.salesSummary, json.statusCounts);
                         return json.data;
                     }
                 },
@@ -96,6 +116,19 @@ COLLECTION = {
                 let $row = $(this).closest('tr');
                 COLLECTION.list.openDrawer($row.attr('data-id'), $row.attr('data-name'));
             });
+        },
+
+        cardSummary(data, counts) {
+            if (data) {
+                ['draft', 'approved'].forEach(k => {
+                    ['grand', 'sub', 'tax'].forEach(t => $('#total_' + k + '_' + t).text(amountFormat(data['total_' + k + '_' + t] || 0)));
+                });
+            }
+            if (counts) {
+                $('#cardAllCount').text(counts.all ?? 0);
+                $('#cardApprovedCount').text(counts.APPROVED ?? 0);
+                $('#cardDraftCount').text(counts.DRAFT ?? 0);
+            }
         },
 
         openDrawer(collectionId, collectionNo) {

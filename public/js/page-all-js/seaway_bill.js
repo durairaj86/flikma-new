@@ -3,6 +3,12 @@ SEAWAY_BILL = {
     baseUrl: 'bl/seaway',
     actionUrl: 'bl/seaway',
     load() {
+        $(document).off('click.blno').on('click.blno', '#dataTable tbody .bl-no-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const $row = $(this).closest('tr');
+            SEAWAY_BILL.list.openDrawer($row.attr('data-id'), $row.attr('data-name'));
+        });
         SEAWAY_BILL.form.load();
         SEAWAY_BILL.filter.load();
         datepicker();
@@ -72,6 +78,16 @@ SEAWAY_BILL = {
         iframe.src = '/' + SEAWAY_BILL.baseUrl + '/' + printId + '/print';
     },
     list: {
+        openDrawer(id, name) {
+            $('#drawerSubtitle').text(name || '');
+            bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer')).show();
+            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
+            $.get('/bl/seaway/' + id + '/overview', function (data) {
+                $('#moduleOverview').html(data);
+            }).fail(function () {
+                $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load details.</div>');
+            });
+        },
         load(activeTab = null) {
             SEAWAY_BILL.list.dataTable(activeTab);
         },
@@ -95,6 +111,7 @@ SEAWAY_BILL = {
                     },
                     dataSrc: function (json) {
                         $('#dataTable tbody').find('.loading-row').remove();
+                        if (json.statusCounts) GLOBAL_FN.setStatusCounts(json.statusCounts);
                         return json.data;
                     }
                 },
@@ -124,7 +141,7 @@ SEAWAY_BILL = {
                                 statusBadge = '<span class="badge bg-danger-subtle text-danger me-2 text-xsmall">Cancelled</span>';
                             }
 
-                            return '<div class="' + statusClass + ' pb-1">' + row.row_no + '</div>' + statusBadge;
+                            return '<div class="' + statusClass + ' pb-1 fw-bold bl-no-link" style="cursor:pointer;">' + row.row_no + '</div>' + statusBadge;
                         }
                     },
                     {
@@ -218,17 +235,7 @@ SEAWAY_BILL = {
             },
             view(row) {
                 $('#row_view').off().on('click', function () {
-                    let SEAWAY_BILLId = row.attr('data-id');
-
-                    // Open drawer
-                    let drawer = new bootstrap.Offcanvas(document.getElementById('moduleDrawer'));
-                    drawer.show();
-
-                    // Load Overview
-                    $('#moduleOverview').html('<p>Loading...</p>');
-                    $.get('/bl/seaway/' + SEAWAY_BILLId + '/overview', function (data) {
-                        $('#moduleOverview').html(data);
-                    });
+                    SEAWAY_BILL.list.openDrawer(row.attr('data-id'), row.attr('data-name'));
                 });
             },
             print(row) {

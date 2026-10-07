@@ -13,6 +13,8 @@ use Yajra\DataTables\Facades\DataTables;
 
 class AirwayBillController extends Controller
 {
+    use \App\Http\Controllers\Concerns\BuildsBillTimeline;
+
     /**
      * Display the airway bill form in a modal
      */
@@ -493,7 +495,8 @@ class AirwayBillController extends Controller
     public function overview($id)
     {
         $airwayBill = AirwayBill::with('airwayBillSubs', 'documents', 'job', 'customer')->findOrFail($id);
-        return view('modules.bl.airway-bill.airway-bill-view', compact('airwayBill'));
+        [$origin, $timeline] = $this->billTimeline($airwayBill, __('Airway Bill'));
+        return view('modules.bl.airway-bill.view-overview', compact('airwayBill', 'origin', 'timeline'));
     }
 
     /**

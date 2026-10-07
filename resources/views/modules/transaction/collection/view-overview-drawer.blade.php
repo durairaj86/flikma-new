@@ -1,3 +1,7 @@
+@php
+    $colStatus = [1 => ['label' => __('Draft'), 'class' => 'bg-warning-subtle text-warning'], 2 => ['label' => __('Approved'), 'class' => 'bg-success-subtle text-success'], 3 => ['label' => __('Cancelled'), 'class' => 'bg-danger-subtle text-danger']];
+    $colInfo = $colStatus[$collection->status] ?? ['label' => __('Unknown'), 'class' => 'bg-secondary-subtle text-secondary'];
+@endphp
 <style>
     .section {
         margin-bottom: 1.5rem;
@@ -47,7 +51,50 @@
         padding: 4px 10px;
         font-size: 13.5px;
     }
+    .invoice-no-heading {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 1rem;
+    }
+    /* two-sided time frame: Enquiry / Job / Collection on the right, Quotation / Invoice on the left */
+    .col-timeline { list-style: none; margin: 0; padding: 0; position: relative; }
+    .col-timeline::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: #e2e8f0; }
+    .col-timeline li { position: relative; width: 50%; padding: 0 2rem .9rem 0; font-size: 13.5px; text-align: right; }
+    .col-timeline li.side-r { margin-left: 50%; padding: 0 0 .9rem 2rem; text-align: left; }
+    .col-timeline .dot { position: absolute; top: 0; right: -.75rem; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: #e7f0fe; color: #0d6efd; display: inline-flex; align-items: center; justify-content: center; font-size: .75rem; z-index: 1; }
+    .col-timeline li.side-r .dot { right: auto; left: -.75rem; }
+    .col-timeline .t-mod { display: inline-block; font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; color: #0d6efd; background: #e7f0fe; border-radius: 10px; padding: 0 .5rem; margin-bottom: .15rem; }
+    .col-timeline .t-label { font-weight: 600; color: #0f172a; }
+    .col-timeline .t-meta { color: #64748b; font-size: 12.5px; }
+    .x-small { font-size: .75rem; }
 </style>
+<ul class="nav nav-tabs mb-3" role="tablist">
+    <li class="nav-item">
+        <button class="nav-link active fw-semibold" data-bs-toggle="tab" data-bs-target="#colDetailsTab" type="button" role="tab">
+            <i class="bi bi-cash-coin me-1"></i> {{ __('Details') }}
+        </button>
+    </li>
+    <li class="nav-item ms-auto">
+        <button class="nav-link fw-semibold" data-bs-toggle="tab" data-bs-target="#colTimeFrameTab" type="button" role="tab"
+                title="{{ __('Time Frame') }}" aria-label="{{ __('Time Frame') }}">
+            <i class="bi bi-clock-history fs-5"></i>
+        </button>
+    </li>
+</ul>
+<div class="tab-content">
+<div class="tab-pane fade show active" id="colDetailsTab" role="tabpanel">
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div class="invoice-no-heading mb-0">#{{ $collection->row_no }}
+        <span class="badge {{ $colInfo['class'] }} rounded-pill px-3 py-1 fw-semibold fs-6 align-middle ms-2">{{ $colInfo['label'] }}</span>
+    </div>
+    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 linked-print"
+            data-print-url="{{ url('transaction/collections/' . $collection->id . '/print') }}"
+            onclick="if (window.COLLECTION && COLLECTION.printPreview) { COLLECTION.printPreview('{{ $collection->id }}'); }">
+        <i class="bi bi-printer me-1"></i> {{ __('Print') }}
+    </button>
+</div>
 
 @php
     $paidIntoAccount = $collection->account ? \App\Models\Finance\Account\Account::find($collection->account) : null;
@@ -56,11 +103,11 @@
 <div class="section">
     <h6>{{ __('Customer & Collection Information') }}</h6>
     <div class="info-grid">
-        <div><strong>{{ __('Customer') }}:</strong><span>{{ $collection->customer->name_en ?? '-' }}</span></div>
+        <div><strong>{{ __('Customer') }}:</strong><span>@if($collection->customer_id)<a href="#" class="open-linked text-primary text-decoration-none" data-type="customer" data-id="{{ $collection->customer_id }}" data-title="{{ $collection->customer->name_en ?? '' }}">{{ $collection->customer->name_en ?? '-' }}</a>@else - @endif</span></div>
         <div><strong>{{ __('Collection No') }}:</strong><span>#{{ $collection->row_no }}</span></div>
         <div><strong>{{ __('Phone') }}:</strong><span>{{ $collection->customer->phone ?? '-' }}</span></div>
         <div><strong>{{ __('Collection Date') }}:</strong><span>{{ $collection->collection_date }}</span></div>
-        <div><strong>{{ __('Job') }}:</strong><span>{{ $collection->job_no ?? ($collection->job->job_no ?? '-') }}</span></div>
+        <div><strong>{{ __('Job') }}:</strong><span>@if($collection->job_id)<a href="#" class="open-linked text-primary text-decoration-none" data-type="job" data-id="{{ $collection->job_id }}" data-title="{{ $collection->job->row_no ?? $collection->job_no }}">{{ $collection->job->row_no ?? $collection->job_no ?? '-' }}</a>@else{{ $collection->job_no ?? '-' }}@endif</span></div>
         <div><strong>{{ __('Reference No') }}:</strong><span>{{ $collection->reference_no ?? '-' }}</span></div>
         <div><strong>{{ __('Paid Into') }}:</strong><span>{{ $paidIntoAccount->name ?? '-' }}</span></div>
         <div><strong>{{ __('Payment Method') }}:</strong><span>{{ $collection->payment_method ?? $collection->collection_method ?? '-' }}</span></div>
@@ -91,7 +138,7 @@
                 @foreach($collection->collectionInvoices as $ci)
                     <tr>
                         <td>{{ $loop->iteration }}</td>
-                        <td>{{ $ci->customerInvoice->row_no ?? '-' }}</td>
+                        <td>@if($ci->customerInvoice)<a href="#" class="open-linked text-primary text-decoration-none" data-type="invoice" data-id="{{ $ci->customerInvoice->id }}" data-title="{{ $ci->customerInvoice->row_no }}">{{ $ci->customerInvoice->row_no }}</a>@else - @endif</td>
                         <td>{{ $ci->customerInvoice->invoice_date ?? '-' }}</td>
                         <td>{{ $ci->customerInvoice->due_at ?? '-' }}</td>
                         <td class="text-end">{{ number_format($ci->customerInvoice->grand_total ?? 0, decimals()) }}</td>
@@ -178,4 +225,31 @@
             <div><strong>{{ __('Approved At') }}:</strong><span>{{ $collection->approved_at ?? '-' }}</span></div>
         @endif
     </div>
+</div>
+
+</div>
+
+<div class="tab-pane fade" id="colTimeFrameTab" role="tabpanel">
+    <div class="section">
+        <h6>{{ __('Time Frame') }}</h6>
+        <div class="text-muted small mb-3"><i class="bi bi-diagram-3 me-1"></i>{{ $origin }}</div>
+        @php
+            $sideRight = ['enquiry', 'job', 'collection'];
+            $modLabel = ['enquiry' => __('Enquiry'), 'quotation' => __('Quotation'), 'job' => __('Job'), 'invoice' => __('Invoice'), 'collection' => __('Collection')];
+        @endphp
+        <ul class="col-timeline">
+            @foreach($timeline as $step)
+                <li class="{{ in_array($step['module'], $sideRight) ? 'side-r' : 'side-l' }}">
+                    <span class="dot"><i class="bi {{ $step['icon'] }}"></i></span>
+                    <div class="t-mod">{{ $modLabel[$step['module']] ?? '' }}</div>
+                    <div class="t-label">@if(!empty($step['link']))<a href="#" class="open-linked text-primary text-decoration-none" data-type="{{ $step['link'][0] }}" data-id="{{ $step['link'][1] }}" data-title="{{ $step['link'][2] }}">{{ $step['label'] }}</a>@else{{ $step['label'] }}@endif @if($step['meta'])<span class="text-muted fw-normal">· {{ $step['meta'] }}</span>@endif</div>
+                    <div class="t-meta">
+                        {{ \Carbon\Carbon::parse($step['at'])->format('d-m-Y H:i') }}
+                        @if($step['by']) &middot; {{ __('by') }} {{ $step['by'] }} @endif
+                    </div>
+                </li>
+            @endforeach
+        </ul>
+    </div>
+</div>
 </div>

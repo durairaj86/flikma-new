@@ -8,10 +8,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\CompanyScopeTrait;
+use App\Traits\Log\LogHistoryTrait;
 
 class AirwayBill extends Model
 {
-    use CompanyScopeTrait, HasFactory, SoftDeletes;
+    use CompanyScopeTrait, LogHistoryTrait, HasFactory, SoftDeletes;
 
     protected $table = 'airway_bills';
 

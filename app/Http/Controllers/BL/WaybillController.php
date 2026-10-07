@@ -13,6 +13,8 @@ use Yajra\DataTables\Facades\DataTables;
 
 class WaybillController extends Controller
 {
+    use \App\Http\Controllers\Concerns\BuildsBillTimeline;
+
     /**
      * Display the waybill form in a modal
      */
@@ -423,7 +425,8 @@ class WaybillController extends Controller
         $waybill = Waybill::with(['waybillSubs', 'customer', 'job'])->findOrFail($id);
         $descriptions = \App\Models\Master\Description::descriptions()->pluck('description', 'id')->toArray();
 
-        return view('modules.bl.waybill.view-overview', compact('waybill', 'descriptions'));
+        [$origin, $timeline] = $this->billTimeline($waybill, __('Waybill'));
+        return view('modules.bl.waybill.view-overview', compact('waybill', 'descriptions', 'origin', 'timeline'));
     }
 
     /**
