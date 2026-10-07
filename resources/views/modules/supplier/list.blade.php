@@ -18,8 +18,10 @@
             body:not(.has-top-header) .sup-title { display: block; }
             /* Table header sits flush at the top of the card; the chips row only takes space when filters are applied. */
             .sup-chips-row:has(#supplierFilterChips:empty) { display: none !important; }
-            #dataTable thead th:first-child { border-top-left-radius: 10px; }
-            #dataTable thead th:last-child { border-top-right-radius: 10px; }
+            /* header row styled like the Credit Note list */
+            #dataTable thead th { background-color: #f8f9fa !important; color: #6c757d; font-weight: 600; text-transform: uppercase; border-bottom: 1px solid #e9ecef; padding: 0.65rem 0.75rem; font-size: 12.5px; letter-spacing: .02em; }
+            #dataTable thead th:first-child { border-top-left-radius: 8px; }
+            #dataTable thead th:last-child { border-top-right-radius: 8px; }
         </style>
         <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap pt-2 pb-0">
             <h4 class="fw-bold text-dark mb-0 sup-title">@yield('page-title')</h4>

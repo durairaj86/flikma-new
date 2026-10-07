@@ -19,8 +19,10 @@
         <style>
         /* Table header sits flush at the top of the card; the chips row only takes space when filters are applied. */
         .cust-chips-row:has(#customerFilterChips:empty) { display: none !important; }
-        #dataTable thead th:first-child { border-top-left-radius: 10px; }
-        #dataTable thead th:last-child { border-top-right-radius: 10px; }
+        /* header row styled like the Credit Note list */
+        #dataTable thead th { background-color: #f8f9fa !important; color: #6c757d; font-weight: 600; text-transform: uppercase; border-bottom: 1px solid #e9ecef; padding: 0.65rem 0.75rem; font-size: 12.5px; letter-spacing: .02em; }
+        #dataTable thead th:first-child { border-top-left-radius: 8px; }
+        #dataTable thead th:last-child { border-top-right-radius: 8px; }
             .cust-title { display: none; }
             body:not(.has-top-header) .cust-title { display: block; }
         </style>
