@@ -9,6 +9,12 @@
             #dataTable thead th { background-color: #f8f9fa !important; }
             #dataTable thead th:first-child { border-top-left-radius: 8px; }
             #dataTable thead th:last-child { border-top-right-radius: 8px; }
+            /* Tree: parents are bold with a caret; children are indented under them. */
+            .acc-caret { display: inline-flex; width: 20px; justify-content: center; cursor: pointer; color: #6c757d; transition: transform .15s; user-select: none; }
+            .acc-caret.collapsed { transform: rotate(-90deg); }
+            .acc-caret-spacer { display: inline-block; width: 20px; }
+            .acc-name.is-parent { font-weight: 600; }
+            .acc-tree-row { border-bottom: 1px solid #f1f3f5; }
         </style>
         <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap pt-2 pb-0">
             <h4 class="fw-bold text-dark mb-0 acc-title">@yield('page-title')</h4>
@@ -128,15 +134,18 @@
         <div class="shadow bdr-r-10 py-3 flex-grow-1">
             <div class="d-flex justify-content-between px-3 flex-shrink-0">
                 <div id="filtered-data"></div>
+                <div class="ms-auto d-flex gap-2">
+                    <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" id="acc-expand-all"><i class="bi bi-arrows-expand me-1"></i>{{ __('Expand all') }}</button>
+                    <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" id="acc-collapse-all"><i class="bi bi-arrows-collapse me-1"></i>{{ __('Collapse all') }}</button>
+                </div>
             </div>
             <div class="flex-grow-1">
                 <div>
                     <table class="table align-middle dataTable" id="dataTable" data-module-url="account">
                         <thead class="table-light sticky-top bg-white">
                         <tr>
-                            <th>{{ __('Name') }}</th>
+                            <th>{{ __('Account Name') }}</th>
                             <th>{{ __('Code') }}</th>
-                            <th>{{ __('Parent Account') }}</th>
                             <th>{{ __('Account No') }}</th>
                             <th>{{ __('Active') }}</th>
                             <th></th>

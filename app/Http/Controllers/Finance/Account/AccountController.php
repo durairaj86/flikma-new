@@ -188,35 +188,38 @@ class AccountController extends Controller
             ->when(($request->filterData['status'] ?? 'all') === 'inactive', fn($q) => $q->where('is_active', 0))
             ->when(!empty($request->filterData['parent']), fn($q) => $q->where('parent_id', (int) $request->filterData['parent']));
 
-        $allAccounts = $rows->get()->pluck('name', 'id')->toArray();
-        // Get counts per status in one query
+        // Counts per account type in one query
         $allCounts = Account::select('type', DB::raw('COUNT(*) as total'))
             ->groupBy('type')
             ->pluck('total', 'type')
             ->toArray();
 
+        // Chart of accounts as a tree: children follow their parent (depth-first), so the list can be indented / collapsed.
+        // An account whose parent isn't in the filtered set (other type, filtered out) is shown as a root.
+        $list = $rows->orderBy('code')->get();
+        $present = $list->pluck('id')->flip();
+        $byParent = $list->groupBy(fn($a) => $a->parent_id && isset($present[$a->parent_id]) ? $a->parent_id : 0);
+        $flat = collect();
+        $walk = function ($parent, $depth, $ancestors) use (&$walk, $byParent, &$flat) {
+            foreach ($byParent[$parent] ?? [] as $acc) {
+                $acc->depth = $depth;
+                $acc->ancestors = implode(',', $ancestors);
+                $acc->has_children = isset($byParent[$acc->id]);
+                $flat->push($acc);
+                $walk($acc->id, $depth + 1, array_merge($ancestors, [$acc->id]));
+            }
+        };
+        $walk(0, 0, []);
 
-        return DataTables::eloquent($rows)
-            ->addIndexColumn() // gives DT_RowIndex
+        return DataTables::collection($flat)
+            ->addIndexColumn()
             ->setRowAttr([
-                'data-id' => function ($model) {
-                    return $model->id;
-                },
+                'data-id' => fn($model) => $model->id,
+                'data-ancestors' => fn($model) => $model->ancestors,
+                'data-depth' => fn($model) => $model->depth,
                 'class' => 'row-item',
             ])
-            ->addColumn('parent_name', function ($row) {
-                return optional($row->parent)->name ?? '-';
-            })
-            ->editColumn('is_active', function ($row) {
-                return (bool)$row->is_active;
-            })
-            ->addColumn('row_no', function ($row) {
-                // optional: alias DT_RowIndex to row_no if your JS expects row_no
-                return $row->DT_RowIndex ?? '';
-            })
-            ->editColumn('parent_id', function ($row) use ($allAccounts) {
-                return $allAccounts[$row->parent_id] ?? '-';
-            })
+            ->editColumn('is_active', fn($row) => (bool)$row->is_active)
             ->with([
                 'statusCounts' => $allCounts,  // ✅ send to DataTables response
             ])

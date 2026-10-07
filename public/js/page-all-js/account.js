@@ -40,7 +40,8 @@ ACCOUNT = {
                 serverSide: true,
                 autoWidth: false,
                 lengthChange: false,
-                pageLength: 25,
+                pageLength: 500,
+                ordering: false,
                 dom: 'rt<"row mt-2"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7 d-flex justify-content-end"p>>',
                 ajax: {
                     url: GLOBAL_FN.buildUrl('finance/account/data'),
@@ -57,9 +58,18 @@ ACCOUNT = {
                 },
                 columns: [
                     //{data: 'DT_RowIndex', class: 'hide-tooltip fav-index'},
-                    {data: 'name'},
+                    {
+                        data: 'name', render: function (data, type, row) {
+                            if (type !== 'display') return data;
+                            const indent = (row.depth || 0) * 22;
+                            const caret = row.has_children
+                                ? '<span class="acc-caret" data-id="' + row.id + '"><i class="bi bi-caret-down-fill small"></i></span>'
+                                : '<span class="acc-caret-spacer"></span>';
+                            return '<div class="d-flex align-items-center" style="padding-left:' + indent + 'px;">' + caret
+                                + '<span class="acc-name' + (row.has_children ? ' is-parent' : '') + '">' + data + '</span></div>';
+                        }
+                    },
                     {data: 'code'},
-                    {data: 'parent_id'},
                     {data: 'account_number'},
                     {
                         data: 'is_active', render: function (data, type, row) {
@@ -79,6 +89,27 @@ ACCOUNT = {
                     ACCOUNT.list.actions.statusChange();
                 },
             });
+            // Collapse / expand a parent: hides every row whose ancestors include it (re-showing only rows whose own ancestors are all open).
+            const collapsed = new Set();
+            const applyTree = () => {
+                $('#dataTable tbody tr.row-item').each(function () {
+                    const anc = ($(this).attr('data-ancestors') || '').split(',').filter(Boolean);
+                    $(this).toggle(!anc.some(id => collapsed.has(id)));
+                });
+            };
+            $('#dataTable tbody').off('click', '.acc-caret').on('click', '.acc-caret', function (e) {
+                e.stopPropagation();
+                const id = String($(this).data('id'));
+                collapsed.has(id) ? collapsed.delete(id) : collapsed.add(id);
+                $(this).toggleClass('collapsed', collapsed.has(id));
+                applyTree();
+            });
+            $('#acc-expand-all').off().on('click', function () { collapsed.clear(); $('.acc-caret').removeClass('collapsed'); applyTree(); });
+            $('#acc-collapse-all').off().on('click', function () {
+                $('#dataTable tbody .acc-caret').each(function () { collapsed.add(String($(this).data('id'))); }).addClass('collapsed');
+                applyTree();
+            });
+
             $('#customSearch').on('keyup input', window.debounceSearch(function () {
                 table.search(this.value).draw();
             }));
