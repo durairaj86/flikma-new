@@ -1,16 +1,41 @@
 @section('js', 'general_ledger')
 @section('page-title', __('Customer Ledger'))
+@section('hide-topbar', true)
 @section('page-subtitle', __('Complete transaction history per customer with running balance'))
 
-<div class="gl-wrapper min-vh-100 bg-light pt-3 pb-4">
+<div class="gl-wrapper min-vh-100 bg-light pt-1 pb-4">
     <div class="container-fluid px-3">
 
-        {{-- Page Header --}}
+        <style>
+            .rpt-title { display: none; }
+            body:not(.has-top-header) .rpt-title { display: block; }
+        </style>
+        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap pt-2 pb-3 d-print-none">
+            <div class="rpt-title">
+                <h4 class="fw-bold text-dark mb-0">@yield('page-title')</h4>
+                @hasSection('page-subtitle')<div class="text-muted small mt-1">@yield('page-subtitle')</div>@endif
+            </div>
+            <div class="btn-group shadow-sm ms-auto position-relative">
+                <button class="btn btn-white border border-end-0" onclick="window.print()">
+                    <i class="bi bi-printer me-2"></i>{{ __('Print') }}
+                </button>
+                <div class="btn-group position-relative" x-data="{ open: false, pos: '', toggle() { this.open = !this.open; if (this.open) { const r = this.$refs.btn.getBoundingClientRect(); this.pos = 'position:fixed;left:auto;bottom:auto;right:' + (window.innerWidth - r.right) + 'px;top:' + (r.bottom + 4) + 'px;'; } } }" @click.outside="open = false" @keydown.escape.window="open = false" @scroll.window="open = false" @resize.window="open = false">
+                    <button type="button" class="btn btn-white border dropdown-toggle" x-ref="btn" @click="toggle()" :aria-expanded="open">
+                        <i class="bi bi-download me-2"></i>{{ __('Export') }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow" :class="{ show: open }" x-cloak :style="pos" @click="open = false">
+                        <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'gl-print', {orientation: 'landscape'})"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
+                        <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
                 {{-- Filters --}}
         <div class="card border-0 shadow-sm mb-4 d-print-none" id="list-filter">
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
-<div class="col-lg-4 col-md-4 col-xl-2">
+<div class="col-12 col-sm-6 col-lg">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('From Date') }}</label>
                         <input type="hidden" id="gl-start-hidden" wire:model.live="startDate" value="{{ $startDate }}" />
                         <input type="text" id="gl-start-date"
@@ -18,7 +43,7 @@
                                placeholder="dd-mm-yyyy"
                                value="{{ $startDate }}" />
                     </div>
-<div class="col-lg-4 col-md-4 col-xl-2">
+<div class="col-12 col-sm-6 col-lg">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('To Date') }}</label>
                         <input type="hidden" id="gl-end-hidden" wire:model.live="endDate" value="{{ $endDate }}" />
                         <input type="text" id="gl-end-date"
@@ -26,7 +51,7 @@
                                placeholder="dd-mm-yyyy"
                                value="{{ $endDate }}" />
                     </div>
-<div class="col-lg-4 col-md-4 col-xl-2 col-xxl-3">
+<div class="col-12 col-sm-6 col-lg">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Customer') }} <sup class="text-danger">*</sup></label>
                         <select class="tom-select bg-light border-0 no-ts" wire:model="customerId" required data-live-search="true">
                             @if(count($customers) === 0)
@@ -41,8 +66,16 @@
                             @endforeach
                         </select>
                     </div>
-<div class="col-lg-12 col-xl-6 col-xxl-5">
-    <div class="d-flex flex-wrap gap-2 justify-content-end align-items-center">
+
+<div class="col-12 col-sm-6 col-lg">
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Search') }}</label>
+                        <input type="text"
+                               class="form-control bg-light border-0 py-2"
+                               placeholder="{{ __('Voucher, description…') }}"
+                               wire:model.live.debounce.300ms="search" />
+                    </div>
+<div class="col-12 col-lg-auto">
+    <div class="d-flex flex-wrap gap-2 justify-content-lg-end align-items-center">
         <button type="button" class="btn btn-gl fw-bold py-2 shadow-sm"
                                             onclick="glApplyFilter()"
                                             wire:loading.attr="disabled">
@@ -50,29 +83,9 @@
                                         <span wire:loading.remove>{{ __('Generate') }}</span>
                                         <span wire:loading><span class="spinner-border spinner-border-sm me-1"></span>{{ __('Loading…') }}</span>
                                     </button>
-        <div class="btn-group shadow-sm">
-                            <button class="btn btn-white border border-end-0" onclick="window.print()">
-                                <i class="bi bi-printer me-2"></i>{{ __('Print') }}
-                            </button>
-                            <div class="btn-group">
-                                <button class="btn btn-white border dropdown-toggle" data-bs-toggle="dropdown">
-                                    <i class="bi bi-download me-2"></i>{{ __('Export') }}
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                                    <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'gl-print', {orientation: 'landscape'})"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
-                                    <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
-                                </ul>
-                            </div>
-                        </div>
     </div>
 </div>
-<div class="col-lg-4 col-md-4 col-xl-2">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Search') }}</label>
-                        <input type="text"
-                               class="form-control bg-light border-0 py-2"
-                               placeholder="{{ __('Voucher, description…') }}"
-                               wire:model.live.debounce.300ms="search" />
-                    </div></div>
+</div>
             </div>
         </div>
 

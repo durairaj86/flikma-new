@@ -4,6 +4,23 @@ ITEM = {
     actionUrl: 'inventory/items',
     load() {
         ITEM.form.open();
+        datepicker();
+        ITEM.filter.load();
+    },
+    filter: {
+        load() {
+            $('#apply-filter').off().on('click', function () {
+                ITEM.list.dataTable();
+                FILTER.filteredColumn();
+            });
+        },
+        default() {
+            let data = {};
+            new URLSearchParams($('#list-filter').serialize()).forEach((value, key) => {
+                data[key] = data[key] ? [].concat(data[key], value) : value;
+            });
+            return data;
+        },
     },
     list: {
         load(activeTab) {
@@ -29,14 +46,15 @@ ITEM = {
                     ajax: {
                         url: GLOBAL_FN.buildUrl('inventory/items/data'),
                         type: 'POST',
-                        data: {
-                            'tab': activeTab
+                        data: function (d) {
+                            d.tab = activeTab;
+                            d.filterData = ITEM.filter.default();
                         },
                         dataSrc: function (json) {
                             // Remove loader rows when data arrives
                             $('#dataTable tbody').find('.loading-row').remove();
                             // Set the count of all items
-                            $('#allCount').text(json.data.length);
+                            $('#allCount').text(json.recordsTotal ?? json.data.length);
                             return json.data;
                         }
                     },

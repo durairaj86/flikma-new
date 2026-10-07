@@ -1,10 +1,64 @@
 @section('js','item')
+@section('hide-topbar', true)
 @section('page-title', __('Items'))
 <x-app-layout>
     <!-- Main Content -->
     <main class="gmail-content bg-white px-3">
-        <!-- Tabs -->
-        <div class="d-flex justify-content-between align-items-start py-3">
+        <style>
+            .itm-title { display: none; }
+            body:not(.has-top-header) .itm-title { display: block; }
+            #dataTable thead th { background-color: #f8f9fa !important; }
+            #dataTable thead th:first-child { border-top-left-radius: 8px; }
+            #dataTable thead th:last-child { border-top-right-radius: 8px; }
+        </style>
+        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap pt-2 pb-0">
+            <div class="d-flex align-items-center gap-2 itm-title">
+                <h4 class="fw-bold text-dark mb-0">@yield('page-title')</h4>
+                @stack('page-title-action')
+            </div>
+            <div class="d-flex align-items-center gap-2 ms-auto">
+                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Item') }}</button>
+            </div>
+        </div>
+
+        <div id="filterPanel" class="card shadow-sm border-0 d-none filter-panel-card mt-3">
+            <div class="card-header bg-white border-0 pt-3 pb-0">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="filter-panel-icon"><i class="bi bi-funnel-fill"></i></span>
+                    <h6 class="mb-0 fw-semibold">{{ __('Filters') }}</h6>
+                </div>
+            </div>
+            <div class="card-body pt-3">
+                <form id="list-filter" method="post" novalidate="novalidate">
+                    @csrf
+                    <div class="row g-4">
+                        <div class="col-md-6 col-xl-4 form-filter">
+                            <label class="form-label fw-medium filter-label-row">{{ __('Created Date') }}</label>
+                            <div class="filter-date-range">
+                                <input type="date" class="form-control datepicker from-date" id="filter-from-date" name="filter-from-date">
+                                <i class="bi bi-arrow-right filter-date-range-arrow"></i>
+                                <input type="date" class="form-control datepicker to-date" id="filter-to-date" name="filter-to-date">
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-xl-4 form-filter">
+                            <label class="form-label fw-medium filter-label-row">{{ __('Account Type') }}</label>
+                            <select class="tom-select" name="account_type" id="filter-account-type">
+                                <option value="">{{ __('All Types') }}</option>
+                                <option value="expense">{{ __('Expense') }}</option>
+                                <option value="income">{{ __('Income') }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="text-center mt-4 pt-2 border-top filter-panel-actions">
+                        <button class="btn btn-primary btn-round px-4" type="button" id="apply-filter">
+                            <i class="bi bi-search me-1"></i> {{ __('Search') }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 py-3">
             <div class="align-items-center flex-shrink-0">
                 <div class="gap-4">
                     <ul class="nav align-items-center" id="listTabs" role="tablist"
@@ -20,89 +74,20 @@
                     </ul>
                 </div>
             </div>
-            <div class="d-flex justify-content-between">
-                <div class="position-relative">
-                    <!-- Compact Filter button -->
-                    <button class="btn btn-outline-secondary me-2" onclick="toggleFilter()"><i class="bi bi-funnel"></i>
-                        {{ __('Filter') }}
-                    </button>
-
-                    <!-- Filter panel (dropdown style) -->
-                    <div id="filterPanel" class="card p-3 d-none"
-                         style="position: absolute; top: 100%; right: 0; width: 20rem; z-index: 1000; box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);">
-                        <!-- Date range -->
-                        <div class="mb-3">
-                           {{-- <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">Date range</span>
-                                <button class="btn btn-link btn-sm p-0" onclick="resetField('date')">Reset</button>
-                            </div>
-
-                            <!-- Predefined date ranges -->
-                            <select class="form-control selectpicker mb-2" id="presetDateRange"
-                                    onchange="setPresetDateRange()">
-                                <option value="">Custom</option>
-                                <option value="today">Today</option>
-                                <option value="yesterday">Yesterday</option>
-                                <option value="thisMonth">This Month</option>
-                                <option value="lastMonth">Last Month</option>
-                                <option value="thisQuarter">This Quarter</option>
-                                <option value="lastQuarter">Last Quarter</option>
-                                <option value="thisYear">This Year</option>
-                                <option value="lastYear">Last Year</option>
-                            </select>--}}
-
-                            <div class="d-flex gap-2">
-                                <input type="date" class="form-control datepicker" id="fromDate">
-                                <input type="date" class="form-control datepicker" id="toDate">
-                            </div>
-                        </div>
-
-                        <!-- Account Type -->
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">{{ __('Account Type') }}</span>
-                                <button class="btn btn-link btn-sm p-0" onclick="resetField('accountType')">{{ __('Reset') }}</button>
-                            </div>
-                            <select class="form-select" id="accountType">
-                                <option value="">{{ __('All Types') }}</option>
-                                <option value="expense">{{ __('Expense') }}</option>
-                                <option value="income">{{ __('Income') }}</option>
-                            </select>
-                        </div>
-
-                        <!-- Keyword search -->
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">{{ __('Keyword search') }}</span>
-                                <button class="btn btn-link btn-sm p-0" onclick="resetField('keyword')">{{ __('Reset') }}</button>
-                            </div>
-                            <input type="text" class="form-control" placeholder="{{ __('Search...') }}" id="keyword">
-                        </div>
-
-                        <!-- Buttons -->
-                        <div class="d-flex justify-content-between">
-                            <button class="btn btn-outline-secondary" onclick="resetAll()">{{ __('Reset all') }}</button>
-                            <button class="btn btn-success">{{ __('Apply now') }}</button>
-                        </div>
-                    </div>
+            <div class="d-flex align-items-center gap-2">
+                <div class="search-box position-relative">
+                    <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                    <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
+                           placeholder="{{ __('Search items...') }}" aria-label="{{ __('Search items...') }}">
                 </div>
-                <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Item') }}</button>
+                <button class="btn btn-icon-search rounded-circle" id="filter-box" type="button"
+                        title="{{ __('Filter') }}" aria-label="{{ __('Filter') }}"><i class="bi bi-funnel"></i></button>
             </div>
         </div>
 
         <!-- Table Section -->
         <div class="shadow bdr-r-10 py-3 flex-grow-1">
-            <!-- Search & New -->
-            <div class="d-flex justify-content-between px-3 flex-shrink-0">
-                <div class="align-items-center gap-2">
-                    <div class="search-box position-relative me-2">
-                        <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-
-                        <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="{{ __('Search items...') }}" aria-label="{{ __('Search items...') }}">
-                    </div>
-                </div>
-            </div>
+            <div id="filtered-data" class="px-3"></div>
 
             <!-- Table with scroll -->
             <div class="flex-grow-1">

@@ -1,16 +1,41 @@
 @section('js', 'tax_summary')
 @section('page-title', __('Tax Summary'))
+@section('hide-topbar', true)
 @section('page-subtitle'){{ __('VAT reconciliation for') }} {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} &mdash; {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}@endsection
 
-<div class="provisional-wrapper min-vh-100 bg-light pt-3 pb-4">
+<div class="provisional-wrapper min-vh-100 bg-light pt-1 pb-4">
     <div class="container-fluid px-3">
 
-        {{-- Page Header --}}
+        <style>
+            .rpt-title { display: none; }
+            body:not(.has-top-header) .rpt-title { display: block; }
+        </style>
+        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap pt-2 pb-3 d-print-none">
+            <div class="rpt-title">
+                <h4 class="fw-bold text-dark mb-0">@yield('page-title')</h4>
+                @hasSection('page-subtitle')<div class="text-muted small mt-1">@yield('page-subtitle')</div>@endif
+            </div>
+            <div class="btn-group shadow-sm ms-auto position-relative">
+                <button class="btn btn-white border border-end-0" onclick="window.print()">
+                    <i class="bi bi-printer me-2"></i>{{ __('Print') }}
+                </button>
+                <div class="btn-group position-relative" x-data="{ open: false, pos: '', toggle() { this.open = !this.open; if (this.open) { const r = this.$refs.btn.getBoundingClientRect(); this.pos = 'position:fixed;left:auto;bottom:auto;right:' + (window.innerWidth - r.right) + 'px;top:' + (r.bottom + 4) + 'px;'; } } }" @click.outside="open = false" @keydown.escape.window="open = false" @scroll.window="open = false" @resize.window="open = false">
+                    <button type="button" class="btn btn-white border dropdown-toggle" x-ref="btn" @click="toggle()" :aria-expanded="open">
+                        <i class="bi bi-download me-2"></i>{{ __('Export') }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow" :class="{ show: open }" x-cloak :style="pos" @click="open = false">
+                        <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'ts-print')"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
+                        <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
                 {{-- Filters --}}
         <div class="card border-0 shadow-sm mb-4 d-print-none">
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
-<div class="col-lg-4 col-md-4 col-xl-2">
+<div class="col-12 col-sm-6 col-lg">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('From Date') }}</label>
                         <input type="hidden" id="ts-start-date-hidden" wire:model="startDate" value="{{ $startDate }}" />
                         <input type="text" id="ts-start-date"
@@ -18,7 +43,7 @@
                                placeholder="dd-mm-yyyy"
                                value="{{ $startDate }}" />
                     </div>
-<div class="col-lg-4 col-md-4 col-xl-2">
+<div class="col-12 col-sm-6 col-lg">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('To Date') }}</label>
                         <input type="hidden" id="ts-end-date-hidden" wire:model="endDate" value="{{ $endDate }}" />
                         <input type="text" id="ts-end-date"
@@ -26,40 +51,27 @@
                                placeholder="dd-mm-yyyy"
                                value="{{ $endDate }}" />
                     </div>
-<div class="col-lg-4 col-md-4 col-xl-2 col-xxl-3">
+<div class="col-12 col-sm-6 col-lg">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Search') }}</label>
                         <input type="text" class="form-control bg-light border-0 py-2"
                                wire:model.debounce.400ms="search"
                                placeholder="{{ __('Reference no, description...') }}" />
                     </div>
-<div class="col-lg-12 col-xl-6 col-xxl-5">
-    <div class="d-flex flex-wrap gap-2 justify-content-end align-items-center">
+<div class="col-12 col-lg-auto">
+    <div class="d-flex flex-wrap gap-2 justify-content-lg-end align-items-center">
         <button type="button" class="btn btn-pr fw-bold py-2 shadow-sm"
                                             wire:click="applyFilter" wire:loading.attr="disabled">
                                         <i class="bi bi-filter-left me-2"></i>
                                         <span wire:loading.remove>{{ __('Generate') }}</span>
                                         <span wire:loading><span class="spinner-border spinner-border-sm me-1"></span>{{ __('Loading...') }}</span>
                                     </button>
-        <div class="btn-group shadow-sm">
-                            <button class="btn btn-white border border-end-0" onclick="window.print()">
-                                <i class="bi bi-printer me-2"></i>{{ __('Print') }}
-                            </button>
-                            <div class="btn-group">
-                                <button class="btn btn-white border dropdown-toggle" data-bs-toggle="dropdown">
-                                    <i class="bi bi-download me-2"></i>{{ __('Export') }}
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                                    <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'ts-print')"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
-                                    <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
-                                </ul>
-                            </div>
-                        </div>
         <button type="button" class="btn btn-outline-secondary border-0 bg-light py-2 px-3"
                                             wire:click="resetFilter">
                                         <i class="bi bi-arrow-counterclockwise"></i>
                                     </button>
     </div>
-</div></div>
+</div>
+</div>
             </div>
         </div>
 

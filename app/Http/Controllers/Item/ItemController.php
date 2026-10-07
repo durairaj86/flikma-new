@@ -44,6 +44,11 @@ class ItemController extends Controller
             'created_at',
             'company_id'
         )->where('is_active', 1)
+         ->when(!empty($request->filterData['account_type']), fn($q) => $q->where('account_type', $request->filterData['account_type']))
+         ->when(!empty($request->filterData['filter-from-date']) && !empty($request->filterData['filter-to-date']), function ($q) use ($request) {
+             $q->whereDate('created_at', '>=', formDate($request->filterData['filter-from-date']))
+               ->whereDate('created_at', '<=', formDate($request->filterData['filter-to-date']));
+         })
          ->orderBy('name_en');
 
         return DataTables::eloquent($rows)
