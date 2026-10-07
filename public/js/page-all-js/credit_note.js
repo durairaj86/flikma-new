@@ -4,8 +4,10 @@ CREDIT_NOTE = {
     actionUrl: 'adjustment/credit-note',
     load() {
         CREDIT_NOTE.form.load();
+        datepicker();
         CREDIT_NOTE.filter.load();
         CREDIT_NOTE.list.load('all');
+        FILTER.filteredColumn();
     },
     filter: {
         load: function () {
@@ -234,6 +236,12 @@ CREDIT_NOTE = {
 
                     // Clear other tabs
                     $('#cnItemsContent, #cnDocumentsContent').html('');
+                    $('#cnTimeFrameContent').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div></div>');
+                    $.get('/adjustment/credit-note/' + recordId + '/timeline', function (data) {
+                        $('#cnTimeFrameContent').html(data);
+                    }).fail(function () {
+                        $('#cnTimeFrameContent').html('<div class="alert alert-danger m-3">Failed to load time frame.</div>');
+                    });
 
                     // Show drawer
                     let drawer = new bootstrap.Offcanvas(document.getElementById('moduleDrawer'));

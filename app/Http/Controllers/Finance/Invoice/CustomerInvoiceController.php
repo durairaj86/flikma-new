@@ -789,8 +789,8 @@ class CustomerInvoiceController extends Controller
         $enquiry = $quotation && $quotation->enquiry_id ? \App\Models\Enquiry\Enquiry::find($quotation->enquiry_id) : null;
 
         if ($enquiry) $add(__('Enquiry created') . ' · ' . $enquiry->row_no, $enquiry->created_at, 'bi-chat-left-text', null, null, 'enquiry');
-        if ($quotation) $add(__('Quotation posted') . ' · ' . $quotation->row_no, $quotation->posted_at ?? $quotation->created_at, 'bi-file-earmark-text', null, null, 'quotation');
-        if ($job) $add(($quotation ? __('Converted to job') : __('Job created')) . ' · ' . $job->row_no, $job->posted_at ?? $job->created_at, 'bi-briefcase', null, null, 'job');
+        if ($quotation) $add(__('Quotation posted') . ' · ' . $quotation->row_no, $quotation->created_at, 'bi-file-earmark-text', null, null, 'quotation');
+        if ($job) $add(($quotation ? __('Converted to job') : __('Job created')) . ' · ' . $job->row_no, $job->created_at, 'bi-briefcase', null, null, 'job');
 
         $rank = 1;
         $origin = $quotation
@@ -825,7 +825,7 @@ class CustomerInvoiceController extends Controller
         $dec = decimals();
         foreach (\App\Models\Finance\Adjustment\CreditNote::where('invoice_id', $inv->id)->orderBy('id')->get() as $cn) {
             $kind = $grand > 0 && (float) $cn->grand_total >= $grand - 0.005 ? __('Full credit note') : __('Partial credit note');
-            $add($kind . ' · ' . $cn->row_no, $cn->posted_at ?? $cn->created_at, 'bi-receipt-cutoff', null, number_format((float) $cn->grand_total, $dec), 'credit_note');
+            $add($kind . ' · ' . $cn->row_no, $cn->created_at, 'bi-receipt-cutoff', null, number_format((float) $cn->grand_total, $dec), 'credit_note');
         }
 
         $cumulative = 0.0;
@@ -835,7 +835,7 @@ class CustomerInvoiceController extends Controller
             if (($ci->collection->status ?? 0) == 3) continue; // cancelled
             $cumulative += (float) $ci->amount;
             $kind = $grand > 0 && $cumulative >= $grand - 0.005 ? __('Full collection') : __('Partial collection');
-            $add($kind . ' · ' . ($ci->collection->row_no ?? ''), $ci->collection->collection_date ?? $ci->collection->created_at ?? null, 'bi-cash-coin', null, number_format((float) $ci->amount, $dec), 'collection');
+            $add($kind . ' · ' . ($ci->collection->row_no ?? ''), $ci->collection->created_at ?? $ci->created_at, 'bi-cash-coin', null, number_format((float) $ci->amount, $dec), 'collection');
         }
 
         usort($events, fn($a, $b) => [$a['rank'], $a['rank'] ? $a['key'] : $a['seq'], $a['seq']] <=> [$b['rank'], $b['rank'] ? $b['key'] : $b['seq'], $b['seq']]);
@@ -882,7 +882,7 @@ class CustomerInvoiceController extends Controller
                 'type_color' => 'info',
                 'reference' => $cn->row_no ?? '—',
                 'url' => url('adjustment/credit-note/' . $cn->id . '/create'),
-                'date' => $cn->posted_at ?? $cn->created_at,
+                'date' => $cn->created_at,
                 'amount' => $cn->grand_total,
                 'status_label' => $label[0],
                 'status_color' => $label[1],

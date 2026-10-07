@@ -755,6 +755,81 @@ class CreditNoteController extends Controller
         return view('modules.finance.credit-note.view-overview', compact('creditNote', 'descriptions'));
     }
 
+    /**
+     * Time frame for the credit note drawer: how the invoice it adjusts came
+     * to exist (enquiry -> quotation -> job -> invoice), then the credit
+     * note's own life (created / updated / approved / cancelled).
+     */
+    public function timeline($id)
+    {
+        $cn = CreditNote::findOrFail($id);
+        $inv = $cn->invoice_id ? \App\Models\Finance\CustomerInvoice\CustomerInvoice::find($cn->invoice_id) : null;
+        $jobId = $cn->job_id ?: $inv?->job_id;
+
+        $events = [];
+        $rank = 0;
+        $add = function ($label, $at, $icon, $module, $by = null, $meta = null) use (&$events, &$rank) {
+            if (!$at) return;
+            $events[] = ['label' => $label, 'at' => $at, 'icon' => $icon, 'module' => $module, 'by' => $by, 'meta' => $meta,
+                'rank' => $rank, 'key' => \Illuminate\Support\Carbon::parse($at)->timestamp, 'seq' => count($events)];
+        };
+
+        $job = $jobId ? \App\Models\Job\Job::find($jobId) : null;
+        $quotation = $job && $job->quotation_id ? \App\Models\Quotation\Quotation::find($job->quotation_id) : null;
+        $enquiry = $quotation && $quotation->enquiry_id ? \App\Models\Enquiry\Enquiry::find($quotation->enquiry_id) : null;
+
+        if ($enquiry) $add(__('Enquiry created') . ' · ' . $enquiry->row_no, $enquiry->created_at, 'bi-chat-left-text', 'enquiry');
+        if ($quotation) $add(__('Quotation posted') . ' · ' . $quotation->row_no, $quotation->created_at, 'bi-file-earmark-text', 'quotation');
+        if ($job) $add(($quotation ? __('Converted to job') : __('Job created')) . ' · ' . $job->row_no, $job->created_at, 'bi-briefcase', 'job');
+
+        $rank = 1;
+        $origin = $quotation
+            ? ($enquiry ? __('Enquiry') . ' → ' : '') . __('Quotation') . ' → ' . __('Job') . ' → ' . __('Invoice') . ' → ' . __('Credit Note')
+            : ($job ? __('Job') . ' → ' . __('Invoice') . ' → ' . __('Credit Note') : ($inv ? __('Invoice') . ' → ' . __('Credit Note') : __('Credit note created directly')));
+
+        if ($inv) {
+            $add(__('Invoice created') . ' · ' . $inv->row_no, $inv->created_at, 'bi-receipt', 'invoice', null, number_format((float) $inv->grand_total, decimals()));
+            $logs = \App\Models\Log\LogHistory::where('loggable_type', \App\Models\Finance\CustomerInvoice\CustomerInvoice::class)
+                ->where('loggable_id', $inv->id)->orderBy('id')->get();
+            foreach ($logs as $log) {
+                $st = (int) ($log->changes['new']['status'] ?? 0);
+                if ($log->action === 'updated' && $st === \App\Enums\CustomerInvoiceEnum::APPROVED->value) {
+                    $add(__('Invoice approved') . ' · ' . $inv->row_no, $log->created_at, 'bi-check-circle', 'invoice', $log->user_id['name'] ?? null);
+                    break;
+                }
+            }
+        }
+
+        $statusLabels = [1 => __('Draft'), 2 => __('Approved'), 3 => __('Cancelled')];
+        $grand = $inv ? (float) $inv->grand_total : 0;
+        $kind = $grand > 0 && (float) $cn->grand_total >= $grand - 0.005 ? __('Full credit note') : __('Partial credit note');
+        $logs = \App\Models\Log\LogHistory::where('loggable_type', CreditNote::class)
+            ->where('loggable_id', $cn->id)->orderBy('id')->get();
+        $ignore = ['status', 'updated_at', 'posted_at'];
+        $seenCreate = false;
+        foreach ($logs as $log) {
+            $by = $log->user_id['name'] ?? null;
+            if ($log->action === 'created') {
+                $seenCreate = true;
+                $add($kind . ' ' . __('created') . ' · ' . $cn->row_no, $log->created_at, 'bi-receipt-cutoff', 'credit_note', $by, number_format((float) $cn->grand_total, decimals()));
+            } elseif ($log->action === 'updated') {
+                $new = $log->changes['new'] ?? [];
+                if (isset($new['status'])) {
+                    $st = (int) $new['status'];
+                    $add($statusLabels[$st] ?? __('Status changed'), $log->created_at,
+                        $st === 2 ? 'bi-check-circle' : ($st === 3 ? 'bi-x-circle' : 'bi-clock'), 'credit_note', $by);
+                } elseif (array_diff(array_keys($new), $ignore)) {
+                    $add(__('Credit note updated'), $log->created_at, 'bi-pencil-square', 'credit_note', $by);
+                }
+            }
+        }
+        if (!$seenCreate) $add($kind . ' ' . __('created') . ' · ' . $cn->row_no, $cn->created_at, 'bi-receipt-cutoff', 'credit_note', null, number_format((float) $cn->grand_total, decimals()));
+
+        usort($events, fn($a, $b) => [$a['rank'], $a['rank'] ? $a['key'] : $a['seq'], $a['seq']] <=> [$b['rank'], $b['rank'] ? $b['key'] : $b['seq'], $b['seq']]);
+
+        return view('modules.finance.credit-note.timeline', ['origin' => $origin, 'timeline' => $events]);
+    }
+
     public function print($id)
     {
         $creditNote = $this->allPrint($id);

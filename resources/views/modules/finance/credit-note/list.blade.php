@@ -1,6 +1,7 @@
 @section('page-title', __('Credit Note'))
 @section('page-subtitle', __('Credit note adjustments and refunds'))
 @section('js','credit_note')
+@section('hide-topbar', true)
 @push('page-title-action')
     <button class="btn btn-link btn-sm text-muted p-0 text-decoration-none lh-1"
             data-bs-toggle="modal" data-bs-target="#creditNoteWorkflowModal"
@@ -9,7 +10,7 @@
     </button>
 @endpush
 <x-app-layout>
-    <div class="bg-light py-4">
+    <main class="gmail-content bg-white px-3">
         <style>
             :root{
                 --cn_primary: #0b6aa0;
@@ -17,7 +18,6 @@
                 --cn_radius: 12px;
                 --cn_shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
             }
-            body { background: #f8fafc; }
             .cn-card {
                 background: var(--cn_card_bg);
                 border-radius: var(--cn_radius);
@@ -55,13 +55,21 @@
             }
 
             #dataTable thead th {
-                background-color: #fff;
+                background-color: #f8f9fa !important;
                 color: #6c757d;
                 font-weight: 600;
                 border-bottom: 1px solid #e9ecef;
                 padding: 0.65rem 1rem;
                 white-space: nowrap;
             }
+            #dataTable thead th:first-child { border-top-left-radius: 8px; }
+            #dataTable thead th:last-child { border-top-right-radius: 8px; }
+            .cn-title { display: none; }
+            body:not(.has-top-header) .cn-title { display: block; }
+            #listTabs .status-btn:not(.active) { background: #f1f3f5; color: #495057; }
+            #listTabs .status-btn:not(.active) > span:first-child > i { color: var(--bs-warning) !important; }
+            #listTabs .status-btn.active { background: rgb(13, 110, 253) !important; color: #fff !important; }
+            #listTabs .status-btn.active > span:first-child > i { color: #fff !important; }
 
             #dataTable tbody td {
                 padding: 0.65rem 1rem;
@@ -91,22 +99,113 @@
             }
         </style>
 
-        <div class="container-fluid px-lg-5">
+        <div>
+            <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap pt-2 pb-0">
+                <div class="d-flex align-items-center gap-2 cn-title">
+                    <h4 class="fw-bold text-dark mb-0">@yield('page-title')</h4>
+                    @stack('page-title-action')
+                </div>
+                <div class="d-flex align-items-center gap-2 ms-auto">
+                    <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Credit Note') }}</button>
+                </div>
+            </div>
 
-            {{-- Header --}}
-            <div class="d-flex flex-wrap justify-content-end align-items-center mb-3">
-                <div class="d-flex gap-2">
-                    <button class="btn btn-outline-primary btn-sm rounded-pill px-3" id="filter-box">
-                        <i class="bi bi-funnel me-1"></i> {{ __('Filter') }}
-                    </button>
-                    <button class="btn btn-primary btn-sm rounded-pill px-3" id="new">
-                        <i class="bi bi-plus-lg me-1"></i> {{ __('New Credit Note') }}
-                    </button>
+            {{-- Filter Panel --}}
+            <div id="filterPanel" class="card shadow-sm border-0 d-none filter-panel-card mt-3">
+                <div class="card-header bg-white border-0 pt-3 pb-0">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="filter-panel-icon"><i class="bi bi-funnel-fill"></i></span>
+                        <h6 class="mb-0 fw-semibold">{{ __('Filters') }}</h6>
+                    </div>
+                </div>
+                <div class="card-body pt-3">
+                    <form id="list-filter" method="post" novalidate="novalidate">
+                        @csrf
+                        <div class="row g-4">
+                            <div class="col-md-6 col-xl-4 form-filter">
+                                <label class="form-label fw-medium filter-label-row">{{ __('Date') }}</label>
+                                <div class="filter-date-range">
+                                    <input type="date" class="form-control datepicker from-date default-filter" id="filter-from-date" name="filter-from-date"
+                                           value="{{ \Carbon\Carbon::today()->subMonth(6)->startOfMonth()->format('d-m-Y') }}">
+                                    <i class="bi bi-arrow-right filter-date-range-arrow"></i>
+                                    <input type="date" class="form-control datepicker to-date default-filter" id="filter-to-date" name="filter-to-date"
+                                           value="{{ \Carbon\Carbon::today()->format('d-m-Y') }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-xl-4 form-filter">
+                                <label class="form-label fw-medium filter-label-row">{{ __('Customer') }}</label>
+                                <x-common.customers multiple></x-common.customers>
+                            </div>
+                            <div class="col-md-6 col-xl-4 form-filter">
+                                <label class="form-label fw-medium filter-label-row">{{ __('Invoice') }}</label>
+                                <select class="form-select form-select-sm" id="filter-invoice" name="invoice">
+                                <option value="">{{ __('All Invoices') }}</option>
+                                @foreach(\App\Models\Finance\CustomerInvoice\CustomerInvoice::where('status', 3)->get() as $invoice)
+                                    <option value="{{ encodeId($invoice->id) }}">{{ $invoice->row_no ?? $invoice->id }}</option>
+                                @endforeach
+                            </select>
+                            </div>
+                        </div>
+                        <div class="text-center mt-4 pt-2 border-top filter-panel-actions">
+                            <button class="btn btn-primary btn-round px-4" type="button" id="apply-filter">
+                                <i class="bi bi-search me-1"></i> {{ __('Search') }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {{-- Status Tabs --}}
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 py-3">
+                <div class="align-items-center flex-shrink-0">
+                    <div class="gap-4">
+                        <ul class="nav align-items-center" id="listTabs" role="tablist">
+                            <li class="nav-item me-2">
+                                <button class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn active"
+                                        data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="all">
+                                    <span><i class="bi bi-collection me-1"></i> {{ __('All') }} -</span>
+                                    <span class="status-count ms-2" id="tabAllCount">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item me-2">
+                                <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
+                                        data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="draft">
+                                    <span><i class="bi bi-clock me-1"></i> {{ __('Draft') }} -</span>
+                                    <span class="status-count ms-2" id="tabDraftCount">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item me-2">
+                                <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
+                                        data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="approved">
+                                    <span><i class="bi bi-check-circle me-1"></i> {{ __('Approved') }} -</span>
+                                    <span class="status-count ms-2" id="tabApprovedCount">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
+                                        data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="cancelled">
+                                    <span><i class="bi bi-x-circle me-1"></i> {{ __('Cancelled') }} -</span>
+                                    <span class="status-count ms-2" id="tabCancelledCount">0</span>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="search-box position-relative">
+                        <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                        <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
+                               placeholder="{{ __('Search...') }}" aria-label="{{ __('Search...') }}">
+                    </div>
+                    <button class="btn btn-icon-search rounded-circle" id="toggle-summary" type="button"
+                            title="{{ __('Hide Summary') }}" aria-label="{{ __('Hide Summary') }}"><i class="bi bi-eye-slash"></i></button>
+                    <button class="btn btn-icon-search rounded-circle" id="filter-box" type="button"
+                            title="{{ __('Filter') }}" aria-label="{{ __('Filter') }}"><i class="bi bi-funnel"></i></button>
                 </div>
             </div>
 
             {{-- KPI Cards --}}
-            <div class="row g-3 mb-3">
+            <div class="row g-3 mb-3" id="summary-cards">
                 <div class="col-lg-3 col-md-6">
                     <div class="cn-kpi d-flex align-items-center justify-content-between">
                         <div>
@@ -154,103 +253,9 @@
                 </div>
             </div>
 
-            {{-- Filter Panel --}}
-            <div id="filterPanel" class="cn-card mb-3 d-none">
-                <form id="list-filter" method="post" novalidate="novalidate">
-                    @csrf
-                    <div class="row g-3 align-items-end">
-                        {{--<div class="col-md-2">
-                            <label class="form-label fw-medium small">Date Range</label>
-                            <select class="form-select form-select-sm" id="presetDateRange">
-                                <option value="">Custom</option>
-                                <option value="today">Today</option>
-                                <option value="yesterday">Yesterday</option>
-                                <option value="thisMonth">This Month</option>
-                                <option value="lastMonth">Last Month</option>
-                                <option value="thisQuarter">This Quarter</option>
-                                <option value="lastQuarter">Last Quarter</option>
-                                <option value="thisYear">This Year</option>
-                                <option value="lastYear">Last Year</option>
-                            </select>
-                        </div>--}}
-                        <div class="col-md-3">
-                            <label class="form-label fw-medium small">{{ __('From Date') }}</label>
-                            <input type="date" class="form-control form-control-sm from-date" id="filter-from-date" name="filter-from-date"
-                                   value="{{ \Carbon\Carbon::today()->subMonth(6)->startOfMonth()->format('Y-m-d') }}">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label fw-medium small">{{ __('To Date') }}</label>
-                            <input type="date" class="form-control form-control-sm to-date" id="filter-to-date" name="filter-to-date"
-                                   value="{{ \Carbon\Carbon::today()->format('Y-m-d') }}">
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label fw-medium small">{{ __('Customer') }}</label>
-                            <x-common.customers multiple></x-common.customers>
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label fw-medium small">{{ __('Invoice') }}</label>
-                            <select class="form-select form-select-sm" id="filter-invoice" name="invoice">
-                                <option value="">{{ __('All Invoices') }}</option>
-                                @foreach(\App\Models\Finance\CustomerInvoice\CustomerInvoice::where('status', 3)->get() as $invoice)
-                                    <option value="{{ encodeId($invoice->id) }}">{{ $invoice->row_no ?? $invoice->id }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                    <div class="text-center mt-3">
-                        <button class="btn btn-primary btn-sm px-4 rounded-pill" type="button" id="apply-filter">
-                            <i class="bi bi-search me-1"></i> {{ __('Search') }}
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            {{-- Status Tabs --}}
-            <div class="d-flex justify-content-between align-items-start py-3">
-                <div class="align-items-center flex-shrink-0">
-                    <div class="gap-4">
-                        <ul class="nav align-items-center" id="listTabs" role="tablist">
-                            <li class="nav-item me-2">
-                                <button class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn active"
-                                        data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="all">
-                                    <span><i class="bi bi-collection me-1"></i> {{ __('All') }} -</span>
-                                    <span class="status-count ms-2" id="tabAllCount">0</span>
-                                </button>
-                            </li>
-                            <li class="nav-item me-2">
-                                <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
-                                        data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="draft">
-                                    <span><i class="bi bi-clock me-1"></i> {{ __('Draft') }} -</span>
-                                    <span class="status-count ms-2" id="tabDraftCount">0</span>
-                                </button>
-                            </li>
-                            <li class="nav-item me-2">
-                                <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
-                                        data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="approved">
-                                    <span><i class="bi bi-check-circle me-1"></i> {{ __('Approved') }} -</span>
-                                    <span class="status-count ms-2" id="tabApprovedCount">0</span>
-                                </button>
-                            </li>
-                            <li class="nav-item">
-                                <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
-                                        data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="cancelled">
-                                    <span><i class="bi bi-x-circle me-1"></i> {{ __('Cancelled') }} -</span>
-                                    <span class="status-count ms-2" id="tabCancelledCount">0</span>
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="pt-2">
-                    <div class="search-box position-relative" style="min-width:200px;">
-                        <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-                        <input type="text" id="customSearch" class="form-control form-control-sm rounded-pill ps-5" placeholder="{{ __('Search...') }}" aria-label="{{ __('Search...') }}">
-                    </div>
-                </div>
-            </div>
-
             {{-- Table --}}
             <div class="cn-card p-0">
+                <div id="filtered-data" class="px-3 pt-3"></div>
                 <table class="table align-middle mb-0 dataTable" id="dataTable">
                     <thead>
                         <tr class="text-muted text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.03em;">
@@ -270,7 +275,30 @@
             </div>
 
         </div>
-    </div>
+    </main>
+
+    <script>
+        (function () {
+            const KEY = 'credit_note_hide_summary';
+            const box = document.getElementById('summary-cards');
+            const btn = document.getElementById('toggle-summary');
+            if (!box || !btn) return;
+            const apply = (hide) => {
+                box.classList.toggle('d-none', hide);
+                btn.querySelector('i').className = 'bi ' + (hide ? 'bi-eye' : 'bi-eye-slash');
+                const t = hide ? @json(__('Show Summary')) : @json(__('Hide Summary'));
+                btn.title = t; btn.setAttribute('aria-label', t);
+            };
+            let hidden = false;
+            try { hidden = localStorage.getItem(KEY) === '1'; } catch (e) {}
+            apply(hidden);
+            btn.addEventListener('click', () => {
+                hidden = !hidden;
+                try { localStorage.setItem(KEY, hidden ? '1' : '0'); } catch (e) {}
+                apply(hidden);
+            });
+        })();
+    </script>
 
     @include('modules.email.send-email')
     @include('modules.workflows.credit-note')

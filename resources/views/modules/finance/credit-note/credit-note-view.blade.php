@@ -28,6 +28,13 @@
                     <i class="bi bi-paperclip me-1"></i> {{ __('Documents') }}
                 </button>
             </li>
+            <li class="nav-item ms-auto">
+                <button class="nav-link fw-semibold" id="cn-timeframe-tab"
+                        data-bs-toggle="tab" data-bs-target="#cnTimeFrameTab" type="button" role="tab"
+                        title="{{ __('Time Frame') }}" aria-label="{{ __('Time Frame') }}">
+                    <i class="bi bi-clock-history fs-5"></i>
+                </button>
+            </li>
         </ul>
 
         <!-- Tab Content -->
@@ -61,6 +68,11 @@
                         {{ __('No documents found.') }}
                     </div>
                 </div>
+            </div>
+
+            <!-- Time Frame Tab -->
+            <div class="tab-pane fade" id="cnTimeFrameTab" role="tabpanel">
+                <div id="cnTimeFrameContent"></div>
             </div>
 
         </div>

@@ -625,7 +625,89 @@ class SupplierInvoiceController extends Controller
     {
         $supplierInvoice = SupplierInvoice::with('supplierInvoiceSubs', 'supplier')->findOrFail($id);
         $descriptions = Description::descriptions()->pluck('description', 'id')->toArray();
-        return view('modules.finance.supplier-invoice.view-overview-drawer', compact('supplierInvoice', 'descriptions'));
+        [$origin, $timeline] = $this->invoiceTimeline($supplierInvoice);
+        return view('modules.finance.supplier-invoice.view-overview-drawer', compact('supplierInvoice', 'descriptions', 'origin', 'timeline'));
+    }
+
+    /**
+     * Time frame for the supplier invoice drawer: where the job came from
+     * (enquiry -> quotation -> job), the invoice's own life, the customer
+     * invoice(s) raised on the same job (re-billing) and payments to the
+     * supplier, oldest first.
+     */
+    private function invoiceTimeline(SupplierInvoice $inv): array
+    {
+        $events = [];
+        $rank = 0; // origin chain always first, in order
+        $add = function ($label, $at, $icon, $module, $by = null, $meta = null) use (&$events, &$rank) {
+            if (!$at) return;
+            $ts = Carbon::parse($at);
+            // Date-only values carry no time: treat as end of day so they follow same-day invoice events.
+            $key = $ts->format('H:i:s') === '00:00:00' ? $ts->copy()->endOfDay()->timestamp : $ts->timestamp;
+            $events[] = ['label' => $label, 'at' => $at, 'icon' => $icon, 'module' => $module, 'by' => $by, 'meta' => $meta,
+                'rank' => $rank, 'key' => $key, 'seq' => count($events)];
+        };
+
+        $job = $inv->job_id ? \App\Models\Job\Job::find($inv->job_id) : null;
+        $quotation = $job && $job->quotation_id ? \App\Models\Quotation\Quotation::find($job->quotation_id) : null;
+        $enquiry = $quotation && $quotation->enquiry_id ? \App\Models\Enquiry\Enquiry::find($quotation->enquiry_id) : null;
+
+        if ($enquiry) $add(__('Enquiry created') . ' · ' . $enquiry->row_no, $enquiry->created_at, 'bi-chat-left-text', 'enquiry');
+        if ($quotation) $add(__('Quotation posted') . ' · ' . $quotation->row_no, $quotation->created_at, 'bi-file-earmark-text', 'quotation');
+        if ($job) $add(($quotation ? __('Converted to job') : __('Job created')) . ' · ' . $job->row_no, $job->created_at, 'bi-briefcase', 'job');
+
+        $rank = 1;
+        $origin = $quotation
+            ? ($enquiry ? __('Enquiry') . ' → ' : '') . __('Quotation') . ' → ' . __('Job') . ' → ' . __('Supplier Invoice')
+            : ($job ? __('Job') . ' → ' . __('Supplier Invoice') : __('Supplier invoice created directly'));
+
+        $logs = \App\Models\Log\LogHistory::where('loggable_type', SupplierInvoice::class)
+            ->where('loggable_id', $inv->id)->orderBy('id')->get();
+        $ignore = ['status', 'paid_amount', 'base_paid_amount', 'updated_at', 'posted_at', 'tax_submit_status', 'tax_submitted_at'];
+        $seenCreate = false;
+        foreach ($logs as $log) {
+            $by = $log->user_id['name'] ?? null;
+            if ($log->action === 'created') {
+                $seenCreate = true;
+                $add(__('Supplier invoice created') . ' · ' . $inv->row_no, $log->created_at, 'bi-receipt', 'invoice', $by);
+            } elseif ($log->action === 'updated') {
+                $new = $log->changes['new'] ?? [];
+                if (isset($new['status'])) {
+                    $st = (int) $new['status'];
+                    $label = SupplierInvoiceEnum::tryFrom($st)?->label() ?? __('Status changed');
+                    $icon = $st === SupplierInvoiceEnum::APPROVED->value ? 'bi-check-circle'
+                        : ($st === SupplierInvoiceEnum::CANCELLED->value ? 'bi-x-circle' : 'bi-clock');
+                    $add(__($label), $log->created_at, $icon, 'invoice', $by);
+                } elseif (array_diff(array_keys($new), $ignore)) {
+                    $add(__('Invoice updated'), $log->created_at, 'bi-pencil-square', 'invoice', $by);
+                }
+            }
+        }
+        if (!$seenCreate) $add(__('Supplier invoice created') . ' · ' . $inv->row_no, $inv->created_at, 'bi-receipt', 'invoice');
+
+        $dec = decimals();
+        // Customer invoice(s) raised on the same job = this cost re-billed to the customer.
+        if ($inv->job_id) {
+            foreach (\App\Models\Finance\CustomerInvoice\CustomerInvoice::where('job_id', $inv->job_id)->orderBy('id')->get() as $ci) {
+                $add(__('Customer invoice') . ' · ' . $ci->row_no, $ci->created_at, 'bi-receipt-cutoff', 'customer_invoice', null,
+                    number_format((float) $ci->grand_total, $dec) . ' ' . (\App\Enums\CustomerInvoiceEnum::tryFrom((int) $ci->status)?->label() ?? ''));
+            }
+        }
+
+        $grand = (float) $inv->grand_total;
+        $cumulative = 0.0;
+        $pis = \App\Models\Finance\Payment\PaymentInvoice::where('supplier_invoice_id', $inv->id)
+            ->with('payment:id,row_no,payment_date,status,created_at')->orderBy('id')->get();
+        foreach ($pis as $pi) {
+            if (($pi->payment->status ?? 0) == 3) continue; // cancelled
+            $cumulative += (float) $pi->amount;
+            $kind = $grand > 0 && $cumulative >= $grand - 0.005 ? __('Full payment') : __('Partial payment');
+            $add($kind . ' · ' . ($pi->payment->row_no ?? ''), $pi->payment->created_at ?? $pi->created_at, 'bi-cash-coin', 'payment', null, number_format((float) $pi->amount, $dec));
+        }
+
+        usort($events, fn($a, $b) => [$a['rank'], $a['rank'] ? $a['key'] : $a['seq'], $a['seq']] <=> [$b['rank'], $b['rank'] ? $b['key'] : $b['seq'], $b['seq']]);
+
+        return [$origin, $events];
     }
 
     public function print($id)
