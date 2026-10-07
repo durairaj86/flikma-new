@@ -451,6 +451,8 @@ class EnquiryController extends Controller
         $quotation = \App\Models\Quotation\Quotation::where('enquiry_id', $enquiry->id)->latest('id')->first(['id', 'row_no', 'job_id']);
         $quotationNo = $quotation?->row_no;
         $jobNo = $quotation?->job_id ? \App\Models\Job\Job::whereKey($quotation->job_id)->value('row_no') : null;
+        $quotationId = $quotation?->id;
+        $jobId = $quotation?->job_id;
 
         // Time frame: who posted it and when each status change happened (from the change log).
         $statusLabels = [
@@ -482,7 +484,7 @@ class EnquiryController extends Controller
             $timeline[] = ['label' => __('Posted'), 'at' => $enquiry->created_at, 'by' => null, 'icon' => 'bi-send'];
         }
 
-        return view('modules.enquiry.view-overview-drawer', compact('enquiry', 'quotationNo', 'jobNo', 'timeline'));
+        return view('modules.enquiry.view-overview-drawer', compact('enquiry', 'quotationNo', 'jobNo', 'quotationId', 'jobId', 'timeline'));
     }
 
     public function print($id)

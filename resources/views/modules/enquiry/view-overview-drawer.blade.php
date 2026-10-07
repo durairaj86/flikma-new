@@ -61,10 +61,10 @@
 <div class="qtn-refs">
     <span><span class="ref-label">{{ __('Enquiry No') }}:</span><span class="ref-value">{{ $enquiry->row_no }}</span></span>
     @if($quotationNo)
-        <span><span class="ref-label">{{ __('Quotation') }}:</span><span class="ref-value">{{ $quotationNo }}</span></span>
+        <span><span class="ref-label">{{ __('Quotation') }}:</span><a href="#" class="ref-value open-linked text-primary text-decoration-none" data-type="quotation" data-id="{{ $quotationId }}" data-title="{{ $quotationNo }}" title="{{ __('Open quotation') }}">{{ $quotationNo }} <i class="bi bi-box-arrow-up-right small"></i></a></span>
     @endif
     @if($jobNo)
-        <span><span class="ref-label">{{ __('Job') }}:</span><span class="ref-value">{{ $jobNo }}</span></span>
+        <span><span class="ref-label">{{ __('Job') }}:</span><a href="#" class="ref-value open-linked text-primary text-decoration-none" data-type="job" data-id="{{ $jobId }}" data-title="{{ $jobNo }}" title="{{ __('Open job') }}">{{ $jobNo }} <i class="bi bi-box-arrow-up-right small"></i></a></span>
     @endif
 </div>
 

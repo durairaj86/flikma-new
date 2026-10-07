@@ -775,22 +775,22 @@ class CustomerInvoiceController extends Controller
     {
         $events = [];
         $rank = 0; // origin chain (enquiry -> quotation -> job) always comes first, in order
-        $add = function ($label, $at, $icon, $by = null, $meta = null, $module = 'invoice') use (&$events, &$rank) {
+        $add = function ($label, $at, $icon, $by = null, $meta = null, $module = 'invoice', $link = null) use (&$events, &$rank) {
             if (!$at) return;
             $ts = \Carbon\Carbon::parse($at);
             // Date-only values (credit note / collection dates) carry no time:
             // treat them as end of day so they follow same-day invoice events.
             $key = $ts->format('H:i:s') === '00:00:00' ? $ts->copy()->endOfDay()->timestamp : $ts->timestamp;
-            $events[] = ['label' => $label, 'at' => $at, 'icon' => $icon, 'by' => $by, 'meta' => $meta, 'module' => $module, 'rank' => $rank, 'key' => $key, 'seq' => count($events)];
+            $events[] = ['label' => $label, 'at' => $at, 'icon' => $icon, 'by' => $by, 'meta' => $meta, 'module' => $module, 'link' => $link, 'rank' => $rank, 'key' => $key, 'seq' => count($events)];
         };
 
         $job = $inv->job_id ? \App\Models\Job\Job::find($inv->job_id) : null;
         $quotation = $job && $job->quotation_id ? \App\Models\Quotation\Quotation::find($job->quotation_id) : null;
         $enquiry = $quotation && $quotation->enquiry_id ? \App\Models\Enquiry\Enquiry::find($quotation->enquiry_id) : null;
 
-        if ($enquiry) $add(__('Enquiry created') . ' · ' . $enquiry->row_no, $enquiry->created_at, 'bi-chat-left-text', null, null, 'enquiry');
-        if ($quotation) $add(__('Quotation posted') . ' · ' . $quotation->row_no, $quotation->created_at, 'bi-file-earmark-text', null, null, 'quotation');
-        if ($job) $add(($quotation ? __('Converted to job') : __('Job created')) . ' · ' . $job->row_no, $job->created_at, 'bi-briefcase', null, null, 'job');
+        if ($enquiry) $add(__('Enquiry created') . ' · ' . $enquiry->row_no, $enquiry->created_at, 'bi-chat-left-text', null, null, 'enquiry', ['enquiry', $enquiry->id, $enquiry->row_no]);
+        if ($quotation) $add(__('Quotation posted') . ' · ' . $quotation->row_no, $quotation->created_at, 'bi-file-earmark-text', null, null, 'quotation', ['quotation', $quotation->id, $quotation->row_no]);
+        if ($job) $add(($quotation ? __('Converted to job') : __('Job created')) . ' · ' . $job->row_no, $job->created_at, 'bi-briefcase', null, null, 'job', ['job', $job->id, $job->row_no]);
 
         $rank = 1;
         $origin = $quotation
@@ -825,7 +825,7 @@ class CustomerInvoiceController extends Controller
         $dec = decimals();
         foreach (\App\Models\Finance\Adjustment\CreditNote::where('invoice_id', $inv->id)->orderBy('id')->get() as $cn) {
             $kind = $grand > 0 && (float) $cn->grand_total >= $grand - 0.005 ? __('Full credit note') : __('Partial credit note');
-            $add($kind . ' · ' . $cn->row_no, $cn->created_at, 'bi-receipt-cutoff', null, number_format((float) $cn->grand_total, $dec), 'credit_note');
+            $add($kind . ' · ' . $cn->row_no, $cn->created_at, 'bi-receipt-cutoff', null, number_format((float) $cn->grand_total, $dec), 'credit_note', ['credit_note', $cn->id, $cn->row_no]);
         }
 
         $cumulative = 0.0;
@@ -835,7 +835,7 @@ class CustomerInvoiceController extends Controller
             if (($ci->collection->status ?? 0) == 3) continue; // cancelled
             $cumulative += (float) $ci->amount;
             $kind = $grand > 0 && $cumulative >= $grand - 0.005 ? __('Full collection') : __('Partial collection');
-            $add($kind . ' · ' . ($ci->collection->row_no ?? ''), $ci->collection->created_at ?? $ci->created_at, 'bi-cash-coin', null, number_format((float) $ci->amount, $dec), 'collection');
+            $add($kind . ' · ' . ($ci->collection->row_no ?? ''), $ci->collection->created_at ?? $ci->created_at, 'bi-cash-coin', null, number_format((float) $ci->amount, $dec), 'collection', $ci->collection_id ? ['collection', $ci->collection_id, $ci->collection->row_no ?? ''] : null);
         }
 
         usort($events, fn($a, $b) => [$a['rank'], $a['rank'] ? $a['key'] : $a['seq'], $a['seq']] <=> [$b['rank'], $b['rank'] ? $b['key'] : $b['seq'], $b['seq']]);

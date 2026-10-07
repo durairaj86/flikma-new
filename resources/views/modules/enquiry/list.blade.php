@@ -156,9 +156,9 @@
                         </li>
                         <li class="nav-item me-2">
                             <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
-                                    data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="completed">
+                                    data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="quotation">
                                 <span><i class="bi bi-arrow-repeat me-1"></i> {{ __('Converted to Quotation') }} -</span>
-                                <span class="status-count ms-2" id="completedCount">0</span>
+                                <span class="status-count ms-2" id="quotationCount">0</span>
                             </button>
                         </li>
                         <li class="nav-item">
@@ -223,6 +223,7 @@
         </div>
     </main>
     @include('modules.enquiry.enquiry-view')
+    @include('modules.common.linked-drawer', ['mainWidth' => 45, 'subWidth' => 50])
     @include('modules.email.send-email')
 
     <style>

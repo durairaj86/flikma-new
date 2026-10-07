@@ -266,7 +266,7 @@
                 <li class="{{ in_array($step['module'], $sideRight) ? 'side-r' : 'side-l' }}">
                     <span class="dot"><i class="bi {{ $step['icon'] }}"></i></span>
                     <div class="t-mod">{{ $modLabel[$step['module']] ?? '' }}</div>
-                    <div class="t-label">{{ $step['label'] }}@if($step['meta']) <span class="text-muted fw-normal">· {{ $step['meta'] }}</span>@endif</div>
+                    <div class="t-label">@if(!empty($step['link']))<a href="#" class="open-linked text-primary text-decoration-none" data-type="{{ $step['link'][0] }}" data-id="{{ $step['link'][1] }}" data-title="{{ $step['link'][2] }}">{{ $step['label'] }}</a>@else{{ $step['label'] }}@endif@if($step['meta']) <span class="text-muted fw-normal">· {{ $step['meta'] }}</span>@endif</div>
                     <div class="t-meta">
                         {{ \Carbon\Carbon::parse($step['at'])->format('d-m-Y H:i') }}
                         @if($step['by']) &middot; {{ __('by') }} {{ $step['by'] }} @endif
