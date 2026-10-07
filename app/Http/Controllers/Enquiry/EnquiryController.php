@@ -446,7 +446,43 @@ class EnquiryController extends Controller
     public function overviewDrawer($id)
     {
         $enquiry = Enquiry::with(['customer', 'prospect', 'activity'])->findOrFail($id);
-        return view('modules.enquiry.view-overview-drawer', compact('enquiry'));
+
+        // Linked documents shown at the top of the drawer.
+        $quotation = \App\Models\Quotation\Quotation::where('enquiry_id', $enquiry->id)->latest('id')->first(['id', 'row_no', 'job_id']);
+        $quotationNo = $quotation?->row_no;
+        $jobNo = $quotation?->job_id ? \App\Models\Job\Job::whereKey($quotation->job_id)->value('row_no') : null;
+
+        // Time frame: who posted it and when each status change happened (from the change log).
+        $statusLabels = [
+            EnquiryEnum::PENDING->value => __('Moved to Pending'),
+            EnquiryEnum::CONFIRMED->value => __('Confirmed'),
+            EnquiryEnum::QUOTATION->value => __('Converted to Quotation'),
+            EnquiryEnum::CANCELLED->value => __('Cancelled'),
+            EnquiryEnum::COMPLETED->value => __('Completed'),
+        ];
+        $icons = [
+            EnquiryEnum::CONFIRMED->value => 'bi-check-circle', EnquiryEnum::QUOTATION->value => 'bi-arrow-repeat',
+            EnquiryEnum::CANCELLED->value => 'bi-x-circle', EnquiryEnum::COMPLETED->value => 'bi-flag',
+        ];
+        $timeline = [];
+        $logs = \App\Models\Log\LogHistory::where('loggable_type', Enquiry::class)
+            ->where('loggable_id', $enquiry->id)->orderBy('id')->get();
+        foreach ($logs as $log) {
+            $by = $log->user_id['name'] ?? null;
+            if ($log->action === 'created') {
+                $timeline[] = ['label' => __('Posted'), 'at' => $log->created_at, 'by' => $by, 'icon' => 'bi-send'];
+            } elseif ($log->action === 'updated' && isset($log->changes['new']['status'])) {
+                $st = (int) $log->changes['new']['status'];
+                if (isset($statusLabels[$st])) {
+                    $timeline[] = ['label' => $statusLabels[$st], 'at' => $log->created_at, 'by' => $by, 'icon' => $icons[$st] ?? 'bi-clock'];
+                }
+            }
+        }
+        if (!$timeline) {
+            $timeline[] = ['label' => __('Posted'), 'at' => $enquiry->created_at, 'by' => null, 'icon' => 'bi-send'];
+        }
+
+        return view('modules.enquiry.view-overview-drawer', compact('enquiry', 'quotationNo', 'jobNo', 'timeline'));
     }
 
     public function print($id)

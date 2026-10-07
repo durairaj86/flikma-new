@@ -88,6 +88,13 @@
         'Delete',
         'This supplier invoice is already added.',
         'added to the invoice lines.',
+        'Mark as Confirmed',
+        'Convert to Quotation',
+        'Mark as Cancelled',
+        'Print',
+        'Are you sure you want to mark this enquiry as Confirmed?',
+        'Are you sure you want to cancel this enquiry?',
+        'Are you sure you want to move this enquiry back to Pending?',
     ];
     $i18nMap = collect($i18nKeys)->mapWithKeys(fn($key) => [$key => __($key)]);
 @endphp

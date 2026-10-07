@@ -112,22 +112,6 @@
         </div>
     @endif
 
-    <div class="section">
-        <h6>{{ __('Time Frame') }}</h6>
-        <ul class="qtn-timeline">
-            @foreach($timeline as $step)
-                <li>
-                    <span class="dot"><i class="bi {{ $step['icon'] }}"></i></span>
-                    <div class="t-label">{{ $step['label'] }}</div>
-                    <div class="t-meta">
-                        {{ $step['at'] ? \Carbon\Carbon::parse($step['at'])->format('d-m-Y H:i') : '-' }}
-                        @if($step['by']) &middot; {{ __('by') }} {{ $step['by'] }} @endif
-                    </div>
-                </li>
-            @endforeach
-        </ul>
-    </div>
-
 </div>
 
 <!-- Container Tab -->
@@ -239,4 +223,23 @@
             {{ __('No charges added to this quotation.') }}
         </div>
     @endif
+</div>
+
+<!-- Time Frame Tab -->
+<div class="tab-pane fade" id="quotationTimeFrameTab" role="tabpanel">
+    <div class="section">
+        <h6>{{ __('Time Frame') }}</h6>
+        <ul class="qtn-timeline">
+            @foreach($timeline as $step)
+                <li>
+                    <span class="dot"><i class="bi {{ $step['icon'] }}"></i></span>
+                    <div class="t-label">{{ $step['label'] }}</div>
+                    <div class="t-meta">
+                        {{ $step['at'] ? \Carbon\Carbon::parse($step['at'])->format('d-m-Y H:i') : '-' }}
+                        @if($step['by']) &middot; {{ __('by') }} {{ $step['by'] }} @endif
+                    </div>
+                </li>
+            @endforeach
+        </ul>
+    </div>
 </div>

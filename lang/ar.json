@@ -2966,5 +2966,8 @@
     "supplier invoices of this job": "فواتير الموردين لهذه المهمة",
     "Pick a supplier invoice to add its lines": "اختر فاتورة مورد لإضافة بنودها",
     "This supplier invoice is already added.": "فاتورة المورد هذه مضافة بالفعل.",
-    "added to the invoice lines.": "تمت إضافتها إلى بنود الفاتورة."
+    "added to the invoice lines.": "تمت إضافتها إلى بنود الفاتورة.",
+    "Are you sure you want to mark this enquiry as Confirmed?": "هل أنت متأكد من تحديد هذا الاستفسار كمؤكد؟",
+    "Are you sure you want to cancel this enquiry?": "هل أنت متأكد من إلغاء هذا الاستفسار؟",
+    "Are you sure you want to move this enquiry back to Pending?": "هل أنت متأكد من إعادة هذا الاستفسار إلى قيد الانتظار؟"
 }

@@ -203,9 +203,12 @@ class QuotationController extends Controller
 
         // Mark the source enquiry as converted to quotation
         if ($quotation->enquiry_id) {
-            Enquiry::where('id', $quotation->enquiry_id)
-                ->where('status', '!=', EnquiryEnum::QUOTATION->value)
-                ->update(['status' => EnquiryEnum::QUOTATION->value]);
+            // via the model (not a bulk query) so the change lands in the enquiry's time frame
+            $sourceEnquiry = Enquiry::find($quotation->enquiry_id);
+            if ($sourceEnquiry && (int) $sourceEnquiry->status !== EnquiryEnum::QUOTATION->value) {
+                $sourceEnquiry->status = EnquiryEnum::QUOTATION->value;
+                $sourceEnquiry->save();
+            }
         }
 
         // ✅ Insert containers (same field set as Job's Container tab)

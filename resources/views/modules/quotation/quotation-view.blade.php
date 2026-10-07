@@ -37,6 +37,14 @@
                     <i class="bi bi-receipt me-1"></i> {{ __('Charges') }}
                 </button>
             </li>
+            {{-- Time frame: icon-only tab at the right end of the tab bar --}}
+            <li class="nav-item ms-auto">
+                <button class="nav-link fw-semibold" id="quotation-timeframe-tab"
+                        data-bs-toggle="tab" data-bs-target="#quotationTimeFrameTab" type="button" role="tab"
+                        title="{{ __('Time Frame') }}" aria-label="{{ __('Time Frame') }}">
+                    <i class="bi bi-clock-history fs-5"></i>
+                </button>
+            </li>
         </ul>
 
         <!-- Tab Content (fully replaced on each drawer open) -->

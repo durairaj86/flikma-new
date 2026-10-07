@@ -109,6 +109,8 @@ ENQUIRY = {
             // Show drawer
             let drawer = bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer'));
             drawer.show();
+            bootstrap.Tab.getOrCreateInstance(document.getElementById('enquiry-general-tab')).show();
+            ENQUIRY.list.loadDrawerActions(enquiryId);
 
             // Load content
             $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
@@ -117,6 +119,46 @@ ENQUIRY = {
             }).fail(function () {
                 $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load enquiry details.</div>');
             });
+        },
+        // Next-step buttons in the drawer header — the same actions the row menu offers:
+        // pending → Mark as Confirmed / Cancelled, confirmed → Convert to Quotation, and Print always.
+        loadDrawerActions(id) {
+            const defs = {
+                row_confirmed: {cls: 'btn-primary', icon: 'bi-check-circle', label: trans('Mark as Confirmed'), msg: 'Are you sure you want to mark this enquiry as Confirmed?'},
+                row_quotation: {cls: 'btn-primary', icon: 'bi-arrow-repeat', label: trans('Convert to Quotation')},
+                row_rejected: {cls: 'btn-outline-danger', icon: 'bi-x-circle', label: trans('Mark as Cancelled'), msg: 'Are you sure you want to cancel this enquiry?'},
+            };
+            const $box = $('#drawerActions').empty();
+            $.get('/sales/enquiry/' + id + '/actions', function (items) {
+                const flat = [];
+                items.forEach(i => { if (i.items) i.items.forEach(s => flat.push(s)); else flat.push(i); });
+                ['row_confirmed', 'row_quotation', 'row_rejected'].forEach(key => {
+                    const a = flat.find(x => x.id === key);
+                    if (!a) return;
+                    const d = defs[key];
+                    $box.append('<button type="button" class="btn btn-sm rounded-pill px-3 ' + d.cls + ' drawer-action" data-id="' + id + '" data-action="' + key + '" data-value="' + (a['data-value'] ?? '') + '"><i class="bi ' + d.icon + ' me-1"></i>' + d.label + '</button>');
+                });
+                $box.append('<button type="button" class="btn btn-sm rounded-pill px-3 btn-outline-secondary drawer-print" data-id="' + id + '"><i class="bi bi-printer me-1"></i>' + trans('Print') + '</button>');
+            });
+            $('#moduleDrawer').off('click.enqActions')
+                .on('click.enqActions', '.drawer-print', function () { ENQUIRY.printPreview($(this).data('id')); })
+                .on('click.enqActions', '.drawer-action', function () {
+                    const id = $(this).data('id'), action = $(this).data('action');
+                    if (action === 'row_quotation') { ENQUIRY.convertToQuotation(id); return; }
+                    ENQUIRY.list.changeStatus(id, $(this).data('value'), defs[action].msg, true);
+                });
+        },
+        changeStatus(id, value, message, fromDrawer = false) {
+            changeCustomerStatus(GLOBAL_FN.buildUrl('sales/enquiry/' + id + '/status/' + value), {
+                method: 'POST',
+                data: new FormData(),
+                confirmMessage: message ? trans(message) : undefined,
+                callBack: fromDrawer ? function () {
+                    $('#dataTable').DataTable().ajax.reload(null, false);
+                    const dr = bootstrap.Offcanvas.getInstance(document.getElementById('moduleDrawer'));
+                    if (dr) dr.hide();
+                } : 'datatable'
+            }, String(value));
         },
         dataTable(activeTab = null) {
             GLOBAL_FN.destroyDataTable();
@@ -250,12 +292,12 @@ ENQUIRY = {
             statusChange(row) {
                 $('#row_pending,#row_confirmed,#row_rejected').off().on('click', function () {
                     //GLOBAL_FN.ajaxData.sendData(GLOBAL_FN.buildUrl('ENQUIRY/' + row.attr('data-id') + '/status/' + $(this).attr('data-value')),'datatable',{})
-                    let fd = new FormData();
-                    changeCustomerStatus(GLOBAL_FN.buildUrl('sales/enquiry/' + row.attr('data-id') + '/status/' + $(this).attr('data-value')), {
-                        method: 'POST',
-                        data: fd,
-                        callBack: 'datatable'
-                    }, $(this).attr('data-value'));
+                    const msgs = {
+                        row_confirmed: 'Are you sure you want to mark this enquiry as Confirmed?',
+                        row_rejected: 'Are you sure you want to cancel this enquiry?',
+                        row_pending: 'Are you sure you want to move this enquiry back to Pending?'
+                    };
+                    ENQUIRY.list.changeStatus(row.attr('data-id'), $(this).attr('data-value'), msgs[this.id]);
                 })
             },
             view(row) {

@@ -228,7 +228,7 @@ function convert($amount, $currency = 'ريال سعودي')
 
 function appVersion(): string
 {
-    return "1.0.175";
+    return "1.0.176";
 }
 
 function toArabicNumber($number)
