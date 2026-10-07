@@ -428,6 +428,8 @@
                 $('#drawerSubtitle').text(name || '');
                 $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2"></div> {{ __('Loading...') }}</div>');
                 bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer')).show();
+                // Always start on the General tab, whichever tab the previous quotation was left on.
+                bootstrap.Tab.getOrCreateInstance(document.getElementById('quotation-general-tab')).show();
                 loadDrawerActions(id);
                 $.get('/sales/quotation/' + id + '/overview-drawer', function (data) {
                     $('#moduleOverview').html(data);
