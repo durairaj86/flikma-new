@@ -162,4 +162,20 @@ class SalespersonController extends Controller
             ]);
         }
     }
+
+    /** Delete — refused (HTTP 422 + the reasons) while anything still uses this record. */
+    public function delete($id)
+    {
+        $model = Salesperson::findOrFail($id);
+        $guard = app(\App\Services\DeletionGuard::class);
+        $why = $guard->blockers('salesperson', (int) $id);
+        if ($why) {
+            return $guard->refusal(__('salesperson'), $why);
+        }
+
+        $model->delete();
+        Cache::forget(self::$cache . cacheName());
+
+        return response()->json(['status' => 'success', 'message' => __('Salesperson deleted successfully')]);
+    }
 }

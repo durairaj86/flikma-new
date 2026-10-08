@@ -12,6 +12,7 @@ Route::namespace('finance')->prefix('finance')->group(function () {
     Route::post('/account/create', [AccountController::class, 'store']);
     Route::get('/account/{id}/create', [AccountController::class, 'edit']);
     Route::post('/account/{id}/create', [AccountController::class, 'store']);
+    Route::delete('/account/{id}/delete', [AccountController::class, 'destroy'])->whereNumber('id');
     Route::get('accounts/{id}/actions', [AccountController::class, 'actions']);
     Route::post('accounts/{id}/status/{status}', [AccountController::class, 'updateStatus']);
     //Route::get('/account/get/{type}', [AccountController::class, 'parentAccounts']);

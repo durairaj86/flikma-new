@@ -154,4 +154,19 @@ class DescriptionController extends Controller
 
         return response()->json($contextMenu->values());
     }
+
+    /** Delete — refused (HTTP 422 + the reasons) while anything still uses this record. */
+    public function delete($id)
+    {
+        $model = Description::findOrFail($id);
+        $guard = app(\App\Services\DeletionGuard::class);
+        $why = $guard->blockers('description', (int) $id);
+        if ($why) {
+            return $guard->refusal(__('description'), $why);
+        }
+
+        $model->delete();
+
+        return response()->json(['status' => 'success', 'message' => __('Description deleted successfully')]);
+    }
 }

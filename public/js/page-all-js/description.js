@@ -88,45 +88,8 @@ DESCRIPTION = {
         actions: {
             delete(row) {
                 $('#row_delete').off().on('click', function () {
-
-                    $.confirm({
-                        title: 'Confirm Delete',
-                        content: 'Are you sure you want to delete this record?',
-                        type: 'red',
-                        buttons: {
-                            cancel: function () {
-                            },
-
-                            delete: {
-                                text: 'Delete',
-                                btnClass: 'btn-red',
-                                action: function () {
-
-                                    $.ajax({
-                                        url: '/masters/description/delete/' + row.attr('data-id'),
-                                        type: 'DELETE',
-                                        dataType: 'json',
-                                        success: function (response) {
-
-                                            if (response.status === 'success') {
-                                                toastr.success(response.message);
-                                                //row.remove(); // remove row if needed
-                                                loadJs('list.load');
-                                            } else if (response.status === 'warning') {
-                                                toastr.warning(response.message);
-                                            } else {
-                                                toastr.error(trans('Error deleting record.'));
-                                            }
-                                        },
-                                        error: function () {
-                                            toastr.error(trans('Server error'));
-                                        }
-                                    });
-
-                                }
-                            }
-                        }
-                    });
+                    deleteRecord(GLOBAL_FN.buildUrl('masters/description/' + row.attr('data-id')), function () { DESCRIPTION.list.dataTable ? DESCRIPTION.list.dataTable() : loadJs('list.load'); },
+                        {name: $.trim(row.find('td').not(':first').first().text())});
                 });
             }
         }

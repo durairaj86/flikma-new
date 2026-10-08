@@ -27,6 +27,20 @@
 @endif--}}
 @php
     $i18nKeys = [
+        'Delete :name? This cannot be undone.',
+        'Cannot delete :name',
+        'Cannot delete',
+        'Close',
+        'Confirm',
+        'Delete record?',
+        'This cannot be undone.',
+        'Cancel',
+        'Terminate',
+        'Reactivate',
+        'Terminate user?',
+        'Reactivate user?',
+        'This user will no longer be able to log in. Their history stays.',
+        'This user will be able to log in again.',
         'selected',
         'Select a job to choose its containers.',
         'This job has no containers.',

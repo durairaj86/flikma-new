@@ -62,6 +62,9 @@ UNIT = {
         },
         extraActions(row) {
             UNIT.list.actions.statusChange(row);
+            $('#row_delete').off().on('click', function () {
+                deleteRecord(GLOBAL_FN.buildUrl('masters/unit/' + row.attr('data-id')), function () { UNIT.list.dataTable(); }, {name: $.trim(row.find('td').not(':first').first().text())});
+            });
         },
         actions: {
             statusChange(row) {

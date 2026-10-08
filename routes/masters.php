@@ -81,6 +81,8 @@ Route::post('/masters/user/create', [\App\Http\Controllers\Master\UserController
 Route::get('/masters/user/{id}/create', [\App\Http\Controllers\Master\UserController::class, 'edit']);
 Route::post('/masters/user/{id}/create', [\App\Http\Controllers\Master\UserController::class, 'store']);
 Route::get('masters/user/{id}/actions', [\App\Http\Controllers\Master\UserController::class, 'actions']);
+Route::post('masters/user/{id}/status/{status}', [\App\Http\Controllers\Master\UserController::class, 'updateStatus']);
+Route::delete('masters/user/{id}', [\App\Http\Controllers\Master\UserController::class, 'delete'])->whereNumber('id');
 Route::get('masters/user/{id}/overview', [\App\Http\Controllers\Master\UserController::class, 'overview']);
 
 Route::view('/masters/transport/directories/seaports', 'modules.master.transport-directory.seaport.list')->name('ports');
@@ -106,6 +108,7 @@ Route::post('/masters/bank/create', [\App\Http\Controllers\Master\BankController
 Route::get('/masters/bank/{id}/create', [\App\Http\Controllers\Master\BankController::class, 'edit']);
 Route::post('/masters/bank/{id}/create', [\App\Http\Controllers\Master\BankController::class, 'store']);
 Route::get('masters/bank/{id}/actions', [\App\Http\Controllers\Master\BankController::class, 'actions']);
+Route::delete('masters/bank/{id}', [\App\Http\Controllers\Master\BankController::class, 'delete'])->whereNumber('id');
 Route::get('masters/bank/{id}/overview', [\App\Http\Controllers\Master\BankController::class, 'overview']);
 
 Route::view('/masters/descriptions', 'modules.master.description.list')->name('descriptions');
@@ -115,6 +118,7 @@ Route::post('/masters/description/create', [\App\Http\Controllers\Master\Descrip
 Route::get('/masters/description/{id}/create', [\App\Http\Controllers\Master\DescriptionController::class, 'edit']);
 Route::post('/masters/description/{id}/create', [\App\Http\Controllers\Master\DescriptionController::class, 'store']);
 Route::get('masters/description/{id}/actions', [\App\Http\Controllers\Master\DescriptionController::class, 'actions']);
+Route::delete('masters/description/{id}', [\App\Http\Controllers\Master\DescriptionController::class, 'delete'])->whereNumber('id');
 
 Route::view('/masters/salesperson', 'modules.master.salesperson.list')->name('salespersons');
 Route::post('/masters/salesperson/data', [\App\Http\Controllers\Master\Salesperson\SalespersonController::class, 'fetchAllRows'])->name('salesperson.data');
@@ -123,6 +127,7 @@ Route::post('/masters/salesperson/create', [\App\Http\Controllers\Master\Salespe
 Route::get('/masters/salesperson/{id}/create', [\App\Http\Controllers\Master\Salesperson\SalespersonController::class, 'edit']);
 Route::post('/masters/salesperson/{id}/create', [\App\Http\Controllers\Master\Salesperson\SalespersonController::class, 'store']);
 Route::get('masters/salesperson/{id}/actions', [\App\Http\Controllers\Master\Salesperson\SalespersonController::class, 'actions']);
+Route::delete('masters/salesperson/{id}', [\App\Http\Controllers\Master\Salesperson\SalespersonController::class, 'delete'])->whereNumber('id');
 Route::post('/masters/salesperson/{id}/status/{status}', [\App\Http\Controllers\Master\Salesperson\SalespersonController::class, 'updateStatus']);
 
 Route::view('/masters/units', 'modules.master.unit.list')->name('units');
@@ -132,4 +137,5 @@ Route::post('/masters/unit/create', [\App\Http\Controllers\Master\Unit\UnitContr
 Route::get('/masters/unit/{id}/create', [\App\Http\Controllers\Master\Unit\UnitController::class, 'edit']);
 Route::post('/masters/unit/{id}/create', [\App\Http\Controllers\Master\Unit\UnitController::class, 'store']);
 Route::get('masters/unit/{id}/actions', [\App\Http\Controllers\Master\Unit\UnitController::class, 'actions']);
+Route::delete('masters/unit/{id}', [\App\Http\Controllers\Master\Unit\UnitController::class, 'delete'])->whereNumber('id');
 Route::post('/masters/unit/{id}/status/{status}', [\App\Http\Controllers\Master\Unit\UnitController::class, 'updateStatus']);

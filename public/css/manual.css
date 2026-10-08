@@ -1980,3 +1980,53 @@ body:not(.has-top-header) #sendEmailDrawer.offcanvas.offcanvas-end {
 
 /* Invalid tom-select: the real <select> is hidden, so highlight its visible control. */
 .ts-wrapper.is-invalid .ts-control { border-color: #dc3545 !important; box-shadow: 0 0 0 .2rem rgba(220, 53, 69, .15); }
+
+/* Confirm dialogs (jquery-confirm) sit at the top of the screen with space above them (the top gap is the plugin's offsetTop). */
+.jconfirm .jconfirm-cell { vertical-align: top; }
+
+/* ---- Confirm dialogs (jquery-confirm) in the app's look: centred card, big icon badge, full-width pill buttons ---- */
+.jconfirm .jconfirm-bg { background: rgba(15, 23, 42, .45) !important; opacity: 1 !important; backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
+.jconfirm .jconfirm-box {
+    border-radius: 18px;
+    padding: 2rem 1.75rem 1.5rem;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, .28), 0 4px 12px rgba(15, 23, 42, .08);
+    border: 0;
+    max-width: 420px;
+    text-align: center;
+    background: #fff;
+}
+.jconfirm .jconfirm-box div.jconfirm-closeIcon { display: none !important; }
+.jconfirm .jconfirm-box div.jconfirm-title-c {
+    display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 0 0 .5rem; font-size: 1.15rem; text-align: center;
+}
+.jconfirm .jconfirm-box div.jconfirm-title-c .jconfirm-icon-c {
+    width: 64px; height: 64px; flex: 0 0 64px; border-radius: 50%; margin: 0 !important;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: #e7f0fe; color: #0d6efd; font-size: 1.6rem;
+    box-shadow: 0 0 0 8px #f1f6ff;
+}
+.jconfirm .jconfirm-box div.jconfirm-title-c .jconfirm-icon-c i { font-size: 1.6rem; }
+.jconfirm .jconfirm-box div.jconfirm-title-c .jconfirm-icon-c:empty { display: none; }
+.jconfirm .jconfirm-box div.jconfirm-title-c .jconfirm-title { font-weight: 700; color: #0f172a; font-size: 1.2rem; padding: 0; }
+.jconfirm .cf-danger .jconfirm-box div.jconfirm-title-c .jconfirm-icon-c { background: #fee2e2; color: #dc2626; box-shadow: 0 0 0 8px #fef2f2; }
+.jconfirm .jconfirm-box .jconfirm-content-pane { margin-bottom: 0; }
+.jconfirm .jconfirm-box .jconfirm-content { font-size: .92rem; line-height: 1.55; padding: 0 .25rem; text-align: center; }
+.jconfirm .jconfirm-box .jconfirm-content .cf-note { margin-top: .4rem; font-size: .8rem; color: #94a3b8; }
+.jconfirm .jconfirm-box .jconfirm-buttons { float: none; width: 100%; display: flex; justify-content: center; gap: .75rem; padding: 1.4rem 0 0; }
+.jconfirm .jconfirm-box .jconfirm-buttons button {
+    flex: 1 1 0; margin: 0; border-radius: 999px; padding: .6rem 1rem; font-weight: 600; font-size: .9rem; border: 1px solid transparent;
+}
+.jconfirm .jconfirm-box .jconfirm-buttons button.btn-outline-secondary { background: #fff !important; color: #475569 !important; border-color: #d8dde3 !important; }
+.jconfirm .jconfirm-box .jconfirm-buttons button.btn-outline-secondary:hover { background: #f1f5f9 !important; }
+.jconfirm .jconfirm-box .jconfirm-buttons button.btn-danger { background: #dc2626 !important; border-color: #dc2626 !important; color: #fff !important; box-shadow: 0 6px 14px rgba(220, 38, 38, .28); }
+.jconfirm .jconfirm-box .jconfirm-buttons button.btn-danger:hover { background: #b91c1c !important; border-color: #b91c1c !important; }
+.jconfirm .jconfirm-box .jconfirm-buttons button.btn-primary { background: #0d6efd !important; border-color: #0d6efd !important; color: #fff !important; box-shadow: 0 6px 14px rgba(13, 110, 253, .25); }
+.jconfirm .jconfirm-box .jconfirm-buttons button:focus { transform: none; box-shadow: 0 0 0 3px rgba(13, 110, 253, .2); }
+.jconfirm .jconfirm-box .jconfirm-buttons button:focus::after { display: none; }
+.jconfirm .cf-danger .jconfirm-box .jconfirm-buttons button.btn-danger:focus { box-shadow: 0 0 0 3px rgba(220, 38, 38, .3); }
+
+/* App confirm / info modal (appConfirm): drops in from the top like FastFatoora's delete dialogs. */
+.modal-dialog.modal-delete-top { margin-top: 72px; max-width: 440px; }
+.modal-dialog.modal-delete-top .app-confirm-icon { width: 56px; height: 56px; font-size: 1.5rem; }
+.modal-dialog.modal-delete-top .modal-content { border-radius: 14px; }
+.modal-dialog.modal-delete-top .app-confirm-list { max-height: 220px; overflow-y: auto; padding-left: 1.25rem; }

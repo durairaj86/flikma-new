@@ -209,4 +209,20 @@ class UnitController extends Controller
             ]);
         }
     }
+
+    /** Delete — refused (HTTP 422 + the reasons) while anything still uses this record. */
+    public function delete($id)
+    {
+        $model = Unit::findOrFail($id);
+        $guard = app(\App\Services\DeletionGuard::class);
+        $why = $guard->blockers('unit', (int) $id);
+        if ($why) {
+            return $guard->refusal(__('unit'), $why);
+        }
+
+        $model->delete();
+        Cache::forget(self::$cache . cacheName());
+
+        return response()->json(['status' => 'success', 'message' => __('Unit deleted successfully')]);
+    }
 }

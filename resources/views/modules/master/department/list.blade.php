@@ -15,7 +15,7 @@
                 </div>
                 <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Department') }}</button>
             </div>
-            <div class="shadow bdr-r-10 py-3 flex-grow-1">
+            <div class="shadow bdr-r-10 pt-0 pb-3 flex-grow-1 overflow-hidden">
                 <div class="flex-grow-1">
                     <table class="table align-middle dataTable" id="dataTable" data-title="{{ __('Department') }}" data-model-size="md">
                         <thead class="table-light sticky-top bg-white">

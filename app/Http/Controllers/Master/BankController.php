@@ -130,4 +130,19 @@ class BankController extends Controller
         $bank = Bank::findOrFail($id);
         return view('modules.master.bank.view-overview', compact('bank'));
     }
+
+    /** Delete — refused (HTTP 422 + the reasons) while anything still uses this record. */
+    public function delete($id)
+    {
+        $model = Bank::findOrFail($id);
+        $guard = app(\App\Services\DeletionGuard::class);
+        $why = $guard->blockers('bank', (int) $id);
+        if ($why) {
+            return $guard->refusal(__('bank'), $why);
+        }
+
+        $model->delete();
+
+        return response()->json(['status' => 'success', 'message' => __('Bank deleted successfully')]);
+    }
 }

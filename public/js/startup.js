@@ -3159,7 +3159,6 @@ window.debounceSearch = function (fn, ms) {
 };
 
 
-/* Confirm, then DELETE a record. The server refuses (HTTP 422 + message) when other records still point at it. */
 /**
  * Container picker on the waybill / airway bill / seaway bill forms.
  * Loads the containers of the selected job (#job_id) into #bl-containers and keeps the saved selection ticked.
@@ -3215,29 +3214,103 @@ window.BillContainers = {
     },
 };
 
-window.deleteRecord = function (url, onSuccess) {
-    $.confirm({
-        title: trans('Confirm Delete'),
-        content: trans('Are you sure you want to delete this record?'),
-        type: 'red',
-        buttons: {
-            cancel: function () {},
-            delete: {
-                text: trans('Delete'),
-                btnClass: 'btn-red',
-                action: function () {
-                    $.ajax({
-                        url: url, type: 'DELETE', dataType: 'json',
-                        success: function (res) {
-                            toastr.success((res && res.message) || trans('Deleted!'));
-                            if (onSuccess) onSuccess();
-                        },
-                        error: function (xhr) {
-                            toastr.error((xhr.responseJSON && xhr.responseJSON.message) || trans('Server error'));
-                        }
-                    });
+/* Confirm dialogs (jquery-confirm) drop in from the top and rest at the top of the screen with some space above. */
+$(function () {
+    if (window.jconfirm) {
+        window.jconfirm.defaults = $.extend(true, window.jconfirm.defaults || {}, {alignMiddle: false, offsetTop: 70, animation: 'top', closeAnimation: 'top', animationSpeed: 350, animationBounce: 1.05});
+    }
+});
+
+/**
+ * Confirm / info modal in the app's one look (same as FastFatoora): Bootstrap modal that drops in from the top,
+ * round icon badge, bold title, muted message (or a list of reasons), Cancel + action buttons.
+ * opts: {title, message, list[], hint, button, btnClass, icon, tone('danger'|'primary'|'warning'), onConfirm, infoOnly}
+ */
+window.appConfirm = function (opts) {
+    opts = opts || {};
+    let el = document.getElementById('appConfirmModal');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'appConfirmModal';
+        el.className = 'modal fade';
+        el.tabIndex = -1;
+        el.setAttribute('aria-hidden', 'true');
+        el.innerHTML = '<div class="modal-dialog modal-delete-top"><div class="modal-content border-0 shadow"><div class="modal-body text-center p-4">'
+            + '<div class="mb-3"><span class="app-confirm-icon d-inline-flex align-items-center justify-content-center rounded-circle"><i class="bi"></i></span></div>'
+            + '<h5 class="fw-bold mb-2 app-confirm-title"></h5>'
+            + '<p class="text-muted mb-0 app-confirm-message"></p>'
+            + '<ul class="app-confirm-list text-start text-muted small mt-3 mb-0"></ul>'
+            + '<p class="app-confirm-hint small fw-semibold mt-3 mb-0"></p>'
+            + '<div class="d-flex justify-content-center gap-2 mt-4">'
+            + '<button type="button" class="btn btn-light border px-4 app-confirm-cancel" data-bs-dismiss="modal"></button>'
+            + '<button type="button" class="btn px-4 app-confirm-ok"></button></div></div></div></div>';
+        document.body.appendChild(el);
+    }
+    const tone = opts.tone || 'danger';
+    const $ = window.jQuery;
+    el.querySelector('.app-confirm-icon').className = 'app-confirm-icon d-inline-flex align-items-center justify-content-center rounded-circle bg-' + tone + '-subtle text-' + tone;
+    el.querySelector('.app-confirm-icon i').className = 'bi ' + (opts.icon || 'bi-trash3');
+    el.querySelector('.app-confirm-title').textContent = opts.title || '';
+    const msg = el.querySelector('.app-confirm-message');
+    msg.textContent = opts.message || '';
+    msg.style.display = opts.message ? '' : 'none';
+    const list = el.querySelector('.app-confirm-list');
+    list.innerHTML = '';
+    (opts.list || []).forEach(function (t) { const li = document.createElement('li'); li.textContent = t; list.appendChild(li); });
+    list.style.display = (opts.list && opts.list.length) ? '' : 'none';
+    const hint = el.querySelector('.app-confirm-hint');
+    hint.textContent = opts.hint || '';
+    hint.className = 'app-confirm-hint small fw-semibold mt-3 mb-0 text-body';
+    hint.style.display = opts.hint ? '' : 'none';
+    const cancel = el.querySelector('.app-confirm-cancel');
+    cancel.textContent = opts.infoOnly ? trans('Close') : trans('Cancel');
+    const ok = el.querySelector('.app-confirm-ok');
+    ok.style.display = opts.infoOnly ? 'none' : '';
+    ok.className = 'btn px-4 app-confirm-ok ' + (opts.btnClass || 'btn-danger');
+    ok.textContent = opts.button || trans('Confirm');
+    const modal = bootstrap.Modal.getOrCreateInstance(el);
+    ok.onclick = function () {
+        modal.hide();
+        if (opts.onConfirm) opts.onConfirm();
+    };
+    modal.show();
+};
+
+/* Confirm, then DELETE a record. When other records still point at it the server answers 422 with the reasons, shown in the same modal. */
+window.deleteRecord = function (url, onSuccess, opts) {
+    opts = opts || {};
+    const name = opts.name ? String(opts.name).trim() : '';
+    appConfirm({
+        title: opts.title || trans('Delete record?'),
+        message: name ? trans('Delete :name? This cannot be undone.').replace(':name', name) : trans('Are you sure you want to delete this record?') + ' ' + trans('This cannot be undone.'),
+        button: trans('Delete'),
+        btnClass: 'btn-danger',
+        icon: 'bi-trash3',
+        tone: 'danger',
+        onConfirm: function () {
+            $.ajax({
+                url: url, type: 'DELETE', dataType: 'json',
+                success: function (res) {
+                    toastr.success((res && res.message) || trans('Deleted!'));
+                    if (onSuccess) onSuccess();
+                },
+                error: function (xhr) {
+                    const r = xhr.responseJSON || {};
+                    if (xhr.status === 422 && r.reasons && r.reasons.length) {
+                        appConfirm({
+                            title: name ? trans('Cannot delete :name').replace(':name', name) : trans('Cannot delete'),
+                            message: '',
+                            list: r.reasons,
+                            hint: r.hint || '',
+                            tone: 'warning',
+                            icon: 'bi-shield-exclamation',
+                            infoOnly: true
+                        });
+                    } else {
+                        toastr.error(r.message || trans('Server error'));
+                    }
                 }
-            }
+            });
         }
     });
 };

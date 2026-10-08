@@ -233,6 +233,7 @@ class UserController extends Controller
     public function actions($id)
     {
         $user = User::select('id', 'status')->findOrFail($id);
+        $isActive = $user->status === 'active';
 
         $contextMenu = collect([]);
 
@@ -254,6 +255,15 @@ class UserController extends Controller
             'type' => 'item',
             'icon' => 'edit'
         ], [
+            // A user that has any history can't be deleted — terminating (or re-activating) is the way to take them out of use.
+            'label' => $isActive ? __('Terminate') : __('Reactivate'),
+            'code' => '01CSTM',
+            'id' => $isActive ? 'row_terminate' : 'row_reactivate',
+            'class' => $isActive ? 'row_terminate' : 'row_reactivate',
+            'data-id' => $user->id,
+            'type' => 'item',
+            'icon' => $isActive ? 'blocked' : 'confirmed'
+        ], [
             'label' => __('Delete'),
             'code' => '01CSDL',
             'id' => 'row_delete',
@@ -264,6 +274,49 @@ class UserController extends Controller
         ]);
 
         return response()->json($contextMenu->values());
+    }
+
+    /** Terminate (take out of use, no login) or reactivate a user. */
+    public function updateStatus($id, $status)
+    {
+        $user = User::findOrFail($id);
+        $active = $status === 'active';
+
+        if (!$active && (int) Auth::id() === (int) $user->id) {
+            return response()->json(['status' => 'error', 'message' => __('You cannot terminate your own account.')], 422);
+        }
+
+        $user->status = $active ? 'active' : 'terminated';
+        $user->login_permission = $active ? 'yes' : 'no';
+        $user->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => $active ? __('User reactivated.') : __('User terminated.'),
+        ]);
+    }
+
+    /** Delete a user — refused when payroll, created records or any other entries still point at them. */
+    public function delete($id)
+    {
+        $user = User::findOrFail($id);
+        $guard = app(\App\Services\DeletionGuard::class);
+        $why = $guard->blockers('user', (int) $id);
+        if ($why) {
+            return response()->json([
+                'status' => 'error',
+                'message' => __('This :what cannot be deleted: :why.', ['what' => __('user'), 'why' => implode('; ', $why)]),
+                'reasons' => $why,
+                'hint' => __('Clear these, or terminate the user instead.'),
+            ], 422);
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($user, $guard, $id) {
+            $guard->clearUserPreferences((int) $id);
+            $user->delete();
+        });
+
+        return response()->json(['status' => 'success', 'message' => __('User deleted successfully')]);
     }
 
     public function overview($id)

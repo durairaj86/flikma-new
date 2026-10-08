@@ -92,18 +92,33 @@ USER = {
         extraActions(row) {
             USER.list.actions.statusChange(row);
             USER.list.actions.view(row);
+            USER.list.actions.delete(row);
         },
         actions: {
             statusChange(row) {
-                /* $('#row_pending,#row_confirm,#row_blocked,#row_rejected').off().on('click', function () {
-                     //GLOBAL_FN.ajaxData.sendData(GLOBAL_FN.buildUrl('customer/' + row.attr('data-id') + '/status/' + $(this).attr('data-value')),'datatable',{})
-                     let fd = new FormData();
-                     changeCustomerStatus(GLOBAL_FN.buildUrl('customer/' + row.attr('data-id') + '/status/' + $(this).attr('data-value')), {
-                         method: 'POST',
-                         data: fd,
-                         callBack: 'datatable'
-                     }, $(this).attr('data-value'));
-                 })*/
+                // Terminate / reactivate: the safe alternative to deleting a user who has history.
+                $('#row_terminate,#row_reactivate').off().on('click', function () {
+                    const activate = this.id === 'row_reactivate';
+                    const name = $.trim(row.find('td').eq(1).text());
+                    appConfirm({
+                        title: trans(activate ? 'Reactivate user?' : 'Terminate user?'),
+                        message: (name ? name + ' — ' : '') + trans(activate ? 'This user will be able to log in again.' : 'This user will no longer be able to log in. Their history stays.'),
+                        button: trans(activate ? 'Reactivate' : 'Terminate'),
+                        btnClass: activate ? 'btn-primary' : 'btn-danger',
+                        icon: activate ? 'bi-arrow-counterclockwise' : 'bi-person-x',
+                        tone: activate ? 'primary' : 'danger',
+                        onConfirm: function () {
+                            $.post(GLOBAL_FN.buildUrl('masters/user/' + row.attr('data-id') + '/status/' + (activate ? 'active' : 'terminated')), {_token: $('meta[name="csrf-token"]').attr('content')})
+                                .done(res => { toastr.success(res.message); USER.list.dataTable(); })
+                                .fail(xhr => toastr.error((xhr.responseJSON && xhr.responseJSON.message) || trans('Server error')));
+                        }
+                    });
+                });
+            },
+            delete(row) {
+                $('#row_delete').off().on('click', function () {
+                    deleteRecord(GLOBAL_FN.buildUrl('masters/user/' + row.attr('data-id')), function () { USER.list.dataTable(); }, {name: $.trim(row.find('td').eq(1).text())});
+                });
             },
             view(row) {
                 $('#row_view').off().on('click', function () {

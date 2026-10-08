@@ -256,6 +256,30 @@ class AccountController extends Controller
         return response()->json($contextMenu->values());
     }
 
+    /**
+     * Delete an account — refused while anything still uses it (sub accounts, ledger entries,
+     * invoice / expense / payment lines, items, journal lines) or when it is a default / system account.
+     */
+    public function destroy($id): \Illuminate\Http\JsonResponse
+    {
+        $account = Account::findOrFail($id);
+        $guard = app(\App\Services\DeletionGuard::class);
+        $why = $guard->blockers('account', (int) $id);
+        if ($account->company_id != companyId()) {
+            $why[] = __('it is a default account of the chart of accounts');
+        }
+        if ($why) {
+            return $guard->refusal(__('account'), array_values(array_unique($why)));
+        }
+
+        $account->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => __('Account deleted successfully'),
+        ]);
+    }
+
     public function updateStatus($id, $status): \Illuminate\Http\JsonResponse
     {
         $account = Account::findOrFail($id);

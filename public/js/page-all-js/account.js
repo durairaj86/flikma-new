@@ -117,7 +117,9 @@ ACCOUNT = {
             webDataTable.search(table);
         },
         extraActions(row) {
-
+            $('#row_delete').off().on('click', function () {
+                deleteRecord(GLOBAL_FN.buildUrl('finance/account/' + row.attr('data-id') + '/delete'), function () { ACCOUNT.list.dataTable(); });
+            });
         },
         actions: {
             statusChange() {

@@ -62,6 +62,9 @@ SALESPERSON = {
         },
         extraActions(row) {
             SALESPERSON.list.actions.statusChange(row);
+            $('#row_delete').off().on('click', function () {
+                deleteRecord(GLOBAL_FN.buildUrl('masters/salesperson/' + row.attr('data-id')), function () { SALESPERSON.list.dataTable(); }, {name: $.trim(row.find('td').not(':first').first().text())});
+            });
         },
         actions: {
             statusChange(row) {
