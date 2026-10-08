@@ -59,6 +59,9 @@
             },
             collection: {title: @json(__('Collection Details')), url: id => '/transaction/collections/' + id + '/overview-drawer'},
             credit_note: {title: @json(__('Credit Note Details')), url: id => '/adjustment/credit-note/' + id + '/overview'},
+            master_bl: {title: @json(__('Master B/L Details')), url: id => '/bl/master-bl/' + id + '/overview'},
+            seaway: {title: @json(__('Seaway Bill Details')), url: id => '/bl/seaway/' + id + '/overview'},
+            airway: {title: @json(__('Airway Bill Details')), url: id => '/bl/airway-bill/' + id + '/overview'},
         };
 
         const body = document.getElementById('linkedDrawerBody');

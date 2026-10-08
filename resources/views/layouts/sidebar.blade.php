@@ -168,6 +168,11 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a href="/sales/rate-sheets" class="nav-link {{ $submenu == 'rate-sheets' ? 'active' : '' }}">
+                                <p>{{ __('Rate Sheets') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a href="/reports/sale-report" class="nav-link {{ $submenu == 'sale-report' ? 'active' : '' }}">
                                 <p>{{ __('Sales Report') }}</p>
                             </a>
@@ -193,6 +198,21 @@
                         <li class="nav-item">
                             <a href="/operation/jobs" class="nav-link {{ $submenu == 'jobs' ? 'active' : '' }}">
                                 <p>{{ __('Jobs') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/operation/bookings" class="nav-link {{ $submenu == 'bookings' ? 'active' : '' }}">
+                                <p>{{ __('Bookings') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/operation/delivery-orders" class="nav-link {{ $submenu == 'delivery-orders' ? 'active' : '' }}">
+                                <p>{{ __('Delivery Orders') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/operation/customs" class="nav-link {{ $submenu == 'customs' ? 'active' : '' }}">
+                                <p>{{ __('Customs Clearance') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -247,6 +267,12 @@
                             <a href="/adjustment/credit-note"
                                class="nav-link {{ $submenu == 'credit-note' ? 'active' : '' }}">
                                 <p>{{ __('Credit Note') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/adjustment/debit-note"
+                               class="nav-link {{ $submenu == 'debit-note' ? 'active' : '' }}">
+                                <p>{{ __('Debit Note') }}</p>
                             </a>
                         </li>
                     </ul>
@@ -357,6 +383,11 @@
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/bl/master-bl" class="nav-link {{ $submenu == 'master-bl' ? 'active' : '' }}">
+                                <p>{{ __('Master B/L') }}</p>
+                            </a>
+                        </li>
                         <li class="nav-item">
                             <a href="/bl/airway-bill" class="nav-link {{ $submenu == 'airway-bill' ? 'active' : '' }}">
                                 <p>{{ __('Airway Bill') }}</p>

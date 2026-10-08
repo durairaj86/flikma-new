@@ -44,4 +44,17 @@ Route::prefix('bl')->group(function () {
     Route::get('/seaway/{id}/print', [SeawayBillController::class, 'print']);
     Route::get('/seaway/{id}/actions', [SeawayBillController::class, 'actions']);
     Route::post('/seaway/{id}/status/{status}', [SeawayBillController::class, 'updateStatus']);
+
+    // Master B/L with its house bills
+    Route::view('/master-bl', 'modules.master-bl.list')->name('bl.master-bl');
+    Route::post('/master-bl/data', [\App\Http\Controllers\BL\MasterBlController::class, 'fetchAllRows'])->name('bl.master-bl.data');
+    Route::get('/master-bl/create', [\App\Http\Controllers\BL\MasterBlController::class, 'modal']);
+    Route::post('/master-bl/create', [\App\Http\Controllers\BL\MasterBlController::class, 'store']);
+    Route::get('/master-bl/house-bills/{mode}/{masterId?}', [\App\Http\Controllers\BL\MasterBlController::class, 'houseBills'])->whereIn('mode', ['sea', 'air'])->whereNumber('masterId');
+    Route::get('/master-bl/{id}/create', [\App\Http\Controllers\BL\MasterBlController::class, 'edit'])->whereNumber('id');
+    Route::post('/master-bl/{id}/create', [\App\Http\Controllers\BL\MasterBlController::class, 'store'])->whereNumber('id');
+    Route::get('/master-bl/{id}/actions', [\App\Http\Controllers\BL\MasterBlController::class, 'actions'])->whereNumber('id');
+    Route::post('/master-bl/{id}/status/{status}', [\App\Http\Controllers\BL\MasterBlController::class, 'updateStatus'])->whereNumber('id');
+    Route::get('/master-bl/{id}/overview', [\App\Http\Controllers\BL\MasterBlController::class, 'overview'])->whereNumber('id');
+    Route::delete('/master-bl/{id}', [\App\Http\Controllers\BL\MasterBlController::class, 'delete'])->whereNumber('id');
 });

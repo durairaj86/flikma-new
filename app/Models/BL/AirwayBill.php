@@ -53,6 +53,11 @@ class AirwayBill extends Model
     /**
      * Get the job associated with the airway bill.
      */
+    public function masterBl()
+    {
+        return $this->belongsTo(\App\Models\BL\MasterBl::class, 'master_bl_id');
+    }
+
     public function job()
     {
         return $this->belongsTo(\App\Models\Job\Job::class, 'job_id');

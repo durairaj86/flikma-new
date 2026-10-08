@@ -39,6 +39,19 @@ Route::namespace('sales')->prefix('sales')->group(function () {
     Route::get('/quotation/{id}/email-data', [QuotationController::class, 'getQuotationEmailData']);
     Route::post('/quotation/send-email', [QuotationController::class, 'sendEmail']);
 
+    // Rate sheets
+    Route::view('/rate-sheets', 'modules.rate-sheet.list')->name('rate-sheets');
+    Route::post('/rate-sheet/data', [\App\Http\Controllers\Sales\RateSheetController::class, 'fetchAllRows'])->name('rate-sheets.data');
+    Route::get('/rate-sheet/create', [\App\Http\Controllers\Sales\RateSheetController::class, 'modal']);
+    Route::post('/rate-sheet/create', [\App\Http\Controllers\Sales\RateSheetController::class, 'store']);
+    Route::get('/rate-sheet/{id}/create', [\App\Http\Controllers\Sales\RateSheetController::class, 'edit']);
+    Route::post('/rate-sheet/{id}/create', [\App\Http\Controllers\Sales\RateSheetController::class, 'store']);
+    Route::get('/rate-sheet/{id}/actions', [\App\Http\Controllers\Sales\RateSheetController::class, 'actions']);
+    Route::post('/rate-sheet/{id}/status/{status}', [\App\Http\Controllers\Sales\RateSheetController::class, 'updateStatus']);
+    Route::post('/rate-sheet/{id}/duplicate', [\App\Http\Controllers\Sales\RateSheetController::class, 'duplicate']);
+    Route::get('/rate-sheet/{id}/overview', [\App\Http\Controllers\Sales\RateSheetController::class, 'overview']);
+    Route::delete('/rate-sheet/{id}', [\App\Http\Controllers\Sales\RateSheetController::class, 'delete'])->whereNumber('id');
+
     Route::get('/overview', [\App\Http\Controllers\Sales\SalesOverviewController::class, 'index'])->name('sales.overview');
 
     // ─── Quotation New ────────────────────────────────────────────────────

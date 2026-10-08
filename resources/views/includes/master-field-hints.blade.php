@@ -52,6 +52,11 @@
             'job_id' => 'The job of that invoice, for your records.',
             'reason' => 'Why you are crediting the customer, for example rate correction or duplicate billing.',
         ],
+        'adjustment/debit-note' => [
+            'invoice_id' => 'The approved supplier invoice you are debiting. Currency and rate are copied from it.',
+            'job_id' => 'The job of that invoice, for your records.',
+            'reason' => 'Why you are debiting the supplier, for example an overcharge or a service not provided.',
+        ],
         'finance/expense' => [
             'customer' => 'Fill only if this expense is for a customer, so it can be tracked against them.',
             'supplier' => 'The vendor you paid. Leave empty for petty expenses without a supplier.',

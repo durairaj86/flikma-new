@@ -501,7 +501,7 @@ class AirwayBillController extends Controller
      */
     public function overview($id)
     {
-        $airwayBill = AirwayBill::with('airwayBillSubs', 'documents', 'job', 'customer')->findOrFail($id);
+        $airwayBill = AirwayBill::with('airwayBillSubs', 'documents', 'job', 'customer', 'masterBl')->findOrFail($id);
         [$origin, $timeline] = $this->billTimeline($airwayBill, __('Airway Bill'));
         return view('modules.bl.airway-bill.view-overview', compact('airwayBill', 'origin', 'timeline'));
     }

@@ -501,7 +501,7 @@ class SeawayBillController extends Controller
      */
     public function overview($id)
     {
-        $seawayBill = SeawayBill::with('seawayBillSubs', 'documents', 'job', 'customer')->findOrFail($id);
+        $seawayBill = SeawayBill::with('seawayBillSubs', 'documents', 'job', 'customer', 'masterBl')->findOrFail($id);
         [$origin, $timeline] = $this->billTimeline($seawayBill, __('Seaway Bill'));
         return view('modules.bl.seaway.view-overview', compact('seawayBill', 'origin', 'timeline'));
     }
