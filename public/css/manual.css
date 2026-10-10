@@ -2031,3 +2031,11 @@ body:not(.has-top-header) #sendEmailDrawer.offcanvas.offcanvas-end {
 .modal-dialog.modal-delete-top .app-confirm-icon { width: 56px; height: 56px; font-size: 1.5rem; }
 .modal-dialog.modal-delete-top .modal-content { border-radius: 14px; }
 .modal-dialog.modal-delete-top .app-confirm-list { max-height: 220px; overflow-y: auto; padding-left: 1.25rem; }
+
+/* List tables sit in a scrolling wrapper, which would clip the row action menu on short lists. On desktop the table always fits, so let the menu overflow instead of padding the list with blank space. */
+@media (min-width: 992px) {
+    .table-responsive:has(#dataTable) { overflow: visible; }
+}
+/* "Showing x to y" + pager line up with the table's first and last cell instead of the card edge. */
+.table-responsive #dataTable_wrapper > .row { margin: .25rem 0 0; padding: 0 20px 4px; }
+.table-responsive #dataTable_wrapper > .row > [class*="col-"] { padding-left: 0; padding-right: 0; }

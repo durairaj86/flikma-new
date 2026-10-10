@@ -17,6 +17,19 @@ Route::namespace('operations')->prefix('operation')->group(function () {
     Route::get('/booking/{id}/overview', [\App\Http\Controllers\Booking\BookingController::class, 'overview']);
     Route::delete('/booking/{id}', [\App\Http\Controllers\Booking\BookingController::class, 'delete'])->whereNumber('id');
 
+    // Cargo arrival notice / notification
+    Route::view('/arrival-notices', 'modules.arrival-notice.list')->name('arrival-notices');
+    Route::post('/arrival-notice/data', [\App\Http\Controllers\Arrival\ArrivalNoticeController::class, 'fetchAllRows'])->name('arrival-notices.data');
+    Route::get('/arrival-notice/create', [\App\Http\Controllers\Arrival\ArrivalNoticeController::class, 'modal']);
+    Route::post('/arrival-notice/create', [\App\Http\Controllers\Arrival\ArrivalNoticeController::class, 'store']);
+    Route::get('/arrival-notice/{id}/create', [\App\Http\Controllers\Arrival\ArrivalNoticeController::class, 'edit'])->whereNumber('id');
+    Route::post('/arrival-notice/{id}/create', [\App\Http\Controllers\Arrival\ArrivalNoticeController::class, 'store'])->whereNumber('id');
+    Route::get('/arrival-notice/{id}/actions', [\App\Http\Controllers\Arrival\ArrivalNoticeController::class, 'actions'])->whereNumber('id');
+    Route::post('/arrival-notice/{id}/status/{status}', [\App\Http\Controllers\Arrival\ArrivalNoticeController::class, 'updateStatus'])->whereNumber('id');
+    Route::get('/arrival-notice/{id}/overview', [\App\Http\Controllers\Arrival\ArrivalNoticeController::class, 'overview'])->whereNumber('id');
+    Route::get('/arrival-notice/{id}/print', [\App\Http\Controllers\Arrival\ArrivalNoticeController::class, 'print'])->whereNumber('id');
+    Route::delete('/arrival-notice/{id}', [\App\Http\Controllers\Arrival\ArrivalNoticeController::class, 'delete'])->whereNumber('id');
+
     // Delivery orders / dispatch
     Route::view('/delivery-orders', 'modules.delivery-order.list')->name('delivery-orders');
     Route::post('/delivery-order/data', [\App\Http\Controllers\Delivery\DeliveryOrderController::class, 'fetchAllRows'])->name('delivery-orders.data');

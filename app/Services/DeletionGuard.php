@@ -32,7 +32,7 @@ class DeletionGuard
         'employee_loans' => 'employee loans', 'customers' => 'customers', 'suppliers' => 'suppliers', 'prospects' => 'prospects',
         'waybill_subs' => 'waybill lines', 'airway_bill_subs' => 'airway bill lines', 'seaway_bill_subs' => 'seaway bill lines', 'enquiry_subs' => 'enquiry lines',
         'quotation_subs' => 'quotation lines', 'proforma_invoice_subs' => 'proforma invoice lines', 'debit_note_subs' => 'debit note lines',
-        'bookings' => 'bookings', 'delivery_orders' => 'delivery orders', 'rate_sheets' => 'rate sheets', 'master_bls' => 'master B/Ls', 'users' => 'users created by this user', 'department_module_permissions' => 'department permissions', 'employees' => 'employee records', 'banks' => 'bank accounts', 'documents' => 'documents',
+        'bookings' => 'bookings', 'delivery_orders' => 'delivery orders', 'rate_sheets' => 'rate sheets', 'master_bls' => 'master B/Ls', 'arrival_notices' => 'arrival notices', 'users' => 'users created by this user', 'department_module_permissions' => 'department permissions', 'employees' => 'employee records', 'banks' => 'bank accounts', 'documents' => 'documents',
         'period_closings' => 'period closings', 'currency_locks' => 'currency locks', 'zatca_histories' => 'ZATCA records',
     ];
 
@@ -89,6 +89,12 @@ class DeletionGuard
                 // Once it is on the road or delivered the record is the proof of delivery.
                 if (DB::table('delivery_orders')->where('id', $id)->whereIn('status', [2, 3])->exists()) {
                     $why[] = __('only a pending or cancelled delivery order can be deleted');
+                }
+                break;
+            case 'arrival_notice':
+                // Once the consignee has been told the notice is part of the shipment record.
+                if (DB::table('arrival_notices')->where('id', $id)->whereIn('status', [2, 3])->exists()) {
+                    $why[] = __('only a draft or cancelled arrival notice can be deleted');
                 }
                 break;
             case 'master_bl':

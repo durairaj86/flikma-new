@@ -206,6 +206,11 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a href="/operation/arrival-notices" class="nav-link {{ $submenu == 'arrival-notices' ? 'active' : '' }}">
+                                <p>{{ __('Arrival Notices') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a href="/operation/delivery-orders" class="nav-link {{ $submenu == 'delivery-orders' ? 'active' : '' }}">
                                 <p>{{ __('Delivery Orders') }}</p>
                             </a>

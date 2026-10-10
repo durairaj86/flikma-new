@@ -100,7 +100,7 @@
              even with very few rows — overflow:hidden here clips the menu (a
              DOM descendant of this card) at its bottom edge once the menu's
              rendered height exceeds the card's natural content height. --}}
-        <div class="shadow bdr-r-10 pb-3 flex-grow-1">
+        <div class="border bdr-r-10 pb-3 flex-grow-1">
             <!-- Search & New -->
             <div class="d-flex justify-content-between align-items-center px-3 pt-3 flex-shrink-0 sup-chips-row">
                 {{--<div id="searchLabels" class="mb-3 d-flex flex-wrap gap-2"></div>--}}
