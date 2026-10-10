@@ -280,20 +280,20 @@
 
     <style>
         :root {
-            --customer-primary: #4f46e5;
-            --customer-dark: #3730a3;
-            --customer-light: #eef2ff;
+            --customer-primary: #0ea5e9;
+            --customer-dark: #0369a1;
+            --customer-light: #e0f2fe;
         }
         .text-customer { color: var(--customer-primary) !important; }
         .border-customer { border-color: var(--customer-primary) !important; }
-        .bg-customer-subtle { background-color: #eef2ff !important; }
-        .border-customer-subtle { border-color: #c7d2fe !important; }
+        .bg-customer-subtle { background-color: #e0f2fe !important; }
+        .border-customer-subtle { border-color: #bae6fd !important; }
         .ls-1 { letter-spacing: 0.05em; }
         .x-small { font-size: 0.7rem; text-transform: uppercase; }
         .tabular-nums { font-variant-numeric: tabular-nums; }
         .card { border-radius: 1rem; }
         .form-control:focus, .form-select:focus {
-            box-shadow: 0 0 0 0.25rem rgba(79, 70, 229, 0.1);
+            box-shadow: 0 0 0 0.25rem rgba(14, 165, 233, 0.1);
             border-color: var(--customer-primary);
         }
         @media print {

@@ -10,80 +10,69 @@
 </script>
 @endsection
 <x-app-layout>
-    <div class="bg-light py-4">
+    <div class="bg-light pb-4">
+    <div class="jw-page pt-2">
         <style>
-            :root{
-                --job_primary: #0b6aa0;
-                --job_secondary: #5b57ae;
-                --job_accent: #16a34a;
-                --job_bg: #f8fafc;
-                --job_card_bg: #ffffff;
-                --job_radius: 12px;
-                --job_shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-            }
+            :root { --job_bg: #f8fafc; }
             body { background: var(--job_bg); }
-            .job-kpi-card {
-                background: var(--job_card_bg);
-                border-radius: var(--job_radius);
-                box-shadow: var(--job_shadow);
-                padding: 1.25rem;
-                transition: box-shadow .2s;
-                border: 1px solid rgba(0,0,0,0.04);
-            }
-            .job-kpi-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-            .job-kpi-card .kpi-label { font-size: .8rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: #64748b; }
-            .job-kpi-card .kpi-value { font-size: 1.65rem; font-weight: 700; color: #0f172a; line-height: 1.2; margin-top: .25rem; }
-            .job-kpi-card .kpi-sub { font-size: .78rem; color: #94a3b8; margin-top: .2rem; }
-            .job-icon-circle { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
-            .job-card {
-                background: var(--job_card_bg);
-                border-radius: var(--job_radius);
-                box-shadow: var(--job_shadow);
-                border: 1px solid rgba(0,0,0,0.04);
-            }
-            .job-card-header {
-                display: flex; align-items: center; justify-content: space-between;
-                padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9;
-            }
-            .job-card-header h6 { margin: 0; font-weight: 700; font-size: .9rem; color: #0f172a; }
-            .job-card-body { padding: 1.25rem; }
-            .job-table th { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: #64748b; background: #f8fafc; border-bottom-width: 1px; }
-            .job-table td { font-size: .82rem; vertical-align: middle; color: #1e293b; }
-            .badge-job { background: rgba(11,106,160,0.1); color: #0b6aa0; font-weight: 600; font-size: .7rem; padding: .25em .7em; border-radius: 20px; }
-            /* Dashboard-widget look for the KPI and chart cards (matches the dashboard's rounded, soft-tinted widgets). */
-            .job-kpi-card.wd {
-                --kbg: color-mix(in srgb, var(--kc) 9%, #fff);
-                background: var(--kbg); border: 0; border-radius: 18px; padding: 16px 18px 14px;
+            .jw {
+                --kbg: color-mix(in srgb, var(--kc) 8%, #fff);
+                background: var(--kbg); border-radius: 16px; padding: 12px 14px; height: 100%;
                 box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(15,23,42,.07);
-                display: block; height: 100%;
             }
-            .job-kpi-card.wd:hover { box-shadow: 0 1px 2px rgba(0,0,0,.05), 0 12px 30px rgba(15,23,42,.11); }
-            .wd-head { display: flex; align-items: center; gap: 10px; }
-            .wd-icon { width: 32px; height: 32px; border-radius: 50%; background: var(--kc); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: .85rem; flex-shrink: 0;
-                       box-shadow: 0 3px 8px color-mix(in srgb, var(--kc) 40%, transparent); }
-            .wd-title { font-weight: 600; font-size: .9rem; color: #475467; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-            .wd-value { font-size: 1.9rem; font-weight: 700; letter-spacing: -.02em; color: #101828; line-height: 1.1; margin-top: 14px; white-space: nowrap; }
-            .wd-note { font-size: .8rem; color: #667085; margin-top: 4px; }
-            .job-kpi-card.wd-sm { padding: 12px 14px 12px; }
-            .job-kpi-card.wd-sm .wd-value { font-size: 1.35rem; margin-top: 8px; }
-            .job-kpi-card.wd-sm .wd-title { font-size: .78rem; }
-            .job-kpi-card.wd-sm .wd-icon { width: 26px; height: 26px; font-size: .72rem; }
-            .job-card { border: 0; border-radius: 18px; box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(15,23,42,.07); overflow: hidden; }
-            .job-card-header { border-bottom: 0; padding: 16px 18px 6px; }
-            .job-card-header h6 { font-size: .9rem; font-weight: 600; color: #475467; }
-            .job-card-body { padding: 8px 18px 18px; }
-            .trend-up { color: #16a34a; }
-            .trend-down { color: #dc2626; }
+            .jw.white { background: #fff; }
+            .jw-head { display: flex; align-items: center; gap: 10px; }
+            .jw-icon { width: 26px; height: 26px; border-radius: 50%; background: var(--kc); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: .75rem; flex-shrink: 0; box-shadow: 0 3px 8px color-mix(in srgb, var(--kc) 38%, transparent); }
+            .jw-title { font-weight: 600; font-size: .82rem; color: #344054; flex: 1; min-width: 0; line-height: 1.2; }
+            .jw-tag { font-size: .66rem; font-weight: 600; background: #fff; border: 1px solid #e5e7eb; color: #475467; border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
+            .jw-value-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+            .jw-value { font-size: 1.55rem; font-weight: 700; letter-spacing: -.02em; color: #101828; line-height: 1.1; }
+            .jw-pill { font-size: .66rem; font-weight: 600; border-radius: 8px; padding: 2px 8px; background: #e0f2fe; color: #0369a1; }
+            .jw-pill.up { background: #dcfce7; color: #15803d; }
+            .jw-pill.down { background: #fee2e2; color: #b91c1c; }
+            .jw-note { font-size: .72rem; color: #667085; margin-top: 2px; }
+            .jw-track { height: 5px; border-radius: 99px; background: color-mix(in srgb, var(--kc, #94a3b8) 16%, #e5e7eb); overflow: hidden; margin-top: 8px; }
+            .jw-track > span { display: block; height: 100%; border-radius: 99px; background: var(--kc, #0b6aa0); transition: width .5s; }
+            .jw-legend { display: flex; justify-content: space-between; gap: 6px; margin-top: 8px; }
+            .jw-legend > div { flex: 1; background: rgba(255,255,255,.75); border-radius: 9px; padding: 4px 8px; font-size: .68rem; color: #667085; display: flex; align-items: center; justify-content: space-between; gap: 4px; }
+            .jw-legend strong { font-size: .8rem; color: #101828; margin-left: auto; }
+            .jw-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; background: var(--kc); }
+            .jw-split { display: flex; align-items: center; gap: 8px; }
+            .jw-left { flex: 1; min-width: 0; }
+            .jw-mini { position: relative; width: 96px; height: 96px; flex-shrink: 0; }
+            /* compact stat widgets */
+            .jw-sm { aspect-ratio: 1 / 1; max-width: 150px; padding: 12px; border-radius: 16px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; }
+            .jw-sm .jw-txt { display: flex; flex-direction: column; min-width: 0; width: 100%; }
+            .jw-sm .jw-title { font-size: .72rem; color: #667085; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .jw-sm-value { font-size: 1.5rem; font-weight: 700; color: #101828; line-height: 1.1; }
+            .trend-up { color: #16a34a !important; }
+            .trend-down { color: #dc2626 !important; }
+            /* chart / list widgets */
+            .jw-body { margin-top: 8px; }
+            .jw-row { display: flex; align-items: flex-start; gap: 8px; padding: 5px 0; }
+            .jw-row + .jw-row { border-top: 1px dashed #eef0f3; }
+            .jw-rank { width: 20px; height: 20px; border-radius: 50%; background: #f1f5f9; color: #475467; font-size: .66rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+            .jw-row-main { flex: 1; min-width: 0; }
+            .jw-row-top { display: flex; justify-content: space-between; gap: 8px; font-size: .78rem; }
+            .jw-row-name { font-weight: 600; color: #1e293b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .jw-row-val { font-weight: 700; color: #101828; }
+            .jw-row-sub { font-size: .66rem; color: #94a3b8; }
+            .jw-row .jw-track { margin-top: 3px; height: 4px; }
+            .jw-stack { display: flex; height: 10px; border-radius: 99px; overflow: hidden; background: #eef0f3; }
+            .jw-stack > span { display: block; height: 100%; }
+            .jw-legend-item { display: inline-flex; align-items: center; gap: 6px; background: #f8fafc; border-radius: 999px; padding: 3px 10px; font-size: .72rem; margin: 8px 6px 0 0; color: #475467; }
+            .jw-legend-item .jw-dot { margin: 0; }
+            .jw-chart { position: relative; height: 150px; }
+            .jw-chart.sm { height: 140px; }
         </style>
 
         <div class="container-fluid px-lg-5">
-
-            {{-- Title row: title on the left (when the header is off), period filter at the right end --}}
             <style>
                 .jo-title { display: none; }
                 body:not(.has-top-header) .jo-title { display: block; }
             </style>
-            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            @php($rangeLabel = ['this_month' => __('This Month'), 'last_month' => __('Last Month'), 'this_year' => __('This Year')][$range] ?? '')
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
                 <div class="jo-title">
                     <h4 class="fw-bold text-dark mb-0">@yield('page-title')</h4>
                     <div class="text-muted small mt-1">@yield('page-subtitle')</div>
@@ -94,227 +83,130 @@
                         <option value="last_month" {{ $range==='last_month' ? 'selected' : '' }}>{{ __('Last Month') }}</option>
                         <option value="this_year" {{ $range==='this_year' ? 'selected' : '' }}>{{ __('This Year') }}</option>
                     </select></div>
-                    <button class="btn btn-primary btn-sm px-3" id="btn-apply">
-                        <i class="bi bi-arrow-repeat me-1"></i> {{ __('Apply') }}
-                    </button>
+                    <button class="btn btn-primary btn-sm px-3" id="btn-apply"><i class="bi bi-arrow-repeat me-1"></i> {{ __('Apply') }}</button>
                 </div>
             </div>
 
-            {{-- KPI Cards --}}
-            <div class="row g-3 mb-4">
-                <div class="col-lg-3 col-md-6">
-                    <div class="job-kpi-card wd" style="--kc: #0b6aa0;">
-                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-briefcase"></i></span><span class="wd-title">{{ __('Total Jobs') }}</span></div>
-                        <div class="wd-value" id="kpiTotalJobs">0</div>
-                        <div class="wd-note">{{ __('Created this period') }}</div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="job-kpi-card wd" style="--kc: #16a34a;">
-                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-check-circle"></i></span><span class="wd-title">{{ __('Completed') }}</span></div>
-                        <div class="wd-value" id="kpiCompletedJobs">0</div>
-                        <div class="wd-note">{{ __('Finished this period') }}</div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="job-kpi-card wd" style="--kc: #dc2626;">
-                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-hourglass-split"></i></span><span class="wd-title">{{ __('Pending') }}</span></div>
-                        <div class="wd-value" id="kpiPendingJobs" style="color:#dc2626;">0</div>
-                        <div class="wd-note">{{ __('Currently in progress') }}</div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="job-kpi-card wd" style="--kc: #5b57ae;">
-                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-receipt"></i></span><span class="wd-title">{{ __('Invoiced Jobs') }}</span></div>
-                        <div class="wd-value" id="kpiInvoicedJobs">0</div>
-                        <div class="wd-note">{{ __('Have a customer invoice') }}</div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Secondary KPIs --}}
-            <div class="row g-3 mb-4">
-                <div class="col-lg-2 col-md-4 col-6">
-                    <div class="job-kpi-card wd wd-sm" style="--kc: #dc2626;">
-                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-x-circle"></i></span><span class="wd-title">{{ __('Cancelled') }}</span></div>
-                        <div class="wd-value" id="kpiCancelledJobs">0</div>
-                    </div>
-                </div>
-                <div class="col-lg-2 col-md-4 col-6">
-                    <div class="job-kpi-card wd wd-sm" style="--kc: #0b6aa0;">
-                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-people"></i></span><span class="wd-title">{{ __('Customers') }}</span></div>
-                        <div class="wd-value" id="kpiCustomerCount">0</div>
-                    </div>
-                </div>
-                <div class="col-lg-2 col-md-4 col-6">
-                    <div class="job-kpi-card wd wd-sm" style="--kc: #5b57ae;">
-                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-file-earmark-text"></i></span><span class="wd-title">{{ __('From Quotations') }}</span></div>
-                        <div class="wd-value" id="kpiFromQuotations">0</div>
-                    </div>
-                </div>
-                <div class="col-lg-2 col-md-4 col-6">
-                    <div class="job-kpi-card wd wd-sm" style="--kc: #16a34a;">
-                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-arrow-repeat"></i></span><span class="wd-title">{{ __('Repeat Customers') }}</span></div>
-                        <div class="wd-value" id="kpiRepeat">0%</div>
-                    </div>
-                </div>
-                <div class="col-lg-2 col-md-4 col-6">
-                    <div class="job-kpi-card wd wd-sm" style="--kc: #0891b2;">
-                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-box-seam"></i></span><span class="wd-title">{{ __('Avg Containers/Job') }}</span></div>
-                        <div class="wd-value" id="kpiAvgContainers">0</div>
-                    </div>
-                </div>
-                <div class="col-lg-2 col-md-4 col-6">
-                    <div class="job-kpi-card wd wd-sm" style="--kc: #f59e0b;">
-                        <div class="wd-head"><span class="wd-icon"><i class="bi bi-graph-up"></i></span><span class="wd-title">{{ __('vs Last Month') }}</span></div>
-                        <div class="wd-value" id="kpiJobsChange">0%</div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Charts Row --}}
-            <div class="row g-3 mb-4">
-                <div class="col-xl-7">
-                    <div class="job-card h-100">
-                        <div class="job-card-header">
-                            <h6><i class="bi bi-graph-up me-2" style="color:#0b6aa0;"></i>{{ __('Jobs Trend') }}</h6>
-                            <span class="badge-job">{{ $range === 'this_year' ? __('Monthly') : __('Weekly') }}</span>
-                        </div>
-                        <div class="job-card-body">
-                            <canvas id="chartJobsTrend" height="180"></canvas>
+            {{-- Main widgets --}}
+            <div class="row g-2 mb-2">
+                <div class="col-xl-3 col-md-6">
+                    <div class="jw" style="--kc:#0b6aa0;">
+                        <div class="jw-head"><span class="jw-icon"><i class="bi bi-briefcase"></i></span><span class="jw-title">{{ __('Total Jobs') }}</span></div>
+                        <div class="jw-split"><div class="jw-left"><div class="jw-value-row"><span class="jw-value" id="kpiTotalJobs">0</span><span class="jw-pill up" id="totDelta"></span></div>
+                        <div class="jw-note">{{ $rangeLabel }} &middot; <span id="kpiDonePill">0%</span> {{ __('completed') }}</div>
+                        </div><div class="jw-mini"><canvas id="miniTotal"></canvas></div></div>
+                        <div class="jw-legend">
+                            <div><span class="jw-dot" style="background:#16a34a"></span>{{ __('Completed') }}<strong id="totDone">0</strong></div>
+                            <div><span class="jw-dot" style="background:#dc2626"></span>{{ __('Cancelled') }}<strong id="totCancelled">0</strong></div>
                         </div>
                     </div>
                 </div>
-                <div class="col-xl-5">
-                    <div class="job-card h-100">
-                        <div class="job-card-header">
-                            <h6><i class="bi bi-signpost-split me-2" style="color:#5b57ae;"></i>{{ __('Job Source') }}</h6>
-                            <span class="badge-job">{{ __('Sales Pipeline') }}</span>
+                <div class="col-xl-3 col-md-6">
+                    <div class="jw" style="--kc:#16a34a;">
+                        <div class="jw-head"><span class="jw-icon"><i class="bi bi-check-circle"></i></span><span class="jw-title">{{ __('Completed') }}</span></div>
+                        <div class="jw-split"><div class="jw-left"><div class="jw-value-row"><span class="jw-value" id="kpiCompletedJobs">0</span></div>
+                        <div class="jw-note">{{ $rangeLabel }} &middot; {{ __('finished') }}</div>
+                        </div><div class="jw-mini"><canvas id="miniDone"></canvas></div></div>
+                        <div class="jw-legend"><div>{{ __('Completion rate') }}<strong id="kpiDoneNote">0 / 0</strong></div></div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="jw" style="--kc:#f59e0b;">
+                        <div class="jw-head"><span class="jw-icon"><i class="bi bi-hourglass-split"></i></span><span class="jw-title">{{ __('Pending') }}</span><span class="jw-tag">{{ __('Live') }}</span></div>
+                        <div class="jw-split"><div class="jw-left"><div class="jw-value-row"><span class="jw-value" id="kpiPendingJobs">0</span></div>
+                        <div class="jw-note">{{ __('Currently in progress') }}</div>
+                        </div><div class="jw-mini"><canvas id="miniPending"></canvas></div></div>
+                        <div class="jw-legend">
+                            <div><span class="jw-dot" style="background:#dc2626"></span>{{ __('Cancelled') }}<strong id="pendCancelled">0</strong></div>
+                            <div><span class="jw-dot" style="background:#5b57ae"></span>{{ __('From Quotations') }}<strong id="pendQuotes">0</strong></div>
                         </div>
-                        <div class="job-card-body">
-                            <canvas id="chartJobSource" height="180"></canvas>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="jw" style="--kc:#5b57ae;">
+                        <div class="jw-head"><span class="jw-icon"><i class="bi bi-receipt"></i></span><span class="jw-title">{{ __('Invoiced Jobs') }}</span></div>
+                        <div class="jw-split"><div class="jw-left"><div class="jw-value-row"><span class="jw-value" id="kpiInvoicedJobs">0</span><span class="jw-pill" id="kpiInvPill">0%</span></div>
+                        <div class="jw-note">{{ __('Have a customer invoice') }}</div>
+                        </div><div class="jw-mini"><canvas id="miniInv"></canvas></div></div>
+                        <div class="jw-legend">
+                            <div><span class="jw-dot"></span>{{ __('Invoiced') }}<strong id="invYes">0</strong></div>
+                            <div><span class="jw-dot" style="background:#cbd5e1"></span>{{ __('Not Yet Invoiced') }}<strong id="invNo">0</strong></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {{-- Second Charts Row --}}
-            <div class="row g-3 mb-4">
-                <div class="col-lg-3 col-md-6">
-                    <div class="job-card h-100">
-                        <div class="job-card-header">
-                            <h6><i class="bi bi-graph-up-arrow me-2" style="color:#16a34a;"></i>{{ __('Completion Rate') }}</h6>
-                        </div>
-                        <div class="job-card-body">
-                            <canvas id="chartCompletionRate" height="170"></canvas>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="job-card h-100">
-                        <div class="job-card-header">
-                            <h6><i class="bi bi-truck me-2" style="color:#16a34a;"></i>{{ __('Top Carriers') }}</h6>
-                        </div>
-                        <div class="job-card-body">
-                            <canvas id="chartTopCarriers" height="170"></canvas>
+            {{-- Small widgets --}}
+            <div class="row g-2 mb-2">
+                @foreach([
+                    ['kpiCancelledJobs', '#dc2626', 'bi-x-circle', __('Cancelled'), '0'],
+                    ['kpiCustomerCount', '#0b6aa0', 'bi-people', __('Customers'), '0'],
+                    ['kpiFromQuotations', '#5b57ae', 'bi-file-earmark-text', __('From Quotations'), '0'],
+                    ['kpiRepeat', '#16a34a', 'bi-arrow-repeat', __('Repeat Customers'), '0%'],
+                    ['kpiAvgContainers', '#0891b2', 'bi-box-seam', __('Avg Containers/Job'), '0'],
+                    ['kpiJobsChange', '#f59e0b', 'bi-graph-up', __('vs Last Month'), '0%'],
+                ] as [$id, $c, $ic, $label, $zero])
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="jw jw-sm" style="--kc:{{ $c }};">
+                            <span class="jw-icon"><i class="bi {{ $ic }}"></i></span>
+                            <div class="jw-txt"><span class="jw-sm-value" id="{{ $id }}">{{ $zero }}</span><span class="jw-title" style="flex:none;">{{ $label }}</span></div>
                         </div>
                     </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="job-card h-100">
-                        <div class="job-card-header">
-                            <h6><i class="bi bi-receipt-cutoff me-2" style="color:#0b6aa0;"></i>{{ __('Invoicing Coverage') }}</h6>
-                        </div>
-                        <div class="job-card-body">
-                            <canvas id="chartInvoicingCoverage" height="170"></canvas>
-                        </div>
+                @endforeach
+            </div>
+
+            {{-- Trend + source --}}
+            <div class="row g-2 mb-2">
+                <div class="col-xl-3 col-md-6">
+                    <div class="jw white" style="--kc:#0b6aa0;">
+                        <div class="jw-head"><span class="jw-icon"><i class="bi bi-graph-up"></i></span><span class="jw-title">{{ __('Jobs Trend') }}</span><span class="jw-tag">{{ $range === 'this_year' ? __('Monthly') : __('Weekly') }}</span></div>
+                        <div class="jw-body jw-chart"><canvas id="chartJobsTrend"></canvas></div>
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="job-card h-100">
-                        <div class="job-card-header">
-                            <h6><i class="bi bi-people me-2" style="color:#f59e0b;"></i>{{ __('Handled By') }}</h6>
+                <div class="col-xl-3 col-md-6">
+                    <div class="jw white" style="--kc:#5b57ae;">
+                        <div class="jw-head"><span class="jw-icon"><i class="bi bi-signpost-split"></i></span><span class="jw-title">{{ __('Job Source') }}</span><span class="jw-tag">{{ __('Sales Pipeline') }}</span></div>
+                        <div class="jw-body jw-chart"><canvas id="chartJobSource"></canvas></div>
+                    </div>
+                </div>
+
+                @foreach([
+                    ['chartCompletionRate', '#16a34a', 'bi-graph-up-arrow', __('Completion Rate')],
+                    ['chartTopCarriers', '#f97316', 'bi-truck', __('Top Carriers')],
+                    ['chartInvoicingCoverage', '#0b6aa0', 'bi-receipt-cutoff', __('Invoicing Coverage')],
+                    ['chartHandledBy', '#8b5cf6', 'bi-person-badge', __('Handled By')],
+                ] as [$id, $c, $ic, $label])
+                    <div class="col-xl-3 col-md-6">
+                        <div class="jw white" style="--kc:{{ $c }};">
+                            <div class="jw-head"><span class="jw-icon"><i class="bi {{ $ic }}"></i></span><span class="jw-title">{{ $label }}</span></div>
+                            <div class="jw-body jw-chart sm"><canvas id="{{ $id }}"></canvas></div>
                         </div>
-                        <div class="job-card-body">
-                            <canvas id="chartHandledBy" height="170"></canvas>
+                    </div>
+                @endforeach
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="jw white" style="--kc:#f59e0b;">
+                        <div class="jw-head"><span class="jw-icon"><i class="bi bi-trophy"></i></span><span class="jw-title">{{ __('Top 10 Customers by Job Count') }}</span><span class="jw-tag">{{ __('Jobs') }}</span></div>
+                        <div class="jw-body" id="listCustomers" style="max-height:210px;overflow:auto;"></div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="jw white" style="--kc:#0b6aa0;">
+                        <div class="jw-head"><span class="jw-icon"><i class="bi bi-signpost-split"></i></span><span class="jw-title">{{ __('Top Routes') }}</span><span class="jw-tag">{{ __('POL') }} &rarr; {{ __('POD') }}</span></div>
+                        <div class="jw-body" id="listRoutes" style="max-height:210px;overflow:auto;"></div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="jw white" style="--kc:#0b6aa0;">
+                        <div class="jw-head"><span class="jw-icon"><i class="bi bi-list-check"></i></span><span class="jw-title">{{ __('Job Status Breakdown') }}</span><span class="jw-tag">{{ $rangeLabel }}</span></div>
+                        <div class="jw-body">
+                            <div class="jw-stack" id="statusBar"></div>
+                            <div id="statusLegend"></div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            {{-- Tables Row --}}
-            <div class="row g-3 mb-4">
-                <div class="col-lg-7">
-                    <div class="job-card">
-                        <div class="job-card-header">
-                            <h6><i class="bi bi-trophy me-2" style="color:#f59e0b;"></i>{{ __('Top 10 Customers by Job Count') }}</h6>
-                            <span class="badge-job">{{ __('Jobs / Containers / Packages') }}</span>
-                        </div>
-                        <div class="job-card-body p-0">
-                            <div style="max-height:380px;overflow:auto;">
-                                <table class="table job-table mb-0">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>#</th>
-                                            <th>{{ __('Customer') }}</th>
-                                            <th class="text-end">{{ __('Jobs') }}</th>
-                                            <th class="text-end">{{ __('Containers') }}</th>
-                                            <th class="text-end">{{ __('Packages') }}</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tableCustomers"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-5">
-                    <div class="job-card">
-                        <div class="job-card-header">
-                            <h6><i class="bi bi-signpost-split me-2" style="color:#0b6aa0;"></i>{{ __('Top Routes') }}</h6>
-                            <span class="badge-job">{{ __('POL') }} &rarr; {{ __('POD') }}</span>
-                        </div>
-                        <div class="job-card-body p-0">
-                            <div style="max-height:380px;overflow:auto;">
-                                <table class="table job-table mb-0">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>#</th>
-                                            <th>{{ __('Route') }}</th>
-                                            <th class="text-end">{{ __('Jobs') }}</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tableRoutes"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Job Status Summary --}}
-            <div class="row g-3 mb-4">
-                <div class="col-12">
-                    <div class="job-card">
-                        <div class="job-card-header">
-                            <h6><i class="bi bi-list-check me-2" style="color:#0b6aa0;"></i>{{ __('Job Status Breakdown') }}</h6>
-                        </div>
-                        <div class="job-card-body p-0">
-                            <table class="table job-table mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>{{ __('Status') }}</th>
-                                        <th class="text-end">{{ __('Count') }}</th>
-                                        <th class="text-end">{{ __('% of Total') }}</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tableJobStatuses"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
         </div>
     </div>
 
@@ -328,62 +220,92 @@
     function render() {
         const d = DATA;
 
-        // Primary KPIs
-        document.getElementById('kpiTotalJobs').innerText = fmt(d.totalJobs);
-        document.getElementById('kpiCompletedJobs').innerText = fmt(d.completedJobs);
-        document.getElementById('kpiPendingJobs').innerText = fmt(d.pendingJobs);
-        document.getElementById('kpiInvoicedJobs').innerText = fmt(d.invoicedJobs);
+        const total = d.totalJobs || 0;
+        const setText = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v; };
+        const pctOf = (n, t) => t ? Math.round((n / t) * 100) : 0;
+        const setBar = (id, v) => { const el = document.getElementById(id); if (el) el.style.width = Math.min(100, Math.max(0, v)) + '%'; };
 
-        // Secondary KPIs
-        document.getElementById('kpiCancelledJobs').innerText = fmt(d.cancelledJobs);
-        document.getElementById('kpiCustomerCount').innerText = fmt(d.customersCount);
-        document.getElementById('kpiFromQuotations').innerText = fmt(d.fromQuotations);
-        document.getElementById('kpiRepeat').innerText = pct(d.repeatRatio);
-        document.getElementById('kpiAvgContainers').innerText = (d.avgContainersPerJob || 0).toFixed(1);
+        // Main widgets
+        setText('kpiTotalJobs', fmt(total));
+        setText('kpiCompletedJobs', fmt(d.completedJobs));
+        setText('kpiPendingJobs', fmt(d.pendingJobs));
+        setText('kpiInvoicedJobs', fmt(d.invoicedJobs));
 
-        // Monthly comparison
+        const donePct = pctOf(d.completedJobs, total);
+        setText('kpiDonePill', donePct + '%');
+        setText('totDone', fmt(d.completedJobs));
+        setText('totCancelled', fmt(d.cancelledJobs));
+        setBar('barTotal', donePct);
+        setText('kpiDoneNote', fmt(d.completedJobs) + ' / ' + fmt(total));
+        setBar('barDone', donePct);
+        setText('pendCancelled', fmt(d.cancelledJobs));
+        setText('pendQuotes', fmt(d.fromQuotations));
+        const invPct = pctOf(d.invoicedJobs, total);
+        setText('kpiInvPill', invPct + '%');
+        setText('invYes', fmt(d.invoicedJobs));
+        setText('invNo', fmt(Math.max(0, total - d.invoicedJobs)));
+        setBar('barInv', invPct);
+
+        // Small widgets
+        setText('kpiCancelledJobs', fmt(d.cancelledJobs));
+        setText('kpiCustomerCount', fmt(d.customersCount));
+        setText('kpiFromQuotations', fmt(d.fromQuotations));
+        setText('kpiRepeat', pct(d.repeatRatio));
+        setText('kpiAvgContainers', (d.avgContainersPerJob || 0).toFixed(1));
+
+        // Change versus last month (only meaningful for the monthly views)
         const mc = d.monthlyComparison || {};
         const prevJobs = mc.previous?.jobs || 0;
         const jobsChange = prevJobs > 0 ? ((d.totalJobs - prevJobs) / prevJobs) * 100 : 0;
         const chgEl = document.getElementById('kpiJobsChange');
         chgEl.innerText = (jobsChange >= 0 ? '+' : '') + jobsChange.toFixed(1) + '%';
-        chgEl.className = 'wd-value' + (jobsChange >= 0 ? ' trend-up' : ' trend-down');
+        chgEl.className = 'jw-sm-value ' + (jobsChange >= 0 ? 'trend-up' : 'trend-down');
+        const pill = document.getElementById('totDelta');
+        if (pill) {
+            if ('{{ $range }}' === 'this_month' && prevJobs > 0) {
+                pill.className = 'jw-pill ' + (jobsChange >= 0 ? 'up' : 'down');
+                pill.innerHTML = (jobsChange >= 0 ? '&#9650; ' : '&#9660; ') + Math.abs(jobsChange).toFixed(1) + '%';
+            } else { pill.style.display = 'none'; }
+        }
 
-        // Top customers table
-        const custHtml = (d.customers || []).map((c, i) => {
-            return `<tr>
-                <td>${i + 1}</td>
-                <td class="fw-medium">${c.name}</td>
-                <td class="text-end">${c.jobs}</td>
-                <td class="text-end">${c.containers}</td>
-                <td class="text-end">${c.packages}</td>
-            </tr>`;
-        }).join('');
-        document.getElementById('tableCustomers').innerHTML = custHtml || '<tr><td colspan="5" class="text-center text-muted py-3">{{ __('No data') }}</td></tr>';
+        // List widgets with a share bar behind each row
+        const rankRows = (rows, nameFn, subFn, valFn, color) => {
+            const max = Math.max(1, ...rows.map(valFn));
+            return rows.map((r, i) => `<div class="jw-row">
+                <span class="jw-rank">${i + 1}</span>
+                <div class="jw-row-main">
+                    <div class="jw-row-top"><span class="jw-row-name">${nameFn(r)}</span><span class="jw-row-val">${fmt(valFn(r))}</span></div>
+                    ${subFn ? `<div class="jw-row-sub">${subFn(r)}</div>` : ''}
+                    <div class="jw-track"><span style="width:${Math.max(4, valFn(r) / max * 100)}%;background:${color};"></span></div>
+                </div></div>`).join('');
+        };
+        const empty = '<div class="text-center text-muted py-4 small">{{ __('No data') }}</div>';
+        document.getElementById('listCustomers').innerHTML = rankRows(d.customers || [], c => c.name,
+            c => fmt(c.containers) + ' {{ __('Containers') }} · ' + fmt(c.packages) + ' {{ __('Packages') }}', c => c.jobs, '#0b6aa0') || empty;
+        document.getElementById('listRoutes').innerHTML = rankRows(d.routes || [], r => r.route, null, r => r.jobs, '#5b57ae') || empty;
 
-        // Top routes table
-        const routesHtml = (d.routes || []).map((r, idx) => {
-            return `<tr>
-                <td>${idx + 1}</td>
-                <td>${r.route}</td>
-                <td class="text-end">${fmt(r.jobs)}</td>
-            </tr>`;
-        }).join('');
-        document.getElementById('tableRoutes').innerHTML = routesHtml || '<tr><td colspan="3" class="text-center text-muted py-3">{{ __('No data') }}</td></tr>';
-
-        // Job status table
+        // Status breakdown: one stacked bar plus a legend
         const statuses = d.jobStatuses || [];
         const totalStatusCount = statuses.reduce((sum, s) => sum + s.count, 0);
-        const statusHtml = statuses.map(s => {
-            const badgeClass = s.status === 'completed' ? 'bg-success' : s.status === 'pending' ? 'bg-warning' : s.status === 'cancelled' ? 'bg-danger' : s.status === 'trashed' ? 'bg-secondary' : 'bg-secondary';
-            const pctOfTotal = totalStatusCount ? ((s.count / totalStatusCount) * 100).toFixed(1) : 0;
-            return `<tr>
-                <td><span class="badge ${badgeClass}">${s.label}</span></td>
-                <td class="text-end">${s.count}</td>
-                <td class="text-end fw-semibold">${pctOfTotal}%</td>
-            </tr>`;
-        }).join('');
-        document.getElementById('tableJobStatuses').innerHTML = statusHtml || '<tr><td colspan="3" class="text-center text-muted py-3">{{ __('No data') }}</td></tr>';
+        const statusColor = {completed: '#16a34a', pending: '#f59e0b', cancelled: '#dc2626'};
+        document.getElementById('statusBar').innerHTML = statuses.map(s =>
+            `<span title="${s.label}" style="width:${totalStatusCount ? s.count / totalStatusCount * 100 : 0}%;background:${statusColor[s.status] || '#94a3b8'};"></span>`).join('');
+        document.getElementById('statusLegend').innerHTML = statuses.map(s => `<div class="jw-legend-item">
+                <span class="jw-dot" style="background:${statusColor[s.status] || '#94a3b8'};"></span>
+                <span>${s.label}</span><strong>${fmt(s.count)}</strong>
+                <small class="text-muted">${totalStatusCount ? ((s.count / totalStatusCount) * 100).toFixed(1) : 0}%</small></div>`).join('') || empty;
+
+
+        // Mini charts inside the main widgets
+        const mini = (id, cfg) => { const el = document.getElementById(id); if (el) new Chart(el.getContext('2d'), cfg); };
+        const dn = (vals, colors) => ({ type: 'doughnut', data: { datasets: [{ data: vals, backgroundColor: colors, borderWidth: 0 }] },
+            options: { cutout: '70%', plugins: { legend: { display: false }, tooltip: { enabled: false } }, maintainAspectRatio: false } });
+        mini('miniTotal', { type: 'line', data: { labels: d.jobsTrend.map((_, i) => i + 1), datasets: [{ data: d.jobsTrend, borderColor: '#0b6aa0', backgroundColor: 'rgba(11,106,160,.15)', fill: true, tension: .4, pointRadius: 0, borderWidth: 2 }] },
+            options: { plugins: { legend: { display: false }, tooltip: { enabled: false } }, scales: { x: { display: false }, y: { display: false, beginAtZero: true } }, maintainAspectRatio: false } });
+        mini('miniDone', dn([d.completedJobs, Math.max(0, total - d.completedJobs)], ['#16a34a', '#d1fae5']));
+        const stColors = {completed: '#16a34a', pending: '#f59e0b', cancelled: '#dc2626'};
+        mini('miniPending', dn((d.jobStatuses || []).map(s => s.count).concat((d.jobStatuses || []).length ? [] : [1]), (d.jobStatuses || []).map(s => stColors[s.status] || '#94a3b8').concat((d.jobStatuses || []).length ? [] : ['#e5e7eb'])));
+        mini('miniInv', dn([d.invoicedJobs, Math.max(0, total - d.invoicedJobs)], ['#5b57ae', '#e0e0f5']));
 
         // --- Charts ---
         const colorPalette = ['#0b6aa0','#8b5cf6','#f59e0b','#06b6d4','#dc2626','#f97316'];

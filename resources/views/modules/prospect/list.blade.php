@@ -89,7 +89,7 @@
         </div>
 
         <!-- Table Section -->
-        <div class="shadow bdr-r-10 pb-3 flex-grow-1">
+        <div class="border bdr-r-10 pb-3 flex-grow-1">
             <!-- Search & New -->
             <div class="d-flex justify-content-between px-3 pt-3 flex-shrink-0 pro-chips-row">
                 {{--<div id="searchLabels" class="mb-3 d-flex flex-wrap gap-2"></div>--}}

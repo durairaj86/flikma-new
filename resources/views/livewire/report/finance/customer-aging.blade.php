@@ -395,16 +395,16 @@
 
     <style>
         :root {
-            --customer-primary: #4f46e5;
-            --customer-dark: #3730a3;
-            --customer-light: #eef2ff;
+            --customer-primary: #0ea5e9;
+            --customer-dark: #0369a1;
+            --customer-light: #e0f2fe;
         }
         .text-customer { color: var(--customer-primary) !important; }
         .border-customer { border-color: var(--customer-primary) !important; }
-        .bg-customer-subtle { background-color: #eef2ff !important; }
-        .border-customer-subtle { border-color: #c7d2fe !important; }
+        .bg-customer-subtle { background-color: #e0f2fe !important; }
+        .border-customer-subtle { border-color: #bae6fd !important; }
         .avatar-ui {
-            width: 56px; height: 56px; background: #eef2ff; color: var(--customer-primary);
+            width: 56px; height: 56px; background: #e0f2fe; color: var(--customer-primary);
             display: flex; align-items: center; justify-content: center;
             border-radius: 12px; font-weight: 800; font-size: 1.5rem;
         }
@@ -413,7 +413,7 @@
         .tabular-nums { font-variant-numeric: tabular-nums; }
         .card { border-radius: 1rem; }
         .form-control:focus, .form-select:focus {
-            box-shadow: 0 0 0 0.25rem rgba(79, 70, 229, 0.1);
+            box-shadow: 0 0 0 0.25rem rgba(14, 165, 233, 0.1);
             border-color: var(--customer-primary);
         }
         @media print {

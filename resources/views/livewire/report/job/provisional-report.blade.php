@@ -1,7 +1,7 @@
 @section('js', 'provisional_report')
 @section('page-title', __('Provisional Report'))
 @section('hide-topbar', true)
-@section('page-subtitle', __('Compare provisional vs actual cost & sales — per job or by activity'))
+@section('page-subtitle', __('Compare provisional vs actual cost & sales — per job or by department'))
 
 <div class="provisional-wrapper min-vh-100 bg-light pt-1 pb-4">
     <div class="container-fluid px-3">
@@ -55,7 +55,7 @@
                     </div>
                     <span class="ms-3 text-muted small">
                         @if($viewMode === 'activity')
-                            <i class="bi bi-info-circle me-1"></i>{{ __('Grouped by shipment mode (Ocean, Air, Land, etc.)') }}
+                            <i class="bi bi-info-circle me-1"></i>{{ __('Grouped by the job department (FCL Import, FCL Export, Air Export, etc.)') }}
                         @else
                             <i class="bi bi-info-circle me-1"></i>{{ __('One row per job') }}
                         @endif
@@ -187,7 +187,7 @@
                     {{ $viewMode === 'activity' ? __('Department Summary') : __('Job Comparison') }}
                 </h6>
                 <span class="badge bg-pr-subtle text-pr border border-pr-subtle px-3 py-2 ms-auto flex-shrink-0">
-                    {{ count($rows) }} {{ $viewMode === 'activity' ? __(Str::plural('Activity', count($rows))) : __(Str::plural('Job', count($rows))) }}
+                    {{ count($rows) }} {{ $viewMode === 'activity' ? __(Str::plural('Department', count($rows))) : __(Str::plural('Job', count($rows))) }}
                 </span>
             </div>
             <div class="table-responsive">
@@ -222,16 +222,11 @@
                             <td class="ps-4">
                                 <span class="fw-bold text-dark">
                                     @php
-                                        $modeIcons = [
-                                            'Ocean' => 'bi-water',
-                                            'Sea'   => 'bi-water',
-                                            'Air'   => 'bi-airplane',
-                                            'Land'  => 'bi-truck',
-                                            'Road'  => 'bi-truck',
-                                            'Courier' => 'bi-box-seam',
-                                            'VAS'   => 'bi-stars',
-                                        ];
-                                        $icon = $modeIcons[$row['activity']] ?? 'bi-box';
+                                        $dn = strtolower($row['activity']);
+                                        $icon = str_contains($dn, 'air') ? 'bi-airplane'
+                                            : (str_contains($dn, 'fcl') || str_contains($dn, 'lcl') || str_contains($dn, 'sea') ? 'bi-box-seam'
+                                            : (str_contains($dn, 'land') || str_contains($dn, 'road') ? 'bi-truck'
+                                            : (str_contains($dn, 'courier') ? 'bi-send' : 'bi-diagram-3')));
                                     @endphp
                                     <i class="bi {{ $icon }} text-pr me-2"></i>{{ $row['activity'] }}
                                 </span>
@@ -502,7 +497,7 @@
                         <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
                     </td>
                     <td class="text-end">
-                        <div class="stmt-title">{{ __('PROVISIONAL REPORT') }}{{ $viewMode === 'activity' ? __(' (BY ACTIVITY)') : __(' (BY JOB)') }}</div>
+                        <div class="stmt-title">{{ __('PROVISIONAL REPORT') }}{{ $viewMode === 'activity' ? __(' (BY DEPARTMENT)') : __(' (BY JOB)') }}</div>
                         <div class="stmt-sub">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
                         <div class="stmt-sub">{{ __('Generated:') }} {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency:') }} SAR</div>
                     </td>

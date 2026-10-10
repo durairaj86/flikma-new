@@ -146,7 +146,7 @@
     <style>
         .x-small { font-size: 0.7rem; font-weight: 500; }
         .ls-sm { font-size: 0.65rem; font-weight: 700; color: #6c757d; }
-        .bg-soft-primary { background-color: #e7f1ff; }
+        .bg-soft-primary { background-color: #e0f2fe; }
         .table-light-subtle { background-color: #fcfcfc; }
 
         /* Table Styling */

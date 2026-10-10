@@ -66,7 +66,7 @@ class ProvisionalReport extends Component
             $query->where('shipment_type', $this->shipmentType);
         }
 
-        $jobs = $query->orderBy('posted_at', 'desc')->get();
+        $jobs = $query->with('activity:id,name')->orderBy('posted_at', 'desc')->get();
 
         $rows   = [];
         $totals = [
@@ -79,11 +79,11 @@ class ProvisionalReport extends Component
         ];
 
         if ($this->viewMode === 'activity') {
-            // Group by shipment_mode (activity)
+            // Group by the department chosen on the job (FCL Import, FCL Export, Air Export ...)
             $groups = [];
 
             foreach ($jobs as $job) {
-                $activity = $job->shipment_mode ?: 'Unspecified';
+                $activity = $job->activity->name ?? __('Unspecified');
 
                 // base_grand_total / base_sub_total+base_tax_total (company-
                 // currency-normalized), not grand_total (the document's own

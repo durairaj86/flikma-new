@@ -435,18 +435,26 @@
 
     <style>
         :root {
-            --bs-primary: #4f46e5;
-            --bs-primary-hover: #4338ca;
+            --bs-primary: #0ea5e9;
+            --bs-primary-hover: #0369a1;
             --slate-900: #0f172a;
+            /* same indigo as the Customer Aging report, also for Bootstrap's own primary utilities */
+            --bs-primary-rgb: 14, 165, 233;
+            --bs-primary-text-emphasis: #0369a1;
+            --bs-primary-bg-subtle: #e0f2fe;
+            --bs-primary-border-subtle: #bae6fd;
         }
+        .border-primary { border-color: #0ea5e9 !important; }
+        .border-primary-subtle { border-color: #bae6fd !important; }
+        .text-primary-emphasis { color: #0369a1 !important; }
 
-        .btn-primary { background-color: #4f46e5; border-color: #4f46e5; }
-        .btn-primary:hover { background-color: #4338ca; }
+        .btn-primary { background-color: #0ea5e9; border-color: #0ea5e9; }
+        .btn-primary:hover { background-color: #0369a1; }
         .text-primary { color: var(--bs-primary) !important; }
-        .bg-primary-subtle { background-color: #eef2ff !important; }
+        .bg-primary-subtle { background-color: #e0f2fe !important; }
 
         .avatar-ui {
-            width: 56px; height: 56px; background: #eef2ff; color: var(--bs-primary);
+            width: 56px; height: 56px; background: #e0f2fe; color: var(--bs-primary);
             display: flex; align-items: center; justify-content: center;
             border-radius: 12px; font-weight: 800; font-size: 1.5rem;
         }
@@ -459,7 +467,7 @@
 
         .card { border-radius: 1rem; }
         .form-control:focus, .form-select:focus {
-            box-shadow: 0 0 0 0.25rem rgba(79, 70, 229, 0.1);
+            box-shadow: 0 0 0 0.25rem rgba(14, 165, 233, 0.1);
             border-color: var(--bs-primary);
         }
 
