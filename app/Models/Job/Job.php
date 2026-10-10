@@ -21,6 +21,7 @@ class Job extends Model
     public $fillable = ['status'];
     protected $casts = [
         'services' => 'array',
+        'invoice_json' => 'array',
         'cargo_requirements' => 'array',
         // jobs.status is a varchar column holding JobEnum's integer values
         // as strings (e.g. '1'). Without this cast, every strict comparison

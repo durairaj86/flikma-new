@@ -713,6 +713,22 @@ JOB = {
                         pending: ['#2563eb', 'Open'], completed: ['#16a34a', 'Completed'], cancelled: ['#dc2626', 'Cancelled'], trashed: ['#6b7280', 'Trashed']}[st] || ['#6b7280', ''];
                     return `<span class="jc-dot"><i style="background:${m[0]}"></i><span style="color:${m[0]}">${trans(m[1])}</span></span>`;
                 };
+                // Supplier invoices, then Cus Inv./CN: customer invoices and credit notes added together. Hover a badge for the split.
+                const docCounts = (j) => {
+                    j = j || {};
+                    const none = {created: 0, approved: 0, draft: 0, cancelled: 0};
+                    const si = j.si || none, ci = j.ci || none, cn = j.cn || none;
+                    const badge = (n, cls, tip, split) => n ? `<span class="jd-n ${cls}" data-tip="${n} ${trans(tip)}${split ? ' (' + split + ')' : ''}">${n}</span>` : '<span class="jd-z">·</span>';
+                    const split = (k) => (ci[k] || cn[k]) ? `${ci[k] || 0} Cus Inv. + ${cn[k] || 0} CN` : '';
+                    const sum = (k) => (ci[k] || 0) + (cn[k] || 0);
+                    const total = sum('created');
+                    return `<div class="jd">
+                        <div class="jd-row ${si.created ? '' : 'jd-empty'}"><span class="jd-l"><i class="bi bi-box-arrow-in-down"></i>${trans('Supplier Inv.')}</span><span class="jd-g">${si.created
+                            ? `<span class="jd-t">${si.created}</span>${badge(si.approved, 'ok', 'Approved')}${badge(si.draft, 'dr', 'Draft')}${badge(si.cancelled, 'cx', 'Cancelled')}` : '<span class="jd-z">—</span>'}</span></div>
+                        <div class="jd-row ${total ? '' : 'jd-empty'}"><span class="jd-l"><i class="bi bi-receipt"></i>Cus Inv./CN</span><span class="jd-g">${total
+                            ? `<span class="jd-t" title="${split('created')}">${total}</span>${badge(sum('approved'), 'ok', 'Approved', split('approved'))}${badge(sum('draft'), 'dr', 'Draft', split('draft'))}${badge(sum('cancelled'), 'cx', 'Cancelled', split('cancelled'))}` : '<span class="jd-z">—</span>'}</span></div>
+                    </div>`;
+                };
                 const stat = (l, v) => v ? `<div class="jc-stat"><span>${trans(l)}</span><b>${v}</b></div>` : '';
                 return [
                     {data: 'row_no', defaultContent: '', render: (d, t, r) => {
@@ -756,7 +772,7 @@ JOB = {
                             </div>
                             <div class="jc-stats">
                                 ${stat('Carrier', S.esc(r.carrier))}
-                                ${stat('Invoices', (inv.draft || inv.approved) ? `${inv.approved} ${trans('approved')} / ${inv.draft} ${trans('draft')}` : '')}
+                                ${docCounts(r.invoice_json)}
                                 ${stat('Value', S.esc(r.value))}
                                 ${stat('Incoterm', S.esc(cargo.incoterm))}
                                 <div class="mt-1 d-flex gap-1 flex-wrap"><span class="badge bg-${billing[0]}">${trans(billing[1])}</span>${customs}</div>
@@ -770,9 +786,8 @@ JOB = {
                                     return `<div class="fw-semibold small">ETA ${S.esc(r.eta)}</div><div class="cell-secondary">${r.etd ? 'ETD ' + S.esc(r.etd) : ''}</div>`;
                                 })()}
                                 <div class="mt-1">${S.health(r.health)}</div>
-                                ${pg ? `<div class="mt-1"><span class="badge rounded-pill job-stage"><i class="bi bi-signpost-2 me-1"></i>${trans('Stage')}: ${pg.current ? trans(pg.current) : trans('Not started')}</span></div>` : ''}
                                 ${pg ? `<div class="job-prog ms-auto mt-2" style="max-width:190px"><div class="job-seg">${(pg.segments || []).map(x => `<span class="${x}"></span>`).join('')}</div>
-                                    <div class="cell-secondary mt-1">${pg.done}/${pg.total}${pg.skipped ? ' · ' + pg.skipped + ' ' + trans('skipped') : ''} · ${pg.next ? trans('Next') + ': ' + trans(pg.next) : trans('Complete')}</div></div>` : ''}
+                                    <div class="cell-secondary mt-1">${pg.done}/${pg.total}${pg.skipped ? ' · ' + pg.skipped + ' ' + trans('skipped') : ''}${pg.next ? ' · ' + trans('Next') + ': ' + trans(pg.next) : ''}</div></div>` : ''}
                                 ${btns}
                             </div>
                         </div>`;

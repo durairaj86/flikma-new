@@ -188,6 +188,30 @@
             .job-prog-bar { height: 6px; border-radius: 6px; background: #e9ecef; overflow: hidden; }
             .job-prog-bar span { display: block; height: 100%; background: #198754; border-radius: 6px; }
             .job-health { font-weight: 600; }
+            .jd { background: #f8fafc; border: 1px solid #eef0f4; border-radius: 10px; padding: .35rem .55rem; margin: .25rem 0 .4rem; }
+            .jd-row { display: grid; grid-template-columns: auto 1fr; gap: .5rem; justify-items: end; align-items: center; text-align: center; font-size: .78rem; padding: .12rem 0; }
+            .jd-row + .jd-row { border-top: 1px dashed #e5e7eb; }
+            .jd-head { font-size: .62rem; text-transform: uppercase; letter-spacing: .04em; color: #9ca3af; font-weight: 700; border-bottom: 1px solid #e5e7eb; padding-bottom: .2rem; margin-bottom: .1rem; }
+            .jd-head + .jd-row { border-top: 0; }
+            .jd-l { text-align: left; color: #4b5563; font-weight: 600; white-space: nowrap; }
+            .jd-l i { color: #9ca3af; margin-right: .35rem; }
+            .jd-t { font-weight: 800; color: #111827; }
+            .jd-z { color: #d1d5db; }
+            .jd-n { display: inline-block; min-width: 20px; border-radius: 6px; font-weight: 700; font-size: .72rem; line-height: 1.5; }
+            .jd-n.ok { background: #dcfce7; color: #166534; } .jd-n.dr { background: #fef3c7; color: #92400e; } .jd-n.cx { background: #fee2e2; color: #991b1b; }
+            .jd-one { display: flex; flex-wrap: nowrap; gap: .5rem; justify-content: space-between; padding: .4rem .5rem; }
+            .jd-one .jd-g { display: inline-flex; align-items: center; gap: .2rem; font-size: .75rem; white-space: nowrap; }
+            .jd-k { position: relative; font-weight: 800; font-size: .68rem; letter-spacing: .04em; color: #6b7280; cursor: default; }
+            .jd-k[data-tip]:hover::after { content: attr(data-tip); position: absolute; bottom: 135%; left: 0; background: #111827; color: #fff; font-size: .7rem; font-weight: 600; white-space: nowrap; padding: .2rem .5rem; border-radius: 6px; z-index: 20; pointer-events: none; letter-spacing: 0; }
+            .jd-one .jd-empty { opacity: .55; }
+            .jd-g { display: inline-flex; align-items: center; gap: .3rem; }
+            .jd-sep { color: #d1d5db; margin: 0 .35rem; }
+            .jd-row { grid-template-columns: auto 1fr auto auto; }
+            .jd-row > .jd-g:first-of-type { justify-self: end; }
+            .jd-empty .jd-l { color: #9ca3af; }
+            .jd-n { position: relative; cursor: default; }
+            .jd-n[data-tip]:hover::after { content: attr(data-tip); position: absolute; bottom: 135%; left: 50%; transform: translateX(-50%); background: #111827; color: #fff; font-size: .7rem; font-weight: 600; white-space: nowrap; padding: .2rem .5rem; border-radius: 6px; z-index: 20; pointer-events: none; }
+            .jd-n[data-tip]:hover::before { content: ''; position: absolute; bottom: 115%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #111827; z-index: 20; pointer-events: none; }
             .job-stage { background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe; font-weight: 600; }
             @keyframes jcFlash { from { background: #dcfce7; } to { background: #fff; } }
             .jc-mode #dataTable tbody tr.jc-flash td { animation: jcFlash 1.8s ease-out; }

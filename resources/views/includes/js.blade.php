@@ -27,6 +27,13 @@
 @endif--}}
 @php
     $i18nKeys = [
+        'Credit Note',
+        'Total',
+        'Draft',
+        'Approved',
+        'Credit Notes',
+        'Customer Inv.',
+        'Supplier Inv.',
         'Not started',
         'Stage updated',
         'Stage',

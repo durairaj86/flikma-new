@@ -3522,5 +3522,7 @@
     "This step is not needed for this job": "هذه الخطوة غير مطلوبة لهذه المهمة",
     "Nothing left to skip.": "لا توجد خطوات للتخطي",
     "Stage": "المرحلة",
-    "Stage updated": "تم تحديث المرحلة"
+    "Stage updated": "تم تحديث المرحلة",
+    "Supplier Inv.": "فواتير الموردين",
+    "Customer Inv.": "فواتير العملاء"
 }

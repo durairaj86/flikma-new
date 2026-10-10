@@ -507,6 +507,7 @@ class JobController extends Controller
             'jobs.created_by as created_by',
             'jobs.company_id as company_id',
             'jobs.status as status',
+            'invoice_json',
             // Correlated subquery (not a join) — jobs and quotations share many
             // unqualified column names above (pol, pod, customer_id, ...), so a
             // leftJoin here would make those ambiguous.
