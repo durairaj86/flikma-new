@@ -17,6 +17,12 @@
                 </button>
             </li>
             <li class="nav-item">
+                <button class="nav-link fw-semibold" id="job-clearance-tab"
+                        data-bs-toggle="tab" data-bs-target="#jobClearanceTab" type="button" role="tab">
+                    <i class="bi bi-shield-check me-1"></i> {{ __('Clearance') }}
+                </button>
+            </li>
+            <li class="nav-item">
                 <button class="nav-link fw-semibold" id="job-container-tab"
                         data-bs-toggle="tab" data-bs-target="#jobContainerTab" type="button" role="tab">
                     <i class="bi bi-box-seam me-1"></i> {{ __('Container') }}
@@ -26,6 +32,18 @@
                 <button class="nav-link fw-semibold" id="job-package-tab"
                         data-bs-toggle="tab" data-bs-target="#jobPackageTab" type="button" role="tab">
                     <i class="bi bi-boxes me-1"></i> {{ __('Package') }}
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link fw-semibold" id="job-finance-tab"
+                        data-bs-toggle="tab" data-bs-target="#jobFinanceTab" type="button" role="tab">
+                    <i class="bi bi-cash-coin me-1"></i> {{ __('Financials') }}
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link fw-semibold" id="job-timeline-tab"
+                        data-bs-toggle="tab" data-bs-target="#jobTimelineTab" type="button" role="tab">
+                    <i class="bi bi-clock-history me-1"></i> {{ __('Timeline') }}
                 </button>
             </li>
             <li class="nav-item">

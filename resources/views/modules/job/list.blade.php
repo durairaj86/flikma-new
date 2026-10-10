@@ -531,6 +531,7 @@
     </main>
     @include('modules.email.send-email')
     @include('modules.job.job-view')
+    @include('modules.common.linked-drawer', ['mainWidth' => 55, 'subWidth' => 40])
 
     @include('modules.workflows.job')
 

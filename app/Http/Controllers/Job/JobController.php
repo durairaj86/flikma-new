@@ -797,11 +797,13 @@ class JobController extends Controller
 
     public function overviewDrawer($id)
     {
-        $job = Job::with(['customer', 'containers', 'packages', 'activity', 'documents'])
+        $job = Job::with(['customer', 'containers', 'packages', 'activity', 'documents', 'clearance', 'quotation'])
             ->withTrashed()
             ->findOrFail($id);
 
-        return view('modules.job.view-overview-drawer', compact('job'));
+        $fin = \App\Services\Job\JobFinancials::collect($job);
+
+        return view('modules.job.view-overview-drawer', compact('job', 'fin'));
     }
 
     public function delete($id)

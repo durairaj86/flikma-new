@@ -54,8 +54,9 @@
             customer: {narrow: true, title: @json(__('Customer Details')), url: id => '/customer/' + id + '/overview'},
             job: {
                 title: @json(__('Job Details')), url: id => '/operation/job/' + id + '/overview-drawer',
-                tabs: [['jobGeneralTab', 'bi-info-circle', @json(__('General'))], ['jobContainerTab', 'bi-box-seam', @json(__('Container'))],
-                    ['jobPackageTab', 'bi-boxes', @json(__('Package'))], ['jobDocumentsTab', 'bi-paperclip', @json(__('Documents'))]]
+                tabs: [['jobGeneralTab', 'bi-info-circle', @json(__('General'))], ['jobClearanceTab', 'bi-shield-check', @json(__('Clearance'))], ['jobContainerTab', 'bi-box-seam', @json(__('Container'))],
+                    ['jobPackageTab', 'bi-boxes', @json(__('Package'))], ['jobFinanceTab', 'bi-cash-coin', @json(__('Financials'))],
+                    ['jobTimelineTab', 'bi-clock-history', @json(__('Timeline'))], ['jobDocumentsTab', 'bi-paperclip', @json(__('Documents'))]]
             },
             collection: {title: @json(__('Collection Details')), url: id => '/transaction/collections/' + id + '/overview-drawer'},
             credit_note: {title: @json(__('Credit Note Details')), url: id => '/adjustment/credit-note/' + id + '/overview'},

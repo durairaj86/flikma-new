@@ -87,6 +87,11 @@ class Job extends Model
         return $this->hasMany(JobPackage::class);
     }
 
+    public function quotation(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Quotation\Quotation::class);
+    }
+
     public function activity(): BelongsTo
     {
         return $this->belongsTo(LogisticActivity::class);
