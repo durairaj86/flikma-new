@@ -177,11 +177,6 @@
                                 <p>{{ __('Sales Report') }}</p>
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a href="/sales/overview" class="nav-link {{ $submenu == 'overview' ? 'active' : '' }}">
-                                <p>{{ __('Overview') }}</p>
-                            </a>
-                        </li>
                     </ul>
                 </li>
 

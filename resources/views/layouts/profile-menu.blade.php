@@ -95,6 +95,15 @@
                 <i class="bi bi-translate"></i>
             </a>
 
+            @if(\App\Services\Briefing\OperationsBriefing::allowed($authUser))
+                {{-- Today's briefing: arrivals, departures and what needs attention --}}
+                <button type="button" data-briefing-open class="profile-menu-btn profile-menu-btn-bell position-relative"
+                        title="{{ __('Today\'s Briefing') }}" aria-label="{{ __('Today\'s Briefing') }}">
+                    <i class="bi bi-stars"></i>
+                    <span class="briefing-badge" data-briefing-badge></span>
+                </button>
+            @endif
+
             {{-- Notifications / activity feed — the header's bell (same #activity-feed trigger, wired in startup.js).
                  The header and rail are never both rendered, so the id stays unique. --}}
             <a href="#" id="activity-feed" class="profile-menu-btn profile-menu-btn-bell position-relative"

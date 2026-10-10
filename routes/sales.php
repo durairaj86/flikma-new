@@ -52,8 +52,6 @@ Route::namespace('sales')->prefix('sales')->group(function () {
     Route::get('/rate-sheet/{id}/overview', [\App\Http\Controllers\Sales\RateSheetController::class, 'overview']);
     Route::delete('/rate-sheet/{id}', [\App\Http\Controllers\Sales\RateSheetController::class, 'delete'])->whereNumber('id');
 
-    Route::get('/overview', [\App\Http\Controllers\Sales\SalesOverviewController::class, 'index'])->name('sales.overview');
-
     // ─── Quotation New ────────────────────────────────────────────────────
     Route::get('/quotations-new',                         [QuotationNewController::class, 'index'])->name('quotations-new');
     Route::post('/quotations-new/data',                   [QuotationNewController::class, 'fetchAllRows'])->name('quotations-new.data');

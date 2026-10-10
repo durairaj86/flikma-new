@@ -273,6 +273,8 @@
 <iframe id="print-frame" style="display:none;"></iframe>
     @include('activity.feed-view')
 
+    @include('partials.briefing-modal')
+
     @livewireScripts
 {{-- One-line help under confusing form fields (texts live in includes/master-field-hints) --}}
 @auth

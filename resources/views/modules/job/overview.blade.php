@@ -41,10 +41,10 @@
             .jw-left { flex: 1; min-width: 0; }
             .jw-mini { position: relative; width: 96px; height: 96px; flex-shrink: 0; }
             /* compact stat widgets */
-            .jw-sm { aspect-ratio: 1 / 1; max-width: 150px; padding: 12px; border-radius: 16px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; }
+            .jw-sm { padding: 12px 14px; border-radius: 16px; display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 12px; }
             .jw-sm .jw-txt { display: flex; flex-direction: column; min-width: 0; width: 100%; }
             .jw-sm .jw-title { font-size: .72rem; color: #667085; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-            .jw-sm-value { font-size: 1.5rem; font-weight: 700; color: #101828; line-height: 1.1; }
+            .jw-sm-value { font-size: 1.3rem; font-weight: 700; color: #101828; line-height: 1.1; }
             .trend-up { color: #16a34a !important; }
             .trend-down { color: #dc2626 !important; }
             /* chart / list widgets */

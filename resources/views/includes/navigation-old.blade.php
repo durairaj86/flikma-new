@@ -92,11 +92,6 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="/sales/overview" class="nav-link {{ $submenu == 'overview' ? 'active' : '' }}">
-                                <p>Overview</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
                             <a href="/sales/prospect" class="nav-link {{ $submenu == 'prospect' ? 'active' : '' }}">
                                 <p>Prospect</p>
                             </a>

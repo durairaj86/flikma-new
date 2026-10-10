@@ -125,11 +125,6 @@
                                 <p>Quotations</p>
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a href="/sales/overview" class="nav-link {{ $submenu == 'overview' ? 'active' : '' }}">
-                                <p>Overview</p>
-                            </a>
-                        </li>
                     </ul>
                 </li>
 
