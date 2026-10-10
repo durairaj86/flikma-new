@@ -212,6 +212,8 @@
             .jd-n { position: relative; cursor: default; }
             .jd-n[data-tip]:hover::after { content: attr(data-tip); position: absolute; bottom: 135%; left: 50%; transform: translateX(-50%); background: #111827; color: #fff; font-size: .7rem; font-weight: 600; white-space: nowrap; padding: .2rem .5rem; border-radius: 6px; z-index: 20; pointer-events: none; }
             .jd-n[data-tip]:hover::before { content: ''; position: absolute; bottom: 115%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #111827; z-index: 20; pointer-events: none; }
+            /* Badges on the cards: text centred both ways. */
+            .jc .badge { display: inline-flex; align-items: center; justify-content: center; line-height: 1; min-height: 22px; padding: .347rem .65rem .253rem; }
             .job-stage { background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe; font-weight: 600; }
             @keyframes jcFlash { from { background: #dcfce7; } to { background: #fff; } }
             .jc-mode #dataTable tbody tr.jc-flash td { animation: jcFlash 1.8s ease-out; }
