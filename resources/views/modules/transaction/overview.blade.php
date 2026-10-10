@@ -66,7 +66,7 @@
             .jw-chart.sm { height: 140px; }
         </style>
 
-        <div class="container-fluid px-lg-5">
+        <div class="container-fluid px-lg-5" style="max-width:1300px;margin-left:auto;margin-right:auto;">
             <style>
                 .jo-title { display: none; }
                 body:not(.has-top-header) .jo-title { display: block; }
