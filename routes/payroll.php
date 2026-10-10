@@ -1,61 +1,69 @@
 <?php
 
 use App\Http\Controllers\Payroll\AttendanceController;
-use App\Http\Controllers\Payroll\BasicSalaryController;
+use App\Http\Controllers\Payroll\AttendanceDeviceController;
+use App\Http\Controllers\Payroll\DashboardController;
 use App\Http\Controllers\Payroll\EmployeeLoanController;
-use App\Http\Controllers\Payroll\MonthlySalaryController;
+use App\Http\Controllers\Payroll\EmployeeProfileController;
+use App\Http\Controllers\Payroll\PayrollRunController;
+use App\Http\Controllers\Payroll\PunchEntryController;
+use App\Http\Controllers\Payroll\PunchImportController;
+use App\Http\Controllers\Payroll\SalaryStructureController;
+use App\Http\Controllers\Payroll\ShiftController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('payroll')->group(function () {
-    // Basic Salary routes
-    Route::view('/basic/salary', 'modules.payroll.basic-salary.list')->name('payroll.basic-salary');
-    Route::post('/basic/salary/data', [BasicSalaryController::class, 'fetchAllRows'])->name('payroll.basic-salary.data');
-    Route::get('/basic/salary/create', [BasicSalaryController::class, 'create']);
-    Route::post('/basic/salary/create', [BasicSalaryController::class, 'store']);
-    Route::get('/basic/salary/{id}/create', [BasicSalaryController::class, 'edit']);
-    Route::post('/basic/salary/{id}/create', [BasicSalaryController::class, 'store']);
-    Route::delete('/basic/salary/{id}/delete', [BasicSalaryController::class, 'destroy']);
-    Route::get('/basic/salary/{id}/overview', [BasicSalaryController::class, 'overview']);
-    Route::get('/basic/salary/{id}/print', [BasicSalaryController::class, 'print']);
-    Route::get('/basic/salary/{id}/actions', [BasicSalaryController::class, 'actions']);
-    Route::post('/basic/salary/{id}/status/{status}', [BasicSalaryController::class, 'updateStatus']);
+// Employee loans (the people themselves are managed in Masters > Employees)
+Route::resource('employee-loans', EmployeeLoanController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
+Route::post('employee-loans/{employee_loan}/pay-installment', [EmployeeLoanController::class, 'payInstallment'])->name('employee-loans.pay-installment');
 
-    // Monthly Salary routes
-    Route::view('/monthly/salary', 'modules.payroll.monthly-salary.list')->name('payroll.monthly-salary');
-    Route::post('/monthly/salary/data', [MonthlySalaryController::class, 'fetchAllRows'])->name('payroll.monthly-salary.data');
-    Route::get('/monthly/salary/create', [MonthlySalaryController::class, 'create']);
-    Route::post('/monthly/salary/create', [MonthlySalaryController::class, 'store']);
-    Route::get('/monthly/salary/{id}/create', [MonthlySalaryController::class, 'edit']);
-    Route::post('/monthly/salary/{id}/create', [MonthlySalaryController::class, 'store']);
-    Route::get('/monthly/salary/{id}/print', [MonthlySalaryController::class, 'print']);
-    Route::delete('/monthly/salary/{id}/delete', [MonthlySalaryController::class, 'destroy']);
-    Route::post('/monthly/salary/get-employee-basic-salary', [MonthlySalaryController::class, 'getEmployeeBasicSalary']);
-    Route::get('/monthly/salary/{id}/overview', [MonthlySalaryController::class, 'overview']);
-    Route::get('/monthly/salary/{id}/print', [MonthlySalaryController::class, 'print']);
-    Route::get('/monthly/salary/{id}/actions', [MonthlySalaryController::class, 'actions']);
-    Route::post('/monthly/salary/{id}/status/{status}', [MonthlySalaryController::class, 'updateStatus']);
+// Payroll & attendance
+Route::prefix('payroll')->name('payroll.')->group(function () {
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Employee Loan routes
-    Route::view('/employee/loan', 'modules.payroll.employee-loan.list')->name('payroll.employee-loan');
-    Route::post('/employee/loan/data', [EmployeeLoanController::class, 'fetchAllRows'])->name('payroll.employee-loan.data');
-    Route::get('/employee/loan/create', [EmployeeLoanController::class, 'create']);
-    Route::post('/employee/loan/create', [EmployeeLoanController::class, 'store']);
-    Route::get('/employee/loan/{id}/create', [EmployeeLoanController::class, 'edit']);
-    Route::post('/employee/loan/{id}/create', [EmployeeLoanController::class, 'store']);
-    Route::get('/employee/loan/{id}/view', [EmployeeLoanController::class, 'view']);
-    Route::delete('/employee/loan/{id}/delete', [EmployeeLoanController::class, 'destroy']);
-    Route::get('/employee/loan/{id}/overview', [EmployeeLoanController::class, 'overview']);
-    Route::get('/employee/loan/{id}/print', [EmployeeLoanController::class, 'print']);
-    Route::get('/employee/loan/{id}/actions', [EmployeeLoanController::class, 'actions']);
-    Route::post('/employee/loan/{id}/status/{status}', [EmployeeLoanController::class, 'updateStatus']);
+    Route::post('punch-log/entries', [PunchEntryController::class, 'store'])->name('punch-entry.store');
+    Route::put('punch-log/entries/{punch}', [PunchEntryController::class, 'update'])->name('punch-entry.update');
+    Route::delete('punch-log/entries/{punch}', [PunchEntryController::class, 'destroy'])->name('punch-entry.destroy');
+    Route::get('punch-log/import', [PunchImportController::class, 'form'])->name('punch-import');
+    Route::get('punch-log/import/template', [PunchImportController::class, 'template'])->name('punch-import.template');
+    Route::post('punch-log/import', [PunchImportController::class, 'upload'])->name('punch-import.upload');
+    Route::get('punch-log/import/{token}', [PunchImportController::class, 'preview'])->name('punch-import.preview');
+    Route::post('punch-log/import/{token}', [PunchImportController::class, 'confirm'])->name('punch-import.confirm');
+    Route::get('punch-log', [AttendanceDeviceController::class, 'punchLog'])->name('punch-log');
+    Route::get('devices', [AttendanceDeviceController::class, 'index'])->name('devices.index');
+    Route::post('devices', [AttendanceDeviceController::class, 'store'])->name('devices.store');
+    Route::post('devices/map', [AttendanceDeviceController::class, 'map'])->name('devices.map');
+    Route::post('devices/reprocess', [AttendanceDeviceController::class, 'reprocess'])->name('devices.reprocess');
+    Route::get('devices/{device}', [AttendanceDeviceController::class, 'configure'])->whereNumber('device')->name('devices.configure');
+    Route::post('devices/{device}/connection', [AttendanceDeviceController::class, 'saveConnection'])->name('devices.connection');
+    Route::post('devices/{device}/mapping', [AttendanceDeviceController::class, 'saveMapping'])->name('devices.mapping');
+    Route::post('devices/{device}/preview', [AttendanceDeviceController::class, 'preview'])->name('devices.preview');
+    Route::post('devices/{device}/test-pull', [AttendanceDeviceController::class, 'testPull'])->name('devices.test-pull');
+    Route::post('devices/{device}/pull-now', [AttendanceDeviceController::class, 'pullNow'])->name('devices.pull-now');
+    Route::put('devices/{device}', [AttendanceDeviceController::class, 'update'])->name('devices.update');
+    Route::post('devices/{device}/regenerate', [AttendanceDeviceController::class, 'regenerate'])->name('devices.regenerate');
+    Route::delete('devices/{device}', [AttendanceDeviceController::class, 'destroy'])->name('devices.destroy');
 
-    // Attendance routes
-    Route::get('/attendance', [AttendanceController::class, 'index'])->name('payroll.attendance');
-    Route::post('/attendance/data', [AttendanceController::class, 'fetchAllRows'])->name('payroll.attendance.data');
-    Route::get('/attendance/create', [AttendanceController::class, 'create']);
-    Route::post('/attendance/create', [AttendanceController::class, 'store']);
-    Route::get('/attendance/{id}/create', [AttendanceController::class, 'edit']);
-    Route::post('/attendance/{id}/create', [AttendanceController::class, 'store']);
-    Route::delete('/attendance/{id}/delete', [AttendanceController::class, 'destroy']);
-    Route::post('/attendance/calendar', [AttendanceController::class, 'getMonthlyCalendar'])->name('payroll.attendance.calendar');
+    Route::get('attendance', [AttendanceController::class, 'index'])->name('attendance.index');
+    Route::post('attendance', [AttendanceController::class, 'store'])->name('attendance.store');
+    Route::put('attendance/{attendance}', [AttendanceController::class, 'update'])->name('attendance.update');
+    Route::post('attendance/check-in', [AttendanceController::class, 'checkIn'])->name('attendance.check-in');
+    Route::post('attendance/check-out', [AttendanceController::class, 'checkOut'])->name('attendance.check-out');
+    Route::get('attendance/employee-month/{employee}', [AttendanceController::class, 'employeeMonth'])->name('attendance.employee-month');
+
+    Route::resource('shifts', ShiftController::class)->except(['show', 'create', 'edit']);
+    Route::resource('salary-structures', SalaryStructureController::class)->except(['show', 'create', 'edit']);
+
+    Route::get('runs', [PayrollRunController::class, 'index'])->name('runs.index');
+    Route::get('runs/create', [PayrollRunController::class, 'create'])->name('runs.create');
+    Route::post('runs', [PayrollRunController::class, 'store'])->name('runs.store');
+    Route::get('runs/{payroll_record}', [PayrollRunController::class, 'show'])->whereNumber('payroll_record')->name('runs.show');
+    Route::get('runs/{payroll_record}/slip', [PayrollRunController::class, 'slip'])->whereNumber('payroll_record')->name('runs.slip');
+    Route::delete('runs/{payroll_record}', [PayrollRunController::class, 'destroy'])->name('runs.destroy');
+    Route::post('runs/{payroll_record}/pay', [PayrollRunController::class, 'pay'])->name('runs.pay');
+    Route::post('runs/{payroll_record}/disapprove', [PayrollRunController::class, 'disapprove'])->name('runs.disapprove');
+
+    Route::get('employees', [EmployeeProfileController::class, 'index'])->name('employees.index');
+    Route::get('employees/{user}', [EmployeeProfileController::class, 'show'])->name('employees.show');
+    Route::get('employees/{user}/edit', [EmployeeProfileController::class, 'edit'])->name('employees.edit');
+    Route::put('employees/{user}', [EmployeeProfileController::class, 'update'])->name('employees.update');
 });

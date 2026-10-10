@@ -22,6 +22,18 @@ Route::get('/welcome', function () {
     return view('auth.welcome');
 })->middleware(['auth', 'verified'])->name('welcome');
 
+// Biometric / punching-machine endpoints (token or device-serial authenticated, no session).
+Route::middleware('throttle:240,1')->group(function () {
+    Route::match(['get', 'post'], 'api/attendance/punch', [\App\Http\Controllers\Api\AttendancePunchController::class, 'punch'])->name('api.attendance.punch');
+    Route::match(['get', 'post'], 'api/attendance/hook/{publicId}', [\App\Http\Controllers\Api\AttendancePunchController::class, 'hook'])->name('api.attendance.hook');
+    Route::get('api/attendance/ping', [\App\Http\Controllers\Api\AttendancePunchController::class, 'ping'])->name('api.attendance.ping');
+    Route::match(['get', 'post'], 'iclock/cdata', [\App\Http\Controllers\Api\AttendancePunchController::class, 'zkCdata']);
+    Route::match(['get', 'post'], 'iclock/getrequest', [\App\Http\Controllers\Api\AttendancePunchController::class, 'zkGetRequest']);
+});
+
+Route::post('api/payroll/attendance/punch', [\App\Http\Controllers\Payroll\AttendanceController::class, 'punch'])
+    ->name('payroll.attendance.punch');
+
 Route::middleware(['auth', 'module.permission'])->group(function () {
     /* Top-header visibility (per user): when on, the header hosts the action icons and the
        right rail collapses to zero width; when off, the icons move into the rail.
@@ -105,19 +117,11 @@ Route::middleware(['auth', 'module.permission'])->group(function () {
     Route::get('/supplier/statement', [\App\Http\Controllers\Supplier\SupplierStatementController::class, 'index'])->name('suppliers.statement');
 
 
+    // Document scanning (supplier invoice upload and the supplier invoice list)
+    Route::post('/ocr/scan', [\App\Http\Controllers\Ocr\OcrController::class, 'googleOcrUpload'])->name('ocr.scan');
+    Route::post('/ocr/read', [\App\Http\Controllers\Ocr\OcrController::class, 'upload'])->name('ocr.read');
     Route::get('/dropdown/search', [\App\Http\Controllers\Common\DropdownListSearchController::class, 'index']);
     Route::get('/load/customer', [\App\Http\Controllers\Common\DropdownListSearchController::class, 'customerList']);
-    // Item routes
-    Route::view('/inventory/items', 'modules.inventory.item.list')->name('items');
-    Route::post('/inventory/items/data', [\App\Http\Controllers\Item\ItemController::class, 'fetchAllRows'])->name('items.data');
-    Route::get('/inventory/items/create', [\App\Http\Controllers\Item\ItemController::class, 'modal']);
-    Route::post('/inventory/items/create', [\App\Http\Controllers\Item\ItemController::class, 'store']);
-    Route::get('/inventory/items/{id}/edit', [\App\Http\Controllers\Item\ItemController::class, 'edit']);
-    Route::post('/inventory/items/{id}/create', [\App\Http\Controllers\Item\ItemController::class, 'store']);
-    Route::get('/inventory/items/{id}/view', [\App\Http\Controllers\Item\ItemController::class, 'view']);
-    Route::get('/inventory/items/{id}/actions', [\App\Http\Controllers\Item\ItemController::class, 'actions']);
-    Route::delete('/inventory/items/{id}/delete', [\App\Http\Controllers\Item\ItemController::class, 'delete']);
-    Route::post('/inventory/items/store', [\App\Http\Controllers\Item\ItemController::class, 'createItem']);
 
 
     Route::get('currency/rate/{base}/{target}', [\App\Http\Controllers\CurrencyExchangeController::class, 'getExchangeRate']);
@@ -150,7 +154,7 @@ Route::middleware(['auth', 'module.permission'])->group(function () {
     // Billing & AI usage. Deliberately absent from config/modules.php, so the
     // module.permission middleware leaves these paths unrestricted and every
     // authenticated user can reach their own subscription and usage data.
-    Route::prefix('billing')->name('billing.')->group(function () {
+    Route::prefix('billing')->name('billing.')->middleware('owner')->group(function () {
         Route::get('', [\App\Http\Controllers\Billing\SubscriptionController::class, 'index'])->name('index');
         Route::post('contact/{package}', [\App\Http\Controllers\Billing\SubscriptionController::class, 'contact'])->name('contact');
         Route::get('ai-usage', [\App\Http\Controllers\AiUsageController::class, 'index'])->name('ai-usage');
@@ -158,33 +162,15 @@ Route::middleware(['auth', 'module.permission'])->group(function () {
 
 });
 
-Route::view('/developer/quote', 'developer.quote');
-Route::view('/developer/quote1', 'developer.quote1');
-Route::view('/developer/quote2', 'developer.quote2');
-Route::view('/developer/supplier', 'developer.supplier');
-Route::view('/developer/tomselect', 'developer.tomselect');
-Route::view('/developer/design', 'developer.design');
-Route::view('/developer/print', 'developer.print');
-Route::view('/developer/web1', 'developer.web1');
-Route::view('/developer/web2', 'developer.web2');
-Route::view('/developer/web3', 'developer.web3');
-Route::view('/developer/job-card', 'developer.job-card');
 
 // Queue processing routes for shared hosting
 Route::post('/queue/process-emails', [\App\Http\Controllers\QueueController::class, 'processEmails'])->name('queue.process-emails');
 Route::post('/queue/retry-failed-jobs', [\App\Http\Controllers\QueueController::class, 'retryFailedJobs'])->name('queue.retry-failed-jobs');
 
-Route::get('/ocr', [OcrController::class, 'index'])->name('ocr.index');
-Route::post('/ocr/upload', [OcrController::class, 'upload'])->name('ocr.upload');
-
 require __DIR__ . '/auth.php';
 
 Route::get('/log/activities/feed', [LogActivityController::class, 'showFeed'])->name('activities.feed');
 Route::get('/log/activities/load-more', [LogActivityController::class, 'loadMoreActivities'])->name('activities.load_more');
-
-Route::get('/dashboard-with-feed', function () {
-    return view('dashboard'); // Assuming you have a basic dashboard view
-})->name('dashboard.feed.test');
 
 Route::get('logout', function () {
     Auth::logout();
@@ -192,45 +178,6 @@ Route::get('logout', function () {
     return redirect('/login');
 });
 
-Route::get('/test-ocr', [OcrController::class, 'index']);
-Route::post('/test-ocr/upload', [OcrController::class, 'upload'])->name('test-ocr.upload');
-
-Route::get('/test-google-ocr', [OcrController::class, 'googleOcrIndex']);
-Route::post('/test-google-ocr/upload', [OcrController::class, 'googleOcrUpload'])->name('test-google-ocr.upload');
-
-Route::get('/compare-ocr-engines', [OcrController::class, 'compareEngines'])->name('ocr.compare-engines');
-Route::post('/compare-ocr-engines/upload', [OcrController::class, 'compareUpload'])->name('ocr.compare-upload');
-
-// Test route for OCR with Language enum
-Route::get('/test-ocr-enum', function () {
-    try {
-        // Create options for OCR Space
-        $options = \Codesmiths\LaravelOcrSpace\OcrSpaceOptions::make()
-            ->language(\Codesmiths\LaravelOcrSpace\Enums\Language::English)
-            ->detectOrientation(true)
-            ->scale(true)
-            ->isTable(false);
-
-        // Test with a sample image URL
-        $imageUrl = 'https://ocr.space/Content/Images/receipt.jpg';
-
-        // Process the image URL with OCR Space
-        $result = \Codesmiths\LaravelOcrSpace\Facades\OcrSpace::parseImageUrl($imageUrl, $options);
-
-        // Get the parsed text
-        $text = $result->getParsedText();
-
-        return response()->json([
-            'status' => 'success',
-            'text' => $text
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => $e->getMessage()
-        ], 500);
-    }
-});
 
 
 // Local-only end-to-end checker (headless + live "head" mode). 404s outside the local environment.
@@ -241,3 +188,5 @@ Route::middleware(['auth'])->prefix('autocheck')->name('autocheck.')->group(func
     Route::post('/cleanup', [\App\Http\Controllers\AutocheckController::class, 'cleanup'])->name('cleanup');
     Route::post('/reset', [\App\Http\Controllers\AutocheckController::class, 'reset'])->name('reset');
 });
+
+Route::get('/track/{token}', [\App\Http\Controllers\Job\TrackingController::class, 'publicShow'])->where('token', '[A-Za-z0-9]{32}');

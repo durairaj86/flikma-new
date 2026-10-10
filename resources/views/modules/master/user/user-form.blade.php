@@ -1,11 +1,11 @@
 <div class="container px-4 py-3 align-items-center" id="modal-buttons" data-buttons="cancel,save"
-     data-button-save="{{ __('Save Customer') }}">
+     data-button-save="{{ __('Save Employee') }}">
     <!-- Meta Info -->
     <div class="row g-3 align-items-center bg-white border-bottom py-2 mb-3 small">
         <div class="d-flex justify-content-between align-items-center flex-wrap">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-4">
                 <div class="module-info">
-                    <span class="fw-semibold fs-5">{{ $user->name ?? __('New User') }}</span> <small
+                    <span class="fw-semibold fs-5">{{ $user->name ?? __('New Employee') }}</span> <small
                         class="text-secondary">{{ $user->row_no ? ' - ' . $user->row_no : '' }}</small>
                 </div>
 
@@ -34,6 +34,14 @@
                             data-bs-toggle="tab" data-bs-target="#tab-address"
                             type="button">
                             <i class="bi bi-geo-alt-fill me-1"></i> {{ __('Address') }}
+                        </button>
+                    </li>
+                    <li class="nav-item me-2">
+                        <button
+                            class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn"
+                            data-bs-toggle="tab" data-bs-target="#tab-employee"
+                            type="button">
+                            <i class="bi bi-person-badge me-1"></i> {{ __('Employment') }}
                         </button>
                     </li>
                 </ul>
@@ -154,6 +162,47 @@
                             <div class="col-4 form-group">
                                 <label class="form-label">{{ __('Country') }}</label>
                                 <x-common.country :value="$user->country"></x-common.country>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Employment & payroll -->
+                <div class="tab-pane" id="tab-employee">
+                    <div class="model-form-tab-div">
+                        <div class="model-form-sub-title">
+                            <h5>{{ __('Employment') }}</h5>
+                        </div>
+                        <div class="row">
+                            <div class="col-4 form-group">
+                                <label class="form-label">{{ __('Employee Code') }}</label>
+                                <input type="text" class="form-control" value="{{ $user->employee_code ?: __('Assigned when saved') }}" disabled>
+                            </div>
+                            <div class="col-4 form-group">
+                                <label class="form-label">{{ __('Designation') }}</label>
+                                <input type="text" name="designation" class="form-control" value="{{ $user->designation }}" maxlength="100">
+                            </div>
+                            <div class="col-4 form-group">
+                                <label class="form-label">{{ __('Date of Joining') }}</label>
+                                <input type="text" name="joining_date" class="form-control datepicker" value="{{ $user->joining_date?->format('d-m-Y') }}">
+                            </div>
+                            <div class="col-4 form-group">
+                                <label class="form-label">{{ __('Date of Birth') }}</label>
+                                <input type="text" name="dob" class="form-control datepicker" value="{{ $user->dob?->format('d-m-Y') }}">
+                            </div>
+                            <div class="col-4 form-group">
+                                <label class="form-label">{{ __('Gender') }}</label>
+                                <select name="gender" class="tom-select">
+                                    <option value="">{{ __('Select') }}</option>
+                                    <option value="0" @selected($user->gender !== null && (string) $user->gender === '0')>{{ __('Male') }}</option>
+                                    <option value="1" @selected((string) $user->gender === '1')>{{ __('Female') }}</option>
+                                    <option value="2" @selected((string) $user->gender === '2')>{{ __('Other') }}</option>
+                                </select>
+                            </div>
+                            <div class="col-4 form-group">
+                                <label class="form-label">{{ __('Machine ID (punch device)') }}</label>
+                                <input type="text" name="device_user_id" class="form-control" value="{{ $user->device_user_id }}" maxlength="64">
+                                <div class="form-text">{{ __('The ID this person uses on the fingerprint / face machine. Shift, bank, IBAN and GOSI are set under Payroll > Employee Profiles.') }}</div>
                             </div>
                         </div>
                     </div>

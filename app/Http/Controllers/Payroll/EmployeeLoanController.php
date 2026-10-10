@@ -3,449 +3,217 @@
 namespace App\Http\Controllers\Payroll;
 
 use App\Http\Controllers\Controller;
-use App\Models\Finance\Finance;
-use App\Models\Finance\FinanceSub;
+
 use App\Models\Payroll\EmployeeLoan;
+use App\Models\Payroll\LoanInstallment;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Yajra\DataTables\Facades\DataTables;
+use Illuminate\View\View;
 
 class EmployeeLoanController extends Controller
 {
-    /**
-     * Display the employee loan list view.
-     */
-    public function index()
+    public function index(Request $request): View
     {
-        return view('modules.payroll.employee-loan.list');
-    }
+        $query = EmployeeLoan::with('employee');
 
-    /**
-     * Show the form for creating a new employee loan.
-     */
-    public function create()
-    {
-        $employees = User::where('status', 'active')->get();
-        $paymentMethods = ['bank_transfer', 'cash', 'check'];
-        $statuses = ['pending', 'approved', 'rejected', 'paid', 'partially_paid'];
-
-        return view('modules.payroll.employee-loan.form', compact('employees', 'paymentMethods', 'statuses'));
-    }
-
-    /**
-     * Show the form for editing the specified employee loan.
-     */
-    public function edit($id)
-    {
-        $employeeLoan = EmployeeLoan::findOrFail($id);
-        $employees = User::where('status', 'active')->get();
-        $paymentMethods = ['bank_transfer', 'cash', 'check'];
-        $statuses = ['pending', 'approved', 'rejected', 'paid', 'partially_paid'];
-
-        return view('modules.payroll.employee-loan.form', compact('employeeLoan', 'employees', 'paymentMethods', 'statuses'));
-    }
-
-    /**
-     * Store a newly created or update an existing employee loan.
-     */
-    public function store(Request $request)
-    {
-        $numericFields = [
-            'loan_amount',
-            'interest_rate',
-            'installment_amount',
-            'remaining_amount',
-        ];
-
-        foreach ($numericFields as $field) {
-            if ($request->has($field)) {
-                $value = $request->input($field);
-
-                if (is_array($value)) {
-                    // Handle table/array inputs (like quantity[], weight[])
-                    $cleaned = array_map(fn($v) => is_string($v) ? str_replace(',', '', $v) : $v, $value);
-                } else {
-                    // Handle direct fields (like loan_amount, basic_salary)
-                    $cleaned = is_string($value) ? str_replace(',', '', $value) : $value;
-                }
-
-                $request->merge([$field => $cleaned]);
-            }
+        if ($request->filled('employee_id')) {
+            $query->where('employee_id', $request->employee_id);
         }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $loans = $query->withCount('installments')->latest()->paginate(15);
+        $employees = User::where('is_employee', true)->orderBy('name')->get(['id', 'name']);
+
+        return view('modules.payroll.loans.index', compact('loans', 'employees'));
+    }
+
+    public function create(): View
+    {
+        $employees = User::where('is_employee', true)->orderBy('name')->get(['id', 'name']);
+        return view('modules.payroll.loans.create', compact('employees'));
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'employee_id' => ['required', 'exists:users,id'],
+            'loan_amount' => ['required', 'numeric', 'min:1'],
+            'total_installments' => ['required', 'integer', 'min:1'],
+            'installment_amount' => ['required', 'numeric', 'min:1'],
+            'start_date' => ['required', 'date'],
+            'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
+            'description' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $this->assertInstallmentsMatch($data);
+        $data['start_date'] = formDate($data['start_date']);
+        $data['end_date'] = formDate($data['end_date'] ?? null);
+
+        EmployeeLoan::create([
+            'company_id' => companyId(),
+            'employee_id' => $data['employee_id'],
+            'loan_amount' => $data['loan_amount'],
+            'total_installments' => $data['total_installments'],
+            'installment_amount' => $data['installment_amount'],
+            'paid_amount' => 0,
+            'remaining_amount' => $data['loan_amount'],
+            'start_date' => $data['start_date'],
+            'end_date' => $data['end_date'],
+            'description' => $data['description'] ?? null,
+            'status' => 'active',
+        ]);
+
+        return redirect()->route('employee-loans.index')->with('success', 'Loan created.');
+    }
+
+    public function show(EmployeeLoan $employeeLoan): View
+    {
+        $employeeLoan->load(['employee', 'installments.bankAccount']);
+        // Repayments are received into cash or a bank account only.
+        $paymentAccounts = \App\Models\Finance\Account\Account::query()->active()->posting()->cashOrBank()->orderBy('code')->get(['id', 'code', 'name', 'type']);
+        return view('modules.payroll.loans.show', compact('employeeLoan', 'paymentAccounts'));
+    }
+
+    public function edit(EmployeeLoan $employeeLoan): View
+    {
+        $employees = User::where('is_employee', true)->orderBy('name')->get(['id', 'name']);
+        return view('modules.payroll.loans.edit', compact('employeeLoan', 'employees'));
+    }
+
+    public function update(Request $request, EmployeeLoan $employeeLoan): RedirectResponse
+    {
+        $data = $request->validate([
+            'employee_id' => ['required', 'exists:users,id'],
+            'loan_amount' => ['required', 'numeric', 'min:1'],
+            'total_installments' => ['required', 'integer', 'min:1'],
+            'installment_amount' => ['required', 'numeric', 'min:1'],
+            'start_date' => ['required', 'date'],
+            'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'status' => ['required', 'in:active,closed,cancelled'],
+            'update_reason' => ['required', 'string', 'min:3', 'max:500'],
+        ], ['update_reason.required' => __('Please tell us why you are updating this loan.')]);
+        $reason = trim($data['update_reason']);
+        unset($data['update_reason']);
+
+        // Once any instalment has been deducted from salary, the loan amount is fixed — changing it would
+        // contradict what has already been recovered and posted to the ledger.
+        if ($employeeLoan->hasDeductions()) {
+            if ((int) $data['employee_id'] !== (int) $employeeLoan->employee_id) {
+                return back()->withInput()->withErrors(['employee_id' => __('The employee cannot be changed because instalments have already been deducted.')]);
+            }
+            if (abs((float) $data['loan_amount'] - (float) $employeeLoan->loan_amount) > 0.001) {
+                return back()->withInput()->withErrors(['loan_amount' => __('The loan amount cannot be changed because instalments have already been deducted.')]);
+            }
+        } else {
+            // Nothing recovered yet: the balance still owed follows the (possibly new) loan amount.
+            $data['remaining_amount'] = $data['loan_amount'];
+        }
+
+        $this->assertInstallmentsMatch($data);
+        $data['start_date'] = formDate($data['start_date']);
+        $data['end_date'] = formDate($data['end_date'] ?? null);
+        $employeeLoan->fill($data);
+        $changes = [];
+        foreach ($employeeLoan->getDirty() as $field => $new) {
+            $changes[$field] = ['old' => $employeeLoan->getOriginal($field), 'new' => $new];
+        }
+        $employeeLoan->save();
+
+        // Every update is traceable together with the reason the user gave (mandatory).
+        \App\Models\Log\LogHistory::create([
+            'company_id' => companyId(),
+            'loggable_type' => EmployeeLoan::class,
+            'loggable_id' => $employeeLoan->id,
+            'loggable_number' => 'Loan #' . $employeeLoan->id,
+            'loggable_name' => $employeeLoan->employee?->name,
+            'user_id' => ['id' => auth()->id(), 'name' => auth()->user()->name],
+            'action' => 'updated',
+            'changes' => ['old' => collect($changes)->map->old->all(), 'new' => collect($changes)->map->new->all() + ['reason' => $reason]],
+        ]);
+
+        return redirect()->route('employee-loans.index')->with('success', 'Loan updated.');
+    }
+
+    public function destroy(EmployeeLoan $employeeLoan): RedirectResponse
+    {
+        // Instalments already deducted from salary (and posted to the ledger) mean the loan is part of the
+        // books. It can be cancelled (edit → status), never deleted.
+        if ($employeeLoan->hasDeductions()) {
+            return back()->withErrors(['loan' => __('This loan cannot be deleted because instalments have already been deducted from salary (:amount recovered). Cancel or close it instead.', ['amount' => number_format((float) $employeeLoan->paid_amount, 2)])]);
+        }
+        $employeeLoan->delete();
+        return back()->with('success', 'Loan deleted.');
+    }
+
+    public function payInstallment(Request $request, EmployeeLoan $employeeLoan): RedirectResponse
+    {
         $request->validate([
-            'employee_id' => 'required|exists:users,id',
-            'loan_amount' => 'required|numeric|min:0',
-            'interest_rate' => 'nullable|numeric|min:0',
-            'number_of_installments' => 'required|integer|min:1',
-            'installment_amount' => 'required|numeric|min:0',
-            'loan_date' => 'required|date',
-            'first_payment_date' => 'required|date|after_or_equal:loan_date',
-            'payment_method' => 'required|in:bank_transfer,cash,check',
-            'remaining_amount' => 'required|numeric|min:0',
-            'remaining_installments' => 'required|integer|min:0',
-            'purpose' => 'nullable|string',
-            'remarks' => 'nullable|string',
+            'amount' => ['required', 'numeric', 'min:0.01'],
+            'paid_date' => ['required', 'string'],
+            'bank_account_id' => ['required', 'integer'],
+            'remarks' => ['nullable', 'string', 'max:500'],
+        ], [
+            'bank_account_id.required' => __('Select the cash / bank account the payment was received into.'),
         ]);
 
-        try {
-            DB::beginTransaction();
+        if (!\App\Models\Finance\Account\Account::query()->active()->posting()->cashOrBank()->whereKey($request->bank_account_id)->exists()) {
+            return back()->withInput()->withErrors(['bank_account_id' => __('Received In must be a cash or bank account.')]);
+        }
+        $paidDate = formDate($request->paid_date);
+        if (!$paidDate || \Illuminate\Support\Carbon::parse($paidDate)->gt(now()->endOfDay())) {
+            return back()->withInput()->withErrors(['paid_date' => __('Payment date is invalid or in the future.')]);
+        }
 
-            $data = $request->all();
-
-            // If it's an update
-            if ($request->has('data-id') && $request->input('data-id')) {
-                $employeeLoan = EmployeeLoan::findOrFail($request->input('data-id'));
-                $employeeLoan->update($data);
-                $message = 'Employee loan updated successfully';
-            } else {
-                // Generate row_no
-                $lastRecord = EmployeeLoan::latest('id')->first();
-                $newId = $lastRecord ? $lastRecord->id + 1 : 1;
-                $data['row_no'] = 'EL-' . str_pad($newId, 5, '0', STR_PAD_LEFT);
-
-                // Set initial remaining values
-                $data['remaining_amount'] = $request->input('loan_amount');
-                $data['remaining_installments'] = $request->input('number_of_installments');
-                $data['status'] = 'pending';
-                $data['user_id'] = Auth::id();
-                $data['company_id'] = companyId();
-
-                $employeeLoan = EmployeeLoan::create($data);
-                $message = 'Employee loan created successfully';
+        $error = null;
+        DB::transaction(function () use ($request, $employeeLoan, $paidDate, &$error) {
+            // Lock the loan so a double click / second tab cannot record the same payment twice.
+            $loan = EmployeeLoan::whereKey($employeeLoan->id)->lockForUpdate()->first();
+            $amount = round((float) $request->amount, 2);
+            if ($loan->status !== 'active' || $amount > (float) $loan->remaining_amount + 0.001) {
+                $error = __('The amount exceeds the remaining balance (:r) or the loan is already closed.', ['r' => number_format((float) $loan->remaining_amount, 2)]);
+                return;
             }
 
-            DB::commit();
-            return response()->json([
-                'status' => 'success',
-                'message' => $message,
+            $inst = LoanInstallment::create([
+                'company_id' => companyId(),
+                'loan_id' => $loan->id,
+                'amount' => $amount,
+                'paid_date' => $paidDate,
+                'bank_account_id' => $request->bank_account_id,
+                'remarks' => $request->remarks,
             ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'status' => 'error',
-                'message' => __('Error saving employee loan: ') . $e->getMessage()
-            ], 500);
-        }
-    }
 
-    /**
-     * Fetch all employee loans for DataTables.
-     */
-    public function fetchAllRows(Request $request)
-    {
-        $query = EmployeeLoan::with('employee')->select('employee_loans.*');
-
-        return DataTables::of($query)
-            ->setRowAttr([
-                'data-id' => fn($model) => $model->id,
-                'data-name' => fn($model) => $model->row_no,
-                'data-title' => fn($model) => $model->row_no,
-                'class' => 'row-item',
-            ])
-            ->addColumn('employee_name', function ($row) {
-                return $row->employee ? $row->employee->name : 'N/A';
-            })
-            ->addColumn('actions', function ($row) {
-                return $this->actions($row->id);
-            })
-            ->rawColumns(['actions'])
-            ->make(true);
-    }
-
-    /**
-     * Generate action buttons for DataTables.
-     */
-    public function actions($id)
-    {
-        $employeeLoan = EmployeeLoan::select(
-            'id',
-            'status'
-        )->withTrashed()->findOrFail($id);
-        $contextMenu = collect([]);
-        $edit = $delete = [];
-
-        if ($employeeLoan->status === 'pending') {
-            $contextMenu->push([
-                'label' => __('Mark as Approved'),
-                'code' => '01CSBK',
-                'id' => 'row_approved',
-                'data-id' => $employeeLoan->id,
-                'data-value' => 'approved',
-                'type' => 'item',
-                'icon' => 'confirmed',
-            ], [
-                'label' => __('Mark as Rejected'),
-                'code' => '01CSBK',
-                'id' => 'row_rejected',
-                'data-id' => $employeeLoan->id,
-                'data-value' => 'rejected',
-                'type' => 'item',
-                'icon' => 'rejected',
-                'separator' => 'after',
-            ]);
-        } elseif ($employeeLoan->status === 'approved') {
-            $contextMenu->push([
-                'label' => __('Mark as Paid'),
-                'code' => '01CSBK',
-                'id' => 'row_paid',
-                'data-id' => $employeeLoan->id,
-                'data-value' => 'paid',
-                'type' => 'item',
-                'icon' => 'paid',
-            ], [
-                'label' => __('Mark as Partially Paid'),
-                'code' => '01CSBK',
-                'id' => 'row_partially_paid',
-                'data-id' => $employeeLoan->id,
-                'data-value' => 'partially_paid',
-                'type' => 'item',
-                'icon' => 'partial',
-                'separator' => 'after',
-            ]);
-        } elseif ($employeeLoan->status === 'partially_paid') {
-            $contextMenu->push([
-                'label' => __('Mark as Paid'),
-                'code' => '01CSBK',
-                'id' => 'row_paid',
-                'data-id' => $employeeLoan->id,
-                'data-value' => 'paid',
-                'type' => 'item',
-                'icon' => 'paid',
-                'separator' => 'after',
-            ]);
-        }
-
-        $contextMenu->push([
-            'label' => __('Print'),
-            'code' => '01CSVW',
-            'id' => 'row_print',
-            'class' => 'row_print',
-            'data-id' => $employeeLoan->id,
-            'type' => 'item',
-            'icon' => 'print',
-            'onclick' => 'EMPLOYEE_LOAN.printPreview(' . $employeeLoan->id . ')',
-            //'separator' => 'before',
-        ]);
-        $contextMenu->push([
-            'label' => __('View'),
-            'code' => '01CSVW',
-            'id' => 'row_view',
-            'class' => 'row_view',
-            'data-id' => $employeeLoan->id,
-            'type' => 'item',
-            'icon' => 'view',
-            //'separator' => 'before',
-        ]);
-        if ($employeeLoan->status === 'pending') {
-            $edit = [
-                'label' => __('Edit'),
-                'code' => '01CSED',
-                'id' => 'row_edit',
-                'class' => 'row_edit',
-                'data-id' => $employeeLoan->id,
-                'type' => 'item',
-                'icon' => 'edit'
-            ];
-            $contextMenu->push([
-                'label' => __('Actions'),
-                'type' => 'submenu',
-                'icon' => 'action',
-                'items' => [$edit]
-            ]);
-        }
-        return response()->json($contextMenu->values());
-    }
-
-    public function updateStatus($id, $status): \Illuminate\Http\JsonResponse
-    {
-        $employeeLoan = EmployeeLoan::findOrFail($id);
-        $previousStatus = $employeeLoan->status;
-
-        DB::beginTransaction();
-        try {
-            $employeeLoan->status = $status;
-            $employeeLoan->save();
-
-            if ($status === 'approved') {
-                $this->createEmployeeLoanFinanceEntries($employeeLoan);
+            $loan->paid_amount += $amount;
+            $loan->remaining_amount -= $amount;
+            if ($loan->remaining_amount <= 0.001) {
+                $loan->status = 'closed';
+                $loan->remaining_amount = 0;
             }
+            $loan->save();
 
-            if ($previousStatus === 'approved' && $status !== 'approved') {
-                $this->deleteEmployeeLoanFinanceEntries($employeeLoan->id);
-            }
+            app(\App\Services\Payroll\PayrollLedger::class)->postLoanRepayment($inst);
+        });
 
-            DB::commit();
+        if ($error) {
+            return back()->withInput()->withErrors(['amount' => $error]);
+        }
 
-            return response()->json([
-                'status' => 'success',
-                'message' => __('Loan status updated successfully!'),
-                'data' => [
-                    'id' => $employeeLoan->id,
-                    'status' => $employeeLoan->status,
-                ],
+        return redirect()->route('employee-loans.show', $employeeLoan)->with('success', __('Payment recorded and posted to the ledger.'));
+    }
+
+    /** Installment amount × number of installments must equal the loan amount (0.01 tolerance for rounding). */
+    protected function assertInstallmentsMatch(array $data): void
+    {
+        $total = round((float) $data['installment_amount'] * (int) $data['total_installments'], 2);
+        if (abs($total - (float) $data["loan_amount"]) >= 0.011) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'installment_amount' => __('Installment amount × installments (:total) must equal the loan amount (:loan).', ['total' => number_format($total, 2), 'loan' => number_format((float) $data['loan_amount'], 2)]),
             ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'status' => 'error',
-                'message' => __('Error updating loan status: ') . $e->getMessage(),
-            ], 500);
         }
-    }
-
-    /**
-     * Create finance entries for an employee loan marked as approved (disbursed).
-     * Debit Employee Loans Receivable (asset), Credit the disbursing bank/cash account.
-     */
-    private function createEmployeeLoanFinanceEntries(EmployeeLoan $employeeLoan)
-    {
-        try {
-            $this->deleteEmployeeLoanFinanceEntries($employeeLoan->id);
-
-            $amount = $employeeLoan->loan_amount;
-            $referenceDate = $employeeLoan->loan_date ?? now();
-            // payment_method is an enum (bank_transfer/cash/check), not a
-            // user-picked account id like Expense's payment_mode — map it to
-            // the matching bank/cash leaf account (57=Petty Cash, 58=Visa/
-            // Mastercard Undeposited, the only two disbursement accounts that
-            // exist in the live chart of accounts).
-            $creditAccountId = $employeeLoan->payment_method === 'cash' ? 57 : 58;
-
-            $finance = new Finance();
-            $finance->voucher_no = $employeeLoan->row_no;
-            $finance->voucher_type = 'PV'; // Payroll Voucher
-            $finance->reference_no = $finance->voucher_no;
-            $finance->reference_date = $referenceDate;
-            $finance->narration = 'Employee Loan: ' . $finance->voucher_no;
-            $finance->currency = 'SAR';
-            $finance->exchange_rate = 1;
-            $finance->total_debit = $amount;
-            $finance->total_credit = $amount;
-            $finance->base_currency = 'SAR';
-            $finance->base_total_debit = $amount;
-            $finance->base_total_credit = $amount;
-            $finance->is_approved = 1;
-            $finance->posted_at = now();
-            $finance->linked_id = $employeeLoan->id;
-            $finance->linked_type = EmployeeLoan::class;
-            $finance->company_id = $employeeLoan->company_id;
-            $finance->user_id = Auth::id();
-            $finance->save();
-
-            $financeSubs = [
-                [
-                    'finance_id' => $finance->id,
-                    'voucher_no' => $finance->voucher_no,
-                    'voucher_type' => $finance->voucher_type,
-                    'reference_no' => $finance->reference_no,
-                    'account_id' => 72, // Employee Loans Receivable (Asset)
-                    'reference_date' => formDate($referenceDate),
-                    'description' => 'Loan disbursed to ' . ($employeeLoan->employee?->name ?? $employeeLoan->employee_id) . ' - ' . $employeeLoan->row_no,
-                    'debit' => $amount,
-                    'credit' => 0,
-                    'currency' => 'SAR',
-                    'base_debit' => $amount,
-                    'base_credit' => 0,
-                    'base_currency' => 'SAR',
-                    'exchange_rate' => 1,
-                    'is_tax_line' => 0,
-                    'is_auto_generated' => 1,
-                    'linked_id' => $employeeLoan->id,
-                    'linked_type' => EmployeeLoan::class,
-                    'user_id' => Auth::id(),
-                    'company_id' => $employeeLoan->company_id,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-                [
-                    'finance_id' => $finance->id,
-                    'voucher_no' => $finance->voucher_no,
-                    'voucher_type' => $finance->voucher_type,
-                    'reference_no' => $finance->reference_no,
-                    'account_id' => $creditAccountId,
-                    'reference_date' => formDate($referenceDate),
-                    'description' => 'Loan disbursement payout - ' . $employeeLoan->row_no,
-                    'debit' => 0,
-                    'credit' => $amount,
-                    'currency' => 'SAR',
-                    'base_debit' => 0,
-                    'base_credit' => $amount,
-                    'base_currency' => 'SAR',
-                    'exchange_rate' => 1,
-                    'is_tax_line' => 0,
-                    'is_auto_generated' => 1,
-                    'linked_id' => $employeeLoan->id,
-                    'linked_type' => EmployeeLoan::class,
-                    'user_id' => Auth::id(),
-                    'company_id' => $employeeLoan->company_id,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-            ];
-
-            FinanceSub::insert($financeSubs);
-        } catch (\Exception $e) {
-            Log::error('Error creating finance entries for employee loan: ' . $e->getMessage());
-            throw $e;
-        }
-    }
-
-    /**
-     * Delete finance entries for an employee loan.
-     */
-    private function deleteEmployeeLoanFinanceEntries($employeeLoanId)
-    {
-        try {
-            $financeEntries = Finance::where('linked_id', $employeeLoanId)
-                ->where('linked_type', EmployeeLoan::class)
-                ->get();
-
-            foreach ($financeEntries as $finance) {
-                FinanceSub::where('finance_id', $finance->id)->delete();
-                $finance->delete();
-            }
-        } catch (\Exception $e) {
-            Log::error('Error deleting finance entries for employee loan: ' . $e->getMessage());
-            throw $e;
-        }
-    }
-
-    /**
-     * Remove the specified employee loan from storage.
-     */
-    public function destroy($id)
-    {
-        try {
-            $employeeLoan = EmployeeLoan::findOrFail($id);
-            $employeeLoan->delete();
-
-            return response()->json(['success' => true, 'message' => __('Employee loan deleted successfully')]);
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
-        }
-    }
-
-    /**
-     * Display the specified employee loan.
-     */
-    public function overview($id)
-    {
-        $employeeLoan = EmployeeLoan::with('employee')->findOrFail($id);
-        return view('modules.payroll.employee-loan.view-overview', compact('employeeLoan'));
-    }
-
-    /**
-     * Print
-     */
-    public function print($id)
-    {
-        // In a real implementation, you would fetch the waybill by ID
-        // For now, we'll just return a simple view
-        $employeeLoan = EmployeeLoan::withTrashed()->findOrFail($id);
-        return view('modules.payroll.employee-loan.view-overview', compact('employeeLoan'));
     }
 }

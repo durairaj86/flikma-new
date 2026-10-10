@@ -30,6 +30,8 @@
                         'color' => 'success',
                         'reports' => [
                             ['url' => '/reports/sale-report', 'name' => __('Sales Report'), 'desc' => __('Daily, weekly, and monthly sales transaction summaries.')],
+                            ['url' => '/reports/shipment-volume', 'name' => __('Shipment Volume'), 'desc' => __('Jobs, containers and TEU by customer, carrier, lane or mode.')],
+                            ['url' => '/reports/sales-by-salesperson', 'name' => __('Sales by Salesperson'), 'desc' => __('Jobs and value won by each salesperson.')],
                             ['url' => '/reports/customer-activity-report', 'name' => __('Customer Activity Report'), 'desc' => __('Job activity, revenue, and profitability grouped by customer.')],
                         ]
                     ],

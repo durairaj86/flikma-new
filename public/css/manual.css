@@ -2039,3 +2039,7 @@ body:not(.has-top-header) #sendEmailDrawer.offcanvas.offcanvas-end {
 /* "Showing x to y" + pager line up with the table's first and last cell instead of the card edge. */
 .table-responsive #dataTable_wrapper > .row { margin: .25rem 0 0; padding: 0 20px 4px; }
 .table-responsive #dataTable_wrapper > .row > [class*="col-"] { padding-left: 0; padding-right: 0; }
+
+/* Payroll module pages: same content width as the other full-page screens */
+.pr-wrap { max-width: 1300px; margin: 0 auto; padding: 14px 28px 24px; }
+@media (max-width: 767.98px) { .pr-wrap { padding: 10px 12px 20px; } }

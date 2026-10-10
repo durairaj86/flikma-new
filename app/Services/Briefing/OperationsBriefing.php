@@ -248,11 +248,12 @@ class OperationsBriefing
                     __('Drafts older than 3 days are not in your books or receivables yet. Approve or delete them.'), __('Customer invoices'), url('/invoice/customer'), [], $n);
             }
             if ($today->day >= 25) {
-                $missing = DB::table('employees as e')->join('users as u', 'u.id', '=', 'e.user_id')->where('u.company_id', session('company_id') ?: $user->company_id)->whereNull('e.termination_date')
-                    ->whereNotExists(fn($w) => $w->select(DB::raw(1))->from('monthly_salaries as m')->whereColumn('m.employee_id', 'e.id')->where('m.month', $today->month)->where('m.year', $today->year)->whereNull('m.deleted_at'))->count();
+                $missing = DB::table('users as e')->where('e.company_id', session('company_id') ?: $user->company_id)->where('e.is_employee', 1)->whereNull('e.terminated_at')
+                    ->whereExists(fn($w) => $w->select(DB::raw(1))->from('salary_structures as s')->whereColumn('s.employee_id', 'e.id'))
+                    ->whereNotExists(fn($w) => $w->select(DB::raw(1))->from('payroll_records as m')->whereColumn('m.employee_id', 'e.id')->where('m.month', $today->month)->where('m.year', $today->year)->where('m.status', '!=', 'cancelled'))->count();
                 if ($missing > 0) {
                     $add('warn', 'bi-people', trans_choice('{1} :n employee has no salary generated this month|[2,*] :n employees have no salary generated this month', $missing, ['n' => $missing]),
-                        __('Month end is near. Generate and pay salaries on time.'), __('Monthly salary'), url('/payroll/monthly-salary'), [], $missing);
+                        __('Month end is near. Generate and pay salaries on time.'), __('Payroll Runs'), url('/payroll/runs'), [], $missing);
                 }
             }
             $group = __('Sales');

@@ -34,3 +34,7 @@ Route::get('/reports/supplier-balance-summary', \App\Livewire\Report\Operation\S
 
 // Sale Reports
 Route::get('/reports/sale-report', \App\Livewire\Report\Sale\SaleReport::class);
+
+// Report pack
+Route::get('/reports/shipment-volume', \App\Livewire\Report\Pack\ShipmentVolume::class);
+Route::get('/reports/sales-by-salesperson', \App\Livewire\Report\Pack\SalesBySalesperson::class);

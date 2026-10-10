@@ -87,6 +87,13 @@ class UserController extends Controller
 
             'role' => 'required|string|min:0',
             'status' => 'required|string|min:0',
+
+            // employee / payroll profile
+            'designation' => 'nullable|string|max:100',
+            'gender' => 'nullable|integer|in:0,1,2',
+            'joining_date' => 'nullable|date',
+            'dob' => 'nullable|date',
+            'device_user_id' => ['nullable', 'string', 'max:64', \Illuminate\Validation\Rule::unique('users', 'device_user_id')->where('company_id', companyId())->ignore($request->input('data-id'))],
         ];
 
         // Validate request
@@ -110,6 +117,12 @@ class UserController extends Controller
         // Only update password if it's provided
         if ($request->filled('password')) {
             $user->password = bcrypt($request->input('password'));
+        } elseif (!$user->exists) {
+            if ($request->input('login_permission') === 'yes') {
+                return response()->json(['status' => 'error', 'message' => __('Enter a password for this employee, or turn Login Permission off.')], 422);
+            }
+            // No login: a random password nobody knows, so the account can never be used to sign in.
+            $user->password = bcrypt(\Illuminate\Support\Str::random(40));
         }
 
         $user->status = $request->input('status');
@@ -122,11 +135,20 @@ class UserController extends Controller
         $user->country = $request->input('country');
         $user->alternate_email = $request->input('alt_email');
         $user->remark = $request->input('remark');
+
+        // Everyone in this list is an employee. Shift, bank, GOSI ... are kept under Payroll > Employee Profiles.
+        $user->is_employee = true;
+        $user->department = $request->filled('department') ? \App\Models\Master\Department::find($request->input('department'))?->name : null;
+        $user->login_enabled = $request->input('login_permission') === 'yes';
+        foreach (['designation', 'gender', 'joining_date', 'dob', 'device_user_id'] as $f) {
+            $user->{$f} = $request->filled($f) ? $request->input($f) : null;
+        }
+        $user->terminated_at = $user->status === 'active' ? null : ($user->terminated_at ?? today());
         $user->save();
 
         return response()->json([
             'status' => 'success',
-            'message' => __('User created successfully'),
+            'message' => __('Employee saved successfully'),
             'module_id' => $user->id,
         ]);
     }
@@ -288,11 +310,13 @@ class UserController extends Controller
 
         $user->status = $active ? 'active' : 'terminated';
         $user->login_permission = $active ? 'yes' : 'no';
+        $user->login_enabled = $active;
+        $user->terminated_at = $active ? null : ($user->terminated_at ?? today());
         $user->save();
 
         return response()->json([
             'status' => 'success',
-            'message' => $active ? __('User reactivated.') : __('User terminated.'),
+            'message' => $active ? __('Employee reactivated.') : __('Employee terminated.'),
         ]);
     }
 

@@ -95,29 +95,6 @@
             'payment_method' => 'Who pays for the transport: sender or receiver.',
             'special_instructions' => 'Handling notes for the driver.',
         ],
-        'payroll/basic/salary' => [
-            'basic_salary' => 'Monthly basic pay before allowances and deductions.',
-            'housing_allowance' => 'Fixed monthly housing allowance added to the basic salary.',
-            'transportation_allowance' => 'Fixed monthly transport allowance.',
-            'other_allowance' => 'Any other fixed monthly allowance.',
-            'status' => 'Only active salary structures are used when payroll is run.',
-        ],
-        'payroll/employee/loan' => [
-            'loan_amount' => 'Total amount lent to the employee.',
-            'interest_rate' => 'Yearly interest in percent. Leave 0 for an interest-free loan.',
-            'number_of_installments' => 'How many monthly deductions repay the loan.',
-            'installment_amount' => 'Amount deducted from salary each month.',
-            'remaining_amount' => 'Balance still to be repaid. Starts equal to the loan amount.',
-            'remaining_installments' => 'Installments still to be deducted.',
-            'purpose' => 'Why the loan was given, for your records.',
-        ],
-        'inventory/items' => [
-            'account_type' => 'Whether the item is stock you keep, a service, or a non-stock expense.',
-            'cost_price' => 'What it costs you to buy one unit.',
-            'selling_price' => 'Default price you charge for one unit.',
-            'cost_account_id' => 'Expense account used when this item is bought or consumed.',
-            'sales_account_id' => 'Income account used when this item is sold.',
-        ],
         // Sales: only the fields people ask about. Obvious ones (customer name, remarks ...) have no hint.
         'sales/enquiries' => [
             'prospect' => 'Use when the enquiry is from someone who is not a customer yet. Pick either a customer or a prospect.',

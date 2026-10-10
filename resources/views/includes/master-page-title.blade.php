@@ -16,7 +16,7 @@
         'masters/incoterms' => ['bi-globe2', 'Trade terms such as FOB, CIF or EXW.', 'Used on quotations, jobs and bills of lading to show who pays for and carries the risk of each leg.'],
         'masters/currencies' => ['bi-currency-exchange', 'The currencies you trade in, with their codes.', 'Used on quotations, invoices and payments, and for exchange-rate conversion.'],
         'masters/departments' => ['bi-diagram-2', 'The departments in your company, such as Sales or Operations.', 'Used when you add users and employees, and in payroll.'],
-        'masters/users' => ['bi-people', 'The people who can sign in and work in the system.', 'Each user gets their own login, role and department.'],
+        'masters/users' => ['bi-person-badge', 'Everyone who works for your company: employees, with or without a login.', 'Each employee has a department, role and payroll details; a login is optional.'],
         'masters/transport/directories/seaports' => ['bi-water', 'Sea ports with their codes and countries.', 'Used as the port of loading and discharge on enquiries, quotations, jobs and bills of lading.'],
         'masters/transport/directories/airports' => ['bi-airplane', 'Airports with their codes and countries.', 'Used as the origin and destination on air enquiries, quotations, jobs and airway bills.'],
         'masters/banks' => ['bi-bank', 'Your bank and cash accounts.', 'Used for receiving payments from customers and paying suppliers, and printed on invoices.'],

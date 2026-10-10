@@ -447,7 +447,7 @@
             ocrResult.classList.add('d-none');
 
             // Send the file for OCR processing
-            fetch('{{ route("test-ocr.upload") }}', {
+            fetch('{{ route("ocr.read") }}', {
                 method: 'POST',
                 body: formData,
                 headers: {

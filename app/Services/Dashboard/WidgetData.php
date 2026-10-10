@@ -255,4 +255,113 @@ class WidgetData
             'prevLabel' => $ps->format('M'),
         ];
     }
+
+    // ------------------------------------------------------------------
+    // Payroll / attendance / punching (live snapshots, current company only)
+    // ------------------------------------------------------------------
+
+    private static function activeEmployees()
+    {
+        return \App\Models\User::query()->where('company_id', companyId())->where('is_employee', true)->whereNull('terminated_at');
+    }
+
+    /** This month's payroll: how much is generated, paid and still pending. */
+    public static function payroll(): array
+    {
+        $now = Carbon::now('Asia/Riyadh');
+        $recs = \App\Models\Payroll\PayrollRecord::with('employee:id,name')->where('company_id', companyId())
+            ->where('month', $now->month)->where('year', $now->year)->where('status', '!=', 'cancelled')->get();
+        $paid = $recs->where('status', 'paid');
+        $pending = $recs->where('status', '!=', 'paid');
+        $net = (float) $recs->sum('net_payable');
+
+        return [
+            'month' => $now->translatedFormat('F Y'),
+            'employees' => self::activeEmployees()->count(),
+            'count' => $recs->count(),
+            'net_total' => $net,
+            'paid_total' => (float) $paid->sum('net_payable'),
+            'pending_total' => (float) $pending->sum('net_payable'),
+            'paid_count' => $paid->count(),
+            'pending_count' => $pending->count(),
+            'loan_total' => (float) $recs->sum('loan_deduction'),
+            'paid_pct' => $net > 0 ? (int) round($paid->sum('net_payable') / $net * 100) : 0,
+            'rows' => $recs->sortBy(fn ($r) => mb_strtolower($r->employee->name ?? ''))->map(fn ($r) => [
+                'name' => $r->employee->name ?? '—', 'net' => (float) $r->net_payable, 'status' => $r->status,
+            ])->values()->all(),
+        ];
+    }
+
+    /** Today's attendance of every active employee (people with no record are "not marked"). */
+    public static function attendance(): array
+    {
+        $today = Carbon::today('Asia/Riyadh')->toDateString();
+        $emps = self::activeEmployees()->orderBy('name')->get(['id', 'name']);
+        $att = \App\Models\Payroll\Attendance::where('company_id', companyId())->where('date', $today)->get()->keyBy('employee_id');
+
+        $rows = $emps->map(function ($e) use ($att) {
+            $a = $att->get($e->id);
+
+            return [
+                'name' => $e->name,
+                'status' => $a->status ?? 'not_marked',
+                'in' => $a && $a->check_in ? substr((string) $a->check_in, 0, 5) : null,
+                'out' => $a && $a->check_out ? substr((string) $a->check_out, 0, 5) : null,
+            ];
+        });
+        $count = fn (string $st) => $rows->where('status', $st)->count();
+        $total = $emps->count();
+        $present = $count('present') + $count('half_day');
+
+        return [
+            'total' => $total,
+            'present' => $present,
+            'absent' => $count('absent'),
+            'leave' => $count('leave') + $count('holiday'),
+            'not_marked' => $count('not_marked'),
+            'pct' => $total > 0 ? (int) round($present / $total * 100) : 0,
+            'date' => Carbon::today('Asia/Riyadh')->translatedFormat('l, d M'),
+            // not marked / absent first: those are the people to follow up
+            'rows' => $rows->sortBy(fn ($r) => ['not_marked' => 0, 'absent' => 1, 'leave' => 2, 'holiday' => 2, 'half_day' => 3, 'present' => 4][$r['status']] ?? 5)->values()->all(),
+        ];
+    }
+
+    /** Today's punches coming from the machines, and how the machines themselves are doing. */
+    public static function punching(): array
+    {
+        $today = Carbon::today('Asia/Riyadh')->toDateString();
+        $punches = \App\Models\Payroll\AttendancePunch::with(['employee:id,name', 'device:id,name'])->where('company_id', companyId())
+            ->whereDate('punched_at', $today)->orderByDesc('punched_at')->get();
+        $devices = \App\Models\Payroll\AttendanceDevice::where('company_id', companyId())->whereNotIn('protocol', ['import', 'manual'])->get();
+        $last = $punches->first();
+
+        return [
+            'punches' => $punches->count(),
+            'people' => $punches->whereNotNull('employee_id')->pluck('employee_id')->unique()->count(),
+            'devices_total' => $devices->count(),
+            'devices_online' => $devices->filter(fn ($d) => $d->isOnline())->count(),
+            'unmapped' => \App\Models\Payroll\AttendancePunch::where('company_id', companyId())->where('status', 'unmapped')->count(),
+            'last' => $last ? Carbon::parse($last->punched_at)->format('H:i') : null,
+            'rows' => $punches->take(30)->map(fn ($p) => [
+                'time' => Carbon::parse($p->punched_at)->format('H:i'),
+                'name' => $p->employee->name ?? ('#' . $p->device_user_id),
+                'dir' => $p->direction,
+                'device' => $p->device->name ?? '—',
+                'status' => $p->status,
+            ])->values()->all(),
+        ];
+    }
+
+    /** Live (not month-filtered) snapshots for the HR widgets. */
+    public static function snapshot(string $view): array
+    {
+        $view = preg_replace('/-(small|medium|tall)$/', '', $view);
+
+        return match ($view) {
+            'payroll' => self::payroll(),
+            'attendance' => self::attendance(),
+            'punching' => self::punching(),
+            default => [],
+        };
+    }
 }

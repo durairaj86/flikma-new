@@ -11,8 +11,10 @@ class Documents extends Model
     use CompanyScopeTrait;
 
     protected $fillable = [
-        'title', 'file_path', 'file_name', 'expiry_date', 'posted_date', 'user_id', 'company_id'
+        'title', 'file_path', 'file_name', 'expiry_date', 'posted_date', 'user_id', 'company_id', 'documentable_type', 'documentable_id', 'doc_type'
     ];
+
+    protected $casts = ['expiry_date' => 'date', 'posted_date' => 'date'];
 
     public function documentable(): MorphTo
     {

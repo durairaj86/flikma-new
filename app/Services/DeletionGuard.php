@@ -15,6 +15,8 @@ class DeletionGuard
 {
     /** Tables that are old copies / pure link tables and must not block a delete. */
     private const IGNORE_SUFFIX = '_old';
+    /** Tables of the retired payroll screens: still in the database, no longer used. */
+    private const RETIRED_TABLES = ['basic_salaries', 'monthly_salaries', 'attendances'];
 
     /** Friendly names for the "linked with …" message. */
     private const LABELS = [
@@ -28,11 +30,11 @@ class DeletionGuard
         'accounts' => 'sub accounts', 'expense_subs' => 'expense lines', 'customer_invoice_subs' => 'customer invoice lines',
         'supplier_invoice_subs' => 'supplier invoice lines', 'credit_note_subs' => 'credit note lines',
         'journal_voucher_items' => 'journal voucher lines', 'payment_additional_transactions' => 'payment transactions', 'items' => 'items',
-        'attendances' => 'attendance records', 'basic_salaries' => 'basic salary records', 'monthly_salaries' => 'monthly salary records',
+        'attendances' => 'attendance records', 'attendance' => 'attendance records', 'salary_structures' => 'salary structures', 'payroll_records' => 'payroll records', 'attendance_punches' => 'punch records', 'loan_installments' => 'loan instalments',
         'employee_loans' => 'employee loans', 'customers' => 'customers', 'suppliers' => 'suppliers', 'prospects' => 'prospects',
         'waybill_subs' => 'waybill lines', 'airway_bill_subs' => 'airway bill lines', 'seaway_bill_subs' => 'seaway bill lines', 'enquiry_subs' => 'enquiry lines',
         'quotation_subs' => 'quotation lines', 'proforma_invoice_subs' => 'proforma invoice lines', 'debit_note_subs' => 'debit note lines',
-        'bookings' => 'bookings', 'delivery_orders' => 'delivery orders', 'rate_sheets' => 'rate sheets', 'master_bls' => 'master B/Ls', 'arrival_notices' => 'arrival notices', 'users' => 'users created by this user', 'department_module_permissions' => 'department permissions', 'employees' => 'employee records', 'banks' => 'bank accounts', 'documents' => 'documents',
+        'bookings' => 'bookings', 'delivery_orders' => 'delivery orders', 'rate_sheets' => 'rate sheets', 'master_bls' => 'master B/Ls', 'arrival_notices' => 'arrival notices', 'drivers' => 'drivers', 'vehicles' => 'vehicles', 'trips' => 'trips', 'job_milestones' => 'shipment milestones', 'users' => 'users created by this user', 'department_module_permissions' => 'department permissions', 'employees' => 'employee records', 'banks' => 'bank accounts', 'documents' => 'documents',
         'period_closings' => 'period closings', 'currency_locks' => 'currency locks', 'zatca_histories' => 'ZATCA records',
     ];
 
@@ -89,6 +91,23 @@ class DeletionGuard
                 // Once it is on the road or delivered the record is the proof of delivery.
                 if (DB::table('delivery_orders')->where('id', $id)->whereIn('status', [2, 3])->exists()) {
                     $why[] = __('only a pending or cancelled delivery order can be deleted');
+                }
+                break;
+            case 'driver':
+                $n = DB::table('vehicles')->where('driver_id', $id)->whereNull('deleted_at')->count() + DB::table('trips')->where('driver_id', $id)->whereNull('deleted_at')->count();
+                if ($n > 0) {
+                    $why[] = __('it is used on :n vehicles or trips', ['n' => $n]);
+                }
+                break;
+            case 'vehicle':
+                $n = DB::table('trips')->where('vehicle_id', $id)->whereNull('deleted_at')->count();
+                if ($n > 0) {
+                    $why[] = __('it has :n trips', ['n' => $n]);
+                }
+                break;
+            case 'trip':
+                if (DB::table('trips')->where('id', $id)->whereIn('status', [2, 3])->exists()) {
+                    $why[] = __('only a planned or cancelled trip can be deleted');
                 }
                 break;
             case 'arrival_notice':
@@ -327,7 +346,7 @@ class DeletionGuard
                 'select TABLE_NAME from information_schema.COLUMNS where TABLE_SCHEMA = database() and COLUMN_NAME = ?',
                 [$column]
             ))->pluck('TABLE_NAME')
-                ->reject(fn ($t) => str_ends_with($t, self::IGNORE_SUFFIX))
+                ->reject(fn ($t) => str_ends_with($t, self::IGNORE_SUFFIX) || in_array($t, self::RETIRED_TABLES, true))
                 ->values()->all();
         }
 

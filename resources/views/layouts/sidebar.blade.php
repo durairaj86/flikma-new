@@ -146,7 +146,7 @@
 
                 <!-- Sales -->
                 @php
-                    $salesOpen = $menu == 'sales' || ($menu == 'reports' && $submenu == 'sale-report');
+                    $salesOpen = $menu == 'sales' || ($menu == 'reports' && in_array($submenu, ['sale-report', 'shipment-volume', 'sales-by-salesperson']));
                 @endphp
                 <li class="nav-item {{ $salesOpen ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link">
@@ -175,6 +175,16 @@
                         <li class="nav-item">
                             <a href="/reports/sale-report" class="nav-link {{ $submenu == 'sale-report' ? 'active' : '' }}">
                                 <p>{{ __('Sales Report') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/reports/shipment-volume" class="nav-link {{ $submenu == 'shipment-volume' ? 'active' : '' }}">
+                                <p>{{ __('Shipment Volume') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/reports/sales-by-salesperson" class="nav-link {{ $submenu == 'sales-by-salesperson' ? 'active' : '' }}">
+                                <p>{{ __('Sales by Salesperson') }}</p>
                             </a>
                         </li>
                     </ul>
@@ -211,6 +221,26 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a href="/operation/trips" class="nav-link {{ $submenu == 'trips' ? 'active' : '' }}">
+                                <p>{{ __('Trips') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/operation/tracking" class="nav-link {{ $submenu == 'tracking' ? 'active' : '' }}">
+                                <p>{{ __('Shipment Tracking') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/operation/demurrage" class="nav-link {{ $submenu == 'demurrage' ? 'active' : '' }}">
+                                <p>{{ __('Demurrage') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/operation/documents" class="nav-link {{ $submenu == 'documents' ? 'active' : '' }}">
+                                <p>{{ __('Documents') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a href="/operation/customs" class="nav-link {{ $submenu == 'customs' ? 'active' : '' }}">
                                 <p>{{ __('Customs Clearance') }}</p>
                             </a>
@@ -220,18 +250,6 @@
                                 <p>{{ __('Job Overview') }}</p>
                             </a>
                         </li>
-                        {{--<li class="nav-item">
-                            <a href="/operations/tracking"
-                               class="nav-link {{ $submenu == 'tracking' ? 'active' : '' }}">
-                                <p>{{ __('Shipment Tracking') }}</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/operations/documents"
-                               class="nav-link {{ $submenu == 'documents' ? 'active' : '' }}">
-                                <p>{{ __('Documents') }}</p>
-                            </a>
-                        </li>--}}
                     </ul>
                 </li>
 
@@ -290,46 +308,24 @@
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
-                        {{--<li class="nav-item {{ $menu == 'voucher' ? 'menu-open' : '' }}">
-                            <a href="#" class="nav-link">
-                                <p>
-                                    {{ __('Vouchers') }}
-                                    <i class="nav-arrow bi bi-chevron-right"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview ms-3">
-                                <li class="nav-item">
-                                    <a href="/invoice/proforma"
-                                       class="nav-link {{ $submenu == 'proforma' ? 'active' : '' }}">
-                                        <p>{{ __('Payments') }}</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/invoice/supplier"
-                                       class="nav-link {{ $submenu == 'supplier' ? 'active' : '' }}">
-                                        <p>{{ __('Collections') }}</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/invoice/customer"
-                                       class="nav-link {{ $submenu == 'customer' ? 'active' : '' }}">
-                                        <p>{{ __('Journal Voucher') }}</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>--}}
                         <li class="nav-item">
                             <a href="/finance/expense"
                                class="nav-link {{ $submenu == 'expense' ? 'active' : '' }}">
                                 <p>{{ __('Expenses') }}</p>
                             </a>
                         </li>
-                        {{--<li class="nav-item">
+                        <li class="nav-item">
+                            <a href="/finance/journal-vouchers"
+                               class="nav-link {{ $submenu == 'journal-vouchers' ? 'active' : '' }}">
+                                <p>{{ __('Journal Voucher') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a href="/finance/asset"
                                class="nav-link {{ $submenu == 'asset' ? 'active' : '' }}">
                                 <p>{{ __('Assets') }}</p>
                             </a>
-                        </li>--}}
+                        </li>
                         <li class="nav-item">
                             <a href="/finance/accounts"
                                class="nav-link {{ $submenu == 'accounts' ? 'active' : '' }}">
@@ -366,11 +362,6 @@
                                 <p>{{ __('Transactions Overview') }}</p>
                             </a>
                         </li>
-                        {{--<li class="nav-item">
-                            <a href="/transaction/vouchers" class="nav-link {{ $submenu == 'vouchers' ? 'active' : '' }}">
-                                <p>{{ __('Vouchers') }}</p>
-                            </a>
-                        </li>--}}
                     </ul>
                 </li>
 
@@ -405,7 +396,7 @@
                         </li>
                     </ul>
                 </li>
-                <li class="nav-item {{ $menu == 'payroll' ? 'menu-open' : '' }}">
+                <li class="nav-item {{ in_array($menu, ['payroll', 'employee-loans']) ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link">
                         <i class="nav-icon bi bi-cart"></i>
                         <p>
@@ -415,27 +406,48 @@
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a href="/payroll/attendance"
-                               class="nav-link {{ $submenu == 'collections' ? 'active' : '' }}">
+                            <a href="/payroll" class="nav-link {{ $segment1 == 'payroll' && $segment2 == '' ? 'active' : '' }}">
+                                <p>{{ __('Dashboard') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/payroll/attendance" class="nav-link {{ $segment2 == 'attendance' ? 'active' : '' }}">
                                 <p>{{ __('Attendance') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="/payroll/basic/salary"
-                               class="nav-link {{ $submenu == 'basic' ? 'active' : '' }}">
-                                <p>{{ __('Basic Salary') }}</p>
+                            <a href="/payroll/punch-log" class="nav-link {{ $segment2 == 'punch-log' ? 'active' : '' }}">
+                                <p>{{ __('Punch Log') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="/payroll/monthly/salary"
-                               class="nav-link {{ $submenu == 'collections' ? 'active' : '' }}">
-                                <p>{{ __('Monthly Salary') }}</p>
+                            <a href="/payroll/shifts" class="nav-link {{ $segment2 == 'shifts' ? 'active' : '' }}">
+                                <p>{{ __('Shifts') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="/payroll/employee/loan"
-                               class="nav-link {{ $submenu == 'employee-loan' ? 'active' : '' }}">
-                                <p>{{ __('Employee Loan') }}</p>
+                            <a href="/payroll/salary-structures" class="nav-link {{ $segment2 == 'salary-structures' ? 'active' : '' }}">
+                                <p>{{ __('Salary Structures') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/payroll/runs" class="nav-link {{ $segment2 == 'runs' ? 'active' : '' }}">
+                                <p>{{ __('Payroll Runs') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/employee-loans" class="nav-link {{ $segment1 == 'employee-loans' ? 'active' : '' }}">
+                                <p>{{ __('Loans') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/payroll/employees" class="nav-link {{ $segment1 == 'payroll' && $segment2 == 'employees' ? 'active' : '' }}">
+                                <p>{{ __('Employee Profiles') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/payroll/devices" class="nav-link {{ $segment2 == 'devices' ? 'active' : '' }}">
+                                <p>{{ __('Punch Devices') }}</p>
                             </a>
                         </li>
                     </ul>
@@ -459,12 +471,12 @@
                                 <p>{{ __('Job Report') }} <i class="nav-arrow bi bi-chevron-right"></i></p>
                             </a>
                             <ul class="nav nav-treeview ms-3">
-                                {{--<li class="nav-item">
+                                <li class="nav-item">
                                     <a href="/reports/job-report"
                                        class="nav-link {{ $submenu == 'job-report' ? 'active' : '' }}">
                                         <p>{{ __('Job Report') }}</p>
                                     </a>
-                                </li>--}}
+                                </li>
                                 <li class="nav-item">
                                     <a href="/reports/job-balance-report"
                                        class="nav-link {{ $submenu == 'job-balance-report' ? 'active' : '' }}">
@@ -549,24 +561,6 @@
                     </ul>
                 </li>
 
-                <!-- Inventory -->
-                <li class="nav-item {{ $menu == 'inventory' ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link">
-                        <i class="nav-icon bi bi-bar-chart-line"></i>
-                        <p>
-                            {{ __('Inventory') }}
-                            <i class="nav-arrow bi bi-chevron-right"></i>
-                        </p>
-                    </a>
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a href="/inventory/items"
-                               class="nav-link {{ $submenu == 'items' ? 'active' : '' }}">
-                                <p>{{ __('Items') }}</p>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
 
                 <!-- Masters -->
                 <li class="nav-item">
@@ -575,106 +569,10 @@
                         <p>{{ __('Masters') }}</p>
                     </a>
                 </li>
-                {{--<li class="nav-item {{ $segment1 == 'masters' ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link">
-                        <i class="nav-icon bi bi-database"></i>
-                        <p>
-                            {{ __('Masters') }}
-                            <i class="nav-arrow bi bi-chevron-right"></i>
-                        </p>
-                    </a>
-                    <ul class="nav nav-treeview">
-
-                        <!-- Users -->
-                        <li class="nav-item">
-                            <a href="/masters/users" class="nav-link {{ $submenu == 'users' ? 'active' : '' }}">
-                                <p>{{ __('Users') }}</p>
-                            </a>
-                        </li>
-
-                        <!-- Transport Directory -->
-                        <li class="nav-item">
-                            <a href="/masters/transport/directories/seaports"
-                               class="nav-link {{ $submenu == 'directories' ? 'active' : '' }}">
-                                <p>{{ __('Transport Directory') }}</p>
-                            </a>
-                        </li>
-
-                        <!-- Reference Data (Submenu with children) -->
-                        <!-- Logistics Data -->
-                        <li class="nav-item {{ in_array($segment2,['services','package','container','incoterms','currencies','quotation-terms','hs-tariffs','period-closing']) ? 'menu-open' : '' }}">
-                            <a href="#" class="nav-link">
-                                <p>{{ __('Predefined Data') }} <i class="nav-arrow bi bi-chevron-right"></i></p>
-                            </a>
-                            <ul class="nav nav-treeview ms-3">
-                                <li class="nav-item">
-                                    <a href="/masters/services"
-                                       class="nav-link {{ $submenu=='services' ? 'active':'' }}">
-                                        <p>{{ __('Logistics Services') }}</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/masters/package/codes"
-                                       class="nav-link {{ $submenu=='packages' ? 'active':'' }}">
-                                        <p>{{ __('Package Codes') }}</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/masters/container/types"
-                                       class="nav-link {{ $submenu=='container' ? 'active':'' }}">
-                                        <p>{{ __('Container Types') }}</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/masters/incoterms"
-                                       class="nav-link {{ $submenu=='incoterms' ? 'active':'' }}">
-                                        <p>{{ __('Incoterms') }}</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/masters/quotation-terms"
-                                       class="nav-link {{ $submenu=='quotation-terms' ? 'active':'' }}">
-                                        <p>{{ __('Quotation Terms') }}</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/masters/hs-tariffs"
-                                       class="nav-link {{ $submenu=='hs-tariffs' ? 'active':'' }}">
-                                        <p>{{ __('HS Tariff') }}</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/masters/period-closing"
-                                       class="nav-link {{ $submenu=='period-closing' ? 'active':'' }}">
-                                        <p>{{ __('Period Closing') }}</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/masters/currencies"
-                                       class="nav-link {{ $submenu=='currencies' ? 'active':'' }}">
-                                        <p>{{ __('Currencies') }}</p>
-                                    </a>
-                                </li>
-                                --}}{{--<li class="nav-item">
-                                    <a href="/masters/categories" class="nav-link {{ $submenu=='categories' ? 'active':'' }}">
-                                        <p>{{ __('Categories') }}</p>
-                                    </a>
-                                </li>--}}{{--
-                            </ul>
-                        </li>
-
-                        <!-- Banks -->
-                        <li class="nav-item">
-                            <a href="/masters/banks" class="nav-link {{ $submenu == 'banks' ? 'active' : '' }}">
-                                <p>{{ __('Banks') }}</p>
-                            </a>
-                        </li>
-
-                    </ul>
-                </li>--}}
 
 
-                <!-- Billing -->
+                <!-- Billing (account owner only) -->
+                @if(isSuperUser())
                 <li class="nav-item {{ $menu == 'billing' ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link">
                         <i class="nav-icon bi bi-credit-card"></i>
@@ -696,6 +594,7 @@
                         </li>
                     </ul>
                 </li>
+                @endif
 
                 <!-- Settings -->
                 <li class="nav-item">

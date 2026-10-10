@@ -1,5 +1,5 @@
 USER = {
-    title: 'User',
+    title: 'Employee',
     baseUrl: 'masters/user',
     actionUrl: 'masters/user',
     load() {
@@ -101,8 +101,8 @@ USER = {
                     const activate = this.id === 'row_reactivate';
                     const name = $.trim(row.find('td').eq(1).text());
                     appConfirm({
-                        title: trans(activate ? 'Reactivate user?' : 'Terminate user?'),
-                        message: (name ? name + ' — ' : '') + trans(activate ? 'This user will be able to log in again.' : 'This user will no longer be able to log in. Their history stays.'),
+                        title: trans(activate ? 'Reactivate employee?' : 'Terminate employee?'),
+                        message: (name ? name + ' — ' : '') + trans(activate ? 'This employee will be able to log in again.' : 'This employee will no longer be able to log in. Their history stays.'),
                         button: trans(activate ? 'Reactivate' : 'Terminate'),
                         btnClass: activate ? 'btn-primary' : 'btn-danger',
                         icon: activate ? 'bi-arrow-counterclockwise' : 'bi-person-x',
@@ -146,7 +146,7 @@ USER = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'Add User',
+                    title: 'Add Employee',
                     url: GLOBAL_FN.buildUrl('masters/user/create'),
                     content: null,
                     size: 'md',

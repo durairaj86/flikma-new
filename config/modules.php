@@ -42,11 +42,7 @@ return [
     ],
     'payroll' => [
         'label' => 'Payroll',
-        'prefixes' => ['payroll'],
-    ],
-    'inventory' => [
-        'label' => 'Inventory (Items)',
-        'prefixes' => ['inventory'],
+        'prefixes' => ['payroll', 'employee-loans'],
     ],
     'reports' => [
         'label' => 'Reports',

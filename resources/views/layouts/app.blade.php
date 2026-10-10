@@ -201,6 +201,7 @@
             localStorage.getItem('flikma-sidebar-theme') || 'gray');
     </script>
     @include('includes.js')
+    @stack('styles')
 </head>
 @php
     /* Mirrors components/layouts/app.blade.php. Resolved before <body> because the
@@ -277,6 +278,7 @@
     @include('partials.briefing-modal')
 
     @livewireScripts
+    @stack('scripts')
 {{-- One-line help under confusing form fields (texts live in includes/master-field-hints) --}}
 @auth
     @include('includes.master-field-hints')

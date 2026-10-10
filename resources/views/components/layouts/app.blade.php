@@ -197,6 +197,7 @@
             localStorage.getItem('flikma-sidebar-theme') || 'gray');
     </script>
     @include('includes.js')
+    @stack('styles')
 </head>
 @php
     /* Top header on/off. When it's on, the header hosts the quick-create /
@@ -276,6 +277,7 @@
     @include('partials.briefing-modal')
 
     @livewireScripts
+    @stack('scripts')
 {{-- One-line help under confusing form fields (texts live in includes/master-field-hints) --}}
 @auth
     @include('includes.master-field-hints')

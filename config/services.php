@@ -45,4 +45,9 @@ return [
           'scan_quality' => env('GEMINI_SCAN_QUALITY', 'medium'),
       ],
 
-  ];
+  
+    'biometric' => [
+        'token' => env('BIOMETRIC_DEVICE_TOKEN'),
+    ],
+
+];

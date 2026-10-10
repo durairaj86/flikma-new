@@ -2,71 +2,56 @@
 
 namespace App\Models\Payroll;
 
-use App\Models\BaseModel;
-use App\Models\User;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Casts\Attribute;
-use App\Traits\CompanyScopeTrait;
+use App\Traits\BelongsToCompany;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class EmployeeLoan extends BaseModel
+class EmployeeLoan extends Model
 {
-    use CompanyScopeTrait, HasFactory, SoftDeletes;
+    use BelongsToCompany;
 
     protected $fillable = [
+        'company_id',
         'employee_id',
-        'row_no',
         'loan_amount',
-        'interest_rate',
-        'number_of_installments',
+        'total_installments',
         'installment_amount',
-        'loan_date',
-        'first_payment_date',
-        'payment_method',
-        'status',
+        'paid_amount',
         'remaining_amount',
-        'remaining_installments',
-        'purpose',
-        'remarks',
-        'user_id',
-        'company_id'
+        'start_date',
+        'end_date',
+        'description',
+        'status',
     ];
 
-    protected $dates = [
-        'loan_date',
-        'first_payment_date',
-        'created_at',
-        'updated_at',
-        'deleted_at',
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'loan_amount' => 'decimal:2',
+        'installment_amount' => 'decimal:2',
+        'paid_amount' => 'decimal:2',
+        'remaining_amount' => 'decimal:2',
     ];
 
-    /**
-     * Get the employee associated with the loan.
-     */
-    public function employee()
+    public function employee(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'employee_id');
+        return $this->belongsTo(\App\Models\User::class, 'employee_id');
     }
 
-    /**
-     * Format the loan date attribute.
-     */
-    protected function loanDate(): Attribute
+    public function installments(): HasMany
     {
-        return Attribute::make(
-            get: fn($value) => $value ? \Carbon\Carbon::parse($value)->format('d-m-Y') : null,
-            set: fn($value) => $value ? \Carbon\Carbon::parse($value)->format('Y-m-d') : null,
-        );
+        return $this->hasMany(LoanInstallment::class, 'loan_id');
     }
 
-    /**
-     * Format the first payment date attribute.
-     */
-    protected function firstPaymentDate(): Attribute
+    public function isActive(): bool
     {
-        return Attribute::make(
-            get: fn($value) => $value ? \Carbon\Carbon::parse($value)->format('d-m-Y') : null,
-            set: fn($value) => $value ? \Carbon\Carbon::parse($value)->format('Y-m-d') : null,
-        );
+        return $this->status === 'active';
+    }
+
+    /** True once any instalment has been recovered from salary. */
+    public function hasDeductions(): bool
+    {
+        return (float) $this->paid_amount > 0 || $this->installments()->exists();
     }
 }

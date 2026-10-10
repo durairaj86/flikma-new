@@ -19,11 +19,6 @@ use OpenAI;
 
 class OcrController extends Controller
 {
-    public function index()
-    {
-        return view('ocr.test-ocr');
-    }
-
     public function upload(Request $request)
     {
         $request->validate([
@@ -242,16 +237,6 @@ Detect the currency (e.g., SAR, USD, INR, EUR). Use standard 3-letter ISO codes.
 
         return false;
     }*/
-
-    /**
-     * Display the Google OCR test view
-     *
-     * @return \Illuminate\Contracts\View\View
-     */
-    public function googleOcrIndex()
-    {
-        return view('ocr.test-google-ocr');
-    }
 
     /**
      * Process file upload with Google OCR

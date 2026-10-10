@@ -11,8 +11,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->validateCsrfTokens(except: [
+            'api/payroll/attendance/punch',
+            'api/attendance/*',
+            'iclock/*',
+        ]);
+
         $middleware->alias([
             'module.permission' => \App\Http\Middleware\CheckModulePermission::class,
+            'owner' => \App\Http\Middleware\OwnerOnly::class,
         ]);
 
         $middleware->web(append: [

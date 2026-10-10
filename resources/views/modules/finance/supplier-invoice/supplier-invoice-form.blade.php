@@ -369,7 +369,7 @@
         let formData = new FormData(ocrForm);
         //$('#output').text('Processing...');
         $.ajax({
-            url: '{{ route('test-google-ocr.upload') }}',
+            url: '{{ route('ocr.scan') }}',
             type: 'POST',
             data: formData,
             processData: false,

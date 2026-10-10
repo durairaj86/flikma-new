@@ -64,4 +64,43 @@ Route::namespace('operations')->prefix('operation')->group(function () {
     Route::get('/job/{id}/overview-drawer', [\App\Http\Controllers\Job\JobController::class, 'overviewDrawer']);
     Route::get('/job/{id}/delete', [\App\Http\Controllers\Job\JobController::class, 'delete']);
     Route::get('/job/{id}/print', [JobController::class, 'print']);
+
+    // Drivers
+
+    // Vehicles
+
+    // Trips
+    Route::view('/trips', 'modules.fleet-trip.list')->name('trips');
+    Route::post('/trip/data', [\App\Http\Controllers\Fleet\TripController::class, 'fetchAllRows'])->name('trips.data');
+    Route::get('/trip/create', [\App\Http\Controllers\Fleet\TripController::class, 'modal']);
+    Route::post('/trip/create', [\App\Http\Controllers\Fleet\TripController::class, 'store']);
+    Route::get('/trip/{id}/create', [\App\Http\Controllers\Fleet\TripController::class, 'edit'])->whereNumber('id');
+    Route::post('/trip/{id}/create', [\App\Http\Controllers\Fleet\TripController::class, 'store'])->whereNumber('id');
+    Route::get('/trip/{id}/actions', [\App\Http\Controllers\Fleet\TripController::class, 'actions'])->whereNumber('id');
+    Route::post('/trip/{id}/status/{status}', [\App\Http\Controllers\Fleet\TripController::class, 'updateStatus'])->whereNumber('id');
+    Route::get('/trip/{id}/overview', [\App\Http\Controllers\Fleet\TripController::class, 'overview'])->whereNumber('id');
+    Route::delete('/trip/{id}', [\App\Http\Controllers\Fleet\TripController::class, 'delete'])->whereNumber('id');
+
+    // Documents center
+    Route::view('/documents', 'modules.document-center.list')->name('documents');
+    Route::post('/document/data', [\App\Http\Controllers\Documents\DocumentCenterController::class, 'fetchAllRows'])->name('documents.data');
+    Route::get('/document/create', [\App\Http\Controllers\Documents\DocumentCenterController::class, 'modal']);
+    Route::post('/document/create', [\App\Http\Controllers\Documents\DocumentCenterController::class, 'store']);
+    Route::get('/document/owners/{type}', [\App\Http\Controllers\Documents\DocumentCenterController::class, 'owners']);
+    Route::get('/document/{id}/create', [\App\Http\Controllers\Documents\DocumentCenterController::class, 'edit'])->whereNumber('id');
+    Route::post('/document/{id}/create', [\App\Http\Controllers\Documents\DocumentCenterController::class, 'store'])->whereNumber('id');
+    Route::get('/document/{id}/actions', [\App\Http\Controllers\Documents\DocumentCenterController::class, 'actions'])->whereNumber('id');
+    Route::get('/document/{id}/file', [\App\Http\Controllers\Documents\DocumentCenterController::class, 'download'])->whereNumber('id');
+    Route::delete('/document/{id}', [\App\Http\Controllers\Documents\DocumentCenterController::class, 'delete'])->whereNumber('id');
+
+    // Shipment tracking
+    Route::get('/tracking', [\App\Http\Controllers\Job\TrackingController::class, 'index'])->name('tracking');
+    Route::get('/tracking/{id}', [\App\Http\Controllers\Job\TrackingController::class, 'edit'])->whereNumber('id');
+    Route::post('/tracking/{id}', [\App\Http\Controllers\Job\TrackingController::class, 'save'])->whereNumber('id');
+    Route::post('/tracking/{id}/share', [\App\Http\Controllers\Job\TrackingController::class, 'share'])->whereNumber('id');
+
+    // Demurrage & detention
+    Route::get('/demurrage', [\App\Http\Controllers\Job\DemurrageController::class, 'index'])->name('demurrage');
+    Route::get('/demurrage/{id}', [\App\Http\Controllers\Job\DemurrageController::class, 'edit'])->whereNumber('id');
+    Route::post('/demurrage/{id}', [\App\Http\Controllers\Job\DemurrageController::class, 'save'])->whereNumber('id');
 });

@@ -139,3 +139,25 @@ Route::post('/masters/unit/{id}/create', [\App\Http\Controllers\Master\Unit\Unit
 Route::get('masters/unit/{id}/actions', [\App\Http\Controllers\Master\Unit\UnitController::class, 'actions']);
 Route::delete('masters/unit/{id}', [\App\Http\Controllers\Master\Unit\UnitController::class, 'delete'])->whereNumber('id');
 Route::post('/masters/unit/{id}/status/{status}', [\App\Http\Controllers\Master\Unit\UnitController::class, 'updateStatus']);
+
+// Fleet masters
+Route::view('/masters/drivers', 'modules.fleet-driver.list')->name('drivers');
+Route::post('/masters/driver/data', [\App\Http\Controllers\Fleet\DriverController::class, 'fetchAllRows'])->name('drivers.data');
+Route::get('/masters/driver/create', [\App\Http\Controllers\Fleet\DriverController::class, 'modal']);
+Route::post('/masters/driver/create', [\App\Http\Controllers\Fleet\DriverController::class, 'store']);
+Route::get('/masters/driver/{id}/create', [\App\Http\Controllers\Fleet\DriverController::class, 'edit'])->whereNumber('id');
+Route::post('/masters/driver/{id}/create', [\App\Http\Controllers\Fleet\DriverController::class, 'store'])->whereNumber('id');
+Route::get('/masters/driver/{id}/actions', [\App\Http\Controllers\Fleet\DriverController::class, 'actions'])->whereNumber('id');
+Route::post('/masters/driver/{id}/status/{status}', [\App\Http\Controllers\Fleet\DriverController::class, 'updateStatus'])->whereNumber('id');
+Route::get('/masters/driver/{id}/overview', [\App\Http\Controllers\Fleet\DriverController::class, 'overview'])->whereNumber('id');
+Route::delete('/masters/driver/{id}', [\App\Http\Controllers\Fleet\DriverController::class, 'delete'])->whereNumber('id');
+Route::view('/masters/vehicles', 'modules.fleet-vehicle.list')->name('vehicles');
+Route::post('/masters/vehicle/data', [\App\Http\Controllers\Fleet\VehicleController::class, 'fetchAllRows'])->name('vehicles.data');
+Route::get('/masters/vehicle/create', [\App\Http\Controllers\Fleet\VehicleController::class, 'modal']);
+Route::post('/masters/vehicle/create', [\App\Http\Controllers\Fleet\VehicleController::class, 'store']);
+Route::get('/masters/vehicle/{id}/create', [\App\Http\Controllers\Fleet\VehicleController::class, 'edit'])->whereNumber('id');
+Route::post('/masters/vehicle/{id}/create', [\App\Http\Controllers\Fleet\VehicleController::class, 'store'])->whereNumber('id');
+Route::get('/masters/vehicle/{id}/actions', [\App\Http\Controllers\Fleet\VehicleController::class, 'actions'])->whereNumber('id');
+Route::post('/masters/vehicle/{id}/status/{status}', [\App\Http\Controllers\Fleet\VehicleController::class, 'updateStatus'])->whereNumber('id');
+Route::get('/masters/vehicle/{id}/overview', [\App\Http\Controllers\Fleet\VehicleController::class, 'overview'])->whereNumber('id');
+Route::delete('/masters/vehicle/{id}', [\App\Http\Controllers\Fleet\VehicleController::class, 'delete'])->whereNumber('id');

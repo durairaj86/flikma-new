@@ -22,7 +22,7 @@
             <li class="nav-item" data-url="/masters/users">
                 <a href="{{ asset('/masters/users') }}"
                    class="nav-link d-flex align-items-center py-2 {{ $page1 == 'users' ? 'active' : 'text-dark' }}">
-                    <i class="bi bi-person-circle text-secondary me-2"></i> Users
+                    <i class="bi bi-person-badge text-secondary me-2"></i> {{ __('Employees') }}
                 </a>
             </li>
 
@@ -143,6 +143,18 @@
                 <a href="{{ asset('/masters/salesperson') }}"
                    class="nav-link d-flex align-items-center py-2 {{ $page1 == 'salesperson' ? 'active' : 'text-dark' }}">
                     <i class="bi bi-person-badge text-secondary me-2"></i> Salesperson
+                </a>
+            </li>
+            <li class="nav-item" data-url="/masters/vehicles">
+                <a href="{{ asset('/masters/vehicles') }}"
+                   class="nav-link d-flex align-items-center py-2 {{ $page1 == 'vehicles' ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-truck text-secondary me-2"></i> {{ __('Vehicles') }}
+                </a>
+            </li>
+            <li class="nav-item" data-url="/masters/drivers">
+                <a href="{{ asset('/masters/drivers') }}"
+                   class="nav-link d-flex align-items-center py-2 {{ $page1 == 'drivers' ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-person-vcard text-secondary me-2"></i> {{ __('Drivers') }}
                 </a>
             </li>
             <li class="nav-item" data-url="/masters/finance/opening-balance">

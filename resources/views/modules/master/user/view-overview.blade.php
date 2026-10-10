@@ -52,6 +52,22 @@
                             <td class="text-muted"><i class="bi bi-diagram-3 me-2 text-primary"></i> {{ __('Department') }}</td>
                             <td class="fw-medium">{{ $user->department?->name ?? __('N/A') }}</td>
                         </tr>
+                        <tr>
+                            <td class="text-muted"><i class="bi bi-person-badge me-2 text-primary"></i> {{ __('Employee Code') }}</td>
+                            <td class="fw-medium">{{ $user->employee_code ?: '-' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted"><i class="bi bi-briefcase me-2 text-primary"></i> {{ __('Designation') }}</td>
+                            <td class="fw-medium">{{ $user->designation ?: '-' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted"><i class="bi bi-calendar-check me-2 text-primary"></i> {{ __('Date of Joining') }}</td>
+                            <td class="fw-medium">{{ $user->joining_date?->format('d-m-Y') ?? '-' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted"><i class="bi bi-fingerprint me-2 text-primary"></i> {{ __('Machine ID') }}</td>
+                            <td class="fw-medium">{{ $user->device_user_id ?: '-' }}</td>
+                        </tr>
                     </table>
                 </div>
             </div>

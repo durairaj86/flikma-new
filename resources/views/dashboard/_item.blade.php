@@ -28,5 +28,12 @@
     @case('revenue-trend') @include('dashboard.widgets.revenue-trend-medium') @break
     @case('outstanding') @include('dashboard.widgets.outstanding-medium') @break
     @case('awaiting-approval') @include('dashboard.widgets.awaiting-approval-medium') @break
+    @case('payroll-small') @include('dashboard.widgets.payroll-small') @break
+    @case('payroll-medium') @include('dashboard.widgets.payroll-medium') @break
+    @case('payroll') @include('dashboard.widgets.payroll-tall') @break
+    @case('attendance') @include('dashboard.widgets.attendance-tall') @break
+    @case('punching-small') @include('dashboard.widgets.punching-small') @break
+    @case('punching-medium') @include('dashboard.widgets.punching-medium') @break
+    @case('punching') @include('dashboard.widgets.punching-tall') @break
     @case('cost-summary') @include('dashboard.widgets.cost-summary-medium') @break
 @endswitch

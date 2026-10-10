@@ -45,6 +45,13 @@ class DashboardLayoutController extends Controller
         'eta-etd' => ['size' => 'large', 'module' => 'operations', 'group' => 'eta-etd', 'title' => 'ETA / ETD', 'icon' => 'bi-ship'],
         'ata-atd-small' => ['size' => 'small', 'module' => 'operations', 'group' => 'ata-atd', 'title' => 'ATA / ATD', 'icon' => 'bi-truck', 'default' => false],
         'ata-atd' => ['size' => 'large', 'module' => 'operations', 'group' => 'ata-atd', 'title' => 'ATA / ATD', 'icon' => 'bi-truck'],
+        'payroll-small' => ['size' => 'small', 'module' => 'hr', 'group' => 'payroll', 'title' => 'Payroll', 'icon' => 'bi-cash-coin', 'default' => false],
+        'payroll-medium' => ['size' => 'medium', 'module' => 'hr', 'group' => 'payroll', 'title' => 'Payroll', 'icon' => 'bi-cash-coin', 'default' => false],
+        'payroll' => ['size' => 'large', 'module' => 'hr', 'group' => 'payroll', 'title' => 'Payroll', 'icon' => 'bi-cash-coin', 'default' => false],
+        'attendance' => ['size' => 'large', 'module' => 'hr', 'group' => 'attendance', 'title' => 'Attendance', 'icon' => 'bi-calendar-check', 'default' => false],
+        'punching-small' => ['size' => 'small', 'module' => 'hr', 'group' => 'punching', 'title' => 'Punching', 'icon' => 'bi-fingerprint', 'default' => false],
+        'punching-medium' => ['size' => 'medium', 'module' => 'hr', 'group' => 'punching', 'title' => 'Punching', 'icon' => 'bi-fingerprint', 'default' => false],
+        'punching' => ['size' => 'large', 'module' => 'hr', 'group' => 'punching', 'title' => 'Punching', 'icon' => 'bi-fingerprint', 'default' => false],
     ];
 
     public const MODULES = [
@@ -53,6 +60,7 @@ class DashboardLayoutController extends Controller
         'customers' => ['title' => 'Customers', 'icon' => 'bi-people'],
         'finance' => ['title' => 'Finance', 'icon' => 'bi-wallet2'],
         'operations' => ['title' => 'Operations', 'icon' => 'bi-truck'],
+        'hr' => ['title' => 'HR & Payroll', 'icon' => 'bi-people'],
     ];
 
     public static function sizes(): array

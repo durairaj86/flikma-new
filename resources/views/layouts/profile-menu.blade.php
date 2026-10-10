@@ -20,10 +20,14 @@
             ['label' => 'Settings', 'icon' => 'bi-gear', 'url' => route('settings.company.edit'), 'bg' => '#eef2ff', 'fg' => '#4f46e5'],
             ['label' => 'Reports', 'icon' => 'bi-bar-chart', 'url' => url('reports'), 'bg' => '#e6f4ec', 'fg' => '#1b7a4d'],
             ['label' => 'Customers', 'icon' => 'bi-people', 'url' => route('customers'), 'bg' => '#e7f0f9', 'fg' => '#1d6fb8'],
-            ['label' => 'Items', 'icon' => 'bi-box-seam', 'url' => route('items'), 'bg' => '#faf1e6', 'fg' => '#b5651d'],
+            ['label' => 'Jobs', 'icon' => 'bi-briefcase', 'url' => url('operation/jobs'), 'bg' => '#faf1e6', 'fg' => '#b5651d'],
             ['label' => 'Invoices', 'icon' => 'bi-receipt', 'url' => route('invoices.customer'), 'bg' => '#f0e9f7', 'fg' => '#6b3fa0'],
             ['label' => 'Billing', 'icon' => 'bi-credit-card', 'url' => route('billing.index'), 'bg' => '#fff7e6', 'fg' => '#b7791f'],
         ];
+        // Billing is for the account owner only.
+        if (!isSuperUser()) {
+            $gridLinks = array_values(array_filter($gridLinks, fn($l) => $l['label'] !== 'Billing'));
+        }
 
         $moreLinks = [
             ['label' => 'Supplier Bills', 'icon' => 'bi-truck', 'url' => url('invoice/supplier')],
