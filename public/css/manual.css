@@ -2020,8 +2020,9 @@ body:not(.has-top-header) #sendEmailDrawer.offcanvas.offcanvas-end {
 .jconfirm .jconfirm-box .jconfirm-buttons button.btn-outline-secondary:hover { background: #f1f5f9 !important; }
 .jconfirm .jconfirm-box .jconfirm-buttons button.btn-danger { background: #dc2626 !important; border-color: #dc2626 !important; color: #fff !important; box-shadow: 0 6px 14px rgba(220, 38, 38, .28); }
 .jconfirm .jconfirm-box .jconfirm-buttons button.btn-danger:hover { background: #b91c1c !important; border-color: #b91c1c !important; }
-.jconfirm .jconfirm-box .jconfirm-buttons button.btn-primary { background: #0d6efd !important; border-color: #0d6efd !important; color: #fff !important; box-shadow: 0 6px 14px rgba(13, 110, 253, .25); }
-.jconfirm .jconfirm-box .jconfirm-buttons button:focus { transform: none; box-shadow: 0 0 0 3px rgba(13, 110, 253, .2); }
+.jconfirm .jconfirm-box .jconfirm-buttons button.btn-primary { background: #6366F1 !important; border-color: #6366F1 !important; color: #fff !important; box-shadow: 0 6px 14px rgba(99, 102, 241, .28); }
+.jconfirm .jconfirm-box .jconfirm-buttons button.btn-primary:hover { background: #4f46e5 !important; border-color: #4f46e5 !important; }
+.jconfirm .jconfirm-box .jconfirm-buttons button:focus { transform: none; box-shadow: 0 0 0 3px rgba(99, 102, 241, .25); }
 .jconfirm .jconfirm-box .jconfirm-buttons button:focus::after { display: none; }
 .jconfirm .cf-danger .jconfirm-box .jconfirm-buttons button.btn-danger:focus { box-shadow: 0 0 0 3px rgba(220, 38, 38, .3); }
 
