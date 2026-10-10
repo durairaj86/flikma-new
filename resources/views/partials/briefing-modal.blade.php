@@ -6,10 +6,10 @@
         <div class="modal fade" id="briefingModal" tabindex="-1" aria-hidden="true"
              data-url="{{ route('briefing.show') }}" data-auto="{{ $briefingAuto ? '1' : '0' }}"
              data-morning="{{ __('Good morning') }}" data-afternoon="{{ __('Good afternoon') }}" data-evening="{{ __('Good evening') }}"
-             data-today="{{ __('Today is') }}" data-sec-bad="{{ __('Act now') }}" data-sec-warn="{{ __('Coming up, do not miss') }}" data-sec-info="{{ __('Today') }}" data-sec-good="{{ __('Good news') }}" data-locale="{{ app()->getLocale() }}"
+             data-today="{{ __('Today is') }}" data-s-lead="{{ __('Here is what needs your attention today: ') }}" data-s-bad="{{ __('to act on now') }}" data-s-warn="{{ __('coming up') }}" data-s-info="{{ __('for today') }}" data-s-first="{{ __('Start with:') }}" data-more="{{ __('more') }}" data-sec-bad="{{ __('Act now') }}" data-sec-warn="{{ __('Coming up, do not miss') }}" data-sec-info="{{ __('Today') }}" data-sec-good="{{ __('Good news') }}" data-locale="{{ app()->getLocale() }}"
              data-empty="{{ __('All clear. Nothing needs your attention right now.') }}"
              data-error="{{ __('Could not load the briefing right now. Please try again.') }}">
-            <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-sm-down">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-fullscreen-sm-down">
                 <div class="modal-content border-0 shadow brief-modal">
                     <div class="brief-hero">
                         <button type="button" class="btn-close btn-close-white brief-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>

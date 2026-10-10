@@ -22,6 +22,37 @@ class AccountImportController extends Controller
     private const TYPE_BASE = ['Asset' => 1000, 'Liability' => 2000, 'Equity' => 3000, 'Income' => 4000, 'Expense' => 5000];
     private const CHUNK = 40;
 
+    public function page()
+    {
+        return view('modules.finance.accounts.import');
+    }
+
+    /** A small example file showing the columns we understand. */
+    public function sample()
+    {
+        $rows = [
+            ['code', 'name', 'type', 'parent_code'],
+            ['1000', 'Assets', 'Asset', ''],
+            ['1100', 'Cash and Bank', 'Asset', '1000'],
+            ['1110', 'Main Bank Account', 'Asset', '1100'],
+            ['2000', 'Liabilities', 'Liability', ''],
+            ['2100', 'Accounts Payable', 'Liability', '2000'],
+            ['4000', 'Income', 'Income', ''],
+            ['4100', 'Freight Revenue', 'Income', '4000'],
+            ['5000', 'Expenses', 'Expense', ''],
+            ['5100', 'Port Charges', 'Expense', '5000'],
+        ];
+
+        return response()->streamDownload(function () use ($rows) {
+            $out = fopen('php://output', 'w');
+            fwrite($out, "\xEF\xBB\xBF");
+            foreach ($rows as $r) {
+                fputcsv($out, $r);
+            }
+            fclose($out);
+        }, 'chart-of-accounts-sample.csv', ['Content-Type' => 'text/csv']);
+    }
+
     public function preview(Request $request, GeminiService $gemini): JsonResponse
     {
         $request->validate(['file' => 'required|file|mimes:xlsx,xls,csv,txt,pdf,jpg,jpeg,png,webp|max:10240']);
