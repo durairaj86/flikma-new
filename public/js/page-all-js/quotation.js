@@ -875,6 +875,7 @@ QUOTATION = {
             QUOTATION.form.addPackage();
             QUOTATION.form.removeRow();
             QUOTATION.form.initCharges();
+            QUOTATION.form.rateSheets();
             QUOTATION.form.shipmentMode();
             setTimeout(function () {
                 QUOTATION.form.customerProspectToggle();
@@ -986,6 +987,72 @@ QUOTATION = {
             initTomSelectSearch('#pol', port, 50, preLoad);
             initTomSelectSearch('#pod', port, 50, preLoad);
             initTomSelectSearch('#carrier', port + 'Lines', 50, preLoad);
+        },
+        // Suggest freight from the Rate Sheets module for the chosen origin / destination.
+        rateSheets() {
+            const mode = () => { const m = String($('#activity-id-hidden').val() || 'sea').toLowerCase(); return m === 'land' ? 'road' : m; };
+            const fetchRates = () => $.getJSON('/sales/rate-sheet/lookup', {mode: mode(), pol: $('#pol').val() || '', pod: $('#pod').val() || ''});
+            const money = (n) => Number(n).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            let rates = [];
+
+            const refresh = () => {
+                if (!$('#pol').val() || !$('#pod').val()) { rates = []; $('#rateSheetHint').hide(); $('#rateSheetCount').text(''); return $.Deferred().resolve().promise(); }
+                return fetchRates().done(function (rows) {
+                    rates = rows || [];
+                    $('#rateSheetCount').text(rates.length || '');
+                    $('#rateSheetHint').html(rates.length
+                        ? '<i class="bi bi-tags me-1"></i>' + rates.length + ' rate sheet' + (rates.length > 1 ? 's' : '') + ' match this lane. Open the Charges tab to add freight.'
+                        : '').toggle(rates.length > 0);
+                    if ($('#rateSheetPanel').is(':visible')) render();
+                });
+            };
+
+            const addCharge = (r) => {
+                const $tbody = $('#chargesBody');
+                let $row = $tbody.find('.charge-row').filter(function () {
+                    return !parseFloat($(this).find('.chg-amt-qty').val()) && !$(this).find('.chg-description').val();
+                }).first();
+                if (!$row.length) {
+                    $tbody.find('.charge-row:first .chg-add-row').trigger('click');
+                    $row = $tbody.find('.charge-row:last');
+                }
+                const pick = ($sel, re) => { const o = $sel.find('option').filter(function () { return re.test($(this).text()); }).first(); if (o.length) $sel.val(o.val()); };
+                pick($row.find('.chg-description'), /freight/i);
+                const unitRe = {per_container: /container/i, per_cbm: /cbm|volume/i, per_kg: /kg|weight/i, per_pallet: /pallet/i, per_shipment: /shipment/i}[r.basis];
+                if (unitRe) pick($row.find('.chg-unit'), unitRe);
+                if ($row.find('.chg-currency option[value="' + r.currency + '"]').length) $row.find('.chg-currency').val(r.currency);
+                $row.find('.chg-qty').val(1);
+                $row.find('.chg-amt-qty').val(Number(r.sell_rate).toFixed(2)).trigger('input');
+                $row.find('input[name="chg_remarks[]"]').val('Rate sheet ' + r.row_no + (r.carrier ? ' - ' + r.carrier : '') + (r.container_type ? ' - ' + r.container_type : ''));
+                if (window.toastr) toastr.success('Rate ' + r.row_no + ' added to charges');
+            };
+
+            const render = () => {
+                const $p = $('#rateSheetPanel');
+                if (!rates.length) {
+                    $p.html('<div class="text-muted small p-2">No active rate sheet for this origin and destination. Choose both first, or add one under Sales &gt; Rate Sheets.</div>');
+                    return;
+                }
+                $p.html(rates.map(function (r, i) {
+                    return '<div class="d-flex align-items-center justify-content-between gap-3 py-2 ' + (i ? 'border-top' : '') + '">'
+                        + '<div><div class="fw-semibold">' + r.row_no + ' &middot; ' + (r.carrier || 'Any carrier') + (r.container_type ? ' &middot; ' + r.container_type : '') + '</div>'
+                        + '<div class="small text-muted">' + r.currency + ' ' + money(r.sell_rate) + ' / ' + r.basis_label.toLowerCase()
+                        + (r.transit_days ? ' &middot; ' + r.transit_days + ' days' : '') + (r.valid_to ? ' &middot; valid till ' + r.valid_to : '')
+                        + (r.expiring ? ' <span class="badge bg-warning-subtle text-warning-emphasis">expiring</span>' : '') + '</div></div>'
+                        + '<button type="button" class="btn btn-sm btn-primary rounded-pill px-3 rs-add" data-i="' + i + '">Add to charges</button></div>';
+                }).join(''));
+            };
+
+            $('#btnRateSheets').off('click.rs').on('click.rs', function () {
+                const $p = $('#rateSheetPanel');
+                if ($p.is(':visible')) { $p.hide(); return; }
+                $p.html('<div class="text-muted small p-2">Loading...</div>').show();
+                refresh().always(render);
+            });
+            $('#rateSheetPanel').off('click.rs').on('click.rs', '.rs-add', function () { addCharge(rates[parseInt($(this).data('i'), 10)]); });
+            $('#pol,#pod').off('change.rs').on('change.rs', refresh);
+            $('#activity-id').off('change.rs').on('change.rs', function () { setTimeout(refresh, 400); });
+            setTimeout(refresh, 600);
         },
         addContainer() {
             // Same table-row-clone pattern as JOB.form.addContainer()

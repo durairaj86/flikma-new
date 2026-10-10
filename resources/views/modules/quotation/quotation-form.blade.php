@@ -199,7 +199,7 @@
                                         <option value="{{ $quotation->pol }}" selected>{{ $quotation->pol }}</option>
                                     @endif
                                     @foreach($polPod as $pol)
-                                        <option value="{{ $pol->id }}">{{ $pol->name }}</option>
+                                        <option value="{{ $pol->code . ' - ' . $pol->name }}" data-code="{{ $pol->code }}">{{ $pol->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -213,9 +213,10 @@
                                         <option value="{{ $quotation->pod }}" selected>{{ $quotation->pod }}</option>
                                     @endif
                                     @foreach($polPod as $pod)
-                                        <option value="{{ $pod->id }}">{{ $pod->name }}</option>
+                                        <option value="{{ $pod->code . ' - ' . $pod->name }}" data-code="{{ $pod->code }}">{{ $pod->name }}</option>
                                     @endforeach
                                 </select>
+                                <div id="rateSheetHint" class="form-text text-primary" style="display:none;"></div>
                             </div>
 
                             <div class="col-md-4">
@@ -527,6 +528,14 @@
 
                 <!-- Charges Tab -->
                 <div class="tab-pane mt-4" id="charges" role="tabpanel">
+                    {{-- Rates the company has agreed for this origin / destination (Sales > Rate Sheets) --}}
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <button type="button" id="btnRateSheets" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                            <i class="bi bi-tags me-1"></i>{{ __('Rate sheets') }} <span class="badge bg-primary ms-1" id="rateSheetCount"></span>
+                        </button>
+                        <span class="small text-muted">{{ __('Add freight from the agreed rates for this origin and destination.') }}</span>
+                    </div>
+                    <div id="rateSheetPanel" class="border rounded-3 p-2 mb-3 bg-light" style="display:none;"></div>
                     <div class="table-responsive">
                         <table class="table table-bordered table-sm align-middle" id="chargesTable">
                             <thead class="table-light">

@@ -164,7 +164,30 @@ RATE_SHEET = {
                 });
             });
         },
+        // Origin / Destination search like the Job form's POL / POD: sea ports, airports, or any typed place for road.
+        ports() {
+            const mode = $('#rt-mode').val() || 'sea';
+            ['#rt-origin', '#rt-destination'].forEach(function (sel) {
+                const el = document.querySelector(sel);
+                if (!el) return;
+                const keep = el.value;
+                if (el.tomselect) el.tomselect.destroy();
+                if (mode === 'road') {
+                    new TomSelect(el, {create: true, persist: false, maxItems: 1, allowEmptyOption: true, placeholder: el.dataset.placeholder || ''});
+                } else {
+                    initTomSelectSearch(sel, mode, 50, true);
+                }
+                if (keep && el.tomselect && !el.tomselect.options[keep]) { el.tomselect.addOption({[el.tomselect.settings.valueField]: keep, name: keep, text: keep, code: ''}); }
+                if (keep && el.tomselect) el.tomselect.setValue(keep, true);
+            });
+        },
         openCallback() {
+            // after the modal's own select setup has run
+            setTimeout(RATE_SHEET.form.ports, 250);
+            $('#rt-mode').off('change.rtports').on('change.rtports', function () {
+                ['#rt-origin', '#rt-destination'].forEach(function (sel) { const el = document.querySelector(sel); if (el && el.tomselect) el.tomselect.clear(true); });
+                RATE_SHEET.form.ports();
+            });
             // Shows the margin while you type the buy and sell rates.
             const hint = () => {
                 const buy = parseFloat(String($('#rt-buy').val()).replace(/,/g, '')) || 0;

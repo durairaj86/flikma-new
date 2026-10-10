@@ -60,6 +60,65 @@ class RateSheetController extends Controller
         };
     }
 
+    /** Strip a leading "CODE - " so "AEJEA - Port of Jebel Ali" and "Port of Jebel Ali" compare equal. */
+    private function laneName(?string $v): string
+    {
+        $v = trim((string) $v);
+        if (preg_match('/^[A-Z0-9]{2,6}\s*-\s*(.+)$/u', $v, $m)) {
+            $v = $m[1];
+        }
+
+        return mb_strtolower(trim($v));
+    }
+
+    /** Same place: equal names, or one contains the other ("Chennai" matches "Chennai International Airport"). */
+    private function sameLane(?string $rate, string $wanted): bool
+    {
+        $a = $this->laneName($rate);
+        if ($a === '' || $wanted === '') {
+            return false;
+        }
+
+        return $a === $wanted || (mb_strlen($a) >= 4 && str_contains($wanted, $a)) || (mb_strlen($wanted) >= 4 && str_contains($a, $wanted));
+    }
+
+    /**
+     * Active, in-date rate sheets for a lane. Used by the quotation form to suggest freight charges.
+     * GET ?mode=sea|air|road&pol=...&pod=...
+     */
+    public function lookup(Request $request)
+    {
+        $mode = strtolower((string) $request->query('mode'));
+        $mode = $mode === 'land' ? 'road' : $mode;
+        $pol = $this->laneName($request->query('pol'));
+        $pod = $this->laneName($request->query('pod'));
+        if ($pol === '' || $pod === '') {
+            return response()->json([]);
+        }
+
+        $rows = RateSheet::with('carrier:id,name')->where('is_active', 1)
+            ->where(fn($q) => $q->whereNull('valid_from')->orWhereDate('valid_from', '<=', today()))
+            ->where(fn($q) => $q->whereNull('valid_to')->orWhereDate('valid_to', '>=', today()))
+            ->when(in_array($mode, ['sea', 'air', 'road'], true), fn($q) => $q->where('shipment_mode', $mode))
+            ->orderBy('sell_rate')->limit(100)->get()
+            ->filter(fn($r) => $this->sameLane($r->origin, $pol) && $this->sameLane($r->destination, $pod))->values();
+
+        return response()->json($rows->take(10)->map(fn($r) => [
+            'id' => $r->id,
+            'row_no' => $r->row_no,
+            'carrier' => $r->carrier->name ?? null,
+            'container_type' => $r->container_type,
+            'basis' => $r->basis,
+            'basis_label' => RateSheet::BASIS[$r->basis] ?? $r->basis,
+            'currency' => $r->currency,
+            'sell_rate' => (float) $r->sell_rate,
+            'min_charge' => (float) $r->min_charge,
+            'transit_days' => $r->transit_days,
+            'valid_to' => $r->valid_to?->format('d-m-Y'),
+            'expiring' => $r->validity() === 'expiring',
+        ]));
+    }
+
     private function applyFilters($query, array $filter)
     {
         return $query

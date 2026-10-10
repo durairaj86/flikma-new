@@ -24,6 +24,7 @@
     module-agnostic pieces that don't need quotation.js loaded.
 --}}
 <x-app-layout>
+    <script src="{{ asset('js/page-all-js/quotation.js') }}?v={{ appVersion() }}"></script>
     <style>
         /* Same tab look as the Customers list: inactive = soft grey with amber icon, active = blue with white icon. */
         #basicListTabs .status-btn:not(.active) { background: #f1f3f5; color: #495057; }
@@ -389,6 +390,38 @@
                 $('#prospect').trigger('change.custProspect');
             }
 
+            // Origin / Destination search: the same live port search the Job form uses (list follows the
+            // department's mode: sea / air / land ...). This page doesn't load the quotation module, so
+            // QUOTATION.form.polPodLoad() / activityChange() never run here. Wire them up ourselves.
+            function bindRoutePorts() {
+                const load = function () {
+                    const port = $('#activity-id-hidden').val() || 'sea';
+                    ['#pol', '#pod'].forEach(function (sel) {
+                        const el = document.querySelector(sel);
+                        if (!el) return;
+                        if (el.tomselect) el.tomselect.destroy();
+                        initTomSelectSearch(sel, port, 50, true);
+                    });
+                };
+                load();
+                $('#activity-id').off('change.ports').on('change.ports', function () {
+                    const type = this.selectedOptions[0] ? this.selectedOptions[0].dataset.shipmentType : null;
+                    if (type && $('#activity-id-hidden').val() !== type) {
+                        $('#activity-id-hidden').val(type);
+                        load();
+                    }
+                });
+            }
+
+            // The form's own helpers (container / package / charge rows, customer address, terms) live in the
+            // quotation module, which isn't loaded as this page's module. Load it just for those helpers.
+            function bindQuotationFormHelpers() {
+                if (!window.QUOTATION || !QUOTATION.form) return;
+                ['addContainer', 'addPackage', 'removeRow', 'initCharges', 'rateSheets', 'customerAddressFetch', 'termsAutoFill'].forEach(function (fn) {
+                    try { if (typeof QUOTATION.form[fn] === 'function') QUOTATION.form[fn](); } catch (e) { console.error('QUOTATION.form.' + fn, e); }
+                });
+            }
+
             function openNewQuotationModal(content) {
                 webModal.openGlobalModal({
                     title: {{ Illuminate\Support\Js::from(__('New Quotation')) }},
@@ -398,6 +431,8 @@
                     content: content,
                     callBack: function () {
                         setTimeout(bindCustomerProspectToggle);
+                        setTimeout(bindRoutePorts);
+                        setTimeout(bindQuotationFormHelpers);
                     },
                 });
             }
@@ -597,6 +632,8 @@
                     scroll: true,
                     callBack: function () {
                         setTimeout(bindCustomerProspectToggle);
+                        setTimeout(bindRoutePorts);
+                        setTimeout(bindQuotationFormHelpers);
                     },
                 });
             });

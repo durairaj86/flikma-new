@@ -42,6 +42,7 @@ Route::namespace('sales')->prefix('sales')->group(function () {
     // Rate sheets
     Route::view('/rate-sheets', 'modules.rate-sheet.list')->name('rate-sheets');
     Route::post('/rate-sheet/data', [\App\Http\Controllers\Sales\RateSheetController::class, 'fetchAllRows'])->name('rate-sheets.data');
+    Route::get('/rate-sheet/lookup', [\App\Http\Controllers\Sales\RateSheetController::class, 'lookup']);
     Route::get('/rate-sheet/create', [\App\Http\Controllers\Sales\RateSheetController::class, 'modal']);
     Route::post('/rate-sheet/create', [\App\Http\Controllers\Sales\RateSheetController::class, 'store']);
     Route::get('/rate-sheet/{id}/create', [\App\Http\Controllers\Sales\RateSheetController::class, 'edit']);

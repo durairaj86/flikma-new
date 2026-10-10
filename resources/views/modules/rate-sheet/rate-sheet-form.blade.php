@@ -19,7 +19,7 @@
                 <div class="col-12"><h6 class="border-bottom pb-2 mb-0 fw-semibold">{{ __('Lane') }}</h6></div>
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">{{ __('Mode') }} <sup class="text-danger">*</sup></label>
-                    <select name="shipment_mode" class="tom-select" required>
+                    <select name="shipment_mode" id="rt-mode" class="tom-select" required>
                         <option value="sea" @selected($rate->shipment_mode == 'sea')>{{ __('Sea') }}</option>
                         <option value="air" @selected($rate->shipment_mode == 'air')>{{ __('Air') }}</option>
                         <option value="road" @selected($rate->shipment_mode == 'road')>{{ __('Road') }}</option>
@@ -27,11 +27,17 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">{{ __('Origin') }} <sup class="text-danger">*</sup></label>
-                    <input type="text" name="origin" class="form-control" value="{{ $rate->origin }}" required>
+                    <select id="rt-origin" name="origin" class="tom-select-search" autocomplete="off" required data-placeholder="{{ __('Search port or city') }}">
+                        <option value="">{{ __('--Select--') }}</option>
+                        @if($rate->origin)<option value="{{ $rate->origin }}" selected>{{ $rate->origin }}</option>@endif
+                    </select>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">{{ __('Destination') }} <sup class="text-danger">*</sup></label>
-                    <input type="text" name="destination" class="form-control" value="{{ $rate->destination }}" required>
+                    <select id="rt-destination" name="destination" class="tom-select-search" autocomplete="off" required data-placeholder="{{ __('Search port or city') }}">
+                        <option value="">{{ __('--Select--') }}</option>
+                        @if($rate->destination)<option value="{{ $rate->destination }}" selected>{{ $rate->destination }}</option>@endif
+                    </select>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">{{ __('Carrier') }} <small class="text-muted fw-normal">({{ __('optional') }})</small></label>
