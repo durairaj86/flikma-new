@@ -66,6 +66,11 @@ class Job extends Model
         return $this->belongsTo(Customer::class);
     }
 
+    public function milestones(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(JobMilestone::class);
+    }
+
     public function clearance()
     {
         return $this->hasOne(JobClearance::class);

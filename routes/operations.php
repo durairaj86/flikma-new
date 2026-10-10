@@ -52,8 +52,12 @@ Route::namespace('operations')->prefix('operation')->group(function () {
     Route::post('/customs/{id}/status/{status}', [\App\Http\Controllers\Job\CustomsController::class, 'updateStatus']);
     Route::get('/customs/{id}/overview', [\App\Http\Controllers\Job\CustomsController::class, 'overview']);
 
-    Route::view('/jobs', 'modules.job.list')->name('jobs');
+    Route::view('/jobs', 'modules.job.list', ['fixedColumns' => true])->name('jobs');
+    // Same list where each user can choose and arrange the columns.
+    Route::view('/jobs/new', 'modules.job.list', ['fixedColumns' => false])->name('jobs.custom');
     Route::post('/job/data', [\App\Http\Controllers\Job\JobController::class, 'fetchAllRows'])->name('jobs.data');
+    Route::get('/job/insights', [\App\Http\Controllers\Job\JobController::class, 'insights']);
+    Route::post('/job/ask', [\App\Http\Controllers\Job\JobController::class, 'ask']);
     Route::get('/job/create', [\App\Http\Controllers\Job\JobController::class, 'modal']);
     Route::post('/job/create', [\App\Http\Controllers\Job\JobController::class, 'store']);
     Route::get('/job/{id}/create', [\App\Http\Controllers\Job\JobController::class, 'edit']);
@@ -97,6 +101,7 @@ Route::namespace('operations')->prefix('operation')->group(function () {
     Route::get('/tracking', [\App\Http\Controllers\Job\TrackingController::class, 'index'])->name('tracking');
     Route::get('/tracking/{id}', [\App\Http\Controllers\Job\TrackingController::class, 'edit'])->whereNumber('id');
     Route::post('/tracking/{id}', [\App\Http\Controllers\Job\TrackingController::class, 'save'])->whereNumber('id');
+    Route::post('/tracking/{id}/next', [\App\Http\Controllers\Job\TrackingController::class, 'advance'])->whereNumber('id');
     Route::post('/tracking/{id}/share', [\App\Http\Controllers\Job\TrackingController::class, 'share'])->whereNumber('id');
 
     // Demurrage & detention

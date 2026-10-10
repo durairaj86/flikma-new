@@ -72,6 +72,15 @@ class AutocheckRunner
         'trial_balance' => ['Check trial balance', '/reports/trial-balance'],
         'balance_sheet' => ['Check balance sheet', '/reports/balance-sheet'],
         'tax_summary' => ['Check tax summary', '/reports/tax-summary'],
+        'tracking' => ['Shipment tracking: steps, job dates and public link', '/operation/tracking'],
+        'job_insights' => ['Job list: health, progress and AI insight counts', '/operation/jobs'],
+        'demurrage' => ['Demurrage: free days, detention and cost', '/operation/demurrage'],
+        'documents' => ['Documents center: upload, expiry tabs, download, delete', '/operation/documents'],
+        'fleet' => ['Masters: driver, vehicle, then a trip from start to finish', '/masters/vehicles'],
+        'employee' => ['Payroll: employee, shift, salary structure and a punch', '/payroll/attendance'],
+        'payroll_run' => ['Payroll: generate, pay and post the salary to the ledger', '/payroll/runs'],
+        'employee_loan' => ['Payroll: employee loan', '/employee-loans'],
+        'guard_fleet' => ['Delete check: vehicle with a trip is protected', '/masters/vehicles'],
         'guard_expense' => ['Delete check: approved expense is protected', '/finance/expense'],
         'guard_collection' => ['Delete check: approved collection is protected', '/collection'],
         'guard_payment' => ['Delete check: approved payment is protected', '/transaction/payments'],
@@ -538,6 +547,195 @@ class AutocheckRunner
         return '/transaction/payments';
     }
 
+    // ───────────── logistics, fleet and payroll modules ─────────────
+
+    private function stepTracking(array &$ctx, array &$checks): string
+    {
+        $tc = app(\App\Http\Controllers\Job\TrackingController::class);
+        $job = Job::with('clearance')->find($ctx['job_id']);
+        $codes = array_keys(\App\Http\Controllers\Job\TrackingController::template($job->shipment_mode));
+        $this->check($checks, 'Tracking steps include documents and D/O', in_array('docs_received', $codes) && in_array('do_released', $codes), implode(', ', $codes));
+
+        $dep = now()->subDays(5)->format('d-m-Y');
+        $this->call($tc, 'save', ['date' => ['booked' => now()->subDays(8)->format('d-m-Y'), 'docs_received' => now()->subDays(7)->format('d-m-Y'), 'departed' => $dep], 'location' => ['booked' => 'AUTOCHECK']], [$job->id]);
+        $job = $job->fresh('clearance');
+        $this->check($checks, 'Documents received date written back to the job', filled($job->doc_received), $job->doc_received);
+        $this->check($checks, 'ATD written back to the job', filled($job->atd), $job->atd);
+
+        $before = collect(\App\Http\Controllers\Job\TrackingController::steps($job))->whereNotNull('actual')->count();
+        $adv = $this->callNoRequest($tc, 'advance', [$job->id]);
+        $after = collect(\App\Http\Controllers\Job\TrackingController::steps($job->fresh('clearance')))->whereNotNull('actual')->count();
+        $this->check($checks, 'One-click "Done" completes the next step', ($adv['status'] ?? '') === 'success' && $after === $before + 1, "$before → $after");
+
+        $job->clearance?->forceFill(['clearance_status' => 'cleared', 'clearance_date' => today()])->save();
+        $cust = collect(\App\Http\Controllers\Job\TrackingController::steps($job->fresh('clearance')))->firstWhere('code', 'customs');
+        if ($job->clearance) {
+            $this->check($checks, 'Customs step follows the Customs Clearance module', (bool) $cust['actual'], $cust['actual']?->format('d-m-Y'));
+        }
+
+        $url = $this->callNoRequest($tc, 'share', [$job->id])['url'] ?? '';
+        $this->check($checks, 'Public tracking link created', str_contains($url, '/track/'), $url);
+        $html = $tc->publicShow(substr($url, -32))->render();
+        $this->check($checks, 'Public page shows the job and no amounts', str_contains($html, (string) $job->row_no) && !str_contains($html, 'grand_total'), $job->row_no);
+        return '/operation/tracking';
+    }
+
+    private function stepJobInsights(array &$ctx, array &$checks): string
+    {
+        $job = Job::with('customer:id,name_en', 'invoices:id,job_id,status', 'clearance', 'milestones')->find($ctx['job_id']);
+        $h = \App\Services\Job\JobInsights::health($job);
+        $p = \App\Services\Job\JobInsights::progress($job);
+        $this->check($checks, 'Job has a health state', filled($h['state']), $h['state'] . ' ' . $h['label']);
+        $this->check($checks, 'Progress counts the done steps', $p['done'] >= 3 && $p['total'] >= 5, "{$p['done']}/{$p['total']}");
+        $this->check($checks, 'Billing state matches the invoices', \App\Services\Job\JobInsights::billing($job) !== 'none', \App\Services\Job\JobInsights::billing($job));
+        $snap = \App\Services\Job\JobInsights::snapshot();
+        $this->check($checks, 'Insight counts are returned', isset($snap['counts']['delayed'], $snap['counts']['unbilled']) && $snap['active'] >= 1, json_encode($snap['counts']));
+        $ctxText = \App\Services\Job\JobInsights::context();
+        $this->check($checks, 'AI assistant context lists the job', str_contains($ctxText, (string) $job->row_no), $job->row_no);
+        return '/operation/jobs';
+    }
+
+    private function stepDemurrage(array &$ctx, array &$checks): string
+    {
+        $c = \App\Models\Job\JobContainer::create(['job_id' => $ctx['job_id'], 'container_number' => 'AUTO1234567', 'container_size' => '40HC']);
+        $dc = app(\App\Http\Controllers\Job\DemurrageController::class);
+        $this->call($dc, 'save', ['discharged_at' => now()->subDays(10)->format('d-m-Y'), 'free_days' => 7], [$c->id]);
+        $f = \App\Http\Controllers\Job\DemurrageController::figures($c->fresh(), 100);
+        $this->check($checks, 'Container is in detention after the free days', $f['state'] === 'detention', $f['state']);
+        $this->check($checks, 'Days over and cost are worked out', $f['over'] === 4 && (int) $f['cost'] === 400, "{$f['over']} days, {$f['cost']}");
+        $this->call($dc, 'save', ['discharged_at' => now()->subDays(10)->format('d-m-Y'), 'returned_at' => now()->subDays(5)->format('d-m-Y'), 'free_days' => 7], [$c->id]);
+        $f = \App\Http\Controllers\Job\DemurrageController::figures($c->fresh(), 100);
+        $this->check($checks, 'Returned in time: no charge', $f['state'] === 'returned' && $f['cost'] == 0, $f['state']);
+        $this->check($checks, 'Tracker page renders', strlen($dc->index(Request::create('/x', 'GET', ['tab' => 'returned']))->render()) > 1000, 'ok');
+        return '/operation/demurrage';
+    }
+
+    private function stepDocuments(array &$ctx, array &$checks): string
+    {
+        $dc = app(\App\Http\Controllers\Documents\DocumentCenterController::class);
+        $tmp = tempnam(sys_get_temp_dir(), 'ac') . '.pdf';
+        file_put_contents($tmp, "%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF");
+        $file = new \Illuminate\Http\UploadedFile($tmp, 'autocheck-bl.pdf', 'application/pdf', null, true);
+        $request = Request::create('/autocheck-internal', 'POST', [
+            'title' => 'AUTOCHECK Bill of Lading', 'doc_type' => 'bl', 'owner_type' => 'job', 'owner_id' => $ctx['job_id'],
+            'expiry_date' => now()->addDays(10)->format('d-m-Y'),
+        ], [], ['file' => $file]);
+        $request->setLaravelSession(app('session.store'));
+        app()->instance('request', $request);
+        $res = $dc->store($request)->getData(true);
+        $doc = \App\Models\Documents\Documents::find($res['id'] ?? 0);
+        $this->check($checks, 'Document saved against the job', $doc && (int) $doc->documentable_id === (int) $ctx['job_id'], $doc?->title);
+        $this->check($checks, 'File is stored', $doc && \Storage::disk('public')->exists($doc->file_path), $doc?->file_path);
+
+        $list = $this->call($dc, 'fetchAllRows', ['tab' => 'expiring', 'draw' => 1, 'start' => 0, 'length' => 50]);
+        $this->check($checks, 'Document appears under Expiring Soon', collect($list['data'] ?? [])->contains('id', $doc?->id), json_encode($list['statusCounts'] ?? []));
+        $this->check($checks, 'Download works', $doc && $dc->download($doc->id, Request::create('/x'))->getStatusCode() === 200, 'ok');
+
+        if ($doc) {
+            $this->callNoRequest($dc, 'delete', [$doc->id]);
+            $this->check($checks, 'Document and file are removed on delete', !$this->exists('documents', $doc->id) && !\Storage::disk('public')->exists($doc->file_path), 'deleted');
+        }
+        @unlink($tmp);
+        return '/operation/documents';
+    }
+
+    private function stepFleet(array &$ctx, array &$checks): string
+    {
+        $d = $this->call(app(\App\Http\Controllers\Fleet\DriverController::class), 'store', ['name' => 'AUTOCHECK Driver', 'phone' => '0500000000', 'license_no' => 'LIC-1', 'license_expiry' => now()->addYear()->format('d-m-Y')]);
+        $driver = \App\Models\Fleet\Driver::where('name', 'AUTOCHECK Driver')->latest('id')->first();
+        $this->check($checks, 'Driver saved with a number', $driver && filled($driver->row_no), $driver?->row_no);
+        $ctx['driver_id'] = $driver?->id;
+        $this->call(app(\App\Http\Controllers\Fleet\VehicleController::class), 'store', ['plate_no' => 'AUT 1234', 'type' => 'truck', 'capacity_kg' => 20000, 'driver_id' => $driver?->id]);
+        $veh = \App\Models\Fleet\Vehicle::where('plate_no', 'AUT 1234')->latest('id')->first();
+        $this->check($checks, 'Vehicle saved with a number', $veh && filled($veh->row_no), $veh?->row_no);
+        $ctx['vehicle_id'] = $veh?->id;
+
+        $tc = app(\App\Http\Controllers\Fleet\TripController::class);
+        $this->call($tc, 'store', ['trip_date' => now()->format('d-m-Y'), 'vehicle_id' => $veh?->id, 'driver_id' => $driver?->id, 'job_id' => $ctx['job_id'],
+            'origin' => 'Dammam', 'destination' => 'Riyadh', 'freight_amount' => 1500, 'driver_allowance' => 100, 'fuel_cost' => 300]);
+        $trip = \App\Models\Fleet\Trip::where('vehicle_id', $veh?->id)->latest('id')->first();
+        $this->check($checks, 'Trip saved and is Planned', $trip && $this->st($trip->status) === 1, $trip?->row_no);
+        $ctx['trip_id'] = $trip?->id;
+        $this->callNoRequest($tc, 'updateStatus', [$trip->id, 2]);
+        $this->check($checks, 'Starting a trip stamps the start time', filled($trip->fresh()->started_at), $trip->fresh()->started_at);
+        $this->callNoRequest($tc, 'updateStatus', [$trip->id, 3]);
+        $this->check($checks, 'Completing a trip stamps the end time', filled($trip->fresh()->completed_at), $trip->fresh()->completed_at);
+        $this->check($checks, 'Trip listed under the job link', \App\Models\Fleet\Trip::where('job_id', $ctx['job_id'])->exists(), 'linked');
+        return '/masters/vehicles';
+    }
+
+    private function stepGuardFleet(array &$ctx, array &$checks): string
+    {
+        $this->guard($checks, 'Vehicle with a trip', app(\App\Http\Controllers\Fleet\VehicleController::class), 'delete', 'vehicles', $ctx['vehicle_id'] ?? null);
+        $this->guard($checks, 'Driver with a trip', app(\App\Http\Controllers\Fleet\DriverController::class), 'delete', 'drivers', $ctx['driver_id'] ?? null);
+        return '/masters/vehicles';
+    }
+
+    private function stepEmployee(array &$ctx, array &$checks): string
+    {
+        $user = \App\Models\User::withoutGlobalScopes()->create([
+            'name' => 'AUTOCHECK Employee', 'email' => 'autocheck.employee.' . time() . '@example.com', 'password' => bcrypt(\Illuminate\Support\Str::random(24)),
+            'company_id' => companyId(), 'is_employee' => 1, 'employee_code' => 'ACE' . random_int(100, 999), 'login_permission' => 0,
+        ]);
+        $this->check($checks, 'Employee created (a users row flagged as employee)', (bool) $user->id && (int) $user->is_employee === 1, $user->employee_code);
+        $ctx['employee_id'] = $user->id;
+
+        $this->call(app(\App\Http\Controllers\Payroll\ShiftController::class), 'store', ['name' => 'AUTOCHECK Shift', 'type' => 'morning', 'start_time' => '08:00', 'end_time' => '17:00', 'grace_minutes' => 15, 'week_off_days' => [5]]);
+        $shift = \App\Models\Payroll\Shift::where('name', 'AUTOCHECK Shift')->latest('id')->first();
+        $this->check($checks, 'Shift saved', (bool) $shift, $shift?->name);
+        $ctx['shift_id'] = $shift?->id;
+
+        $this->call(app(\App\Http\Controllers\Payroll\SalaryStructureController::class), 'store', ['employee_id' => $user->id, 'basic_salary' => 3000, 'housing_allowance' => 500, 'transportation_allowance' => 200, 'effective_from' => now()->startOfMonth()->format('Y-m-d')]);
+        $ss = \App\Models\Payroll\SalaryStructure::where('employee_id', $user->id)->latest('id')->first();
+        $this->check($checks, 'Salary structure total = basic + allowances', $ss && (float) $ss->total_salary === 3700.0, $ss?->total_salary);
+
+        $day = now()->startOfMonth()->addDay();
+        while ($day->isFriday() || $day->isFuture()) { $day = $day->subDay(); }
+        foreach (['08:05' => 'in', '17:10' => 'out'] as $time => $dir) {
+            $this->call(app(\App\Http\Controllers\Payroll\PunchEntryController::class), 'store', ['employee_id' => $user->id, 'date' => $day->format('d-m-Y'), 'time' => $time, 'direction' => $dir]);
+        }
+        $att = \App\Models\Payroll\Attendance::withoutGlobalScopes()->where('employee_id', $user->id)->first();
+        $punches = \App\Models\Payroll\AttendancePunch::withoutGlobalScopes()->where('employee_id', $user->id)->count();
+        $this->check($checks, 'Two punches recorded', $punches === 2, $punches);
+        $this->check($checks, 'Punches build the day attendance (in and out)', $att && filled($att->check_in) && filled($att->check_out), $att ? "{$att->check_in} - {$att->check_out}" : '-');
+        return '/payroll/attendance';
+    }
+
+    private function stepPayrollRun(array &$ctx, array &$checks): string
+    {
+        $pc = app(\App\Http\Controllers\Payroll\PayrollRunController::class);
+        $this->call($pc, 'store', ['month' => (int) now()->format('n'), 'year' => (int) now()->format('Y'), 'employee_ids' => [$ctx['employee_id']]]);
+        $rec = \App\Models\Payroll\PayrollRecord::withoutGlobalScopes()->where('employee_id', $ctx['employee_id'])->latest('id')->first();
+        $this->check($checks, 'Payroll record generated as draft', $rec && $rec->status === 'draft', $rec?->payroll_number);
+        $this->check($checks, 'Net pay is worked out', $rec && (float) $rec->net_payable > 0 && (float) $rec->net_payable <= (float) $rec->total_earnings, $rec ? $this->money($rec->net_payable) : '-');
+        $ctx['payroll_id'] = $rec?->id;
+
+        $cash = \App\Models\Finance\Account\Account::query()->active()->posting()->cashOrBank()->value('id');
+        $this->check($checks, 'A cash or bank account exists to pay from', (bool) $cash, $cash);
+        $this->call($pc, 'pay', ['bank_account_id' => $cash, 'payment_date' => now()->format('Y-m-d')], [$rec]);
+        $rec = $rec->fresh();
+        $this->check($checks, 'Record is Paid', $rec->status === 'paid', $rec->status);
+        $led = $this->ledger((int) $cash, $rec->id, \App\Models\Payroll\PayrollRecord::class);
+        $this->check($checks, 'Bank credited with the net pay', abs($led['cr'] - (float) $rec->net_payable) < 0.01, $this->money($led['cr']));
+        $this->check($checks, 'Salary voucher balances', abs($this->entryImbalance($rec->id, \App\Models\Payroll\PayrollRecord::class)) < 0.01, 'balanced');
+
+        $this->callNoRequest($pc, 'disapprove', [$rec]);
+        $this->check($checks, 'Un-paying removes the voucher', $this->entryImbalance($rec->id, \App\Models\Payroll\PayrollRecord::class) == 0.0 && $rec->fresh()->status === 'draft', 'draft again');
+        return '/payroll/runs';
+    }
+
+    private function stepEmployeeLoan(array &$ctx, array &$checks): string
+    {
+        $this->call(app(\App\Http\Controllers\Payroll\EmployeeLoanController::class), 'store', [
+            'employee_id' => $ctx['employee_id'], 'loan_amount' => 1200, 'total_installments' => 4, 'installment_amount' => 300, 'start_date' => now()->format('Y-m-d'),
+        ]);
+        $loan = \App\Models\Payroll\EmployeeLoan::withoutGlobalScopes()->where('employee_id', $ctx['employee_id'])->latest('id')->first();
+        $this->check($checks, 'Loan saved and Active', $loan && $loan->status === 'active', $loan?->status);
+        $this->check($checks, 'Remaining equals the loan amount', $loan && (float) $loan->remaining_amount === 1200.0, $loan?->remaining_amount);
+        $ctx['loan_id'] = $loan?->id;
+        return '/employee-loans';
+    }
+
     private function stepGuardPayment(array &$ctx, array &$checks): string
     {
         $this->guard($checks, 'Approved payment', app(PaymentController::class), 'destroy', 'payments', $ctx['payment_id']);
@@ -768,6 +966,32 @@ class AutocheckRunner
                 $fin = DB::table('finance')->where('linked_type', $type)->where('linked_id', $ctx[$key])->pluck('id');
                 DB::table('finance_subs')->whereIn('finance_id', $fin)->delete();
                 DB::table('finance')->whereIn('id', $fin)->delete();
+            }
+            // Payroll, fleet and logistics extras created by the newer steps.
+            if (!empty($ctx['payroll_id'])) {
+                $fin = DB::table('finance')->where('linked_type', \App\Models\Payroll\PayrollRecord::class)->where('linked_id', $ctx['payroll_id'])->pluck('id');
+                DB::table('finance_subs')->whereIn('finance_id', $fin)->delete();
+                DB::table('finance')->whereIn('id', $fin)->delete();
+                DB::table('payroll_records')->where('id', $ctx['payroll_id'])->delete();
+            }
+            if (!empty($ctx['employee_id'])) {
+                foreach (['loan_installments' => 'employee_id', 'attendance_punches' => 'employee_id', 'attendance' => 'employee_id', 'salary_structures' => 'employee_id', 'payroll_records' => 'employee_id'] as $t => $col) {
+                    if (\Schema::hasTable($t) && \Schema::hasColumn($t, $col)) DB::table($t)->where($col, $ctx['employee_id'])->delete();
+                }
+                if (\Schema::hasTable('loan_installments') && !empty($ctx['loan_id'])) DB::table('loan_installments')->where('loan_id', $ctx['loan_id'])->delete();
+                if (!empty($ctx['loan_id'])) DB::table('employee_loans')->where('id', $ctx['loan_id'])->delete();
+                DB::table('users')->where('id', $ctx['employee_id'])->delete();
+                $removed[] = 'employee';
+            }
+            if (!empty($ctx['shift_id'])) DB::table('shifts')->where('id', $ctx['shift_id'])->delete();
+            foreach (['trip_id' => 'trips', 'vehicle_id' => 'vehicles', 'driver_id' => 'drivers'] as $k => $t) {
+                if (!empty($ctx[$k])) { DB::table($t)->where('id', $ctx[$k])->delete(); $removed[] = $t; }
+            }
+            if (!empty($ctx['job_id'])) {
+                DB::table('job_milestones')->where('job_id', $ctx['job_id'])->delete();
+                $docIds = DB::table('documents')->where('documentable_id', $ctx['job_id'])->where('documentable_type', \App\Models\Job\Job::class)->get(['id', 'file_path']);
+                foreach ($docIds as $d) { if ($d->file_path) \Storage::disk('public')->delete($d->file_path); }
+                DB::table('documents')->whereIn('id', $docIds->pluck('id'))->delete();
             }
             $docs = [
                 ['collection_id', 'collection_invoices', 'collection_id', 'collections'],

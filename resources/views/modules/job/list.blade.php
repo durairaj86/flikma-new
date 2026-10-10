@@ -159,11 +159,96 @@
                 </div>
                 <button class="btn btn-icon-search rounded-circle" id="filter-box" type="button"
                         title="{{ __('Filter') }}" aria-label="{{ __('Filter') }}"><i class="bi bi-funnel"></i></button>
+@if($fixedColumns ?? false)
+                <button class="btn btn-icon-search rounded-circle" id="jobAiBtn" type="button"
+                        title="{{ __('AI Assistant') }}" aria-label="{{ __('AI Assistant') }}"><i class="bi bi-stars"></i></button>
+@endif
+@unless($fixedColumns ?? false)
                 <button class="btn btn-icon-search rounded-circle" id="columnSettingsBtn" type="button"
                         title="{{ __('Column Settings') }}" aria-label="{{ __('Column Settings') }}"><i class="bi bi-columns-gap"></i></button>
+@endunless
             </div>
         </div>
 
+        @if($fixedColumns ?? false)
+        <style>
+            .jq { border: 1px solid #e9ecef; border-radius: 12px; padding: .7rem .9rem; background: #fff; cursor: pointer; text-align: left; width: 100%; transition: .15s; }
+            .jq:hover { border-color: #adb5bd; transform: translateY(-1px); }
+            .jq.active { border-color: #0d6efd; background: #f0f7ff; box-shadow: 0 0 0 2px rgba(13,110,253,.15); }
+            .jq .jq-n { font-size: 1.5rem; font-weight: 700; line-height: 1.1; }
+            .jq .jq-l { font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; color: #6c757d; }
+            .jq-delayed .jq-n { color: #dc2626; } .jq-arriving .jq-n { color: #d97706; } .jq-clearance .jq-n { color: #0d6efd; } .jq-unbilled .jq-n { color: #7c3aed; }
+            #jobAiBtn.active { background: #ede9fe; color: #5b21b6; border-color: #c4b5fd; }
+            .job-ai { border-radius: 14px; background: linear-gradient(135deg, #f5f3ff 0%, #eff6ff 100%); border: 1px solid #e0e7ff; padding: 1rem 1.25rem; }
+            .job-ai-badge { display: inline-flex; align-items: center; gap: .35rem; font-weight: 700; font-size: .8rem; color: #5b21b6; }
+            .job-ai-chip { border: 1px solid #ddd6fe; background: #fff; color: #5b21b6; border-radius: 50rem; font-size: .75rem; padding: .2rem .7rem; cursor: pointer; }
+            .job-ai-chip:hover { background: #ede9fe; }
+            #jobAiAnswer { background: #fff; border-radius: 10px; padding: .75rem 1rem; font-size: .88rem; border: 1px solid #e0e7ff; }
+            .job-prog { min-width: 150px; }
+            .job-prog-bar { height: 6px; border-radius: 6px; background: #e9ecef; overflow: hidden; }
+            .job-prog-bar span { display: block; height: 100%; background: #198754; border-radius: 6px; }
+            .job-health { font-weight: 600; }
+            .jc-mode { box-shadow: none !important; background: transparent; }
+            .jc-chip { border: 1px solid #dee2e6; background: #fff; border-radius: 8px; font-weight: 600; font-size: .8rem; padding: .25rem .9rem; }
+            .jc-chip.active { background: #0d6efd; color: #fff; border-color: #0d6efd; }
+            .jc-mode #dataTable { border-collapse: separate; border-spacing: 0 12px; }
+            .jc-mode #dataTable thead { display: none; }
+            .jc-mode #dataTable tbody td { background: #fff; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; padding: 1rem 1.25rem; vertical-align: middle; }
+            .jc-mode #dataTable tbody td:first-child { border-left: 1px solid #e5e7eb; border-radius: 12px 0 0 12px; }
+            .jc-mode #dataTable tbody td:last-child { border-right: 1px solid #e5e7eb; border-radius: 0 12px 12px 0; width: 56px; text-align: center; }
+            .jc-mode #dataTable tbody tr:hover td { background: #fcfcfd; }
+            .jc-mode #dataTable tbody tr.jc-delayed td { border-color: #fecaca; }
+            .jc-mode #dataTable tbody tr.jc-delayed td:first-child { box-shadow: inset 4px 0 0 #dc2626; }
+            .jc-mode #dataTable tbody tr.jc-soon td:first-child { box-shadow: inset 4px 0 0 #f59e0b; }
+            .jc-mode #dataTable tbody tr.jc-done td { border-color: #bbf7d0; }
+            .jc-mode #dataTable tbody tr.jc-done td:first-child { box-shadow: inset 4px 0 0 #16a34a; }
+            .jc { display: grid; grid-template-columns: 1.15fr 2.1fr 1fr 1.35fr; gap: 1.25rem; align-items: center; }
+            @media (max-width: 1300px) { .jc { grid-template-columns: 1fr 1.6fr; } }
+            .jc-no { font-size: 1.05rem; font-weight: 700; color: #1d4ed8; text-decoration: none; }
+            .jc-dot { display: inline-flex; align-items: center; gap: .35rem; font-size: .75rem; font-weight: 600; }
+            .jc-dot i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+            .jc-route { display: flex; align-items: center; gap: .9rem; }
+            .jc-city { font-size: 1.05rem; font-weight: 700; line-height: 1.15; max-width: 150px; }
+            .jc-line { flex: 1; text-align: center; min-width: 120px; }
+            .jc-line .jc-rail { position: relative; border-top: 2px solid #d1d5db; margin: .35rem 0; }
+            .jc-line .jc-rail::before, .jc-line .jc-rail::after { content: ''; position: absolute; top: -5px; width: 8px; height: 8px; border-radius: 50%; background: #9ca3af; }
+            .jc-line .jc-rail::before { left: 0; } .jc-line .jc-rail::after { right: 0; }
+            .jc-line .jc-ico { position: absolute; left: 50%; top: -11px; transform: translateX(-50%); background: #fff; padding: 0 .35rem; color: #2563eb; }
+            .jc-stat { display: flex; justify-content: space-between; font-size: .8rem; color: #6b7280; padding: .1rem 0; }
+            .jc-stat b { color: #111827; }
+            .jc-stats { border-left: 1px solid #e5e7eb; padding-left: 1.1rem; }
+            .jc-act { text-align: right; }
+
+        </style>
+        <div class="pb-3">
+            <div class="job-ai mb-3 d-none" id="jobAiPanel">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div class="job-ai-badge"><i class="bi bi-stars"></i> {{ __('AI Assistant') }}</div>
+                    <div id="jobAiSummary" class="small text-secondary flex-grow-1 ms-2">{{ __('Reading your jobs...') }}</div>
+                </div>
+                <form id="jobAiForm" class="d-flex gap-2 mt-3">
+                    <input type="text" id="jobAiInput" class="form-control rounded-pill" maxlength="500" autocomplete="off"
+                           placeholder="{{ __('Ask about your jobs... e.g. which jobs need action today?') }}">
+                    <button class="btn btn-primary rounded-pill px-4" type="submit"><i class="bi bi-send me-1"></i>{{ __('Ask') }}</button>
+                </form>
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    <button type="button" class="job-ai-chip">{{ __('What needs my attention today?') }}</button>
+                    <button type="button" class="job-ai-chip">{{ __('Which jobs are late and what should I tell the customers?') }}</button>
+                    <button type="button" class="job-ai-chip">{{ __('Which jobs have no invoice yet?') }}</button>
+                    <button type="button" class="job-ai-chip">{{ __('Summarise this week arrivals') }}</button>
+                </div>
+                <div id="jobAiAnswer" class="d-none mt-3"></div>
+            </div>
+            <div class="row g-2" id="jobQuick">
+                <div class="col-6 col-md"><button type="button" class="jq" id="jq-active" data-quick=""><div class="jq-n">0</div><div class="jq-l">{{ __('Open Jobs') }}</div></button></div>
+                <div class="col-6 col-md"><button type="button" class="jq jq-delayed" id="jq-delayed" data-quick="delayed"><div class="jq-n">0</div><div class="jq-l">{{ __('Past ETA') }}</div></button></div>
+                <div class="col-6 col-md"><button type="button" class="jq jq-arriving" id="jq-arriving" data-quick="arriving"><div class="jq-n">0</div><div class="jq-l">{{ __('Arriving This Week') }}</div></button></div>
+                <div class="col-6 col-md"><button type="button" class="jq jq-clearance" id="jq-clearance" data-quick="clearance"><div class="jq-n">0</div><div class="jq-l">{{ __('In Clearance') }}</div></button></div>
+                <div class="col-6 col-md"><button type="button" class="jq jq-unbilled" id="jq-unbilled" data-quick="unbilled"><div class="jq-n">0</div><div class="jq-l">{{ __('Not Invoiced') }}</div></button></div>
+                <div class="col-6 col-md"><button type="button" class="jq" id="jq-noeta" data-quick="noeta"><div class="jq-n">0</div><div class="jq-l">{{ __('No ETA') }}</div></button></div>
+            </div>
+        </div>
+        @else
         <div class="container-fluid pb-3">
             <div class="row g-3">
 
@@ -221,10 +306,19 @@
 
             </div>
         </div>
+        @endif
 
-        <div class="shadow bdr-r-10 py-3 flex-grow-1">
+        <div class="shadow bdr-r-10 py-3 flex-grow-1 {{ ($fixedColumns ?? false) ? 'jc-mode' : '' }}">
             <!-- Search & New -->
             <div class="d-flex justify-content-between px-3 flex-shrink-0">
+                @if($fixedColumns ?? false)
+                <div class="d-flex align-items-center gap-2 flex-wrap" id="jobModeChips">
+                    <span class="text-muted small fw-semibold">{{ __('Mode') }}</span>
+                    @foreach(['' => 'All', 'fcl' => 'FCL', 'lcl' => 'LCL', 'air' => 'Air', 'road' => 'Road'] as $k => $l)
+                        <button type="button" class="btn btn-sm jc-chip {{ $k === '' ? 'active' : '' }}" data-mode="{{ $k }}">{{ __($l) }}</button>
+                    @endforeach
+                </div>
+                @endif
                 <div id="filtered-data">
                 {{--<div class="d-inline-flex align-items-center bg-light border rounded-pill px-2 py-1 me-2 mb-2 small" style="font-size: 0.8rem;">
                     <span class="me-2">Date: 10-12-2024 / 10-12-2025</span>
@@ -253,6 +347,15 @@
                 </div>
                 -->
                 <div class="d-flex align-items-center gap-2">
+                    @if($fixedColumns ?? false)
+                    <span class="text-muted small fw-semibold">{{ __('Sort By') }}</span>
+                    <select id="jobSort" class="form-select form-select-sm w-auto">
+                        <option value="">{{ __('Newest') }}</option>
+                        <option value="eta">{{ __('ETA (soonest)') }}</option>
+                        <option value="oldest">{{ __('Oldest') }}</option>
+                        <option value="job">{{ __('Job No') }}</option>
+                    </select>
+                    @endif
                     <select id="pageLength" class="form-select form-select-sm w-auto" aria-label="{{ __('Rows per page') }}">
                         <option value="25" selected>25</option>
                         <option value="50">50</option>
@@ -431,6 +534,7 @@
 
     @include('modules.workflows.job')
 
+    @unless($fixedColumns ?? false)
     <!-- Column Settings Modal -->
     <div class="modal fade" id="columnSettingsModal" tabindex="-1" aria-labelledby="columnSettingsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
@@ -502,4 +606,6 @@
             </div>
         </div>
     </div>
+    @endunless
+    <script>window.JOB_FIXED_COLUMNS = {{ ($fixedColumns ?? false) ? 'true' : 'false' }};</script>
 </x-app-layout>

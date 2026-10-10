@@ -6,6 +6,7 @@ JOB = {
         JOB.columnSettings.bindBtn();
         JOB.form.load();
         JOB.filter.load();
+        JOB.list.insights.load();
         datepicker();
     },
 
@@ -64,6 +65,8 @@ JOB = {
         },
 
         fetch(callback) {
+            // /operation/jobs uses the standard columns; only /operation/jobs/new lets users change them.
+            if (window.JOB_FIXED_COLUMNS) { callback(this._fallback); return; }
             if (this._cache) { callback(this._cache); return; }
             $.get('/column-settings/' + this.page)
                 .done((res) => {
@@ -366,6 +369,9 @@ JOB = {
             data['tab'] = tab;
             data['limit'] = 25;
             data['customSearch'] = $('#customSearch').val();
+            if (JOB.list.quick) data['quick'] = JOB.list.quick;
+            if (JOB.list.mode) data['mode'] = JOB.list.mode;
+            if ($('#jobSort').val()) data['sort'] = $('#jobSort').val();
             //JOB.list.dataTable(tab, data);
             return data;
         },
@@ -567,18 +573,21 @@ JOB = {
                 fields.forEach(f => { fieldMap[f.key] = f; });
 
                 // Rebuild thead
-                $('#dataTable thead tr').html(JOB.list._buildThead(columns, fields));
+                // /operation/jobs shows the smart layout; /operation/jobs/new keeps the configurable columns.
+                const smart = !!window.JOB_FIXED_COLUMNS;
+                $('#dataTable thead tr').html(smart ? JOB.list.smart.thead() : JOB.list._buildThead(columns, fields));
 
-                const dtColumns = columns.map(col => JOB.list._buildDtColumn(col, fields));
+                const dtColumns = smart ? JOB.list.smart.columns() : columns.map(col => JOB.list._buildDtColumn(col, fields));
 
                 // Orderable column indices
                 const noSort = dtColumns.map((_, i) => {
-                    const meta = fieldMap[columns[i].key] || {};
+                    const meta = smart ? {} : (fieldMap[columns[i].key] || {});
                     return meta.orderable ? null : i;
                 }).filter(i => i !== null);
                 noSort.push(dtColumns.length); // always disable action column
 
                 const defaultOrder = (() => {
+                    if (smart) return [[0, 'desc']];
                     const first = dtColumns.findIndex((_, i) => (fieldMap[columns[i].key] || {}).orderable);
                     return first >= 0 ? [[first, 'desc']] : [[0, 'desc']];
                 })();
@@ -606,6 +615,13 @@ JOB = {
                             JOB.list.setSummaryCards(json.statusCounts);
                             return json.data;
                         }
+                    },
+                    createdRow(row, data) {
+                        if (!smart) return;
+                        const st = data.health?.state;
+                        if (st === 'delayed') $(row).addClass('jc-delayed');
+                        else if (st === 'soon') $(row).addClass('jc-soon');
+                        else if (data.status === 2 || data.status === '2' || st === 'arrived') $(row).addClass('jc-done');
                     },
                     columnDefs: [{targets: noSort, orderable: false, searchable: false}],
                     columns: [...dtColumns, actionBtn],
@@ -642,6 +658,24 @@ JOB = {
 
                 // Clicking the job number itself also opens the details drawer,
                 // same as the "View" row action.
+                const openTracking = (row) => webModal.openGlobalModal({
+                    title: 'Update Tracking - ' + row.attr('data-name'),
+                    url: GLOBAL_FN.buildUrl('operation/tracking/' + row.attr('data-id')),
+                    content: null, size: 'lg', scroll: true,
+                });
+                $('#dataTable tbody').off('click', '.job-trk-edit').on('click', '.job-trk-edit', function () { openTracking($(this).closest('tr')); });
+                $('#dataTable tbody').off('click', '.job-complete').on('click', '.job-complete', function () {
+                    const $b = $(this).prop('disabled', true);
+                    $.post(GLOBAL_FN.buildUrl('operation/job/' + $b.closest('tr').attr('data-id') + '/status/2'), {_token: $('meta[name="csrf-token"]').attr('content')})
+                        .done(r => { toastr.success(r.message); $('#dataTable').DataTable().ajax.reload(null, false); JOB.list.insights.refresh(); })
+                        .fail(() => { toastr.error(trans('Something went wrong!')); $b.prop('disabled', false); });
+                });
+                $('#dataTable tbody').off('click', '.job-trk-next').on('click', '.job-trk-next', function () {
+                    const $b = $(this).prop('disabled', true);
+                    $.post(GLOBAL_FN.buildUrl('operation/tracking/' + $b.closest('tr').attr('data-id') + '/next'), {_token: $('meta[name="csrf-token"]').attr('content')})
+                        .done(r => { toastr.success(r.message); $('#dataTable').DataTable().ajax.reload(null, false); JOB.list.insights.refresh(); })
+                        .fail(x => { toastr.error(x.responseJSON?.message || trans('Something went wrong!')); $b.prop('disabled', false); });
+                });
                 $('#dataTable tbody').off('click', '.job-no-link').on('click', '.job-no-link', function (e) {
                     e.preventDefault();
                     e.stopPropagation();
@@ -650,6 +684,148 @@ JOB = {
                 });
             });
         },
+        /** The job list people actually work from: who, where, when, how far along, billed or not. */
+        smart: {
+            // DataTables already HTML-escapes every server column, so values are used as they come.
+            esc: (v) => v ?? '',
+            // One card per job; the card holds everything, the second column is the row menu.
+            thead: () => '<th></th><th style="min-width:50px;"></th>',
+            health(h) {
+                if (!h) return '';
+                const map = {
+                    delayed: ['danger', 'bi-exclamation-triangle-fill'], soon: ['warning', 'bi-clock-fill'],
+                    ontime: ['success', 'bi-check-circle-fill'], arrived: ['primary', 'bi-geo-alt-fill'], noeta: ['secondary', 'bi-question-circle'],
+                };
+                const [c, ic] = map[h.state] || ['secondary', 'bi-dot'];
+                return `<span class="badge bg-${c}-subtle text-${c}-emphasis border border-${c}-subtle job-health"><i class="bi ${ic} me-1"></i>${trans(h.label)}</span>`;
+            },
+            columns() {
+                const S = JOB.list.smart;
+                const statusDot = (st) => {
+                    const m = {1: ['#2563eb', 'Open'], 2: ['#16a34a', 'Completed'], 3: ['#dc2626', 'Cancelled'], 4: ['#6b7280', 'Trashed'],
+                        pending: ['#2563eb', 'Open'], completed: ['#16a34a', 'Completed'], cancelled: ['#dc2626', 'Cancelled'], trashed: ['#6b7280', 'Trashed']}[st] || ['#6b7280', ''];
+                    return `<span class="jc-dot"><i style="background:${m[0]}"></i><span style="color:${m[0]}">${trans(m[1])}</span></span>`;
+                };
+                const stat = (l, v) => v ? `<div class="jc-stat"><span>${trans(l)}</span><b>${v}</b></div>` : '';
+                return [
+                    {data: 'row_no', defaultContent: '', render: (d, t, r) => {
+                        const mode = (r.shipment_mode || '').toLowerCase();
+                        const ic = mode === 'air' ? 'bi-airplane-fill' : (['sea', 'ocean'].includes(mode) ? 'bi-water' : 'bi-truck');
+                        const cargo = r.cargo || {};
+                        const label = [r.activity_name, ''].filter(Boolean)[0] || (mode ? mode.toUpperCase() : '');
+                        const bits = [];
+                        if (cargo.containers) bits.push(`${cargo.containers} ${trans('containers')}`);
+                        if (cargo.weight) bits.push(`${Number(cargo.weight).toLocaleString()} kg`);
+                        if (cargo.volume) bits.push(`${Number(cargo.volume).toLocaleString()} CBM`);
+                        if (cargo.pieces) bits.push(`${cargo.pieces} ${trans('pcs')}`);
+                        const services = (r.services || '').split(',').filter(Boolean).map(x => `<span class="badge bg-light text-dark border me-1">${S.esc(x.trim())}</span>`).join('');
+                        const inv = r.invoices || {draft: 0, approved: 0};
+                        const billing = {approved: ['success', 'Invoiced'], draft: ['warning', 'Draft invoice'], none: ['light text-muted border', 'Not invoiced']}[r.billing] || ['light', ''];
+                        const c = r.customs;
+                        const customs = c && c.status ? `<span class="badge bg-info-subtle text-info-emphasis border border-info-subtle text-capitalize">${S.esc(c.status)}</span>` : '';
+                        const pg = r.progress;
+                        const pending = r.status === 1 || r.status === '1' || r.status === 'pending';
+                        const btns = pg && pending ? `<div class="mt-2 d-flex gap-1 justify-content-end flex-wrap">
+                                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill py-0 px-2 job-trk-edit" style="font-size:.72rem">${trans('Update')}</button>
+                                ${pg.next ? `<button type="button" class="btn btn-sm btn-primary rounded-pill py-0 px-2 job-trk-next" style="font-size:.72rem" title="${trans('Mark the next step done today')}: ${trans(pg.next)}"><i class="bi bi-check2"></i> ${trans('Done')}</button>`
+                                          : `<button type="button" class="btn btn-sm btn-success rounded-pill py-0 px-2 job-complete" style="font-size:.72rem"><i class="bi bi-check2-circle"></i> ${trans('Complete job')}</button>`}</div>` : '';
+                        return `<div class="jc">
+                            <div>
+                                <a href="#" class="jc-no job-no-link">${S.esc(d) || '—'}</a>
+                                <div class="small fw-semibold text-dark">${S.esc(r.customer_name)}</div>
+                                <div class="cell-secondary"><i class="bi bi-calendar3 me-1"></i>${S.esc(r.posted_at) || ''}</div>
+                                ${r.owner ? `<div class="cell-secondary"><i class="bi bi-person me-1"></i>${S.esc(r.owner)}</div>` : ''}
+                                <div class="mt-1">${statusDot(r.status)}</div>
+                            </div>
+                            <div class="jc-route">
+                                <div class="jc-city text-end">${S.esc(r.route_from) || '?'}</div>
+                                <div class="jc-line">
+                                    <div class="cell-secondary fw-semibold text-dark">${S.esc(label)}</div>
+                                    <div class="jc-rail"><i class="bi ${ic} jc-ico"></i></div>
+                                    <div class="cell-secondary">${bits.join(' · ') || S.esc(cargo.commodity) || ''}</div>
+                                    <div class="mt-1">${services}</div>
+                                </div>
+                                <div class="jc-city">${S.esc(r.route_to) || '?'}</div>
+                            </div>
+                            <div class="jc-stats">
+                                ${stat('Carrier', S.esc(r.carrier))}
+                                ${stat('Invoices', (inv.draft || inv.approved) ? `${inv.approved} ${trans('approved')} / ${inv.draft} ${trans('draft')}` : '')}
+                                ${stat('Value', S.esc(r.value))}
+                                ${stat('Incoterm', S.esc(cargo.incoterm))}
+                                <div class="mt-1 d-flex gap-1 flex-wrap"><span class="badge bg-${billing[0]}">${trans(billing[1])}</span>${customs}</div>
+                            </div>
+                            <div class="jc-act">
+                                <div class="fw-semibold small">${r.eta ? 'ETA ' + S.esc(r.eta) : '<span class="text-muted">' + trans('No ETA') + '</span>'}</div>
+                                <div class="cell-secondary">${r.etd ? 'ETD ' + S.esc(r.etd) : ''}</div>
+                                <div class="mt-1">${S.health(r.health)}</div>
+                                ${pg ? `<div class="job-prog ms-auto mt-2" style="max-width:190px"><div class="job-prog-bar"><span style="width:${pg.pct}%"></span></div>
+                                    <div class="cell-secondary mt-1">${pg.done}/${pg.total} · ${pg.next ? trans('Next') + ': ' + trans(pg.next) : trans('Complete')}</div></div>` : ''}
+                                ${btns}
+                            </div>
+                        </div>`;
+                    }},
+                ];
+            },
+        },
+
+        /** Quick filter chosen from the panel above the list ('' = none). */
+        quick: '',
+        mode: '',
+
+        insights: {
+            refresh() { if (window.JOB_FIXED_COLUMNS) JOB.list.insights.load(); },
+            load() {
+                if (!window.JOB_FIXED_COLUMNS) return;
+                $.getJSON(GLOBAL_FN.buildUrl('operation/job/insights'), function (r) {
+                    const c = r.counts || {};
+                    Object.keys(c).forEach(k => $('#jq-' + k + ' .jq-n').text(c[k]));
+                    $('#jq-active .jq-n').text(r.active ?? 0);
+                    const parts = [];
+                    if (c.delayed) parts.push(`<b>${c.delayed}</b> ${trans('jobs are past their ETA')}`);
+                    if (c.arriving) parts.push(`<b>${c.arriving}</b> ${trans('arrive within a week')}`);
+                    if (c.unbilled) parts.push(`<b>${c.unbilled}</b> ${trans('have no invoice yet')}`);
+                    if (c.clearance) parts.push(`<b>${c.clearance}</b> ${trans('are in customs clearance')}`);
+                    $('#jobAiSummary').html(parts.length ? parts.join(' · ') : trans('Everything looks on track.'));
+                });
+                $('#jobModeChips').off('click', '.jc-chip').on('click', '.jc-chip', function () {
+                    JOB.list.mode = $(this).data('mode') || '';
+                    $('#jobModeChips .jc-chip').removeClass('active');
+                    $(this).addClass('active');
+                    JOB.list.dataTable();
+                });
+                $('#jobSort').off('change').on('change', () => JOB.list.dataTable());
+                $('#jobAiBtn').off('click').on('click', function () {
+                    const open = $('#jobAiPanel').hasClass('d-none');
+                    $('#jobAiPanel').toggleClass('d-none', !open);
+                    $(this).toggleClass('active', open);
+                    if (open) $('#jobAiInput').trigger('focus');
+                });
+                $('#jobQuick').off('click', '.jq').on('click', '.jq', function () {
+                    const k = $(this).data('quick') || '';
+                    JOB.list.quick = (JOB.list.quick === k) ? '' : k;
+                    $('#jobQuick .jq').removeClass('active');
+                    if (JOB.list.quick) $(this).addClass('active');
+                    $('#pending').tab('show');
+                    JOB.list.dataTable('pending');
+                });
+                const ask = (q) => {
+                    q = $.trim(q);
+                    if (!q) return;
+                    const $a = $('#jobAiAnswer').removeClass('d-none').html('<span class="spinner-border spinner-border-sm me-2"></span>' + trans('Thinking...'));
+                    $.post(GLOBAL_FN.buildUrl('operation/job/ask'), {_token: $('meta[name="csrf-token"]').attr('content'), question: q})
+                        .done(r => {
+                            // Escape first, then allow only **bold** and bullet marks from the reply.
+                            const safe = $('<div>').text(r.answer).html()
+                                .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/^\s*[*-]\s+/gm, '• ');
+                            $a.html(safe).css('white-space', 'pre-line');
+                        })
+                        .fail(x => $a.text(x.responseJSON?.message || trans('Something went wrong!')));
+                };
+                $('#jobAiForm').off('submit').on('submit', function (e) { e.preventDefault(); ask($('#jobAiInput').val()); });
+                $('.job-ai-chip').off('click').on('click', function () { $('#jobAiInput').val($(this).text()); ask($(this).text()); });
+            },
+        },
+
         templates: {
             rowInfo: (data, row) => {
                 const services = row.services ? row.services.split(',') : [];
@@ -695,6 +871,13 @@ JOB = {
             //<div class="text-info fw-medium" style="font-size: 0.7rem;"><i class="bi bi-person-check me-1"></i>Ops: Anil S.</div>
         },
         extraActions(row) {
+            $('#row_tracking').off().on('click', function () {
+                webModal.openGlobalModal({
+                    title: 'Update Tracking - ' + row.attr('data-name'),
+                    url: GLOBAL_FN.buildUrl('operation/tracking/' + row.attr('data-id')),
+                    content: null, size: 'lg', scroll: true,
+                });
+            });
             JOB.list.actions.statusChange(row);
             JOB.list.actions.view(row);
             JOB.list.actions.email(row);

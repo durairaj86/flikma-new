@@ -370,25 +370,25 @@
                             <div class="col-md-3">
                                 <label class="form-label">{{ __('HS Code') }}</label>
                                 <input type="text" name="hs_code" class="form-control"
-                                       value="{{ $job->clearance->hs_code }}">
+                                       value="{{ $job->clearance?->hs_code }}">
                             </div>
 
                             <div class="col-md-3">
                                 <label class="form-label">{{ __('Customs Declaration No') }}</label>
                                 <input type="text" name="declaration_no" class="form-control"
-                                       value="{{ $job->clearance->declaration_no }}">
+                                       value="{{ $job->clearance?->declaration_no }}">
                             </div>
 
                             <div class="col-md-3">
                                 <label class="form-label">{{ __('Customs Broker') }}</label>
                                 <input type="text" name="customs_broker" class="form-control"
-                                       value="{{ $job->clearance->customs_broker }}">
+                                       value="{{ $job->clearance?->customs_broker }}">
                             </div>
 
                             <div class="col-md-3">
                                 <label class="form-label">{{ __('Port of Clearance') }}</label>
                                 <input type="text" name="port_clearance" class="form-control"
-                                       value="{{ $job->clearance->port_clearance }}">
+                                       value="{{ $job->clearance?->port_clearance }}">
                             </div>
 
                             <div class="col-md-3 mt-3">
@@ -406,37 +406,37 @@
                             <div class="col-md-3 mt-3">
                                 <label class="form-label">{{ __('Docs Copy Received Date') }}</label>
                                 <input type="date" name="doc_received" class="form-control datepicker"
-                                       value="{{ $job->clearance->doc_received }}">
+                                       value="{{ $job->clearance?->doc_received }}">
                             </div>
 
                             <div class="col-md-3 mt-3">
                                 <label class="form-label">{{ __('BL Receive Date') }}</label>
                                 <input type="date" name="bl_receive_date" class="form-control datepicker"
-                                       value="{{ $job->clearance->bl_receive_date }}">
+                                       value="{{ $job->clearance?->bl_receive_date }}">
                             </div>
 
                             <div class="col-md-3 mt-3">
                                 <label class="form-label">{{ __('Original Docs Received Date') }}</label>
                                 <input type="date" name="original_doc_received" class="form-control datepicker"
-                                       value="{{ $job->clearance->original_doc_received }}">
+                                       value="{{ $job->clearance?->original_doc_received }}">
                             </div>
 
                             <div class="col-md-3 mt-3">
                                 <label class="form-label">{{ __('Saber Certificate Date') }}</label>
                                 <input type="date" name="saber_certificate_date" class="form-control datepicker"
-                                       value="{{ $job->clearance->saber_certificate_date }}">
+                                       value="{{ $job->clearance?->saber_certificate_date }}">
                             </div>
 
                             <div class="col-md-3 mt-3">
                                 <label class="form-label">{{ __('Bayan Date') }}</label>
                                 <input type="date" name="bayan_date" class="form-control datepicker"
-                                       value="{{ $job->clearance->bayan_date }}">
+                                       value="{{ $job->clearance?->bayan_date }}">
                             </div>
 
                             <div class="col-md-3 mt-3">
                                 <label class="form-label">{{ __('Bayan No') }}</label>
                                 <input type="text" name="bayan_no" class="form-control"
-                                       value="{{ $job->clearance->bayan_no }}">
+                                       value="{{ $job->clearance?->bayan_no }}">
                             </div>
 
                         </div>
@@ -454,37 +454,37 @@
                             <div class="col-md-3">
                                 <label class="form-label">{{ __('D.O Date') }}</label>
                                 <input type="date" name="do_date" class="form-control datepicker"
-                                       value="{{ $job->clearance->do_date }}">
+                                       value="{{ $job->clearance?->do_date }}">
                             </div>
 
                             <div class="col-md-3">
                                 <label class="form-label">{{ __('D.O No') }}</label>
                                 <input type="text" name="do_no" class="form-control"
-                                       value="{{ $job->clearance->do_no }}">
+                                       value="{{ $job->clearance?->do_no }}">
                             </div>
 
                             <div class="col-md-3">
                                 <label class="form-label">{{ __('Duty Amount - CEL') }}</label>
                                 <input type="number" step="0.01" name="duty_amount" class="form-control"
-                                       value="{{ $job->clearance->duty_amount }}">
+                                       value="{{ $job->clearance?->duty_amount }}">
                             </div>
 
                             <div class="col-md-3">
                                 <label class="form-label">{{ __('Duty Amount - Client') }}</label>
                                 <input type="number" step="0.01" name="duty_amount_client" class="form-control"
-                                       value="{{ $job->clearance->duty_amount_client }}">
+                                       value="{{ $job->clearance?->duty_amount_client }}">
                             </div>
 
                             <div class="col-md-3 mt-3">
                                 <label class="form-label">{{ __('Demurrage Date') }}</label>
                                 <input type="date" name="demurrage_date" class="form-control datepicker"
-                                       value="{{ $job->clearance->demurrage_date }}">
+                                       value="{{ $job->clearance?->demurrage_date }}">
                             </div>
 
                             <div class="col-md-6 mt-3">
                                 <label class="form-label">{{ __('D.O Remarks') }}</label>
                                 <textarea name="do_remarks" class="form-control"
-                                          rows="2">{{ $job->clearance->do_remarks }}</textarea>
+                                          rows="2">{{ $job->clearance?->do_remarks }}</textarea>
                             </div>
 
                         </div>
@@ -503,8 +503,8 @@
                                 <label class="form-label">{{ __('Lab Test Required?') }}</label>
                                 <select name="lab_clearance" class="tom-select">
                                     <option value="">{{ __('--Select--') }}</option>
-                                    <option value="0" @selected(!$job->clearance->lab_clearance)>{{ __('No') }}</option>
-                                    <option value="1" @selected($job->clearance->lab_clearance)>{{ __('Yes') }}</option>
+                                    <option value="0" @selected(!$job->clearance?->lab_clearance)>{{ __('No') }}</option>
+                                    <option value="1" @selected($job->clearance?->lab_clearance)>{{ __('Yes') }}</option>
                                 </select>
                             </div>
 
@@ -512,8 +512,8 @@
                                 <label class="form-label">{{ __('Inspection Required?') }}</label>
                                 <select name="inspection" class="tom-select">
                                     <option value="">{{ __('--Select--') }}</option>
-                                    <option value="0" @selected($job->clearance->inspection==0)>{{ __('No') }}</option>
-                                    <option value="1" @selected($job->clearance->inspection==1)>{{ __('Yes') }}</option>
+                                    <option value="0" @selected($job->clearance?->inspection==0)>{{ __('No') }}</option>
+                                    <option value="1" @selected($job->clearance?->inspection==1)>{{ __('Yes') }}</option>
                                 </select>
                             </div>
 
@@ -522,7 +522,7 @@
                                 <select name="clearance_status" class="tom-select">
                                     <option value="">{{ __('--Select--') }}</option>
                                     @foreach(clearanceStatus() as $id => $name)
-                                        <option value="{{ $id }}" @selected($job->clearance->clearance_status == $id)>
+                                        <option value="{{ $id }}" @selected($job->clearance?->clearance_status == $id)>
                                             {{ $name }}
                                         </option>
                                     @endforeach
@@ -532,13 +532,13 @@
                             <div class="col-md-3">
                                 <label class="form-label">{{ __('Clearance Date') }}</label>
                                 <input type="date" name="clearance_date" class="form-control datepicker"
-                                       value="{{ $job->clearance->clearance_date }}">
+                                       value="{{ $job->clearance?->clearance_date }}">
                             </div>
 
                             <div class="col-md-6 mt-3">
                                 <label class="form-label">{{ __('Remarks') }}</label>
                                 <textarea name="clearance_remarks" class="form-control"
-                                          rows="2">{{ $job->clearance->clearance_remarks }}</textarea>
+                                          rows="2">{{ $job->clearance?->clearance_remarks }}</textarea>
                             </div>
 
                         </div>

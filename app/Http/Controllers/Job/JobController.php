@@ -275,11 +275,10 @@ class JobController extends Controller
         $this->setBaseColumns($clearance);
         $clearance->save();*/
 
-        if ($request->filled('data-id')) {
-            $clearance = JobClearance::where('job_id', $request->get('data-id'))->first();
-        } else {
-            $clearance = new JobClearance();
-        }
+        // Older jobs may have no clearance record yet, so create one instead of failing.
+        $clearance = $request->filled('data-id')
+            ? (JobClearance::where('job_id', $request->get('data-id'))->first() ?? new JobClearance())
+            : new JobClearance();
 
         $clearance->hs_code = $validated['hs_code'] ?? null;
         $clearance->declaration_no = $validated['declaration_no'] ?? null;
@@ -446,6 +445,20 @@ class JobController extends Controller
             })
             ->when($filter['filter-pod'] ?? null, function ($query, $pod) {
                 $query->where('pod', 'like', "%{$pod}%");
+            })
+            ->when($filter['mode'] ?? null, function ($query, $mode) {
+                if (in_array($mode, ['fcl', 'lcl'])) {
+                    $ids = LogisticActivity::activities()->filter(fn($a) => stripos($a->name, $mode) !== false)->pluck('id');
+                    $query->whereIn('activity_id', $ids->all() ?: [0]);
+                } elseif ($mode === 'air') {
+                    $query->whereRaw("LOWER(shipment_mode) = 'air'");
+                } elseif ($mode === 'road') {
+                    $query->whereRaw("LOWER(shipment_mode) IN ('road','land','truck','trucking')");
+                }
+            })
+            ->when($filter['quick'] ?? null, function ($query, $quick) {
+                $ids = \App\Services\Job\JobInsights::buckets()[$quick] ?? [];
+                $query->whereIn('jobs.id', $ids ?: [0]);
             });
         };
 
@@ -490,17 +503,23 @@ class JobController extends Controller
             'demurrage_date',
             'hs_code',
             'declaration_no',
+            'salesperson_id',
+            'jobs.created_by as created_by',
             'jobs.company_id as company_id',
             'jobs.status as status',
             // Correlated subquery (not a join) — jobs and quotations share many
             // unqualified column names above (pol, pod, customer_id, ...), so a
             // leftJoin here would make those ambiguous.
             DB::raw('(SELECT quotations.row_no FROM quotations WHERE quotations.id = jobs.quotation_id) AS linked_quotation_no'),
-        )->with('customer:id,name_en,name_ar,email,phone', 'invoices', 'clearance:id,job_id,clearance_status,clearance_date')
+        )->with('customer:id,name_en,name_ar,email,phone', 'invoices', 'milestones', 'clearance:id,job_id,clearance_status,clearance_date,updated_at')->withCount('containers')
             ->where('jobs.status', JobEnum::fromName($request->tab))
             ->tap($applyFilters)
-            ->orderByDesc('id');
+            ->when(($filter['sort'] ?? '') === 'eta', fn($q) => $q->orderByRaw("(jobs.eta IS NULL OR jobs.eta = '') asc")->orderBy('jobs.eta'))
+            ->when(($filter['sort'] ?? '') === 'oldest', fn($q) => $q->orderBy('jobs.id'))
+            ->when(($filter['sort'] ?? '') === 'job', fn($q) => $q->orderBy('jobs.row_no'))
+            ->when(!in_array($filter['sort'] ?? '', ['eta', 'oldest', 'job']), fn($q) => $q->orderByDesc('jobs.id'));
 
+        $owners = \App\Models\User::withoutGlobalScopes()->pluck('name', 'id');
 
         // Counts per status using the same filters as the list
         $statusCounts = Job::withTrashed()->select('jobs.status', DB::raw('COUNT(*) as total'))
@@ -539,6 +558,21 @@ class JobController extends Controller
             ->addColumn('activity_name',   fn($model) => $activity->where('id', $model->activity_id)->pluck('name')->first() ?? '')
             ->addColumn('clearance_status',fn($model) => $model->clearance?->clearance_status ?? '')
             ->addColumn('clearance_date',  fn($model) => $model->clearance?->clearance_date ? Carbon::parse($model->clearance->clearance_date)->format('d-M-Y') : '')
+            ->addColumn('health', fn($m) => $m->status === 1 ? \App\Services\Job\JobInsights::health($m) : null)
+            ->addColumn('progress', fn($m) => \App\Services\Job\JobInsights::progress($m))
+            ->addColumn('billing', fn($m) => \App\Services\Job\JobInsights::billing($m))
+            ->addColumn('owner', fn($m) => $owners[$m->salesperson_id ?: $m->created_by] ?? '')
+            ->addColumn('cargo', fn($m) => [
+                'commodity' => $m->commodity, 'weight' => (float)$m->weight, 'volume' => (float)$m->volume,
+                'pieces' => $m->no_of_pieces, 'containers' => $m->containers_count, 'incoterm' => $m->incoterm ?: $m->incoterms,
+            ])
+            ->addColumn('customs', fn($m) => [
+                'status' => $m->clearance?->clearance_status, 'bayan_no' => $m->bayan_no, 'do_no' => $m->do_no,
+            ])
+            ->addColumn('delivery', fn($m) => filled($m->delivery_date) ? Carbon::parse($m->delivery_date)->format('d-M-Y') : '')
+            ->addColumn('value', fn($m) => (float)$m->grand_total ? number_format($m->grand_total, 2) . ' ' . $m->currency : '')
+            ->addColumn('route_from', fn($m) => $m->pol_name ?: $m->pol)
+            ->addColumn('route_to', fn($m) => $m->pod_name ?: $m->pod)
             ->addColumn('invoices', fn($model) => [
                 'draft'    => $model->invoices->where('status', 1)->count(),
                 'approved' => $model->invoices->where('status', 3)->count(),
@@ -546,6 +580,32 @@ class JobController extends Controller
             ->rawColumns(['status'])
             ->with(['statusCounts' => $allCounts])
             ->toJson();
+    }
+
+    /** Counts and the jobs that need attention, for the panel above the list. */
+    public function insights(): \Illuminate\Http\JsonResponse
+    {
+        return response()->json(\App\Services\Job\JobInsights::snapshot());
+    }
+
+    /** Free-text question about the open jobs, answered by the AI assistant. */
+    public function ask(Request $request, \App\Services\GeminiService $gemini): \Illuminate\Http\JsonResponse
+    {
+        $q = trim((string)$request->input('question'));
+        if ($q === '') {
+            return response()->json(['status' => 'error', 'message' => __('Type a question first.')], 422);
+        }
+        $context = \App\Services\Job\JobInsights::context();
+        $prompt = "You are the operations assistant of a freight forwarding company. Today is " . today()->format('d M Y') . ".\n"
+            . "Below are the company's open jobs, one per line (job no | customer | mode | route | carrier | dates | health | progress | billing).\n"
+            . "Answer the question using ONLY these jobs. Be short and practical: plain sentences or a short list, mention job numbers, say what to do next. "
+            . "If the answer is not in the data, say so. Do not invent data.\n\nJOBS:\n" . ($context ?: '(no open jobs)') . "\n\nQUESTION: " . mb_substr($q, 0, 500);
+        $answer = $gemini->generateResponse($prompt, false, 0.3, 'job_assistant');
+        if (!$answer) {
+            return response()->json(['status' => 'error', 'message' => __('The AI assistant is not available right now. Please try again in a moment.')], 503);
+        }
+
+        return response()->json(['status' => 'success', 'answer' => trim($answer)]);
     }
 
     public function actions($id)
@@ -674,6 +734,17 @@ class JobController extends Controller
             'onclick' => 'JOB.printPreview(' . $job->id . ')',
             //'separator' => 'before',
         ]);
+        if ($job->status === JobEnum::PENDING->value) {
+            $contextMenu->push([
+                'label' => __('Update Tracking'),
+                'code' => '01CSVW',
+                'id' => 'row_tracking',
+                'class' => 'row_tracking',
+                'data-id' => $job->id,
+                'type' => 'item',
+                'icon' => 'view',
+            ]);
+        }
         $contextMenu->push([
             'label' => __('View'),
             'code' => '01CSVW',
