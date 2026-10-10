@@ -3515,5 +3515,12 @@
     "Total Weight": "الوزن الإجمالي",
     "Chargeable": "القابل للاحتساب",
     "Not started": "لم يبدأ",
-    "Open Customs Clearance": "فتح التخليص الجمركي"
+    "Open Customs Clearance": "فتح التخليص الجمركي",
+    "Skip": "تخطي",
+    "Skipped": "تم التخطي",
+    "Skip this step (not needed for this job)": "تخطي هذه الخطوة (غير مطلوبة لهذه المهمة)",
+    "This step is not needed for this job": "هذه الخطوة غير مطلوبة لهذه المهمة",
+    "Nothing left to skip.": "لا توجد خطوات للتخطي",
+    "Stage": "المرحلة",
+    "Stage updated": "تم تحديث المرحلة"
 }

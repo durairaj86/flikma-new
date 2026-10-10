@@ -548,6 +548,8 @@ class JobController extends Controller
             ->editColumn('created_at', fn($model) => Carbon::parse($model->created_at)->format('d-m-Y'))
             ->editColumn('eta', fn($model) => filled($model->eta) ? Carbon::parse($model->eta)->format('d-M-Y') : '')
             ->editColumn('etd', fn($model) => filled($model->etd) ? Carbon::parse($model->etd)->format('d-M-Y') : '')
+            ->editColumn('ata', fn($model) => filled($model->ata) ? Carbon::parse($model->ata)->format('d-M-Y') : '')
+            ->editColumn('atd', fn($model) => filled($model->atd) ? Carbon::parse($model->atd)->format('d-M-Y') : '')
             ->editColumn('doc_received',   fn($m) => filled($m->doc_received)   ? Carbon::parse($m->doc_received)->format('d-M-Y')   : '')
             ->editColumn('bl_receive_date',fn($m) => filled($m->bl_receive_date)? Carbon::parse($m->bl_receive_date)->format('d-M-Y'): '')
             ->editColumn('bayan_date',     fn($m) => filled($m->bayan_date)     ? Carbon::parse($m->bayan_date)->format('d-M-Y')     : '')

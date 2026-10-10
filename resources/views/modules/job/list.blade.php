@@ -188,6 +188,13 @@
             .job-prog-bar { height: 6px; border-radius: 6px; background: #e9ecef; overflow: hidden; }
             .job-prog-bar span { display: block; height: 100%; background: #198754; border-radius: 6px; }
             .job-health { font-weight: 600; }
+            .job-stage { background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe; font-weight: 600; }
+            @keyframes jcFlash { from { background: #dcfce7; } to { background: #fff; } }
+            .jc-mode #dataTable tbody tr.jc-flash td { animation: jcFlash 1.8s ease-out; }
+            .job-seg { display: flex; gap: 2px; height: 6px; }
+            .job-seg span { flex: 1; border-radius: 3px; background: #e9ecef; }
+            .job-seg span.done { background: #198754; }
+            .job-seg span.skip { background: #f59e0b; }
             .jc-mode { box-shadow: none !important; background: transparent; }
             .jc-chip { border: 1px solid #dee2e6; background: #fff; border-radius: 8px; font-weight: 600; font-size: .8rem; padding: .25rem .9rem; }
             .jc-chip.active { background: #0d6efd; color: #fff; border-color: #0d6efd; }

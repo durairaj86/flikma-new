@@ -27,6 +27,12 @@
 @endif--}}
 @php
     $i18nKeys = [
+        'Not started',
+        'Stage updated',
+        'Stage',
+        'Skip this step (not needed for this job)',
+        'Skip',
+        'skipped',
         'Trashed',
         'Cancelled',
         'Completed',

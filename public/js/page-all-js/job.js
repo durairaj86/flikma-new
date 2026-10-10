@@ -619,6 +619,7 @@ JOB = {
                     createdRow(row, data) {
                         if (!smart) return;
                         const st = data.health?.state;
+                        if (JOB.list.flashId && String(data.id) === String(JOB.list.flashId)) { $(row).addClass('jc-flash'); JOB.list.flashId = null; }
                         if (st === 'delayed') $(row).addClass('jc-delayed');
                         else if (st === 'soon') $(row).addClass('jc-soon');
                         else if (data.status === 2 || data.status === '2' || st === 'arrived') $(row).addClass('jc-done');
@@ -670,10 +671,16 @@ JOB = {
                         .done(r => { toastr.success(r.message); $('#dataTable').DataTable().ajax.reload(null, false); JOB.list.insights.refresh(); })
                         .fail(() => { toastr.error(trans('Something went wrong!')); $b.prop('disabled', false); });
                 });
+                $('#dataTable tbody').off('click', '.job-trk-skip').on('click', '.job-trk-skip', function () {
+                    const $b = $(this).prop('disabled', true);
+                    $.post(GLOBAL_FN.buildUrl('operation/tracking/' + $b.closest('tr').attr('data-id') + '/skip'), {_token: $('meta[name="csrf-token"]').attr('content')})
+                        .done(r => { toastr.info(r.message); $('#dataTable').DataTable().ajax.reload(null, false); })
+                        .fail(x => { toastr.error(x.responseJSON?.message || trans('Something went wrong!')); $b.prop('disabled', false); });
+                });
                 $('#dataTable tbody').off('click', '.job-trk-next').on('click', '.job-trk-next', function () {
                     const $b = $(this).prop('disabled', true);
                     $.post(GLOBAL_FN.buildUrl('operation/tracking/' + $b.closest('tr').attr('data-id') + '/next'), {_token: $('meta[name="csrf-token"]').attr('content')})
-                        .done(r => { toastr.success(r.message); $('#dataTable').DataTable().ajax.reload(null, false); JOB.list.insights.refresh(); })
+                        .done(r => { JOB.list.flashId = $b.closest('tr').attr('data-id'); toastr.success(trans('Stage updated') + ': ' + r.message); $('#dataTable').DataTable().ajax.reload(null, false); JOB.list.insights.refresh(); })
                         .fail(x => { toastr.error(x.responseJSON?.message || trans('Something went wrong!')); $b.prop('disabled', false); });
                 });
                 $('#dataTable tbody').off('click', '.job-no-link').on('click', '.job-no-link', function (e) {
@@ -727,7 +734,7 @@ JOB = {
                         const pending = r.status === 1 || r.status === '1' || r.status === 'pending';
                         const btns = pg && pending ? `<div class="mt-2 d-flex gap-1 justify-content-end flex-wrap">
                                 <button type="button" class="btn btn-sm btn-outline-primary rounded-pill py-0 px-2 job-trk-edit" style="font-size:.72rem">${trans('Update')}</button>
-                                ${pg.next ? `<button type="button" class="btn btn-sm btn-primary rounded-pill py-0 px-2 job-trk-next" style="font-size:.72rem" title="${trans('Mark the next step done today')}: ${trans(pg.next)}"><i class="bi bi-check2"></i> ${trans('Done')}</button>`
+                                ${pg.next ? `<button type="button" class="btn btn-sm btn-outline-warning rounded-pill py-0 px-2 job-trk-skip" style="font-size:.72rem" title="${trans('Skip this step (not needed for this job)')}">${trans('Skip')}</button><button type="button" class="btn btn-sm btn-primary rounded-pill py-0 px-2 job-trk-next" style="font-size:.72rem" title="${trans('Mark the next step done today')}: ${trans(pg.next)}"><i class="bi bi-check2"></i> ${trans(pg.next)}</button>`
                                           : `<button type="button" class="btn btn-sm btn-success rounded-pill py-0 px-2 job-complete" style="font-size:.72rem"><i class="bi bi-check2-circle"></i> ${trans('Complete job')}</button>`}</div>` : '';
                         return `<div class="jc">
                             <div>
@@ -755,11 +762,17 @@ JOB = {
                                 <div class="mt-1 d-flex gap-1 flex-wrap"><span class="badge bg-${billing[0]}">${trans(billing[1])}</span>${customs}</div>
                             </div>
                             <div class="jc-act">
-                                <div class="fw-semibold small">${r.eta ? 'ETA ' + S.esc(r.eta) : '<span class="text-muted">' + trans('No ETA') + '</span>'}</div>
-                                <div class="cell-secondary">${r.etd ? 'ETD ' + S.esc(r.etd) : ''}</div>
+                                ${(() => {
+                                    const st = r.health?.state;
+                                    const fmt = (v) => { const d = new Date(v); return isNaN(d) ? S.esc(v) : d.toLocaleDateString('en-GB', {day: '2-digit', month: 'short', year: 'numeric'}).replace(/ /g, '-'); };
+                                    if (st === 'arrived') return `<div class="fw-semibold small">${r.ata ? trans('Arrived') + ' ' + fmt(r.ata) : (r.eta ? 'ETA ' + S.esc(r.eta) : '')}</div>`;
+                                    if (st === 'noeta' || !r.eta) return '';
+                                    return `<div class="fw-semibold small">ETA ${S.esc(r.eta)}</div><div class="cell-secondary">${r.etd ? 'ETD ' + S.esc(r.etd) : ''}</div>`;
+                                })()}
                                 <div class="mt-1">${S.health(r.health)}</div>
-                                ${pg ? `<div class="job-prog ms-auto mt-2" style="max-width:190px"><div class="job-prog-bar"><span style="width:${pg.pct}%"></span></div>
-                                    <div class="cell-secondary mt-1">${pg.done}/${pg.total} · ${pg.next ? trans('Next') + ': ' + trans(pg.next) : trans('Complete')}</div></div>` : ''}
+                                ${pg ? `<div class="mt-1"><span class="badge rounded-pill job-stage"><i class="bi bi-signpost-2 me-1"></i>${trans('Stage')}: ${pg.current ? trans(pg.current) : trans('Not started')}</span></div>` : ''}
+                                ${pg ? `<div class="job-prog ms-auto mt-2" style="max-width:190px"><div class="job-seg">${(pg.segments || []).map(x => `<span class="${x}"></span>`).join('')}</div>
+                                    <div class="cell-secondary mt-1">${pg.done}/${pg.total}${pg.skipped ? ' · ' + pg.skipped + ' ' + trans('skipped') : ''} · ${pg.next ? trans('Next') + ': ' + trans(pg.next) : trans('Complete')}</div></div>` : ''}
                                 ${btns}
                             </div>
                         </div>`;

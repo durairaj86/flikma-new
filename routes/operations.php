@@ -102,6 +102,7 @@ Route::namespace('operations')->prefix('operation')->group(function () {
     Route::get('/tracking/{id}', [\App\Http\Controllers\Job\TrackingController::class, 'edit'])->whereNumber('id');
     Route::post('/tracking/{id}', [\App\Http\Controllers\Job\TrackingController::class, 'save'])->whereNumber('id');
     Route::post('/tracking/{id}/next', [\App\Http\Controllers\Job\TrackingController::class, 'advance'])->whereNumber('id');
+    Route::post('/tracking/{id}/skip', [\App\Http\Controllers\Job\TrackingController::class, 'skipNext'])->whereNumber('id');
     Route::post('/tracking/{id}/share', [\App\Http\Controllers\Job\TrackingController::class, 'share'])->whereNumber('id');
 
     // Demurrage & detention
