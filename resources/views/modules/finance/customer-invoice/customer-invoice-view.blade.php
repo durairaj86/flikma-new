@@ -17,7 +17,7 @@
 
 <div class="offcanvas offcanvas-end" tabindex="-1" id="paymentHistoryDrawer" style="width: 35%;">
     <div class="offcanvas-header border-bottom">
-        <h5 class="offcanvas-title mb-0">{{ __('Payment History') }}</h5>
+        <h5 class="offcanvas-title mb-0">{{ __('Collection History') }}</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="{{ __('Close') }}"></button>
     </div>
     <div class="offcanvas-body px-4 py-3">

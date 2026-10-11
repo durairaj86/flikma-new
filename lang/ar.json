@@ -3527,5 +3527,13 @@
     "Customer Inv.": "فواتير العملاء",
     "Ref": "المرجع",
     "In detention": "في التأخير",
-    "free left": "أيام مجانية متبقية"
+    "free left": "أيام مجانية متبقية",
+    "Show all invoices": "عرض كل الفواتير",
+    "Part paid": "مدفوعة جزئياً",
+    "days overdue": "يوم تأخير",
+    "Due today": "مستحقة اليوم",
+    "Due tomorrow": "مستحقة غداً",
+    "Collection History": "سجل التحصيلات",
+    "No collections recorded against this invoice yet.": "لا توجد تحصيلات مسجلة لهذه الفاتورة بعد",
+    "Entered by": "أدخلها"
 }

@@ -637,7 +637,7 @@ class CustomerInvoiceController extends Controller
                 'separator' => 'before',
             ]);*/
             $contextMenu->push([
-                'label' => __('Payment History'),
+                'label' => __('Collection History'),
                 'code' => '01CSPH',
                 'id' => 'row_payment_history',
                 'class' => 'row_payment_history',
@@ -906,13 +906,18 @@ class CustomerInvoiceController extends Controller
         $customerInvoice = CustomerInvoice::findOrFail($id);
 
         $collectionInvoices = \App\Models\Finance\Collection\CollectionInvoice::where('customer_invoice_id', $id)
-            ->with('collection:id,row_no,collection_date,account,currency,status')
+            ->with('collection:id,row_no,collection_date,account,currency,status,created_by,created_at')
             ->orderByDesc('id')
             ->get();
 
+        // Who entered each collection (created_by, or the user who saved it) and when.
+        $enteredBy = \App\Models\User::withoutGlobalScopes()
+            ->whereIn('id', $collectionInvoices->map(fn($ci) => $ci->collection?->created_by)->filter()->unique())
+            ->pluck('name', 'id');
+
         $balance = (float) $customerInvoice->grand_total - (float) ($customerInvoice->paid_amount ?? 0);
 
-        return view('modules.finance.customer-invoice.payment-history', compact('customerInvoice', 'collectionInvoices', 'balance'));
+        return view('modules.finance.customer-invoice.payment-history', compact('customerInvoice', 'collectionInvoices', 'balance', 'enteredBy'));
     }
 
     public function print($id)

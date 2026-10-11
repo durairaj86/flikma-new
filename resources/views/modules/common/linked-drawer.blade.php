@@ -34,7 +34,11 @@
     document.addEventListener('DOMContentLoaded', function () {
         const mainEl = document.getElementById('moduleDrawer');
         const subEl = document.getElementById('linkedDrawer');
-        if (!mainEl || !subEl) return;
+        if (!subEl) return;
+        // Drawers that can have the sub drawer slide out beside them (the page's main drawer, and the collection history drawer).
+        const hosts = ['moduleDrawer', 'paymentHistoryDrawer'].map(id => document.getElementById(id)).filter(Boolean);
+        if (!hosts.length) return;
+        let hostEl = mainEl || hosts[0];
 
         // Where each kind of record loads from, and the tabs its content is split into (if any).
         const TYPES = {
@@ -80,25 +84,33 @@
             }
         });
 
-        mainEl.addEventListener('click', function (e) {
-            const a = e.target.closest('.open-linked');
-            if (!a) return;
-            e.preventDefault();
-            openLinked(a.dataset);
+        hosts.forEach(function (host) {
+            host.addEventListener('click', function (e) {
+                const a = e.target.closest('.open-linked');
+                if (!a) return;
+                e.preventDefault();
+                hostEl = host;
+                openLinked(a.dataset);
+            });
         });
 
         function openLinked(a) {
             const def = TYPES[a.type];
             if (!def) return;
             // The main drawer is already showing a customer invoice: its tab ids would clash, so don't open a second copy.
-            if (a.type === 'invoice' && mainEl.querySelector('#ciDetailsTab')) return;
-            if (a.type === 'supplier_invoice' && mainEl.querySelector('#siDetailsTab')) return;
+            if (a.type === 'invoice' && hostEl.querySelector('#ciDetailsTab')) return;
+            if (a.type === 'supplier_invoice' && hostEl.querySelector('#siDetailsTab')) return;
 
             // Short content (customer) keeps the default width; long content (job, collection, credit note) fills the rest of the screen.
-            if (window.matchMedia('(min-width: 992px)').matches) {
-                subEl.style.width = def.narrow ? '' : (100 - {{ $mainWidth }}) + '%';
+            // Sit beside whichever drawer the link was clicked in.
+            const sideBySide = window.matchMedia('(min-width: 992px)').matches;
+            if (sideBySide && hostEl !== mainEl) {
+                const hw = hostEl.offsetWidth;
+                subEl.style.right = hw + 'px';
+                subEl.style.width = def.narrow ? '' : Math.max(360, window.innerWidth - hw) + 'px';
             } else {
-                subEl.style.width = '';
+                subEl.style.right = '';
+                subEl.style.width = sideBySide ? (def.narrow ? '' : (100 - {{ $mainWidth }}) + '%') : '';
             }
             document.getElementById('linkedDrawerTitle').textContent = def.title;
             document.getElementById('linkedDrawerSubtitle').textContent = a.title || '';
@@ -112,7 +124,7 @@
             });
 
             // Two open drawers would fight over keyboard focus; pause the main drawer's trap while the sub drawer is on top.
-            const mainFocus = bootstrap.Offcanvas.getInstance(mainEl)?._focustrap;
+            const mainFocus = bootstrap.Offcanvas.getInstance(hostEl)?._focustrap;
             if (!subEl.classList.contains('show')) {
                 mainFocus?.deactivate();
                 subEl.addEventListener('hidden.bs.offcanvas', function () { mainFocus?.activate(); }, {once: true});
@@ -144,14 +156,16 @@
             frame.src = btn.dataset.printUrl;
         });
 
-        // Closing the main drawer: the sub drawer closes first, then the main one closes by itself.
-        mainEl.addEventListener('hide.bs.offcanvas', function (e) {
-            if (e.target !== mainEl || !subEl.classList.contains('show')) return;
-            e.preventDefault();
-            subEl.addEventListener('hidden.bs.offcanvas', function () {
-                bootstrap.Offcanvas.getInstance(mainEl)?.hide();
-            }, {once: true});
-            bootstrap.Offcanvas.getInstance(subEl).hide();
+        // Closing a host drawer: the sub drawer closes first, then the host closes by itself.
+        hosts.forEach(function (host) {
+            host.addEventListener('hide.bs.offcanvas', function (e) {
+                if (e.target !== host || !subEl.classList.contains('show')) return;
+                e.preventDefault();
+                subEl.addEventListener('hidden.bs.offcanvas', function () {
+                    bootstrap.Offcanvas.getInstance(host)?.hide();
+                }, {once: true});
+                bootstrap.Offcanvas.getInstance(subEl).hide();
+            });
         });
     });
 </script>

@@ -99,6 +99,7 @@ CUSTOMER_INVOICE = {
             GLOBAL_FN.destroyDataTable();
             activeTab = (activeTab && (typeof activeTab !== 'object')) ? activeTab : $("#listTabs").find('li button.active').attr('id');
             let templates = CUSTOMER_INVOICE.list.templates;
+            const jobScoped = $('#new').attr('data-loader-id') !== 'list';
             let table = $('#dataTable').DataTable({
                 processing: false,
                 serverSide: true,
@@ -122,49 +123,16 @@ CUSTOMER_INVOICE = {
                         return json.data;
                     }
                 },
-                columnDefs: [
-                    {targets: [0], searchable: false},
-                    {targets: [0, 1, 2, 3, 4, 5, 6, 7, 8], orderable: false},
-                ],
+                columnDefs: [{targets: '_all', orderable: false}, {targets: [0], searchable: false}],
                 columns: [
-                    {
-                        data: 'row_no', render: (data, type, row) => templates.invoiceNumber(row)
-                    },
-                    {
-                        data: 'job_no', render: (data, type, row) => templates.job(row)
-                    },
-                    {
-                        data: 'customer_name', render: (data, type, row) => templates.customer(row)
-                    },
-                    {
-                        data: 'sub_total', class: 'text-end', render: function (data, type, row) {
-                            return '<div class="cell-primary">' + amountFormat(row.sub_total) + '</div><div class="cell-secondary">' + row.currency + '</div>';
-                        }
-                    },
-                    {
-                        data: 'tax_total', class: 'text-end', render: function (data, type, row) {
-                            return '<div class="cell-primary">' + amountFormat(row.tax_total) + '</div>';
-                        }
-                    },
-                    {
-                        data: 'balance', class: 'text-end', render: (data, type, row) => templates.balance(row)
-                    },
-                    {
-                        data: 'invoice_date', class: 'text-end', render: (data, type, row) => templates.invoice(row)
-                    },
-                    {
-                        data: 'due_status', class: 'text-end', render: (data, type, row) => templates.aging(row)
-                    },
-                    /*{
-                        data: 'due_status', render: function (data, type, row) {
-                            if (row.status !== 'unpaid') {
-                                return '<div class="text-sm text-gray-500">Due: 21-09-2025</div><small class="text-xs font-bold text-red-600 block">74 days overdue</small>';
-                            }
-                            return '<div class="text-sm text-gray-500">Due: 21-12-2025</div><small class="text-xs font-bold text-green-600 block">On Time</small>';
-                        }
-                    },*/
+                    {data: 'row_no', render: (data, type, row) => templates.invoiceNumber(row)},
+                    // The Job column is only useful on the all-invoices list; opened from a job the job is already named above.
+                    ...(jobScoped ? [] : [{data: 'job_no', render: (data, type, row) => templates.job(row)}]),
+                    {data: 'customer_name', render: (data, type, row) => templates.customer(row)},
+                    {data: 'grand_total', class: 'text-end', render: (data, type, row) => templates.amount(row)},
+                    {data: 'balance', class: 'text-end', render: (data, type, row) => templates.balance(row)},
+                    {data: 'due_at', class: 'text-end', render: (data, type, row) => templates.due(row)},
                     GLOBAL_FN.dataTable.optionButton()
-
                 ],
                 language: {
                     search: ""
@@ -183,11 +151,25 @@ CUSTOMER_INVOICE = {
             webDataTable.loader(table);
             webDataTable.search(table);
 
+            $('#dataTable tbody').off('click', '.ci-history-link').on('click', '.ci-history-link', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                CUSTOMER_INVOICE.list.openHistory($(this).closest('tr').attr('data-id'));
+            });
+
             $('#dataTable tbody').off('click', '.customer-invoice-no-link').on('click', '.customer-invoice-no-link', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 let $row = $(this).closest('tr');
                 CUSTOMER_INVOICE.list.openDrawer($row.attr('data-id'), $row.attr('data-name'));
+            });
+        },
+        /** The collection history drawer (same one the row menu opens). */
+        openHistory(invoiceId) {
+            bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('paymentHistoryDrawer')).show();
+            $('#paymentHistoryBody').html('<p>Loading...</p>');
+            $.get('/invoice/customer/' + invoiceId + '/payment-history', function (data) {
+                $('#paymentHistoryBody').html(data);
             });
         },
         openDrawer(customerId, invoiceNo) {
@@ -226,36 +208,46 @@ CUSTOMER_INVOICE = {
                 5: '<span class="badge bg-danger-subtle text-danger-emphasis">Cancelled</span>',
                 6: '<span class="badge bg-primary-subtle text-primary-emphasis">Converted</span>',
             },
-            invoiceNumber: (row) => `<div class="cell-primary fw-bold text-primary customer-invoice-no-link" style="cursor:pointer;">${row.row_no ?? ''}</div><div class="mt-1">${CUSTOMER_INVOICE.list.templates.statusBadge[row.status] ?? ''}</div>`,
+            // One idea per column, each with a bold main line and a small grey line.
+            invoiceNumber: (row) => `<div class="cell-primary fw-bold text-primary customer-invoice-no-link" style="cursor:pointer;">${row.row_no ?? ''}</div>
+                <div class="d-flex align-items-center gap-2 mt-1">${CUSTOMER_INVOICE.list.templates.statusBadge[row.status] ?? ''}<span class="cell-secondary">${row.invoice_date ?? ''}</span></div>`,
 
-            job: (row) => `<div class="cell-primary">${row.job_no ?? '—'}</div><div class="cell-secondary">${row.job_activity ?? ''}</div>`,
+            job: (row) => row.job_no
+                ? `<div class="cell-primary">${row.job_no}</div><div class="cell-secondary">${row.job_activity && row.job_activity !== '-' ? row.job_activity : ''}</div>`
+                : '<span class="text-muted">—</span>',
 
             customer: (row) => `<div class="cell-primary">${row.customer?.name_en ?? ''}</div><div class="cell-secondary">${row.customer?.row_no ?? ''}</div>`,
 
-            invoice: (row) => `<div class="cell-primary">${row.invoice_date}</div><div class="cell-secondary">Due ${row.due_at}</div>`,
+            // Total to pay, with how it is made up underneath.
+            amount: (row) => `<div class="cell-primary">${row.grand_total} <span class="cell-secondary">${row.currency ?? ''}</span></div>
+                <div class="cell-secondary">${trans('Excl. VAT')} ${amountFormat(row.sub_total)} + ${trans('VAT')} ${amountFormat(row.tax_total)}</div>`,
 
-            aging: (row) => {
-                const grand = parseFloat(String(row.grand_total).replace(/,/g, '')) || 0;
-                const paid = parseFloat(row.paid_amount) || 0;
-                // Overdue/due-days aging is meaningless once an invoice is fully
-                // settled — show a plain "Paid" indicator instead.
-                if (grand > 0 && paid >= grand) {
-                    return `<span class="badge bg-success-subtle text-success border border-opacity-10 px-2 py-1" style="font-size: 0.65rem;">PAID</span>`;
-                }
-                const badge = `<span class="badge ${row.due_days.class} border border-opacity-10 px-2 py-1" style="font-size: 0.65rem;">${row.due_days.label}</span>`;
-                // Settlement rate only makes sense for approved invoices — draft/cancelled
-                // invoices have no meaningful collection progress to show.
-                if (row.status !== 3) return badge;
-                return badge + '<div class="mt-1 d-flex justify-content-end">' + CUSTOMER_INVOICE.list.templates.settlementRate(row) + '</div>';
-            },
-
-            // due_status from the API is a hardcoded stub (always "unpaid"),
-            // so paid/unpaid is computed here from the real totals instead.
+            // What is still owed, and whether anything has been paid.
             balance: (row) => {
                 const grand = parseFloat(String(row.grand_total).replace(/,/g, '')) || 0;
                 const paid = parseFloat(row.paid_amount) || 0;
-                const isPaid = grand > 0 && paid >= grand;
-                return `<div class="cell-primary">${row.balance}</div><div class="cell-secondary ${isPaid ? 'text-success' : 'text-danger'}">${isPaid ? 'Paid' : 'Unpaid'}</div>`;
+                if (row.status !== 3) return '<span class="text-muted">—</span>';
+                const settled = grand > 0 && paid >= grand;
+                const part = paid > 0 && !settled;
+                const label = settled ? trans('Paid') : (part ? trans('Part paid') : trans('Unpaid'));
+                const color = settled ? 'text-success' : (part ? 'text-warning-emphasis' : 'text-danger');
+                // Paid / Part paid: click to see the collections behind it.
+                const caption = (settled || part)
+                    ? `<a href="#" class="cell-secondary ${color} ci-history-link" title="${trans('Collection History')}"><i class="bi bi-clock-history me-1"></i>${label}</a>`
+                    : `<span class="cell-secondary ${color}">${label}</span>`;
+                return `<div class="cell-primary ${settled ? 'text-success' : ''}">${settled ? '0.00' : row.balance}</div><div>${caption}</div>`;
+            },
+
+            // Due date, and how late or how soon, in plain words. Only approved, unpaid invoices have a due status.
+            due: (row) => {
+                const grand = parseFloat(String(row.grand_total).replace(/,/g, '')) || 0;
+                const paid = parseFloat(row.paid_amount) || 0;
+                if (row.status !== 3) return `<div class="cell-secondary">${row.due_at ?? ''}</div>`;
+                if (grand > 0 && paid >= grand) return `<div class="cell-secondary">${row.due_at ?? ''}</div><span class="badge bg-success-subtle text-success-emphasis">${trans('Paid')}</span>`;
+                const d = row.due_days || {};
+                const text = String(d.label || '').toLowerCase().replace(/^overdue: (\d+) days?$/, (m, n) => n + ' ' + trans('days overdue')).replace(/^open: (\d+) days left$/, (m, n) => n + ' ' + trans('days left'))
+                    .replace('due: today', trans('Due today')).replace('due: tomorrow', trans('Due tomorrow'));
+                return `<div class="cell-primary">${row.due_at ?? ''}</div><span class="badge ${d.class || ''}" style="font-size:.68rem;">${text}</span>`;
             },
 
             settlementRate: (row) => {
@@ -310,15 +302,7 @@ CUSTOMER_INVOICE = {
             },
             paymentHistory(row) {
                 $('#row_payment_history').off().on('click', function () {
-                    let invoiceId = row.attr('data-id');
-
-                    let drawer = new bootstrap.Offcanvas(document.getElementById('paymentHistoryDrawer'));
-                    drawer.show();
-
-                    $('#paymentHistoryBody').html('<p>Loading...</p>');
-                    $.get('/invoice/customer/' + invoiceId + '/payment-history', function (data) {
-                        $('#paymentHistoryBody').html(data);
-                    });
+                    CUSTOMER_INVOICE.list.openHistory(row.attr('data-id'));
                 });
             }
         }

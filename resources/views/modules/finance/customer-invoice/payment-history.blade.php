@@ -30,7 +30,7 @@
         <table class="table table-sm table-bordered align-middle">
             <thead class="table-light">
             <tr>
-                <th>{{ __('Collection No') }}</th>
+                <th>{{ __('Collection No') }} <span class="fw-normal text-muted">/ {{ __('Entered by') }}</span></th>
                 <th>{{ __('Date') }}</th>
                 <th class="text-end">{{ __('Amount') }}</th>
                 <th>{{ __('Status') }}</th>
@@ -41,9 +41,17 @@
                 @php $statusLabels = [1 => [__('Draft'), 'secondary'], 2 => [__('Approved'), 'success'], 3 => [__('Cancelled'), 'danger']]; @endphp
                 <tr>
                     <td>
-                        <a href="{{ url('transaction/collections/' . $ci->collection_id) }}" target="_blank">
+                        <a href="#" class="open-linked text-primary text-decoration-none" data-type="collection" data-id="{{ $ci->collection_id }}" data-title="{{ $ci->collection->row_no }}">
                             {{ $ci->collection->row_no ?? '—' }}
                         </a>
+                        @php
+                            $col = $ci->collection;
+                            $by = $enteredBy[$col?->created_by] ?? null;
+                        @endphp
+                        <div class="text-muted" style="font-size:.7rem;line-height:1.35;">
+                            <i class="bi bi-person me-1"></i>{{ $by ?? '—' }}<br>
+                            <i class="bi bi-clock me-1"></i>{{ $col?->created_at?->format('d-M-Y H:i') ?? '—' }}
+                        </div>
                     </td>
                     <td>{{ $ci->collection->collection_date ?? '—' }}</td>
                     <td class="text-end">{{ number_format($ci->amount, 2) }} {{ strtoupper($ci->collection->currency ?? '') }}</td>
@@ -54,7 +62,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="4" class="text-center text-muted py-4">{{ __('No payments recorded against this invoice yet.') }}</td>
+                    <td colspan="4" class="text-center text-muted py-4">{{ __('No collections recorded against this invoice yet.') }}</td>
                 </tr>
             @endforelse
             </tbody>

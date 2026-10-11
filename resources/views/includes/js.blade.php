@@ -27,6 +27,15 @@
 @endif--}}
 @php
     $i18nKeys = [
+        'Due tomorrow',
+        'Due today',
+        'days left',
+        'days overdue',
+        'Unpaid',
+        'Part paid',
+        'Paid',
+        'VAT',
+        'Excl. VAT',
         'free left',
         'In detention',
         'Due',

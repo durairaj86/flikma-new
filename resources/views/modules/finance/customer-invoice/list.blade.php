@@ -11,6 +11,8 @@
 <x-app-layout>
     <main class="gmail-content bg-white px-3">
         <style>
+            .ci-history-link { text-decoration: none; border-bottom: 1px dashed currentColor; cursor: pointer; }
+            .ci-history-link:hover { opacity: .75; }
             .bg-ci-approved { background-color: #dcfce7; }
             .text-ci-approved { color: #166534; }
             .bg-ci-draft { background-color: #fef9c3; }
@@ -108,9 +110,11 @@
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 py-3">
             <div class="align-items-center flex-shrink-0">
                 @if(isset($job_no))
-                    <h3 class="fw-bold text-muted bg-info-subtle rounded p-3">
-                        {{ $job_no }}
-                    </h3>
+                    {{-- Opened from a job: the job is named once here, so the table has no Job column. --}}
+                    <div class="d-flex align-items-center gap-2 mb-2 ci-jobchip">
+                        <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis border border-primary-subtle px-3 py-2"><i class="bi bi-briefcase me-1"></i>{{ __('Job') }} {{ $job_no }}</span>
+                        <a href="{{ url('/invoice/customer') }}" class="small text-decoration-none"><i class="bi bi-x-circle me-1"></i>{{ __('Show all invoices') }}</a>
+                    </div>
                 @endif
 
                 <div class="gap-4">
@@ -263,14 +267,12 @@
                 <table class="table align-middle dataTable" id="dataTable" data-min-height="min-height:75vh;" data-title="Job" data-model-size="lg">
                     <thead>
                     <tr class="text-muted text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.03em;">
-                        <th>{{ __('Invoice #') }}</th>
-                        <th>{{ __('Job') }}</th>
+                        <th>{{ __('Invoice') }}</th>
+                        @unless(isset($job_no))<th>{{ __('Job') }}</th>@endunless
                         <th>{{ __('Customer') }}</th>
-                        <th class="text-end">{{ __('Excl. VAT') }}</th>
-                        <th class="text-end">{{ __('Tax') }}</th>
-                        <th class="text-end">{{ __('Balance Due') }}</th>
-                        <th>{{ __('Dates') }}</th>
-                        <th class="text-end">{{ __('Aging') }}</th>
+                        <th class="text-end">{{ __('Amount') }}</th>
+                        <th class="text-end">{{ __('Balance') }}</th>
+                        <th class="text-end">{{ __('Due') }}</th>
                         <th></th>
                     </tr>
                     </thead>
