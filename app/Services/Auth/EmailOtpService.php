@@ -51,9 +51,11 @@ class EmailOtpService
     /**
      * Create and email a new code (to the user's own address, or to $deliverTo when an administrator sends it elsewhere).
      * Returns null when sent, or a message when it may not be sent yet.
+     * $final = false (the automatic first send when the page opens): a failed send is NOT withdrawn; the queue worker keeps
+     * trying while the code is valid, and the page shows a gentle notice instead of an error.
      * Mail failures are thrown so the caller can tell the person.
      */
-    public function send(User $user, ?string $deliverTo = null): ?string
+    public function send(User $user, ?string $deliverTo = null, bool $final = true): ?string
     {
         $state = $this->state($user);
         if ($state['resend_in'] > 0) {
@@ -83,7 +85,10 @@ class EmailOtpService
             ['userName' => $user->name, 'userEmail' => $to, 'code' => $code, 'minutes' => self::TTL_MINUTES],
             ['type' => 'otp', 'sensitive' => true, 'expires_at' => now()->addMinutes(self::TTL_MINUTES), 'company_id' => $user->company_id]);
 
-        if (!$queue->sendNow($mail, false)) {
+        if (!$queue->sendNow($mail, !$final)) {
+            if (!$final) {
+                return null; // retried by the worker; see delivery()
+            }
             $reason = (string) $mail->fresh()->error_message;
             if (app()->environment('local')) {
                 // Development: the mail provider may not be set up. Keep the code usable and write it to the log, so the page can still be tried.
@@ -96,6 +101,15 @@ class EmailOtpService
         }
 
         return null;
+    }
+
+    /** How the newest code email of this person is doing: sent | pending | failed | null (none). */
+    public function delivery(User $user): ?string
+    {
+        $row = \App\Models\EmailQueue::where('type', 'otp')->where(fn($q) => $q->where('to', $user->email)->orWhere('created_by', $user->id))
+            ->orderByDesc('id')->first();
+
+        return $row?->status === 'processing' ? 'pending' : $row?->status;
     }
 
     /** @return string ok | none | expired | locked | invalid */

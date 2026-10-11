@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Mail;
 /** Finds out why email is not going out: shows the settings in use, tests the login, and can send one test message. */
 class MailCheck extends Command
 {
-    protected $signature = 'mail:check {--to= : Also send one test email to this address}';
+    protected $signature = 'mail:check {--to= : Also send one test email to this address} {--queue : With --to: send the test through the email queue table, the way the app does}';
 
     protected $description = 'Check the mail settings and the connection to the mail server';
 
@@ -83,7 +83,21 @@ class MailCheck extends Command
             $code === 200 ? $this->info('API key          : OK') : ($ok = false) . $this->error("API key rejected (HTTP $code). Create a new API token in MailerSend.");
         }
 
-        if ($to = $this->option('to')) {
+        if (($to = $this->option('to')) && $this->option('queue')) {
+            // The same path the verification code and other emails take: store in email_queues, then send.
+            if (!\Illuminate\Support\Facades\Schema::hasTable('email_queues')) {
+                $this->error('The table email_queues does not exist on this server. Create it: php artisan migrate --path=database/migrations/2026_10_21_000001_create_email_queues_table.php --force');
+
+                return self::FAILURE;
+            }
+            $svc = app(\App\Services\Mail\EmailQueueService::class);
+            $row = $svc->enqueue($to, 'Flikma queue test', 'emails.generic', ['body' => 'This test email went through the Flikma email queue table. If you can read this, queued sending works.'], ['type' => 'test']);
+            $this->line("Stored as email_queues #{$row->id} (status: pending)");
+            $sent = $svc->sendNow($row);
+            $row->refresh();
+            $sent ? $this->info("Sent. Row status: {$row->status}. Check the inbox (and Spam) of $to.") : $this->error("Not sent. Row status: {$row->status}. Reason: {$row->error_message}");
+            $ok = $sent;
+        } elseif ($to = $this->option('to')) {
             try {
                 Mail::raw('This is a test email from Flikma. If you can read this, email sending works.', fn($m) => $m->to($to)->subject('Flikma test email'));
                 $this->info("Test email sent to $to (check Spam too).");

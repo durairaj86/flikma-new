@@ -17,6 +17,9 @@
                     @if ($sendFailed || session('status') == 'verification-link-failed')
                         <div class="alert alert-danger border-0 shadow-sm small mb-3 text-start">{{ __('We could not send the code right now. Please try again in a moment.') }}</div>
                     @endif
+                    @if (!empty($delayed))
+                        <div class="alert alert-warning border-0 shadow-sm small mb-3 text-start"><i class="bi bi-hourglass-split me-1"></i>{{ __('The code email has not been delivered yet. We keep trying. You can also press Resend code.') }}</div>
+                    @endif
                     @error('otp')
                         <div class="alert alert-danger border-0 shadow-sm small mb-3 text-start"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>
                     @enderror

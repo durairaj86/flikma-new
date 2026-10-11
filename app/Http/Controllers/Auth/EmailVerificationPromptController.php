@@ -22,22 +22,24 @@ class EmailVerificationPromptController extends Controller
             return redirect()->intended(route('dashboard', absolute: false));
         }
 
-        $sendFailed = false;
         $state = $otp->state($user);
         if (!$state['active'] && $state['resend_in'] === 0) {
             try {
-                $otp->send($user);
+                // The automatic first send never shows an error: if it cannot go out now, the worker keeps trying.
+                $otp->send($user, null, false);
             } catch (\Throwable $e) {
-                Log::error('Could not send the verification code: ' . $e->getMessage());
-                $sendFailed = true;
+                Log::error('Could not queue the verification code: ' . $e->getMessage());
             }
             $state = $otp->state($user);
         }
+        // Only mention a problem when the code email really has not gone out.
+        $delayed = $state['active'] && in_array($otp->delivery($user), ['failed', 'pending'], true);
 
         return view('auth.verify-email', [
             'maskedEmail' => EmailOtpService::mask($user->email),
             'state' => $state,
-            'sendFailed' => $sendFailed,
+            'sendFailed' => false,
+            'delayed' => $delayed,
             'ttl' => EmailOtpService::TTL_MINUTES,
         ]);
     }

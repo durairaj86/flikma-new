@@ -3588,5 +3588,6 @@
     "That code is not correct.": "الرمز غير صحيح",
     "Please wait :s seconds before asking for a new code.": "يرجى الانتظار :s ثانية قبل طلب رمز جديد",
     "Too many codes were requested. Please try again in an hour.": "تم طلب رموز كثيرة. حاول مرة أخرى بعد ساعة",
-    "No code yet. Press Resend code.": "لا يوجد رمز بعد. اضغط إعادة إرسال الرمز"
+    "No code yet. Press Resend code.": "لا يوجد رمز بعد. اضغط إعادة إرسال الرمز",
+    "The code email has not been delivered yet. We keep trying. You can also press Resend code.": "لم يصل بريد الرمز بعد. نواصل المحاولة. يمكنك أيضاً الضغط على إعادة إرسال الرمز"
 }
