@@ -43,6 +43,15 @@ class AppServiceProvider extends ServiceProvider
             }
         }
 
+        // Once a person's email is verified (by code or by the old link), they get the welcome email, one time.
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Auth\Events\Verified::class, function ($event) {
+            try {
+                app(\App\Services\Mail\WelcomeEmail::class)->queue($event->user);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Could not queue the welcome email: ' . $e->getMessage());
+            }
+        });
+
         View::share('user', $this->getUser());
     }
 
