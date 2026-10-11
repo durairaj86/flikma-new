@@ -2,12 +2,10 @@
 
 namespace App\Services\Auth;
 
-use App\Mail\VerificationOtpMail;
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 
 /**
  * Email verification by one-time code.
@@ -77,18 +75,24 @@ class EmailOtpService
             ]);
         });
 
-        try {
-            Mail::to($deliverTo ?: $user->email)->send(new VerificationOtpMail($user, $code, self::TTL_MINUTES));
-        } catch (\Throwable $e) {
+        // The email is stored in the queue table and sent at once (the person is waiting). If it cannot be sent the
+        // code is withdrawn, so they can ask for a new one; the queue row keeps the reason.
+        $queue = app(\App\Services\Mail\EmailQueueService::class);
+        $to = $deliverTo ?: $user->email;
+        $mail = $queue->enqueue($to, 'Your Flikma verification code', 'emails.auth.verification-otp',
+            ['userName' => $user->name, 'userEmail' => $to, 'code' => $code, 'minutes' => self::TTL_MINUTES],
+            ['type' => 'otp', 'sensitive' => true, 'expires_at' => now()->addMinutes(self::TTL_MINUTES), 'company_id' => $user->company_id]);
+
+        if (!$queue->sendNow($mail, false)) {
+            $reason = (string) $mail->fresh()->error_message;
             if (app()->environment('local')) {
                 // Development: the mail provider may not be set up. Keep the code usable and write it to the log, so the page can still be tried.
-                \Illuminate\Support\Facades\Log::warning("[DEV] Verification code for {$user->email}: {$code} (email not sent: " . $e->getMessage() . ')');
+                \Illuminate\Support\Facades\Log::warning("[DEV] Verification code for {$user->email}: {$code} (email not sent: {$reason})");
 
                 return null;
             }
-            // A code that never reached the person is of no use: remove it so they can ask again straight away.
             DB::table(self::TABLE)->where('id', $id)->delete();
-            throw $e;
+            throw new \RuntimeException($reason ?: 'The email could not be sent.');
         }
 
         return null;

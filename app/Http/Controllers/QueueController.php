@@ -22,6 +22,9 @@ class QueueController extends Controller
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
+        // Emails stored in email_queues first, then any other queued jobs.
+        $sent = app(\App\Services\Mail\EmailQueueService::class)->sendPending();
+
         // Process a specific number of jobs from the queue
         Artisan::call('queue:work', [
             '--once' => true,
@@ -29,7 +32,7 @@ class QueueController extends Controller
             '--tries' => 3,
         ]);
 
-        return response()->json(['message' => __('Queued emails processed successfully')]);
+        return response()->json(['message' => __('Queued emails processed successfully'), 'sent' => $sent]);
     }
 
     /**

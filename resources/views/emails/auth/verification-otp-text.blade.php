@@ -1,4 +1,4 @@
-Hello {{ $user->name }},
+Hello {{ $userName }},
 
 Your Flikma verification code is: {{ $code }}
 

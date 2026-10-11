@@ -6,7 +6,6 @@ use App\Enums\EnquiryEnum;
 use App\Enums\QuotationEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Enquiry\Enquiry;
-use App\Mail\QuotationMail;
 use App\Models\Customer\Customer;
 use App\Models\Job\Job;
 use App\Models\Master\Description;
@@ -786,25 +785,20 @@ class QuotationController extends Controller
             'body' => 'required|string',
         ]);
 
-        $emailData = [
-            'subject' => $request->subject,
-            'body' => $request->body,
-        ];
-
-        // Handle attachments if any
+        // Attachments are kept on disk; the queue stores only where they are.
         $attachments = [];
         if ($request->hasFile('attachment')) {
-            foreach ($request->file('attachment') as $file) {
+            foreach ((array) $request->file('attachment') as $file) {
                 $path = $file->store('email-attachments', 'public');
-                $attachments[] = storage_path('app/public/' . $path);
+                $attachments[] = ['path' => storage_path('app/public/' . $path), 'name' => $file->getClientOriginalName(), 'mime' => $file->getClientMimeType()];
             }
-            $emailData['attachments'] = $attachments;
         }
 
-        // Send email using queue
-        Mail::to($request->to)
-            ->cc($request->cc)
-            ->queue(new QuotationMail($emailData));
+        // Store the email; the worker sends it within a minute.
+        app(\App\Services\Mail\EmailQueueService::class)->enqueue(
+            $request->to, $request->subject, 'emails.generic', ['body' => $request->body],
+            ['type' => 'quotation', 'cc' => $request->cc, 'attachments' => $attachments]
+        );
 
         return response()->json([
             'success' => true,

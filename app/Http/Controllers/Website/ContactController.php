@@ -3,12 +3,10 @@
 namespace App\Http\Controllers\Website;
 
 use App\Http\Controllers\Controller;
-use App\Mail\ContactMessageReceived;
 use App\Models\ContactMessage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 class ContactController extends Controller
 {
@@ -34,10 +32,15 @@ class ContactController extends Controller
         // visitor's submission — the message is already saved above and
         // visible to staff regardless of whether the notification email
         // goes out.
+        // Stored in the email queue; the worker sends it (and retries if the mail server is down).
         try {
-            Mail::to('support@flikma.com')->send(new ContactMessageReceived($contactMessage));
+            app(\App\Services\Mail\EmailQueueService::class)->enqueue(
+                'support@flikma.com', 'New Contact Form Submission - ' . $contactMessage->name, 'emails.website.contact-message',
+                ['contactMessage' => $contactMessage->only(['name', 'email', 'company', 'phone', 'interest', 'message']) + ['submitted' => $contactMessage->created_at?->format('d M Y, h:i A')]],
+                ['type' => 'contact', 'from_address' => config('mail.from.address'), 'from_name' => 'Flikma Website']
+            );
         } catch (\Throwable $e) {
-            Log::error('Failed to send contact form notification email: '.$e->getMessage());
+            Log::error('Failed to queue contact form notification email: '.$e->getMessage());
         }
 
         return redirect()

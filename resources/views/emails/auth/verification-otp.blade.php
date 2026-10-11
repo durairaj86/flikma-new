@@ -22,7 +22,7 @@
                 <tr>
                     <td style="padding:34px 32px 8px;">
                         <h1 style="margin:0 0 14px;font-size:21px;line-height:1.3;color:#111827;">Verify your email address</h1>
-                        <p style="margin:0 0 10px;font-size:15px;line-height:1.6;color:#374151;">Hello {{ $user->name }},</p>
+                        <p style="margin:0 0 10px;font-size:15px;line-height:1.6;color:#374151;">Hello {{ $userName }},</p>
                         <p style="margin:0;font-size:15px;line-height:1.6;color:#374151;">Use the code below to confirm your email address and start using your Flikma account.</p>
                     </td>
                 </tr>
@@ -57,7 +57,7 @@
                 </tr>
                 <tr>
                     <td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:18px 32px;">
-                        <p style="margin:0;font-size:12px;line-height:1.6;color:#6b7280;">This is an automated message from Flikma, sent to {{ $user->email }}. Please do not reply to this email.</p>
+                        <p style="margin:0;font-size:12px;line-height:1.6;color:#6b7280;">This is an automated message from Flikma, sent to {{ $userEmail }}. Please do not reply to this email.</p>
                         <p style="margin:6px 0 0;font-size:12px;color:#9ca3af;">&copy; {{ date('Y') }} Flikma. All rights reserved.</p>
                     </td>
                 </tr>
