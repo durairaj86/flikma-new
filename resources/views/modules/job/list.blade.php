@@ -217,6 +217,8 @@
             .jc-refs { display: flex; flex-wrap: wrap; gap: .1rem .8rem; justify-content: center; font-size: .72rem; color: #6b7280; margin-top: .5rem; }
             .jc-refs b { color: #374151; font-weight: 700; margin-right: .15rem; }
             .jc-refs i { color: #9ca3af; }
+            .job-skel { height: 96px; border-radius: 12px; margin-bottom: 12px; background: linear-gradient(90deg, #f1f3f5 25%, #e9ecef 37%, #f1f3f5 63%); background-size: 400% 100%; animation: jobShimmer 1.3s ease infinite; }
+            @keyframes jobShimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
             .job-stage { background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe; font-weight: 600; }
             @keyframes jcFlash { from { background: #dcfce7; } to { background: #fff; } }
             .jc-mode #dataTable tbody tr.jc-flash td { animation: jcFlash 1.8s ease-out; }
@@ -399,6 +401,13 @@
             </div>
 
             <!-- Empty / zero-records state (shown instead of table) -->
+            <!-- Shown while a tab / filter is loading, so the empty state never flashes first. -->
+            <div id="jobLoading" class="px-3 pt-2">
+                @for($i = 0; $i < 4; $i++)
+                    <div class="job-skel"></div>
+                @endfor
+            </div>
+
             <div id="jobEmptyState" class="d-none text-center py-5 px-4">
                 <div id="emptyStateNoData">
                     <div class="mb-3">
@@ -448,7 +457,7 @@
                     </tbody>
                 </table>
             </div>--}}
-            <div class="flex-grow-1" id="tableWrapper">
+            <div class="flex-grow-1 d-none" id="tableWrapper">
                 <table class="table align-middle dataTable no-footer" id="dataTable" data-model-size="lg">
                     <thead>
                     <tr id="dtTheadRow" class="text-secondary small text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;"></tr>

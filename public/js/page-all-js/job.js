@@ -563,6 +563,11 @@ JOB = {
                 ? activeTab
                 : $("#listTabs").find('li button.active').attr('id');
 
+            // Loading state first: never flash "No Jobs Yet" while the list is on its way.
+            $('#jobLoading').removeClass('d-none');
+            $('#jobEmptyState, #tableWrapper, #dtFooter').addClass('d-none');
+            let loaded = false;
+
             JOB.columnSettings.fetch((settings) => {
                 $('#dtFooter').empty();   // clear relocated pagination before destroy
                 GLOBAL_FN.destroyDataTable();
@@ -610,6 +615,7 @@ JOB = {
                             d.filterData = JOB.filter.default();
                         },
                         dataSrc(json) {
+                            loaded = true;
                             $('#dataTable tbody').find('.loading-row').remove();
                             GLOBAL_FN.setStatusCounts(json.statusCounts);
                             JOB.list.setSummaryCards(json.statusCounts);
@@ -629,6 +635,9 @@ JOB = {
                     language: {search: '', emptyTable: ' ', zeroRecords: ' '},
                     deferLoading: 0,
                     drawCallback() {
+                        // The first draw happens before the server has answered: keep showing the loader.
+                        if (!loaded) return;
+                        $('#jobLoading').addClass('d-none');
                         const info = this.api().page.info();
                         const noData = info.recordsTotal === 0;
                         const noResults = !noData && info.recordsDisplay === 0;
