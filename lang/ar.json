@@ -3557,5 +3557,16 @@
     "Already has an opening balance": "لديه رصيد افتتاحي بالفعل",
     "Empty row": "صف فارغ",
     "No amount": "بدون مبلغ",
-    "Amount is not a number": "المبلغ ليس رقماً"
+    "Amount is not a number": "المبلغ ليس رقماً",
+    "The customer or supplier cannot be changed. Delete this entry and add it again to use a different one.": "لا يمكن تغيير العميل أو المورد. احذف هذا الإدخال وأضفه من جديد لاستخدام آخر",
+    "The opening balance entry stays balanced: if this change makes debit and credit differ, the difference is carried to an automatic balancing line on Owner Capital.": "يبقى القيد الافتتاحي متوازناً: إذا اختلف المدين والدائن بعد التعديل يُرحَّل الفرق إلى سطر موازنة تلقائي على رأس مال المالك",
+    "Opening balances already exist on :d. Use the same date.": "توجد أرصدة افتتاحية بتاريخ :d. استخدم التاريخ نفسه",
+    "Opening balance updated.": "تم تحديث الرصيد الافتتاحي",
+    "Any difference was carried to the balancing line (Owner Capital).": "تم ترحيل أي فرق إلى سطر الموازنة (رأس مال المالك)",
+    "Enter either a debit or a credit, not both.": "أدخل مديناً أو دائناً وليس كليهما",
+    "Enter an amount, or delete this entry instead.": "أدخل مبلغاً أو احذف هذا الإدخال",
+    "Opening balance entry not found.": "إدخال الرصيد الافتتاحي غير موجود",
+    "This is the automatic balancing line. Change the other lines and it adjusts itself.": "هذا سطر الموازنة التلقائي. عدّل الأسطر الأخرى وسيتعدل تلقائياً",
+    "This is the automatic balancing line. Delete the other lines and it goes away by itself.": "هذا سطر الموازنة التلقائي. احذف الأسطر الأخرى وسيختفي تلقائياً",
+    "That account cannot be used here, or it already has an opening balance.": "لا يمكن استخدام هذا الحساب هنا أو لديه رصيد افتتاحي بالفعل"
 }

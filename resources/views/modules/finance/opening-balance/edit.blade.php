@@ -54,7 +54,7 @@
                             @if($balance->party_type === 'customer')
                                 <div class="mb-3">
                                     <label class="form-label fw-medium">{{ __('Customer') }}</label>
-                                    <select name="customer_id" class="form-select">
+                                    <select class="form-select bg-light" disabled>
                                         <option value="">{{ __('None') }}</option>
                                         @foreach($customers as $c)
                                             <option value="{{ $c->id }}" @selected($balance->customer_id == $c->id)>
@@ -66,7 +66,7 @@
                             @elseif($balance->party_type === 'supplier')
                                 <div class="mb-3">
                                     <label class="form-label fw-medium">{{ __('Supplier') }}</label>
-                                    <select name="supplier_id" class="form-select">
+                                    <select class="form-select bg-light" disabled>
                                         <option value="">{{ __('None') }}</option>
                                         @foreach($suppliers as $s)
                                             <option value="{{ $s->id }}" @selected($balance->supplier_id == $s->id)>
@@ -76,6 +76,12 @@
                                     </select>
                                 </div>
                             @endif
+                            @if($balance->party_type)
+                                <div class="form-text mb-3" style="margin-top:-.5rem">{{ __('The customer or supplier cannot be changed. Delete this entry and add it again to use a different one.') }}</div>
+                            @endif
+                            <div class="alert alert-info border-0 py-2 small mb-3">
+                                <i class="bi bi-info-circle me-1"></i>{{ __('The opening balance entry stays balanced: if this change makes debit and credit differ, the difference is carried to an automatic balancing line on Owner Capital.') }}
+                            </div>
 
                             <div class="row g-3 mb-3">
                                 <div class="col-md-6">

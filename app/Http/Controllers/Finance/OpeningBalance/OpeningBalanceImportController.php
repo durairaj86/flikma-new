@@ -165,26 +165,13 @@ class OpeningBalanceImportController extends Controller
 
         DB::beginTransaction();
         try {
-            $voucherNo = 'OB-' . date('YmdHis');
+            $svc = app(\App\Services\Finance\OpeningBalanceService::class);
             $lines = $rows->map(fn($r) => ['account_id' => $r['account_id'], 'customer_id' => $r['customer_id'], 'supplier_id' => $r['supplier_id'], 'debit' => $r['debit'], 'credit' => $r['credit'], 'description' => $r['notes'] ?: null])->all();
             if ($diff !== 0.0) {
-                $lines[] = ['account_id' => $contraId, 'customer_id' => null, 'supplier_id' => null, 'debit' => $diff < 0 ? abs($diff) : 0, 'credit' => $diff > 0 ? $diff : 0, 'description' => __('Opening balance - balancing entry')];
-                $debit = max($debit, $credit);
-                $credit = $debit;
+                // The difference is carried by the automatic balancing line, the same one edits and deletes keep in step.
+                $lines[] = ['account_id' => $contraId, 'customer_id' => null, 'supplier_id' => null, 'debit' => $diff < 0 ? abs($diff) : 0, 'credit' => $diff > 0 ? $diff : 0, 'description' => \App\Services\Finance\OpeningBalanceService::BALANCING_NOTE, 'auto' => true];
             }
-            $finance = Finance::create([
-                'voucher_no' => $voucherNo, 'voucher_type' => 'OB', 'posted_at' => $date, 'reference_date' => $date, 'narration' => 'Opening Balance (import)',
-                'total_debit' => $debit, 'total_credit' => $credit, 'base_total_debit' => $debit, 'base_total_credit' => $credit,
-                'is_approved' => 1, 'company_id' => companyId(), 'user_id' => auth()->id(),
-            ]);
-            foreach ($lines as $l) {
-                FinanceSub::create([
-                    'finance_id' => $finance->id, 'voucher_no' => $voucherNo, 'voucher_type' => 'OB', 'account_id' => $l['account_id'],
-                    'customer_id' => $l['customer_id'], 'supplier_id' => $l['supplier_id'], 'reference_date' => $date,
-                    'debit' => $l['debit'], 'credit' => $l['credit'], 'base_debit' => $l['debit'], 'base_credit' => $l['credit'],
-                    'description' => $l['description'], 'company_id' => companyId(), 'user_id' => auth()->id(),
-                ]);
-            }
+            $svc->post($date, $lines, 'Opening Balance (import)');
             DB::commit();
         } catch (\Throwable $e) {
             DB::rollBack();
@@ -258,11 +245,12 @@ class OpeningBalanceImportController extends Controller
                 }
             }
         }
-        $arId = Account::where('code', '1130')->value('id') ?: 5;
-        $apId = Account::where('code', '2110')->value('id') ?: 18;
+        $svc = app(\App\Services\Finance\OpeningBalanceService::class);
+        $arId = $svc->arId();
+        $apId = $svc->apId();
         $haveCust = $existingOb->whereNotNull('customer_id')->pluck('customer_id')->flip();
         $haveSupp = $existingOb->whereNotNull('supplier_id')->pluck('supplier_id')->flip();
-        $haveAcct = $existingOb->whereNull('customer_id')->whereNull('supplier_id')->pluck('account_id')->flip();
+        $haveAcct = $existingOb->whereNull('customer_id')->whereNull('supplier_id')->where('is_auto_generated', 0)->pluck('account_id')->flip();
 
         $cell = fn($row, $f) => isset($map[$f]) ? ($row[$map[$f]] ?? '') : '';
         $seen = [];
