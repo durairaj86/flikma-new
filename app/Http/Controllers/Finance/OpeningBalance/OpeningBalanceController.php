@@ -40,10 +40,10 @@ class OpeningBalanceController extends Controller
             $query->where('account_id', $request->account_id);
         }
         if ($request->filled('date_from')) {
-            $query->whereHas('finance', fn($q) => $q->whereDate('posted_at', '>=', $request->date_from));
+            $query->whereHas('finance', fn($q) => $q->whereDate('posted_at', '>=', formDate($request->date_from)));
         }
         if ($request->filled('date_to')) {
-            $query->whereHas('finance', fn($q) => $q->whereDate('posted_at', '<=', $request->date_to));
+            $query->whereHas('finance', fn($q) => $q->whereDate('posted_at', '<=', formDate($request->date_to)));
         }
 
         $openingBalances = $query->paginate(25)->withQueryString();
@@ -106,6 +106,8 @@ class OpeningBalanceController extends Controller
     // ──────────────────────────────────────────────────────────────
     public function store(Request $request)
     {
+        // The calendar sends dd-mm-yyyy; the rest of this method works with yyyy-mm-dd.
+        $request->merge(['posted_at' => formDate($request->posted_at)]);
         $request->validate(['posted_at' => 'required|date']);
 
         $rows = collect($request->input('balances', []))->filter(function ($row) {

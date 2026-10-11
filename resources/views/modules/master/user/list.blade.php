@@ -48,7 +48,7 @@
                 </div>
                 <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Employee') }}</button>
             </div>
-            <div class="shadow bdr-r-10 pt-0 pb-3 flex-grow-1 overflow-hidden">
+            <div class="border bdr-r-10 pt-0 pb-3 overflow-hidden">
                 <!-- Table with scroll -->
                 <div class="flex-grow-1">
                     <table class="table align-middle dataTable" id="dataTable" data-model-size="md">

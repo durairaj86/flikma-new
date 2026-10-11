@@ -21,7 +21,7 @@
         @endif
 
         {{-- Filter Card --}}
-        <div class="card border-0 shadow-sm mb-3">
+        <div class="card border mb-3">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 @if(headerEnabledForUser())
                     <h6 class="mb-0 fw-semibold">{{ __('Filters') }}</h6>
@@ -32,15 +32,20 @@
                         <div class="text-muted small mt-1">{{ __('Maintain beginning balances for accounts and sub-ledgers.') }}</div>
                     </div>
                 @endif
-                <a href="{{ route('finance.opening-balance.create') }}" class="btn btn-primary btn-sm rounded-pill px-3 ms-auto">
-                    <i class="bi bi-plus-lg me-1"></i> {{ __('New Entry') }}
-                </a>
+                <div class="d-flex gap-2 ms-auto">
+                    <a href="{{ route('finance.opening-balance.import') }}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                        <i class="bi bi-upload me-1"></i> {{ __('Import') }}
+                    </a>
+                    <a href="{{ route('finance.opening-balance.create') }}" class="btn btn-primary btn-sm rounded-pill px-3">
+                        <i class="bi bi-plus-lg me-1"></i> {{ __('New Entry') }}
+                    </a>
+                </div>
             </div>
             <div class="card-body py-3">
-                <form method="GET" action="{{ route('finance.opening-balance') }}" class="row g-2 align-items-end">
+                <form method="GET" id="obFilter" action="{{ route('finance.opening-balance') }}" class="row g-2 align-items-end">
                     <div class="col-md-3">
                         <label class="form-label small fw-medium">{{ __('Account') }}</label>
-                        <select name="account_id" class="form-select form-select-sm">
+                        <select name="account_id" class="tom-select" data-live-search="true">
                             <option value="">{{ __('All Accounts') }}</option>
                             @foreach($accounts as $acc)
                                 <option value="{{ $acc->id }}" {{ (string)request('account_id') === (string)$acc->id ? 'selected' : '' }}>
@@ -51,7 +56,7 @@
                     </div>
                     <div class="col-md-2">
                         <label class="form-label small fw-medium">{{ __('Customer') }}</label>
-                        <select name="customer_id" class="form-select form-select-sm">
+                        <select name="customer_id" class="tom-select" data-live-search="true">
                             <option value="">{{ __('All Customers') }}</option>
                             @foreach($customers as $c)
                                 <option value="{{ $c->id }}" {{ (string)request('customer_id') === (string)$c->id ? 'selected' : '' }}>
@@ -62,7 +67,7 @@
                     </div>
                     <div class="col-md-2">
                         <label class="form-label small fw-medium">{{ __('Supplier') }}</label>
-                        <select name="supplier_id" class="form-select form-select-sm">
+                        <select name="supplier_id" class="tom-select" data-live-search="true">
                             <option value="">{{ __('All Suppliers') }}</option>
                             @foreach($suppliers as $s)
                                 <option value="{{ $s->id }}" {{ (string)request('supplier_id') === (string)$s->id ? 'selected' : '' }}>
@@ -73,11 +78,11 @@
                     </div>
                     <div class="col-md-2">
                         <label class="form-label small fw-medium">{{ __('From') }}</label>
-                        <input type="date" name="date_from" class="form-control form-control-sm" value="{{ request('date_from') }}">
+                        <input type="text" name="date_from" class="form-control form-control-sm datepicker" value="{{ request('date_from') }}" autocomplete="off">
                     </div>
                     <div class="col-md-2">
                         <label class="form-label small fw-medium">{{ __('To') }}</label>
-                        <input type="date" name="date_to" class="form-control form-control-sm" value="{{ request('date_to') }}">
+                        <input type="text" name="date_to" class="form-control form-control-sm datepicker" value="{{ request('date_to') }}" autocomplete="off">
                     </div>
                     <div class="col-md-1">
                         <div class="d-flex gap-1">
@@ -92,7 +97,7 @@
         </div>
 
         {{-- Table card --}}
-        <div class="card border-0 shadow-sm rounded-3 overflow-hidden mb-4">
+        <div class="card border rounded-3 overflow-hidden mb-4">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
@@ -232,6 +237,14 @@
                 btn.disabled = false;
                 btn.textContent = "{{ __('Delete') }}";
             });
+        });
+    </script>
+
+    <script>
+        // Searchable dropdowns and calendars for the filter bar.
+        window.addEventListener('load', function () {
+            if (typeof initTomSelectForm === 'function') initTomSelectForm($('#obFilter'));
+            if (typeof datepicker === 'function') datepicker();
         });
     </script>
 </x-app-layout>

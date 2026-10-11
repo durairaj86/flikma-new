@@ -5,7 +5,7 @@
         @include('includes.master-navigation')
         <section class="flex-grow-1 px-4 d-flex flex-column">
             @include('includes.master-page-title')
-            <div class="shadow bdr-r-10 py-3 flex-grow-1">
+            <div class="border bdr-r-10 pt-0 pb-3 overflow-hidden">
                 <!-- Table with scroll -->
                 <div class="flex-grow-1 overflow-auto" style="min-height:320px;">
                     <table class="table align-middle dataTable" id="dataTable">

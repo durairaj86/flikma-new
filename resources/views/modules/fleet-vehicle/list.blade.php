@@ -10,6 +10,8 @@
             .mod-title { display: none; }
             body:not(.has-top-header) .mod-title { display: block; }
             #dataTable thead th { background-color: #f8f9fa !important; }
+            #filtered-data:empty { display: none; }
+            #filtered-data:not(:empty) { padding-top: 12px; }
             #dataTable thead th:first-child { border-top-left-radius: 8px; }
             #dataTable thead th:last-child { border-top-right-radius: 8px; }
             #listTabs .status-btn:not(.active) { background: #f1f3f5; color: #495057; }
@@ -84,8 +86,8 @@
             </div>
         </div>
 
-        <div class="shadow bdr-r-10 pb-3 flex-grow-1">
-            <div id="filtered-data" class="px-3 pt-3"></div>
+        <div class="border bdr-r-10 pb-3">
+            <div id="filtered-data" class="px-3"></div>
             <div class="table-responsive">
                 <table class="table align-middle dataTable" id="dataTable" data-title="Vehicle" data-model-size="xl">
                     <thead>

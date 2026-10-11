@@ -29,14 +29,16 @@
                         <div class="col-md-4">
                             <label class="form-label fw-medium">{{ __('Balance Date') }} <span class="text-danger">*</span></label>
                             @if($lockedDate)
-                                <input type="date" name="posted_at" value="{{ $lockedDate }}"
+                                <input type="text" name="posted_at" value="{{ \Carbon\Carbon::parse($lockedDate)->format('d-m-Y') }}"
                                        class="form-control bg-light" readonly>
                                 <div class="form-text text-info">
                                     <i class="bi bi-lock-fill me-1"></i> {{ __('Date locked based on previous entries.') }}
                                 </div>
                             @else
-                                <input type="date" name="posted_at" class="form-control"
-                                       value="{{ old('posted_at', date('Y-m-d')) }}" required>
+                                {{-- Opening balances often start before the calendar's default window, so allow older dates. --}}
+                                <input type="text" name="posted_at" class="form-control datepicker" autocomplete="off"
+                                       data-min-date="01-01-2000" data-max-date="31-12-2035"
+                                       value="{{ old('posted_at') ? \Carbon\Carbon::parse(old('posted_at'))->format('d-m-Y') : date('d-m-Y') }}" required>
                                 <div class="form-text text-muted">{{ __('This date will be used for all balances.') }}</div>
                             @endif
                         </div>
@@ -261,6 +263,10 @@
         </form>
         </section>
     </main>
+
+    <script>
+        window.addEventListener('load', function () { if (typeof datepicker === 'function') datepicker(); });
+    </script>
 
     <script>
         function openingBalanceCreator() {
