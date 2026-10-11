@@ -1,10 +1,13 @@
 @section('page-title', __('Opening Balance'))
-@section('hide-master-title', true)
 @section('page-subtitle', __('Maintain beginning balances for accounts and sub-ledgers.'))
 <x-app-layout>
     <main class="gmail-content bg-white d-flex">
         @include('includes.master-navigation')
         <section class="flex-grow-1 px-4 d-flex flex-column">
+        @push('master-title-actions')
+            <a href="{{ route('finance.opening-balance.import') }}" class="btn btn-outline-primary rounded-pill px-4"><i class="bi bi-upload me-1"></i>{{ __('Import') }}</a>
+            <a href="{{ route('finance.opening-balance.create') }}" class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Entry') }}</a>
+        @endpush
         @include('includes.master-page-title')
 
         @if(session('success'))
@@ -20,87 +23,48 @@
             </div>
         @endif
 
-        {{-- Filter Card --}}
-        <div class="card border mb-3">
-            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                @if(headerEnabledForUser())
-                    <h6 class="mb-0 fw-semibold">{{ __('Filters') }}</h6>
-                @else
-                    {{-- Header off: this card header carries the page title and description instead of "Filters". --}}
-                    <div>
-                        <h4 class="fw-bold text-dark mb-0">{{ __('Opening Balance') }}</h4>
-                        <div class="text-muted small mt-1">{{ __('Maintain beginning balances for accounts and sub-ledgers.') }}</div>
-                    </div>
-                @endif
-                <div class="d-flex gap-2 ms-auto">
-                    <a href="{{ route('finance.opening-balance.import') }}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
-                        <i class="bi bi-upload me-1"></i> {{ __('Import') }}
-                    </a>
-                    <a href="{{ route('finance.opening-balance.create') }}" class="btn btn-primary btn-sm rounded-pill px-3">
-                        <i class="bi bi-plus-lg me-1"></i> {{ __('New Entry') }}
-                    </a>
+        {{-- Same layout as the other Masters lists: filters on the left, actions on the right, then the table. --}}
+        <div class="d-flex justify-content-between align-items-end flex-wrap gap-2 pb-3">
+            <form method="GET" id="obFilter" action="{{ route('finance.opening-balance') }}" class="d-flex flex-wrap align-items-end gap-2">
+                <div style="width:210px">
+                    <select name="account_id" class="tom-select" data-live-search="true" data-placeholder="{{ __('All Accounts') }}">
+                        <option value="">{{ __('All Accounts') }}</option>
+                        @foreach($accounts as $acc)
+                            <option value="{{ $acc->id }}" {{ (string)request('account_id') === (string)$acc->id ? 'selected' : '' }}>{{ $acc->name }}{{ $acc->code ? ' ('.$acc->code.')' : '' }}</option>
+                        @endforeach
+                    </select>
                 </div>
-            </div>
-            <div class="card-body py-3">
-                <form method="GET" id="obFilter" action="{{ route('finance.opening-balance') }}" class="row g-2 align-items-end">
-                    <div class="col-md-3">
-                        <label class="form-label small fw-medium">{{ __('Account') }}</label>
-                        <select name="account_id" class="tom-select" data-live-search="true">
-                            <option value="">{{ __('All Accounts') }}</option>
-                            @foreach($accounts as $acc)
-                                <option value="{{ $acc->id }}" {{ (string)request('account_id') === (string)$acc->id ? 'selected' : '' }}>
-                                    {{ $acc->name }}{{ $acc->code ? ' ('.$acc->code.')' : '' }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label small fw-medium">{{ __('Customer') }}</label>
-                        <select name="customer_id" class="tom-select" data-live-search="true">
-                            <option value="">{{ __('All Customers') }}</option>
-                            @foreach($customers as $c)
-                                <option value="{{ $c->id }}" {{ (string)request('customer_id') === (string)$c->id ? 'selected' : '' }}>
-                                    {{ $c->name_en }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label small fw-medium">{{ __('Supplier') }}</label>
-                        <select name="supplier_id" class="tom-select" data-live-search="true">
-                            <option value="">{{ __('All Suppliers') }}</option>
-                            @foreach($suppliers as $s)
-                                <option value="{{ $s->id }}" {{ (string)request('supplier_id') === (string)$s->id ? 'selected' : '' }}>
-                                    {{ $s->name_en }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label small fw-medium">{{ __('From') }}</label>
-                        <input type="text" name="date_from" class="form-control form-control-sm datepicker" value="{{ request('date_from') }}" autocomplete="off">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label small fw-medium">{{ __('To') }}</label>
-                        <input type="text" name="date_to" class="form-control form-control-sm datepicker" value="{{ request('date_to') }}" autocomplete="off">
-                    </div>
-                    <div class="col-md-1">
-                        <div class="d-flex gap-1">
-                            <button class="btn btn-sm btn-primary w-100">{{ __('Filter') }}</button>
-                            <a href="{{ route('finance.opening-balance') }}" class="btn btn-sm btn-light border" title="{{ __('Clear') }}">
-                                <i class="bi bi-arrow-clockwise"></i>
-                            </a>
-                        </div>
-                    </div>
-                </form>
-            </div>
+                <div style="width:190px">
+                    <select name="customer_id" class="tom-select" data-live-search="true" data-placeholder="{{ __('All Customers') }}">
+                        <option value="">{{ __('All Customers') }}</option>
+                        @foreach($customers as $c)
+                            <option value="{{ $c->id }}" {{ (string)request('customer_id') === (string)$c->id ? 'selected' : '' }}>{{ $c->name_en }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div style="width:190px">
+                    <select name="supplier_id" class="tom-select" data-live-search="true" data-placeholder="{{ __('All Suppliers') }}">
+                        <option value="">{{ __('All Suppliers') }}</option>
+                        @foreach($suppliers as $s)
+                            <option value="{{ $s->id }}" {{ (string)request('supplier_id') === (string)$s->id ? 'selected' : '' }}>{{ $s->name_en }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                {{-- The calendar adds its own visible box, so the width is set on the wrapper. --}}
+                <div style="width:135px"><input type="text" name="date_from" class="form-control datepicker" value="{{ request('date_from') }}" autocomplete="off"></div>
+                <div style="width:135px"><input type="text" name="date_to" class="form-control datepicker" value="{{ request('date_to') }}" autocomplete="off"></div>
+                <button class="btn btn-primary rounded-pill px-4">{{ __('Filter') }}</button>
+                @if(request()->hasAny(['account_id', 'customer_id', 'supplier_id', 'date_from', 'date_to']))
+                    <a href="{{ route('finance.opening-balance') }}" class="btn btn-light border rounded-pill px-3" title="{{ __('Clear') }}"><i class="bi bi-x-lg"></i></a>
+                @endif
+            </form>
         </div>
 
         {{-- Table card --}}
-        <div class="card border rounded-3 overflow-hidden mb-4">
+        <div class="border bdr-r-10 pt-0 pb-3 overflow-hidden">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light sticky-top bg-white">
                         <tr>
                             <th class="ps-4">{{ __('Date') }}</th>
                             <th>{{ __('Account') }}</th>
@@ -171,7 +135,7 @@
             </div>
 
             @if($openingBalances->hasPages())
-                <div class="card-footer bg-white border-top px-4 py-3 d-flex justify-content-end">
+                <div class="px-4 pt-3 d-flex justify-content-end">
                     {{ $openingBalances->links() }}
                 </div>
             @endif

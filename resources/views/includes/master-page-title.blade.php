@@ -61,7 +61,7 @@
             try {
                 var api = new $.fn.dataTable.Api(settings);
                 var pi = api.page.info();
-                var card = $(this).closest('.shadow.bdr-r-10');
+                var card = $(this).closest('.bdr-r-10');
                 var none = pi.recordsTotal === 0;
                 card.toggleClass('ms-empty', none);
                 helpIcon(info && !none);
@@ -85,7 +85,7 @@
 </script>
 <style>
     /* The list card hugs its rows instead of stretching down to the bottom of the page. */
-    section.d-flex.flex-column > .shadow.bdr-r-10.flex-grow-1 { flex-grow: 0 !important; align-self: stretch; min-height: 230px; }
+    section.d-flex.flex-column > .bdr-r-10.flex-grow-1 { flex-grow: 0 !important; align-self: stretch; min-height: 230px; }
 </style>
 @if(headerEnabledForUser())
     @php
