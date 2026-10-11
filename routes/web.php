@@ -34,20 +34,8 @@ Route::middleware('throttle:240,1')->group(function () {
 Route::post('api/payroll/attendance/punch', [\App\Http\Controllers\Payroll\AttendanceController::class, 'punch'])
     ->name('payroll.attendance.punch');
 
-Route::middleware(['auth', 'module.permission'])->group(function () {
-    /* Top-header visibility (per user): when on, the header hosts the action icons and the
-       right rail collapses to zero width; when off, the icons move into the rail.
-       Mirrors the reference app's two-layout setup. Lives inside the authenticated
-       group so a signed-out request can't flip the tenant's setting. */
-    Route::post('header/toggle', function () {
-        // Per user, not per company: each person chooses their own layout (users.header_enabled).
-        $user = auth()->user();
-        $user->header_enabled = ! headerEnabledForUser();
-        $user->save();
-
-        return back();
-    })->name('header.toggle');
-
+// The language switch only needs a login: the email verification page shows it too.
+Route::middleware('auth')->group(function () {
     /* EN/AR toggle: persists the choice in the session so SetLocale (the
        global web middleware) applies it on every subsequent request. */
     Route::get('locale/{locale}', function (string $locale) {
@@ -57,7 +45,9 @@ Route::middleware(['auth', 'module.permission'])->group(function () {
 
         return back();
     })->name('locale.switch');
+});
 
+Route::middleware(['auth', 'verified', 'module.permission'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

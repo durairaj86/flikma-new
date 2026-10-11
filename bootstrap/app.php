@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'module.permission' => \App\Http\Middleware\CheckModulePermission::class,
             'owner' => \App\Http\Middleware\OwnerOnly::class,
+            'verified' => \App\Http\Middleware\EnsureEmailIsVerifiedForApp::class,
         ]);
 
         $middleware->web(append: [

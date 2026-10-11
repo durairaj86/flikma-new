@@ -196,4 +196,12 @@ class User extends Authenticatable implements MustVerifyEmail
 
         return $out;
     }
+
+    /** Email verification is by one-time code, not by link (used by registration and the resend button). */
+    public function sendEmailVerificationNotification()
+    {
+        if ($msg = app(\App\Services\Auth\EmailOtpService::class)->send($this)) {
+            \Illuminate\Support\Facades\Log::info('Verification code not sent for user ' . $this->id . ': ' . $msg);
+        }
+    }
 }

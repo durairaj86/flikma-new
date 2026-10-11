@@ -46,6 +46,13 @@ Route::middleware('auth')->group(function () {
         ->middleware(['signed', 'throttle:6,1'])
         ->name('verification.verify');
 
+    // Opening the code address directly (or refreshing after a wrong code) goes back to the page instead of an error.
+    Route::get('verify-email/otp', fn () => redirect()->route('verification.notice'));
+
+    Route::post('verify-email/otp', \App\Http\Controllers\Auth\VerifyEmailOtpController::class)
+        ->middleware('throttle:10,1')
+        ->name('verification.otp');
+
     Route::post('email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
         ->middleware('throttle:6,1')
         ->name('verification.send');

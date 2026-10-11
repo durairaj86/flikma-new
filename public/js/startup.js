@@ -3314,3 +3314,34 @@ window.deleteRecord = function (url, onSuccess, opts) {
         }
     });
 };
+
+/* An unverified account can open the app but not use it: anything the page tries to load (a modal, a drawer, a list)
+   comes back as 403 "email_unverified". Show one clear message instead of an empty or broken window. */
+(function () {
+    if (!window.jQuery) return;
+    var lastShown = 0;
+    jQuery(document).ajaxError(function (event, xhr) {
+        if (!xhr || xhr.status !== 403) return;
+        // responseJSON only exists for JSON requests; modals ask for HTML, so read the text.
+        var d = xhr.responseJSON;
+        if (!d) { try { d = JSON.parse(xhr.responseText); } catch (e) { d = null; } }
+        if (!d || d.code !== 'email_unverified') return;
+        // Close whatever was opening. A window that is still animating open ignores hide(), so try again a few times.
+        var closeOpening = function () {
+            try {
+                document.querySelectorAll('.modal.show').forEach(function (m) { bootstrap.Modal.getInstance(m)?.hide(); });
+                document.querySelectorAll('.offcanvas.show').forEach(function (o) { bootstrap.Offcanvas.getInstance(o)?.hide(); });
+            } catch (e) { /* never block the message */ }
+        };
+        closeOpening();
+        setTimeout(closeOpening, 350);
+        setTimeout(closeOpening, 900);
+        if (Date.now() - lastShown < 1500) return; // one message even if several requests fail together
+        lastShown = Date.now();
+        if (window.toastr) {
+            toastr.warning(d.message, '', {timeOut: 6000, closeButton: true});
+        } else {
+            alert(d.message);
+        }
+    });
+})();

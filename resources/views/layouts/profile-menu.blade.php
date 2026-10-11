@@ -115,16 +115,6 @@
                 <i class="bi bi-bell"></i>
             </a>
 
-            {{-- Header on/off shortcut. Sits in the rail while the header is hidden,
-                 and in the header itself while it is showing, so one click is always
-                 available to flip between the two layouts. --}}
-            <form method="POST" action="{{ route('header.toggle') }}" class="m-0">
-                @csrf
-                <button type="submit" class="profile-menu-btn profile-menu-btn-bell" title="Show Top Header" aria-label="Show top header">
-                    <i class="bi bi-layout-text-window-reverse"></i>
-                </button>
-            </form>
-
             <div class="position-relative" @click.outside="themeOpen = false">
                 <button @click="themeOpen = !themeOpen" class="profile-menu-btn profile-menu-btn-bell" title="Sidebar Theme" aria-label="Sidebar theme">
                     <i class="bi bi-palette2"></i>

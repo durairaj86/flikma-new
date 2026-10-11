@@ -19,13 +19,17 @@ class EmailVerificationNotificationController extends Controller
         }
 
         try {
-            $request->user()->sendEmailVerificationNotification();
+            // Returns a message when a new code may not be sent yet (too soon, or too many today).
+            $why = app(\App\Services\Auth\EmailOtpService::class)->send($request->user());
         } catch (\Throwable $e) {
-            Log::error('Failed to resend verification email: '.$e->getMessage());
+            Log::error('Failed to send the verification code: '.$e->getMessage());
 
             return back()->with('status', 'verification-link-failed');
         }
+        if ($why) {
+            return back()->withErrors(['otp' => $why]);
+        }
 
-        return back()->with('status', 'verification-link-sent');
+        return back()->with('status', 'otp-sent');
     }
 }
