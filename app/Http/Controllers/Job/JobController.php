@@ -512,7 +512,7 @@ class JobController extends Controller
             // unqualified column names above (pol, pod, customer_id, ...), so a
             // leftJoin here would make those ambiguous.
             DB::raw('(SELECT quotations.row_no FROM quotations WHERE quotations.id = jobs.quotation_id) AS linked_quotation_no'),
-        )->with('customer:id,name_en,name_ar,email,phone', 'invoices', 'milestones', 'clearance:id,job_id,clearance_status,clearance_date,updated_at')->withCount('containers')
+        )->with('customer:id,name_en,name_ar,email,phone', 'invoices', 'milestones', 'containers:id,job_id,container_number,container_no,discharged_at,returned_at,free_days', 'clearance:id,job_id,clearance_status,clearance_date,updated_at')->withCount('containers')
             ->where('jobs.status', JobEnum::fromName($request->tab))
             ->tap($applyFilters)
             ->when(($filter['sort'] ?? '') === 'eta', fn($q) => $q->orderByRaw("(jobs.eta IS NULL OR jobs.eta = '') asc")->orderBy('jobs.eta'))
@@ -537,6 +537,19 @@ class JobController extends Controller
 
         $activity = LogisticActivity::activities();
         return DataTables::eloquent($rows)
+            ->filter(function ($query) use ($request) {
+                // Search the things people actually quote: job no, customer, B/L, AWB, references, container numbers.
+                $term = trim((string) ($request->input('search.value') ?? ''));
+                if ($term === '') return;
+                $query->where(function ($w) use ($term) {
+                    $like = "%{$term}%";
+                    $w->where('jobs.row_no', 'like', $like)->orWhere('hbl_number', 'like', $like)->orWhere('awb_number', 'like', $like)
+                        ->orWhere('shipping_ref', 'like', $like)->orWhere('client_ref', 'like', $like)->orWhere('carrier', 'like', $like)
+                        ->orWhere('shipper', 'like', $like)->orWhere('consignee', 'like', $like)->orWhere('commodity', 'like', $like)
+                        ->orWhereHas('customer', fn($q) => $q->where('name_en', 'like', $like))
+                        ->orWhereHas('containers', fn($q) => $q->where('container_number', 'like', $like)->orWhere('container_no', 'like', $like));
+                });
+            })
             ->addIndexColumn()
             ->setRowAttr([
                 'data-id' => fn($model) => $model->id,
@@ -574,6 +587,22 @@ class JobController extends Controller
             ])
             ->addColumn('delivery', fn($m) => filled($m->delivery_date) ? Carbon::parse($m->delivery_date)->format('d-M-Y') : '')
             ->addColumn('value', fn($m) => (float)$m->grand_total ? number_format($m->grand_total, 2) . ' ' . $m->currency : '')
+            ->addColumn('refs', fn($m) => [
+                'bl' => $m->hbl_number, 'awb' => $m->awb_number, 'ref' => $m->shipping_ref ?: $m->client_ref,
+                'containers' => $m->containers->map(fn($x) => $x->container_number ?: $x->container_no)->filter()->values()->take(3)->all(),
+                'container_count' => $m->containers_count,
+            ])
+            ->addColumn('money', fn($m) => $m->invoice_json['money'] ?? null)
+            ->addColumn('detention', function ($m) {
+                // Worst container still out: in detention, ending soon, or free days left.
+                $worst = null;
+                foreach ($m->containers as $x) {
+                    if (!$x->discharged_at || $x->returned_at) continue;
+                    $f = \App\Http\Controllers\Job\DemurrageController::figures($x, 0);
+                    if (!$worst || $f['left'] < $worst['left']) $worst = $f;
+                }
+                return $worst ? ['state' => $worst['state'], 'left' => $worst['left'], 'over' => $worst['over']] : null;
+            })
             ->addColumn('route_from', fn($m) => $m->pol_name ?: $m->pol)
             ->addColumn('route_to', fn($m) => $m->pod_name ?: $m->pod)
             ->addColumn('invoices', fn($model) => [

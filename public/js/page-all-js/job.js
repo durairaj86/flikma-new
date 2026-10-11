@@ -729,6 +729,32 @@ JOB = {
                             ? `<span class="jd-t" title="${split('created')}">${total}</span>${badge(sum('approved'), 'ok', 'Approved', split('approved'))}${badge(sum('draft'), 'dr', 'Draft', split('draft'))}${badge(sum('cancelled'), 'cx', 'Cancelled', split('cancelled'))}` : '<span class="jd-z">—</span>'}</span></div>
                     </div>`;
                 };
+                // B/L, AWB, reference and container numbers: what people quote on the phone.
+                const refs = (x) => {
+                    if (!x) return '';
+                    const bits = [];
+                    if (x.bl) bits.push(`<span><b>B/L</b> ${S.esc(x.bl)}</span>`);
+                    if (x.awb) bits.push(`<span><b>AWB</b> ${S.esc(x.awb)}</span>`);
+                    if (x.ref) bits.push(`<span><b>${trans('Ref')}</b> ${S.esc(x.ref)}</span>`);
+                    const cs = x.containers || [];
+                    if (cs.length) bits.push(`<span><i class="bi bi-box-seam"></i> ${cs.map(S.esc).join(', ')}${x.container_count > cs.length ? ' +' + (x.container_count - cs.length) : ''}</span>`);
+                    return bits.length ? `<div class="jc-refs">${bits.join('')}</div>` : '';
+                };
+                // Profit and amount still due on this job (approved documents only).
+                const money = (m) => {
+                    if (!m || (!m.invoiced && !m.cost)) return '';
+                    const fmt = (n) => Number(n).toLocaleString(undefined, {maximumFractionDigits: 0});
+                    const pc = m.profit < 0 ? 'text-danger' : 'text-success';
+                    return `<div class="jc-stat"><span>${trans('Profit')}</span><b class="${pc}">${m.profit < 0 ? '-' : ''}${fmt(Math.abs(m.profit))}</b></div>
+                            <div class="jc-stat"><span>${trans('Due')}</span><b class="${m.due > 0 ? 'text-warning-emphasis' : 'text-muted'}">${m.due > 0 ? fmt(m.due) : '✓'}</b></div>`;
+                };
+                // Free days / detention for containers that are still out.
+                const detention = (d) => {
+                    if (!d) return '';
+                    const m = {detention: ['danger', 'bi-exclamation-octagon-fill', trans('In detention') + ' · ' + d.over + 'd'],
+                        ending: ['warning', 'bi-hourglass-split', d.left + 'd ' + trans('free left')], free: ['success', 'bi-hourglass', d.left + 'd ' + trans('free left')]}[d.state];
+                    return m ? `<div class="mt-1"><span class="badge bg-${m[0]}-subtle text-${m[0]}-emphasis border border-${m[0]}-subtle"><i class="bi ${m[1]} me-1"></i>${m[2]}</span></div>` : '';
+                };
                 const stat = (l, v) => v ? `<div class="jc-stat"><span>${trans(l)}</span><b>${v}</b></div>` : '';
                 return [
                     {data: 'row_no', defaultContent: '', render: (d, t, r) => {
@@ -750,7 +776,7 @@ JOB = {
                         const pending = r.status === 1 || r.status === '1' || r.status === 'pending';
                         const btns = pg && pending ? `<div class="mt-2 d-flex gap-1 justify-content-end flex-wrap">
                                 <button type="button" class="btn btn-sm btn-outline-primary rounded-pill py-0 px-2 job-trk-edit" style="font-size:.72rem">${trans('Update')}</button>
-                                ${pg.next ? `<button type="button" class="btn btn-sm btn-outline-warning rounded-pill py-0 px-2 job-trk-skip" style="font-size:.72rem" title="${trans('Skip this step (not needed for this job)')}">${trans('Skip')}</button><button type="button" class="btn btn-sm btn-primary rounded-pill py-0 px-2 job-trk-next" style="font-size:.72rem" title="${trans('Mark the next step done today')}: ${trans(pg.next)}"><i class="bi bi-check2"></i> ${trans(pg.next)}</button>`
+                                ${pg.next ? `<button type="button" class="btn btn-sm btn-outline-warning rounded-pill py-0 px-2 job-trk-skip" style="font-size:.72rem" title="${trans('Skip this step (not needed for this job)')}">${trans('Skip')}</button>`
                                           : `<button type="button" class="btn btn-sm btn-success rounded-pill py-0 px-2 job-complete" style="font-size:.72rem"><i class="bi bi-check2-circle"></i> ${trans('Complete job')}</button>`}</div>` : '';
                         return `<div class="jc">
                             <div>
@@ -760,6 +786,7 @@ JOB = {
                                 ${r.owner ? `<div class="cell-secondary"><i class="bi bi-person me-1"></i>${S.esc(r.owner)}</div>` : ''}
                                 <div class="mt-1">${statusDot(r.status)}</div>
                             </div>
+                            <div>
                             <div class="jc-route">
                                 <div class="jc-city text-end">${S.esc(r.route_from) || '?'}</div>
                                 <div class="jc-line">
@@ -770,9 +797,12 @@ JOB = {
                                 </div>
                                 <div class="jc-city">${S.esc(r.route_to) || '?'}</div>
                             </div>
+                                ${refs(r.refs)}
+                            </div>
                             <div class="jc-stats">
                                 ${stat('Carrier', S.esc(r.carrier))}
                                 ${docCounts(r.invoice_json)}
+                                ${money(r.money)}
                                 ${stat('Value', S.esc(r.value))}
                                 ${stat('Incoterm', S.esc(cargo.incoterm))}
                                 <div class="mt-1 d-flex gap-1 flex-wrap"><span class="badge bg-${billing[0]}">${trans(billing[1])}</span>${customs}</div>
@@ -786,6 +816,7 @@ JOB = {
                                     return `<div class="fw-semibold small">ETA ${S.esc(r.eta)}</div><div class="cell-secondary">${r.etd ? 'ETD ' + S.esc(r.etd) : ''}</div>`;
                                 })()}
                                 <div class="mt-1">${S.health(r.health)}</div>
+                                ${detention(r.detention)}
                                 ${pg ? `<div class="job-prog ms-auto mt-2" style="max-width:190px"><div class="job-seg">${(pg.segments || []).map(x => `<span class="${x}"></span>`).join('')}</div>
                                     <div class="cell-secondary mt-1">${pg.done}/${pg.total}${pg.skipped ? ' · ' + pg.skipped + ' ' + trans('skipped') : ''}${pg.next ? ' · ' + trans('Next') + ': ' + trans(pg.next) : ''}</div></div>` : ''}
                                 ${btns}

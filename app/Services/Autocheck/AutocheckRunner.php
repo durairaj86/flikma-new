@@ -72,6 +72,7 @@ class AutocheckRunner
         'trial_balance' => ['Check trial balance', '/reports/trial-balance'],
         'balance_sheet' => ['Check balance sheet', '/reports/balance-sheet'],
         'tax_summary' => ['Check tax summary', '/reports/tax-summary'],
+        'job_links' => ['Job links: every job document is in the one common table', '/operation/jobs'],
         'tracking' => ['Shipment tracking: steps, job dates and public link', '/operation/tracking'],
         'job_insights' => ['Job list: health, progress and AI insight counts', '/operation/jobs'],
         'demurrage' => ['Demurrage: free days, detention and cost', '/operation/demurrage'],
@@ -549,6 +550,26 @@ class AutocheckRunner
 
     // ───────────── logistics, fleet and payroll modules ─────────────
 
+    private function stepJobLinks(array &$ctx, array &$checks): string
+    {
+        $jobId = (int) $ctx['job_id'];
+        $links = \App\Models\Job\JobLink::withoutGlobalScopes()->where('job_id', $jobId)->get()->groupBy('doc_type');
+        foreach (['customer_invoice' => 'Customer invoice', 'supplier_invoice' => 'Supplier invoice', 'credit_note' => 'Credit note', 'collection' => 'Collection', 'payment' => 'Payment'] as $type => $label) {
+            $n = ($links[$type] ?? collect())->count();
+            $this->check($checks, $label . ' is in job_links', $n >= 1, $n);
+        }
+        $this->check($checks, 'Each link points back to its document (morph)', \App\Models\Job\JobLink::withoutGlobalScopes()->where('job_id', $jobId)->get()->every(fn($l) => (bool) $l->linkable), 'all found');
+        $this->check($checks, 'A link carries the document state', ($links['customer_invoice'] ?? collect())->every(fn($l) => $l->state === 'approved'), $links['customer_invoice'][0]->state ?? '-');
+
+        $json = json_decode((string) DB::table('jobs')->where('id', $jobId)->value('invoice_json'), true) ?: [];
+        $this->check($checks, 'jobs.invoice_json counts match the table', ($json['ci']['created'] ?? -1) === ($links['customer_invoice'] ?? collect())->count()
+            && ($json['si']['created'] ?? -1) === ($links['supplier_invoice'] ?? collect())->count() && ($json['cn']['created'] ?? -1) === ($links['credit_note'] ?? collect())->count(), json_encode($json['ci'] ?? []));
+        $fin = \App\Services\Job\JobFinancials::collect(Job::find($jobId));
+        $this->check($checks, 'Financials tab reads the same documents', collect($fin['groups'])->sum(fn($g) => count($g['rows'])) === \App\Models\Job\JobLink::withoutGlobalScopes()->where('job_id', $jobId)->count(), collect($fin['groups'])->sum(fn($g) => count($g['rows'])));
+        $this->check($checks, 'Profit on the job card = invoiced - credits - cost', abs(($json['money']['profit'] ?? -9999) - ($fin['summary']['profit'])) < 0.01, $this->money($fin['summary']['profit']));
+        return '/operation/jobs';
+    }
+
     private function stepTracking(array &$ctx, array &$checks): string
     {
         $tc = app(\App\Http\Controllers\Job\TrackingController::class);
@@ -988,6 +1009,7 @@ class AutocheckRunner
                 if (!empty($ctx[$k])) { DB::table($t)->where('id', $ctx[$k])->delete(); $removed[] = $t; }
             }
             if (!empty($ctx['job_id'])) {
+                DB::table('job_links')->where('job_id', $ctx['job_id'])->delete();
                 DB::table('job_milestones')->where('job_id', $ctx['job_id'])->delete();
                 $docIds = DB::table('documents')->where('documentable_id', $ctx['job_id'])->where('documentable_type', \App\Models\Job\Job::class)->get(['id', 'file_path']);
                 foreach ($docIds as $d) { if ($d->file_path) \Storage::disk('public')->delete($d->file_path); }

@@ -214,6 +214,9 @@
             .jd-n[data-tip]:hover::before { content: ''; position: absolute; bottom: 115%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #111827; z-index: 20; pointer-events: none; }
             /* Badges on the cards: text centred both ways. */
             .jc .badge { display: inline-flex; align-items: center; justify-content: center; line-height: 1; min-height: 22px; padding: .347rem .65rem .253rem; }
+            .jc-refs { display: flex; flex-wrap: wrap; gap: .1rem .8rem; justify-content: center; font-size: .72rem; color: #6b7280; margin-top: .5rem; }
+            .jc-refs b { color: #374151; font-weight: 700; margin-right: .15rem; }
+            .jc-refs i { color: #9ca3af; }
             .job-stage { background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe; font-weight: 600; }
             @keyframes jcFlash { from { background: #dcfce7; } to { background: #fff; } }
             .jc-mode #dataTable tbody tr.jc-flash td { animation: jcFlash 1.8s ease-out; }
@@ -226,15 +229,13 @@
             .jc-chip.active { background: #0d6efd; color: #fff; border-color: #0d6efd; }
             .jc-mode #dataTable { border-collapse: separate; border-spacing: 0 12px; }
             .jc-mode #dataTable thead { display: none; }
-            .jc-mode #dataTable tbody td { background: #fff; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; padding: 1rem 1.25rem; vertical-align: middle; }
-            .jc-mode #dataTable tbody td:first-child { border-left: 1px solid #e5e7eb; border-radius: 12px 0 0 12px; }
-            .jc-mode #dataTable tbody td:last-child { border-right: 1px solid #e5e7eb; border-radius: 0 12px 12px 0; width: 56px; text-align: center; }
-            .jc-mode #dataTable tbody tr:hover td { background: #fcfcfd; }
-            .jc-mode #dataTable tbody tr.jc-delayed td { border-color: #fecaca; }
-            .jc-mode #dataTable tbody tr.jc-delayed td:first-child { box-shadow: inset 4px 0 0 #dc2626; }
-            .jc-mode #dataTable tbody tr.jc-soon td:first-child { box-shadow: inset 4px 0 0 #f59e0b; }
-            .jc-mode #dataTable tbody tr.jc-done td { border-color: #bbf7d0; }
-            .jc-mode #dataTable tbody tr.jc-done td:first-child { box-shadow: inset 4px 0 0 #16a34a; }
+            .jc-mode #dataTable tbody td { background: #fff; border-top: 1px solid #e9ecf1; border-bottom: 1px solid #e9ecf1; padding: 1rem 1.25rem; vertical-align: middle; }
+            .jc-mode #dataTable tbody td:first-child { border-left: 1px solid #e9ecf1; border-radius: 12px 0 0 12px; }
+            .jc-mode #dataTable tbody td:last-child { border-right: 1px solid #e9ecf1; border-radius: 0 12px 12px 0; width: 56px; text-align: center; }
+            .jc-mode #dataTable tbody tr:hover td { background: #fcfcfd; border-color: #dfe3ea; }
+            .jc-mode #dataTable tbody tr.jc-delayed td:first-child { box-shadow: inset 3px 0 0 #f87171; }
+            .jc-mode #dataTable tbody tr.jc-soon td:first-child { box-shadow: inset 3px 0 0 #fbbf24; }
+            .jc-mode #dataTable tbody tr.jc-done td:first-child { box-shadow: inset 3px 0 0 #4ade80; }
             .jc { display: grid; grid-template-columns: 1.15fr 2.1fr 1fr 1.35fr; gap: 1.25rem; align-items: center; }
             @media (max-width: 1300px) { .jc { grid-template-columns: 1fr 1.6fr; } }
             .jc-no { font-size: 1.05rem; font-weight: 700; color: #1d4ed8; text-decoration: none; }

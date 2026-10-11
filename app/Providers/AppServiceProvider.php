@@ -21,23 +21,25 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Keep jobs.invoice_json (counts of supplier invoices, customer invoices and credit notes) in step.
-        foreach ([
-            \App\Models\Finance\SupplierInvoice\SupplierInvoice::class,
-            \App\Models\Finance\CustomerInvoice\CustomerInvoice::class,
-            \App\Models\Finance\Adjustment\CreditNote::class,
-        ] as $model) {
-            $refresh = function ($m) {
-                \App\Services\Job\JobInvoiceSummary::refresh($m->job_id ? (int) $m->job_id : null);
-                $old = $m->getOriginal('job_id');
-                if ($old && (int) $old !== (int) $m->job_id) {
-                    \App\Services\Job\JobInvoiceSummary::refresh((int) $old);
+        // Every document that belongs to a job is mirrored into job_links (one common table), and the job's
+        // summary (jobs.invoice_json) is refreshed from it.
+        foreach (array_keys(\App\Services\Job\JobLinks::TYPES) as $model) {
+            $model::saved(function ($m) {
+                foreach (\App\Services\Job\JobLinks::sync($m) as $jobId) {
+                    \App\Services\Job\JobInvoiceSummary::refresh($jobId);
                 }
-            };
-            $model::saved($refresh);
-            $model::deleted($refresh);
+            });
+            $model::deleted(function ($m) {
+                foreach (\App\Services\Job\JobLinks::remove($m) as $jobId) {
+                    \App\Services\Job\JobInvoiceSummary::refresh($jobId);
+                }
+            });
             if (method_exists($model, 'restored')) {
-                $model::restored($refresh);
+                $model::restored(function ($m) {
+                    foreach (\App\Services\Job\JobLinks::sync($m) as $jobId) {
+                        \App\Services\Job\JobInvoiceSummary::refresh($jobId);
+                    }
+                });
             }
         }
 

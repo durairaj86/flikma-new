@@ -133,4 +133,10 @@ class Payment extends Model
     {
         return $this->hasMany(PaymentAdditionalTransaction::class);
     }
+
+    /** Rows in job_links for this document (one per job it belongs to). */
+    public function jobLinks(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(\App\Models\Job\JobLink::class, 'linkable');
+    }
 }

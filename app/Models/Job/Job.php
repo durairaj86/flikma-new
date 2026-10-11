@@ -88,6 +88,12 @@ class Job extends Model
         return $this->hasMany(JobPackage::class);
     }
 
+    /** Every document of this job (invoices, credit notes, expenses, collections, payments ...) from the one table. */
+    public function links(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(JobLink::class);
+    }
+
     public function quotation(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Quotation\Quotation::class);

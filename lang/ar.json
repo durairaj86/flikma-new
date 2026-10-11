@@ -3524,5 +3524,8 @@
     "Stage": "المرحلة",
     "Stage updated": "تم تحديث المرحلة",
     "Supplier Inv.": "فواتير الموردين",
-    "Customer Inv.": "فواتير العملاء"
+    "Customer Inv.": "فواتير العملاء",
+    "Ref": "المرجع",
+    "In detention": "في التأخير",
+    "free left": "أيام مجانية متبقية"
 }
