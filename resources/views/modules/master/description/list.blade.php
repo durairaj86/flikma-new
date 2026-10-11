@@ -20,7 +20,7 @@
             </div>
 
             <!-- Table Section -->
-            <div class="border bdr-r-10 pt-0 pb-3 overflow-hidden">
+            <div class="border bdr-r-10 pt-0 pb-3">
                 <!-- Table with scroll -->
                 <div class="flex-grow-1 overflow-auto" style="min-height:320px;">
                     <table class="table align-middle dataTable" id="dataTable" data-title="{{ __('Description') }}" data-min-height="min-height:75vh;" data-model-size="md">

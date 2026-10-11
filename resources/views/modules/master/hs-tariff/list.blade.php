@@ -17,7 +17,7 @@
                     <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New HS Tariff') }}</button>
                 </div>
             </div>
-            <div class="border bdr-r-10 pt-0 pb-3 overflow-hidden">
+            <div class="border bdr-r-10 pt-0 pb-3">
                 <!-- Table with scroll -->
                 <div class="flex-grow-1 overflow-auto" style="min-height:320px;">
                     <table class="table align-middle dataTable" id="dataTable" data-model-size="mid">

@@ -30,6 +30,9 @@
     /* Empty list: the card shrinks to the message instead of keeping its table height. */
     .ms-help { display: inline-block; font-size: .95rem; font-weight: 400; color: #98a2b3; cursor: help; vertical-align: middle; }
     .ms-help:hover, .ms-help:focus { color: #4f46e5; outline: 0; }
+    /* The list box no longer clips (row menus must be able to open past its bottom edge), so the heading row rounds its own corners. */
+    .bdr-r-10 thead th:first-child { border-top-left-radius: 9px; }
+    .bdr-r-10 thead th:last-child { border-top-right-radius: 9px; }
     .ms-empty { min-height: 0 !important; }
     .ms-empty .overflow-auto, .ms-empty > div { min-height: 0 !important; }
     .ms-empty table.dataTable > thead { display: none; }
