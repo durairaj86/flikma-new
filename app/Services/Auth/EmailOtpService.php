@@ -51,10 +51,11 @@ class EmailOtpService
     }
 
     /**
-     * Create and email a new code. Returns null when sent, or a message when it may not be sent yet.
+     * Create and email a new code (to the user's own address, or to $deliverTo when an administrator sends it elsewhere).
+     * Returns null when sent, or a message when it may not be sent yet.
      * Mail failures are thrown so the caller can tell the person.
      */
-    public function send(User $user): ?string
+    public function send(User $user, ?string $deliverTo = null): ?string
     {
         $state = $this->state($user);
         if ($state['resend_in'] > 0) {
@@ -77,7 +78,7 @@ class EmailOtpService
         });
 
         try {
-            Mail::to($user->email)->send(new VerificationOtpMail($user, $code, self::TTL_MINUTES));
+            Mail::to($deliverTo ?: $user->email)->send(new VerificationOtpMail($user, $code, self::TTL_MINUTES));
         } catch (\Throwable $e) {
             if (app()->environment('local')) {
                 // Development: the mail provider may not be set up. Keep the code usable and write it to the log, so the page can still be tried.
