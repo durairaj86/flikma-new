@@ -212,7 +212,10 @@ ENQUIRY = {
                     {
                         data: 'contact',
                         render: function (data, type, row) {
-                            return row.contact.email + '<br><small class="text-muted">' + row.contact.phone + '</small>';
+                            // long emails are cut with "..." (full address on hover) so they never run into the next column
+                            const esc = v => $('<div>').text(v == null ? '' : v).html();
+                            return '<div class="text-truncate" style="max-width:210px" title="' + esc(row.contact.email).replace(/"/g, '&quot;') + '">' + esc(row.contact.email) + '</div>'
+                                + '<small class="text-muted">' + esc(row.contact.phone) + '</small>';
                         }
                     },
                     {data: 'activity.name'},
