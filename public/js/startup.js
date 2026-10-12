@@ -2252,6 +2252,9 @@ function initTomSelectForm(form = null, destroy = false, individualId = null) {
         let el = this;
         if (!el) return;
 
+        // a box already built by initTomSelectSearch() (POL / POD with live search) must not be rebuilt without its search
+        if (!destroy && el.tomselect && el.tomselect.settings && typeof el.tomselect.settings.load === 'function') return;
+
         // destroy safely
         if (el.tomselect && typeof el.tomselect.destroy === "function") {
             el.tomselect.destroy();
@@ -2464,6 +2467,8 @@ function initTomSelectSearch(selector, dbName = 'sea', maxLength = 100, preLoad 
     const $selector = $(selector);
     const placeholder = $selector.data('placeholder') ?? $selector.attr('placeholder') ?? '';
     const isMultiple = $selector.prop('multiple');
+    // the form's generic Tom Select setup may already have wrapped this box (without live search): replace it
+    $selector.each(function () { if (this.tomselect) this.tomselect.destroy(); });
     new TomSelect(selector, {
         // ... (existing configuration) ...
         valueField: 'combined_value', // Using 'name' for the value

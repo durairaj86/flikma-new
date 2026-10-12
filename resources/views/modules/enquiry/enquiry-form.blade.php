@@ -229,7 +229,7 @@
                                             <option value="{{ $enquiry->pol }}" selected>{{ $enquiry->pol }}</option>
                                         @endif
                                         @foreach($polPod as $pol)
-                                            <option value="{{ $pol->id }}">{{ $pol->name }}</option>
+                                            <option value="{{ $pol->code . ' - ' . $pol->name }}">{{ $pol->name }}</option>
                                         @endforeach
                                     </select>
                                     {{--<x-common.country :value="$enquiry->origin_country" inputName="origin_country"></x-common.country>--}}
@@ -249,7 +249,7 @@
                                             <option value="{{ $enquiry->pod }}" selected>{{ $enquiry->pod }}</option>
                                         @endif
                                         @foreach($polPod as $pod)
-                                            <option value="{{ $pod->id }}">{{ $pod->name }}</option>
+                                            <option value="{{ $pod->code . ' - ' . $pod->name }}">{{ $pod->name }}</option>
                                         @endforeach
                                     </select>
                                 </div>

@@ -611,10 +611,9 @@ function paymentModes(): array
 function preloadPOLAndPOD($port = null): \Illuminate\Support\Collection
 {
     $port = $port ?? 'sea';
-    if ($port == 'sea') {
-        $result = Port::select('id', 'name', 'code')->orderBy('name')->limit(50)->get();
-    } elseif ($port == 'air') {
-        $result = Airport::select('id', 'name', 'code')->orderBy('name')->limit(50)->get();
+    if ($port == 'sea' || $port == 'air') {
+        // the ports this company used most recently (at least 20, filled from the master list)
+        $result = \App\Services\Common\RecentPorts::get($port);
     }/* elseif ($port == 'carrier-sea') {
         $result = CarrierLines::select('id', 'name', 'mode')->where('mode', 'Sea')->orderBy('name')->limit(50)->get();
     } elseif ($port == 'carrier-air') {

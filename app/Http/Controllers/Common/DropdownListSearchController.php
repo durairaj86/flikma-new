@@ -29,6 +29,9 @@ class DropdownListSearchController extends Controller
 
     public function sea($search)
     {
+        if (!$search) {
+            return \App\Services\Common\RecentPorts::get('sea');   // before typing: the ports this company used last
+        }
         $port = Port::when($search, function ($q) use ($search) {
             $q->where('code', 'LIKE', "%{$search}%")->orWhere('name', 'LIKE', "%{$search}%");
         })->select('id', 'name', 'code')->orderBy('code')->limit(100)->get();
@@ -40,6 +43,9 @@ class DropdownListSearchController extends Controller
 
     public function air($search)
     {
+        if (!$search) {
+            return \App\Services\Common\RecentPorts::get('air');
+        }
         $port = Airport::when($search, function ($q) use ($search) {
             $q->where('code', 'LIKE', "%{$search}%")->orWhere('name', 'LIKE', "%{$search}%");
         })->select('id', 'name', 'code')->orderBy('code')->limit(100)->get();
