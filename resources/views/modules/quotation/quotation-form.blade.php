@@ -586,8 +586,8 @@
                                         </select>
                                     </td>
                                     <td>
-                                        <input type="number" name="chg_qty[]"
-                                               class="form-control form-control-sm chg-qty"
+                                        <input type="text" name="chg_qty[]"
+                                               class="integer form-control form-control-sm chg-qty"
                                                value="{{ $charge->qty ?? 1 }}" min="1" step="1">
                                     </td>
                                     <td>
@@ -599,25 +599,25 @@
                                         </select>
                                     </td>
                                     <td>
-                                        <input type="number" name="chg_ex_rate[]"
-                                               class="form-control form-control-sm chg-ex-rate"
+                                        <input type="text" name="chg_ex_rate[]"
+                                               class="decimal form-control form-control-sm chg-ex-rate"
                                                value="{{ $charge->ex_rate ?? 1 }}" step="0.000001" min="0">
                                     </td>
                                     <td>
-                                        <input type="number" name="chg_amt_qty[]"
-                                               class="form-control form-control-sm chg-amt-qty"
+                                        <input type="text" name="chg_amt_qty[]"
+                                               class="decimal form-control form-control-sm chg-amt-qty"
                                                value="{{ $charge->amount_per_qty ?? '' }}"
                                                step="0.01" min="0" placeholder="0.00">
                                     </td>
                                     <td>
-                                        <input type="number" name="chg_fcy_amount[]"
-                                               class="form-control form-control-sm chg-fcy-amount bg-light"
+                                        <input type="text" name="chg_fcy_amount[]"
+                                               class="decimal form-control form-control-sm chg-fcy-amount bg-light"
                                                value="{{ $charge->fcy_amount ?? '' }}"
                                                step="0.01" readonly placeholder="0.00">
                                     </td>
                                     <td>
-                                        <input type="number" name="chg_local_amount[]"
-                                               class="form-control form-control-sm chg-local-amount bg-light"
+                                        <input type="text" name="chg_local_amount[]"
+                                               class="decimal form-control form-control-sm chg-local-amount bg-light"
                                                value="{{ $charge->local_amount ?? '' }}"
                                                step="0.01" readonly placeholder="0.00">
                                     </td>

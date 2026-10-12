@@ -19,7 +19,7 @@
                 <input type="hidden" name="tab" value="{{ $tab }}">
                 <input type="text" name="q" value="{{ $q }}" class="form-control rounded-pill" placeholder="{{ __('Search container or job...') }}">
                 <div class="input-group" style="width:190px"><span class="input-group-text">{{ __('Per day') }}</span>
-                    <input type="number" name="rate" value="{{ $rate }}" class="form-control" onchange="this.form.submit()"></div>
+                    <input type="text" name="rate" value="{{ $rate }}" class="decimal form-control" onchange="this.form.submit()"></div>
             </form>
         </div>
         <div class="row g-3 pb-3">

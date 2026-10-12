@@ -118,15 +118,15 @@
                 <div class="col-12"><h6 class="border-bottom pb-2 mb-0 fw-semibold">{{ __('Cargo') }}</h6></div>
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">{{ __("20' Containers") }}</label>
-                    <input type="number" min="0" name="containers_20" id="an-c20" class="form-control" value="{{ (int) $notice->containers_20 }}">
+                    <input type="text" min="0" name="containers_20" id="an-c20" class="integer form-control" value="{{ (int) $notice->containers_20 }}">
                 </div>
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">{{ __("40' Containers") }}</label>
-                    <input type="number" min="0" name="containers_40" id="an-c40" class="form-control" value="{{ (int) $notice->containers_40 }}">
+                    <input type="text" min="0" name="containers_40" id="an-c40" class="integer form-control" value="{{ (int) $notice->containers_40 }}">
                 </div>
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">{{ __('Packages') }}</label>
-                    <input type="number" min="0" name="packages" id="an-packages" class="form-control" value="{{ $notice->packages }}">
+                    <input type="text" min="0" name="packages" id="an-packages" class="integer form-control" value="{{ $notice->packages }}">
                 </div>
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">{{ __('Carrier / Line') }}</label>
@@ -147,7 +147,7 @@
                 <div class="col-12"><h6 class="border-bottom pb-2 mb-0 fw-semibold">{{ __('Free Time & Line Detention') }}</h6></div>
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">{{ __('Empty Return Within (days)') }}</label>
-                    <input type="number" min="0" name="free_days" class="form-control" value="{{ $notice->free_days ?? 7 }}">
+                    <input type="text" min="0" name="free_days" class="integer form-control" value="{{ $notice->free_days ?? 7 }}">
                 </div>
                 <div class="col-md-9">
                     <label class="form-label fw-semibold">{{ __('Return Depot') }}</label>
@@ -169,13 +169,13 @@
                             @foreach(['standard' => __('Standard'), 'special' => __('Special'), 'reefer' => __('Reefer')] as $k => $label)
                                 <tr>
                                     <td class="text-start fw-semibold">{{ $label }}</td>
-                                    <td><input type="number" min="0" class="form-control form-control-sm text-center" name="detention[{{ $k }}][free]" value="{{ $detention[$k]['free'] }}"></td>
+                                    <td><input type="text" min="0" class="integer form-control form-control-sm text-center" name="detention[{{ $k }}][free]" value="{{ $detention[$k]['free'] }}"></td>
                                     @foreach($detention[$k]['tiers'] as $i => $t)
                                         <td>
                                             <div class="d-flex gap-1">
-                                                <input type="number" min="0" class="form-control form-control-sm text-center px-1" style="width:52px;" name="detention[{{ $k }}][tiers][{{ $i }}][days]" value="{{ $t['days'] }}" @if($t['days'] === null) placeholder="-" @endif>
-                                                <input type="number" min="0" step="0.01" class="form-control form-control-sm text-center px-1" name="detention[{{ $k }}][tiers][{{ $i }}][r20]" value="{{ $t['r20'] }}">
-                                                <input type="number" min="0" step="0.01" class="form-control form-control-sm text-center px-1" name="detention[{{ $k }}][tiers][{{ $i }}][r40]" value="{{ $t['r40'] }}">
+                                                <input type="text" min="0" class="integer form-control form-control-sm text-center px-1" style="width:52px;" name="detention[{{ $k }}][tiers][{{ $i }}][days]" value="{{ $t['days'] }}" @if($t['days'] === null) placeholder="-" @endif>
+                                                <input type="text" min="0" step="0.01" class="decimal form-control form-control-sm text-center px-1" name="detention[{{ $k }}][tiers][{{ $i }}][r20]" value="{{ $t['r20'] }}">
+                                                <input type="text" min="0" step="0.01" class="decimal form-control form-control-sm text-center px-1" name="detention[{{ $k }}][tiers][{{ $i }}][r40]" value="{{ $t['r40'] }}">
                                             </div>
                                         </td>
                                     @endforeach

@@ -25,7 +25,7 @@
     </div>
     <div class="col-md-6">
         <label class="form-label small fw-bold">{{ __('Grace Period (minutes)') }}</label>
-        <input type="number" min="0" max="180" name="grace_minutes" id="{{ $id('grace') }}" class="form-control" value="15">
+        <input type="text" min="0" max="180" name="grace_minutes" id="{{ $id('grace') }}" class="integer form-control" value="15">
     </div>
     <div class="col-md-6 d-flex align-items-end">
         <div class="form-check">

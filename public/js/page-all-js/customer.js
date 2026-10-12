@@ -453,8 +453,14 @@ CUSTOMER = {
                 $('#vat_number').prop('disabled', !isRequired);
 
                 // 3. Clear the value if the field is disabled (unregistered)
-                if (!isRequired && (fieldId == 'cr_number' || fieldId == 'vat_number')) {
-                    $field.val('');
+                // The number is kept in data-old-value so switching back to Registered brings it back.
+                if (fieldId == 'cr_number' || fieldId == 'vat_number') {
+                    if (!isRequired) {
+                        if ($field.val()) $field.attr('data-old-value', $field.val());
+                        $field.val('');
+                    } else if (!$field.val() && $field.attr('data-old-value')) {
+                        $field.val($field.attr('data-old-value'));
+                    }
                 }
 
                 // 4. Optional: If you use the ARIA attribute for enhanced accessibility
@@ -488,6 +494,7 @@ CUSTOMER = {
             });
 
             CUSTOMER.form.documents.addRow();
+            CUSTOMER.form.documents.checkSize();
             CUSTOMER.form.documents.removeRow();
             CUSTOMER.form.documents.removeExisting();
         },
@@ -501,6 +508,16 @@ CUSTOMER = {
                     $newRow.find('input').val('');
 
                     $tbody.append($newRow);
+                });
+            },
+            // a file over 2 MB is refused by the server, so say so as soon as it is picked
+            checkSize() {
+                $('#documentTable').off('change', 'input[type=file]').on('change', 'input[type=file]', function () {
+                    const f = this.files && this.files[0];
+                    if (f && f.size > 2 * 1024 * 1024) {
+                        this.value = '';
+                        toastr.error(trans('Each attachment must be 2 MB or less.'));
+                    }
                 });
             },
             removeRow() {

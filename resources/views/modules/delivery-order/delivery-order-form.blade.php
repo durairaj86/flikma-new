@@ -103,7 +103,7 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">{{ __('Packages') }}</label>
-                    <input type="number" min="0" name="packages" id="dlv-packages" class="form-control" value="{{ $order->packages }}">
+                    <input type="text" min="0" name="packages" id="dlv-packages" class="integer form-control" value="{{ $order->packages }}">
                 </div>
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">{{ __('Weight (kg)') }}</label>

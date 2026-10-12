@@ -517,7 +517,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label small fw-bold">{{ __('Overtime Hours') }}</label>
-                                <input type="number" step="0.5" min="0" max="24" name="overtime_hours" class="form-control" value="0">
+                                <input type="text" step="0.5" min="0" max="24" name="overtime_hours" class="decimal form-control" value="0">
                             </div>
                             <div class="col-12">
                                 <label class="form-label small fw-bold">{{ __('Remarks') }}</label>
@@ -562,7 +562,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label small fw-bold">{{ __('Overtime Hours') }}</label>
-                                <input type="number" step="0.5" min="0" max="24" name="overtime_hours" id="editAttendanceOvertime" class="form-control">
+                                <input type="text" step="0.5" min="0" max="24" name="overtime_hours" id="editAttendanceOvertime" class="decimal form-control">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label small fw-bold">{{ __('Check In') }}</label>
@@ -780,7 +780,7 @@
                     '</select></td>' +
                     '<td><input type="time" class="form-control form-control-sm day-check-in" value="' + (day.check_in || '') + '"></td>' +
                     '<td><input type="time" class="form-control form-control-sm day-check-out" value="' + (day.check_out || '') + '"></td>' +
-                    '<td><input type="number" step="0.5" min="0" max="24" class="form-control form-control-sm day-overtime" value="' + (day.overtime_hours || 0) + '"></td>' +
+                    '<td><input type="text" step="0.5" min="0" max="24" class="decimal form-control form-control-sm day-overtime" value="' + (day.overtime_hours || 0) + '"></td>' +
                     '<td class="text-end"><button type="button" class="btn btn-primary btn-sm day-save-btn">{{ __('Save') }}</button></td>' +
                     '</tr>';
             });

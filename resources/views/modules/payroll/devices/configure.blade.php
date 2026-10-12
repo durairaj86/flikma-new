@@ -112,7 +112,7 @@ Content-Type: application/json
                                 <textarea name="pull_params" rows="4" class="form-control font-monospace" placeholder="start={from_date}&end={to_date}&page_size=500">{{ old('pull_params', $device->pull_params) }}</textarea>
                                 <div class="form-text">{{ __('Placeholders:') }} <code>{from}</code> <code>{to}</code> <code>{from_date}</code> <code>{to_date}</code> <code>{from_epoch}</code> <code>{to_epoch}</code></div></div>
                             <div class="col-md-3"><label class="form-label fw-bold">{{ __('Fetch every (minutes)') }}</label>
-                                <input type="number" name="pull_interval" min="1" max="1440" class="form-control" value="{{ old('pull_interval', $device->pull_interval) }}"></div>
+                                <input type="text" name="pull_interval" min="1" max="1440" class="integer form-control" value="{{ old('pull_interval', $device->pull_interval) }}"></div>
                         </div>
                     </div>
                 </div>

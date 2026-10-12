@@ -878,12 +878,15 @@ let webModal = {
                     });
                 }
             } else {
-                const fieldCount = form.find('.is-invalid').length;
+                const fieldCount = form.find('input.is-invalid, textarea.is-invalid, select.is-invalid').length || 1;
+                const firstBad = form.find('.is-invalid').first();
+                const label = (firstBad.closest("[class*='col-'], .form-group, td").find('label').first().text() || '').replace(/\*/g, '').trim();
 
-                let consolidatedMessage = 'Validation Failed';
-                consolidatedMessage += `: ${fieldCount} field${fieldCount > 1 ? 's' : ''} need to be fixed.`;
+                let consolidatedMessage = trans('Validation Failed')
+                    + `: ${fieldCount} field${fieldCount > 1 ? 's' : ''} need to be fixed.`;
+                if (label) consolidatedMessage += ` (${trans('First')}: ${label})`;
 
-                toastr.error(consolidatedMessage);
+                toastr.error(consolidatedMessage, '', {positionClass: 'toast-bottom-center'});
             }
         });
     },

@@ -203,7 +203,7 @@
                                 '<td>' + invoice.due_at + '</td>' +
                                 '<td>' + PAYMENT.edit.formatNumber(invoice.grand_total) + '</td>' +
                                 '<td>' +
-                                '<input type="number" step="0.01" class="form-control invoice-amount" data-id="' + invoice.id + '" value="' + amount + '" min="0" max="' + invoice.grand_total + '"' +
+                                '<input type="text" step="0.01" class="decimal form-control invoice-amount" data-id="' + invoice.id + '" value="' + amount + '" min="0" max="' + invoice.grand_total + '"' +
                                 (!isChecked || !PAYMENT.edit.isDraft ? ' disabled' : '') + '>' +
                                 '</td>' +
                                 '</tr>';

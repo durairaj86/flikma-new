@@ -20,7 +20,7 @@
                 <div class="row g-3">
                     <div class="col-6 form-group">
                         <label class="form-label required">{{ __('Year') }} <sup class="text-danger">*</sup></label>
-                        <input type="number" name="year" class="form-control" required min="2000" max="2100"
+                        <input type="text" name="year" class="integer form-control" required min="2000" max="2100"
                                value="{{ $periodClosing->year ?? now()->year }}">
                     </div>
 

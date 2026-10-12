@@ -51,9 +51,7 @@
             });
             $(form).find("input.is-invalid, textarea.is-invalid").first().each(function () { if (!$firstBad) $firstBad = $(this); });
             if ($firstBad && $firstBad.length) {
-                const label = ($firstBad.closest("[class*='col-'], .form-group, td").find("label").first().text() || "").replace(/\*/g, "").trim();
-                const msg = (window.trans ? trans("Please fill in the required field") : "Please fill in the required field") + (label ? ": " + label : "");
-                if (window.toastr) toastr.error(msg);
+                // the single error toast is raised by the modal save handler (startup.js)
                 try { $firstBad[0].scrollIntoView({block: "center", behavior: "smooth"}); } catch (e) {}
             }
         }

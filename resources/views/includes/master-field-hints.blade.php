@@ -249,12 +249,14 @@
                 $el.attr('data-hinted', '1');
                 // Switches/checkboxes: the hint goes under the whole switch row; selects: under the field itself.
                 var anchor = $el.closest('.form-check, .form-switch, .input-group');
-                if (this.type === 'radio' && anchor.length) anchor = anchor.parent();
+                // Radios: the hint goes inside the field's own column, under the last option (never as a sibling of the column).
+                if (this.type === 'radio' && group.length) anchor = group.find('.form-check').last();
                 if (!anchor.length) anchor = $el;
                 var ts = $el.next('.ts-wrapper');
                 if (ts.length) anchor = ts;
                 var $hint = $('<div class="field-hint-wrap"><div class="field-hint" tabindex="0"></div></div>').attr('data-full', text);
                 $hint.find('.field-hint').text(text);
+                if (this.type === 'radio') $hint.addClass('field-hint-wrap--full');
                 // A field sitting in a flex row (e.g. a switch in a d-flex group) would put the hint beside it:
                 // wrap field + hint together so the hint drops underneath.
                 var parent = anchor.parent();

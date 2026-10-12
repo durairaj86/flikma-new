@@ -1898,6 +1898,9 @@ label.required.label-error {
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; outline: 0;
 }
 .field-hint-wrap.is-truncated .field-hint { cursor: help; }
+/* Radio-option hints are short sentences in a narrow column: show them in full, wrapping onto a second line. */
+.field-hint-wrap--full { height: auto; }
+.field-hint-wrap--full .field-hint { white-space: normal; overflow: visible; text-overflow: clip; }
 .field-hint-wrap.is-truncated:hover::after, .field-hint-wrap.is-truncated:focus-within::after {
     content: attr(data-full);
     position: absolute; left: 0; bottom: calc(100% + 4px); z-index: 30;

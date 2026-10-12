@@ -112,13 +112,13 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <input type="number" step="0.01" class="form-control form-control-sm text-end fw-bold border-0 bg-light-subtle"
+                                    <input type="text" step="0.01" class="decimal form-control form-control-sm text-end fw-bold border-0 bg-light-subtle"
                                            placeholder="0.00"
                                            wire:model.lazy="entries.{{ $index }}.debit"
                                            wire:change="calculateTotals">
                                 </td>
                                 <td>
-                                    <input type="number" step="0.01" class="form-control form-control-sm text-end fw-bold border-0 bg-light-subtle"
+                                    <input type="text" step="0.01" class="decimal form-control form-control-sm text-end fw-bold border-0 bg-light-subtle"
                                            placeholder="0.00"
                                            wire:model.lazy="entries.{{ $index }}.credit"
                                            wire:change="calculateTotals">

@@ -95,16 +95,16 @@
                                         <input type="hidden" name="balances[c{{ $index }}][customer_id]" value="{{ $c->id }}">
                                     </td>
                                     <td>
-                                        <input type="number" step="0.01" min="0"
+                                        <input type="text" step="0.01" min="0"
                                                name="balances[c{{ $index }}][debit]"
-                                               class="form-control form-control-sm text-end border-0 bg-transparent row-debit"
+                                               class="decimal form-control form-control-sm text-end border-0 bg-transparent row-debit"
                                                placeholder="0.00" value=""
                                                @input="calculateTotals()">
                                     </td>
                                     <td>
-                                        <input type="number" step="0.01" min="0"
+                                        <input type="text" step="0.01" min="0"
                                                name="balances[c{{ $index }}][credit]"
-                                               class="form-control form-control-sm text-end border-0 bg-transparent row-credit"
+                                               class="decimal form-control form-control-sm text-end border-0 bg-transparent row-credit"
                                                placeholder="0.00" value=""
                                                @input="calculateTotals()">
                                     </td>
@@ -144,16 +144,16 @@
                                         <input type="hidden" name="balances[s{{ $index }}][supplier_id]" value="{{ $s->id }}">
                                     </td>
                                     <td>
-                                        <input type="number" step="0.01" min="0"
+                                        <input type="text" step="0.01" min="0"
                                                name="balances[s{{ $index }}][debit]"
-                                               class="form-control form-control-sm text-end border-0 bg-transparent row-debit"
+                                               class="decimal form-control form-control-sm text-end border-0 bg-transparent row-debit"
                                                placeholder="0.00" value=""
                                                @input="calculateTotals()">
                                     </td>
                                     <td>
-                                        <input type="number" step="0.01" min="0"
+                                        <input type="text" step="0.01" min="0"
                                                name="balances[s{{ $index }}][credit]"
-                                               class="form-control form-control-sm text-end border-0 bg-transparent row-credit"
+                                               class="decimal form-control form-control-sm text-end border-0 bg-transparent row-credit"
                                                placeholder="0.00" value=""
                                                @input="calculateTotals()">
                                     </td>
@@ -195,16 +195,16 @@
                                         <input type="hidden" name="balances[a{{ $index }}][account_id]" value="{{ $acc->id }}">
                                     </td>
                                     <td>
-                                        <input type="number" step="0.01" min="0"
+                                        <input type="text" step="0.01" min="0"
                                                name="balances[a{{ $index }}][debit]"
-                                               class="form-control form-control-sm text-end border-0 bg-transparent row-debit"
+                                               class="decimal form-control form-control-sm text-end border-0 bg-transparent row-debit"
                                                placeholder="0.00" value=""
                                                @input="calculateTotals()">
                                     </td>
                                     <td>
-                                        <input type="number" step="0.01" min="0"
+                                        <input type="text" step="0.01" min="0"
                                                name="balances[a{{ $index }}][credit]"
-                                               class="form-control form-control-sm text-end border-0 bg-transparent row-credit"
+                                               class="decimal form-control form-control-sm text-end border-0 bg-transparent row-credit"
                                                placeholder="0.00" value=""
                                                @input="calculateTotals()">
                                     </td>

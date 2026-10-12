@@ -25,15 +25,15 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label small fw-bold">Loan Amount</label>
-                        <input type="number" name="loan_amount" class="form-control" step="0.01" min="1" required>
+                        <input type="text" name="loan_amount" class="decimal form-control" step="0.01" min="1" required>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label small fw-bold">Total Installments</label>
-                        <input type="number" name="total_installments" class="form-control" min="1" required>
+                        <input type="text" name="total_installments" class="integer form-control" min="1" required>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label small fw-bold">Installment Amount</label>
-                        <input type="number" name="installment_amount" class="form-control" step="0.01" min="1" required>
+                        <input type="text" name="installment_amount" class="decimal form-control" step="0.01" min="1" required>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label small fw-bold">Start Date</label>

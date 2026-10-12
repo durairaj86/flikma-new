@@ -32,18 +32,18 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label small fw-bold">Loan Amount</label>
-                        <input type="number" name="loan_amount" class="form-control{{ $employeeLoan->hasDeductions() ? ' bg-light' : '' }}" step="0.01" min="1" value="{{ $employeeLoan->loan_amount }}" required {{ $employeeLoan->hasDeductions() ? 'readonly' : '' }}>
+                        <input type="text" name="loan_amount" class="decimal form-control{{ $employeeLoan->hasDeductions() ? ' bg-light' : '' }}" step="0.01" min="1" value="{{ $employeeLoan->loan_amount }}" required {{ $employeeLoan->hasDeductions() ? 'readonly' : '' }}>
                         @if($employeeLoan->hasDeductions())
                             <div class="form-text small text-muted"><i class="bi bi-lock-fill me-1"></i>{{ __('Locked — instalments have already been deducted.') }}</div>
                         @endif
                     </div>
                     <div class="col-md-3">
                         <label class="form-label small fw-bold">Total Installments</label>
-                        <input type="number" name="total_installments" class="form-control" min="1" value="{{ $employeeLoan->total_installments }}" required>
+                        <input type="text" name="total_installments" class="integer form-control" min="1" value="{{ $employeeLoan->total_installments }}" required>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label small fw-bold">Installment Amount</label>
-                        <input type="number" name="installment_amount" class="form-control" step="0.01" min="1" value="{{ $employeeLoan->installment_amount }}" required>
+                        <input type="text" name="installment_amount" class="decimal form-control" step="0.01" min="1" value="{{ $employeeLoan->installment_amount }}" required>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label small fw-bold">Start Date</label>

@@ -96,7 +96,7 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">{{ __('Transit Days') }}</label>
-                    <input type="number" min="0" name="transit_days" class="form-control" value="{{ $rate->transit_days }}">
+                    <input type="text" min="0" name="transit_days" class="integer form-control" value="{{ $rate->transit_days }}">
                 </div>
             </div>
 

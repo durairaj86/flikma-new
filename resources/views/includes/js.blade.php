@@ -206,6 +206,7 @@
     };
 </script>
 <script type="text/javascript" src="{{ asset('js/startup.js?v='.appVersion()) }}" defer></script>
+<script src="{{ asset('js/number-input.js') }}?v={{ appVersion() }}"></script>
 <script src="{{ asset('js/toastr.min.js') }}"></script>
 <script type="text/javascript" src="{{ asset('js/form-validation.js?v='.appVersion()) }}"></script>
 <script type="text/javascript" src="{{ asset('js/jquery-confirm.js') }}"></script>
@@ -220,7 +221,7 @@
     toastr.options = {
         "closeButton": true,
         "progressBar": true,
-        "positionClass": "toast-top-right",
+        "positionClass": "toast-bottom-center",
         "timeOut": "3000"
     };
 </script>

@@ -90,7 +90,7 @@
                             @csrf
                             <div class="mb-3">
                                 <label class="form-label small fw-bold">Amount <span class="text-muted fw-normal">(max {{ number_format($employeeLoan->remaining_amount, 2) }})</span></label>
-                                <input type="number" name="amount" class="form-control" step="0.01"
+                                <input type="text" name="amount" class="decimal form-control" step="0.01"
                                     min="0.01" max="{{ $employeeLoan->remaining_amount }}" value="{{ old('amount') }}" required>
                             </div>
                             <div class="mb-3">

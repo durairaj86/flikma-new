@@ -101,15 +101,15 @@
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">
                                     <label class="form-label fw-medium">{{ __('Debit') }}</label>
-                                    <input type="number" step="0.01" min="0" name="debit"
+                                    <input type="text" step="0.01" min="0" name="debit"
                                            value="{{ old('debit', (float)$balance->debit) }}"
-                                           class="form-control text-end">
+                                           class="decimal form-control text-end">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label fw-medium">{{ __('Credit') }}</label>
-                                    <input type="number" step="0.01" min="0" name="credit"
+                                    <input type="text" step="0.01" min="0" name="credit"
                                            value="{{ old('credit', (float)$balance->credit) }}"
-                                           class="form-control text-end">
+                                           class="decimal form-control text-end">
                                 </div>
                             </div>
 

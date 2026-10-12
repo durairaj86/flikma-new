@@ -27,7 +27,7 @@
 
                     <div class="col-6 form-group">
                         <label class="form-label required">{{ __('Duty Rate (%)') }} <sup class="text-danger">*</sup></label>
-                        <input type="number" name="duty_rate" class="form-control" step="0.01" min="0" max="100"
+                        <input type="text" name="duty_rate" class="decimal form-control" step="0.01" min="0" max="100"
                                required value="{{ $hsTariff->duty_rate ?? '' }}">
                         <div class="field-hint-wrap" data-full="{{ __('Customs duty as a percentage of the goods value, from 0 to 100. For example 5 means 5%.') }}"><div class="field-hint" tabindex="0">{{ __('Customs duty as a percentage of the goods value, from 0 to 100. For example 5 means 5%.') }}</div></div>
                     </div>

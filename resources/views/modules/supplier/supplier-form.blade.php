@@ -129,12 +129,12 @@
                             <div class="row">
                                 <div class="col-md-4 form-group">
                                     <label class="form-label">{{ __('Credit Limit') }}</label>
-                                    <input type="number" name="credit_limit" class="form-control" min="0"
+                                    <input type="text" name="credit_limit" class="decimal form-control" min="0"
                                            value="{{ $supplier->credit_limit }}">
                                 </div>
                                 <div class="col-md-4 form-group">
                                     <label class="form-label">{{ __('Credit Days') }}</label>
-                                    <input type="number" name="credit_days" class="form-control" min="0"
+                                    <input type="text" name="credit_days" class="integer form-control" min="0"
                                            value="{{ $supplier->credit_days }}">
                                 </div>
                             </div>

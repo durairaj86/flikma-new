@@ -16,7 +16,7 @@
             <div class="col-md-4"><label class="form-label fw-semibold">{{ __('Empty Returned') }}</label>
                 <input type="text" name="returned_at" class="form-control datepicker" value="{{ $c->returned_at ? \Illuminate\Support\Carbon::parse($c->returned_at)->format('d-m-Y') : '' }}"></div>
             <div class="col-md-4"><label class="form-label fw-semibold">{{ __('Free Days') }}</label>
-                <input type="number" min="0" name="free_days" class="form-control" value="{{ $c->free_days }}" placeholder="7">
+                <input type="text" min="0" name="free_days" class="integer form-control" value="{{ $c->free_days }}" placeholder="7">
                 <div class="form-text">{{ __('Given by the shipping line. Empty means 7.') }}</div></div>
             <div class="col-md-8"><label class="form-label fw-semibold">{{ __('Return Depot') }}</label>
                 <input type="text" name="return_depot" class="form-control" value="{{ $c->return_depot }}"></div>

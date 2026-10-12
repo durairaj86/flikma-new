@@ -465,13 +465,13 @@
 
                             <div class="col-md-3">
                                 <label class="form-label">{{ __('Duty Amount - CEL') }}</label>
-                                <input type="number" step="0.01" name="duty_amount" class="form-control"
+                                <input type="text" step="0.01" name="duty_amount" class="decimal form-control"
                                        value="{{ $job->clearance?->duty_amount }}">
                             </div>
 
                             <div class="col-md-3">
                                 <label class="form-label">{{ __('Duty Amount - Client') }}</label>
-                                <input type="number" step="0.01" name="duty_amount_client" class="form-control"
+                                <input type="text" step="0.01" name="duty_amount_client" class="decimal form-control"
                                        value="{{ $job->clearance?->duty_amount_client }}">
                             </div>
 

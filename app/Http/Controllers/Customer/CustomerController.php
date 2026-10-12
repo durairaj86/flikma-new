@@ -345,7 +345,12 @@ class CustomerController extends Controller
         }
 
         // Validate request
-        $validated = $request->validate($rules);
+        // a file the server refuses (too big for PHP's upload_max_filesize / post_max_size) used to be skipped silently
+        $rules['document_file.*'] = 'nullable|file|max:2048';
+        $validated = $request->validate($rules, [
+            'document_file.*.uploaded' => __('A document could not be uploaded. Each attachment must be 2 MB or less.'),
+            'document_file.*.max' => __('Each attachment must be 2 MB or less.'),
+        ]);
 
         if (isset($request['data-id']) and filled($request['data-id'])) {
             $customer = Customer::findOrFail($request->input('data-id'));

@@ -121,7 +121,7 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">{{ __('Containers / Pieces') }}</label>
-                    <input type="number" min="0" name="container_qty" class="form-control" value="{{ $booking->container_qty }}">
+                    <input type="text" min="0" name="container_qty" class="integer form-control" value="{{ $booking->container_qty }}">
                 </div>
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">{{ __('Gross Weight (kg)') }}</label>

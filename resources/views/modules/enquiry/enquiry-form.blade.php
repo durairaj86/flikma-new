@@ -188,8 +188,8 @@
                                 </div>
                                 {{--<div class="col-md-4">
                                     <label for="weight" class="form-label">Weight (kg)</label>
-                                    <input type="number" name="weight" id="weight" step="0.01"
-                                           class="form-control rounded-3"
+                                    <input type="text" name="weight" id="weight" step="0.01"
+                                           class="decimal form-control rounded-3"
                                            value="{{ $enquiry->weight }}">
                                 </div>--}}
                                 <div class="col-md-4">
@@ -200,8 +200,8 @@
                                 </div>
                                 <div class="col-md-4">
                                     <label for="volume" class="form-label">{{ __('Volume (m³)') }}</label>
-                                    <input type="number" name="volume" id="volume" step="0.01"
-                                           class="form-control rounded-3"
+                                    <input type="text" name="volume" id="volume" step="0.01"
+                                           class="decimal form-control rounded-3"
                                            value="{{ $enquiry->volume }}">
                                 </div>
                                 <div class="col-md-4">
@@ -330,8 +330,8 @@
                                                 <td>
                                                     <x-common.container_types name="container[type][]"/>
                                                 </td>
-                                                <td><input type="number" name="container[quantity][]"
-                                                           class="form-control rounded-3"></td>
+                                                <td><input type="text" name="container[quantity][]"
+                                                           class="integer form-control rounded-3"></td>
                                                 <td>
                                                     <select name="container[hazardous][]"
                                                             class="form-control tom-select" data-max-width="200">
@@ -356,17 +356,17 @@
                                                         @endforeach
                                                     </select>
                                                 </td>
-                                                <td><input type="number" name="package[length][]"
-                                                           class="form-control rounded-3"
+                                                <td><input type="text" name="package[length][]"
+                                                           class="decimal form-control rounded-3"
                                                            placeholder="Length"></td>
-                                                <td><input type="number" name="package[width][]"
-                                                           class="form-control rounded-3"
+                                                <td><input type="text" name="package[width][]"
+                                                           class="decimal form-control rounded-3"
                                                            placeholder="Width"></td>
-                                                <td><input type="number" name="package[height][]"
-                                                           class="form-control rounded-3"
+                                                <td><input type="text" name="package[height][]"
+                                                           class="decimal form-control rounded-3"
                                                            placeholder="Height"></td>
-                                                <td><input type="number" name="package[weight][]"
-                                                           class="form-control rounded-3"
+                                                <td><input type="text" name="package[weight][]"
+                                                           class="decimal form-control rounded-3"
                                                            placeholder="Weight"></td>
                                                 <td class="text-center">
                                                     <button type="button" class="btn btn-sm btn-danger remove-row">
@@ -388,8 +388,8 @@
                                                         <x-common.container_types :value="$item->container_type"
                                                                                   name="container[type][]"/>
                                                     </td>
-                                                    <td><input type="number" name="container[quantity][]"
-                                                               class="form-control rounded-3"
+                                                    <td><input type="text" name="container[quantity][]"
+                                                               class="integer form-control rounded-3"
                                                                value="{{ $item->container_quantity }}"></td>
                                                     <td>
                                                         <select name="container[hazardous][]"
@@ -422,17 +422,17 @@
                                                             @endforeach
                                                         </select>
                                                     </td>
-                                                    <td><input type="number" name="package[length][]"
-                                                               class="form-control rounded-3"
+                                                    <td><input type="text" name="package[length][]"
+                                                               class="decimal form-control rounded-3"
                                                                value="{{ $item->length }}"></td>
-                                                    <td><input type="number" name="package[width][]"
-                                                               class="form-control rounded-3"
+                                                    <td><input type="text" name="package[width][]"
+                                                               class="decimal form-control rounded-3"
                                                                value="{{ $item->width }}"></td>
-                                                    <td><input type="number" name="package[height][]"
-                                                               class="form-control rounded-3"
+                                                    <td><input type="text" name="package[height][]"
+                                                               class="decimal form-control rounded-3"
                                                                value="{{ $item->height }}"></td>
-                                                    <td><input type="number" name="package[weight][]"
-                                                               class="form-control rounded-3"
+                                                    <td><input type="text" name="package[weight][]"
+                                                               class="decimal form-control rounded-3"
                                                                value="{{ $item->weight }}"></td>
                                                     <td class="text-center">
                                                         <button type="button" class="btn btn-sm btn-danger remove-row">

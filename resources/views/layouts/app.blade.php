@@ -68,6 +68,7 @@
 
     <!-- Toastr CSS -->
     <link href="{{ asset('css/toastr/toastr.min.css')}}" rel="stylesheet"/>
+    <style>#toast-container.toast-bottom-center{bottom:24px}#toast-container>.toast{border-radius:12px}#toast-container.toast-bottom-center>.toast{width:fit-content;max-width:80vw}</style>
 
     <!-- SweetAlert2 CSS -->
     <link href="{{ asset('css/sweetalert/sweetalert2.min.css')}}" rel="stylesheet">

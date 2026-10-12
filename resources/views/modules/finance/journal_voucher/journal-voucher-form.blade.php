@@ -171,10 +171,10 @@
                                                 <input type="text" class="form-control" name="descriptions[]" value="{{ $item->description }}">
                                             </td>
                                             <td>
-                                                <input type="number" step="0.01" class="form-control debit-amount" name="debit_amounts[]" value="{{ $item->debit_amount }}" min="0">
+                                                <input type="text" step="0.01" class="decimal form-control debit-amount" name="debit_amounts[]" value="{{ $item->debit_amount }}" min="0">
                                             </td>
                                             <td>
-                                                <input type="number" step="0.01" class="form-control credit-amount" name="credit_amounts[]" value="{{ $item->credit_amount }}" min="0">
+                                                <input type="text" step="0.01" class="decimal form-control credit-amount" name="credit_amounts[]" value="{{ $item->credit_amount }}" min="0">
                                             </td>
                                             <td>
                                                 <select class="form-select tax-account-select" name="tax_ids[]">
@@ -187,7 +187,7 @@
                                                 </select>
                                             </td>
                                             <td>
-                                                <input type="number" step="0.01" class="form-control tax-amount" name="tax_amounts[]" value="{{ $item->tax_amount }}" min="0">
+                                                <input type="text" step="0.01" class="decimal form-control tax-amount" name="tax_amounts[]" value="{{ $item->tax_amount }}" min="0">
                                             </td>
                                             <td>
                                                 <button type="button" class="btn btn-sm btn-danger remove-entry-row">
@@ -226,10 +226,10 @@
                                             <input type="text" class="form-control" name="descriptions[]">
                                         </td>
                                         <td>
-                                            <input type="number" step="0.01" class="form-control debit-amount" name="debit_amounts[]" value="0" min="0">
+                                            <input type="text" step="0.01" class="decimal form-control debit-amount" name="debit_amounts[]" value="0" min="0">
                                         </td>
                                         <td>
-                                            <input type="number" step="0.01" class="form-control credit-amount" name="credit_amounts[]" value="0" min="0">
+                                            <input type="text" step="0.01" class="decimal form-control credit-amount" name="credit_amounts[]" value="0" min="0">
                                         </td>
                                         <td>
                                             <select class="form-select tax-account-select" name="tax_ids[]">
@@ -242,7 +242,7 @@
                                             </select>
                                         </td>
                                         <td>
-                                            <input type="number" step="0.01" class="form-control tax-amount" name="tax_amounts[]" value="0" min="0">
+                                            <input type="text" step="0.01" class="decimal form-control tax-amount" name="tax_amounts[]" value="0" min="0">
                                         </td>
                                         <td>
                                             <button type="button" class="btn btn-sm btn-danger remove-entry-row">
@@ -331,10 +331,10 @@
                         <input type="text" class="form-control" name="descriptions[]">
                     </td>
                     <td>
-                        <input type="number" step="0.01" class="form-control debit-amount" name="debit_amounts[]" value="0" min="0">
+                        <input type="text" step="0.01" class="decimal form-control debit-amount" name="debit_amounts[]" value="0" min="0">
                     </td>
                     <td>
-                        <input type="number" step="0.01" class="form-control credit-amount" name="credit_amounts[]" value="0" min="0">
+                        <input type="text" step="0.01" class="decimal form-control credit-amount" name="credit_amounts[]" value="0" min="0">
                     </td>
                     <td>
                         <select class="form-select tax-account-select" name="tax_ids[]">
@@ -347,7 +347,7 @@
                         </select>
                     </td>
                     <td>
-                        <input type="number" step="0.01" class="form-control tax-amount" name="tax_amounts[]" value="0" min="0">
+                        <input type="text" step="0.01" class="decimal form-control tax-amount" name="tax_amounts[]" value="0" min="0">
                     </td>
                     <td>
                         <button type="button" class="btn btn-sm btn-danger remove-entry-row">

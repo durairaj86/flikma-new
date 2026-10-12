@@ -1,7 +1,7 @@
-{{-- Today's briefing: opens by itself once after sign-in (owner / Operations only), and from any [data-briefing-open] button. --}}
+{{-- Today's briefing: opens by itself at most once a day per user (sign-ins do not count) (owner / Operations only), and from any [data-briefing-open] button. --}}
 @auth
     @if(\App\Services\Briefing\OperationsBriefing::allowed(auth()->user()))
-        @php($briefingAuto = !session('briefing_seen'))
+        @php($briefingAuto = \Illuminate\Support\Facades\Cache::add('briefing:auto:'.auth()->id().':'.now()->toDateString(), 1, now()->endOfDay()))
         <link href="{{ asset('css/briefing.css') }}?v={{ appVersion() }}" rel="stylesheet">
         <div class="modal fade" id="briefingModal" tabindex="-1" aria-hidden="true"
              data-url="{{ route('briefing.show') }}" data-auto="{{ $briefingAuto ? '1' : '0' }}"

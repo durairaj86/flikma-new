@@ -14,10 +14,6 @@ class BriefingController extends Controller
         if (!OperationsBriefing::allowed($user)) {
             return response()->json(['allowed' => false, 'items' => [], 'stats' => [], 'count' => 0, 'actionable' => 0, 'name' => '']);
         }
-        if ($request->boolean('auto')) {
-            session(['briefing_seen' => true]); // the automatic popup shows once per sign-in; the bell reopens it any time
-        }
-
         return response()->json(['allowed' => true] + $briefing->build($user));
     }
 }

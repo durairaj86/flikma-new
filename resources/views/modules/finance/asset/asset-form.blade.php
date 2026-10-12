@@ -60,7 +60,7 @@
 
                     <div class="col-md-4">
                         <label class="form-label">{{ __('Useful Life (Months)') }}</label>
-                        <input type="number" name="useful_life_months" class="form-control" min="1" max="600"
+                        <input type="text" name="useful_life_months" class="integer form-control" min="1" max="600"
                                value="{{ $asset->useful_life_months }}">
                     </div>
 
