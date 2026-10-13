@@ -101,6 +101,7 @@
                         ['Debit Note', 'DN', 'Approved', 'Accounts Payable 2110', 'Cost account per line + Input VAT 1150 (reversal)', 'debit_note (against a supplier invoice)'],
                         ['Expense', 'EV', 'Approved', 'Expense account per line + Input VAT 1150', 'Bank / cash account chosen; currency difference account when rates differ', 'expense'],
                         ['Opening Balance', 'OB', 'Saved (no approval)', 'Customer / supplier balances on 1130 / 2110, or any other account', 'Opposite side; one automatic balancing line on Owner Capital 3100 if needed', 'opening_balance'],
+                        ['Bank Reconciliation (charge / interest)', 'BA', 'Posted from the reconciliation screen', 'Charge: the account chosen (e.g. Bank Charges 5260). Interest / credit: the bank account', 'Charge: the bank account. Interest / credit: the account chosen (e.g. Other Income 4160)', 'bank_reconciliation (ticked on its statement)'],
                         ['Payroll', 'PR / LV', 'Salary paid', 'Staff Salaries 5200', 'Bank / cash; Employee Loan Receivable 1180 for loan deductions', 'payroll'],
                         ['Journal Voucher', 'JV', 'Never (gap)', '-', '-', 'Approving a journal voucher only changes its status. It does NOT create a finance entry today.'],
                         ['Proforma Invoice / drafts', '-', 'Never', 'Not an accounting event', 'Not an accounting event', 'Shown through job_links only'],

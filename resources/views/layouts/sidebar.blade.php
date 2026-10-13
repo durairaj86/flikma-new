@@ -327,6 +327,12 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a href="/finance/reconciliation"
+                               class="nav-link {{ $submenu == 'reconciliation' ? 'active' : '' }}">
+                                <p>{{ __('Bank Reconciliation') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a href="/finance/accounts"
                                class="nav-link {{ $submenu == 'accounts' ? 'active' : '' }}">
                                 <p>{{ __('Chart of Accounts') }}</p>

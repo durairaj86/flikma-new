@@ -90,6 +90,7 @@ class AutocheckRunner
         'payroll_run' => ['Payroll: generate, pay and post the salary to the ledger', '/payroll/runs'],
         'employee_loan' => ['Payroll: employee loan', '/employee-loans'],
         'opening_balance' => ['Opening balance: post, edit (auto balancing line) and delete', '/masters/finance/opening-balance'],
+        'bank_reconciliation' => ['Bank reconciliation: tick, post a bank charge, difference 0, finish and undo', '/finance/reconciliation'],
         'email_verification' => ['Email verification: one-time code, wrong tries, welcome email queued once', '/verify-email'],
         'finance_workflow_page' => ['Finance workflow page renders with live counts', '/finance-entries/workflow'],
         'input_rules' => ['Input rules: integer / decimal boxes and maxlength map are in place and current', '/customers'],
@@ -1207,6 +1208,58 @@ class AutocheckRunner
         $this->check($checks, 'Removing the last line removes the voucher', !DB::table('finance')->where('id', $f->id)->exists(), 'gone');
         $this->check($checks, 'The ledger still balances after the opening balance test', abs((float) DB::table('finance_subs')->sum('base_debit') - (float) DB::table('finance_subs')->sum('base_credit')) < 0.01, 'balanced');
         return '/masters/finance/opening-balance';
+    }
+
+    private function stepBankReconciliation(array &$ctx, array &$checks): string
+    {
+        $svc = app(\App\Services\Finance\BankReconciliationService::class);
+        $this->check($checks, 'Bank and cash accounts can be chosen', $svc->accounts()->contains('id', self::BANK), $svc->accounts()->count());
+
+        $today = now()->toDateString();
+        $book = $svc->bookBalance(self::BANK, $today);
+        // the bank says 10.00 less than the books: a charge the books do not have yet
+        $rec = \App\Models\Finance\BankReconciliation\BankReconciliation::create([
+            'company_id' => companyId(), 'account_id' => self::BANK, 'statement_date' => $today, 'statement_balance' => $book - 10, 'status' => 'draft', 'created_by' => auth()->id(),
+        ]);
+        $lines = $svc->lines($rec);
+        $this->check($checks, 'The bank account entries are listed for the statement', $lines->count() >= 2, $lines->count() . ' entries');
+        $this->check($checks, 'Nothing is ticked at the start', $lines->every(fn ($l) => !$l->ticked), 'none');
+
+        $svc->tickAll($rec, true);
+        $s = $svc->summary($rec);
+        $this->check($checks, 'Ticking all: reconciled = books balance', abs($s['cleared'] - $book) < 0.01 && $s['ticked_count'] === $lines->count(), number_format($s['cleared'], 2));
+        $this->check($checks, 'Difference is -10.00 (the charge not in the books)', abs($s['difference'] + 10) < 0.01, number_format($s['difference'], 2));
+        $refused = false;
+        try { $svc->complete($rec); } catch (\RuntimeException $e) { $refused = true; }
+        $this->check($checks, 'Finishing with a difference is refused', $refused, 'refused');
+        $wrong = false;
+        try { $svc->tick($rec, (int) DB::table('finance_ledgers')->where('account_id', '<>', self::BANK)->value('id'), true); } catch (\RuntimeException $e) { $wrong = true; }
+        $this->check($checks, 'A line of another account cannot be ticked here', $wrong, 'refused');
+
+        // post the charge as a proper entry: Dr Bank Charges 5260 / Cr Bank
+        $financeId = $svc->addEntry($rec, 'out', 10, $today, 'AUTOCHECK bank charges', (int) \App\Models\Finance\Account\Account::where('code', '5260')->value('id'));
+        $f = DB::table('finance')->where('id', $financeId)->first();
+        $subs = DB::table('finance_subs')->where('finance_id', $financeId)->get();
+        $this->check($checks, 'Entry posted: type BA, approved, balanced 10.00', $f->voucher_type === 'BA' && (int) $f->is_approved === 1 && abs($subs->sum('base_debit') - 10) < 0.01 && abs($subs->sum('base_credit') - 10) < 0.01, $f->voucher_no);
+        $this->check($checks, 'Debit Bank Charges, credit the bank account', $subs->contains(fn ($x) => (int) $x->account_id === self::BANK && $x->credit > 0) && $subs->contains(fn ($x) => $x->debit > 0 && $x->account_id != self::BANK), 'Dr 5260 / Cr bank');
+        $this->check($checks, 'Entry knows its source (the reconciliation) and is in the ledger view', $f->source_type === 'bank_reconciliation' && DB::table('finance_ledgers')->where('finance_id', $financeId)->count() === 2, $f->source_type);
+
+        $s = $svc->summary($rec->fresh());
+        $this->check($checks, 'The new bank line is ticked and the difference is 0.00', abs($s['difference']) < 0.01 && abs($s['book'] - ($book - 10)) < 0.01, number_format($s['difference'], 2));
+
+        $svc->complete($rec->fresh());
+        $rec = $rec->fresh();
+        $this->check($checks, 'Finished: status completed, figures fixed', $rec->isCompleted() && abs($rec->cleared_balance - ($book - 10)) < 0.01 && (float) $rec->difference === 0.0, $rec->status);
+        $this->check($checks, 'A finished reconciliation cannot be changed', (function () use ($svc, $rec) { try { $svc->tickAll($rec, false); return false; } catch (\RuntimeException $e) { return true; } })(), 'locked');
+        $this->check($checks, 'Reconciled opening balance of the next statement = this one', abs($svc->openingBalance(self::BANK) - ($book - 10)) < 0.01, number_format($svc->openingBalance(self::BANK), 2));
+
+        $svc->undo($rec);
+        $this->check($checks, 'Undo: the statement is gone and its entries are open again', !DB::table('bank_reconciliations')->where('id', $rec->id)->exists() && DB::table('bank_reconciliation_lines')->where('bank_reconciliation_id', $rec->id)->count() === 0, 'open again');
+
+        // leave nothing behind (the posted charge too)
+        DB::table('finance_subs')->where('finance_id', $financeId)->delete();
+        DB::table('finance')->where('id', $financeId)->delete();
+        return '/finance/reconciliation';
     }
 
     private function stepEmailVerification(array &$ctx, array &$checks): string

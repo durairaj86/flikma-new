@@ -136,6 +136,7 @@ Route::middleware(['auth', 'verified', 'module.permission'])->group(function () 
     include 'finance/asset.php';
     include 'finance/journal_voucher.php';
     include 'finance/opening_balance.php';
+    include 'finance/reconciliation.php';
     include 'transaction/payment.php';
     include 'transaction/collection.php';
     include 'transaction/overview.php';
