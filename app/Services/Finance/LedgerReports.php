@@ -4,6 +4,7 @@ namespace App\Services\Finance;
 
 use App\Models\Finance\Account\Account;
 use App\Models\Finance\FinanceLedger;
+use Illuminate\Support\Facades\DB;
 
 /**
  * The statutory finance reports computed from the finance_ledgers view (docs/finance-ledger-design.md, phase 5).
@@ -269,5 +270,132 @@ class LedgerReports
         $from ? $q->whereBetween('transaction_date', [$from, $to]) : $q->where('transaction_date', '<', $to);
 
         return $q->orderBy('transaction_date')->orderBy('id')->get();
+    }
+
+    /** Receivable (customer) / payable (supplier) control account code. */
+    private static function controlCode(string $partner): string
+    {
+        return $partner === 'customer' ? '1130' : self::PAYABLE;
+    }
+
+    /** Debit / credit (base currency) of a partner's control-account lines dated before $before: the statement's opening balance. */
+    public static function statementOpening(string $partner, int $id, int $companyId, string $before): object
+    {
+        $row = DB::table('finance_ledgers')->where('company_id', $companyId)->where($partner . '_id', $id)
+            ->where('account_code', self::controlCode($partner))->where('is_provisional', 0)->where('transaction_date', '<', $before)
+            ->selectRaw('COALESCE(SUM(base_debit), 0) AS debit, COALESCE(SUM(base_credit), 0) AS credit')->first();
+
+        return (object) ['debit' => (float) $row->debit, 'credit' => (float) $row->credit];
+    }
+
+    /** A partner's control-account lines in a period, in the shape the statement screens read (fields as the old query returned them). */
+    public static function statementLines(string $partner, int $id, int $companyId, string $from, string $to)
+    {
+        return DB::table('finance_ledgers as l')
+            ->leftJoin('jobs as j', 'l.job_id', '=', 'j.id')
+            ->where('l.company_id', $companyId)->where('l.' . $partner . '_id', $id)
+            ->where('l.account_code', self::controlCode($partner))->where('l.is_provisional', 0)
+            ->whereBetween('l.transaction_date', [$from, $to])
+            ->select('l.id', 'l.transaction_date as reference_date', 'l.voucher_no', 'l.voucher_type', 'l.reference_no',
+                'j.row_no as job_number', 'l.narration as description', 'l.currency', 'l.exchange_rate', 'l.base_debit', 'l.base_credit')
+            ->orderBy('l.transaction_date')->orderBy('l.id')->get();
+    }
+
+    /**
+     * Amount settled per invoice on or before $asOf, in the invoice currency: receipts / payments AND credit / debit notes,
+     * from finance_allocations (a reversed allocation counts only until it was reversed). Same return shape the aging
+     * screens always read: invoice id => settled amount.
+     *
+     * @return array<int,float>
+     */
+    public static function settledAsOf(string $kind, \Carbon\Carbon $asOf): array
+    {
+        LedgerSync::ensureFresh();
+        $date = $asOf->toDateString();
+
+        return DB::table('finance_allocations')
+            ->where('company_id', companyId())
+            ->where('settled_doc_type', $kind === 'customer' ? 'customer_invoice' : 'supplier_invoice')
+            ->where('allocation_date', '<=', $date)
+            ->where(fn ($q) => $q->where('status', 'active')->orWhere('reversed_at', '>', $date))
+            ->groupBy('settled_doc_id')
+            ->selectRaw('settled_doc_id, SUM(amount) AS paid')
+            ->pluck('paid', 'settled_doc_id')->map(fn ($v) => (float) $v)->all();
+    }
+
+    /**
+     * What the books say for each job (posted entries only, company currency, VAT excluded because VAT is not income or cost):
+     * income = Income accounts (credit - debit), cost = Expense accounts (debit - credit). Keyed by job id.
+     * Not used by the job screens yet: those still add up invoice totals (VAT included, drafts included); see finance:job-compare.
+     *
+     * @param  int[]|null  $jobIds
+     * @return array<int,array{income:float,cost:float,profit:float}>
+     */
+    public static function jobFinancials(?array $jobIds = null): array
+    {
+        $q = FinanceLedger::query()->actual()->whereNotNull('job_id')->whereIn('account_type', ['Income', 'Expense']);
+        if ($jobIds !== null) {
+            $q->whereIn('job_id', $jobIds ?: [0]);
+        }
+        $out = [];
+        foreach ($q->groupBy('job_id', 'account_type')->selectRaw('job_id, account_type, SUM(base_debit) d, SUM(base_credit) c')->get() as $r) {
+            $out[$r->job_id] ??= ['income' => 0.0, 'cost' => 0.0, 'profit' => 0.0];
+            if ($r->account_type === 'Income') {
+                $out[$r->job_id]['income'] += $r->c - $r->d;
+            } else {
+                $out[$r->job_id]['cost'] += $r->d - $r->c;
+            }
+        }
+        foreach ($out as &$o) {
+            $o['profit'] = $o['income'] - $o['cost'];
+        }
+
+        return $out;
+    }
+
+    public static function jobBasisIsLedger(): bool
+    {
+        return config('finance.reports.job_basis', 'ledger') === 'ledger';
+    }
+
+    /**
+     * Actual income and cost of each job from the books, VAT excluded (VAT is neither income nor cost):
+     *  income = Income accounts of customer invoices (CI) and credit notes (CN)
+     *  cost   = Expense accounts of supplier invoices (SI) and debit notes (DN)
+     * Expense vouchers (EV) are NOT cost here: an expense is the provisional estimate until the supplier invoice arrives
+     * (the Provisional Report shows it as such), so counting both would double the cost of the job.
+     *
+     * @param  int[]  $jobIds
+     * @return array<int,array{income:float,cost:float}>  keyed by job id
+     */
+    public static function jobActuals(array $jobIds): array
+    {
+        if (!$jobIds) {
+            return [];
+        }
+        $out = [];
+        $rows = FinanceLedger::query()->actual()->whereIn('job_id', $jobIds)
+            ->where(fn ($q) => $q->where(fn ($i) => $i->where('account_type', 'Income')->whereIn('voucher_type', ['CI', 'CN']))
+                ->orWhere(fn ($c) => $c->where('account_type', 'Expense')->whereIn('voucher_type', ['SI', 'DN'])))
+            ->groupBy('job_id', 'account_type')->selectRaw('job_id, account_type, SUM(base_debit) d, SUM(base_credit) c')->get();
+        foreach ($rows as $r) {
+            $out[$r->job_id] ??= ['income' => 0.0, 'cost' => 0.0];
+            if ($r->account_type === 'Income') {
+                $out[$r->job_id]['income'] += (float) ($r->c - $r->d);
+            } else {
+                $out[$r->job_id]['cost'] += (float) ($r->d - $r->c);
+            }
+        }
+
+        return $out;
+    }
+
+    /** The posted income / cost lines of one job (invoice level detail for the Provisional Report). */
+    public static function jobActualLines(int $jobId)
+    {
+        return FinanceLedger::query()->actual()->where('job_id', $jobId)
+            ->where(fn ($q) => $q->where(fn ($i) => $i->where('account_type', 'Income')->whereIn('voucher_type', ['CI', 'CN']))
+                ->orWhere(fn ($c) => $c->where('account_type', 'Expense')->whereIn('voucher_type', ['SI', 'DN'])))
+            ->orderBy('transaction_date')->orderBy('id')->get();
     }
 }

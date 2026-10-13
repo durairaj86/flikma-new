@@ -64,6 +64,29 @@ class FinanceReportParity extends Command
             'Output Tax cards' => $card('OutputTax'),
         ];
 
+        // statements: every customer / supplier that has a receivable / payable line
+        $partners = [
+            'customer' => \Illuminate\Support\Facades\DB::table('finance_ledgers')->where('account_code', '1130')->whereNotNull('customer_id')->distinct()->pluck('customer_id')->all(),
+            'supplier' => \Illuminate\Support\Facades\DB::table('finance_ledgers')->where('account_code', '2110')->whereNotNull('supplier_id')->distinct()->pluck('supplier_id')->all(),
+        ];
+        foreach ($partners as $kind => $ids) {
+            $class = $kind === 'customer' ? 'CustomerStatementTable' : 'SupplierStatementTable';
+            $method = $kind === 'customer' ? 'getCustomerStatementData' : 'getSupplierStatementData';
+            $prop = $kind . 'Id';
+            foreach ($ids as $id) {
+                $cases[ucfirst($kind) . " Statement #$id"] = function ($s, $e) use ($class, $method, $prop, $id) {
+                    $c = app("App\\Livewire\\Report\\Finance\\$class");
+                    $c->startDate = $s;
+                    $c->endDate = $e;
+                    $c->$prop = $id;
+                    $d = $c->$method();
+                    unset($d[$kind = $prop === 'customerId' ? 'customer' : 'supplier']);   // the partner record itself is not part of the comparison
+
+                    return $d;
+                };
+            }
+        }
+
         $norm = function ($v) use (&$norm) {
             if (is_array($v)) {
                 return array_map($norm, $v);

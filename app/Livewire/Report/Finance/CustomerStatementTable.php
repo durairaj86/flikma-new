@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Report\Finance;
 
+use App\Services\Finance\LedgerReports;
 use App\Exports\Customer\CustomerStatementExport;
 use App\Models\Customer\Customer;
 use App\Models\Finance\Finance;
@@ -122,15 +123,17 @@ class CustomerStatementTable extends Component
             ->where('fs.reference_date', '<', $this->startDate)
             ->where('f.is_approved', 1);
 
-        $openingDebit = (clone $openingQuery)->sum('fs.base_debit');
-        $openingCredit = (clone $openingQuery)->sum('fs.base_credit');
+        $useLedger = LedgerReports::enabled();
+        $o = $useLedger ? LedgerReports::statementOpening('customer', (int) $this->customerId, (int) $companyId, $this->startDate) : null;
+        $openingDebit = $useLedger ? $o->debit : (clone $openingQuery)->sum('fs.base_debit');
+        $openingCredit = $useLedger ? $o->credit : (clone $openingQuery)->sum('fs.base_credit');
 
         $openingBalance = $openingDebit - $openingCredit; // Debit = asset
 
         // Transactions in date range — taken from the AR sub-ledger lines.
         // (Finance headers always have total_debit == total_credit, so they
         // can never move a running balance.)
-        $transactions = DB::table('finance_subs as fs')
+        $transactions = $useLedger ? LedgerReports::statementLines('customer', (int) $this->customerId, (int) $companyId, $this->startDate, $this->endDate) : DB::table('finance_subs as fs')
             ->join('finance as f', 'fs.finance_id', '=', 'f.id')
             ->leftJoin('jobs as j', 'fs.job_id', '=', 'j.id')
             ->where('fs.company_id', $companyId)

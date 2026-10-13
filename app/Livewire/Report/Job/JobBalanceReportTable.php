@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Report\Job;
 
+use App\Services\Finance\LedgerReports;
 use App\Models\Finance\Adjustment\CreditNote;
 use App\Models\Finance\CustomerInvoice\CustomerInvoice;
 use App\Models\Finance\SupplierInvoice\SupplierInvoice;
@@ -82,6 +83,8 @@ class JobBalanceReportTable extends Component
         $totalExpense = 0;
         $totalProfit = 0;
 
+        $actuals = LedgerReports::jobBasisIsLedger() ? LedgerReports::jobActuals($jobs->pluck('id')->all()) : null;
+
         foreach ($jobs as $job) {
             // Get customer invoices (income) for this job — not filtered by
             // status, matching the cards' definition (JobBalanceReport.php),
@@ -100,6 +103,11 @@ class JobBalanceReportTable extends Component
             // otherwise silently corrupt the job's income/expense totals.
             $income = ($customerInvoices->sum('base_grand_total') ?? 0) - ($creditNotes->sum('base_grand_total') ?? 0);
             $expense = $supplierInvoices->sum('base_grand_total') ?? 0;
+            if ($actuals !== null) {
+                // from the books: posted, VAT excluded (config finance.reports.job_basis)
+                $income = $actuals[$job->id]['income'] ?? 0;
+                $expense = $actuals[$job->id]['cost'] ?? 0;
+            }
 
             // Calculate profit
             $profit = $income - $expense;

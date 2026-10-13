@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Report\Job;
 
+use App\Services\Finance\LedgerReports;
 use Livewire\Component;
 use App\Exports\ReportTableExport;
 use App\Models\Job\Job;
@@ -78,6 +79,8 @@ class ProvisionalReport extends Component
             'margin'            => 0,
         ];
 
+        $ledgerActuals = LedgerReports::jobBasisIsLedger() ? LedgerReports::jobActuals($jobs->pluck('id')->all()) : null;
+
         if ($this->viewMode === 'activity') {
             // Group by the department chosen on the job (FCL Import, FCL Export, Air Export ...)
             $groups = [];
@@ -91,13 +94,18 @@ class ProvisionalReport extends Component
                 // silently corrupt these totals. ProformaInvoice/Expense have
                 // no base_grand_total column, so it's derived from their base
                 // sub/tax components instead.
-                $provisionalSales = (float) ProformaInvoice::where('job_id', $job->id)->where('company_id', $companyId)->selectRaw('SUM(base_sub_total + base_tax_total) as total')->value('total');
+                $vatSql = $ledgerActuals !== null ? 'base_sub_total' : 'base_sub_total + base_tax_total';   // books basis: VAT excluded
+                $provisionalSales = (float) ProformaInvoice::where('job_id', $job->id)->where('company_id', $companyId)->selectRaw("SUM($vatSql) as total")->value('total');
                 // Credit notes reduce recognised income — omitting them
                 // overstates actual sales by whatever was later credited back.
                 $actualSales      = (float) CustomerInvoice::where('job_id', $job->id)->where('company_id', $companyId)->sum('base_grand_total')
                     - (float) CreditNote::where('job_id', $job->id)->where('company_id', $companyId)->sum('base_grand_total');
-                $provisionalCost  = (float) Expense::where('job_id', $job->id)->where('company_id', $companyId)->selectRaw('SUM(base_sub_total + base_tax_total) as total')->value('total');
+                $provisionalCost  = (float) Expense::where('job_id', $job->id)->where('company_id', $companyId)->selectRaw("SUM($vatSql) as total")->value('total');
                 $actualCost       = (float) SupplierInvoice::where('job_id', $job->id)->where('company_id', $companyId)->sum('base_grand_total');
+                if ($ledgerActuals !== null) {
+                    $actualSales = (float) ($ledgerActuals[$job->id]['income'] ?? 0);
+                    $actualCost = (float) ($ledgerActuals[$job->id]['cost'] ?? 0);
+                }
 
                 if (!isset($groups[$activity])) {
                     $groups[$activity] = [
@@ -153,10 +161,15 @@ class ProvisionalReport extends Component
                 // See currency note above — same base-currency substitution.
                 // Credit notes reduce recognised income — omitting them
                 // overstates actual sales by whatever was later credited back.
-                $provisionalSales = (float) $proformaInvoices->sum(fn($doc) => (float)$doc->base_sub_total + (float)$doc->base_tax_total);
+                $vat = $ledgerActuals !== null ? 0 : 1;   // books basis: VAT excluded
+                $provisionalSales = (float) $proformaInvoices->sum(fn($doc) => (float)$doc->base_sub_total + $vat * (float)$doc->base_tax_total);
                 $actualSales      = (float) $customerInvoices->sum('base_grand_total') - (float) $creditNotes->sum('base_grand_total');
-                $provisionalCost  = (float) $expenses->sum(fn($doc) => (float)$doc->base_sub_total + (float)$doc->base_tax_total);
+                $provisionalCost  = (float) $expenses->sum(fn($doc) => (float)$doc->base_sub_total + $vat * (float)$doc->base_tax_total);
                 $actualCost       = (float) $supplierInvoices->sum('base_grand_total');
+                if ($ledgerActuals !== null) {
+                    $actualSales = (float) ($ledgerActuals[$job->id]['income'] ?? 0);
+                    $actualCost = (float) ($ledgerActuals[$job->id]['cost'] ?? 0);
+                }
 
                 $salesForCalc = $actualSales > 0 ? $actualSales : $provisionalSales;
                 $costForCalc  = $actualCost  > 0 ? $actualCost  : $provisionalCost;
@@ -172,17 +185,34 @@ class ProvisionalReport extends Component
                 foreach ($proformaInvoices as $doc) {
                     $details[] = ['type' => 'Provisional Sale', 'row_no' => $doc->row_no, 'date' => $doc->posted_at, 'amount' => (float) $doc->base_sub_total + (float) $doc->base_tax_total];
                 }
+                if ($ledgerActuals === null) {
                 foreach ($customerInvoices as $doc) {
                     $details[] = ['type' => 'Actual Sale', 'row_no' => $doc->row_no, 'date' => $doc->invoice_date, 'amount' => (float) $doc->base_grand_total];
                 }
                 foreach ($creditNotes as $doc) {
                     $details[] = ['type' => 'Credit Note', 'row_no' => $doc->row_no, 'date' => $doc->posted_at, 'amount' => -(float) $doc->base_grand_total];
                 }
+                }
                 foreach ($expenses as $doc) {
                     $details[] = ['type' => 'Provisional Cost', 'row_no' => $doc->row_no, 'date' => $doc->posted_at, 'amount' => (float) $doc->base_sub_total + (float) $doc->base_tax_total];
                 }
+                if ($ledgerActuals === null) {
                 foreach ($supplierInvoices as $doc) {
                     $details[] = ['type' => 'Actual Cost', 'row_no' => $doc->row_no, 'date' => $doc->invoice_date, 'amount' => (float) $doc->base_grand_total];
+                }
+                } else {
+                    // actual income / cost as the books hold it (VAT excluded), one line per posted voucher
+                    foreach (LedgerReports::jobActualLines($job->id)->groupBy('finance_id') as $lines) {
+                        $first = $lines->first();
+                        $isIncome = $first->account_type === 'Income';
+                        $amount = $isIncome ? $lines->sum('base_credit') - $lines->sum('base_debit') : $lines->sum('base_debit') - $lines->sum('base_credit');
+                        $details[] = [
+                            'type' => $first->voucher_type === 'CN' ? 'Credit Note' : ($isIncome ? 'Actual Sale' : 'Actual Cost'),
+                            'row_no' => $first->voucher_no,
+                            'date' => $first->transaction_date,
+                            'amount' => (float) $amount,
+                        ];
+                    }
                 }
 
                 $rows[] = [

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Report\Job;
 
+use App\Services\Finance\LedgerReports;
 use App\Exports\ReportTableExport;
 use App\Models\Finance\Adjustment\CreditNote;
 use App\Models\Finance\CustomerInvoice\CustomerInvoice;
@@ -142,6 +143,8 @@ class JobBalanceReport extends Component
         $totalExpense = 0;
         $totalJobs    = 0;
 
+        $actuals = LedgerReports::jobBasisIsLedger() ? LedgerReports::jobActuals($jobs->pluck('id')->all()) : null;
+
         foreach ($jobs as $job) {
             // base_grand_total (company-currency-normalized), not grand_total
             // (the invoice's own currency) — a foreign-currency invoice would
@@ -152,6 +155,10 @@ class JobBalanceReport extends Component
             $income  = (float) CustomerInvoice::where('job_id', $job->id)->where('company_id', $companyId)->sum('base_grand_total')
                 - (float) CreditNote::where('job_id', $job->id)->where('company_id', $companyId)->sum('base_grand_total');
             $expense = (float) SupplierInvoice::where('job_id', $job->id)->where('company_id', $companyId)->sum('base_grand_total');
+            if ($actuals !== null) {
+                $income = (float) ($actuals[$job->id]['income'] ?? 0);
+                $expense = (float) ($actuals[$job->id]['cost'] ?? 0);
+            }
 
             if ($income > 0 || $expense > 0) {
                 $totalJobs++;

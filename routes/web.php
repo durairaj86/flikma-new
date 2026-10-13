@@ -52,6 +52,9 @@ Route::middleware(['auth', 'verified', 'module.permission'])->group(function () 
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    // How finance entries are saved (documentation + live row counts)
+    Route::get('/finance-entries/workflow', [\App\Http\Controllers\Finance\Workflow\FinanceWorkflowController::class, 'index'])->name('finance.workflow');
+
     Route::view('/customers', 'modules.customer.list')->name('customers');
     Route::get('/customers/search', [\App\Http\Controllers\Customer\CustomerDetailController::class, 'search']);
     Route::get('/customers/{id}', [\App\Http\Controllers\Customer\CustomerDetailController::class, 'show'])->whereNumber('id')->name('customers.show');

@@ -16,6 +16,17 @@ trait AgingAsOf
     /** @return array<int,float> invoice id => amount settled on or before $asOf */
     protected function settledAsOf(string $kind, Carbon $asOf): array
     {
+        // from the ledger allocations: includes credit / debit notes and honours reversals (docs/finance-ledger-design.md)
+        if (\App\Services\Finance\LedgerReports::enabled()) {
+            return \App\Services\Finance\LedgerReports::settledAsOf($kind, $asOf);
+        }
+
+        return $this->settledAsOfFromReceipts($kind, $asOf);
+    }
+
+    /** The earlier calculation: receipts / payments only (credit and debit notes were not counted). */
+    protected function settledAsOfFromReceipts(string $kind, Carbon $asOf): array
+    {
         if ($kind === 'customer') {
             $q = DB::table('collection_invoices as ci')
                 ->join('collections as c', 'c.id', '=', 'ci.collection_id')
