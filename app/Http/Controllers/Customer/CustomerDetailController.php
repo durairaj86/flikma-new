@@ -27,11 +27,17 @@ class CustomerDetailController extends Controller
 
     private const TABS = ['general', 'transactions', 'invoices', 'statement', 'aging'];
 
+    /** Customers per page in the left-hand list. */
+    private const PER_PAGE = 30;
+
     public function show($id)
     {
         $customer = Customer::findOrFail($id);
 
-        $customers = $this->listItems(null);
+        // open the list on the page that holds this customer
+        $before = Customer::where(fn ($w) => $w->where('name_en', '<', $customer->name_en)
+            ->orWhere(fn ($x) => $x->where('name_en', $customer->name_en)->where('id', '<', $customer->id)))->count();
+        $customers = $this->listItems(null, intdiv($before, self::PER_PAGE) + 1);
 
         return view('modules.customer.show', compact('customer', 'customers'));
     }
@@ -39,7 +45,7 @@ class CustomerDetailController extends Controller
     /** Live search for the left-hand list (server side); returns the rendered list items. */
     public function search(Request $request)
     {
-        $customers = $this->listItems(trim((string) $request->query('q')));
+        $customers = $this->listItems(trim((string) $request->query('q')), max(1, (int) $request->query('page', 1)));
 
         return view('modules.customer.partials.split-items', [
             'customers' => $customers,
@@ -47,9 +53,9 @@ class CustomerDetailController extends Controller
         ]);
     }
 
-    private function listItems(?string $q)
+    private function listItems(?string $q, int $page = 1)
     {
-        $query = Customer::select('id', 'name_en', 'name_ar', 'email', 'phone', 'row_no', 'vat_number')->orderBy('name_en');
+        $query = Customer::select('id', 'name_en', 'name_ar', 'email', 'phone', 'row_no', 'vat_number')->orderBy('name_en')->orderBy('id');
         if ($q !== null && $q !== '') {
             $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $q) . '%';
             $query->where(function ($w) use ($like) {
@@ -58,7 +64,7 @@ class CustomerDetailController extends Controller
                 }
             });
         }
-        $items = $query->limit(200)->get();
+        $items = $query->paginate(self::PER_PAGE, ['*'], 'page', $page);
         $balances = $this->ledgerBalances();
         foreach ($items as $c) {
             $c->balance = (float) ($balances[$c->id] ?? 0);

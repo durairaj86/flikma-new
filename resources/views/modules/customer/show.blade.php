@@ -52,6 +52,7 @@
         .cust-split-list { width: 340px; flex: 0 0 340px; align-self: flex-start; position: sticky; top: 12px; max-height: calc(100vh - 24px); display: flex; flex-direction: column; }
         .cust-split-detail { flex: 1 1 0; min-width: 0; }
         .cust-split-items { overflow-y: auto; border-top: 1px solid #eef0f3; }
+        .cust-split-pager { position: sticky; bottom: 0; background: #fff; border-top: 1px solid #eef0f3; }
         .cust-split-item { display: block; padding: .8rem 1rem; color: #212529; border-bottom: 1px solid #eef0f3; }
         .cust-split-item:hover { background: #f8f9fa; }
         .cust-split-item.active { background: #e0e7ff; box-shadow: inset 0 -3px 0 var(--bs-primary); }
@@ -80,20 +81,27 @@
                 try { history.replaceState(null, '', location.pathname + '#' + tab); } catch (e) {}
             }
             document.querySelectorAll('#custTabs .nav-link').forEach(b => b.addEventListener('click', () => load(b.dataset.tab)));
-            let st = null, ctl = null;
+            let st = null, ctl = null, page = 1;
             const itemsEl = document.getElementById('splitItems');
-            document.getElementById('splitSearch').addEventListener('input', function () {
-                const q = this.value.trim();
+            const searchEl = document.getElementById('splitSearch');
+            // one place that fills the list: the search text and the page (30 customers per page)
+            function loadList(p) {
+                page = p || 1;
+                if (ctl) ctl.abort();
+                ctl = new AbortController();
+                itemsEl.style.opacity = .5;
+                fetch('/customers/search?q=' + encodeURIComponent(searchEl.value.trim()) + '&page=' + page + '&active=' + id, {headers: {'X-Requested-With': 'XMLHttpRequest'}, signal: ctl.signal})
+                    .then(r => r.ok ? r.text() : Promise.reject())
+                    .then(h => { itemsEl.innerHTML = h; itemsEl.style.opacity = 1; itemsEl.scrollTop = 0; })
+                    .catch(e => { if (!e || e.name !== 'AbortError') itemsEl.style.opacity = 1; });
+            }
+            searchEl.addEventListener('input', function () {
                 clearTimeout(st);
-                st = setTimeout(function () {
-                    if (ctl) ctl.abort();
-                    ctl = new AbortController();
-                    itemsEl.style.opacity = .5;
-                    fetch('/customers/search?q=' + encodeURIComponent(q) + '&active=' + id, {headers: {'X-Requested-With': 'XMLHttpRequest'}, signal: ctl.signal})
-                        .then(r => r.ok ? r.text() : Promise.reject())
-                        .then(h => { itemsEl.innerHTML = h; itemsEl.style.opacity = 1; })
-                        .catch(e => { if (!e || e.name !== 'AbortError') itemsEl.style.opacity = 1; });
-                }, 600);
+                st = setTimeout(() => loadList(1), 600);
+            });
+            itemsEl.addEventListener('click', function (e) {
+                const b = e.target.closest('[data-split-page]');
+                if (b && !b.disabled) loadList(parseInt(b.dataset.splitPage, 10));
             });
             const start = location.hash.replace('#', '');
             load(['general', 'transactions', 'invoices', 'statement', 'aging'].includes(start) ? start : 'general');
