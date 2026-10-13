@@ -1,29 +1,32 @@
 @section('js', 'job_report')
 @section('page-title', __('Job Report'))
+@section('hide-topbar', true)
+@section('page-subtitle', __('Detailed view of all jobs with shipment and status information'))
 
-<div class="provisional-wrapper min-vh-100 bg-light pt-3 pb-4">
+<div class="provisional-wrapper min-vh-100 bg-light pt-1 pb-4">
     <div class="container-fluid px-3">
 
-        {{-- Page Header --}}
-        <div class="row align-items-center mb-4 d-print-none">
-            <div class="col-md-6">
-                <h1 class="h3 fw-bold text-slate-900 mb-1">{{ __('Job Report') }}</h1>
-                <p class="text-muted small mb-0">{{ __('Detailed view of all jobs with shipment and status information') }}</p>
+        <style>
+            .rpt-title { display: none; }
+            body:not(.has-top-header) .rpt-title { display: block; }
+        </style>
+        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap pt-2 pb-3 d-print-none">
+            <div class="rpt-title">
+                <h4 class="fw-bold text-dark mb-0">@yield('page-title')</h4>
+                @hasSection('page-subtitle')<div class="text-muted small mt-1">@yield('page-subtitle')</div>@endif
             </div>
-            <div class="col-md-6 text-md-end mt-3 mt-md-0">
-                <div class="btn-group shadow-sm">
-                    <button class="btn btn-white border border-end-0" onclick="window.print()">
-                        <i class="bi bi-printer me-2"></i>{{ __('Print') }}
+            <div class="btn-group shadow-sm ms-auto position-relative">
+                <button class="btn btn-white border border-end-0" onclick="window.print()">
+                    <i class="bi bi-printer me-2"></i>{{ __('Print') }}
+                </button>
+                <div class="btn-group position-relative" x-data="{ open: false, pos: '', toggle() { this.open = !this.open; if (this.open) { const r = this.$refs.btn.getBoundingClientRect(); this.pos = 'position:fixed;left:auto;bottom:auto;right:' + (window.innerWidth - r.right) + 'px;top:' + (r.bottom + 4) + 'px;'; } } }" @click.outside="open = false" @keydown.escape.window="open = false" @scroll.window="open = false" @resize.window="open = false">
+                    <button type="button" class="btn btn-white border dropdown-toggle" x-ref="btn" @click="toggle()" :aria-expanded="open">
+                        <i class="bi bi-download me-2"></i>{{ __('Export') }}
                     </button>
-                    <div class="btn-group">
-                        <button class="btn btn-white border dropdown-toggle" data-bs-toggle="dropdown">
-                            <i class="bi bi-download me-2"></i>{{ __('Export') }}
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                            <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'jr-print', {orientation: 'landscape'})"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
-                            <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
-                        </ul>
-                    </div>
+                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow" :class="{ show: open }" x-cloak :style="pos" @click="open = false">
+                        <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'jr-print', {orientation: 'landscape'})"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
+                        <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
+                    </ul>
                 </div>
             </div>
         </div>

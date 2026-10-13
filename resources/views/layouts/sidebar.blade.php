@@ -464,7 +464,7 @@
                     </a>
                     <ul class="nav nav-treeview">
                         @php
-                            $jobReportSlugs = ['job-balance-report', 'job-income-report', 'provisional-report'];
+                            $jobReportSlugs = ['job-report', 'job-balance-report', 'job-income-report', 'provisional-report'];
                         @endphp
                         <li class="nav-item {{ in_array($submenu, $jobReportSlugs) ? 'menu-open' : '' }}">
                             <a href="#" class="nav-link">
@@ -497,7 +497,7 @@
                                 </li>
                             </ul>
                         </li>
-                        <li class="nav-item {{ $menu == 'reports' ? 'menu-open' : '' }}">
+                        <li class="nav-item {{ $menu == 'reports' && !in_array($submenu, $jobReportSlugs) ? 'menu-open' : '' }}">
                             <a href="#" class="nav-link">
                                 <p>{{ __('Finance Report') }} <i class="nav-arrow bi bi-chevron-right"></i></p>
                             </a>
