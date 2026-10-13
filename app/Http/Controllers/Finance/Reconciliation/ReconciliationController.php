@@ -108,6 +108,28 @@ class ReconciliationController extends Controller
         });
     }
 
+    /** Read a bank statement file: tick what matches the books, list what the bank has and the books do not. */
+    public function import(Request $request, $id): JsonResponse
+    {
+        $rec = BankReconciliation::findOrFail($id);
+        $request->validate(['file' => 'required|file|max:5120']);
+
+        $result = [];
+        $response = $this->respond($rec, function () use ($request, $rec, &$result) {
+            abort_if($rec->isCompleted(), 422, __('This reconciliation is finished. Undo it to change it.'));
+            $importer = app(\App\Services\Finance\BankStatementImport::class);
+            $rows = $importer->parse($request->file('file'));
+            $result = $importer->match($rec, $rows, $this->service) + ['rows' => count($rows)];
+        });
+        if ($response->getStatusCode() === 200) {
+            $data = $response->getData(true);
+
+            return response()->json($data + $result);
+        }
+
+        return $response;
+    }
+
     public function complete($id): JsonResponse
     {
         $rec = BankReconciliation::findOrFail($id);

@@ -11,6 +11,7 @@ Route::prefix('finance/reconciliation')->group(function () {
     Route::post('/{id}/status/tick', [ReconciliationController::class, 'tick'])->whereNumber('id');
     Route::post('/{id}/status/update', [ReconciliationController::class, 'update'])->whereNumber('id');
     Route::post('/{id}/create', [ReconciliationController::class, 'addEntry'])->whereNumber('id');
+    Route::post('/{id}/status/import', [ReconciliationController::class, 'import'])->whereNumber('id');
     Route::post('/{id}/status/complete', [ReconciliationController::class, 'complete'])->whereNumber('id');
     Route::delete('/{id}', [ReconciliationController::class, 'destroy'])->whereNumber('id');
 });

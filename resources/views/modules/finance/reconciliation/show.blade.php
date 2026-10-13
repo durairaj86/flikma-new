@@ -2,7 +2,9 @@
 @section('page-subtitle', $rec->account->code . ' ' . $rec->account->name)
 @section('hide-topbar', true)
 <x-app-layout>
-    <main class="gmail-content bg-white px-3 pb-5" id="recon" data-id="{{ $rec->id }}" data-done="{{ $rec->isCompleted() ? 1 : 0 }}">
+    <div class="bg-light pb-4 imp-page">
+    @include('modules.finance.reconciliation._style')
+    <main class="imp-wrap" id="recon" data-id="{{ $rec->id }}" data-done="{{ $rec->isCompleted() ? 1 : 0 }}">
         <style>
             .rc-card { border-radius: 12px; padding: .8rem 1.1rem; background: #f9fafb; border: 1px solid #eaecf0; height: 100%; }
             .rc-card .l { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #667085; }
@@ -13,13 +15,13 @@
             .rc-in { color: #175cd3; } .rc-out { color: #b54708; }
         </style>
 
-        <div class="d-flex align-items-start justify-content-between gap-2 flex-wrap pt-2 pb-3">
+        <div class="d-flex align-items-start justify-content-between gap-2 flex-wrap pb-3">
             <div>
-                <a href="{{ route('finance.reconciliation') }}" class="small text-decoration-none"><i class="bi bi-arrow-left me-1"></i>{{ __('All statements') }}</a>
-                <h4 class="fw-bold text-dark mb-0 mt-1">{{ $rec->account->code }} {{ $rec->account->name }}
+                <div class="imp-crumb"><a href="/finance/reconciliation">{{ __('Finance') }}</a> &nbsp;/&nbsp; <a href="{{ route('finance.reconciliation') }}">{{ __('Bank Reconciliation') }}</a> &nbsp;/&nbsp; {{ $rec->account->code }}</div>
+                <h1 class="imp-h1">{{ $rec->account->name }}
                     @if($rec->isCompleted()) <span class="badge text-bg-success fs-6 align-middle">{{ __('Reconciled') }}</span>
                     @else <span class="badge text-bg-warning fs-6 align-middle">{{ __('In progress') }}</span> @endif
-                </h4>
+                </h1>
             </div>
             <div class="d-flex gap-2 align-items-center flex-wrap">
                 @if(!$rec->isCompleted())
@@ -36,7 +38,7 @@
             <div class="row g-2 align-items-end mb-3" style="max-width: 640px">
                 <div class="col-sm-4">
                     <label class="form-label small fw-bold text-uppercase text-muted mb-1">{{ __('Statement date') }}</label>
-                    <input type="text" id="rc-date" class="form-control datepicker" value="{{ $rec->statement_date->format('d-m-Y') }}" autocomplete="off">
+                    <input type="text" id="rc-date" class="form-control datepicker" data-min-date="01-01-2000" data-max-date="31-12-2035" value="{{ $rec->statement_date->format('d-m-Y') }}" autocomplete="off">
                 </div>
                 <div class="col-sm-4">
                     <label class="form-label small fw-bold text-uppercase text-muted mb-1">{{ __('Closing balance on statement') }}</label>
@@ -60,6 +62,21 @@
 
         {{-- entries the bank shows but the books do not --}}
         @if(!$rec->isCompleted())
+            <div class="imp-card mb-3" id="rc-import">
+                <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                    <div>
+                        <b><i class="bi bi-file-earmark-arrow-up me-1"></i>{{ __('Import your bank statement') }}</b>
+                        <div class="imp-help">{{ __('Upload the CSV or Excel file from your bank. Entries that match are ticked for you; anything the bank has and your books do not is listed below.') }}</div>
+                    </div>
+                    <div class="d-flex gap-2 align-items-center">
+                        <input type="file" id="rc-file" class="d-none" accept=".csv,.txt,.xlsx,.xls">
+                        <button type="button" class="btn btn-primary" id="rc-import-btn"><i class="bi bi-upload me-1"></i>{{ __('Import statement (CSV / Excel)') }}</button>
+                    </div>
+                </div>
+                <div class="imp-help mt-2">{{ __('The first row must name the columns: Date, Description, and Debit / Credit (or Withdrawal / Deposit, or one Amount column). Nothing is changed until you tick or post.') }}</div>
+                <div id="rc-import-result" class="mt-3 d-none"></div>
+            </div>
+
             <div class="mb-3">
                 <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#rc-add"><i class="bi bi-plus-circle me-1"></i>{{ __('Add an entry from the statement') }}</button>
                 <span class="text-muted small ms-2">{{ __('For bank charges, interest or anything the bank shows that is not in your books yet.') }}</span>
@@ -68,14 +85,14 @@
                         <div class="row g-3 align-items-end">
                             <div class="col-md-3">
                                 <label class="form-label small fw-bold text-uppercase text-muted mb-1">{{ __('Type') }}</label>
-                                <select id="ae-kind" class="form-select">
+                                <select id="ae-kind" class="tom-select" data-placeholder="{{ __('Type') }}">
                                     <option value="out">{{ __('Money out (charge, fee)') }}</option>
                                     <option value="in">{{ __('Money in (interest, other)') }}</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label small fw-bold text-uppercase text-muted mb-1">{{ __('Date') }}</label>
-                                <input type="text" id="ae-date" class="form-control datepicker" value="{{ $rec->statement_date->format('d-m-Y') }}" autocomplete="off">
+                                <input type="text" id="ae-date" class="form-control datepicker" data-min-date="01-01-2000" data-max-date="31-12-2035" value="{{ $rec->statement_date->format('d-m-Y') }}" autocomplete="off">
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label small fw-bold text-uppercase text-muted mb-1">{{ __('Amount') }}</label>
@@ -83,7 +100,7 @@
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label small fw-bold text-uppercase text-muted mb-1">{{ __('Other side (account)') }}</label>
-                                <select id="ae-account" class="form-select">
+                                <select id="ae-account" class="tom-select" data-live-search="true" data-placeholder="{{ __('Search an account...') }}">
                                     @foreach($counterAccounts as $a)
                                         <option value="{{ $a->id }}" data-code="{{ $a->code }}">{{ $a->code }} {{ $a->name }}</option>
                                     @endforeach
@@ -136,8 +153,13 @@
             </table>
         </div>
     </main>
+    </div>
 
     <script>
+        window.addEventListener('load', function () {
+            if (typeof datepicker === 'function') datepicker();
+            if (typeof initTomSelectForm === 'function') initTomSelectForm($('#recon'));
+        });
         (function () {
             const root = document.getElementById('recon');
             const id = root.dataset.id, base = '/finance/reconciliation/' + id;
@@ -184,10 +206,47 @@
                 post(base, {}, 'DELETE').then(({ok, j}) => ok ? (location.href = j.redirect) : fail(j));
             });
 
+            // import a bank statement file
+            const fileEl = $('#rc-file'), resEl = $('#rc-import-result');
+            const esc = t => String(t ?? '').replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+            $('#rc-import-btn')?.addEventListener('click', () => fileEl.click());
+            fileEl?.addEventListener('change', () => {
+                if (!fileEl.files.length) return;
+                const fd = new FormData(); fd.append('file', fileEl.files[0]);
+                resEl.classList.remove('d-none'); resEl.innerHTML = '<div class="text-muted"><span class="spinner-border spinner-border-sm me-2"></span>{{ __('Reading the statement...') }}</div>';
+                fetch(base + '/status/import', {method: 'POST', headers: {'X-CSRF-TOKEN': csrf, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest'}, body: fd})
+                    .then(r => r.json().then(j => ({ok: r.ok, j}))).then(({ok, j}) => {
+                        fileEl.value = '';
+                        if (!ok) { resEl.innerHTML = '<div class="alert alert-danger mb-0">' + esc(j.message || (j.errors ? Object.values(j.errors)[0][0] : '{{ __('The file could not be read.') }}')) + '</div>'; return; }
+                        show(j.summary);
+                        const un = j.unmatched || [];
+                        let h = '<div class="alert alert-success py-2 mb-2"><b>' + j.matched + '</b> {{ __('of') }} ' + j.rows + ' {{ __('statement lines matched your books and were ticked.') }}' + (un.length ? ' <b>' + un.length + '</b> {{ __('are not in your books.') }}' : '') + '</div>';
+                        if (un.length) {
+                            h += '<div class="table-responsive"><table class="table table-sm align-middle mb-0"><thead class="table-light"><tr><th>{{ __('Date') }}</th><th>{{ __('On the statement') }}</th><th class="text-end">{{ __('Money in') }}</th><th class="text-end">{{ __('Money out') }}</th><th style="min-width:230px">{{ __('Post as entry (other side)') }}</th><th></th></tr></thead><tbody>';
+                            un.forEach((r, i) => { h += '<tr data-i="' + i + '"><td class="text-nowrap">' + esc(r.date.split('-').reverse().join('-')) + '</td><td>' + esc(r.description) + '</td><td class="text-end rc-in">' + (r.in ? money(r.in) : '') + '</td><td class="text-end rc-out">' + (r.out ? money(r.out) : '') + '</td><td><select class="un-acc"></select></td><td class="text-end"><button type="button" class="btn btn-sm btn-outline-primary un-post">{{ __('Post') }}</button></td></tr>'; });
+                            h += '</tbody></table></div><div class="imp-help mt-2">{{ __('Posting creates a balanced entry in the books (money out: debit the account chosen, credit the bank; money in: the opposite) and ticks it.') }}</div>';
+                        }
+                        resEl.innerHTML = h;
+                        resEl.querySelectorAll('tr[data-i]').forEach(tr => {
+                            const r = un[tr.dataset.i], sel = tr.querySelector('.un-acc');
+                            acc.querySelectorAll('option').forEach(o => sel.appendChild(o.cloneNode(true)));
+                            const def = [...sel.options].find(o => o.dataset.code === (r.kind === 'out' ? '5260' : '4160')); if (def) sel.value = def.value;
+                            if (window.TomSelect) new TomSelect(sel, {maxOptions: null, controlInput: null, plugins: ['dropdown_input']});
+                            tr.querySelector('.un-post').addEventListener('click', e => {
+                                e.target.disabled = true;
+                                post(base + '/create', {kind: r.kind, date: r.date, amount: r.amount, account_id: sel.value, description: r.description || ''})
+                                    .then(({ok, j}) => { if (!ok) { e.target.disabled = false; return fail(j); } show(j.summary); tr.innerHTML = '<td colspan="6" class="text-success"><i class="bi bi-check2-circle me-1"></i>' + esc(r.description || '') + ' {{ __('posted and ticked') }}</td>'; });
+                            });
+                        });
+                        // show the matched entries as ticked, without reloading (the list of unmatched rows stays)
+                        (j.ticked || []).forEach(lineId => { const tr = document.querySelector('#rc-lines tr[data-line="' + lineId + '"]'); if (tr) { tr.classList.add('ticked'); const b = tr.querySelector('.rc-tick'); if (b) b.checked = true; } });
+                    });
+            });
+
             // entry from the statement: sensible account for each kind
             const kind = $('#ae-kind'), acc = $('#ae-account');
             if (kind && acc) {
-                const pick = () => { const code = kind.value === 'out' ? '5260' : '4160'; const o = [...acc.options].find(x => x.dataset.code === code); if (o) acc.value = o.value;
+                const pick = () => { const code = kind.value === 'out' ? '5260' : '4160'; const o = [...acc.options].find(x => x.dataset.code === code); if (o) { if (acc.tomselect) acc.tomselect.setValue(o.value); else acc.value = o.value; }
                     $('#ae-help').textContent = kind.value === 'out' ? '{{ __('Posts: debit the account chosen, credit the bank account.') }}' : '{{ __('Posts: debit the bank account, credit the account chosen.') }}'; };
                 kind.addEventListener('change', pick); pick();
                 $('#ae-save').addEventListener('click', () => post(base + '/create', {kind: kind.value, date: $('#ae-date').value, amount: $('#ae-amount').value, account_id: acc.value, description: $('#ae-desc').value})

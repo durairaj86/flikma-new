@@ -1236,6 +1236,22 @@ class AutocheckRunner
         try { $svc->tick($rec, (int) DB::table('finance_ledgers')->where('account_id', '<>', self::BANK)->value('id'), true); } catch (\RuntimeException $e) { $wrong = true; }
         $this->check($checks, 'A line of another account cannot be ticked here', $wrong, 'refused');
 
+        // import a bank statement file: matching entries are ticked, the rest is listed
+        $svc->tickAll($rec, false);
+        $bankLines = $svc->lines($rec);
+        $first = $bankLines->first(fn ($l) => $l->base_debit > 0) ?? $bankLines->first();
+        $csv = "Date,Description,Debit,Credit,Balance\n" . \Carbon\Carbon::parse($first->transaction_date)->format('d/m/Y') . ',AUTOCHECK matching line,'
+            . ($first->base_credit > 0 ? number_format($first->base_credit, 2, '.', '') : '') . ',' . ($first->base_debit > 0 ? number_format($first->base_debit, 2, '.', '') : '') . ",0\n"
+            . $today . ",AUTOCHECK not in books,7.25,,0\n";
+        $tmp = tempnam(sys_get_temp_dir(), 'acstmt') . '.csv';
+        file_put_contents($tmp, $csv);
+        $imp = app(\App\Services\Finance\BankStatementImport::class);
+        $res = $imp->match($rec, $imp->parse(new \Illuminate\Http\UploadedFile($tmp, 'statement.csv', 'text/csv', null, true)), $svc);
+        @unlink($tmp);
+        $this->check($checks, 'Statement file: the matching line is ticked', $res['matched'] === 1 && in_array((int) $first->id, $res['ticked'], true), $res['matched'] . ' matched');
+        $this->check($checks, 'Statement file: a line that is not in the books is listed (7.25 out)', count($res['unmatched']) === 1 && $res['unmatched'][0]['kind'] === 'out' && abs($res['unmatched'][0]['amount'] - 7.25) < 0.01, json_encode($res['unmatched'][0]['amount'] ?? '-'));
+        $svc->tickAll($rec, true);
+
         // post the charge as a proper entry: Dr Bank Charges 5260 / Cr Bank
         $financeId = $svc->addEntry($rec, 'out', 10, $today, 'AUTOCHECK bank charges', (int) \App\Models\Finance\Account\Account::where('code', '5260')->value('id'));
         $f = DB::table('finance')->where('id', $financeId)->first();
