@@ -88,7 +88,6 @@
     <tr class="rpt-table-head">
         <th class="ps-4 border-0 rpt-th-code">{{ __('Code') }}</th>
         <th class="border-0">{{ __('Account Name') }}</th>
-        <th class="border-0 rpt-th-type">{{ __('Type') }}</th>
         <th class="text-end border-0 rpt-th-num">
             <span class="d-block rpt-th-sub">{{ __('Debit') }}</span>{{ __('DR') }}
         </th>
@@ -106,7 +105,7 @@
         @foreach($grouped as $type => $typeAccounts)
             {{-- Section header row --}}
             <tr class="rpt-section-row">
-                <td colspan="6" class="rpt-section-label ps-4">
+                <td colspan="5" class="rpt-section-label ps-4">
                     @php
                         $typeIcons = [
                             'Asset'     => 'bi-building',
@@ -146,11 +145,6 @@
                             <span class="text-muted small ms-1" title="{{ __('This account also has postings of its own') }}">*</span>
                         @endif
                     </td>
-                    <td>
-                        <span class="rpt-type-badge rpt-type-{{ strtolower(str_replace([' ','/'], '-', $type)) }}">
-                            {{ $type }}
-                        </span>
-                    </td>
                     <td class="text-end tabular-nums {{ $dr > 0 ? 'rpt-dr-val tb-amount' : 'rpt-zero' }} {{ $isParent ? 'fw-bold' : '' }}"
                         @if($dr > 0) @click="detail({{ $n['id'] }}, 'debit', @js($n['code'] . ' ' . $n['name']))" title="{{ __('Click to see the entries') }}" @endif>
                         {{ $dr > 0 ? number_format($dr, 2) : '—' }}
@@ -172,7 +166,7 @@
 
             {{-- Section subtotal --}}
             <tr class="rpt-subtotal-row">
-                <td colspan="3" class="ps-4 rpt-subtotal-label">
+                <td colspan="2" class="ps-4 rpt-subtotal-label">
                     {{ __('Subtotal —') }} {{ $type }}
                 </td>
                 <td class="text-end tabular-nums rpt-dr-val fw-bold">
@@ -192,7 +186,7 @@
 
     @else
         <tr>
-            <td colspan="6" class="text-center py-5 text-muted">
+            <td colspan="5" class="text-center py-5 text-muted">
                 <div class="bg-light rounded-circle p-4 d-inline-block mb-3">
                     <i class="bi bi-list-columns h2 text-muted"></i>
                 </div>
@@ -205,7 +199,7 @@
     @if(count($accounts) > 0)
     <tfoot>
         <tr class="rpt-grand-total">
-            <td colspan="3" class="ps-4 rpt-gt-label">
+            <td colspan="2" class="ps-4 rpt-gt-label">
                 <i class="bi bi-sigma me-2"></i>{{ __('Grand Total') }}
             </td>
             <td class="text-end tabular-nums rpt-gt-dr">{{ number_format($debitTotal, 2) }}</td>
@@ -250,7 +244,6 @@
         <tr>
             <th>{{ __('Code') }}</th>
             <th>{{ __('Account Name') }}</th>
-            <th>{{ __('Type') }}</th>
             <th class="text-end">{{ __('Debit') }}</th>
             <th class="text-end">{{ __('Credit') }}</th>
         </tr>
@@ -260,19 +253,18 @@
             <tr class="{{ $n['has_children'] ? 'stmt-strong' : '' }}">
                 <td>{{ $n['code'] }}</td>
                 <td style="padding-left: {{ $n['depth'] * 14 + 4 }}px">{{ $n['name'] }}</td>
-                <td>{{ $n['type'] }}</td>
                 <td class="text-end">{{ $n['debit'] > 0 ? number_format($n['debit'], 2) : '' }}</td>
                 <td class="text-end">{{ $n['credit'] > 0 ? number_format($n['credit'], 2) : '' }}</td>
             </tr>
         @empty
             <tr>
-                <td colspan="5" class="text-center">{{ __('No accounts found for the selected period or search criteria.') }}</td>
+                <td colspan="4" class="text-center">{{ __('No accounts found for the selected period or search criteria.') }}</td>
             </tr>
         @endforelse
         </tbody>
         <tfoot>
         <tr class="stmt-strong">
-            <td colspan="3">{{ __('Grand Total') }}</td>
+            <td colspan="2">{{ __('Grand Total') }}</td>
             <td class="text-end">{{ number_format($debitTotal, 2) }}</td>
             <td class="text-end">{{ number_format($creditTotal, 2) }}</td>
         </tr>
