@@ -15,7 +15,7 @@ class GenerateInputLengths extends Command
 
     protected $description = 'Regenerate the column-length map used to set maxlength on inputs';
 
-    private const SKIP = ['migrations', 'jobs', 'failed_jobs', 'job_batches', 'sessions', 'cache', 'cache_locks', 'password_reset_tokens', 'personal_access_tokens', 'email_queues', 'email_verification_otps'];
+    private const SKIP = ['migrations', 'failed_jobs', 'job_batches', 'sessions', 'cache', 'cache_locks', 'password_reset_tokens', 'personal_access_tokens', 'email_queues', 'email_verification_otps'];
 
     public function handle(): int
     {
@@ -23,6 +23,9 @@ class GenerateInputLengths extends Command
             'select table_name t, column_name c, data_type d, character_maximum_length l, numeric_precision np, numeric_scale ns from information_schema.columns where table_schema = ? order by table_name, ordinal_position',
             [DB::getDatabaseName()]
         );
+
+        // is the table called `jobs` the framework queue table (columns queue + payload)?
+        $queueJobs = \Illuminate\Support\Facades\Schema::hasTable('jobs') && \Illuminate\Support\Facades\Schema::hasColumn('jobs', 'payload') && \Illuminate\Support\Facades\Schema::hasColumn('jobs', 'queue');
 
         $tables = [];
         $any = [];
@@ -34,6 +37,10 @@ class GenerateInputLengths extends Command
             $d = strtolower($r->d ?? $r->D);
             $l = (int) ($r->l ?? $r->L ?? 0);
             if (in_array($t, self::SKIP, true) || str_ends_with($t, '_old')) {
+                continue;
+            }
+            // Laravel's queue table is also called `jobs`; here `jobs` holds the shipments, so only the queue-shaped one is skipped
+            if ($t === 'jobs' && isset($queueJobs) && $queueJobs) {
                 continue;
             }
             $isChar = in_array($d, ['varchar', 'char'], true);

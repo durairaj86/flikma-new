@@ -273,6 +273,12 @@
             z-index: 1090;
         }
 
+        /* A modal's backdrop must cover the rail too: while a modal is open the rail drops below the backdrop (1050).
+           It stays above offcanvas drawers (1045) the rest of the time, as intended. */
+        body.modal-open .profile-menu-fixed {
+            z-index: 1040;
+        }
+
         /* Collapse the rail to nothing visible when the header is on — NOT display:none,
            because this container is also the parent of the profile/activity panels, which
            the header's icons open via dispatched events. A display:none ancestor hides its

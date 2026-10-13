@@ -65,6 +65,10 @@ class AutocheckRunner
         'approve_expense' => ['Approve expense (posts to ledger)', '/finance/expense'],
         'payment' => ['Pay the supplier invoice', '/transaction/payments'],
         'approve_payment' => ['Approve payment (posts to ledger)', '/transaction/payments'],
+        'ledger_structure' => ['Ledger structure: new journal columns, finance_ledgers view, finance:reconcile', '/finance-entries/workflow'],
+        'allocations' => ['Settlements: receipts, credit note and payment allocated to their invoices', '/finance-entries/workflow'],
+        'aging_settled' => ['Aging: settled invoices (receipt + credit note, payment) no longer show as open', '/reports/customer-aging'],
+        'supplier_ledger' => ['Supplier ledger: payable lines only, balance moves with bill and payment', '/reports/supplier-ledger'],
         'links' => ['Check the links between modules', '/operation/jobs'],
         'customer_statement' => ['Check customer statement', '/reports/customer-statement'],
         'supplier_statement' => ['Check supplier statement', '/reports/supplier-statement'],
@@ -72,6 +76,10 @@ class AutocheckRunner
         'trial_balance' => ['Check trial balance', '/reports/trial-balance'],
         'balance_sheet' => ['Check balance sheet', '/reports/balance-sheet'],
         'tax_summary' => ['Check tax summary', '/reports/tax-summary'],
+        'trial_balance_tree' => ['Trial balance: parent / sub-account tree, roll-up and click-through to entries', '/reports/trial-balance'],
+        'profit_loss' => ['Profit & Loss and Balance Sheet: figures and click-through to entries', '/reports/profit-and-loss'],
+        'report_parity' => ['Reports from the ledger view give the same numbers as the old queries', '/finance-entries/workflow'],
+        'job_reports' => ['Job Balance and Provisional Report: actual income and cost from the books', '/reports/job-balance-report'],
         'job_links' => ['Job links: every job document is in the one common table', '/operation/jobs'],
         'tracking' => ['Shipment tracking: steps, job dates and public link', '/operation/tracking'],
         'job_insights' => ['Job list: health, progress and AI insight counts', '/operation/jobs'],
@@ -81,6 +89,10 @@ class AutocheckRunner
         'employee' => ['Payroll: employee, shift, salary structure and a punch', '/payroll/attendance'],
         'payroll_run' => ['Payroll: generate, pay and post the salary to the ledger', '/payroll/runs'],
         'employee_loan' => ['Payroll: employee loan', '/employee-loans'],
+        'opening_balance' => ['Opening balance: post, edit (auto balancing line) and delete', '/masters/finance/opening-balance'],
+        'email_verification' => ['Email verification: one-time code, wrong tries, welcome email queued once', '/verify-email'],
+        'finance_workflow_page' => ['Finance workflow page renders with live counts', '/finance-entries/workflow'],
+        'input_rules' => ['Input rules: integer / decimal boxes and maxlength map are in place and current', '/customers'],
         'guard_fleet' => ['Delete check: vehicle with a trip is protected', '/masters/vehicles'],
         'guard_expense' => ['Delete check: approved expense is protected', '/finance/expense'],
         'guard_collection' => ['Delete check: approved collection is protected', '/collection'],
@@ -944,6 +956,333 @@ class AutocheckRunner
         [$code, $data] = $this->attemptDelete($controller, $method, $id);
         $this->check($checks, $label . ' — delete is allowed', $code < 400, $data['message'] ?? '');
         $this->check($checks, $label . ' — record is gone', !$this->exists($table, $id), 'deleted');
+    }
+
+
+    // ───────────────────────── finance structure (ledger view, settlements, reports) ─────────────────────────
+
+    private function stepLedgerStructure(array &$ctx, array &$checks): string
+    {
+        // The posters do not fill the new reporting columns or the allocations themselves yet (design phase 6): the sync does.
+        $migration = require database_path('migrations/2026_10_22_000001_finance_ledger_foundation.php');
+        $migration->up();
+        app(\App\Services\Finance\AllocationSync::class)->run();
+
+        foreach (['customer_invoice' => 'invoice_id', 'supplier_invoice' => 'supplier_invoice_id', 'credit_note' => 'credit_note_id', 'collection' => 'collection_id', 'payment' => 'payment_id', 'expense' => 'expense_id'] as $type => $key) {
+            $f = DB::table('finance')->where('source_type', $type)->where('source_id', $ctx[$key] ?? 0)->first();
+            $this->check($checks, "$type: journal entry found by its source", (bool) $f, $f->voucher_no ?? '-');
+            if ($f) {
+                $n = DB::table('finance_subs')->where('finance_id', $f->id)->selectRaw('ROUND(SUM(base_debit),2) d, ROUND(SUM(base_credit),2) c, COUNT(*) n, SUM(entry_date IS NULL) nd')->first();
+                $this->check($checks, "$type: entry balances and every line has an entry date", (float) $n->d === (float) $n->c && (int) $n->nd === 0 && $f->state === 'posted' && $f->period_year, "{$n->d} / {$n->c}, {$n->n} lines");
+            }
+        }
+
+        $ar = DB::table('finance_subs')->where('source_type', 'customer_invoice')->where('source_id', $ctx['invoice_id'])->where('account_id', self::AR)->first();
+        $this->check($checks, 'Invoice receivable line is settleable and carries the customer', $ar && (int) $ar->is_reconcilable === 1 && $ar->partner_type === 'customer' && (int) $ar->partner_id === (int) $ctx['customer_id'], $ar->partner_type ?? '-');
+        $vat = DB::table('finance_subs')->where('source_type', 'customer_invoice')->where('source_id', $ctx['invoice_id'])->where('account_id', self::VAT_OUT)->first();
+        $this->check($checks, 'Output VAT line: 15%, output, taxable base 2,000.00', $vat && $vat->tax_type === 'output' && abs($vat->tax_rate - 15) < 0.01 && abs($vat->taxable_base - 2000) < 0.01 && $vat->tax_code === 'S15', $vat ? "{$vat->tax_code} {$vat->tax_rate}% on {$vat->taxable_base}" : '-');
+        $vin = DB::table('finance_subs')->where('source_type', 'supplier_invoice')->where('source_id', $ctx['supplier_invoice_id'])->where('account_id', self::VAT_IN)->first();
+        $this->check($checks, 'Input VAT line: input, taxable base 1,000.00', $vin && $vin->tax_type === 'input' && abs($vin->taxable_base - 1000) < 0.01, $vin->taxable_base ?? '-');
+        $ap = DB::table('finance_subs')->where('source_type', 'supplier_invoice')->where('source_id', $ctx['supplier_invoice_id'])->where('account_id', self::AP)->first();
+        $this->check($checks, 'Bill payable line is settleable and carries the supplier', $ap && (int) $ap->is_reconcilable === 1 && $ap->partner_type === 'supplier', $ap->partner_type ?? '-');
+
+        // the view shows exactly the posted journal
+        $journal = DB::table('finance_subs as s')->join('finance as f', 'f.id', '=', 's.finance_id')->where('f.is_approved', 1)->selectRaw('COUNT(*) n, ROUND(SUM(s.base_debit),2) d, ROUND(SUM(s.base_credit),2) c')->first();
+        $view = DB::table('finance_ledgers')->selectRaw('COUNT(*) n, ROUND(SUM(base_debit),2) d, ROUND(SUM(base_credit),2) c')->first();
+        $this->check($checks, 'finance_ledgers view = posted journal (lines and totals)', $journal->n == $view->n && $journal->d == $view->d && $journal->c == $view->c, "{$view->n} lines");
+        $row = DB::table('finance_ledgers')->where('id', $ar->id ?? 0)->first();
+        $this->check($checks, 'View line carries account code, type and date', $row && $row->account_code === '1130' && $row->account_type === 'Asset' && $row->transaction_date !== null, $row->account_type ?? '-');
+
+        $code = \Illuminate\Support\Facades\Artisan::call('finance:reconcile');
+        $out = trim(\Illuminate\Support\Facades\Artisan::output());
+        $fails = collect(explode("\n", $out))->filter(fn ($l) => str_contains($l, 'FAIL'))->values();
+        $this->check($checks, 'php artisan finance:reconcile passes every check', $code === 0, $fails->first() ?: 'all checks passed');
+        return '/finance-entries/workflow';
+    }
+
+    private function stepAllocations(array &$ctx, array &$checks): string
+    {
+        $ar = DB::table('finance_subs')->where('source_type', 'customer_invoice')->where('source_id', $ctx['invoice_id'])->where('account_id', self::AR)->where('is_reconcilable', 1)->first();
+        $allocs = DB::table('finance_allocations')->where('settled_line_id', $ar->id ?? 0)->get()->keyBy('allocation_type');
+        $this->check($checks, 'Invoice has two allocations (receipt and credit note)', $allocs->count() === 2, $allocs->keys()->implode(', '));
+        $this->check($checks, 'Receipt allocation 1,725.00', abs(($allocs['payment']->amount ?? 0) - 1725) < 0.01, $allocs['payment']->amount ?? '-');
+        $this->check($checks, 'Credit note allocation 575.00', abs(($allocs['credit_note']->amount ?? 0) - 575) < 0.01, $allocs['credit_note']->amount ?? '-');
+        $this->check($checks, 'Allocations add up to the invoice 2,300.00', abs($allocs->sum('amount') - 2300) < 0.01, $allocs->sum('amount'));
+
+        $ap = DB::table('finance_subs')->where('source_type', 'supplier_invoice')->where('source_id', $ctx['supplier_invoice_id'])->where('account_id', self::AP)->where('is_reconcilable', 1)->first();
+        $pay = DB::table('finance_allocations')->where('settled_line_id', $ap->id ?? 0)->get();
+        $this->check($checks, 'Bill is settled by the payment, 1,150.00', $pay->count() === 1 && abs($pay->first()->amount - 1150) < 0.01, $pay->sum('amount'));
+
+        // outstanding as of a date: nothing before the settlement, everything after
+        $before = \App\Models\Finance\FinanceAllocation::withoutGlobalScopes()->where('settled_line_id', $ar->id)->asOf(now()->subDay()->toDateString())->sum('amount');
+        $today = \App\Models\Finance\FinanceAllocation::withoutGlobalScopes()->where('settled_line_id', $ar->id)->asOf(now()->toDateString())->sum('amount');
+        $this->check($checks, 'As of yesterday nothing was settled yet', abs($before) < 0.01, $before);
+        $this->check($checks, 'As of today the invoice is fully settled', abs($today - 2300) < 0.01, $today);
+
+        $inv = CustomerInvoice::find($ctx['invoice_id']);
+        $bill = SupplierInvoice::find($ctx['supplier_invoice_id']);
+        $this->check($checks, 'Cached paid_amount equals the allocations (invoice)', $inv && abs($inv->paid_amount - 2300) < 0.01, $inv?->paid_amount);
+        $this->check($checks, 'Cached paid_amount equals the allocations (bill)', $bill && abs($bill->paid_amount - 1150) < 0.01, $bill?->paid_amount);
+
+        $settled = \App\Services\Finance\LedgerReports::settledAsOf('customer', now());
+        $this->check($checks, 'Aging helper: invoice settled 2,300.00 as of today', abs(($settled[$ctx['invoice_id']] ?? 0) - 2300) < 0.01, $settled[$ctx['invoice_id']] ?? '-');
+        return '/finance-entries/workflow';
+    }
+
+    private function stepAgingSettled(array &$ctx, array &$checks): string
+    {
+        $text = $this->reportText(\App\Livewire\Report\Finance\CustomerAging::class, ['customerId' => encodeId($ctx['customer_id'])]);
+        $this->check($checks, 'Customer aging no longer lists the 2,300.00 invoice', !str_contains($text, '2,300.00'), 'settled');
+        $this->check($checks, 'Customer aging does not show the credit note part (575.00) as overdue', !str_contains($text, '575.00'), 'settled by the credit note');
+        $text = $this->reportText(\App\Livewire\Report\Finance\SupplierAging::class, ['supplierId' => encodeId($ctx['supplier_id'])]);
+        $this->check($checks, 'Supplier aging no longer lists the 1,150.00 bill', !str_contains($text, '1,150.00'), 'paid');
+        return '/reports/customer-aging';
+    }
+
+    private function stepSupplierLedger(array &$ctx, array &$checks): string
+    {
+        $c = app(\App\Livewire\Report\Finance\SupplierLedgerTable::class);
+        $c->startDate = now()->startOfMonth()->format('Y-m-d');
+        $c->endDate = now()->endOfMonth()->format('Y-m-d');
+        $c->supplierId = $ctx['supplier_id'];
+        $d = $c->getSupplierLedgerData();
+        $s = $d['suppliers'][$ctx['supplier_id']] ?? null;
+        $this->check($checks, 'Ledger lists the supplier', (bool) $s, $s['supplier_name'] ?? '-');
+        $lines = $s['transactions'] ?? [];
+        $this->check($checks, 'Only the payable lines are listed (bill and payment)', count($lines) === 2 && collect($lines)->every(fn ($l) => $l['account_code'] === '2110'), count($lines) . ' lines');
+        $this->check($checks, 'Bill moves the balance to -1,150.00', abs(($lines[0]['balance'] ?? 0) + 1150) < 0.01, $lines[0]['balance'] ?? '-');
+        $this->check($checks, 'Payment brings it back to 0.00', abs($lines[1]['balance'] ?? 9) < 0.01, $lines[1]['balance'] ?? '-');
+        $this->check($checks, 'Debit and credit totals are 1,150.00 each (not 2,300.00)', abs(($s['total_debit'] ?? 0) - 1150) < 0.01 && abs(($s['total_credit'] ?? 0) - 1150) < 0.01, ($s['total_debit'] ?? '-') . ' / ' . ($s['total_credit'] ?? '-'));
+        return '/reports/supplier-ledger';
+    }
+
+    private function stepTrialBalanceTree(array &$ctx, array &$checks): string
+    {
+        $from = now()->startOfMonth()->format('Y-m-d');
+        $to = now()->endOfMonth()->format('Y-m-d');
+        $c = app(\App\Livewire\Report\Finance\TrialBalanceTable::class);
+        $c->startDate = $from;
+        $c->endDate = $to;
+        $d = $c->getTrialBalanceData();
+        $tree = \App\Services\Finance\AccountTree::forTrialBalance($d['accounts']);
+        $this->check($checks, 'Tree has parents and sub-accounts', collect($tree)->contains('has_children', true) && collect($tree)->contains(fn ($n) => $n['depth'] >= 2), count($tree) . ' rows');
+
+        $rootDebit = collect($tree)->where('depth', 0)->sum('debit');
+        $this->check($checks, 'Roots add up to the grand total debit (each posting counted once)', abs($rootDebit - $d['total_debit']) < 0.01, number_format($rootDebit, 2));
+        $badParent = collect($tree)->filter(fn ($n) => $n['has_children'] && abs($n['debit'] - (collect($tree)->where('parent_id', $n['id'])->sum('debit') + $n['own_debit'])) > 0.01);
+        $this->check($checks, 'Every parent equals its sub-accounts plus its own postings', $badParent->isEmpty(), $badParent->pluck('code')->implode(','));
+        $arRow = collect($tree)->firstWhere('code', '1130');
+        $this->check($checks, 'Accounts Receivable sits under Current Assets under Assets', $arRow && count($arRow['ancestors']) === 2, $arRow ? implode('>', $arRow['ancestors']) : '-');
+
+        // click an amount: the postings behind it
+        $arAccount = \App\Models\Finance\Account\Account::where('code', '1130')->first();
+        $html = app(\App\Http\Controllers\Finance\Report\TrialBalanceDetailController::class)->show(Request::create('/x', 'GET', ['account_id' => $arAccount->id, 'to' => $to, 'type' => 'debit']))->render();
+        $this->check($checks, 'Modal shows which account was clicked', str_contains($html, '1130') && str_contains($html, 'Accounts Receivable'), 'title');
+        $this->check($checks, 'Modal has a Close button', str_contains($html, 'data-bs-dismiss="modal"'), 'close');
+        preg_match('/<tfoot>.*?([\d,]+\.\d{2})<\/td>\s*<\/tr>\s*<\/tfoot>/s', $html, $m);
+        $arTb = collect($d['accounts'])->firstWhere('account_code', '1130');
+        $this->check($checks, 'Modal total equals the trial balance debit of the account', isset($m[1]) && $arTb && abs((float) str_replace(',', '', $m[1]) - $arTb['debit']) < 0.01, $m[1] ?? '-');
+        $assets = \App\Models\Finance\Account\Account::where('code', '1000')->first();
+        $html = app(\App\Http\Controllers\Finance\Report\TrialBalanceDetailController::class)->show(Request::create('/x', 'GET', ['account_id' => $assets->id, 'to' => $to, 'type' => 'debit']))->render();
+        $this->check($checks, 'A parent account lists its sub-accounts postings too', str_contains($html, 'including sub-accounts'), 'parent');
+
+        $text = $this->reportText(\App\Livewire\Report\Finance\TrialBalance::class);
+        $this->check($checks, 'Subtotal rows are shown per account type', str_contains($text, 'Subtotal') && str_contains($text, 'Asset'), 'Subtotal — Asset');
+        $this->check($checks, 'Expand all / Collapse all controls are shown', str_contains($text, 'Expand all') && str_contains($text, 'Collapse all'), 'controls');
+        return '/reports/trial-balance';
+    }
+
+    private function stepProfitLoss(array &$ctx, array &$checks): string
+    {
+        $from = now()->startOfMonth()->format('Y-m-d');
+        $to = now()->endOfMonth()->format('Y-m-d');
+        $pl = \App\Services\Finance\LedgerReports::profitAndLoss($from, $to);
+        $rev = collect($pl['revenue'])->firstWhere('account_code', '4100');
+        $this->check($checks, 'Freight Income is on the Profit & Loss', (bool) $rev && $rev['balance'] >= 1500, $rev['balance'] ?? '-');
+        $this->check($checks, 'Net income = revenue - expenses', abs($pl['net_income'] - ($pl['total_revenue'] - abs($pl['total_expenses']))) < 0.01, number_format($pl['net_income'], 2));
+        $text = $this->reportText(\App\Livewire\Report\Finance\ProfitAndLoss::class);
+        $this->check($checks, 'Profit & Loss page shows total revenue', str_contains($text, number_format($pl['total_revenue'], 2)), number_format($pl['total_revenue'], 2));
+
+        $ctl = app(\App\Http\Controllers\Finance\Report\AccountPostingsController::class);
+        $balance = fn (string $html) => preg_match('/Balance \(as shown on the report\).*?([\d,]+\.\d{2})/s', strip_tags(str_replace('</td>', ' </td>', $html)), $m) ? (float) str_replace(',', '', $m[1]) : null;
+        $html = $ctl->show(Request::create('/x', 'GET', ['code' => '4100', 'from' => $from, 'to' => $to]))->render();
+        $this->check($checks, 'Click on Freight Income: modal names the account and has Close', str_contains($html, '4100') && str_contains($html, 'Freight Income') && str_contains($html, 'data-bs-dismiss="modal"'), 'title + close');
+        $this->check($checks, 'Modal balance equals the Profit & Loss figure', $rev && $balance($html) !== null && abs($balance($html) - $rev['balance']) < 0.01, $balance($html));
+
+        $bs = \App\Services\Finance\LedgerReports::balanceSheet($to);
+        $bank = collect($bs['assets'])->firstWhere('account_code', '1120');
+        $html = $ctl->show(Request::create('/x', 'GET', ['code' => '1120', 'to' => $to]))->render();
+        $this->check($checks, 'Click on Bank (Balance Sheet): modal balance equals the sheet figure', $bank && abs(($balance($html) ?? -1) - $bank['balance']) < 0.01, $balance($html));
+        $this->check($checks, 'Balance sheet balances: assets = liabilities + equity', abs($bs['total_assets'] - $bs['total_liabilities_equity']) < 0.01, number_format($bs['total_assets'], 2) . ' = ' . number_format($bs['total_liabilities_equity'], 2));
+        return '/reports/profit-and-loss';
+    }
+
+    private function stepReportParity(array &$ctx, array &$checks): string
+    {
+        $start = microtime(true);
+        $code = \Illuminate\Support\Facades\Artisan::call('finance:report-parity', ['--company' => companyId()]);
+        $out = trim(\Illuminate\Support\Facades\Artisan::output());
+        $fails = collect(explode("\n", $out))->filter(fn ($l) => str_contains($l, 'FAIL'))->values();
+        $last = collect(explode("\n", $out))->last();
+        $this->check($checks, 'Old per-table queries and the ledger view agree (statements, reports, tax, cards)', $code === 0, $fails->first() ?: $last);
+        $this->check($checks, 'Parity run finished in a reasonable time', microtime(true) - $start < 90, round(microtime(true) - $start) . 's');
+        return '/finance-entries/workflow';
+    }
+
+    private function stepJobReports(array &$ctx, array &$checks): string
+    {
+        $jobId = (int) $ctx['job_id'];
+        $inv = CustomerInvoice::find($ctx['invoice_id']);
+        $cn = CreditNote::find($ctx['credit_note_id']);
+        $bill = SupplierInvoice::find($ctx['supplier_invoice_id']);
+        $income = (float) $inv->base_sub_total - (float) $cn->base_sub_total;   // VAT is neither income nor cost
+        $cost = (float) $bill->base_sub_total;
+
+        $a = \App\Services\Finance\LedgerReports::jobActuals([$jobId])[$jobId] ?? ['income' => 0, 'cost' => 0];
+        $this->check($checks, 'Actual income = invoice - credit note, VAT excluded', abs($a['income'] - $income) < 0.01, number_format($a['income'], 2) . ' / expected ' . number_format($income, 2));
+        $this->check($checks, 'Actual cost = supplier invoice, VAT excluded (the expense voucher is not counted)', abs($a['cost'] - $cost) < 0.01, number_format($a['cost'], 2) . ' / expected ' . number_format($cost, 2));
+
+        $job = Job::find($jobId);
+        $table = function () use ($job) {
+            $c = app(\App\Livewire\Report\Job\JobBalanceReportTable::class);
+            $c->startDate = now()->startOfMonth()->format('Y-m-d');
+            $c->endDate = now()->endOfMonth()->format('Y-m-d');
+            $d = $c->getJobBalanceReportData();
+            return collect($d['jobs'])->firstWhere('job_number', $job->row_no);
+        };
+        config(['finance.reports.job_basis' => 'ledger']);
+        $row = $table();
+        $this->check($checks, 'Job Balance row: income, expense and profit from the books', $row && abs($row['income'] - $income) < 0.01 && abs($row['expense'] - $cost) < 0.01 && abs($row['profit'] - ($income - $cost)) < 0.01, $row ? "{$row['income']} / {$row['expense']} / {$row['profit']}" : '-');
+        config(['finance.reports.job_basis' => 'documents']);
+        $doc = $table();
+        $vatDiff = ((float) $inv->base_tax_total - (float) $cn->base_tax_total) - (float) $bill->base_tax_total;
+        $this->check($checks, 'Document basis (old) overstates profit by the net VAT', $doc && $row && abs(($doc['profit'] - $row['profit']) - $vatDiff) < 0.01, $doc ? number_format($doc['profit'] - $row['profit'], 2) . ' vs net VAT ' . number_format($vatDiff, 2) : '-');
+        config(['finance.reports.job_basis' => 'ledger']);
+
+        $p = app(\App\Livewire\Report\Job\ProvisionalReport::class);
+        $p->startDate = now()->startOfMonth()->format('Y-m-d');
+        $p->endDate = now()->endOfMonth()->format('Y-m-d');
+        $p->viewMode = 'job';
+        $m = new \ReflectionMethod($p, 'getReportData');
+        $m->setAccessible(true);
+        [$rows] = $m->invoke($p);
+        $r = collect($rows)->first(fn ($x) => ($x['job']->id ?? 0) === $jobId);
+        $this->check($checks, 'Provisional Report: actual sales and cost from the books', $r && abs($r['actual_sales'] - $income) < 0.01 && abs($r['actual_cost'] - $cost) < 0.01, $r ? "{$r['actual_sales']} / {$r['actual_cost']}" : '-');
+        $types = collect($r['details'] ?? [])->pluck('type')->unique()->sort()->values()->implode(', ');
+        $this->check($checks, 'Provisional Report detail: sale, credit note and cost lines', str_contains($types, 'Actual Sale') && str_contains($types, 'Credit Note') && str_contains($types, 'Actual Cost'), $types);
+        return '/reports/job-balance-report';
+    }
+
+    // ───────────────────────── newer modules ─────────────────────────
+
+    private function stepOpeningBalance(array &$ctx, array &$checks): string
+    {
+        $svc = app(\App\Services\Finance\OpeningBalanceService::class);
+        $date = $svc->lockedDate() ?: now()->format('Y-m-d');
+        $petty = (int) \App\Models\Finance\Account\Account::where('code', '1111')->value('id');
+        $capital = (int) $svc->equityId();
+        $this->check($checks, 'Cash (1111) and Owner Capital (3100) accounts exist', $petty > 0 && $capital > 0, "$petty / $capital");
+
+        $f = $svc->post($date, [
+            ['account_id' => $petty, 'debit' => 100, 'credit' => 0, 'description' => 'AUTOCHECK opening balance'],
+            ['account_id' => $capital, 'debit' => 0, 'credit' => 100, 'description' => 'AUTOCHECK opening balance'],
+        ], 'AUTOCHECK Opening Balance');
+        $this->check($checks, 'Opening voucher posted (type OB, approved, 100.00 both sides)', $f->voucher_type === 'OB' && (int) $f->is_approved === 1 && (float) $f->base_total_debit === 100.0 && (float) $f->base_total_credit === 100.0, $f->voucher_no);
+        $inView = DB::table('finance_ledgers')->where('finance_id', $f->id)->count();
+        $this->check($checks, 'Both lines are in the ledger view', $inView === 2, $inView);
+
+        $unbalanced = false;
+        try { $svc->post($date, [['account_id' => $petty, 'debit' => 50, 'credit' => 0]], 'x'); } catch (\RuntimeException $e) { $unbalanced = true; }
+        $this->check($checks, 'An unbalanced opening entry is refused', $unbalanced, 'refused');
+
+        // an edit that removes a line is carried by the automatic balancing line on Owner Capital
+        \App\Models\Finance\FinanceSub::where('finance_id', $f->id)->where('account_id', $capital)->delete();
+        $err = $svc->rebalance($f->id);
+        $auto = \App\Models\Finance\FinanceSub::where('finance_id', $f->id)->where('is_auto_generated', 1)->first();
+        $this->check($checks, 'After removing a line the voucher stays balanced through an automatic line', $err === null && $auto && (int) $auto->account_id === $capital && abs($auto->credit - 100) < 0.01, $auto ? 'credit ' . $auto->credit : ($err ?? '-'));
+
+        // deleting the last own line removes the whole voucher
+        \App\Models\Finance\FinanceSub::where('finance_id', $f->id)->where('is_auto_generated', 0)->delete();
+        $svc->rebalance($f->id);
+        $this->check($checks, 'Removing the last line removes the voucher', !DB::table('finance')->where('id', $f->id)->exists(), 'gone');
+        $this->check($checks, 'The ledger still balances after the opening balance test', abs((float) DB::table('finance_subs')->sum('base_debit') - (float) DB::table('finance_subs')->sum('base_credit')) < 0.01, 'balanced');
+        return '/masters/finance/opening-balance';
+    }
+
+    private function stepEmailVerification(array &$ctx, array &$checks): string
+    {
+        $real = \Illuminate\Support\Facades\Mail::getFacadeRoot();
+        \Illuminate\Support\Facades\Mail::fake();   // nothing leaves the machine
+        $email = 'autocheck.verify.' . time() . '@example.com';
+        $user = null;
+        try {
+            $user = \App\Models\User::withoutGlobalScopes()->create(['name' => 'AUTOCHECK Verify', 'email' => $email, 'password' => bcrypt(\Illuminate\Support\Str::random(24)), 'company_id' => companyId()]);
+            $otp = app(\App\Services\Auth\EmailOtpService::class);
+            $this->check($checks, 'New user starts with an unverified email', !$user->hasVerifiedEmail(), 'unverified');
+
+            $msg = $otp->send($user);
+            $row = DB::table('email_verification_otps')->where('user_id', $user->id)->orderByDesc('id')->first();
+            $this->check($checks, 'A code is created and only its hash is stored', $msg === null && $row && strlen($row->code_hash) === 64 && $row->used_at === null, 'hash stored');
+            $q = \App\Models\EmailQueue::where('to', $email)->where('type', 'otp')->latest('id')->first();
+            $this->check($checks, 'The code email went through the email_queues table and was sent', $q && $q->status === 'sent', $q->status ?? '-');
+            $this->check($checks, 'The code is wiped from the queue row after sending (sensitive)', $q && empty($q->data) || ($q && !str_contains(json_encode($q->data), 'code')), 'wiped');
+            $this->check($checks, 'Asking again at once is refused (60 second wait)', $otp->send($user) !== null, 'refused');
+
+            // use a code we know (the real one is never kept)
+            DB::table('email_verification_otps')->where('id', $row->id)->update(['code_hash' => hash_hmac('sha256', '123456', (string) config('app.key'))]);
+            $this->check($checks, 'A wrong code is rejected', $otp->verify($user, '000000') === 'invalid', 'invalid');
+            $att = DB::table('email_verification_otps')->where('id', $row->id)->value('attempts');
+            $this->check($checks, 'The wrong try is counted', (int) $att === 1, $att);
+            $this->check($checks, 'The right code verifies the email', $otp->verify($user->fresh(), '123456') === 'ok' && $user->fresh()->hasVerifiedEmail(), 'ok');
+            $this->check($checks, 'The same code cannot be used twice', $otp->verify($user->fresh(), '123456') === 'none', 'none');
+            $welcome = \App\Models\EmailQueue::where('to', $email)->where('type', '!=', 'otp')->count();
+            $this->check($checks, 'The welcome email is queued exactly once', $welcome === 1, $welcome);
+        } finally {
+            \Illuminate\Support\Facades\Mail::swap($real);
+            if ($user) {
+                DB::table('email_verification_otps')->where('user_id', $user->id)->delete();
+                \App\Models\EmailQueue::where('to', $email)->delete();
+                DB::table('users')->where('id', $user->id)->delete();
+            }
+        }
+        return '/verify-email';
+    }
+
+    private function stepFinanceWorkflowPage(array &$ctx, array &$checks): string
+    {
+        $this->check($checks, 'Route /finance-entries/workflow exists', \Illuminate\Support\Facades\Route::has('finance.workflow'), 'route');
+        $html = app(\App\Http\Controllers\Finance\Workflow\FinanceWorkflowController::class)->index()->render();
+        $this->check($checks, 'Page renders', str_contains($html, 'Finance Entries Workflow'), strlen($html) . ' bytes');
+        $this->check($checks, 'Page lists the posting rules of the documents', str_contains($html, 'Customer Invoice') && str_contains($html, 'Journal Voucher'), 'posting table');
+        $this->check($checks, 'Page shows live counts (journal entries and lines)', str_contains($html, 'finance_subs') && str_contains($html, 'finance_allocations'), 'live data');
+        $this->check($checks, 'Word document is in docs/', is_file(base_path('docs/Flikma-Finance-Entries-Workflow.docx')), 'docx');
+        return '/finance-entries/workflow';
+    }
+
+    private function stepInputRules(array &$ctx, array &$checks): string
+    {
+        foreach (['number-input.js', 'input-maxlength.js', 'input-lengths.js'] as $f) {
+            $this->check($checks, "public/js/$f exists", is_file(public_path("js/$f")), $f);
+        }
+        $left = [];
+        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(resource_path('views'), \FilesystemIterator::SKIP_DOTS)) as $file) {
+            if (str_ends_with($file->getFilename(), '.blade.php') && str_contains((string) file_get_contents($file->getPathname()), 'type="number"')) {
+                $left[] = str_replace(resource_path('views') . '/', '', $file->getPathname());
+            }
+        }
+        $this->check($checks, 'No <input type="number"> left (use class integer / decimal)', !$left, $left ? implode(', ', array_slice($left, 0, 3)) : 'none');
+
+        // the generated length map must know the current columns (run: php artisan inputs:lengths after a schema change)
+        $js = (string) file_get_contents(public_path('js/input-lengths.js'));
+        $map = json_decode(substr($js, strpos($js, '{'), strrpos($js, '}') - strpos($js, '{') + 1), true) ?: [];
+        $stale = [];
+        foreach (['customers', 'suppliers', 'jobs', 'quotations', 'enquiries', 'users', 'finance_allocations'] as $t) {
+            foreach (\Illuminate\Support\Facades\Schema::getColumnListing($t) as $col) {
+                if (!isset($map['tables'][$t][$col])) { $stale[] = "$t.$col"; }
+            }
+        }
+        $this->check($checks, 'Length map knows every column of the main tables', !$stale, $stale ? implode(', ', array_slice($stale, 0, 4)) : 'current');
+        return '/customers';
     }
 
     // ───────────────────────── helpers ─────────────────────────
