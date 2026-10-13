@@ -5,6 +5,7 @@
     <div class="bg-light pb-4 imp-page">
     @include('modules.finance.reconciliation._style')
     <main class="imp-wrap" id="recon" data-id="{{ $rec->id }}" data-done="{{ $rec->isCompleted() ? 1 : 0 }}">
+    <div class="rc-layout"><div class="rc-main">
         <style>
             .rc-card { border-radius: 12px; padding: .8rem 1.1rem; background: #f9fafb; border: 1px solid #eaecf0; height: 100%; }
             .rc-card .l { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #667085; }
@@ -18,10 +19,13 @@
         <div class="d-flex align-items-start justify-content-between gap-2 flex-wrap pb-3">
             <div>
                 <div class="imp-crumb"><a href="/finance/reconciliation">{{ __('Finance') }}</a> &nbsp;/&nbsp; <a href="{{ route('finance.reconciliation') }}">{{ __('Bank Reconciliation') }}</a> &nbsp;/&nbsp; {{ $rec->account->code }}</div>
-                <h1 class="imp-h1">{{ $rec->account->name }}
-                    @if($rec->isCompleted()) <span class="badge text-bg-success fs-6 align-middle">{{ __('Reconciled') }}</span>
-                    @else <span class="badge text-bg-warning fs-6 align-middle">{{ __('In progress') }}</span> @endif
-                </h1>
+                <div class="d-flex align-items-center gap-3 flex-wrap">
+                    <h1 class="imp-h1">{{ $rec->account->name }}
+                        @if($rec->isCompleted()) <span class="badge text-bg-success fs-6 align-middle">{{ __('Reconciled') }}</span>
+                        @else <span class="badge text-bg-warning fs-6 align-middle">{{ __('In progress') }}</span> @endif
+                    </h1>
+                    <a href="#" class="rc-how" data-bs-toggle="modal" data-bs-target="#rcVideo"><i class="bi bi-play-circle-fill me-1"></i>{{ __('How to reconcile') }}</a>
+                </div>
             </div>
             <div class="d-flex gap-2 align-items-center flex-wrap">
                 @if(!$rec->isCompleted())
@@ -152,6 +156,9 @@
                 </tbody>
             </table>
         </div>
+    </div>
+    @include('modules.finance.reconciliation._guide')
+    </div>
     </main>
     </div>
 

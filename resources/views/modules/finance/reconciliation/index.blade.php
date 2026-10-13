@@ -5,9 +5,14 @@
     <div class="bg-light pb-4 imp-page">
         @include('modules.finance.reconciliation._style')
         <div class="imp-wrap" id="rcStart">
+          <div class="rc-layout">
+           <div class="rc-main">
             <div>
                 <div class="imp-crumb"><a href="/finance/reconciliation">{{ __('Finance') }}</a> &nbsp;/&nbsp; {{ __('Bank Reconciliation') }}</div>
-                <h1 class="imp-h1">{{ __('Bank Reconciliation') }}</h1>
+                <div class="d-flex align-items-center gap-3 flex-wrap">
+                    <h1 class="imp-h1">{{ __('Bank Reconciliation') }}</h1>
+                    <a href="#" class="rc-how" data-bs-toggle="modal" data-bs-target="#rcVideo"><i class="bi bi-play-circle-fill me-1"></i>{{ __('How to reconcile') }}</a>
+                </div>
                 <div class="imp-sub">{{ __('Enter the closing balance of your bank statement, then tick the entries that appear on it. When the difference is 0.00 the account is reconciled.') }}</div>
             </div>
 
@@ -15,8 +20,8 @@
                 <div class="alert alert-danger py-2 mt-3">{{ $errors->first() }}</div>
             @endif
 
-            <div class="row justify-content-center mt-3">
-                <div class="col-lg-9">
+            <div class="row mt-3">
+                <div class="col-12">
                     <div class="imp-card">
                         <h6><span class="imp-step">1</span>{{ __('Start a reconciliation') }}</h6>
                         <form method="POST" action="{{ route('finance.reconciliation.store') }}" class="row g-3 align-items-end">
@@ -46,8 +51,8 @@
                 </div>
             </div>
 
-            <div class="row justify-content-center mt-3">
-                <div class="col-lg-9">
+            <div class="row mt-3">
+                <div class="col-12">
                     <div class="imp-card">
                         <h6><span class="imp-step">2</span>{{ __('Statements') }}</h6>
                         <div class="table-responsive">
@@ -88,6 +93,9 @@
                     </div>
                 </div>
             </div>
+           </div>
+           @include('modules.finance.reconciliation._guide')
+          </div>
         </div>
     </div>
     <script>

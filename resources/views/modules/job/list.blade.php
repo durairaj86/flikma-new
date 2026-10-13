@@ -8,6 +8,10 @@
             title="{{ __('How jobs work') }}">
         <i class="bi bi-info-circle fs-6"></i><span class="d-none d-md-inline ms-1" style="font-size:0.8rem;">{{ __('How it works') }}</span>
     </button>
+    <button class="btn btn-link btn-sm p-0 text-decoration-none lh-1 ms-2" id="jobWatchVideo"
+            data-bs-toggle="modal" data-bs-target="#jobVideoModal" title="{{ __('Watch video') }}">
+        <i class="bi bi-play-circle-fill fs-6"></i><span class="d-none d-md-inline ms-1" style="font-size:0.8rem;">{{ __('Watch video') }}</span>
+    </button>
 @endpush
 <x-app-layout>
     <main class="gmail-content bg-white px-3">
@@ -651,5 +655,6 @@
         </div>
     </div>
     @endunless
+    @include('modules.job._video')
     <script>window.JOB_FIXED_COLUMNS = {{ ($fixedColumns ?? false) ? 'true' : 'false' }};</script>
 </x-app-layout>

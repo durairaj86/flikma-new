@@ -5,7 +5,12 @@
 
     <div class="container-fluid px-2 pt-4 pt-md-0">
         <div class="mb-4">
-            <h1 class="h4 fw-bold text-dark mb-0"><i class="bi bi-cash-coin me-2 d-none d-md-inline-block"></i>{{ __('Payroll') }}</h1>
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <h1 class="h4 fw-bold text-dark mb-0"><i class="bi bi-cash-coin me-2 d-none d-md-inline-block"></i>{{ __('Payroll') }}</h1>
+                <button class="btn btn-link btn-sm p-0 text-decoration-none lh-1" id="payrollWatchVideo" data-bs-toggle="modal" data-bs-target="#payrollVideoModal" title="{{ __('Watch video') }}">
+                    <i class="bi bi-play-circle-fill fs-6"></i><span class="ms-1" style="font-size:0.8rem;">{{ __('Watch video') }}</span>
+                </button>
+            </div>
             <p class="text-muted small mb-0">{{ __('Employees, attendance, shifts and salary structures.') }}</p>
         </div>
 
@@ -150,4 +155,5 @@
         .hover-lift:hover { transform: translateY(-2px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.08) !important; }
     </style>
 </div>
+@include('modules.payroll._video')
 </x-app-layout>
