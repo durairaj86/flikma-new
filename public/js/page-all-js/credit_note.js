@@ -267,8 +267,48 @@ CREDIT_NOTE = {
         openCallback() {
             CREDIT_NOTE.form.addRow();
             CREDIT_NOTE.form.removeRow();
+            CREDIT_NOTE.form.invoiceChange();
             CALCULATION.load();
             CALCULATION.finalTotals();
+        },
+        // Choosing the invoice being credited copies its customer, job and every line into the form.
+        invoiceChange() {
+            $('select[name=invoice_id]').off('change.creditInvoice').on('change.creditInvoice', function () {
+                const id = $(this).val();
+                if (!id) return;
+                $.get(GLOBAL_FN.buildUrl('adjustment/credit-note/invoice/' + id + '/lines'), function (inv) {
+                    const setTs = ($scope, name, val) => {
+                        const el = $scope.find('select[name="' + name + '"]')[0];
+                        if (el && el.tomselect && val !== null && val !== undefined && val !== '') el.tomselect.setValue(String(val));
+                    };
+                    const $form = $('select[name=invoice_id]').closest('form');
+                    setTs($form, 'customer', inv.customer_id);
+                    setTs($form, 'job_id', inv.job_id);
+
+                    const $tbody = $('#' + MODULE + '-tbody');
+                    const $first = $tbody.find('tr:first');
+                    // keep one clean template row, drop the rest, then clone it per invoice line
+                    const $tpl = $first.clone();
+                    $tpl.find('input, textarea').val('');
+                    $tpl.find('select').val('').removeClass('tomselected').removeClass('ts-hidden-accessible');
+                    $tpl.find('div.ts-wrapper').remove();
+                    $tbody.find('tr').remove();
+                    (inv.lines.length ? inv.lines : [null]).forEach(function (line) {
+                        const $row = $tpl.clone();
+                        $tbody.append($row);
+                        initTomSelectForm($row);
+                        if (!line) return;
+                        setTs($row, 'description_id[]', line.description_id);
+                        setTs($row, 'account[]', line.account_id);
+                        setTs($row, 'unit_id[]', line.unit_id);
+                        setTs($row, 'tax[]', line.tax_code);
+                        $row.find('textarea[name="comment[]"]').val(line.comment || '');
+                        $row.find('.quantity').val(line.quantity).trigger('input');
+                        $row.find('.unit_price').val(line.unit_price).trigger('input');
+                    });
+                    CALCULATION.finalTotals();
+                });
+            });
         },
         addRow() {
             $('#' + MODULE + '-tbody').off('click', '.add-row').on('click', '.add-row', function () {

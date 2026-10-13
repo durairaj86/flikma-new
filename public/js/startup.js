@@ -2923,7 +2923,9 @@ const INPUT = {
             const allowNegative = el.classList.contains('negative');
             INPUT.decimalDigits = el.dataset.decimal ?? INPUT.decimalDigits;
 
-            //if (["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab", "Home", "End"].includes(key)) return;
+            // editing / navigation keys and shortcuts (Ctrl+A/C/V/X...) must always work
+            if (["Backspace", "Delete", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Tab", "Home", "End", "Enter", "Escape", "F5"].includes(key)) return;
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
 
             if (allowNegative && key === '-' && el.selectionStart === 0 && !value.includes('-')) return;
 

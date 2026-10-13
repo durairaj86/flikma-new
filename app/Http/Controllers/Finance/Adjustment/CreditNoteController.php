@@ -425,6 +425,28 @@ class CreditNoteController extends Controller
         }
     }
 
+    /**
+     * The approved invoice picked on the credit note form: its customer, job and every line, so the
+     * credit note can start as a copy of the invoice (the user then trims quantities or prices).
+     */
+    public function invoiceLines($invoice): \Illuminate\Http\JsonResponse
+    {
+        $inv = CustomerInvoice::with('customerInvoiceSubs')->findOrFail($invoice);
+        return response()->json([
+            'customer_id' => $inv->customer_id,
+            'job_id' => $inv->job_id,
+            'lines' => $inv->customerInvoiceSubs->map(fn($l) => [
+                'description_id' => $l->description_id,
+                'account_id' => $l->account_id,
+                'unit_id' => $l->unit_id,
+                'tax_code' => $l->tax_code,
+                'quantity' => $l->quantity,
+                'unit_price' => $l->unit_price,
+                'comment' => $l->comment,
+            ])->values(),
+        ]);
+    }
+
     public function actions($id)
     {
         $creditNote = CreditNote::select(
@@ -434,7 +456,7 @@ class CreditNoteController extends Controller
         )->findOrFail($id);
         $contextMenu = collect([]);
         $edit = $delete = [];
-        if ($creditNote->status === CreditNoteEnum::DRAFT->value) {
+        if ((int) $creditNote->status === CreditNoteEnum::DRAFT->value) {
             $contextMenu->push([
                 'label' => __('Move to'),
                 'type' => 'submenu',
@@ -492,7 +514,7 @@ class CreditNoteController extends Controller
             'icon' => 'email',
             //'separator' => 'after',
         ]);
-        if ($creditNote->status === CreditNoteEnum::DRAFT->value) {
+        if ((int) $creditNote->status === CreditNoteEnum::DRAFT->value) {
             $edit = [
                 'label' => __('Edit'),
                 'code' => '01CSED',

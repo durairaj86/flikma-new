@@ -23,7 +23,7 @@
                     <!-- CREDIT NOTE TYPE -->
                     <div class="col-md-4">
                         <label class="form-label fw-semibold">{{ __('Credit Note Type') }} *</label>
-                        <select class="tom-select" name="credit_note_type" id="creditType">
+                        <select class="tom-select" required name="credit_note_type" id="creditType">
                             <option value="invoice" @selected($creditNote->credit_note_type == 'invoice')>{{ __('Against Invoice') }}</option>
                             {{--<option value="standalone" @selected($creditNote->credit_note_type == 'standalone')>Standalone</option>--}}
                             {{--<option value="price_adjustment" @selected($creditNote->credit_note_type == 'price_adjustment')>Price Adjustment</option>
@@ -40,7 +40,7 @@
 
                     <!-- REFERENCE INVOICE (Only If Linked) -->
                     <div class="col-md-4" id="invoice-select-box">
-                        <label class="form-label fw-semibold">{{ __('Invoice') }}</label>
+                        <label class="form-label fw-semibold">{{ __('Invoice') }} *</label>
                         <select name="invoice_id" class="tom-select" required data-live-search="true">
                             <option value="">{{ __('Select Invoice') }}</option>
                             @foreach($customerInvoices as $inv)
@@ -60,8 +60,8 @@
 
                     <!-- JOB -->
                     <div class="col-md-4">
-                        <label class="form-label fw-semibold">{{ __('Job / File No') }}</label>
-                        <select name="job_id" class="tom-select">
+                        <label class="form-label fw-semibold">{{ __('Job / File No') }} *</label>
+                        <select name="job_id" class="tom-select" required>
                             <option value="">{{ __('Select Job') }}</option>
                             @foreach($jobs as $job)
                                 <option value="{{ $job->id }}" @selected($creditNote->job_id == $job->id)>
@@ -81,7 +81,7 @@
                     <!-- REASON CATEGORY -->
                     <div class="col-md-4">
                         <label class="form-label fw-semibold">{{ __('Reason') }} *</label>
-                        <select name="reason" class="tom-select">
+                        <select name="reason" class="tom-select" required>
                             <option value="">{{ __('Select Reason') }}</option>
                             <option value="rate_correction" @selected($creditNote->reason == 'rate_correction')>{{ __('Rate Correction') }}</option>
                             <option value="service_cancellation" @selected($creditNote->reason == 'service_cancellation')>{{ __('Service Cancellation') }}</option>

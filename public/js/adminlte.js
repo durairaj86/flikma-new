@@ -1006,6 +1006,16 @@
                 htmlInput.addEventListener('invalid', () => {
                     this.handleFormError(htmlInput);
                 });
+                // Once the value becomes valid again, drop the old message and error state.
+                const clearIfValid = () => {
+                    if (!htmlInput.checkValidity()) return;
+                    const err = document.getElementById(`${htmlInput.id || htmlInput.name}-error`);
+                    if (err) err.remove();
+                    htmlInput.removeAttribute('aria-describedby');
+                    htmlInput.classList.remove('is-invalid');
+                };
+                htmlInput.addEventListener('input', clearIfValid);
+                htmlInput.addEventListener('change', clearIfValid);
             });
         }
         handleFormError(input) {

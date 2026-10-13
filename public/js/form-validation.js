@@ -92,5 +92,18 @@
             // Re-apply label error if field becomes invalid again
             $field.closest(".form-group").find("label").addClass("label-error");
         }
+
+        // Sweep: clear any other red field in this form that is valid now (e.g. a Tom Select whose
+        // wrapper kept its red outline after a failed save and a later pick).
+        const form = $field.closest("form");
+        if (form.length) {
+            form.find("select.is-invalid, input.is-invalid, textarea.is-invalid").each(function () {
+                if (this.checkValidity()) $(this).removeClass("is-invalid");
+            });
+            form.find(".ts-wrapper.is-invalid").each(function () {
+                const native = this.parentNode && this.parentNode.querySelector("select");
+                if (!native || native.checkValidity()) this.classList.remove("is-invalid");
+            });
+        }
     });
 })(jQuery);

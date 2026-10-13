@@ -7,6 +7,10 @@
             title="{{ __('How customer invoices work') }}">
         <i class="bi bi-info-circle fs-6"></i><span class="d-none d-md-inline ms-1" style="font-size:0.8rem;">{{ __('How it works') }}</span>
     </button>
+    <button class="btn btn-link btn-sm p-0 text-decoration-none lh-1 ms-2" id="customerInvoiceWatchVideo"
+            data-bs-toggle="modal" data-bs-target="#customerInvoiceVideoModal" title="{{ __('Watch video') }}">
+        <i class="bi bi-play-circle-fill fs-6"></i><span class="d-none d-md-inline ms-1" style="font-size:0.8rem;">{{ __('Watch video') }}</span>
+    </button>
 @endpush
 <x-app-layout>
     <main class="gmail-content bg-white px-3">
@@ -311,6 +315,7 @@
 
 
     @include('modules.workflows.customer-invoice')
+    @include('modules.finance.customer-invoice._video')
 </x-app-layout>
 <style>
     /* Clean flat table — no floating row cards, just a thin divider
