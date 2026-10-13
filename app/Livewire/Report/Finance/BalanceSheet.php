@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Report\Finance;
 
+use App\Services\Finance\LedgerReports;
 use App\Exports\ReportTableExport;
 use App\Models\Finance\Account\Account;
 use App\Models\Finance\FinanceSub;
@@ -105,6 +106,22 @@ class BalanceSheet extends Component
 
     public function render()
     {
+        if (LedgerReports::enabled()) {
+            $d = LedgerReports::balanceSheet($this->endDate);
+
+            return view('livewire.report.finance.balance-sheet', [
+                'summary' => [
+                    'total_assets' => $d['total_assets'],
+                    'total_liabilities' => $d['total_liabilities'],
+                    'total_equity' => $d['total_equity'],
+                    'total_liabilities_equity' => $d['total_liabilities_equity'],
+                    'net_income' => $d['net_income'],
+                    'is_balanced' => abs($d['total_assets'] - $d['total_liabilities_equity']) < 0.01,
+                    'difference' => abs($d['total_assets'] - $d['total_liabilities_equity']),
+                ],
+            ]);
+        }
+
         $accounts = Account::where('is_active', 1)
             ->whereIn('type', ['Asset', 'Liability', 'Equity'])
             ->get();

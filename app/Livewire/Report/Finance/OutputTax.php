@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Report\Finance;
 
+use App\Services\Finance\LedgerReports;
 use App\Exports\ReportTableExport;
 use App\Models\Finance\FinanceSub;
 use Livewire\Component;
@@ -94,6 +95,14 @@ class OutputTax extends Component
 
     public function render()
     {
+        if (LedgerReports::enabled()) {
+            $h = LedgerReports::taxHeader('output', $this->startDate, $this->endDate);
+
+            return view('livewire.report.finance.output-tax', [
+                'summary' => ['total_output_tax' => $h['total'] > 0 ? $h['total'] : 0, 'transaction_count' => $h['count']],
+            ]);
+        }
+
         $outputVatAccountId = 20;
 
         $query = FinanceSub::where('is_tax_line', 1)

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Report\Finance;
 
+use App\Services\Finance\LedgerReports;
 use App\Models\Finance\FinanceSub;
 use Livewire\Component;
 
@@ -37,6 +38,10 @@ class TaxSummaryTable extends Component
 
     public function getTaxSummaryData()
     {
+        if (LedgerReports::enabled()) {
+            return LedgerReports::taxSummary($this->startDate, $this->endDate, $this->search);
+        }
+
         // Fixed account IDs (from chart of accounts):
         //   Input VAT  = account 7  (code 1150, type Asset  — DR balance)
         //   Output VAT = account 20 (code 2130, type Liability — CR balance)

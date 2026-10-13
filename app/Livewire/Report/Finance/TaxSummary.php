@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Report\Finance;
 
+use App\Services\Finance\LedgerReports;
 use App\Exports\ReportTableExport;
 use App\Models\Finance\FinanceSub;
 use Livewire\Component;
@@ -95,6 +96,19 @@ class TaxSummary extends Component
 
     public function render()
     {
+        if (LedgerReports::enabled()) {
+            $d = LedgerReports::taxSummary($this->startDate, $this->endDate);
+
+            return view('livewire.report.finance.tax-summary', [
+                'summary' => [
+                    'total_input_tax' => $d['total_input_tax'],
+                    'total_output_tax' => $d['total_output_tax'],
+                    'net_tax' => $d['net_tax'],
+                    'is_payable' => $d['net_tax'] >= 0,
+                ],
+            ]);
+        }
+
         $inputVatAccountId  = 7;
         $outputVatAccountId = 20;
 

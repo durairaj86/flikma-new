@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Report\Finance;
 
+use App\Services\Finance\LedgerReports;
 use App\Exports\ReportTableExport;
 use App\Models\Finance\Account\Account;
 use App\Models\Finance\FinanceSub;
@@ -103,6 +104,23 @@ class ProfitAndLoss extends Component
 
     public function render()
     {
+        if (LedgerReports::enabled()) {
+            $d = LedgerReports::profitAndLoss($this->startDate, $this->endDate);
+            $totalRevenue = $d['total_revenue'];
+            $totalExpenses = $d['total_expenses'];
+            $netIncome = $totalRevenue - $totalExpenses;
+
+            return view('livewire.report.finance.profit-and-loss', [
+                'summary' => [
+                    'total_revenue' => $totalRevenue,
+                    'total_expenses' => $totalExpenses,
+                    'net_income' => $netIncome,
+                    'margin' => $totalRevenue > 0 ? ($netIncome / $totalRevenue) * 100 : 0,
+                    'account_count' => count($d['revenue']) + count($d['expenses']),
+                ],
+            ]);
+        }
+
         $accounts = Account::where('is_active', 1)
             ->whereIn('type', ['Income', 'Expense'])
             ->get();

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Report\Finance;
 
+use App\Services\Finance\LedgerReports;
 use App\Models\Finance\FinanceSub;
 use Livewire\Component;
 
@@ -37,6 +38,12 @@ class InputTaxTable extends Component
 
     public function getInputTaxData()
     {
+        if (LedgerReports::enabled()) {
+            $r = LedgerReports::taxLines('input', $this->startDate, $this->endDate, $this->search);
+
+            return ['input_tax_transactions' => $r['lines'], 'total_input_tax' => $r['total']];
+        }
+
         // Input VAT account ID = 7 (code 1150 — "Input VAT", type Asset)
         // Input tax lines are DEBITS on the supplier invoice (DR Input VAT / CR AP)
         // We filter directly on finance_subs.reference_date (the actual transaction date)

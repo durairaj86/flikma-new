@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Report\Finance;
 
+use App\Services\Finance\LedgerReports;
 use App\Models\Finance\Account\Account;
 use App\Models\Finance\FinanceSub;
 use Illuminate\Support\Facades\DB;
@@ -39,6 +40,10 @@ class TrialBalanceTable extends Component
 
     public function getTrialBalanceData()
     {
+        if (LedgerReports::enabled()) {
+            return LedgerReports::trialBalance($this->startDate, $this->endDate, $this->search);
+        }
+
         // Get all active accounts, filtered by search if provided
         $accounts = Account::where('is_active', 1);
 

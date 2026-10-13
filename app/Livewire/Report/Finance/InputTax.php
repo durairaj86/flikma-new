@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Report\Finance;
 
+use App\Services\Finance\LedgerReports;
 use App\Exports\ReportTableExport;
 use App\Models\Finance\FinanceSub;
 use Livewire\Component;
@@ -94,6 +95,14 @@ class InputTax extends Component
 
     public function render()
     {
+        if (LedgerReports::enabled()) {
+            $h = LedgerReports::taxHeader('input', $this->startDate, $this->endDate);
+
+            return view('livewire.report.finance.input-tax', [
+                'summary' => ['total_input_tax' => $h['total'] > 0 ? $h['total'] : 0, 'transaction_count' => $h['count']],
+            ]);
+        }
+
         $inputVatAccountId = 7;
 
         $query = FinanceSub::where('is_tax_line', 1)

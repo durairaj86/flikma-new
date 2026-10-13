@@ -12,3 +12,7 @@ Artisan::command('inspire', function () {
 
 // Every email is stored in email_queues first; this sends what is waiting (and retries the ones that failed).
 \Illuminate\Support\Facades\Schedule::command('emails:process')->everyMinute()->withoutOverlapping();
+// Finance redesign phase 1: keep the new ledger reporting columns filled until PostingService writes them (docs/finance-ledger-design.md)
+\Illuminate\Support\Facades\Schedule::command('finance:sync-columns')->hourly()->withoutOverlapping();
+// Finance redesign phase 2: keep finance_allocations current until PostingService writes them
+\Illuminate\Support\Facades\Schedule::command('finance:sync-allocations')->hourly()->withoutOverlapping();

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Report\Finance;
 
+use App\Services\Finance\LedgerReports;
 use App\Models\Supplier\Supplier;
 use App\Models\Finance\FinanceSub;
 use Illuminate\Support\Facades\DB;
@@ -160,6 +161,12 @@ class SupplierLedgerTable extends Component
 
     private function getOpeningBalance($supplierId, $startDate)
     {
+        if (LedgerReports::enabled()) {
+            $lines = LedgerReports::supplierLines((int) $supplierId, null, $startDate);
+
+            return (float) ($lines->sum('base_debit') - $lines->sum('base_credit'));
+        }
+
         $financeSub = FinanceSub::where('supplier_id', $supplierId)
             ->where('reference_date', '<', $startDate)
             ->whereHas('finance', function ($query) {
@@ -179,6 +186,16 @@ class SupplierLedgerTable extends Component
 
     private function getSupplierTransactions($supplierId, $startDate, $endDate)
     {
+        if (LedgerReports::enabled()) {
+            // same fields the screen reads from a FinanceSub (reference_date, account code / name...)
+            return LedgerReports::supplierLines((int) $supplierId, $startDate, $endDate)->map(function ($l) {
+                $l->reference_date = $l->transaction_date?->format('d-m-Y');
+                $l->account = (object) ['code' => $l->account_code, 'name' => $l->account_name];
+
+                return $l;
+            });
+        }
+
         return FinanceSub::where('supplier_id', $supplierId)
             ->whereBetween('reference_date', [$startDate, $endDate])
             ->whereHas('finance', function ($query) {

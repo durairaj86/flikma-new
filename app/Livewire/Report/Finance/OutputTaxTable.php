@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Report\Finance;
 
+use App\Services\Finance\LedgerReports;
 use App\Models\Finance\FinanceSub;
 use Livewire\Component;
 
@@ -37,6 +38,12 @@ class OutputTaxTable extends Component
 
     public function getOutputTaxData()
     {
+        if (LedgerReports::enabled()) {
+            $r = LedgerReports::taxLines('output', $this->startDate, $this->endDate, $this->search);
+
+            return ['output_tax_transactions' => $r['lines'], 'total_output_tax' => $r['total']];
+        }
+
         // Output VAT account ID = 20 (code 2130 — "Output VAT Payable", type Liability)
         // Output tax lines are CREDITS on the customer invoice (DR AR / CR Sales / CR Output VAT)
         // We filter directly on finance_subs.reference_date (the actual transaction date)

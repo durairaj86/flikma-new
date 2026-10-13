@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Report\Finance;
 
+use App\Services\Finance\LedgerReports;
 use App\Models\Finance\Account\Account;
 use App\Models\Finance\FinanceSub;
 use Illuminate\Support\Facades\DB;
@@ -39,6 +40,10 @@ class BalanceSheetTable extends Component
 
     public function getBalanceSheetData()
     {
+        if (LedgerReports::enabled()) {
+            return LedgerReports::balanceSheet($this->endDate, $this->search);
+        }
+
         // Balance Sheet is CUMULATIVE — it shows balances as of the end date,
         // including ALL transactions from the beginning up to endDate.
         // It does NOT filter by a date range like P&L does.
