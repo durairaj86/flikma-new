@@ -1,4 +1,5 @@
 <div>
+@include('includes.report-drilldown')
     <div class="row justify-content-center d-print-none">
         <div class="col-xl-12">
             <div class="table-responsive">
@@ -15,7 +16,8 @@
                         <tr wire:key="pl-rev-{{ $loop->index }}">
                             <td class="ps-4 text-secondary small">{{ $account['account_code'] }}</td>
                             <td class="text-dark">{{ $account['account_name'] }}</td>
-                            <td class="pe-4 text-end tabular-nums">{{ number_format($account['balance'], 2) }}</td>
+                            <td class="pe-4 text-end tabular-nums rpt-drill" title="{{ __('Click to see the entries') }}"
+                                onclick="reportDrill(@js($account['account_code']), @js($account['account_code'] . ' ' . $account['account_name']), @js($startDate), @js($endDate))">{{ number_format($account['balance'], 2) }}</td>
                         </tr>
                     @empty
                         <tr>
@@ -55,7 +57,8 @@
                         <tr wire:key="pl-exp-{{ $loop->index }}">
                             <td class="ps-4 text-secondary small">{{ $account['account_code'] }}</td>
                             <td class="text-dark">{{ $account['account_name'] }}</td>
-                            <td class="pe-4 text-end tabular-nums text-danger">
+                            <td class="pe-4 text-end tabular-nums text-danger rpt-drill" title="{{ __('Click to see the entries') }}"
+                                onclick="reportDrill(@js($account['account_code']), @js($account['account_code'] . ' ' . $account['account_name']), @js($startDate), @js($endDate))">
                                 ({{ number_format(abs($account['balance']), 2) }})
                             </td>
                         </tr>

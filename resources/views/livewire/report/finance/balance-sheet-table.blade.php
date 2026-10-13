@@ -1,4 +1,5 @@
 <div>
+@include('includes.report-drilldown')
     <div class="row g-5 d-print-none">
         <div class="col-lg-6">
             <h5 class="fw-bold text-primary border-bottom border-2 pb-2 mb-3 text-uppercase small ls-1">
@@ -13,7 +14,8 @@
                                 <span class="text-secondary small me-2">{{ $account['account_code'] }}</span>
                                 <span>{{ $account['account_name'] }}</span>
                             </div>
-                            <span class="tabular-nums fw-medium">{{ number_format($account['balance'], 2) }}</span>
+                            <span class="tabular-nums fw-medium @if($account['account_code'] !== '') rpt-drill @endif"
+                                  @if($account['account_code'] !== '') title="{{ __('Click to see the entries') }}" onclick="reportDrill(@js($account['account_code']), @js($account['account_code'] . ' ' . $account['account_name']), null, @js($endDate))" @endif>{{ number_format($account['balance'], 2) }}</span>
                         </div>
                     @endforeach
                 @else
@@ -41,7 +43,8 @@
                                 <span class="text-secondary small me-2">{{ $account['account_code'] }}</span>
                                 <span>{{ $account['account_name'] }}</span>
                             </div>
-                            <span class="tabular-nums fw-medium">{{ number_format($account['balance'], 2) }}</span>
+                            <span class="tabular-nums fw-medium @if($account['account_code'] !== '') rpt-drill @endif"
+                                  @if($account['account_code'] !== '') title="{{ __('Click to see the entries') }}" onclick="reportDrill(@js($account['account_code']), @js($account['account_code'] . ' ' . $account['account_name']), null, @js($endDate))" @endif>{{ number_format($account['balance'], 2) }}</span>
                         </div>
                     @endforeach
                 @else
@@ -62,7 +65,8 @@
                                 <span class="text-secondary small me-2">{{ $account['account_code'] }}</span>
                                 <span>{{ $account['account_name'] }}</span>
                             </div>
-                            <span class="tabular-nums fw-medium">{{ number_format($account['balance'], 2) }}</span>
+                            <span class="tabular-nums fw-medium @if($account['account_code'] !== '') rpt-drill @endif"
+                                  @if($account['account_code'] !== '') title="{{ __('Click to see the entries') }}" onclick="reportDrill(@js($account['account_code']), @js($account['account_code'] . ' ' . $account['account_name']), null, @js($endDate))" @endif>{{ number_format($account['balance'], 2) }}</span>
                         </div>
                     @endforeach
                 @else

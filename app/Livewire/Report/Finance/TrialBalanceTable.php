@@ -125,7 +125,9 @@ class TrialBalanceTable extends Component
         $trialBalanceData = $this->getTrialBalanceData();
 
         return view('livewire.report.finance.trial-balance-table', [
-            'trialBalanceData' => $trialBalanceData
+            'trialBalanceData' => $trialBalanceData,
+            // parent / sub-account tree with roll-up totals (the flat list above stays the source of the totals and the exports)
+            'tree' => \App\Services\Finance\AccountTree::forTrialBalance($trialBalanceData['accounts'] ?? []),
         ]);
     }
 }

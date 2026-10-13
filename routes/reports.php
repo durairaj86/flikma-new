@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 
 // Finance Reports
 Route::get('/reports/trial-balance', \App\Livewire\Report\Finance\TrialBalance::class);
+Route::get('/reports/account-postings', [\App\Http\Controllers\Finance\Report\AccountPostingsController::class, 'show']);
+Route::get('/reports/trial-balance/details', [\App\Http\Controllers\Finance\Report\TrialBalanceDetailController::class, 'show']);
 Route::get('/reports/balance-sheet', \App\Livewire\Report\Finance\BalanceSheet::class);
 Route::get('/reports/profit-and-loss', \App\Livewire\Report\Finance\ProfitAndLoss::class);
 Route::get('/reports/customer-statement', \App\Livewire\Report\Finance\CustomerStatement::class);

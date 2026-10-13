@@ -12,6 +12,11 @@
         $type = $acc['account_type'] ?? 'Other';
         $grouped[$type][] = $acc;
     }
+    // parent / sub-account tree, grouped by account type
+    $tree = $tree ?? [];
+    $treeByType = [];
+    foreach ($tree as $node) { $treeByType[$node['type']][] = $node; }
+    $parentIds = array_values(array_map(fn ($n) => $n['id'], array_filter($tree, fn ($n) => $n['has_children'])));
     $typeTotals = [];
     foreach ($grouped as $type => $accs) {
         $typeTotals[$type] = [
@@ -58,7 +63,26 @@
 </div>
 @endif
 
-{{-- Table --}}
+{{-- Table: parent accounts with their sub-accounts, expand / collapse like Zoho Books --}}
+<div x-data="{ closed: {}, parents: @js($parentIds),
+               toggle(id) { this.closed[id] = !this.closed[id]; },
+               hidden(anc) { return anc.some(a => this.closed[a]); },
+               // click a debit / credit amount: the postings that add up to it, in the global modal
+               detail(id, type, title) {
+                   webModal.openGlobalModal({
+                       title: (type === 'debit' ? '{{ __('Debit Details') }}' : '{{ __('Credit Details') }}') + ': ' + title,
+                       url: '/reports/trial-balance/details?account_id=' + id + '&to={{ $endDate }}&type=' + type,
+                       size: 'lg', scroll: true, minHeight: '', maxHeight: ''
+                   });
+               },
+               collapseAll() { this.closed = Object.fromEntries(this.parents.map(i => [i, true])); },
+               expandAll() { this.closed = {}; } }">
+@if(count($parentIds) > 0)
+<div class="d-flex justify-content-end gap-2 px-3 py-2 border-bottom">
+    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" @click="expandAll()"><i class="bi bi-arrows-expand me-1"></i>{{ __('Expand all') }}</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" @click="collapseAll()"><i class="bi bi-arrows-collapse me-1"></i>{{ __('Collapse all') }}</button>
+</div>
+@endif
 <table class="table table-hover align-middle mb-0">
     <thead>
     <tr class="rpt-table-head">
@@ -99,24 +123,40 @@
                 </td>
             </tr>
 
-            @foreach($typeAccounts as $idx => $acc)
+            @foreach($treeByType[$type] ?? [] as $idx => $n)
                 @php
-                    $dr  = (float)($acc['debit']  ?? 0);
-                    $cr  = (float)($acc['credit'] ?? 0);
+                    $dr  = (float) $n['debit'];
+                    $cr  = (float) $n['credit'];
                     $net = $dr - $cr;
+                    $isParent = $n['has_children'];
                 @endphp
-                <tr class="{{ $idx % 2 === 0 ? '' : 'rpt-row-alt' }}">
-                    <td class="ps-4 rpt-code">{{ $acc['account_code'] }}</td>
-                    <td class="rpt-name">{{ $acc['account_name'] }}</td>
+                <tr class="{{ $isParent ? 'tb-parent-row' : ($idx % 2 === 0 ? '' : 'rpt-row-alt') }}"
+                    @if(count($n['ancestors'])) x-show="!hidden(@js($n['ancestors']))" @endif>
+                    <td class="ps-4 rpt-code">{{ $n['code'] }}</td>
+                    <td class="rpt-name" style="padding-left: {{ $n['depth'] * 22 + 8 }}px">
+                        @if($isParent)
+                            <button type="button" class="tb-toggle" @click="toggle({{ $n['id'] }})" :aria-expanded="!closed[{{ $n['id'] }}]">
+                                <i class="bi" :class="closed[{{ $n['id'] }}] ? 'bi-chevron-right' : 'bi-chevron-down'"></i>
+                            </button>
+                        @else
+                            <span class="tb-spacer"></span>
+                        @endif
+                        <span class="{{ $isParent ? 'fw-bold' : '' }}">{{ $n['name'] }}</span>
+                        @if($isParent && $n['has_own'])
+                            <span class="text-muted small ms-1" title="{{ __('This account also has postings of its own') }}">*</span>
+                        @endif
+                    </td>
                     <td>
                         <span class="rpt-type-badge rpt-type-{{ strtolower(str_replace([' ','/'], '-', $type)) }}">
                             {{ $type }}
                         </span>
                     </td>
-                    <td class="text-end tabular-nums {{ $dr > 0 ? 'rpt-dr-val' : 'rpt-zero' }}">
+                    <td class="text-end tabular-nums {{ $dr > 0 ? 'rpt-dr-val tb-amount' : 'rpt-zero' }} {{ $isParent ? 'fw-bold' : '' }}"
+                        @if($dr > 0) @click="detail({{ $n['id'] }}, 'debit', @js($n['code'] . ' ' . $n['name']))" title="{{ __('Click to see the entries') }}" @endif>
                         {{ $dr > 0 ? number_format($dr, 2) : '—' }}
                     </td>
-                    <td class="text-end tabular-nums {{ $cr > 0 ? 'rpt-cr-val' : 'rpt-zero' }}">
+                    <td class="text-end tabular-nums {{ $cr > 0 ? 'rpt-cr-val tb-amount' : 'rpt-zero' }} {{ $isParent ? 'fw-bold' : '' }}"
+                        @if($cr > 0) @click="detail({{ $n['id'] }}, 'credit', @js($n['code'] . ' ' . $n['name']))" title="{{ __('Click to see the entries') }}" @endif>
                         {{ $cr > 0 ? number_format($cr, 2) : '—' }}
                     </td>
                     <td class="text-end pe-4 tabular-nums fw-semibold {{ $net > 0 ? 'rpt-dr-val' : ($net < 0 ? 'rpt-cr-val' : 'rpt-zero') }}">
@@ -186,6 +226,7 @@
     @endif
 </table>
 </div>
+</div>
 
 {{-- Bank-statement style layout: used for Print and PDF export only --}}
 <div id="tb-print" class="stmt-print d-none d-print-block"
@@ -215,13 +256,13 @@
         </tr>
         </thead>
         <tbody>
-        @forelse($accounts as $acc)
-            <tr>
-                <td>{{ $acc['account_code'] }}</td>
-                <td>{{ $acc['account_name'] }}</td>
-                <td>{{ $acc['account_type'] }}</td>
-                <td class="text-end">{{ $acc['debit'] > 0 ? number_format($acc['debit'], 2) : '' }}</td>
-                <td class="text-end">{{ $acc['credit'] > 0 ? number_format($acc['credit'], 2) : '' }}</td>
+        @forelse($tree as $n)
+            <tr class="{{ $n['has_children'] ? 'stmt-strong' : '' }}">
+                <td>{{ $n['code'] }}</td>
+                <td style="padding-left: {{ $n['depth'] * 14 + 4 }}px">{{ $n['name'] }}</td>
+                <td>{{ $n['type'] }}</td>
+                <td class="text-end">{{ $n['debit'] > 0 ? number_format($n['debit'], 2) : '' }}</td>
+                <td class="text-end">{{ $n['credit'] > 0 ? number_format($n['credit'], 2) : '' }}</td>
             </tr>
         @empty
             <tr>
@@ -255,6 +296,12 @@
 @include('includes.report-print-css', ['orientation' => 'portrait'])
 
 <style>
+.tb-toggle { border: 0; background: transparent; padding: 0 .35rem 0 0; color: #667085; line-height: 1; }
+.tb-toggle:hover { color: #101828; }
+.tb-spacer { display: inline-block; width: 1.1rem; }
+.tb-parent-row > td { background: #f9fafb; }
+.tb-amount { cursor: pointer; }
+.tb-amount:hover { text-decoration: underline; }
 /* ── Trial Balance table — provisional report design system ── */
 
 /* Stat cards */
