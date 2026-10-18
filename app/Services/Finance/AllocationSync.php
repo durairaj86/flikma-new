@@ -106,7 +106,7 @@ class AllocationSync
             ->leftJoin('collections as c', 'c.id', '=', 'ca.collection_id')
             ->where('ca.status', 1)->whereNotNull('ca.to_invoice_id')
             ->whereNotExists(fn ($q) => $q->select(DB::raw(1))->from('finance_allocations as a')
-                ->where('a.settling_doc_type', 'credit_application')->whereColumn('a.settling_doc_id', 'ca.id'))
+                ->where('a.settling_doc_type', 'credit_application')->where('a.status', 'active')->whereColumn('a.settling_doc_id', 'ca.id'))
             ->get(['ca.*', 'c.approved_at', 'c.collection_date']);
         foreach ($apps as $ca) {
             $line = fn ($invoiceId) => DB::table('finance_subs')->where('source_type', 'customer_invoice')->where('source_id', $invoiceId)

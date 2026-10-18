@@ -132,6 +132,9 @@
                     <th>{{ __('Due Date') }}</th>
                     <th class="text-end">{{ __('Invoice Total') }}</th>
                     <th class="text-end">{{ __('Collection Amount') }}</th>
+                    @if(($credits ?? collect())->isNotEmpty())
+                        <th class="text-end">{{ __('Credit Applied') }}</th>
+                    @endif
                 </tr>
                 </thead>
                 <tbody>
@@ -143,6 +146,9 @@
                         <td>{{ $ci->customerInvoice->due_at ?? '-' }}</td>
                         <td class="text-end">{{ number_format($ci->customerInvoice->grand_total ?? 0, decimals()) }}</td>
                         <td class="text-end">{{ number_format($ci->amount, decimals()) }}</td>
+                        @if(($credits ?? collect())->isNotEmpty())
+                            <td class="text-end" style="color:#0891b2;">{{ number_format($creditByInvoice[$ci->customer_invoice_id] ?? 0, decimals()) }}</td>
+                        @endif
                     </tr>
                 @endforeach
                 </tbody>
@@ -152,6 +158,48 @@
         <div class="text-center py-4 text-muted">{{ __('No invoices linked to this collection.') }}</div>
     @endif
 </div>
+
+@if(($credits ?? collect())->isNotEmpty())
+    <div class="section">
+        <h6>{{ __('Customer Credit Applied') }}</h6>
+        <div class="small text-muted mb-2">{{ __('Credit this customer already had (for example from a credit note on an invoice that was paid in full) used to settle these invoices instead of cash.') }}</div>
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm align-middle">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>{{ __('Credit from invoice') }}</th>
+                    <th>{{ __('Applied to invoice') }}</th>
+                    <th class="text-end">{{ __('Amount') }}</th>
+                    <th>{{ __('Status') }}</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach($credits as $cr)
+                    <tr>
+                        <td>{{ $loop->iteration }}</td>
+                        <td>@if($cr->from_invoice_id)<a href="#" class="open-linked text-primary text-decoration-none" data-type="invoice" data-id="{{ $cr->from_invoice_id }}" data-title="{{ $cr->from_no }}">{{ $cr->from_no }}</a>@else - @endif</td>
+                        <td>@if($cr->to_invoice_id)<a href="#" class="open-linked text-primary text-decoration-none" data-type="invoice" data-id="{{ $cr->to_invoice_id }}" data-title="{{ $cr->to_no }}">{{ $cr->to_no }}</a>@else - @endif</td>
+                        <td class="text-end fw-semibold" style="color:#0891b2;">{{ number_format($cr->amount, decimals()) }}</td>
+                        <td>
+                            @if((int) $cr->status === 1)
+                                <span class="badge bg-success-subtle text-success-emphasis">{{ __('Applied') }}</span>
+                            @else
+                                <span class="badge bg-secondary-subtle text-secondary-emphasis" title="{{ __('It moves when the collection is approved') }}">{{ __('Chosen - not applied yet') }}</span>
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
+                <tr class="table-light">
+                    <td colspan="3" class="text-end"><strong>{{ __('Total credit') }}</strong></td>
+                    <td class="text-end fw-bold" style="color:#0891b2;">{{ number_format($credits->sum('amount'), decimals()) }}</td>
+                    <td></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+@endif
 
 <div class="section">
     <h6>{{ __('Totals') }}</h6>
@@ -180,6 +228,16 @@
             <td><strong>{{ __('Grand Total') }}</strong></td>
             <td class="text-end fw-bold">{{ number_format($collection->grand_total, decimals()) }} {{ strtoupper($collection->currency) }}</td>
         </tr>
+        @if(($credits ?? collect())->isNotEmpty())
+            <tr>
+                <td><strong>{{ __('Customer Credit Applied') }}</strong></td>
+                <td class="text-end fw-bold" style="color:#0891b2;">{{ number_format($credits->sum('amount'), decimals()) }} {{ strtoupper($collection->currency) }}</td>
+            </tr>
+            <tr class="table-secondary">
+                <td><strong>{{ __('Total Settled on Invoices') }}</strong></td>
+                <td class="text-end fw-bold">{{ number_format($collection->sub_total + $collection->tax_total + $credits->sum('amount'), decimals()) }} {{ strtoupper($collection->currency) }}</td>
+            </tr>
+        @endif
         @if(strtoupper($collection->currency) !== 'SAR')
             <tr>
                 <td><strong>{{ __('Base Currency Total') }}</strong></td>

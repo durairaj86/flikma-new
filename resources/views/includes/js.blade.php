@@ -40,6 +40,8 @@
         'In detention',
         'Due',
         'Continue?',
+        'Collection',
+        'Credit applied',
         'Revenue',
         'Cost',
         'Profit',

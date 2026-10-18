@@ -74,6 +74,8 @@ Route::middleware(['auth', 'verified', 'module.permission'])->group(function () 
     Route::view('/customer/statement', 'modules.customer.statement')->name('customers.statement');
 
     Route::get('customer/{id}/overview', [\App\Http\Controllers\Customer\CustomerController::class, 'overview']);
+    Route::get('customer/{id}/due-detail', [\App\Http\Controllers\Customer\CustomerController::class, 'dueDetail'])->whereNumber('id');
+    Route::get('customer/{id}/unused-detail', [\App\Http\Controllers\Customer\CustomerController::class, 'unusedDetail'])->whereNumber('id');
     Route::get('customer/{id}/address', [\App\Http\Controllers\Customer\CustomerController::class, 'getAddress']);
     Route::post('customer/document/{id}/delete', [\App\Http\Controllers\Customer\CustomerController::class, 'deleteDocument']);
     /*Route::get('customer/{id}/invoices', [\App\Http\Controllers\Customer\CustomerController::class, 'invoices']);

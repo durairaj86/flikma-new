@@ -81,7 +81,18 @@ COLLECTION = {
                     /*{data: 'collection_method', name: 'collection_method'},*/
                     {data: 'reference_no', name: 'reference_no'},
                     {data: 'currency', name: 'currency'},
-                    {data: 'grand_total', name: 'grand_total'},
+                    {
+                        // Amount = everything that settled the invoices (cash + customer credit). With credit applied, the split is shown underneath.
+                        data: 'grand_total', name: 'grand_total', render: function (data, type, row) {
+                            const cash = parseFloat(String(data == null ? '' : data).replace(/,/g, '')) || 0;
+                            const credit = parseFloat(row.credit_applied) || 0;
+                            if (credit <= 0.004 || type !== 'display') return data;
+                            let h = '<div class="fw-bold">' + amountFormat(cash + credit) + '</div>';
+                            if (cash > 0.004) h += '<div class="small text-success">' + trans('Collection') + ' ' + amountFormat(cash) + '</div>';
+                            h += '<div class="small" style="color:#0891b2;">' + trans('Credit applied') + ' ' + amountFormat(credit) + '</div>';
+                            return h;
+                        }
+                    },
                     {data: 'status', name: 'status'},
                     // Actions column
                     GLOBAL_FN.dataTable.optionButton()
@@ -330,16 +341,25 @@ COLLECTION = {
                 COLLECTION.form.calculateTotal();
             }
 
-            // Customer credit: typing an amount (or "Use all") lowers the cash to collect on the ticked invoices by that credit
-            $(document).off('input.credit', '.credit-apply').on('input.credit', '.credit-apply', function () {
-                const max = parseFloat($(this).data('max')) || 0;
-                let v = parseFloat(String($(this).val()).replace(/,/g, '')) || 0;
-                if (v > max) { v = max; $(this).val(v.toFixed(2)); }
-                COLLECTION.form.applyCreditToAmounts();
+            // Customer credit, per invoice: typing credit on an invoice lowers its cash by that credit
+            $(document).off('input.creditTo', '.credit-to').on('input.creditTo', '.credit-to', function () {
+                COLLECTION.form.creditInput($(this));
+            });
+            // cash typed by hand can never push cash + credit above the invoice's balance
+            $(document).off('input.creditCash', '.invoice-amount').on('input.creditCash', '.invoice-amount', function () {
+                if (COLLECTION.form._busy) return;
+                const $row = $(this).closest('tr'), credit = COLLECTION.form.num($row.find('.credit-to').val());
+                if (credit <= 0) return;
+                const balance = COLLECTION.form.rowBalance($row);
+                if (COLLECTION.form.num($(this).val()) + credit > balance + 0.004) {
+                    COLLECTION.form.setRowCash($row, balance - credit, credit);
+                } else {
+                    $row.find('td:last').text(COLLECTION.form.formatNumber(Math.max(0, balance - COLLECTION.form.num($(this).val()) - credit)));
+                }
+                COLLECTION.form.calculateTotal();
             });
             $(document).off('click.credit', '#credit-use-all').on('click.credit', '#credit-use-all', function () {
-                $('.credit-apply').each(function () { $(this).val((parseFloat($(this).data('max')) || 0).toFixed(2)); });
-                COLLECTION.form.applyCreditToAmounts();
+                COLLECTION.form.useAllCredit();
             });
             COLLECTION.form.refreshCreditTotal();
 
@@ -349,38 +369,100 @@ COLLECTION = {
             });*/
         },
 
+        // ---- customer credit, chosen PER INVOICE (the "Credit Applied" column) ----
+        num(v) { return parseFloat(String(v == null ? '' : v).replace(/,/g, '')) || 0; },
+        // money arithmetic in whole cents: 151.80 - 50 is 101.80, never 101.80000000000001
+        money(v) { return Math.round((Number(v) + Number.EPSILON) * 100) / 100; },
+        creditPool() {
+            let t = 0;
+            $('#credit-body tr').each(function () { t += parseFloat($(this).data('available')) || 0; });
+            return t;
+        },
+        // credit typed on the ticked invoices
         creditTotal() {
             let t = 0;
-            $('.credit-apply').each(function () { t += parseFloat(String($(this).val()).replace(/,/g, '')) || 0; });
+            $('.invoice-checkbox:checked').each(function () { t += COLLECTION.form.num($(this).closest('tr').find('.credit-to').val()); });
             return t;
         },
         refreshCreditTotal() {
-            $('#credit-applied-total').text(COLLECTION.form.formatNumber(COLLECTION.form.creditTotal()));
+            const pool = COLLECTION.form.creditPool(), used = COLLECTION.form.creditTotal();
+            $('#credit-available-total').text(COLLECTION.form.formatNumber(pool));
+            $('#credit-applied-total').text(COLLECTION.form.formatNumber(used));
+            $('#credit-left-total').text(COLLECTION.form.formatNumber(Math.max(0, pool - used)));
         },
-        // Spread the chosen credit over the ticked invoices (in order): each one's cash amount = its balance less its share of the credit.
-        applyCreditToAmounts() {
-            let credit = COLLECTION.form.creditTotal();
-            $('.invoice-checkbox:checked').each(function () {
-                const $amt = $(this).closest('tr').find('.invoice-amount');
-                // the invoice's real balance is the input's max (data('balance') is overwritten as amounts are typed)
-                const balance = parseFloat($amt.attr('max')) || parseFloat($amt.attr('data-balance')) || 0;
-                const share = Math.min(credit, balance);
-                credit -= share;
-                $amt.val((balance - share).toFixed(2)).trigger('input');
-                // what is left to collect after cash AND credit
-                $amt.closest('tr').find('td:last').text(COLLECTION.form.formatNumber(balance - (balance - share) - share));
+        // the invoice's real balance is the amount input's max (data('balance') is overwritten as amounts are typed)
+        rowBalance($row) {
+            const $a = $row.find('.invoice-amount');
+            return parseFloat($a.attr('max')) || parseFloat($a.attr('data-balance')) || 0;
+        },
+        // Credit typed on one invoice: capped to what that invoice owes and to the credit still available; the cash to collect is the rest.
+        creditInput($input) {
+            const $row = $input.closest('tr'), balance = COLLECTION.form.rowBalance($row);
+            let v = COLLECTION.form.num($input.val());
+            let others = 0;
+            $('.credit-to').not($input).each(function () {
+                if ($(this).closest('tr').find('.invoice-checkbox').is(':checked')) others += COLLECTION.form.num($(this).val());
+            });
+            const room = Math.max(0, COLLECTION.form.creditPool() - others);
+            const cap = Math.min(balance, room);
+            if (v > cap + 0.004) {
+                v = COLLECTION.form.money(cap);
+                $input.val(v > 0 ? v.toFixed(2) : '');
+                toastr.warning(trans('Only') + ' ' + COLLECTION.form.formatNumber(cap) + ' ' + trans('of credit can be used on this invoice.'));
+            }
+            COLLECTION.form.setRowCash($row, balance - v, v);
+            COLLECTION.form.refreshCreditTotal();
+            COLLECTION.form.calculateTotal();
+        },
+        // set the cash amount of a row, and show what is left to collect after cash and credit
+        setRowCash($row, cash, credit) {
+            const $amt = $row.find('.invoice-amount'), balance = COLLECTION.form.rowBalance($row);
+            COLLECTION.form._busy = true;
+            $amt.val(COLLECTION.form.money(Math.max(0, cash)).toFixed(2)).trigger('input');
+            COLLECTION.form._busy = false;
+            $row.find('td:last').text(COLLECTION.form.formatNumber(Math.max(0, COLLECTION.form.money(balance - Math.max(0, cash) - credit))));
+        },
+        // "Use all credit": hand the available credit to the ticked invoices, in order
+        useAllCredit() {
+            let left = COLLECTION.form.creditPool();
+            $('.invoice-checkbox').each(function () {
+                const $row = $(this).closest('tr'), $c = $row.find('.credit-to');
+                if (!this.checked) { $c.val(''); return; }
+                const take = Math.min(left, COLLECTION.form.rowBalance($row));
+                left = COLLECTION.form.money(left - take);
+                $c.val(take > 0 ? COLLECTION.form.money(take).toFixed(2) : '');
+                COLLECTION.form.setRowCash($row, COLLECTION.form.rowBalance($row) - take, take);
             });
             COLLECTION.form.refreshCreditTotal();
             COLLECTION.form.calculateTotal();
         },
-        // The customer's credit list follows the customer picked on the form.
+        // Paying only with customer credit (no cash): there is no account to collect through and no reference to give.
+        toggleCashFields(cash) {
+            const charges = (parseFloat(String($('#bank_charges').val()).replace(/,/g, '')) || 0) + (parseFloat(String($('#other_charges').val()).replace(/,/g, '')) || 0);
+            const creditOnly = (cash + charges) <= 0.004 && COLLECTION.form.creditTotal() > 0 && $('.invoice-checkbox:checked').length > 0;
+            const $acct = $('select[name="account[]"], select[name="account"]').first(), $ref = $('#reference_no');
+            const $labels = $acct.closest('.mb-3').find('label .text-danger').add($ref.closest('.mb-3').find('label .text-danger'));
+            [$acct, $ref].forEach(function ($f) {
+                if (!$f.length) return;
+                $f.prop('required', !creditOnly);
+                if (creditOnly) {
+                    $f.removeClass('is-invalid');
+                    const ts = $f[0].tomselect; if (ts) ts.wrapper.classList.remove('is-invalid');
+                }
+            });
+            $labels.toggle(!creditOnly);
+            $('#credit-only-note').toggle(creditOnly);
+        },
+        // The customer's credit follows the customer picked on the form.
         loadCustomerCredit(customerId) {
             $.get(GLOBAL_FN.buildUrl(`${COLLECTION.baseUrl}/customer/${customerId}/credit`), {collection: $('#collection_id').val() || ''}, function (rows) {
                 const $body = $('#credit-body').empty();
                 (rows || []).forEach(function (r) {
-                    $body.append('<tr><td>' + r.row_no + '</td><td class="text-end">' + COLLECTION.form.formatNumber(r.available) + '</td><td><input type="text" class="form-control text-end float credit-apply" name="credit_apply[' + r.invoice_id + ']" data-max="' + r.available + '" placeholder="0.00" autocomplete="off"></td></tr>');
+                    $body.append('<tr data-available="' + r.available + '"><td>' + r.row_no + '</td><td class="text-end">' + COLLECTION.form.formatNumber(r.available) + '</td></tr>');
                 });
                 $('#credit-block').toggle((rows || []).length > 0);
+                $('#invoices-table').toggleClass('has-credit', (rows || []).length > 0);
+                $('.credit-to').val('');
                 COLLECTION.form.refreshCreditTotal();
             });
         },
@@ -410,7 +492,7 @@ COLLECTION = {
                         // Use the balance amount from the server, or default to the current amount if it's already selected
                         const balanceAmount = invoice.balance_amount || 0;
                         //const amount = existingInvoice ? existingInvoice.amount : (balanceAmount > 0 ? balanceAmount : 0);
-                        const amount = balanceAmount > 0 ? balanceAmount : 0;
+                        const amount = balanceAmount > 0 ? Number(balanceAmount).toFixed(2) : '0.00';   // money: two decimals
 
                         html += `
                             <tr>
@@ -423,7 +505,10 @@ COLLECTION = {
                                 <td>${invoice.due_at}</td>
                                 <td class="text-end">${COLLECTION.form.formatNumber(invoice.grand_total)}</td>
                                 <td class="text-end">
-                                    <input type="text" step="0.01" class="form-control invoice-amount float text-end" name="invoice_amounts[${invoice.id}]" data-id="${invoice.id}" value="${amount}" min="0" max="${balanceAmount}" data-balance="${balanceAmount}" ${!isChecked ? 'disabled' : ''}>
+                                    <input type="text" step="0.01" data-decimal="2" class="form-control invoice-amount float text-end" name="invoice_amounts[${invoice.id}]" data-id="${invoice.id}" value="${amount}" min="0" max="${Number(balanceAmount).toFixed(2)}" data-balance="${Number(balanceAmount).toFixed(2)}" ${!isChecked ? 'disabled' : ''}>
+                                </td>
+                                <td class="text-end credit-col">
+                                    <input type="text" step="0.01" data-decimal="2" class="form-control credit-to float text-end" name="credit_to[${invoice.id}]" data-id="${invoice.id}" placeholder="0.00" autocomplete="off" disabled>
                                 </td>
                                 <td class="text-end">${COLLECTION.form.formatNumber(balanceAmount)}</td>
                             </tr>
@@ -476,11 +561,15 @@ COLLECTION = {
                 COLLECTION.form.selectedInvoices = COLLECTION.form.selectedInvoices.filter(inv => inv.id !== id);
             }
 
-            // customer credit chosen: re-spread it over whatever is ticked now
-            if (COLLECTION.form.creditTotal() > 0) {
-                COLLECTION.form.applyCreditToAmounts();
-                return;
+            // the credit box of a row only works while the invoice is ticked; unticking gives the credit back
+            const $credit = $checkbox.closest('tr').find('.credit-to');
+            $credit.prop('disabled', !isChecked);
+            if (!isChecked && $credit.val() !== '') {
+                $credit.val('');
+                amountInput.val(COLLECTION.form.rowBalance($checkbox.closest('tr')).toFixed(2));
+                $checkbox.closest('tr').find('td:last').text(COLLECTION.form.formatNumber(COLLECTION.form.rowBalance($checkbox.closest('tr'))));
             }
+            COLLECTION.form.refreshCreditTotal();
             COLLECTION.form.calculateTotal();
         },
 
@@ -527,7 +616,7 @@ COLLECTION = {
         // Paying only with customer credit (no cash): there is no account to collect through and no reference to give.
         toggleCashFields(cash) {
             const charges = (parseFloat(String($('#bank_charges').val()).replace(/,/g, '')) || 0) + (parseFloat(String($('#other_charges').val()).replace(/,/g, '')) || 0);
-            const creditOnly = (cash + charges) <= 0.004 && COLLECTION.form.creditTotal() > 0;
+            const creditOnly = (cash + charges) <= 0.004 && COLLECTION.form.creditTotal() > 0 && $('.invoice-checkbox:checked').length > 0;
             const $acct = $('select[name="account[]"], select[name="account"]').first(), $ref = $('#reference_no');
             const $labels = $acct.closest('.mb-3').find('label .text-danger').add($ref.closest('.mb-3').find('label .text-danger'));
             [$acct, $ref].forEach(function ($f) {

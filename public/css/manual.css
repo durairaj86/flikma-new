@@ -2113,3 +2113,6 @@ th .ts-wrapper.single {
 .ci-bar .a { background: var(--ci-a, #22c55e); } .ci-bar .d { background: var(--ci-d, #6366f1); }
 .ci-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
 .ci-dot.a { background: var(--ci-a, #22c55e); } .ci-dot.d { background: var(--ci-d, #6366f1); }
+
+/* Collection form: the "Credit Applied" column of the invoice table only shows when the customer has credit to apply */
+#invoices-table:not(.has-credit) .credit-col { display: none; }

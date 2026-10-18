@@ -164,8 +164,7 @@
                             <th>{{ __('VAT #') }}</th>
                             <th>{{ __('Credit Limit') }}</th>
                             <th>{{ __('Due') }}</th>
-                            <th>{{ __('Advance') }}</th>
-                            <th>{{ __('Customer Credit') }}</th>
+                            <th>{{ __('Unused Amount') }}</th>
                             <th>{{ __('Salesperson') }}</th>
                             <th>{{ __('Joined') }}</th>
                             <th class="text-center pe-4">{{ __('Actions') }}</th>

@@ -106,7 +106,7 @@ CUSTOMER = {
                     },
                     columnDefs: [
                         {targets: [0], searchable: false},
-                        {targets: [7, 8, 9], searchable: false, orderable: false},
+                        {targets: [7, 8], searchable: false, orderable: false},
                         {targets: [0], orderable: false},
                         /*{targets: [1], class: 'hide', visible: false},*/
                     ],
@@ -152,19 +152,17 @@ CUSTOMER = {
                                 const badge = overdueCount > 0
                                     ? '<span class="badge bg-danger-subtle text-danger border border-opacity-10 px-2 py-1" style="font-size:0.65rem;">' + overdueCount + ' Overdue</span>'
                                     : '<span class="badge bg-success-subtle text-success border border-opacity-10 px-2 py-1" style="font-size:0.65rem;">On Time</span>';
-                                return '<div class="fw-bold">' + amountFormat(due) + '</div><div class="mt-1">' + badge + '</div>';
+                                // click the amount: the unpaid invoices behind it open in the side drawer
+                                return '<div><a href="#" class="fw-bold text-decoration-none cust-due-link" data-id="' + row.id + '" title="Show the unpaid invoices">' + amountFormat(due) + '</a></div><div class="mt-1">' + badge + '</div>';
                             }
                         },
                         {
-                            data: 'advance_amount', render: function (data, type, row) {
-                                const v = parseFloat(row.advance_amount) || 0;
-                                return v > 0 ? '<div class="fw-bold text-info">' + amountFormat(v) + '</div>' : '<div class="text-muted">0.00</div>';
-                            }
-                        },
-                        {
+                            // Unused amount = advance + customer credit: what the customer is owed back / can use on other invoices
                             data: 'credit_amount', render: function (data, type, row) {
-                                const v = parseFloat(row.credit_amount) || 0;
-                                return v > 0 ? '<div class="fw-bold text-info">' + amountFormat(v) + '</div>' : '<div class="text-muted">0.00</div>';
+                                const v = (parseFloat(row.advance_amount) || 0) + (parseFloat(row.credit_amount) || 0);
+                                return v > 0.004
+                                    ? '<a href="#" class="fw-bold text-info text-decoration-none cust-unused-link" data-id="' + row.id + '" title="Show the detail">' + amountFormat(v) + '</a>'
+                                    : '<div class="text-muted">0.00</div>';
                             }
                         },
                         {
@@ -217,6 +215,61 @@ CUSTOMER = {
                 console.error("DataTables Initialization Error:", e);
                 // Gracefully degrade the table to a basic HTML table if the plugin fails.
             }
+        },
+        // Side drawer for the amounts of the list: Due (unpaid invoices) and Unused Amount (advance + customer credit)
+        sideDrawer(title, subtitle, html) {
+            $('#customerDrawerLabel').html(title + (subtitle ? '<div class="small text-muted fw-normal">' + subtitle + '</div>' : ''));
+            $('#customerOverview').html(html);
+            bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('customerDrawer')).show();
+        },
+        loadingHtml() { return '<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2"></div> Loading...</div>'; },
+        esc(v) { return $('<div>').text(v == null ? '' : v).html(); },
+        showDue(id) {
+            const L = CUSTOMER.list, money = (n, cur) => amountFormat(n) + (cur ? ' <small class="text-muted">' + L.esc(cur) + '</small>' : '');
+            L.sideDrawer('Due Amount', '', L.loadingHtml());
+            $.get(GLOBAL_FN.buildUrl('customer/' + id + '/due-detail'), function (d) {
+                let rows = d.invoices.map(function (i) {
+                    const late = i.overdue_days > 0
+                        ? '<span class="badge bg-danger-subtle text-danger-emphasis">' + i.overdue_days + ' days overdue</span>'
+                        : '<span class="badge bg-success-subtle text-success-emphasis">On time</span>';
+                    return '<tr><td class="fw-semibold">' + L.esc(i.row_no) + '<div class="small text-muted">' + L.esc(i.job_no || '') + '</div></td>'
+                        + '<td>' + L.esc(i.invoice_date) + '</td><td>' + L.esc(i.due_at) + '<div>' + late + '</div></td>'
+                        + '<td class="text-end">' + amountFormat(i.total) + '</td><td class="text-end text-success">' + amountFormat(i.paid) + '</td>'
+                        + '<td class="text-end fw-bold text-danger">' + amountFormat(i.balance) + '</td></tr>';
+                }).join('') || '<tr><td colspan="6" class="text-center text-muted py-4">Nothing is due.</td></tr>';
+                const html = '<div class="row g-2 text-center mb-3">'
+                    + '<div class="col-6"><div class="small text-muted text-uppercase">Total due</div><div class="fw-bold fs-4 text-danger">' + amountFormat(d.total_due) + '</div></div>'
+                    + '<div class="col-6"><div class="small text-muted text-uppercase">Overdue invoices</div><div class="fw-bold fs-4">' + d.overdue + '</div></div></div>'
+                    + '<div class="table-responsive"><table class="table table-sm table-bordered align-middle"><thead class="table-light"><tr>'
+                    + '<th>Invoice</th><th>Date</th><th>Due date</th><th class="text-end">Total</th><th class="text-end">Paid</th><th class="text-end">Balance</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+                L.sideDrawer('Due Amount', L.esc(d.customer) + ' · ' + L.esc(d.code), html);
+            }).fail(function () { $('#customerOverview').html('<div class="alert alert-danger">Failed to load.</div>'); });
+        },
+        showUnused(id) {
+            const L = CUSTOMER.list;
+            L.sideDrawer('Unused Amount', '', L.loadingHtml());
+            $.get(GLOBAL_FN.buildUrl('customer/' + id + '/unused-detail'), function (d) {
+                let rows = d.invoices.map(function (i) {
+                    const notes = i.credit_notes.map(function (n) { return '<div class="small">' + L.esc(n.row_no) + ' · ' + amountFormat(n.amount) + (n.reason ? ' <span class="text-muted">(' + L.esc(n.reason) + ')</span>' : '') + '</div>'; }).join('');
+                    return '<tr><td class="fw-semibold">' + L.esc(i.row_no) + '<div class="small text-muted">' + L.esc(i.currency) + '</div></td>'
+                        + '<td class="text-end">' + amountFormat(i.total) + '</td><td class="text-end">' + amountFormat(i.settled) + '</td>'
+                        + '<td>' + (notes || '<span class="text-muted small">cash beyond the invoice</span>') + '</td>'
+                        + '<td class="text-end text-info">' + amountFormat(i.credit) + '</td><td class="text-end text-info">' + amountFormat(i.advance) + '</td>'
+                        + '<td class="text-end fw-bold">' + amountFormat(i.unused) + '</td></tr>';
+                }).join('') || '<tr><td colspan="7" class="text-center text-muted py-4">No unused amount.</td></tr>';
+                const used = d.used.length ? '<h6 class="mt-4">Already used on collections</h6><div class="table-responsive"><table class="table table-sm table-bordered align-middle"><thead class="table-light"><tr>'
+                    + '<th>Collection</th><th>Taken from</th><th>Applied to</th><th class="text-end">Amount</th></tr></thead><tbody>'
+                    + d.used.map(function (u) { return '<tr><td>' + L.esc(u.collection_no) + '</td><td>' + L.esc(u.from) + '</td><td>' + L.esc(u.to) + '</td><td class="text-end">' + amountFormat(u.amount) + '</td></tr>'; }).join('')
+                    + '<tr class="table-light"><td colspan="3" class="text-end"><strong>Total used</strong></td><td class="text-end fw-bold">' + amountFormat(d.used_total) + '</td></tr></tbody></table></div>' : '';
+                const html = '<div class="row g-2 text-center mb-3">'
+                    + '<div class="col-4"><div class="small text-muted text-uppercase">Unused</div><div class="fw-bold fs-4">' + amountFormat(d.total) + '</div></div>'
+                    + '<div class="col-4"><div class="small text-muted text-uppercase">Customer credit</div><div class="fw-bold fs-4 text-info">' + amountFormat(d.credit) + '</div></div>'
+                    + '<div class="col-4"><div class="small text-muted text-uppercase">Advance</div><div class="fw-bold fs-4 text-info">' + amountFormat(d.advance) + '</div></div></div>'
+                    + '<div class="alert alert-info small py-2">The customer paid / was credited more than these invoices were worth. Use it by choosing <b>Credit Applied</b> on another invoice when you record a collection, or refund it.</div>'
+                    + '<div class="table-responsive"><table class="table table-sm table-bordered align-middle"><thead class="table-light"><tr>'
+                    + '<th>Invoice</th><th class="text-end">Invoice total</th><th class="text-end">Settled</th><th>Credit notes</th><th class="text-end">Credit</th><th class="text-end">Advance</th><th class="text-end">Unused</th></tr></thead><tbody>' + rows + '</tbody></table></div>' + used;
+                L.sideDrawer('Unused Amount', L.esc(d.customer) + ' · ' + L.esc(d.code), html);
+            }).fail(function () { $('#customerOverview').html('<div class="alert alert-danger">Failed to load.</div>'); });
         },
         extraActions(row) {
             CUSTOMER.list.actions.statusChange(row);
@@ -602,3 +655,12 @@ CUSTOMER = {
         }
     },
 }
+
+
+// amounts on the customer list: click Due / Unused to see what is behind them
+$(document).off('click.custAmounts').on('click.custAmounts', '.cust-due-link, .cust-unused-link', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const id = $(this).data('id');
+    if ($(this).hasClass('cust-due-link')) CUSTOMER.list.showDue(id); else CUSTOMER.list.showUnused(id);
+});

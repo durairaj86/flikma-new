@@ -140,7 +140,7 @@
                         </div>
                         <div class="table-responsive" id="invoices-table-container"
                              style="{{ count($customerInvoices) > 0 ? '' : 'display: none;' }}">
-                            <table class="table table-bordered table-striped" id="invoices-table">
+                            <table class="table table-bordered table-striped {{ count($creditSources ?? []) ? 'has-credit' : '' }}" id="invoices-table">
                                 <thead>
                                 <tr>
                                     <th width="5%"><input type="checkbox"
@@ -152,6 +152,7 @@
                                     <th>{{ __('Due Date') }}</th>
                                     <th class="text-end">{{ __('Total Amount') }}</th>
                                     <th class="text-end">{{ __('Collection Amount') }}</th>
+                                    <th class="text-end credit-col">{{ __('Credit Applied') }}</th>
                                     <th class="text-end">{{ __('Balance Amount') }}</th>
                                 </tr>
                                 </thead>
@@ -174,12 +175,19 @@
                                         <td>{{ $invoice->due_at }}</td>
                                         <td class="text-end">{{ number_format($invoice->grand_total, 2) }}</td>
                                         <td class="text-end">
-                                            <input type="text" step="0.01" class="form-control invoice-amount float text-end @if($isSelected) bg-white @endif"
-                                                   data-id="{{ $invoice->id }}" name="invoice_amounts[{{ $invoice->id }}]" value="{{ $collectionAmount }}" min="0"
-                                                   max="{{ $balanceAmount }}" data-balance="{{ $balanceAmount }}" {{ !$isSelected ? 'disabled' : '' }}>
+                                            {{-- amounts are money: two decimals at most, never a floating-point tail --}}
+                                            <input type="text" step="0.01" data-decimal="2" class="form-control invoice-amount float text-end @if($isSelected) bg-white @endif"
+                                                   data-id="{{ $invoice->id }}" name="invoice_amounts[{{ $invoice->id }}]" value="{{ number_format((float) $collectionAmount, 2, '.', '') }}" min="0"
+                                                   max="{{ number_format((float) $balanceAmount, 2, '.', '') }}" data-balance="{{ number_format((float) $balanceAmount, 2, '.', '') }}" {{ !$isSelected ? 'disabled' : '' }}>
+                                        </td>
+                                        @php($creditAmt = (float) (($creditChosen ?? [])[$invoice->id] ?? 0))
+                                        <td class="text-end credit-col">
+                                            <input type="text" step="0.01" data-decimal="2" class="form-control credit-to float text-end"
+                                                   name="credit_to[{{ $invoice->id }}]" data-id="{{ $invoice->id }}"
+                                                   value="{{ $creditAmt > 0 ? number_format($creditAmt, 2, '.', '') : '' }}" placeholder="0.00" autocomplete="off" {{ !$isSelected ? 'disabled' : '' }}>
                                         </td>
                                         <td class="text-end">
-                                            {{ number_format($balanceAmount - ($isSelected ? $collectionAmount : 0), 2) }}
+                                            {{ number_format($balanceAmount - ($isSelected ? $collectionAmount : 0) - ($isSelected ? $creditAmt : 0), 2) }}
                                         </td>
                                     </tr>
                                 @endforeach
@@ -189,33 +197,26 @@
                     </div>
                 </div>
 
-                {{-- Customer credit (e.g. from a credit note on an invoice that was already paid): can be applied to the invoices ticked above instead of cash --}}
+                {{-- Customer credit (e.g. from a credit note on an invoice that was already paid): type the credit for each ticked invoice in the "Credit Applied" column above --}}
                 <div class="row mt-4" id="credit-block" style="{{ count($creditSources ?? []) ? '' : 'display: none;' }}">
                     <div class="col-12">
-                        <h4>{{ __('Apply Customer Credit') }}</h4>
+                        <h4>{{ __('Customer Credit') }}</h4>
                         <div class="alert alert-info small py-2">
-                            {{ __('This customer has credit left over from invoices that were settled for more than they were worth. Apply it to the invoices ticked above instead of collecting cash: the Collection Amount of those invoices is reduced by the credit you apply.') }}
+                            {{ __('This customer has credit left over from invoices that were settled for more than they were worth. Type the credit to use for each ticked invoice in the Credit Applied column: its Collection Amount is reduced by that credit, and several invoices can use credit in the same collection.') }}
                         </div>
                         <div class="table-responsive">
                             <table class="table table-bordered table-sm align-middle mb-2" id="credit-table">
                                 <thead>
                                 <tr>
                                     <th>{{ __('Credit on invoice') }}</th>
-                                    <th class="text-end">{{ __('Available') }}</th>
-                                    <th class="text-end" style="width:200px">{{ __('Apply') }}</th>
+                                    <th class="text-end" style="width:200px">{{ __('Available') }}</th>
                                 </tr>
                                 </thead>
                                 <tbody id="credit-body">
                                 @foreach($creditSources ?? [] as $src)
-                                    @php($chosenAmt = (float) (($creditChosen ?? [])[$src['invoice_id']] ?? 0))
-                                    <tr>
+                                    <tr data-available="{{ $src['available'] }}">
                                         <td>{{ $src['row_no'] }}</td>
                                         <td class="text-end">{{ number_format($src['available'], 2) }}</td>
-                                        <td>
-                                            <input type="text" class="form-control text-end float credit-apply"
-                                                   name="credit_apply[{{ $src['invoice_id'] }}]" data-max="{{ $src['available'] }}"
-                                                   value="{{ $chosenAmt > 0 ? $chosenAmt : '' }}" placeholder="0.00" autocomplete="off">
-                                        </td>
                                     </tr>
                                 @endforeach
                                 </tbody>
@@ -225,8 +226,12 @@
                             {{ __('Settled with customer credit only: no cash is received, so no account or reference is needed.') }}
                         </div>
                         <div class="d-flex justify-content-between align-items-center">
-                            <button type="button" class="btn btn-sm btn-outline-primary" id="credit-use-all">{{ __('Use all credit') }}</button>
-                            <div class="text-muted small">{{ __('Credit applied') }}: <b id="credit-applied-total">0.00</b></div>
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="credit-use-all">{{ __('Use all credit on the ticked invoices') }}</button>
+                            <div class="text-muted small">
+                                {{ __('Available') }}: <b id="credit-available-total">0.00</b> ·
+                                {{ __('Applied') }}: <b id="credit-applied-total">0.00</b> ·
+                                {{ __('Left') }}: <b id="credit-left-total">0.00</b>
+                            </div>
                         </div>
                     </div>
                 </div>

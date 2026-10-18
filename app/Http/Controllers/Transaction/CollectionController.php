@@ -88,7 +88,7 @@ class CollectionController extends Controller
                 $paid -= (float) CollectionInvoice::where('collection_id', $exceptCollectionId)->where('customer_invoice_id', $invoice->id)->sum('amount');
             }
         }
-        return (float) $invoice->grand_total - $paid - $drafts;
+        return round((float) $invoice->grand_total - $paid - $drafts, 2);
     }
 
     /**
@@ -110,60 +110,79 @@ class CollectionController extends Controller
             ])->filter(fn ($r) => $r['available'] > 0)->values();
     }
 
-    /** Remember which credit the user chose on this collection (status 0 = chosen, applied when the collection is approved). */
+    /**
+     * Remember the credit chosen on this collection: credit_to[invoice id] = amount, per invoice, so several invoices can use
+     * credit at the same time. The credit is drawn from the customer's available credit, oldest invoice first (status 0 =
+     * chosen; it moves when the collection is approved).
+     */
     private function saveCreditChoices(Collection $collection, Request $request): void
     {
         DB::table('customer_credit_applications')->where('collection_id', $collection->id)->where('status', 0)->delete();
-        $chosen = array_filter((array) $request->input('credit_apply', []), fn ($a) => is_numeric($a) && (float) $a > 0);
+        $chosen = array_filter((array) $request->input('credit_to', []), fn ($a) => is_numeric($a) && (float) $a > 0);
         if (!$chosen) return;
-        $sources = $this->creditSources((int) $collection->customer_id, (int) $collection->id)->keyBy('invoice_id');
+
+        $lines = CollectionInvoice::where('collection_id', $collection->id)->get()->keyBy('customer_invoice_id');
+        $sources = $this->creditSources((int) $collection->customer_id, (int) $collection->id)->values()->all();
+        $pool = array_sum(array_column($sources, 'available'));
+        $asked = array_sum(array_map('floatval', $chosen));
+        if ($asked > $pool + 0.005) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['credit_to' => __('The customer credit chosen (:asked) is more than the credit available (:pool).', ['asked' => number_format($asked, 2), 'pool' => number_format($pool, 2)])]);
+        }
+
         $rows = [];
-        foreach ($chosen as $fromId => $amount) {
+        foreach ($chosen as $toId => $amount) {
+            $toId = (int) $toId;
             $amount = round((float) $amount, 2);
-            $avail = (float) ($sources[(int) $fromId]['available'] ?? 0);
-            if ($amount > $avail + 0.005) {
-                throw \Illuminate\Validation\ValidationException::withMessages(['credit_apply' => __('Only :avail of customer credit is available on :no.', ['avail' => number_format($avail, 2), 'no' => $sources[(int) $fromId]['row_no'] ?? $fromId])]);
+            $line = $lines->get($toId);
+            $inv = CustomerInvoice::find($toId);
+            if (!$line || !$inv) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['credit_to' => __('Credit was chosen for an invoice that is not on this collection.')]);
             }
-            $rows[] = ['company_id' => companyId(), 'customer_id' => $collection->customer_id, 'collection_id' => $collection->id,
-                'from_invoice_id' => (int) $fromId, 'to_invoice_id' => null, 'amount' => $amount, 'status' => 0,
-                'created_by' => Auth::id(), 'created_at' => now(), 'updated_at' => now()];
+            // credit plus cash can never be more than what the invoice still owes
+            $room = max(0, $this->invoiceOutstanding($inv, (int) $collection->id) - (float) $line->amount);
+            if ($amount > $room + 0.005) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['credit_to' => __(':no: the credit (:credit) plus the cash is more than the invoice still owes.', ['no' => $inv->row_no, 'credit' => number_format($amount, 2)])]);
+            }
+            // draw it from the credit available, oldest first (never from the invoice itself)
+            $left = $amount;
+            foreach ($sources as &$src) {
+                if ($left <= 0.004) break;
+                if ($src['available'] <= 0.004 || (int) $src['invoice_id'] === $toId) continue;
+                $take = round(min($left, $src['available']), 2);
+                $src['available'] = round($src['available'] - $take, 2);
+                $left = round($left - $take, 2);
+                $rows[] = ['company_id' => companyId(), 'customer_id' => $collection->customer_id, 'collection_id' => $collection->id,
+                    'from_invoice_id' => (int) $src['invoice_id'], 'to_invoice_id' => $toId, 'amount' => $take, 'status' => 0,
+                    'created_by' => Auth::id(), 'created_at' => now(), 'updated_at' => now()];
+            }
+            unset($src);
+            if ($left > 0.005) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['credit_to' => __('Not enough customer credit for :no.', ['no' => $inv->row_no])]);
+            }
         }
         DB::table('customer_credit_applications')->insert($rows);
     }
 
-    /** Approving the collection: the chosen credit moves from the invoice that carries it onto this collection's invoices (no cash, no ledger entry). */
+    /** Approving the collection: the chosen credit moves from the invoice that carries it onto the invoice it was chosen for (no cash, no ledger entry). */
     private function applyCredits(Collection $collection): void
     {
-        $chosen = DB::table('customer_credit_applications')->where('collection_id', $collection->id)->where('status', 0)->get();
-        if ($chosen->isEmpty()) return;
-        $targets = CollectionInvoice::where('collection_id', $collection->id)->orderBy('id')->pluck('customer_invoice_id')->all();
+        $chosen = DB::table('customer_credit_applications')->where('collection_id', $collection->id)->where('status', 0)->orderBy('id')->get();
         foreach ($chosen as $row) {
-            $left = (float) $row->amount;
             $from = CustomerInvoice::find($row->from_invoice_id);
-            if (!$from) { DB::table('customer_credit_applications')->where('id', $row->id)->delete(); continue; }
-            // never move more than the carrying invoice really holds
-            $left = min($left, max(0, (float) $from->paid_amount - (float) $from->grand_total));
-            foreach ($targets as $toId) {
-                if ($left <= 0.004) break;
-                $to = CustomerInvoice::find($toId);
-                if (!$to || (int) $to->id === (int) $from->id) continue;
-                $need = (float) $to->grand_total - (float) ($to->paid_amount ?? 0);
-                $take = round(min($left, max(0, $need)), 2);
-                if ($take <= 0) continue;
-                $from->paid_amount = (float) $from->paid_amount - $take;
-                $to->paid_amount = (float) ($to->paid_amount ?? 0) + $take;
-                $from->save();
-                $to->save();
-                DB::table('customer_credit_applications')->insert(['company_id' => $collection->company_id, 'customer_id' => $collection->customer_id,
-                    'collection_id' => $collection->id, 'from_invoice_id' => $from->id, 'to_invoice_id' => $to->id, 'amount' => $take, 'status' => 1,
-                    'created_by' => Auth::id(), 'created_at' => now(), 'updated_at' => now()]);
-                $left -= $take;
-            }
-            DB::table('customer_credit_applications')->where('id', $row->id)->delete();   // the chosen line is replaced by what was really applied
+            $to = CustomerInvoice::find($row->to_invoice_id);
+            if (!$from || !$to) { DB::table('customer_credit_applications')->where('id', $row->id)->delete(); continue; }
+            // never more than the carrying invoice really holds, nor more than the receiving invoice still owes
+            $take = round(min((float) $row->amount, max(0, (float) $from->paid_amount - (float) $from->grand_total), max(0, (float) $to->grand_total - (float) ($to->paid_amount ?? 0))), 2);
+            if ($take <= 0.004) { DB::table('customer_credit_applications')->where('id', $row->id)->delete(); continue; }
+            $from->paid_amount = (float) $from->paid_amount - $take;
+            $to->paid_amount = (float) ($to->paid_amount ?? 0) + $take;
+            $from->save();
+            $to->save();
+            DB::table('customer_credit_applications')->where('id', $row->id)->update(['amount' => $take, 'status' => 1, 'updated_at' => now()]);
         }
     }
 
-    /** Un-approving / cancelling the collection: give the credit back to the invoices it came from (it stays chosen on the draft). */
+    /** Un-approving / cancelling the collection: the credit goes back to the invoices it came from (it stays chosen on the draft). */
     private function revertCredits(Collection $collection): void
     {
         $applied = DB::table('customer_credit_applications')->where('collection_id', $collection->id)->where('status', 1)->get();
@@ -173,17 +192,11 @@ class CollectionController extends Controller
             if ($from) { $from->paid_amount = (float) $from->paid_amount + (float) $row->amount; $from->save(); }
             if ($to) { $to->paid_amount = max(0, (float) $to->paid_amount - (float) $row->amount); $to->save(); }
         }
-        $byFrom = $applied->groupBy('from_invoice_id');
-        // the ledger allocations that recorded the move are reversed with it
         if ($applied->isNotEmpty()) {
+            // the ledger allocations that recorded the move are reversed with it
             DB::table('finance_allocations')->where('settling_doc_type', 'credit_application')->whereIn('settling_doc_id', $applied->pluck('id'))
                 ->where('status', 'active')->update(['status' => 'reversed', 'reversed_at' => now(), 'updated_at' => now()]);
-        }
-        DB::table('customer_credit_applications')->where('collection_id', $collection->id)->where('status', 1)->delete();
-        foreach ($byFrom as $fromId => $rows) {
-            DB::table('customer_credit_applications')->insert(['company_id' => $collection->company_id, 'customer_id' => $collection->customer_id,
-                'collection_id' => $collection->id, 'from_invoice_id' => $fromId, 'to_invoice_id' => null, 'amount' => $rows->sum('amount'), 'status' => 0,
-                'created_by' => Auth::id(), 'created_at' => now(), 'updated_at' => now()]);
+            DB::table('customer_credit_applications')->whereIn('id', $applied->pluck('id'))->update(['status' => 0, 'updated_at' => now()]);
         }
     }
 
@@ -274,18 +287,21 @@ class CollectionController extends Controller
         //$customerInvoices = $customerInvoices->values();
         // credit chosen on this collection (chosen or already applied) + what is still available to pick
         $creditSources = $this->creditSources((int) $collection->customer_id, (int) $collection->id);
+        // credit chosen on this collection, per invoice it is applied to
         $creditChosen = DB::table('customer_credit_applications')->where('collection_id', $collection->id)
+            ->selectRaw('to_invoice_id, SUM(amount) as amount')->groupBy('to_invoice_id')->pluck('amount', 'to_invoice_id')->toArray();
+        // credit this collection already moved counts as available again while editing it
+        $ownApplied = DB::table('customer_credit_applications')->where('collection_id', $collection->id)->where('status', 1)
             ->selectRaw('from_invoice_id, SUM(amount) as amount')->groupBy('from_invoice_id')->pluck('amount', 'from_invoice_id')->toArray();
-        foreach ($creditChosen as $fromId => $amt) {
-            // an already applied amount is no longer "available" on its invoice: show it as available again for this collection
-            $row = $creditSources->firstWhere('invoice_id', $fromId);
-            if (!$row) {
+        foreach ($ownApplied as $fromId => $amt) {
+            if ($creditSources->firstWhere('invoice_id', $fromId)) {
+                $creditSources = $creditSources->map(fn ($r) => $r['invoice_id'] == $fromId ? array_merge($r, ['available' => round($r['available'] + (float) $amt, 2)]) : $r);
+            } else {
                 $inv = CustomerInvoice::find($fromId);
                 if ($inv) $creditSources->push(['invoice_id' => $fromId, 'row_no' => $inv->row_no, 'available' => round((float) $amt + max(0, (float) $inv->paid_amount - (float) $inv->grand_total), 2)]);
-            } else {
-                $creditSources = $creditSources->map(fn ($r) => $r['invoice_id'] == $fromId ? array_merge($r, ['available' => round($r['available'] + ((DB::table('customer_credit_applications')->where('collection_id', $collection->id)->where('from_invoice_id', $fromId)->where('status', 1)->sum('amount'))), 2)]) : $r);
             }
         }
+        $creditSources = $creditSources->values();
         return view('modules.transaction.collection.collection-form', compact('collection', 'customers', 'parents', 'subAccounts', 'customerInvoices', 'selectedInvoice', 'creditSources', 'creditChosen'));
     }
 
@@ -295,10 +311,16 @@ class CollectionController extends Controller
     public function store(Request $request)
     {
         $request->merge(['customer' => decodeId($request->input('customer'))]);
+        // money has two decimals: round what came in (a floating-point tail such as 101.80000000000001 must never be saved)
+        foreach (['invoice_amounts', 'credit_to'] as $key) {
+            if (is_array($request->input($key))) {
+                $request->merge([$key => array_map(fn ($a) => is_numeric($a) ? round((float) $a, 2) : $a, $request->input($key))]);
+            }
+        }
         // Nothing is paid in cash when the invoices are settled entirely with customer credit: then there is no account to choose.
         $cashTotal = collect((array) $request->input('invoice_amounts', []))->sum(fn ($a) => (float) $a)
             + (float) $request->input('bank_charges', 0) + (float) $request->input('other_charges', 0);
-        $creditOnly = $cashTotal <= 0.004 && collect((array) $request->input('credit_apply', []))->sum(fn ($a) => (float) $a) > 0;
+        $creditOnly = $cashTotal <= 0.004 && collect((array) $request->input('credit_to', []))->sum(fn ($a) => (float) $a) > 0;
         $validated = $request->validate([
             'customer' => 'required|exists:customers,id',
             //'job_id' => 'nullable|exists:jobs,id',
@@ -495,7 +517,15 @@ class CollectionController extends Controller
 
         [$origin, $timeline] = $this->collectionTimeline($collection);
 
-        return view('modules.transaction.collection.view-overview-drawer', compact('collection', 'origin', 'timeline'));
+        // Customer credit used on this collection: which invoice it came from, which invoice it settled, how much
+        $credits = DB::table('customer_credit_applications as ca')
+            ->leftJoin('customer_invoices as f', 'f.id', '=', 'ca.from_invoice_id')
+            ->leftJoin('customer_invoices as t', 't.id', '=', 'ca.to_invoice_id')
+            ->where('ca.collection_id', $collection->id)->orderBy('ca.id')
+            ->get(['ca.amount', 'ca.status', 'ca.from_invoice_id', 'ca.to_invoice_id', 'f.row_no as from_no', 't.row_no as to_no']);
+        $creditByInvoice = $credits->groupBy('to_invoice_id')->map(fn ($g) => (float) $g->sum('amount'))->all();
+
+        return view('modules.transaction.collection.view-overview-drawer', compact('collection', 'origin', 'timeline', 'credits', 'creditByInvoice'));
     }
 
     /**
@@ -770,6 +800,9 @@ class CollectionController extends Controller
                 'company_id',
                 'collections.created_at',
             ])
+            // customer credit chosen / applied on the collection (not cash), shown next to the amount in the list
+            ->selectSub(fn ($q) => $q->from('customer_credit_applications as cca')->whereColumn('cca.collection_id', 'collections.id')
+                ->selectRaw('COALESCE(SUM(cca.amount), 0)'), 'credit_applied')
             ->when($request->tab, function ($q) use ($request) {
                 if ($request->tab !== 'all') {
                     $q->where('status', CollectionEnum::fromName($request->tab));
@@ -815,6 +848,7 @@ class CollectionController extends Controller
             ->editColumn('collection_date', fn($model) => \Carbon\Carbon::parse($model->collection_date)->format('d-m-Y'))
             ->editColumn('currency', fn($model) => strtoupper($model->currency))
             ->addColumn('customer_name', fn($model) => $model->customer->name_en ?? '-')
+            ->filterColumn('credit_applied', fn () => null)
             ->editColumn('grand_total', fn($model) => number_format($model->grand_total, decimals()))
             ->editColumn('status', fn($model) => CollectionEnum::from($model->status)->label())
             ->with([

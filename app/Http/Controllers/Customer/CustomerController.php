@@ -639,6 +639,70 @@ class CustomerController extends Controller
         return view('modules.customer.view-overview', compact('customer'));
     }
 
+    /** The approved invoices of this customer that are still unpaid (what the "Due" figure on the list adds up), for the side drawer. */
+    public function dueDetail($id)
+    {
+        $customer = Customer::select('id', 'name_en', 'row_no', 'currency')->findOrFail($id);
+        $rows = DB::table('customer_invoices')
+            ->where('customer_id', $customer->id)->where('status', \App\Enums\CustomerInvoiceEnum::APPROVED->value)
+            ->whereColumn('paid_amount', '<', 'grand_total')->whereNull('deleted_at')->where('company_id', companyId())
+            ->orderBy('due_at')->get(['id', 'row_no', 'job_no', 'invoice_date', 'due_at', 'currency', 'grand_total', 'paid_amount']);
+        $today = now()->startOfDay();
+        $invoices = $rows->map(function ($r) use ($today) {
+            $due = $r->due_at ? \Illuminate\Support\Carbon::parse($r->due_at)->startOfDay() : null;
+            return [
+                'id' => $r->id, 'row_no' => $r->row_no, 'job_no' => $r->job_no,
+                'invoice_date' => $r->invoice_date ? \Illuminate\Support\Carbon::parse($r->invoice_date)->format('d-m-Y') : null,
+                'due_at' => $due ? $due->format('d-m-Y') : null,
+                'currency' => $r->currency, 'total' => round((float) $r->grand_total, 2), 'paid' => round((float) $r->paid_amount, 2),
+                'balance' => round((float) $r->grand_total - (float) $r->paid_amount, 2),
+                'overdue_days' => $due && $due->lt($today) ? $due->diffInDays($today) : 0,
+            ];
+        })->values();
+        return response()->json([
+            'customer' => $customer->name_en, 'code' => $customer->row_no,
+            'total_due' => round($invoices->sum('balance'), 2), 'overdue' => $invoices->where('overdue_days', '>', 0)->count(),
+            'invoices' => $invoices,
+        ]);
+    }
+
+    /**
+     * What the customer is owed back ("unused amount" = advance + customer credit): approved invoices settled for more than
+     * they were worth. The part that came from approved credit notes is customer credit, the rest is advance (cash beyond the invoice).
+     */
+    public function unusedDetail($id)
+    {
+        $customer = Customer::select('id', 'name_en', 'row_no')->findOrFail($id);
+        $invoices = \App\Models\Finance\CustomerInvoice\CustomerInvoice::where('customer_id', $customer->id)
+            ->where('status', \App\Enums\CustomerInvoiceEnum::APPROVED->value)->whereColumn('paid_amount', '>', 'grand_total')
+            ->orderBy('id')->get(['id', 'row_no', 'invoice_date', 'currency', 'grand_total', 'paid_amount']);
+        $notes = DB::table('credit_notes')->whereIn('invoice_id', $invoices->pluck('id'))->where('status', 2)->whereNull('deleted_at')
+            ->get(['id', 'row_no', 'invoice_id', 'grand_total', 'reason'])->groupBy('invoice_id');
+        $rows = $invoices->map(function ($i) use ($notes) {
+            $excess = round((float) $i->paid_amount - (float) $i->grand_total, 2);
+            $cn = $notes->get($i->id, collect());
+            $credit = round(min($excess, (float) $cn->sum('grand_total')), 2);
+            return [
+                'id' => $i->id, 'row_no' => $i->row_no, 'invoice_date' => $i->invoice_date, 'currency' => $i->currency,
+                'total' => round((float) $i->grand_total, 2), 'settled' => round((float) $i->paid_amount, 2),
+                'unused' => $excess, 'credit' => $credit, 'advance' => round($excess - $credit, 2),
+                'credit_notes' => $cn->map(fn ($n) => ['id' => $n->id, 'row_no' => $n->row_no, 'amount' => round((float) $n->grand_total, 2), 'reason' => $n->reason ? \Illuminate\Support\Str::headline($n->reason) : null])->values(),
+            ];
+        })->values();
+        // what has already been used from it (applied on collections)
+        $used = DB::table('customer_credit_applications as ca')
+            ->join('collections as c', 'c.id', '=', 'ca.collection_id')
+            ->leftJoin('customer_invoices as f', 'f.id', '=', 'ca.from_invoice_id')->leftJoin('customer_invoices as t', 't.id', '=', 'ca.to_invoice_id')
+            ->where('ca.customer_id', $customer->id)->where('ca.status', 1)->orderByDesc('ca.id')
+            ->get(['ca.amount', 'c.id as collection_id', 'c.row_no as collection_no', 'f.row_no as from_no', 't.row_no as to_no'])
+            ->map(fn ($u) => ['collection_id' => $u->collection_id, 'collection_no' => $u->collection_no, 'from' => $u->from_no, 'to' => $u->to_no, 'amount' => round((float) $u->amount, 2)]);
+        return response()->json([
+            'customer' => $customer->name_en, 'code' => $customer->row_no,
+            'total' => round($rows->sum('unused'), 2), 'credit' => round($rows->sum('credit'), 2), 'advance' => round($rows->sum('advance'), 2),
+            'invoices' => $rows, 'used' => $used->values(), 'used_total' => round($used->sum('amount'), 2),
+        ]);
+    }
+
     public function getAddress($id)
     {
         $customer = Customer::select('address1_en', 'address2_en', 'city_en', 'country_en')
