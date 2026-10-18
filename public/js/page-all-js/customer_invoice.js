@@ -195,6 +195,10 @@ CUSTOMER_INVOICE = {
                 $('#cardAllCount').text(counts.all ?? 0);
                 $('#cardApprovedCount').text(counts.approved ?? 0);
                 $('#cardDraftCount').text(counts.draft ?? 0);
+                // the split bar of the Summary card: approved vs draft share of the invoices that are one or the other
+                const ap = Number(counts.approved ?? 0), dr = Number(counts.draft ?? 0), sum = ap + dr;
+                $('#cardApprovedBar').css('width', sum ? (ap / sum * 100) + '%' : '0');
+                $('#cardDraftBar').css('width', sum ? (dr / sum * 100) + '%' : '0');
             }
         },
         templates: {
@@ -315,20 +319,40 @@ CUSTOMER_INVOICE = {
      * this only supplies the invoiceId query param it reads.
      */
     recordPayment(invoiceId) {
-        // Close the drawer first if this was triggered from within it
-        const historyDrawerEl = document.getElementById('paymentHistoryDrawer');
-        const historyDrawer = bootstrap.Offcanvas.getInstance(historyDrawerEl);
-        if (historyDrawer) historyDrawer.hide();
-
-        webModal.openGlobalModal({
-            title: 'Record Payment',
+        // the normal Collection form in the sub floatbar beside the invoice (like a linked record opens)
+        window.openLinkedForm({
+            title: trans('Collection'),
             url: GLOBAL_FN.buildUrl('transaction/collections/create'),
-            content: {
-                invoiceId: invoiceId
-            },
-            size: 'xl',
-            scroll: true,
-            minHeight: 'min-height:70vh;',
+            params: {invoiceId: invoiceId},
+            onReady: function () { if (typeof COLLECTION !== 'undefined') COLLECTION.form.openCallback(); },
+            afterSave: function () { CUSTOMER_INVOICE.refreshOpenDrawer(invoiceId); },
+        });
+    },
+    // after a collection / credit note is saved from the drawer: show the invoice again with its new balance
+    refreshOpenDrawer(invoiceId) {
+        const el = document.getElementById('moduleDrawer');
+        if (el && el.classList.contains('show')) {
+            $.get('/invoice/customer/' + invoiceId + '/overview-drawer', function (data) { $('#moduleOverview').html(data); });
+        }
+    },
+    // the side drawers (invoice details, payment history) must not sit over a form that opens from them
+    closeDrawers() {
+        document.querySelectorAll('.offcanvas.show').forEach(function (el) {
+            const inst = bootstrap.Offcanvas.getInstance(el);
+            if (inst) inst.hide();
+        });
+    },
+    /**
+     * "Credit Note" button of the invoice drawer: opens the New Credit Note form on top of this page, already pointing at
+     * this invoice (customer, job and all its lines filled in). Uses the credit note form as it is.
+     */
+    newCreditNote(invoiceId) {
+        window.openLinkedForm({
+            title: trans('New Credit Note'),
+            url: GLOBAL_FN.buildUrl('adjustment/credit-note/create'),
+            params: {invoiceId: invoiceId},
+            onReady: function () { if (typeof CREDIT_NOTE !== 'undefined') CREDIT_NOTE.form.openCallback(); },
+            afterSave: function () { CUSTOMER_INVOICE.refreshOpenDrawer(invoiceId); },
         });
     },
     form: {

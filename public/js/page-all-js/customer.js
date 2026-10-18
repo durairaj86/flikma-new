@@ -106,7 +106,7 @@ CUSTOMER = {
                     },
                     columnDefs: [
                         {targets: [0], searchable: false},
-                        {targets: [7], searchable: false, orderable: false},
+                        {targets: [7, 8, 9], searchable: false, orderable: false},
                         {targets: [0], orderable: false},
                         /*{targets: [1], class: 'hide', visible: false},*/
                     ],
@@ -153,6 +153,18 @@ CUSTOMER = {
                                     ? '<span class="badge bg-danger-subtle text-danger border border-opacity-10 px-2 py-1" style="font-size:0.65rem;">' + overdueCount + ' Overdue</span>'
                                     : '<span class="badge bg-success-subtle text-success border border-opacity-10 px-2 py-1" style="font-size:0.65rem;">On Time</span>';
                                 return '<div class="fw-bold">' + amountFormat(due) + '</div><div class="mt-1">' + badge + '</div>';
+                            }
+                        },
+                        {
+                            data: 'advance_amount', render: function (data, type, row) {
+                                const v = parseFloat(row.advance_amount) || 0;
+                                return v > 0 ? '<div class="fw-bold text-info">' + amountFormat(v) + '</div>' : '<div class="text-muted">0.00</div>';
+                            }
+                        },
+                        {
+                            data: 'credit_amount', render: function (data, type, row) {
+                                const v = parseFloat(row.credit_amount) || 0;
+                                return v > 0 ? '<div class="fw-bold text-info">' + amountFormat(v) + '</div>' : '<div class="text-muted">0.00</div>';
                             }
                         },
                         {

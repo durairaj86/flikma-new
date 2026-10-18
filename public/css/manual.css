@@ -2094,3 +2094,22 @@ th .ts-wrapper.single {
     contain: inline-size;
     max-width: 100%;
 }
+
+
+/* Summary cards of the invoice lists (Customer / Proforma / Supplier): main figure left, details stacked right.
+   Colours of the approved / draft dot and bar come from --ci-a / --ci-d set on #summary-cards. */
+.ci-kpi { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-radius: .6rem; padding: .55rem 1rem; }
+.ci-kpi-main { min-width: 0; }
+.ci-kpi-title { font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; display: flex; align-items: center; gap: .35rem; }
+.ci-kpi-big { display: flex; align-items: baseline; gap: .5rem; flex-wrap: wrap; }
+.ci-kpi-big > span { font-size: 20px; font-weight: 700; line-height: 1.25; }
+.ci-kpi-big small { font-size: .72rem; }
+.ci-kpi-side { min-width: 9.5rem; font-size: .78rem; }
+.ci-kv { display: flex; justify-content: space-between; gap: .75rem; line-height: 1.55; }
+.ci-kv > span { color: #6b7280; display: inline-flex; align-items: center; gap: .35rem; }
+.ci-kv > b { font-weight: 600; color: #111827; }
+.ci-bar { display: flex; height: 6px; border-radius: 4px; overflow: hidden; background: #e5e7eb; margin-bottom: .3rem; }
+.ci-bar > span { display: block; height: 100%; }
+.ci-bar .a { background: var(--ci-a, #22c55e); } .ci-bar .d { background: var(--ci-d, #6366f1); }
+.ci-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
+.ci-dot.a { background: var(--ci-a, #22c55e); } .ci-dot.d { background: var(--ci-d, #6366f1); }

@@ -41,7 +41,7 @@
                     <!-- REFERENCE INVOICE (Only If Linked) -->
                     <div class="col-md-4" id="invoice-select-box">
                         <label class="form-label fw-semibold">{{ __('Invoice') }} *</label>
-                        <select name="invoice_id" class="tom-select" required data-live-search="true">
+                        <select name="invoice_id" class="tom-select" required data-live-search="true"{!! !empty($prefill) ? ' data-prefill="1"' : '' !!}>
                             <option value="">{{ __('Select Invoice') }}</option>
                             @foreach($customerInvoices as $inv)
                                 <option value="{{ $inv->id }}" @selected($creditNote->invoice_id == $inv->id)>

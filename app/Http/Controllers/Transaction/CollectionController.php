@@ -44,7 +44,7 @@ class CollectionController extends Controller
             $targetInvoice = CustomerInvoice::with('customer:id,name_en,row_no')->find((int) $request->get('invoiceId'));
 
             if ($targetInvoice) {
-                return $this->recordPaymentModal($targetInvoice);
+                return $this->collectionModalForInvoice($targetInvoice);
             }
         }
 
@@ -55,8 +55,10 @@ class CollectionController extends Controller
         $subAccounts = Account::whereIn('parent_id', [3, 4])->where('is_grouped', 0)->orderBy('name')->get();
         $customerInvoices = collect();
         $selectedInvoice = [];
+        $creditSources = collect();
+        $creditChosen = [];
 
-        return view('modules.transaction.collection.collection-form', compact('collection', 'customers', 'parents', 'subAccounts', 'customerInvoices', 'selectedInvoice'));
+        return view('modules.transaction.collection.collection-form', compact('collection', 'customers', 'parents', 'subAccounts', 'customerInvoices', 'selectedInvoice', 'creditSources', 'creditChosen'));
     }
 
     /**
@@ -65,6 +67,162 @@ class CollectionController extends Controller
      * submitting the exact same field names so store()/updateStatus() need
      * no changes at all.
      */
+    /**
+     * What an invoice still owes: its amount, less everything already settled on it (approved collections and credit
+     * notes, and credit applied from other invoices - all kept in paid_amount), less the amounts sitting on OTHER draft
+     * collections. $exceptCollectionId is the collection being edited (its own lines never reduce the figure).
+     */
+    private function invoiceOutstanding(CustomerInvoice $invoice, ?int $exceptCollectionId = null): float
+    {
+        $drafts = (float) DB::table('collection_invoices as ci')
+            ->join('collections as c', 'c.id', '=', 'ci.collection_id')
+            ->where('ci.customer_invoice_id', $invoice->id)->whereNull('c.deleted_at')
+            ->where('c.status', CollectionEnum::DRAFT->value)
+            ->when($exceptCollectionId, fn ($q) => $q->where('c.id', '!=', $exceptCollectionId))
+            ->sum('ci.amount');
+        $paid = (float) ($invoice->paid_amount ?? 0);
+        // editing an approved collection: its own amount is already inside paid_amount, give it back
+        if ($exceptCollectionId) {
+            $own = Collection::find($exceptCollectionId);
+            if ($own && (int) $own->status === CollectionEnum::APPROVED->value) {
+                $paid -= (float) CollectionInvoice::where('collection_id', $exceptCollectionId)->where('customer_invoice_id', $invoice->id)->sum('amount');
+            }
+        }
+        return (float) $invoice->grand_total - $paid - $drafts;
+    }
+
+    /**
+     * Credit a customer holds that can be applied to other invoices: on an approved invoice that was settled for more
+     * than it was worth (typically a fully paid invoice that was then credited), the excess, less what other draft
+     * collections have already picked. Returns [['invoice_id', 'row_no', 'available'], ...].
+     */
+    private function creditSources(int $customerId, ?int $exceptCollectionId = null): \Illuminate\Support\Collection
+    {
+        $picked = DB::table('customer_credit_applications')->where('status', 0)
+            ->when($exceptCollectionId, fn ($q) => $q->where('collection_id', '!=', $exceptCollectionId))
+            ->selectRaw('from_invoice_id, SUM(amount) as amount')->groupBy('from_invoice_id')->pluck('amount', 'from_invoice_id');
+        return CustomerInvoice::where('customer_id', $customerId)->where('status', 3)
+            ->whereColumn('paid_amount', '>', 'grand_total')->orderBy('id')->get(['id', 'row_no', 'grand_total', 'paid_amount'])
+            ->map(fn ($i) => [
+                'invoice_id' => $i->id,
+                'row_no' => $i->row_no,
+                'available' => round((float) $i->paid_amount - (float) $i->grand_total - (float) ($picked[$i->id] ?? 0), 2),
+            ])->filter(fn ($r) => $r['available'] > 0)->values();
+    }
+
+    /** Remember which credit the user chose on this collection (status 0 = chosen, applied when the collection is approved). */
+    private function saveCreditChoices(Collection $collection, Request $request): void
+    {
+        DB::table('customer_credit_applications')->where('collection_id', $collection->id)->where('status', 0)->delete();
+        $chosen = array_filter((array) $request->input('credit_apply', []), fn ($a) => is_numeric($a) && (float) $a > 0);
+        if (!$chosen) return;
+        $sources = $this->creditSources((int) $collection->customer_id, (int) $collection->id)->keyBy('invoice_id');
+        $rows = [];
+        foreach ($chosen as $fromId => $amount) {
+            $amount = round((float) $amount, 2);
+            $avail = (float) ($sources[(int) $fromId]['available'] ?? 0);
+            if ($amount > $avail + 0.005) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['credit_apply' => __('Only :avail of customer credit is available on :no.', ['avail' => number_format($avail, 2), 'no' => $sources[(int) $fromId]['row_no'] ?? $fromId])]);
+            }
+            $rows[] = ['company_id' => companyId(), 'customer_id' => $collection->customer_id, 'collection_id' => $collection->id,
+                'from_invoice_id' => (int) $fromId, 'to_invoice_id' => null, 'amount' => $amount, 'status' => 0,
+                'created_by' => Auth::id(), 'created_at' => now(), 'updated_at' => now()];
+        }
+        DB::table('customer_credit_applications')->insert($rows);
+    }
+
+    /** Approving the collection: the chosen credit moves from the invoice that carries it onto this collection's invoices (no cash, no ledger entry). */
+    private function applyCredits(Collection $collection): void
+    {
+        $chosen = DB::table('customer_credit_applications')->where('collection_id', $collection->id)->where('status', 0)->get();
+        if ($chosen->isEmpty()) return;
+        $targets = CollectionInvoice::where('collection_id', $collection->id)->orderBy('id')->pluck('customer_invoice_id')->all();
+        foreach ($chosen as $row) {
+            $left = (float) $row->amount;
+            $from = CustomerInvoice::find($row->from_invoice_id);
+            if (!$from) { DB::table('customer_credit_applications')->where('id', $row->id)->delete(); continue; }
+            // never move more than the carrying invoice really holds
+            $left = min($left, max(0, (float) $from->paid_amount - (float) $from->grand_total));
+            foreach ($targets as $toId) {
+                if ($left <= 0.004) break;
+                $to = CustomerInvoice::find($toId);
+                if (!$to || (int) $to->id === (int) $from->id) continue;
+                $need = (float) $to->grand_total - (float) ($to->paid_amount ?? 0);
+                $take = round(min($left, max(0, $need)), 2);
+                if ($take <= 0) continue;
+                $from->paid_amount = (float) $from->paid_amount - $take;
+                $to->paid_amount = (float) ($to->paid_amount ?? 0) + $take;
+                $from->save();
+                $to->save();
+                DB::table('customer_credit_applications')->insert(['company_id' => $collection->company_id, 'customer_id' => $collection->customer_id,
+                    'collection_id' => $collection->id, 'from_invoice_id' => $from->id, 'to_invoice_id' => $to->id, 'amount' => $take, 'status' => 1,
+                    'created_by' => Auth::id(), 'created_at' => now(), 'updated_at' => now()]);
+                $left -= $take;
+            }
+            DB::table('customer_credit_applications')->where('id', $row->id)->delete();   // the chosen line is replaced by what was really applied
+        }
+    }
+
+    /** Un-approving / cancelling the collection: give the credit back to the invoices it came from (it stays chosen on the draft). */
+    private function revertCredits(Collection $collection): void
+    {
+        $applied = DB::table('customer_credit_applications')->where('collection_id', $collection->id)->where('status', 1)->get();
+        foreach ($applied as $row) {
+            $from = CustomerInvoice::find($row->from_invoice_id);
+            $to = CustomerInvoice::find($row->to_invoice_id);
+            if ($from) { $from->paid_amount = (float) $from->paid_amount + (float) $row->amount; $from->save(); }
+            if ($to) { $to->paid_amount = max(0, (float) $to->paid_amount - (float) $row->amount); $to->save(); }
+        }
+        $byFrom = $applied->groupBy('from_invoice_id');
+        // the ledger allocations that recorded the move are reversed with it
+        if ($applied->isNotEmpty()) {
+            DB::table('finance_allocations')->where('settling_doc_type', 'credit_application')->whereIn('settling_doc_id', $applied->pluck('id'))
+                ->where('status', 'active')->update(['status' => 'reversed', 'reversed_at' => now(), 'updated_at' => now()]);
+        }
+        DB::table('customer_credit_applications')->where('collection_id', $collection->id)->where('status', 1)->delete();
+        foreach ($byFrom as $fromId => $rows) {
+            DB::table('customer_credit_applications')->insert(['company_id' => $collection->company_id, 'customer_id' => $collection->customer_id,
+                'collection_id' => $collection->id, 'from_invoice_id' => $fromId, 'to_invoice_id' => null, 'amount' => $rows->sum('amount'), 'status' => 0,
+                'created_by' => Auth::id(), 'created_at' => now(), 'updated_at' => now()]);
+        }
+    }
+
+    /**
+     * The normal Collection form, opened from a customer invoice: that invoice's customer is selected and the invoice is
+     * ticked at its outstanding balance (the customer's other unpaid approved invoices are listed, unticked).
+     */
+    private function collectionModalForInvoice(CustomerInvoice $target)
+    {
+        $collection = new Collection();
+        $collection->customer_id = $target->customer_id;
+        // the collection starts in the invoice's own currency and rate
+        $collection->currency = $target->currency ?: 'SAR';
+        $collection->currency_rate = (float) $target->currency_rate > 0 ? $target->currency_rate : 1;
+        $customers = Customer::select('id', 'name_en')->orderBy('name_en')->get();
+        $parents = Account::whereIn('id', [3, 4])->orderBy('name')->get();
+        $subAccounts = Account::whereIn('parent_id', [3, 4])->where('is_grouped', 0)->orderBy('name')->get();
+
+        $customerInvoices = CustomerInvoice::where('customer_id', $target->customer_id)
+            ->where('status', 3)->orderBy('invoice_date', 'desc')->get();
+        foreach ($customerInvoices as $key => $invoice) {
+            $outstanding = $this->invoiceOutstanding($invoice);
+            $invoice->paid_amount = (float) $invoice->grand_total - $outstanding;
+            $invoice->balance_amount = $outstanding;
+            if ($outstanding <= 0.004) {
+                $customerInvoices->forget($key);
+            }
+        }
+        $customerInvoices = $customerInvoices->values();
+        $picked = $customerInvoices->firstWhere('id', $target->id);
+        $selectedInvoice = $picked ? [$target->id => (float) $picked->balance_amount] : [];
+        $collection->grand_total = $selectedInvoice ? $selectedInvoice[$target->id] : 0;
+
+        $creditSources = $this->creditSources((int) $target->customer_id);
+        $creditChosen = [];
+
+        return view('modules.transaction.collection.collection-form', compact('collection', 'customers', 'parents', 'subAccounts', 'customerInvoices', 'selectedInvoice', 'creditSources', 'creditChosen'));
+    }
+
     private function recordPaymentModal(CustomerInvoice $invoice)
     {
         $collection = new Collection();
@@ -100,26 +258,35 @@ class CollectionController extends Controller
             ->orderBy('invoice_date', 'desc')
             ->get();
 
-        // For each invoice, calculate the total amount already paid
+        // What each invoice still owes (settled amounts and other draft collections taken off), not counting this collection itself
         foreach ($customerInvoices as $key => $invoice) {
-            // Sum all collection amounts for this invoice, excluding the current collection
-            $totalPaid = CollectionInvoice::where('customer_invoice_id', $invoice->id)
-                ->where('collection_id', '!=', $collection->id)
-                ->sum('amount');
+            $outstanding = $this->invoiceOutstanding($invoice, (int) $collection->id);
+            $invoice->paid_amount = (float) $invoice->grand_total - $outstanding;
+            $invoice->balance_amount = $outstanding;
 
-            // Add the paid amount and remaining balance to the invoice object
-            $invoice->paid_amount = $totalPaid;
-            $invoice->balance_amount = $invoice->grand_total - $totalPaid;
-
-            // Remove invoices with zero balance unless they are already selected in this collection
-            if ($invoice->balance_amount <= 0 && !in_array($invoice->id, $selectedInvoiceIds)) {
+            // Remove invoices with nothing left unless they are already selected in this collection
+            if ($outstanding <= 0.004 && !in_array($invoice->id, $selectedInvoiceIds)) {
                 $customerInvoices->forget($key);
             }
         }
 
         $selectedInvoice = $collection->collectionInvoices->pluck('amount', 'customer_invoice_id')->toArray();
         //$customerInvoices = $customerInvoices->values();
-        return view('modules.transaction.collection.collection-form', compact('collection', 'customers', 'parents', 'subAccounts', 'customerInvoices', 'selectedInvoice'));
+        // credit chosen on this collection (chosen or already applied) + what is still available to pick
+        $creditSources = $this->creditSources((int) $collection->customer_id, (int) $collection->id);
+        $creditChosen = DB::table('customer_credit_applications')->where('collection_id', $collection->id)
+            ->selectRaw('from_invoice_id, SUM(amount) as amount')->groupBy('from_invoice_id')->pluck('amount', 'from_invoice_id')->toArray();
+        foreach ($creditChosen as $fromId => $amt) {
+            // an already applied amount is no longer "available" on its invoice: show it as available again for this collection
+            $row = $creditSources->firstWhere('invoice_id', $fromId);
+            if (!$row) {
+                $inv = CustomerInvoice::find($fromId);
+                if ($inv) $creditSources->push(['invoice_id' => $fromId, 'row_no' => $inv->row_no, 'available' => round((float) $amt + max(0, (float) $inv->paid_amount - (float) $inv->grand_total), 2)]);
+            } else {
+                $creditSources = $creditSources->map(fn ($r) => $r['invoice_id'] == $fromId ? array_merge($r, ['available' => round($r['available'] + ((DB::table('customer_credit_applications')->where('collection_id', $collection->id)->where('from_invoice_id', $fromId)->where('status', 1)->sum('amount'))), 2)]) : $r);
+            }
+        }
+        return view('modules.transaction.collection.collection-form', compact('collection', 'customers', 'parents', 'subAccounts', 'customerInvoices', 'selectedInvoice', 'creditSources', 'creditChosen'));
     }
 
     /**
@@ -128,11 +295,15 @@ class CollectionController extends Controller
     public function store(Request $request)
     {
         $request->merge(['customer' => decodeId($request->input('customer'))]);
+        // Nothing is paid in cash when the invoices are settled entirely with customer credit: then there is no account to choose.
+        $cashTotal = collect((array) $request->input('invoice_amounts', []))->sum(fn ($a) => (float) $a)
+            + (float) $request->input('bank_charges', 0) + (float) $request->input('other_charges', 0);
+        $creditOnly = $cashTotal <= 0.004 && collect((array) $request->input('credit_apply', []))->sum(fn ($a) => (float) $a) > 0;
         $validated = $request->validate([
             'customer' => 'required|exists:customers,id',
             //'job_id' => 'nullable|exists:jobs,id',
             'collection_date' => 'required|date',
-            'account' => 'required',
+            'account' => $creditOnly ? 'nullable' : 'required',
             //'collection_method' => 'required|string',
             'reference_no' => 'nullable|string',
             'currency' => 'required|string|size:3',
@@ -160,6 +331,7 @@ class CollectionController extends Controller
 
                 // If this is an approved collection, we need to revert the paid_amount in customer invoices
                 if ($collection->status == CollectionEnum::APPROVED->value) {
+                    $this->revertCredits($collection);   // credit applied by it goes back; it is applied again below
                     $oldCollectionInvoices = CollectionInvoice::where('collection_id', $collection->id)
                         ->get()
                         ->keyBy('customer_invoice_id')
@@ -226,7 +398,7 @@ class CollectionController extends Controller
             $collection->customer_id = $validated['customer'];
             //$collection->job_id = $validated['job_id'];
             $collection->collection_date = $validated['collection_date'];
-            $collection->account = $validated['account'][0];
+            $collection->account = is_array($validated['account'] ?? null) ? ($validated['account'][0] ?: null) : ($validated['account'] ?? null);
             //$collection->collection_method = $validated['collection_method'];
             $collection->reference_no = $validated['reference_no'] ?? null;
             $collection->currency = $validated['currency'];
@@ -277,6 +449,12 @@ class CollectionController extends Controller
                 }
             }
 
+            // customer credit chosen on this collection (applied now only if the collection is approved)
+            $this->saveCreditChoices($collection, $request);
+            if ($collection->status == CollectionEnum::APPROVED->value) {
+                $this->applyCredits($collection);
+            }
+
             DB::commit();
 
             return response()->json([
@@ -284,6 +462,9 @@ class CollectionController extends Controller
                 'message' => __('Collection saved successfully'),
                 'collection_id' => $collection->id,
             ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            throw $e;
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
@@ -393,23 +574,27 @@ class CollectionController extends Controller
                 ->orderBy('invoice_date', 'desc')
                 ->get();
 
-            // For each invoice, calculate the total amount already paid
+            // What each invoice still owes: settled amounts (collections, credit notes, applied credit) and draft collections taken off
             foreach ($invoices as $key => $invoice) {
-                // Sum all collection amounts for this invoice
-                $totalPaid = CollectionInvoice::where('customer_invoice_id', $invoice->id)->sum('amount');
+                $outstanding = $this->invoiceOutstanding($invoice, request()->filled('collection') ? (int) request('collection') : null);
+                $invoice->paid_amount = (float) $invoice->grand_total - $outstanding;
+                $invoice->balance_amount = $outstanding;
 
-                // Add the paid amount and remaining balance to the invoice object
-                $invoice->paid_amount = $totalPaid;
-                $invoice->balance_amount = $invoice->grand_total - $totalPaid;
-
-                // Remove invoices with zero balance
-                if ($invoice->balance_amount <= 0) {
+                // Remove invoices with nothing left
+                if ($outstanding <= 0.004) {
                     $invoices->forget($key);
                 }
             }
         }
 
         return response()->json($invoices->values());
+    }
+
+    /** Customer credit available to apply (for the collection form's customer change). */
+    public function getCustomerCredit($customerId)
+    {
+        $id = (int) decodeId($customerId);
+        return response()->json($id ? $this->creditSources($id, request()->filled('collection') ? (int) request('collection') : null) : []);
     }
 
     /**
@@ -437,6 +622,7 @@ class CollectionController extends Controller
                             $customerInvoice->save();
                         }
                     }
+                    $this->applyCredits($collection);   // the customer credit chosen on this collection moves onto its invoices
                 }
             } elseif ($status == CollectionEnum::CANCELLED->value) {
                 $collection->status = CollectionEnum::CANCELLED->value;
@@ -445,6 +631,7 @@ class CollectionController extends Controller
 
                 // Revert paid_amount in customer invoices when collection is moved back to draft
                 if ($previousStatus == CollectionEnum::APPROVED->value) {
+                    $this->revertCredits($collection);
                     $collectionInvoices = CollectionInvoice::where('collection_id', $collection->id)->get();
                     foreach ($collectionInvoices as $collectionInvoice) {
                         $customerInvoice = CustomerInvoice::find($collectionInvoice->customer_invoice_id);
@@ -504,6 +691,7 @@ class CollectionController extends Controller
 
         // Delete finance entries if collection was previously approved
         if ($previousStatus == CollectionEnum::APPROVED->value) {
+            $this->revertCredits($collection);
             // Revert paid_amount in customer invoices
             $collectionInvoices = CollectionInvoice::where('collection_id', $collection->id)->get();
             foreach ($collectionInvoices as $collectionInvoice) {
@@ -768,6 +956,8 @@ class CollectionController extends Controller
             ], 400);
         }
 
+        // credit chosen on a draft collection is released with it
+        DB::table('customer_credit_applications')->where('collection_id', $collection->id)->where('status', 0)->delete();
         $collection->delete();
 
         return response()->json([
@@ -793,6 +983,11 @@ class CollectionController extends Controller
     {
         // Delete any existing finance entries for this collection
         $this->deleteFinanceEntries($collection->id);
+
+        // Settled with customer credit only: no cash moved, so there is nothing to post (the credit already sits on the customer's receivable)
+        if ((float) $collection->grand_total <= 0.004) {
+            return;
+        }
 
         // The amount credited to AR = sub_total + tax_total (full invoice amount)
         // The amount debited to Bank = grand_total - bank_charges - other_charges

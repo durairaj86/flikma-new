@@ -109,7 +109,7 @@
         <div><strong>{{ __('Collection Date') }}:</strong><span>{{ $collection->collection_date }}</span></div>
         <div><strong>{{ __('Job') }}:</strong><span>@if($collection->job_id)<a href="#" class="open-linked text-primary text-decoration-none" data-type="job" data-id="{{ $collection->job_id }}" data-title="{{ $collection->job->row_no ?? $collection->job_no }}">{{ $collection->job->row_no ?? $collection->job_no ?? '-' }}</a>@else{{ $collection->job_no ?? '-' }}@endif</span></div>
         <div><strong>{{ __('Reference No') }}:</strong><span>{{ $collection->reference_no ?? '-' }}</span></div>
-        <div><strong>{{ __('Paid Into') }}:</strong><span>{{ $paidIntoAccount->name ?? '-' }}</span></div>
+        <div><strong>{{ __('Collected Into') }}:</strong><span>{{ $paidIntoAccount->name ?? '-' }}</span></div>
         <div><strong>{{ __('Payment Method') }}:</strong><span>{{ $collection->payment_method ?? $collection->collection_method ?? '-' }}</span></div>
         <div><strong>{{ __('Currency') }}:</strong><span>{{ strtoupper($collection->currency) }} ({{ __('rate') }} {{ number_format($collection->currency_rate, decimals()) }})</span></div>
         <div><strong>{{ __('Status') }}:</strong><span>{{ \App\Enums\CollectionEnum::tryFrom($collection->status)?->label() ?? '-' }}</span></div>

@@ -374,11 +374,17 @@ let GLOBAL_FN = {
 
 CALCULATION = {
     exchangeRate: parseFloat($('#sarRate').text()) || 3.75, // default fallback
+    // The line-item body of the form: the page module's own (#CUSTOMER_INVOICE-tbody ...), or, when another module's
+    // form is open in the modal (a credit note opened from the invoice page), the one inside the modal.
+    body() {
+        const own = $('#' + MODULE + '-tbody');
+        return own.length ? own : $('#globalModal [id$="-tbody"], #linkedDrawer [id$="-tbody"]').first();
+    },
     load() {
         CALCULATION.start();
     },
     start() {
-        $('#' + MODULE + '-tbody').on('input change', '.quantity, .unit_price, .tax', function () {
+        CALCULATION.body().on('input change', '.quantity, .unit_price, .tax', function () {
             let $row = $(this).closest('tr');
             CALCULATION.rowTotal($row);
             CALCULATION.finalTotals();
@@ -409,7 +415,7 @@ CALCULATION = {
         let totalTax = 0;
         let grandTotal = 0;
 
-        $('#' + MODULE + '-tbody tr').each(function () {
+        CALCULATION.body().find('tr').each(function () {
             const $row = $(this);
             let amount = $row.find('.row-total').val() || 0;
 
@@ -851,6 +857,12 @@ let webModal = {
                             } else {
                                 if (response.status === 'error') {
                                     toastr.error(response.message);
+                                } else if (response.status === 'confirm') {
+                                    // the server wants an explicit yes (e.g. a duplicate or too-large credit note): ask, then send again
+                                    if (window.confirm(response.message + '\n\n' + trans('Continue?'))) {
+                                        $('<input type="hidden">').attr('name', response.confirm_field).val('1').appendTo(form);
+                                        setTimeout(function () { form.trigger('submit'); }, 0);
+                                    }
                                 }
                             }
                         },

@@ -268,6 +268,11 @@ CREDIT_NOTE = {
             CREDIT_NOTE.form.addRow();
             CREDIT_NOTE.form.removeRow();
             CREDIT_NOTE.form.invoiceChange();
+            // opened for a given invoice (from the invoice's detail drawer): fill customer, job and lines straight away
+            setTimeout(function () {
+                const $inv = $('select[name=invoice_id]');
+                if ($inv.val() && $inv.data('prefill')) $inv.trigger('change.creditInvoice');
+            }, 80);
             CALCULATION.load();
             CALCULATION.finalTotals();
         },
@@ -282,10 +287,10 @@ CREDIT_NOTE = {
                         if (el && el.tomselect && val !== null && val !== undefined && val !== '') el.tomselect.setValue(String(val));
                     };
                     const $form = $('select[name=invoice_id]').closest('form');
-                    setTs($form, 'customer', inv.customer_id);
+                    setTs($form, 'customer', inv.customer_code || inv.customer_id);
                     setTs($form, 'job_id', inv.job_id);
 
-                    const $tbody = $('#' + MODULE + '-tbody');
+                    const $tbody = $('#CREDIT_NOTE-tbody');
                     const $first = $tbody.find('tr:first');
                     // keep one clean template row, drop the rest, then clone it per invoice line
                     const $tpl = $first.clone();
@@ -311,7 +316,7 @@ CREDIT_NOTE = {
             });
         },
         addRow() {
-            $('#' + MODULE + '-tbody').off('click', '.add-row').on('click', '.add-row', function () {
+            $('#CREDIT_NOTE-tbody').off('click', '.add-row').on('click', '.add-row', function () {
                 let $tbody = $(this).closest('tbody');
                 let $newRow = $tbody.find('tr:first').clone();
                 $newRow.find('input, select, textarea').val('');
@@ -322,7 +327,7 @@ CREDIT_NOTE = {
             });
         },
         removeRow() {
-            $('#' + MODULE + '-tbody').off('click', '.remove-row').on('click', '.remove-row', function () {
+            $('#CREDIT_NOTE-tbody').off('click', '.remove-row').on('click', '.remove-row', function () {
                 let $tbody = $(this).closest('tbody');
                 const $tr = $(this).closest('tr');
                 if ($tbody.find('tr').length > 1) {

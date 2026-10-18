@@ -22,16 +22,27 @@ use Yajra\DataTables\Facades\DataTables;
 
 class CreditNoteController extends Controller
 {
-    public function modal(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
+    public function modal(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
     {
         $creditNote = new CreditNote();
         $creditNote->creditNoteSubs = [new CreditNoteSub()];
+        // "Credit Note" button of a customer invoice: start from that (approved) invoice
+        $prefill = false;
+        if ($request->filled('invoiceId')) {
+            $src = CustomerInvoice::where('status', 3)->find((int) $request->get('invoiceId'));
+            if ($src) {
+                $creditNote->invoice_id = $src->id;
+                $creditNote->customer_id = $src->customer_id;
+                $creditNote->job_id = $src->job_id;
+                $prefill = true;
+            }
+        }
         $jobs = Job::select('id', 'row_no', 'customer_id')->with('customer:id,name_en')->get();
         $parents = Account::where('type', '!=', 'Equity')->where('is_active', 1)->orderBy('name')->get();//2=>Bank & Cash sub accounts
 
         $subAccounts = Account::where('type', '!=', 'Equity')->where('is_grouped', 0)->orderBy('name')->get();
         $customerInvoices = CustomerInvoice::where('status', 3)->get();
-        return view('modules.finance.credit-note.credit-note-form', compact('creditNote', 'jobs', 'parents', 'subAccounts','customerInvoices'));
+        return view('modules.finance.credit-note.credit-note-form', compact('creditNote', 'jobs', 'parents', 'subAccounts','customerInvoices', 'prefill'));
     }
 
     public function edit($id)
@@ -330,6 +341,33 @@ class CreditNoteController extends Controller
         $creditNote->base_grand_total = $creditNote->base_sub_total + $creditNote->base_tax_total;
         $creditNote->status = 1;
 
+        // Guard against crediting an invoice twice, or more than it was ever worth.
+        if ($linkedInvoice) {
+            $others = CreditNote::where('invoice_id', $linkedInvoice->id)->where('status', '!=', 3)
+                ->when($creditNote->id, fn ($q) => $q->where('id', '!=', $creditNote->id))->get(['row_no', 'grand_total']);
+            $alreadyCredited = (float) $others->sum('grand_total');
+            if ($alreadyCredited + $grandTotal > (float) $linkedInvoice->grand_total + 0.005) {
+                // never more than the invoice itself
+                throw \Illuminate\Validation\ValidationException::withMessages(['grand_total' => __('Credit notes for this invoice would total :total, more than the invoice amount of :invoice.', [
+                    'total' => number_format($alreadyCredited + $grandTotal, 2), 'invoice' => number_format((float) $linkedInvoice->grand_total, 2)])]);
+            }
+            if (!$request->boolean('confirm_credit')) {
+                $notes = [];
+                $stillOwed = (float) $linkedInvoice->grand_total - (float) ($linkedInvoice->paid_amount ?? 0);
+                if ($grandTotal > $stillOwed + 0.005) {
+                    $notes[] = __('This credit note (:amount) is more than the invoice still owes (:owed). The difference (:diff) will stay as a credit balance for the customer.', [
+                        'amount' => number_format($grandTotal, 2), 'owed' => number_format(max(0, $stillOwed), 2), 'diff' => number_format($grandTotal - max(0, $stillOwed), 2)]);
+                }
+                $same = $others->first(fn ($o) => abs((float) $o->grand_total - $grandTotal) < 0.005);
+                if ($same) {
+                    $notes[] = __('A credit note with the same amount (:no) already exists for this invoice.', ['no' => $same->row_no]);
+                }
+                if ($notes) {
+                    return response()->json(['status' => 'confirm', 'confirm_field' => 'confirm_credit', 'message' => implode("\n\n", $notes)]);
+                }
+            }
+        }
+
         DB::beginTransaction();
         try {
 
@@ -434,6 +472,8 @@ class CreditNoteController extends Controller
         $inv = CustomerInvoice::with('customerInvoiceSubs')->findOrFail($invoice);
         return response()->json([
             'customer_id' => $inv->customer_id,
+            // the customer dropdown's option values are encoded ids
+            'customer_code' => $inv->customer_id ? encodeId($inv->customer_id) : null,
             'job_id' => $inv->job_id,
             'lines' => $inv->customerInvoiceSubs->map(fn($l) => [
                 'description_id' => $l->description_id,

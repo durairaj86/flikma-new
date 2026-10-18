@@ -20,6 +20,7 @@ class AllocationSync
             'payments' => $this->payments(),
             'credit_notes' => $this->adjustment('credit_notes', 'credit_note', 'customer_invoice', 'customer', 'credit'),
             'debit_notes' => $this->adjustment('debit_notes', 'debit_note', 'supplier_invoice', 'supplier', 'debit'),
+            'credit_applications' => $this->creditApplications(),
         ];
     }
 
@@ -90,6 +91,42 @@ class AllocationSync
                                   AND inv.is_reconcilable = 1 AND inv.$inv > 0
             WHERE n.invoice_id IS NOT NULL AND n.deleted_at IS NULL
         ");
+    }
+
+    /**
+     * Customer credit moved from one invoice to another (customer_credit_applications, status 1): no new ledger line exists
+     * (the credit already sits on the customer's receivable), so the move is recorded as two allocations: the receiving
+     * invoice is settled by +amount and the invoice that carried the credit is released by -amount.
+     * Reversed applications are marked reversed by CollectionController::revertCredits.
+     */
+    private function creditApplications(): int
+    {
+        $added = 0;
+        $apps = DB::table('customer_credit_applications as ca')
+            ->leftJoin('collections as c', 'c.id', '=', 'ca.collection_id')
+            ->where('ca.status', 1)->whereNotNull('ca.to_invoice_id')
+            ->whereNotExists(fn ($q) => $q->select(DB::raw(1))->from('finance_allocations as a')
+                ->where('a.settling_doc_type', 'credit_application')->whereColumn('a.settling_doc_id', 'ca.id'))
+            ->get(['ca.*', 'c.approved_at', 'c.collection_date']);
+        foreach ($apps as $ca) {
+            $line = fn ($invoiceId) => DB::table('finance_subs')->where('source_type', 'customer_invoice')->where('source_id', $invoiceId)
+                ->where('is_reconcilable', 1)->where('debit', '>', 0)->first();
+            $to = $line($ca->to_invoice_id);
+            $from = $line($ca->from_invoice_id);
+            if (!$to || !$from) continue;
+            $date = substr((string) ($ca->approved_at ?: $ca->collection_date ?: $ca->created_at), 0, 10);
+            $mk = fn ($settled, $other, $docId, $amt) => [
+                'company_id' => $settled->company_id, 'partner_type' => 'customer', 'partner_id' => $settled->partner_id,
+                'settled_line_id' => $settled->id, 'settled_doc_type' => 'customer_invoice', 'settled_doc_id' => $docId,
+                'settling_line_id' => $other->id, 'settling_doc_type' => 'credit_application', 'settling_doc_id' => $ca->id,
+                'allocation_type' => 'credit_apply', 'allocation_date' => $date,
+                'amount' => $amt, 'base_amount' => round($amt * ((float) $settled->base_debit / max(0.0001, (float) $settled->debit)), 2),
+                'currency' => $settled->currency, 'fx_gain_loss' => 0, 'status' => 'active', 'created_at' => now(), 'updated_at' => now(),
+            ];
+            DB::table('finance_allocations')->insert([$mk($to, $from, $ca->to_invoice_id, (float) $ca->amount), $mk($from, $to, $ca->from_invoice_id, -(float) $ca->amount)]);
+            $added += 2;
+        }
+        return $added;
     }
 
     /** Insert the rows of a source query that are not there yet (same settled line + settling line + type). */

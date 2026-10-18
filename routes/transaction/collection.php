@@ -15,6 +15,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Get customer invoices
         Route::get('/customer/{customer_id}/invoices', [CollectionController::class, 'getCustomerInvoices'])->name('customer.invoices');
+        Route::get('/customer/{customer_id}/credit', [CollectionController::class, 'getCustomerCredit'])->name('customer.credit');
 
         // View collection
         Route::get('/{id}', [CollectionController::class, 'show'])->name('show');

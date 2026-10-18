@@ -99,7 +99,7 @@
                             <table class="table table-borderless table-sm mb-0">
                                 <tr><th class="text-muted fw-medium" width="45%">{{ __('Collection Number') }}</th><td class="fw-semibold">{{ $collection->row_no }}</td></tr>
                                 <tr><th class="text-muted fw-medium">{{ __('Collection Date') }}</th><td>{{ $collection->collection_date }}</td></tr>
-                                <tr><th class="text-muted fw-medium">{{ __('Paid Into') }}</th><td>{{ $paidIntoAccount->name ?? __('N/A') }}</td></tr>
+                                <tr><th class="text-muted fw-medium">{{ __('Collected Into') }}</th><td>{{ $paidIntoAccount->name ?? __('N/A') }}</td></tr>
                                 <tr><th class="text-muted fw-medium">{{ __('Reference Number') }}</th><td>{{ $collection->reference_no ?? __('N/A') }}</td></tr>
                                 <tr><th class="text-muted fw-medium">{{ __('Currency') }}</th><td>{{ strtoupper($collection->currency) }}</td></tr>
                                 <tr><th class="text-muted fw-medium">{{ __('Currency Rate') }}</th><td>{{ number_format($collection->currency_rate, 4) }}</td></tr>
@@ -243,7 +243,7 @@
                             <strong>{{ __('Job Number') }}:</strong> {{ $collection->job_no ?? __('N/A') }}
                         </td>
                         <td style="width:50%;">
-                            <strong>{{ __('Paid Into') }}:</strong> {{ $paidIntoAccount->name ?? __('N/A') }}<br>
+                            <strong>{{ __('Collected Into') }}:</strong> {{ $paidIntoAccount->name ?? __('N/A') }}<br>
                             <strong>{{ __('Reference No') }}:</strong> {{ $collection->reference_no ?? __('N/A') }}<br>
                             <strong>{{ __('Status') }}:</strong> {{ $status['label'] }}
                         </td>

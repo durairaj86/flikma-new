@@ -2,7 +2,7 @@
     <!-- Currency Rate -->
     <input type="text" name="currency_rate" id="currency-rate" @if(isset($wireModel)) wire:model="currency_rate"
            @endif
-           class="form-control text-end" value="{{ $exchangeRate ?? 1 }}"
+           class="form-control text-end" value="{{ (isset($exchangeRate) && $exchangeRate !== '' && (float) $exchangeRate > 0) ? $exchangeRate : 1 }}"
            style="max-width: 120px;">
 
     <!-- Spinner inside input group -->

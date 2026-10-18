@@ -774,10 +774,15 @@ class CustomerInvoiceController extends Controller
         $descriptions = Description::descriptions()->pluck('description', 'id')->toArray();
         $balance = (float) $customerInvoice->grand_total - (float) ($customerInvoice->paid_amount ?? 0);
         $transactions = $this->invoiceTransactions($id);
+        // What settled this invoice, kept apart so it reads clearly: approved collections and approved credit notes
+        $collected = (float) $transactions->where('type', 'Collection')->where('status_label', 'Approved')->sum('amount');
+        $credited = (float) $transactions->where('type', 'Credit Note')->where('status_label', 'Approved')->sum('amount');
+        // customer credit moved between invoices by a collection: + received here, - moved to another invoice
+        $creditMoved = (float) $transactions->whereIn('type', ['Credit Applied', 'Credit Moved'])->sum('amount');
 
         [$origin, $timeline] = $this->invoiceTimeline($customerInvoice);
 
-        return view('modules.finance.customer-invoice.view-overview-drawer', compact('customerInvoice', 'descriptions', 'balance', 'transactions', 'origin', 'timeline'));
+        return view('modules.finance.customer-invoice.view-overview-drawer', compact('customerInvoice', 'descriptions', 'balance', 'transactions', 'origin', 'timeline', 'collected', 'credited', 'creditMoved'));
     }
 
     /**
@@ -869,10 +874,30 @@ class CustomerInvoiceController extends Controller
         $creditNoteStatusLabels = [1 => ['Draft', 'secondary'], 2 => ['Approved', 'success'], 3 => ['Cancelled', 'danger']];
 
         $collectionInvoices = \App\Models\Finance\Collection\CollectionInvoice::where('customer_invoice_id', $id)
-            ->with('collection:id,row_no,collection_date,account,currency,status')
+            ->with('collection:id,row_no,collection_date,account,currency,status,created_by,created_at,approved_by,approved_at')
             ->get();
 
         $creditNotes = \App\Models\Finance\Adjustment\CreditNote::where('invoice_id', $id)->get();
+
+        // Who created / approved each one and when. Collections keep created_by, approved_by and approved_at;
+        // credit notes keep user_id, and their approval is read from the change log (the status change to Approved).
+        $cnApproval = [];
+        if ($creditNotes->isNotEmpty()) {
+            $logs = \App\Models\Log\LogHistory::where('loggable_type', \App\Models\Finance\Adjustment\CreditNote::class)
+                ->whereIn('loggable_id', $creditNotes->pluck('id'))->where('action', 'updated')->orderBy('id')->get();
+            foreach ($logs as $log) {
+                if ((int) ($log->changes['new']['status'] ?? 0) === 2) {
+                    $cnApproval[$log->loggable_id] = ['by' => $log->user_id['name'] ?? null, 'at' => $log->created_at];
+                }
+            }
+        }
+        $userIds = $collectionInvoices->flatMap(fn ($ci) => [$ci->collection->created_by ?? null, $ci->collection->approved_by ?? null])
+            ->merge($creditNotes->pluck('user_id'))->filter()->unique()->values();
+        $userNames = $userIds->isEmpty() ? collect() : \App\Models\User::withoutGlobalScopes()->whereIn('id', $userIds)->pluck('name', 'id');
+        $fmt = fn ($d) => $d ? \Carbon\Carbon::parse($d)->format('d-m-Y H:i') : null;
+        // where each collection was paid into (its Paid Through account)
+        $accountIds = $collectionInvoices->map(fn ($ci) => $ci->collection->account ?? null)->filter()->unique()->values();
+        $accountNames = $accountIds->isEmpty() ? collect() : DB::table('accounts')->whereIn('id', $accountIds)->pluck('name', 'id');
 
         $transactions = collect();
 
@@ -887,6 +912,13 @@ class CustomerInvoiceController extends Controller
                 'url' => $ci->collection_id ? url('transaction/collections/' . $ci->collection_id) : null,
                 'date' => $ci->collection->collection_date ?? null,
                 'amount' => $ci->amount,
+                // what happened to the money
+                'note' => ($accountNames[$ci->collection->account ?? 0] ?? null) ? __('Credited to') . ' ' . $accountNames[$ci->collection->account] : null,
+                'note_color' => 'success',
+                'by' => $userNames[$ci->collection->created_by ?? 0] ?? null,
+                'created_on' => $fmt($ci->collection->created_at ?? $ci->collection->collection_date ?? null),
+                'approved_by' => $userNames[$ci->collection->approved_by ?? 0] ?? null,
+                'approved_on' => $fmt($ci->collection->approved_at ?? null),
                 'status_label' => $label[0],
                 'status_color' => $label[1],
             ]);
@@ -903,9 +935,49 @@ class CustomerInvoiceController extends Controller
                 'url' => url('adjustment/credit-note/' . $cn->id . '/create'),
                 'date' => $cn->created_at,
                 'amount' => $cn->grand_total,
+                // a credit note against an invoice reduces what this invoice still owes
+                'note' => __('Applied to this invoice') . ($cn->reason ? ' · ' . \Illuminate\Support\Str::headline($cn->reason) : ''),
+                'note_color' => 'info',
+                'by' => $userNames[$cn->user_id ?? 0] ?? null,
+                'created_on' => $fmt($cn->created_at),
+                'approved_by' => $cnApproval[$cn->id]['by'] ?? null,
+                'approved_on' => $fmt($cnApproval[$cn->id]['at'] ?? null),
                 'status_label' => $label[0],
                 'status_color' => $label[1],
             ]);
+        }
+
+        // Customer credit moved between invoices (on a collection): shown on both invoices
+        $apps = DB::table('customer_credit_applications as ca')
+            ->join('collections as c', 'c.id', '=', 'ca.collection_id')
+            ->where('ca.status', 1)->where(fn ($q) => $q->where('ca.to_invoice_id', $id)->orWhere('ca.from_invoice_id', $id))
+            ->get(['ca.*', 'c.row_no as col_no', 'c.created_by as col_created_by', 'c.created_at as col_created_at', 'c.approved_by as col_approved_by', 'c.approved_at as col_approved_at']);
+        if ($apps->isNotEmpty()) {
+            $invNos = DB::table('customer_invoices')->whereIn('id', $apps->flatMap(fn ($a) => [$a->from_invoice_id, $a->to_invoice_id])->unique())->pluck('row_no', 'id');
+            $names = DB::table('users')->whereIn('id', $apps->flatMap(fn ($a) => [$a->col_created_by, $a->col_approved_by])->filter()->unique())->pluck('name', 'id');
+            foreach ($apps as $a) {
+                $incoming = (int) $a->to_invoice_id === (int) $id;
+                $transactions->push([
+                    'type' => $incoming ? 'Credit Applied' : 'Credit Moved',
+                    'kind' => 'collection',
+                    'id' => $a->collection_id,
+                    'type_color' => 'info',
+                    'reference' => $a->col_no,
+                    'url' => null,
+                    'date' => $a->col_approved_at ?: $a->col_created_at,
+                    'amount' => $incoming ? $a->amount : -$a->amount,
+                    'note' => $incoming
+                        ? __('Customer credit from :no applied to this invoice', ['no' => $invNos[$a->from_invoice_id] ?? '#' . $a->from_invoice_id])
+                        : __('Customer credit moved to :no', ['no' => $invNos[$a->to_invoice_id] ?? '#' . $a->to_invoice_id]),
+                    'note_color' => 'info',
+                    'by' => $names[$a->col_created_by] ?? null,
+                    'created_on' => $fmt($a->col_created_at),
+                    'approved_by' => $names[$a->col_approved_by] ?? null,
+                    'approved_on' => $fmt($a->col_approved_at),
+                    'status_label' => 'Approved',
+                    'status_color' => 'success',
+                ]);
+            }
         }
 
         return $transactions->sortByDesc(fn($t) => $t['date'])->values();

@@ -39,6 +39,7 @@
         'free left',
         'In detention',
         'Due',
+        'Continue?',
         'Revenue',
         'Cost',
         'Profit',

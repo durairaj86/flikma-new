@@ -301,7 +301,9 @@ COLLECTION = {
                 const customerId = $(this).val();
                 if (customerId) {
                     COLLECTION.form.loadCustomerInvoices(customerId);
+                    COLLECTION.form.loadCustomerCredit(customerId);
                 } else {
+                    $('#credit-block').hide();
                     $('#no-invoices-message').show();
                     $('#invoices-table-container').hide();
                 }
@@ -328,12 +330,60 @@ COLLECTION = {
                 COLLECTION.form.calculateTotal();
             }
 
+            // Customer credit: typing an amount (or "Use all") lowers the cash to collect on the ticked invoices by that credit
+            $(document).off('input.credit', '.credit-apply').on('input.credit', '.credit-apply', function () {
+                const max = parseFloat($(this).data('max')) || 0;
+                let v = parseFloat(String($(this).val()).replace(/,/g, '')) || 0;
+                if (v > max) { v = max; $(this).val(v.toFixed(2)); }
+                COLLECTION.form.applyCreditToAmounts();
+            });
+            $(document).off('click.credit', '#credit-use-all').on('click.credit', '#credit-use-all', function () {
+                $('.credit-apply').each(function () { $(this).val((parseFloat($(this).data('max')) || 0).toFixed(2)); });
+                COLLECTION.form.applyCreditToAmounts();
+            });
+            COLLECTION.form.refreshCreditTotal();
+
             // Form submission
             /*$('#moduleForm').off('submit').on('submit', function (e) {
                 return COLLECTION.form.prepareFormData($(this));
             });*/
         },
 
+        creditTotal() {
+            let t = 0;
+            $('.credit-apply').each(function () { t += parseFloat(String($(this).val()).replace(/,/g, '')) || 0; });
+            return t;
+        },
+        refreshCreditTotal() {
+            $('#credit-applied-total').text(COLLECTION.form.formatNumber(COLLECTION.form.creditTotal()));
+        },
+        // Spread the chosen credit over the ticked invoices (in order): each one's cash amount = its balance less its share of the credit.
+        applyCreditToAmounts() {
+            let credit = COLLECTION.form.creditTotal();
+            $('.invoice-checkbox:checked').each(function () {
+                const $amt = $(this).closest('tr').find('.invoice-amount');
+                // the invoice's real balance is the input's max (data('balance') is overwritten as amounts are typed)
+                const balance = parseFloat($amt.attr('max')) || parseFloat($amt.attr('data-balance')) || 0;
+                const share = Math.min(credit, balance);
+                credit -= share;
+                $amt.val((balance - share).toFixed(2)).trigger('input');
+                // what is left to collect after cash AND credit
+                $amt.closest('tr').find('td:last').text(COLLECTION.form.formatNumber(balance - (balance - share) - share));
+            });
+            COLLECTION.form.refreshCreditTotal();
+            COLLECTION.form.calculateTotal();
+        },
+        // The customer's credit list follows the customer picked on the form.
+        loadCustomerCredit(customerId) {
+            $.get(GLOBAL_FN.buildUrl(`${COLLECTION.baseUrl}/customer/${customerId}/credit`), {collection: $('#collection_id').val() || ''}, function (rows) {
+                const $body = $('#credit-body').empty();
+                (rows || []).forEach(function (r) {
+                    $body.append('<tr><td>' + r.row_no + '</td><td class="text-end">' + COLLECTION.form.formatNumber(r.available) + '</td><td><input type="text" class="form-control text-end float credit-apply" name="credit_apply[' + r.invoice_id + ']" data-max="' + r.available + '" placeholder="0.00" autocomplete="off"></td></tr>');
+                });
+                $('#credit-block').toggle((rows || []).length > 0);
+                COLLECTION.form.refreshCreditTotal();
+            });
+        },
         loadCustomerInvoices(customerId) {
             $.ajax({
                 url: GLOBAL_FN.buildUrl(`${COLLECTION.baseUrl}/customer/${customerId}/invoices`),
@@ -426,6 +476,11 @@ COLLECTION = {
                 COLLECTION.form.selectedInvoices = COLLECTION.form.selectedInvoices.filter(inv => inv.id !== id);
             }
 
+            // customer credit chosen: re-spread it over whatever is ticked now
+            if (COLLECTION.form.creditTotal() > 0) {
+                COLLECTION.form.applyCreditToAmounts();
+                return;
+            }
             COLLECTION.form.calculateTotal();
         },
 
@@ -467,6 +522,24 @@ COLLECTION = {
                 }
             });
             $('#total-collection-amount').text(COLLECTION.form.formatNumber(total));
+            COLLECTION.form.toggleCashFields(total);
+        },
+        // Paying only with customer credit (no cash): there is no account to collect through and no reference to give.
+        toggleCashFields(cash) {
+            const charges = (parseFloat(String($('#bank_charges').val()).replace(/,/g, '')) || 0) + (parseFloat(String($('#other_charges').val()).replace(/,/g, '')) || 0);
+            const creditOnly = (cash + charges) <= 0.004 && COLLECTION.form.creditTotal() > 0;
+            const $acct = $('select[name="account[]"], select[name="account"]').first(), $ref = $('#reference_no');
+            const $labels = $acct.closest('.mb-3').find('label .text-danger').add($ref.closest('.mb-3').find('label .text-danger'));
+            [$acct, $ref].forEach(function ($f) {
+                if (!$f.length) return;
+                $f.prop('required', !creditOnly);
+                if (creditOnly) {
+                    $f.removeClass('is-invalid');
+                    const ts = $f[0].tomselect; if (ts) ts.wrapper.classList.remove('is-invalid');
+                }
+            });
+            $labels.toggle(!creditOnly);
+            $('#credit-only-note').toggle(creditOnly);
         },
 
         formatNumber(num) {

@@ -43,7 +43,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label for="payment_method" class="form-label required">{{ __('Paid Through') }} <span
+                            <label for="payment_method" class="form-label required">{{ __('Collected Through') }} <span
                                     class="text-danger">*</span></label>
                             <x-common.account-groups :parentAccount="$parents"
                                                      :subAccounts="$subAccounts"
@@ -185,6 +185,48 @@
                                 @endforeach
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Customer credit (e.g. from a credit note on an invoice that was already paid): can be applied to the invoices ticked above instead of cash --}}
+                <div class="row mt-4" id="credit-block" style="{{ count($creditSources ?? []) ? '' : 'display: none;' }}">
+                    <div class="col-12">
+                        <h4>{{ __('Apply Customer Credit') }}</h4>
+                        <div class="alert alert-info small py-2">
+                            {{ __('This customer has credit left over from invoices that were settled for more than they were worth. Apply it to the invoices ticked above instead of collecting cash: the Collection Amount of those invoices is reduced by the credit you apply.') }}
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-sm align-middle mb-2" id="credit-table">
+                                <thead>
+                                <tr>
+                                    <th>{{ __('Credit on invoice') }}</th>
+                                    <th class="text-end">{{ __('Available') }}</th>
+                                    <th class="text-end" style="width:200px">{{ __('Apply') }}</th>
+                                </tr>
+                                </thead>
+                                <tbody id="credit-body">
+                                @foreach($creditSources ?? [] as $src)
+                                    @php($chosenAmt = (float) (($creditChosen ?? [])[$src['invoice_id']] ?? 0))
+                                    <tr>
+                                        <td>{{ $src['row_no'] }}</td>
+                                        <td class="text-end">{{ number_format($src['available'], 2) }}</td>
+                                        <td>
+                                            <input type="text" class="form-control text-end float credit-apply"
+                                                   name="credit_apply[{{ $src['invoice_id'] }}]" data-max="{{ $src['available'] }}"
+                                                   value="{{ $chosenAmt > 0 ? $chosenAmt : '' }}" placeholder="0.00" autocomplete="off">
+                                        </td>
+                                    </tr>
+                                @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="alert alert-success small py-2 mb-2" id="credit-only-note" style="display: none;">
+                            {{ __('Settled with customer credit only: no cash is received, so no account or reference is needed.') }}
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="credit-use-all">{{ __('Use all credit') }}</button>
+                            <div class="text-muted small">{{ __('Credit applied') }}: <b id="credit-applied-total">0.00</b></div>
                         </div>
                     </div>
                 </div>

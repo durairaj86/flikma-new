@@ -9,6 +9,7 @@
             <h5 class="mb-0 fw-bold" id="linkedDrawerTitle"></h5>
             <small class="text-muted" id="linkedDrawerSubtitle"></small>
         </div>
+        <div id="linkedDrawerActions" class="d-flex gap-2 me-3"></div>
         <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 me-3" data-bs-dismiss="offcanvas">
             <i class="bi bi-arrow-left me-1"></i>{{ __('Back') }}
         </button>
@@ -28,6 +29,9 @@
     /* Switching between records (e.g. customer -> job) grows / shrinks the drawer smoothly instead of jumping. */
     #linkedDrawer.offcanvas.offcanvas-end { transition: transform .3s ease-in-out, width .35s ease; }
     .open-linked { cursor: pointer; }
+    #moduleDrawer.offcanvas.offcanvas-end { transition: transform .3s ease-in-out, width .35s ease; }
+    /* a form in this drawer never scrolls sideways: an open dropdown that is wider than the room is pulled back inside instead */
+    #linkedDrawer .offcanvas-body, #linkedDrawerBody { overflow-x: hidden; }
 </style>
 
 <script>
@@ -112,6 +116,7 @@
                 subEl.style.right = '';
                 subEl.style.width = sideBySide ? (def.narrow ? '' : (100 - {{ $mainWidth }}) + '%') : '';
             }
+            document.getElementById('linkedDrawerActions').innerHTML = '';
             document.getElementById('linkedDrawerTitle').textContent = def.title;
             document.getElementById('linkedDrawerSubtitle').textContent = a.title || '';
             body.innerHTML = '<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> ' + @json(__('Loading...')) + '</div>';
@@ -155,6 +160,183 @@
             };
             frame.src = btn.dataset.printUrl;
         });
+
+        // Messages (toastr) shown while this sub drawer is open are centred on the drawer, not on the whole screen.
+        (function () {
+            function place() {
+                const c = document.getElementById('toast-container');
+                if (!c) return;
+                if (subEl.classList.contains('show') && window.matchMedia('(min-width: 992px)').matches) {
+                    const r = subEl.getBoundingClientRect();
+                    c.style.left = r.left + 'px'; c.style.width = r.width + 'px'; c.style.right = 'auto';
+                } else {
+                    c.style.left = ''; c.style.width = ''; c.style.right = '';
+                }
+            }
+            new MutationObserver(function () {
+                place();
+                const c = document.getElementById('toast-container');
+                if (c && !c.__lfObserved) { c.__lfObserved = true; new MutationObserver(place).observe(c, {childList: true}); }
+            }).observe(document.body, {childList: true});
+            // when the drawer closes, let the last message finish where it is, then restore the normal position
+            subEl.addEventListener('hidden.bs.offcanvas', function () { setTimeout(place, 3600); });
+        })();
+
+        /*
+         * A normal module form (Collection, Credit Note ...) shown in this sub drawer instead of a pop-up window:
+         * window.openLinkedForm({title, subtitle, url, params, onReady, afterSave}).
+         * The form is the module's own blade; this only supplies the Save / Cancel buttons, the field set-up and the save,
+         * exactly like the pop-up does (the "Save and Approve" chain uses the form's data-approve-url as well).
+         */
+        // When the form closes, the main drawer gets back the width it had (60%): one handler for every way of closing,
+        // and it only acts if the drawer is really narrowed (so opening a second form meanwhile can never break it).
+        subEl.addEventListener('hidden.bs.offcanvas', function (e) {
+            if (e.target !== subEl) return;
+            if (subEl.classList.contains('show') || subEl.classList.contains('showing')) return;   // re-opened meanwhile
+            document.getElementById('linkedDrawerActions').innerHTML = '';
+            if (mainEl && mainEl.dataset.lfWidth !== undefined) {
+                mainEl.style.width = mainEl.dataset.lfWidth;
+                delete mainEl.dataset.lfWidth;
+            }
+        });
+
+        window.openLinkedForm = function (opts) {
+            const sideBySide = window.matchMedia('(min-width: 992px)').matches;
+            const shownHost = hosts.find(h => h.classList.contains('show'));
+            if (sideBySide && shownHost) {
+                hostEl = shownHost;
+                if (shownHost === mainEl) {
+                    // a form needs room: the main drawer narrows to 20% while the form takes the other 80%
+                    // (its width is an inline style set elsewhere: remember it and give it back exactly when the form closes)
+                    if (mainEl.dataset.lfWidth === undefined) mainEl.dataset.lfWidth = mainEl.style.width;
+                    mainEl.style.width = '20%';
+                    subEl.style.right = '20%';
+                    subEl.style.width = '80%';
+                } else {
+                    subEl.style.right = shownHost.offsetWidth + 'px';
+                    subEl.style.width = Math.max(360, window.innerWidth - shownHost.offsetWidth) + 'px';
+                }
+            } else if (sideBySide) {
+                subEl.style.right = '0';
+                subEl.style.width = 'min(900px, 60%)';
+            } else {
+                subEl.style.right = '';
+                subEl.style.width = '';
+            }
+            document.getElementById('linkedDrawerActions').innerHTML = '';
+            document.getElementById('linkedDrawerTitle').textContent = opts.title || '';
+            document.getElementById('linkedDrawerSubtitle').textContent = opts.subtitle || '';
+            tabsEl.innerHTML = '';
+            tabsEl.classList.add('d-none');
+            body.innerHTML = '<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> ' + @json(__('Loading...')) + '</div>';
+
+            const mainFocus = shownHost ? bootstrap.Offcanvas.getInstance(shownHost)?._focustrap : null;
+            if (!subEl.classList.contains('show')) {
+                mainFocus?.deactivate();
+                subEl.addEventListener('hidden.bs.offcanvas', function () { mainFocus?.activate(); }, {once: true});
+            }
+            bootstrap.Offcanvas.getOrCreateInstance(subEl).show();
+
+            const qs = opts.params ? '?' + new URLSearchParams(opts.params).toString() : '';
+            fetch(opts.url + qs, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+                .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+                .then(html => { body.innerHTML = html; setupLinkedForm(opts); })
+                .catch(() => { body.innerHTML = '<div class="alert alert-danger m-3">' + @json(__('Failed to load details.')) + '</div>'; });
+        };
+
+        function setupLinkedForm(opts) {
+            const form = body.querySelector('form');
+            if (!form) return;
+            const $form = $(form), $cfg = $(body).find('#modal-buttons');
+            const list = String($cfg.data('buttons') || '').split(',');
+            let pendingApprove = false;
+
+            let html = '<div class="d-flex justify-content-end gap-2">';
+            if (list.includes('cancel')) html += '<button type="button" class="btn btn-outline-secondary" data-lf="cancel"><i class="bi bi-x-circle me-1"></i>' + @json(__('Cancel')) + '</button>';
+            if (list.includes('saveDraft')) html += '<button type="button" class="btn btn-outline-secondary" data-lf="draft"><i class="bi bi-file-earmark me-1"></i>' + ($cfg.data('button-draft') || @json(__('Save as Draft'))) + '</button>';
+            if (list.includes('saveApprove')) html += '<button type="button" class="btn btn-success" data-lf="approve"><i class="bi bi-check2-circle me-1"></i>' + ($cfg.data('button-approve') || @json(__('Save and Approve'))) + '</button>';
+            if (list.includes('save')) html += '<button type="button" class="btn btn-primary" data-lf="save"><i class="bi bi-save me-1"></i>' + ($cfg.data('button-save') || @json(__('Save'))) + '</button>';
+            html += '</div>';
+            // the buttons sit in the drawer header beside Back; the form's own grey title band ("New Collection") is not needed here
+            document.getElementById('linkedDrawerActions').innerHTML = html;
+            const band = $(body).find('#show-buttons').closest('.border-bottom');
+            if (band.length) band.hide(); else $(body).find('#show-buttons').hide();
+
+            $(subEl).off('click.lf').on('click.lf', '#linkedDrawerActions [data-lf]', function () {
+                const k = this.dataset.lf;
+                if (k === 'cancel') { bootstrap.Offcanvas.getInstance(subEl).hide(); return; }
+                pendingApprove = k === 'approve';
+                $form.trigger('submit');
+            });
+
+            // the same field set-up the pop-up does after it loads a form
+            try { initTomSelectForm(); datepicker(); timepicker(); CURRENCY.currencyRate(); INPUT.load(); } catch (e) { console.error(e); }
+            if (typeof opts.onReady === 'function') opts.onReady();
+            // an opened dropdown wider than the room to its right opens leftwards (anchored to the box's right edge)
+            body.querySelectorAll('select').forEach(function (sel) {
+                const ts = sel.tomselect;
+                if (!ts || ts.__lfPos) return;
+                ts.__lfPos = true;
+                ts.on('dropdown_open', function (dd) {
+                    dd.style.left = ''; dd.style.right = '';
+                    const box = body.getBoundingClientRect(), r = dd.getBoundingClientRect();
+                    if (r.right > box.right - 6) { dd.style.left = 'auto'; dd.style.right = '0'; }
+                });
+            });
+
+            $form.off('submit.lf').on('submit.lf', function (e) {
+                e.preventDefault();
+                if (!$form.valid()) {
+                    const n = $form.find('input.is-invalid, textarea.is-invalid, select.is-invalid').length || 1;
+                    toastr.error(trans('Validation Failed') + ': ' + n + ' field' + (n > 1 ? 's' : '') + ' need to be fixed.', '', {positionClass: 'toast-bottom-center'});
+                    return;
+                }
+                // disabled fields (locked currency, ...) are still part of the save
+                const disabled = form.querySelectorAll(':disabled');
+                disabled.forEach(el => el.removeAttribute('disabled'));
+                const formData = new FormData(form);
+                disabled.forEach(el => el.setAttribute('disabled', 'disabled'));
+
+                const $btns = $('#linkedDrawerActions [data-lf]').prop('disabled', true);
+                $.ajax({
+                    url: form.getAttribute('action'), type: 'POST', data: formData, processData: false, contentType: false,
+                    success: function (response) {
+                        if (response.status !== 'success') {
+                            if (response.status === 'error') toastr.error(response.message);
+                            if (response.status === 'confirm' && window.confirm(response.message + '\n\n' + trans('Continue?'))) {
+                                // the server wants an explicit yes (e.g. a duplicate or too-large credit note): send again with it
+                                $('<input type="hidden">').attr('name', response.confirm_field).val('1').appendTo($form);
+                                const again = pendingApprove;
+                                setTimeout(function () { pendingApprove = again; $form.trigger('submit'); }, 0);
+                            }
+                            return;
+                        }
+                        const finish = function () {
+                            toastr.success(response.message);
+                            if ($.fn.DataTable.isDataTable('#dataTable')) $('#dataTable').DataTable().ajax.reload(null, false);
+                            bootstrap.Offcanvas.getInstance(subEl).hide();
+                            if (typeof opts.afterSave === 'function') opts.afterSave(response);
+                        };
+                        const approveUrl = $cfg.data('approve-url'), idKey = $cfg.data('approve-id-key') || 'id';
+                        if (pendingApprove && approveUrl && response[idKey]) {
+                            $.ajax({
+                                url: String(approveUrl).replace('{id}', response[idKey]), method: 'POST',
+                                headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+                                success: finish,
+                                error: function () { toastr.warning(trans('Saved, but approving it failed — it is still saved as a draft.')); finish(); }
+                            });
+                        } else {
+                            finish();
+                        }
+                    },
+                    error: function (xhr) {
+                        const errors = xhr.responseJSON && xhr.responseJSON.errors;
+                        toastr.error(errors ? Object.values(errors).flat().join(' | ') : (xhr.responseJSON && xhr.responseJSON.message) || trans('Something went wrong!'));
+                    },
+                    complete: function () { $btns.prop('disabled', false); pendingApprove = false; }
+                });
+            });
+        }
 
         // Closing a host drawer: the sub drawer closes first, then the host closes by itself.
         hosts.forEach(function (host) {

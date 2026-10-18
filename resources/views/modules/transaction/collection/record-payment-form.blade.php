@@ -84,7 +84,7 @@
                                required>
                     </div>
                     <div class="col-md-4">
-                        <label for="payment_method" class="form-label required">{{ __('Paid Through') }} <span class="text-danger">*</span></label>
+                        <label for="payment_method" class="form-label required">{{ __('Collected Through') }} <span class="text-danger">*</span></label>
                         <x-common.account-groups :parentAccount="$parents"
                                                  :subAccounts="$subAccounts"
                                                  :value="$collection->account"></x-common.account-groups>

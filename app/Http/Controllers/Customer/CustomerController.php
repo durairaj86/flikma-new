@@ -153,6 +153,22 @@ class CustomerController extends Controller
                 $dueInvoiceQuery($query);
                 $query->where('due_at', '<', now())->selectRaw('COUNT(*)');
             }, 'overdue_count')
+            // Money the customer is owed back: on an approved invoice that was settled for more than it was worth, the
+            // part that came from credit notes is "customer credit", the rest (cash received beyond the invoice) is "advance".
+            ->selectSub(function ($query) {
+                $query->from('customer_invoices as ci')
+                    ->whereColumn('ci.customer_id', 'customers.id')
+                    ->where('ci.status', \App\Enums\CustomerInvoiceEnum::APPROVED->value)
+                    ->whereNull('ci.deleted_at')->where('ci.company_id', companyId())
+                    ->selectRaw('COALESCE(SUM(LEAST(GREATEST(ci.paid_amount - ci.grand_total, 0), COALESCE((SELECT SUM(cn.grand_total) FROM credit_notes cn WHERE cn.invoice_id = ci.id AND cn.status = 2 AND cn.deleted_at IS NULL), 0))), 0)');
+            }, 'credit_amount')
+            ->selectSub(function ($query) {
+                $query->from('customer_invoices as ci')
+                    ->whereColumn('ci.customer_id', 'customers.id')
+                    ->where('ci.status', \App\Enums\CustomerInvoiceEnum::APPROVED->value)
+                    ->whereNull('ci.deleted_at')->where('ci.company_id', companyId())
+                    ->selectRaw('COALESCE(SUM(GREATEST(ci.paid_amount - ci.grand_total, 0) - LEAST(GREATEST(ci.paid_amount - ci.grand_total, 0), COALESCE((SELECT SUM(cn.grand_total) FROM credit_notes cn WHERE cn.invoice_id = ci.id AND cn.status = 2 AND cn.deleted_at IS NULL), 0))), 0)');
+            }, 'advance_amount')
             ->orderBy('name_en');
 
         if (strtolower((string) $request->tab) === 'overdue') {
@@ -200,6 +216,8 @@ class CustomerController extends Controller
             // so they can't appear in the search WHERE clause.
             ->filterColumn('due_amount', fn() => null)
             ->filterColumn('overdue_count', fn() => null)
+            ->filterColumn('credit_amount', fn() => null)
+            ->filterColumn('advance_amount', fn() => null)
             ->setRowAttr([
                 'data-id' => fn($model) => $model->id,
                 'data-name' => fn($model) => htmlspecialchars($model->name_en, ENT_QUOTES, 'UTF-8'),

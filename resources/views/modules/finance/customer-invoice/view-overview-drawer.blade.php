@@ -81,7 +81,26 @@
 </ul>
 <div class="tab-content">
 <div class="tab-pane fade show active" id="ciDetailsTab" role="tabpanel">
-<div class="invoice-no-heading">{{ docNumber($customerInvoice, '#') }}</div>
+@php
+    $ciBalance = (float) $customerInvoice->grand_total - (float) ($customerInvoice->paid_amount ?? 0);
+    $ciApproved = (int) $customerInvoice->status === 3;
+@endphp
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div class="invoice-no-heading">{{ docNumber($customerInvoice, '#') }}</div>
+    @if($ciApproved)
+        {{-- Collection opens the Collection form for this invoice; Credit Note opens the New Credit Note form for it --}}
+        <div class="d-flex gap-2">
+            @if($ciBalance > 0)
+                <button type="button" class="btn btn-sm btn-success" onclick="CUSTOMER_INVOICE.recordPayment('{{ $customerInvoice->id }}')">
+                    <i class="bi bi-cash-coin me-1"></i>{{ __('Collection') }}
+                </button>
+            @endif
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="CUSTOMER_INVOICE.newCreditNote('{{ $customerInvoice->id }}')">
+                <i class="bi bi-receipt-cutoff me-1"></i>{{ __('Credit Note') }}
+            </button>
+        </div>
+    @endif
+</div>
 
 <div class="section">
     <h6>{{ __('Customer & Invoice Information') }}</h6>
@@ -150,19 +169,33 @@
         $isPartiallyPaid = $paid > 0 && $paid < $grand;
     @endphp
     <div class="row g-3 text-center mb-3">
-        <div class="col-4">
+        <div class="col-6 col-md-3">
             <div class="small text-muted text-uppercase">{{ __('Grand Total') }}</div>
             <div class="fw-bold fs-5 text-primary">{{ amountFormat($grand) }}</div>
         </div>
-        <div class="col-4">
-            <div class="small text-muted text-uppercase">{{ __('Paid') }}</div>
-            <div class="fw-bold fs-5 text-success">{{ amountFormat($paid) }}</div>
+        <div class="col-6 col-md-3">
+            <div class="small text-muted text-uppercase">{{ __('Collection') }}</div>
+            <div class="fw-bold fs-5 text-success">{{ amountFormat($collected ?? 0) }}</div>
         </div>
-        <div class="col-4">
-            <div class="small text-muted text-uppercase">{{ __('Balance') }}</div>
-            <div class="fw-bold fs-5 {{ $balance > 0 ? 'text-danger' : 'text-success' }}">{{ amountFormat($balance) }}</div>
+        <div class="col-6 col-md-3">
+            <div class="small text-muted text-uppercase">{{ __('Credit Note') }}</div>
+            <div class="fw-bold fs-5" style="color:#0891b2;">{{ amountFormat($credited ?? 0) }}</div>
+        </div>
+        <div class="col-6 col-md-3">
+            @if($balance < 0)
+                <div class="small text-muted text-uppercase">{{ __('Customer Credit') }}</div>
+                <div class="fw-bold fs-5 text-info">{{ amountFormat(abs($balance)) }}</div>
+            @else
+                <div class="small text-muted text-uppercase">{{ __('Balance') }}</div>
+                <div class="fw-bold fs-5 {{ $balance > 0 ? 'text-danger' : 'text-success' }}">{{ amountFormat($balance) }}</div>
+            @endif
         </div>
     </div>
+    @if($balance < 0)
+        <div class="alert alert-info py-2 small mb-3">
+            {{ __('Collections and credit notes together are more than this invoice. The extra :amount :cur is owed back to the customer (refund it, or keep it as a credit for their next invoice).', ['amount' => amountFormat(abs($balance)), 'cur' => $customerInvoice->currency]) }}
+        </div>
+    @endif
     <div class="text-center mb-3">
         @if($isFullyPaid)
             <span class="badge bg-success-subtle text-success px-3 py-2">{{ __('Fully Paid') }}</span>
@@ -192,13 +225,23 @@
             <td class="text-end text-primary fw-bold">{{ amountFormat($grand) }} {{ $customerInvoice->currency }}</td>
         </tr>
         <tr>
-            <td><strong>{{ __('Paid Amount') }}</strong></td>
-            <td class="text-end text-success fw-bold">{{ amountFormat($paid) }} {{ $customerInvoice->currency }}</td>
+            <td><strong>{{ __('Collection Amount') }}</strong></td>
+            <td class="text-end text-success fw-bold">{{ amountFormat($collected ?? 0) }} {{ $customerInvoice->currency }}</td>
         </tr>
+        <tr>
+            <td><strong>{{ __('Credit Note Amount') }}</strong></td>
+            <td class="text-end fw-bold" style="color:#0891b2;">{{ amountFormat($credited ?? 0) }} {{ $customerInvoice->currency }}</td>
+        </tr>
+        @if(abs($creditMoved ?? 0) > 0.004)
+            <tr>
+                <td><strong>{{ ($creditMoved ?? 0) > 0 ? __('Customer Credit Applied') : __('Customer Credit Moved Out') }}</strong></td>
+                <td class="text-end fw-bold" style="color:#0891b2;">{{ ($creditMoved ?? 0) > 0 ? '' : '-' }}{{ amountFormat(abs($creditMoved)) }} {{ $customerInvoice->currency }}</td>
+            </tr>
+        @endif
         <tr class="table-secondary">
-            <td><strong>{{ __('Balance') }}</strong></td>
-            <td class="text-end fw-bold {{ $balance > 0 ? 'text-danger' : 'text-success' }}">
-                {{ amountFormat($balance) }} {{ $customerInvoice->currency }}
+            <td><strong>{{ $balance < 0 ? __('Customer Credit') : __('Balance') }}</strong></td>
+            <td class="text-end fw-bold {{ $balance < 0 ? 'text-info' : ($balance > 0 ? 'text-danger' : 'text-success') }}">
+                {{ amountFormat(abs($balance)) }} {{ $customerInvoice->currency }}
             </td>
         </tr>
     </table>
@@ -212,8 +255,9 @@
             <tr>
                 <th>{{ __('Type') }}</th>
                 <th>{{ __('Reference') }}</th>
-                <th>{{ __('Date') }}</th>
                 <th class="text-end">{{ __('Amount') }}</th>
+                <th>{{ __('Created by') }}</th>
+                <th>{{ __('Approved by') }}</th>
                 <th>{{ __('Status') }}</th>
             </tr>
             </thead>
@@ -230,13 +274,25 @@
                             {{ $tx['reference'] }}
                         @endif
                     </td>
-                    <td>{{ $tx['date'] }}</td>
-                    <td class="text-end">{{ amountFormat($tx['amount']) }}</td>
+                    <td class="text-end">
+                        <div>{{ amountFormat($tx['amount']) }}</div>
+                        @if(!empty($tx['note']))
+                            <div class="small text-{{ $tx['note_color'] ?? 'muted' }}">{{ $tx['note'] }}</div>
+                        @endif
+                    </td>
+                    <td>
+                        <div>{{ $tx['by'] ?? '—' }}</div>
+                        <div class="small text-muted">{{ $tx['created_on'] ?? $tx['date'] }}</div>
+                    </td>
+                    <td>
+                        <div>{{ $tx['approved_by'] ?? '—' }}</div>
+                        <div class="small {{ !empty($tx['approved_on']) ? 'text-success' : 'text-muted' }}">{{ $tx['approved_on'] ?? '—' }}</div>
+                    </td>
                     <td><span class="badge bg-{{ $tx['status_color'] }}-subtle text-{{ $tx['status_color'] }}-emphasis">{{ $tx['status_label'] }}</span></td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" class="text-center text-muted py-4">{{ __('No collections or credit notes recorded against this invoice yet.') }}</td>
+                    <td colspan="6" class="text-center text-muted py-4">{{ __('No collections or credit notes recorded against this invoice yet.') }}</td>
                 </tr>
             @endforelse
             </tbody>
