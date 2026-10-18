@@ -26,6 +26,10 @@
         <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap pt-2 pb-0">
             <div class="d-flex align-items-center gap-2 dlv-title">
                 <h4 class="fw-bold text-dark mb-0">@yield('page-title')</h4>
+    <button class="btn btn-link btn-sm p-0 text-decoration-none lh-1 ms-2" id="deliveryOrderWatchVideo"
+            data-bs-toggle="modal" data-bs-target="#deliveryOrderVideoModal" title="{{ __('Watch video') }}">
+        <i class="bi bi-play-circle-fill fs-6"></i><span class="d-none d-md-inline ms-1" style="font-size:0.8rem;">{{ __('Watch video') }}</span>
+    </button>
             </div>
             <div class="d-flex align-items-center gap-2 ms-auto">
                 <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Delivery Order') }}</button>
@@ -176,4 +180,5 @@
             });
         })();
     </script>
+    @include('modules.delivery-order._video')
 </x-app-layout>

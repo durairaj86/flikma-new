@@ -624,7 +624,7 @@
                                     <td>
                                         <select name="chg_tax_group[]" class="form-select form-select-sm">
                                             <option value="">—</option>
-                                            @foreach(vat() as $vat)
+                                            @foreach(collect(vat())->whereNull('reason') as $vat)
                                                 <option value="{{ $vat['code'] }}"
                                                         data-subtext="{{ $vat['description'] }}"
                                                     @selected(($charge->tax_group_code ?? '') === $vat['code'])>

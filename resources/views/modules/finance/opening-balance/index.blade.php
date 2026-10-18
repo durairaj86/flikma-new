@@ -7,7 +7,11 @@
         @push('master-title-actions')
             <a href="{{ route('finance.opening-balance.import') }}" class="btn btn-outline-primary rounded-pill px-4"><i class="bi bi-upload me-1"></i>{{ __('Import') }}</a>
             <a href="{{ route('finance.opening-balance.create') }}" class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Entry') }}</a>
-        @endpush
+            <button class="btn btn-link btn-sm p-0 text-decoration-none lh-1 ms-2" id="openingBalanceWatchVideo"
+            data-bs-toggle="modal" data-bs-target="#openingBalanceVideoModal" title="{{ __('Watch video') }}">
+        <i class="bi bi-play-circle-fill fs-6"></i><span class="d-none d-md-inline ms-1" style="font-size:0.8rem;">{{ __('Watch video') }}</span>
+    </button>
+@endpush
         @include('includes.master-page-title')
 
         @if(session('success'))
@@ -211,4 +215,5 @@
             if (typeof datepicker === 'function') datepicker();
         });
     </script>
+    @include('modules.finance.opening-balance._video')
 </x-app-layout>

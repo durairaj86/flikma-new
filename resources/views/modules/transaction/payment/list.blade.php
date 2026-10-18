@@ -7,6 +7,10 @@
             title="{{ __('How payments work') }}">
         <i class="bi bi-info-circle fs-6"></i><span class="d-none d-md-inline ms-1" style="font-size:0.8rem;">{{ __('How it works') }}</span>
     </button>
+    <button class="btn btn-link btn-sm p-0 text-decoration-none lh-1 ms-2" id="paymentWatchVideo"
+            data-bs-toggle="modal" data-bs-target="#paymentVideoModal" title="{{ __('Watch video') }}">
+        <i class="bi bi-play-circle-fill fs-6"></i><span class="d-none d-md-inline ms-1" style="font-size:0.8rem;">{{ __('Watch video') }}</span>
+    </button>
 @endpush
 <x-app-layout>
     <!-- Main Content -->
@@ -341,4 +345,5 @@
             </div>
         </div>
     </div>
+    @include('modules.transaction.payment._video')
 </x-app-layout>

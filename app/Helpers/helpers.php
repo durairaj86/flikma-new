@@ -222,7 +222,7 @@ function convert($amount, $currency = 'ريال سعودي')
 
 function appVersion(): string
 {
-    return "1.0.411";
+    return "1.0.430";
 }
 
 function toArabicNumber($number)
@@ -490,4 +490,16 @@ function currentPlanFor($company = null): \App\Models\Billing\Plan
 function planLabelFor($company = null, string $fallback = 'Free'): string
 {
     return currentPlanFor($company)?->label ?: $fallback;
+}
+
+
+/**
+ * The number to show for a document: a draft has no real number yet, so it just says "Draft"
+ * (the stored draft number is only an internal reference). Pass $prefix '#' for headings.
+ */
+function docNumber($doc, string $prefix = ''): string
+{
+    if (!$doc) return '';
+    $status = $doc->status instanceof \BackedEnum ? $doc->status->value : $doc->status;
+    return (int) $status === 1 ? __('Draft') : $prefix . $doc->row_no;
 }

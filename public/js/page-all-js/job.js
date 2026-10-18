@@ -749,12 +749,14 @@ JOB = {
                     if (cs.length) bits.push(`<span><i class="bi bi-box-seam"></i> ${cs.map(S.esc).join(', ')}${x.container_count > cs.length ? ' +' + (x.container_count - cs.length) : ''}</span>`);
                     return bits.length ? `<div class="jc-refs">${bits.join('')}</div>` : '';
                 };
-                // Profit and amount still due on this job (approved documents only).
+                // Revenue (customer invoices), cost (supplier invoices), profit and amount still due on this job (approved documents only).
                 const money = (m) => {
                     if (!m || (!m.invoiced && !m.cost)) return '';
                     const fmt = (n) => Number(n).toLocaleString(undefined, {maximumFractionDigits: 0});
                     const pc = m.profit < 0 ? 'text-danger' : 'text-success';
-                    return `<div class="jc-stat"><span>${trans('Profit')}</span><b class="${pc}">${m.profit < 0 ? '-' : ''}${fmt(Math.abs(m.profit))}</b></div>
+                    return `<div class="jc-stat"><span>${trans('Revenue')}</span><b>${fmt(m.invoiced || 0)}</b></div>
+                            <div class="jc-stat"><span>${trans('Cost')}</span><b>${fmt(m.cost || 0)}</b></div>
+                            <div class="jc-stat"><span>${trans('Profit')}</span><b class="${pc}">${m.profit < 0 ? '-' : ''}${fmt(Math.abs(m.profit))}</b></div>
                             <div class="jc-stat"><span>${trans('Due')}</span><b class="${m.due > 0 ? 'text-warning-emphasis' : 'text-muted'}">${m.due > 0 ? fmt(m.due) : '✓'}</b></div>`;
                 };
                 // Free days / detention for containers that are still out.

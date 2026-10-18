@@ -468,8 +468,23 @@ class CustomerInvoiceController extends Controller
                 'base_total' => $lineTotal * $customer->currency_rate,
                 'total_with_tax' => $netAmount,
                 'base_total_with_tax' => $netAmount * $customer->currency_rate,
+                // where the line was picked from (quotation / supplier invoice) and what it cost; null = typed by hand
+                'source_type' => in_array($request->source_type[$i] ?? null, ['quotation', 'supplier_invoice'], true) ? $request->source_type[$i] : null,
+                'source_id' => is_numeric($request->source_id[$i] ?? null) ? (int) $request->source_id[$i] : null,
+                'source_sub_id' => is_numeric($request->source_sub_id[$i] ?? null) ? (int) $request->source_sub_id[$i] : null,
+                'cost_base_amount' => is_numeric($request->cost_base_amount[$i] ?? null) ? (float) $request->cost_base_amount[$i] : null,
             ];
         }
+        // a source line without its source document makes no sense: drop the half-filled link
+        foreach ($customerSub as &$cs) {
+            if (!$cs['source_type'] || !$cs['source_id']) {
+                $cs['source_type'] = $cs['source_id'] = $cs['source_sub_id'] = $cs['cost_base_amount'] = null;
+            }
+        }
+        unset($cs);
+        // the invoice remembers the quotation it was built from
+        $customer->quotation_id = collect($customerSub)->firstWhere('source_type', 'quotation')['source_id'] ?? null;
+        $customer->save();
 
         DB::table('customer_invoice_subs')
             ->where('customer_invoice_id', $customer->id)
@@ -1232,41 +1247,101 @@ class CustomerInvoiceController extends Controller
     }
 
     /**
-     * Supplier invoices booked against a job (its "job cost"), with their lines, so the customer
-     * invoice form can re-bill any of them. Revenue account = the description's sale account,
-     * falling back to Freight Income.
+     * Everything on a job that a customer invoice can be built from:
+     *  - its quotation(s): the SELLING lines (one per job normally)  -> provisional revenue
+     *  - its supplier invoices: the COST lines (several are normal)  -> actual cost, re-billed with a margin
+     * Each entry also says which customer invoice already used it, so the same cost is not billed twice by mistake.
+     * Revenue account = the description's sale account, falling back to Freight Income.
+     * ?invoice=ID leaves that invoice out of the "already billed" list (editing it).
      */
-    public function jobCosts($jobId)
+    public function jobCosts(Request $request, $jobId)
     {
+        $exclude = (int) $request->get('invoice');
         $bills = \App\Models\Finance\SupplierInvoice\SupplierInvoice::where('job_id', $jobId)
             ->whereIn('status', [\App\Enums\SupplierInvoiceEnum::DRAFT->value, \App\Enums\SupplierInvoiceEnum::APPROVED->value])
             ->with(['supplier:id,name_en', 'supplierInvoiceSubs'])
             ->orderBy('id')->get();
+        $quotes = \App\Models\Quotation\Quotation::where('job_id', $jobId)
+            ->whereNotIn('status', [\App\Enums\QuotationEnum::CANCELLED->value, \App\Enums\QuotationEnum::EXPIRED->value])
+            ->orderBy('id')->get(['id', 'row_no', 'quotation_no', 'currency', 'currency_rate', 'grand_total', 'status']);
+        $charges = DB::table('quotation_charges')->whereIn('quotation_id', $quotes->pluck('id'))->orderBy('sort_order')->orderBy('line_no')->get()->groupBy('quotation_id');
 
-        $descriptions = \Illuminate\Support\Facades\DB::table('descriptions')
-            ->whereIn('id', $bills->flatMap(fn ($b) => $b->supplierInvoiceSubs->pluck('description_id'))->filter()->unique())
-            ->get(['id', 'sale_account_id'])->keyBy('id');
+        // which customer invoices already used these (cancelled ones do not count)
+        $used = fn (string $type, $ids) => DB::table('customer_invoice_subs as s')
+            ->join('customer_invoices as i', 'i.id', '=', 's.customer_invoice_id')
+            ->where('s.source_type', $type)->whereIn('s.source_id', $ids)
+            ->whereNull('s.deleted_at')->whereNull('i.deleted_at')
+            ->where('i.status', '!=', CustomerInvoiceEnum::CANCELLED->value)
+            ->when($exclude, fn ($q) => $q->where('i.id', '!=', $exclude))
+            ->select('s.source_id', 'i.row_no')->distinct()->get()->groupBy('source_id');
+        $usedBills = $used('supplier_invoice', $bills->pluck('id'));
+        $usedQuotes = $used('quotation', $quotes->pluck('id'));
 
-        return response()->json($bills->map(function ($b) use ($descriptions) {
-            return [
-                'id' => $b->id,
-                'row_no' => $b->row_no,
-                'invoice_number' => $b->invoice_number,
-                'supplier' => $b->supplier?->name_en,
-                'status' => (int) ($b->status instanceof \BackedEnum ? $b->status->value : $b->status),
-                'grand_total' => round((float) $b->grand_total, 2),
-                'currency' => $b->currency,
-                'lines' => $b->supplierInvoiceSubs->map(fn ($l) => [
-                    'description_id' => $l->description_id,
-                    'comment' => $l->comment,
-                    'unit_id' => $l->unit_id,
-                    'quantity' => (float) $l->quantity,
-                    'unit_price' => round((float) $l->unit_price, 2),
-                    'tax_code' => $l->tax_code,
-                    'account_id' => ($descriptions[$l->description_id]->sale_account_id ?? null) ?: 32,
-                ])->values(),
-            ];
-        })->values());
+        $allDesc = DB::table('descriptions')->get(['id', 'description', 'sale_account_id']);
+        $descById = $allDesc->keyBy('id');
+        $descByName = $allDesc->keyBy(fn ($d) => mb_strtolower(trim($d->description)));
+        $units = DB::table('units')->get(['id', 'unit_name', 'unit_symbol']);
+        $unitByName = [];
+        foreach ($units as $u) {
+            $unitByName[mb_strtolower(trim($u->unit_name))] = $u->id;
+            $unitByName[mb_strtolower(trim((string) $u->unit_symbol))] = $u->id;
+        }
+        // quotation charges carry legacy ZATCA letters; map them to this app's tax codes
+        $taxMap = ['S' => 'STANDARD', 'Z' => 'ZERO', 'E' => 'EXEMPT', 'O' => 'OUTOFSCOPE'];
+
+        return response()->json([
+            'quotations' => $quotes->map(function ($q) use ($charges, $descByName, $allDesc, $unitByName, $taxMap, $usedQuotes) {
+                return [
+                    'id' => $q->id,
+                    'row_no' => $q->row_no ?: $q->quotation_no,
+                    'currency' => $q->currency,
+                    'total' => round((float) $charges->get($q->id, collect())->sum('local_amount'), 2),
+                    'billed_in' => ($usedQuotes[$q->id] ?? collect())->pluck('row_no')->values(),
+                    'lines' => $charges->get($q->id, collect())->map(function ($c) use ($descByName, $allDesc, $unitByName, $taxMap) {
+                        $name = mb_strtolower(trim((string) $c->charge_description));
+                        // exact name first, then a description that contains it (or is contained by it)
+                        $d = $descByName[$name] ?? $allDesc->first(fn ($x) => $name !== '' && (str_contains(mb_strtolower($x->description), $name) || str_contains($name, mb_strtolower(trim($x->description)))));
+                        $qty = (float) $c->qty ?: 1;
+                        return [
+                            'source_sub_id' => $c->id,
+                            'description_id' => $d->id ?? null,
+                            'description_text' => $c->charge_description,
+                            'comment' => $c->remarks ?: ($d ? null : $c->charge_description),
+                            'unit_id' => $unitByName[mb_strtolower(trim((string) $c->unit))] ?? null,
+                            'quantity' => $qty,
+                            // price per unit in company currency; the form divides by the invoice's own rate
+                            'unit_price_local' => round((float) $c->local_amount / $qty, 4),
+                            'tax_code' => $taxMap[$c->tax_group_code] ?? ($c->tax_group_code ?: 'STANDARD'),
+                            'account_id' => ($d->sale_account_id ?? null) ?: 32,
+                        ];
+                    })->values(),
+                ];
+            })->values(),
+            'bills' => $bills->map(function ($b) use ($descById, $usedBills) {
+                return [
+                    'id' => $b->id,
+                    'row_no' => $b->row_no,
+                    'invoice_number' => $b->invoice_number,
+                    'supplier' => $b->supplier?->name_en,
+                    'status' => (int) ($b->status instanceof \BackedEnum ? $b->status->value : $b->status),
+                    'grand_total' => round((float) $b->grand_total, 2),
+                    'currency' => $b->currency,
+                    'billed_in' => ($usedBills[$b->id] ?? collect())->pluck('row_no')->values(),
+                    'lines' => $b->supplierInvoiceSubs->map(fn ($l) => [
+                        'source_sub_id' => $l->id,
+                        'description_id' => $l->description_id,
+                        'comment' => $l->comment,
+                        'unit_id' => $l->unit_id,
+                        'quantity' => (float) $l->quantity,
+                        'unit_price' => round((float) $l->unit_price, 2),
+                        // the cost behind the line in company currency, excl. VAT
+                        'cost_base' => round((float) $l->base_total, 4),
+                        'tax_code' => $l->tax_code,
+                        'account_id' => ((($descById[$l->description_id]->sale_account_id ?? null))) ?: 32,
+                    ])->values(),
+                ];
+            })->values(),
+        ]);
     }
 
     /** Delete is allowed only when nothing else points at this record (see DeletionGuard). */

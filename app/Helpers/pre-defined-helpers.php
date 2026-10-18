@@ -541,22 +541,28 @@ function userCan(string $module, string $action = 'view', $user = null): bool
 
 function vat(): array
 {
-    return [
+    return array_merge([
         [
             'code' => 'STANDARD',
             'name' => 'Standard',
+            'group' => 'Standard Rated',
+            'label' => 'Standard Rate',
             'percent' => 15,
             'description' => 'Standard VAT rate 15% applied to taxable supplies'
         ],
         [
             'code' => 'ZERO',
             'name' => 'Zero-rated',
+            'group' => 'Zero Rated',
+            'label' => 'Zero Rate',
             'percent' => 0,
             'description' => 'VAT rate 0% — exports, basic foods, education, health services'
         ],
         [
             'code' => 'EXEMPT',
             'name' => 'Exempt',
+            'group' => 'Exempt',
+            'label' => 'Exempt',
             'percent' => 0,
             'description' => 'No VAT charged, cannot reclaim input VAT — e.g., financial services'
         ],
@@ -575,15 +581,76 @@ function vat(): array
         [
             'code' => 'OUTOFSCOPE',
             'name' => 'Out-of-scope',
+            'group' => 'Out of Scope',
+            'label' => 'Out of Scope',
             'percent' => 0,
             'description' => 'Transactions not subject to VAT under KSA law'
         ],
+    ], vatExemptionReasons());
+}
+
+/**
+ * ZATCA exemption / zero-rate reasons (VATEX codes). Each one is a tax code of the form BASE:VATEX-CODE, e.g.
+ * ZERO:VATEX-SA-32. vatBase() gives the category the rest of the app and ZATCA already understand (ZERO / EXEMPT /
+ * OUTOFSCOPE); vatReason() gives the VATEX code that goes on the ZATCA invoice line.
+ */
+function vatExemptionReasons(): array
+{
+    $rows = [
+        ['ZERO', 'VATEX-SA-32', 'Export of goods', 'Zero Rated'],
+        ['ZERO', 'VATEX-SA-33', 'Export of services', 'Zero Rated'],
+        ['ZERO', 'VATEX-SA-34-1', 'International transport of goods', 'Zero Rated'],
+        ['ZERO', 'VATEX-SA-34-2', 'International transport of passengers', 'Zero Rated'],
+        ['ZERO', 'VATEX-SA-34-3', 'Services directly connected to international passenger transport', 'Zero Rated'],
+        ['ZERO', 'VATEX-SA-34-4', 'Supply of a qualifying means of transport', 'Zero Rated'],
+        ['ZERO', 'VATEX-SA-34-5', 'Services relating to goods or passenger transportation (Article 25)', 'Zero Rated'],
+        ['ZERO', 'VATEX-SA-35', 'Medicines and medical equipment', 'Zero Rated'],
+        ['ZERO', 'VATEX-SA-36', 'Qualifying metals', 'Zero Rated'],
+        ['ZERO', 'VATEX-SA-EDU', 'Private education to citizens', 'Zero Rated'],
+        ['ZERO', 'VATEX-SA-HEA', 'Private healthcare to citizens', 'Zero Rated'],
+        ['ZERO', 'VATEX-SA-MLTRY', 'Supply of qualified military goods', 'Zero Rated'],
+        ['EXEMPT', 'VATEX-SA-29', 'Financial services (Article 29)', 'Exempt'],
+        ['EXEMPT', 'VATEX-SA-29-7', 'Life insurance services (Article 29)', 'Exempt'],
+        ['EXEMPT', 'VATEX-SA-30', 'Real estate transactions (Article 30)', 'Exempt'],
+        ['OUTOFSCOPE', 'VATEX-SA-OOS', 'Not subject to VAT', 'Out of Scope'],
     ];
+    return array_map(fn($r) => [
+        'code' => $r[0] . ':' . $r[1],
+        'name' => $r[2],
+        'group' => $r[3],
+        'label' => $r[2],
+        'percent' => 0,
+        'description' => $r[1],
+        'reason' => $r[1],
+    ], $rows);
+}
+
+/** The VAT category of a tax code: 'ZERO:VATEX-SA-32' -> 'ZERO'. */
+function vatBase($code): string
+{
+    return strtok((string)$code, ':') ?: '';
+}
+
+/** The VATEX reason of a tax code ('' when it has none). */
+function vatReason($code): string
+{
+    $parts = explode(':', (string)$code, 2);
+    return $parts[1] ?? '';
+}
+
+/** Readable name of a tax code for lists and prints. */
+function vatLabel($code): string
+{
+    if ($code === null || $code === '') return '-';
+    foreach (vat() as $v) {
+        if ($v['code'] === $code) return number_format($v['percent'], 2) . '% - ' . __($v['label']);
+    }
+    return (string)$code;
 }
 
 function vatPercent($vat): int
 {
-    return match ($vat) {
+    return match (vatBase($vat)) {
         'STANDARD' => 15,
         'ZERO' => 0,
         'EXEMPT' => 0,

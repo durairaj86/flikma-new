@@ -8,6 +8,10 @@
             title="{{ __('How credit notes work') }}">
         <i class="bi bi-info-circle fs-6"></i><span class="d-none d-md-inline ms-1" style="font-size:0.8rem;">{{ __('How it works') }}</span>
     </button>
+    <button class="btn btn-link btn-sm p-0 text-decoration-none lh-1 ms-2" id="creditNoteWatchVideo"
+            data-bs-toggle="modal" data-bs-target="#creditNoteVideoModal" title="{{ __('Watch video') }}">
+        <i class="bi bi-play-circle-fill fs-6"></i><span class="d-none d-md-inline ms-1" style="font-size:0.8rem;">{{ __('Watch video') }}</span>
+    </button>
 @endpush
 <x-app-layout>
     <main class="gmail-content bg-white px-3">
@@ -427,4 +431,5 @@
             </div>
         </div>
     </div>
+    @include('modules.finance.credit-note._video')
 </x-app-layout>

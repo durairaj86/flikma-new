@@ -53,7 +53,7 @@
 
                     <div class="d-flex w-100 justify-content-end">
                         <div class="text-end fw-semibold me-2" style="min-width: 120px;">{{ __('Invoice No') }}:</div>
-                        <div class="text-end" style="min-width: 120px;">#{{ $customerInvoice->row_no }}</div>
+                        <div class="text-end" style="min-width: 120px;">{{ docNumber($customerInvoice, '#') }}</div>
                     </div>
 
                     <div class="d-flex w-100 justify-content-end">

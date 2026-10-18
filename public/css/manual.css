@@ -1522,6 +1522,13 @@ div.dataTables_filter {
 .ts-dropdown {
     width: auto;
     max-width: 500px;
+    /* above sticky table headers (z-index 1020) and sticky bars, so an open list is never painted over */
+    z-index: 1060;
+}
+/* tom-select.bootstrap5.css is loaded after this file and sets 1000, so repeat it with a more specific selector */
+.ts-wrapper .ts-dropdown,
+body .ts-dropdown {
+    z-index: 1060;
 }
 
 .plugin-dropdown_input .dropdown-input {
@@ -2046,3 +2053,44 @@ body:not(.has-top-header) #sendEmailDrawer.offcanvas.offcanvas-end {
 /* Payroll module pages: same content width as the other full-page screens */
 .pr-wrap { max-width: 1300px; margin: 0 auto; padding: 14px 28px 24px; }
 @media (max-width: 767.98px) { .pr-wrap { padding: 10px 12px 20px; } }
+
+
+/* Grouped dropdowns (accounts, taxes): small grey group titles with a divider between groups */
+.ts-dropdown .optgroup-header {
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .02em;
+    color: #667085;
+    padding: .55rem 14px .3rem;
+    background: transparent;
+}
+.ts-dropdown .optgroup + .optgroup,
+.ts-dropdown .optgroup:not(:first-child) {
+    border-top: 1px solid #e5e7eb;
+    margin-top: .25rem;
+}
+/* an option inside a group sits one step to the right of the group title */
+.ts-dropdown .optgroup .option { padding: 8px 38px 8px 30px !important; }
+
+/* A chosen value stays on ONE line and is cut with "..." when the box is narrow (the full name is in the open list) */
+.ts-wrapper.single .ts-control {
+    flex-wrap: nowrap !important;
+    flex-direction: row;
+    align-items: center;
+    overflow: hidden;   /* never taller or wider than the box: what does not fit is hidden */
+}
+.ts-wrapper.single .ts-control > .item {
+    white-space: nowrap !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    max-width: 100%;
+    flex: 1 1 auto;
+}
+
+/* In a table, a long chosen value must not make its column wider: the box takes the width the column already has */
+td .ts-wrapper.single,
+th .ts-wrapper.single {
+    contain: inline-size;
+    max-width: 100%;
+}

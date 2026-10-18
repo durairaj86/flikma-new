@@ -414,7 +414,7 @@ trait SimplifiedInvoice
         }*/
         $cacTaxSubtotal = [];
         // BR-DEC-13, MESSAGE : [BR-DEC-13]-The allowed maximum number of decimals for the Invoice total VAT amount (BT-110) is 2.
-        $addTaxSubtotal = function ($taxable_amount, $tax_amount, $tax_percent, $service_type) use (&$cacTaxSubtotal, $totalTaxableAmount) {
+        $addTaxSubtotal = function ($taxable_amount, $tax_amount, $tax_percent, $service_type, $exemption_code = '') use (&$cacTaxSubtotal, $totalTaxableAmount) {
             //dd($tax_percent);
             $text = 'S';
             $reasonCode = '';
@@ -438,6 +438,10 @@ trait SimplifiedInvoice
                     $reasonCode = 'VATEX-SA-33';
                     $text = 'Z';
                 }
+                // the line carries its own ZATCA exemption reason (e.g. VATEX-SA-34-1): it replaces the default one
+                if ($exemption_code) {
+                    $reasonCode = $exemption_code;
+                }
             }
             $cacTaxSubtotal[] = [
                 // BR-DEC-19
@@ -459,7 +463,7 @@ trait SimplifiedInvoice
                     'cbc:Percent' => $tax_percent ? number_format((float)$tax_percent * 100.00, 2, '.', '') : 0,
                     //'cbc:Percent' => '',
                     // BR-O-10
-                    'cbc:TaxExemptionReason' => $tax_percent ? '' : salesTypes()[$service_type],
+                    'cbc:TaxExemptionReason' => $tax_percent ? '' : ($exemption_code ? (collect(vat())->firstWhere('reason', $exemption_code)['name'] ?? salesTypes()[$service_type]) : salesTypes()[$service_type]),
                     'cbc:TaxExemptionReasonCode' => $reasonCode,
                     'cac:TaxScheme' => [
                         'cbc:ID' => [
@@ -482,7 +486,7 @@ trait SimplifiedInvoice
             $taxable_amount = ($line_item['tax_exclusive_price'] * $line_item['quantity']) - ($total_line_item_discount ?? 0);
 
             $tax_amount = ((float)$line_item['VAT_percent']) * ((float)$taxable_amount);
-            $addTaxSubtotal($taxable_amount, $tax_amount, $line_item['VAT_percent'], $line_item['service_type']);
+            $addTaxSubtotal($taxable_amount, $tax_amount, $line_item['VAT_percent'], $line_item['service_type'], $line_item['exemption_code'] ?? '');
             $taxes_total += round($tax_amount, 2);
             array_map(function ($tax) use (&$taxable_amount, &$addTaxSubtotal, &$taxes_total, &$service_type) {
                 $tax_amount = $tax['percent_amount'] * $taxable_amount;

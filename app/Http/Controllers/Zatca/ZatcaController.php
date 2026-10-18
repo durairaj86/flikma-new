@@ -64,7 +64,8 @@ class ZatcaController extends Controller
                     'quantity' => (float)$item->quantity ?? 1, //54,
                     'tax_exclusive_price' => abs(round($item->base_unit_price, 2) * round(1, 2)),
                     'VAT_percent' => round($item->tax_percent, 2) / 100,
-                    'service_type' => $item->tax_code,
+                    'service_type' => vatBase($item->tax_code),
+                    'exemption_code' => vatReason($item->tax_code),
                     /*'tax_exclusive_price' => 1000.0,
                     'VAT_percent' => 0.5,*/
                     'other_taxes' => [],

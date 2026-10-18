@@ -39,6 +39,8 @@
         'free left',
         'In detention',
         'Due',
+        'Revenue',
+        'Cost',
         'Profit',
         'Ref',
         'Credit Note',

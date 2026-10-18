@@ -2,6 +2,12 @@
 @section('hide-topbar', true)
 @section('js','expense')
 @section('extra-js','customer')
+@push('page-title-action')
+    <button class="btn btn-link btn-sm p-0 text-decoration-none lh-1 ms-2" id="expenseWatchVideo"
+            data-bs-toggle="modal" data-bs-target="#expenseVideoModal" title="{{ __('Watch video') }}">
+        <i class="bi bi-play-circle-fill fs-6"></i><span class="d-none d-md-inline ms-1" style="font-size:0.8rem;">{{ __('Watch video') }}</span>
+    </button>
+@endpush
 <x-app-layout>
     <main class="gmail-content bg-white px-3">
         <style>
@@ -197,4 +203,5 @@
             });
         })();
     </script>
+    @include('modules.finance.expense._video')
 </x-app-layout>

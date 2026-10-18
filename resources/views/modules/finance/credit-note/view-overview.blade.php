@@ -148,7 +148,7 @@
                         <td class="text-end">{{ $item->quantity }}</td>
                         <td class="text-end">{{ number_format($item->unit_price, decimals()) }}</td>
                         <td class="text-end">{{ number_format($item->line_total, decimals()) }}</td>
-                        <td>{{ $item->tax_code ?? '-' }}</td>
+                        <td>{{ vatLabel($item->tax_code ?? null) }}</td>
                         <td class="text-end">{{ $item->tax_percent }}%</td>
                         <td class="text-end">{{ number_format($item->tax_amount, decimals()) }}</td>
                         <td class="text-end">{{ number_format($item->total_with_tax ?? $item->total, decimals()) }}</td>

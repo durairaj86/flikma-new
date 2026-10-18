@@ -1185,10 +1185,15 @@ let webModal = {
             if (focusableArr.length) {
                 firstEl = focusableArr[0];
                 lastEl = focusableArr[focusableArr.length - 1];
+                // never auto-focus a dropdown (it would pop open) or a date box (its calendar would open)
+                const autoFocus = (el) => {
+                    if (!el || el.tagName === 'SELECT' || el.closest('.ts-wrapper, .ts-dropdown') || el.classList.contains('flatpickr-input') || el._flatpickr) return;
+                    el.focus();
+                };
                 if (lastFocusedInput) {
-                    lastFocusedInput.focus();
+                    autoFocus(lastFocusedInput);
                 } else {
-                    firstEl.focus();
+                    autoFocus(firstEl);
                 }
             }
         });
@@ -1414,10 +1419,15 @@ let webModal = {
             if (focusableArr.length) {
                 firstEl = focusableArr[0];
                 lastEl = focusableArr[focusableArr.length - 1];
+                // never auto-focus a dropdown (it would pop open) or a date box (its calendar would open)
+                const autoFocus = (el) => {
+                    if (!el || el.tagName === 'SELECT' || el.closest('.ts-wrapper, .ts-dropdown') || el.classList.contains('flatpickr-input') || el._flatpickr) return;
+                    el.focus();
+                };
                 if (lastFocusedInput) {
-                    lastFocusedInput.focus();
+                    autoFocus(lastFocusedInput);
                 } else {
-                    firstEl.focus();
+                    autoFocus(firstEl);
                 }
             }
         });
@@ -2070,7 +2080,7 @@ function initTomSelectForm2222(form = null, destroy = false, individualId = null
             allowEmptyOption: true,
             maxItems: isMultiple ? null : 1,
             placeholder: placeholder,
-            searchField: liveSearch ? ['text'] : [],
+            searchField: liveSearch ? ['text', 'subtext'] : [],
             hideSelected: false,
 
             plugins: [
@@ -2275,7 +2285,7 @@ function initTomSelectForm(form = null, destroy = false, individualId = null) {
             allowEmptyOption: true,
             maxItems: isMultiple ? null : 1,
             placeholder: placeholder,
-            searchField: liveSearch ? ['text'] : [],
+            searchField: liveSearch ? ['text', 'subtext'] : [],
             hideSelected: false,
 
             plugins: [
@@ -2337,8 +2347,10 @@ function initTomSelectForm(form = null, destroy = false, individualId = null) {
                 if (!isNaN(maxWidth)) {
                     this.wrapper.style.width = maxWidth + 'px';
                     this.control.style.width = maxWidth + 'px';
-                    this.dropdown.style.width = (maxDropdownWidth ?? maxWidth) + 'px';
                 }
+                // the list can be wider than the box (data-dropdown-width), e.g. long account names in a narrow table cell
+                const listWidth = !isNaN(maxDropdownWidth) ? maxDropdownWidth : maxWidth;
+                if (!isNaN(listWidth)) this.dropdown.style.width = listWidth + 'px';
 
                 /* ---------- toggle-on-click (your logic) ---------- */
                 if (isMultiple) {

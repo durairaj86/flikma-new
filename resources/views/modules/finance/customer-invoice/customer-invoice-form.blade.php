@@ -2,7 +2,7 @@
     <div class="d-flex justify-content-between align-items-center flex-wrap">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-4">
             <div class="module-info">
-                <span class="fw-semibold fs-5">{{ $customer->row_no ?? __('New Customer Invoice') }}</span>
+                <span class="fw-semibold fs-5">{{ (!$customer->id || (int) $customer->status === 1) ? __('Draft') : $customer->row_no }}</span>
             </div>
         </div>
         <div id="show-buttons"></div>
@@ -32,14 +32,6 @@
                                 </option>
                             @endforeach
                         </select>
-                    </div>
-
-                    <!-- Job cost: supplier invoices booked against the chosen job; picking one adds its lines below -->
-                    <div class="col-md-4 d-none" id="jobCostWrap">
-                        <label class="form-label">{{ __('Job Cost') }}
-                            <small class="text-muted fw-normal">({{ __('supplier invoices of this job') }})</small>
-                        </label>
-                        <select id="jobCostSelect" class="tom-select avoid-filter" data-placeholder="{{ __('Pick a supplier invoice to add its lines') }}"></select>
                     </div>
 
                     <!-- Customer -->
@@ -86,6 +78,16 @@
                         <x-common.currencies-exchange :value="$customer->currency" width="auto" :disabled="true"
                                                       :exchangeRate="$customer->currency_rate"/>
                     </div>
+
+                    <!-- Job cost: supplier invoices booked against the chosen job; picking one adds its lines below -->
+                    <div class="col-md-4 d-none" id="jobCostWrap">
+                        <label class="form-label">{{ __('Pick up from this job') }}
+                            <small class="text-muted fw-normal">({{ __('quotation or supplier invoices') }})</small>
+                        </label>
+                        <select id="jobCostSelect" class="tom-select avoid-filter" data-live-search="true" data-placeholder="{{ __('Pick the quotation or a supplier invoice to add its lines') }}"></select>
+                        <small class="text-muted d-block mt-1">{{ __('The quotation fills the selling lines. A supplier invoice fills its cost lines: add your margin on the price. Each line remembers its source.') }}</small>
+                    </div>
+
                 </div>
 
                 <div class="row g-3 mt-2">
@@ -203,6 +205,12 @@
                                 <input type="text" name="unit_price[]" class="form-control text-end float unit_price"
                                        autocomplete="off"
                                        value="{{ $subItem->unit_price }}" min="1" required>
+                                {{-- where this line came from and what it cost (filled when picked from a quotation / supplier invoice) --}}
+                                <input type="hidden" name="source_type[]" value="{{ $subItem->source_type }}">
+                                <input type="hidden" name="source_id[]" value="{{ $subItem->source_id }}">
+                                <input type="hidden" name="source_sub_id[]" value="{{ $subItem->source_sub_id }}">
+                                <input type="hidden" name="cost_base_amount[]" value="{{ $subItem->cost_base_amount }}">
+                                <div class="cost-hint small text-end mt-1 d-none"></div>
                             </td>
 
                             <!-- Tax -->
@@ -252,6 +260,16 @@
                         <td class="text-end fw-bold" id="grandNet">
                             {{ number_format($customer->grand_total, decimals()) }}
                         </td>
+                        <td></td>
+                    </tr>
+                    {{-- cost behind the lines picked from supplier invoices, and the margin on them (shown only when there are any) --}}
+                    <tr id="marginRow" class="d-none">
+                        <td colspan="6" class="text-end text-muted fw-normal">
+                            {{ __('Cost of picked supplier lines') }} <b id="marginCost">0.00</b> ·
+                            {{ __('Billed') }} <b id="marginBilled">0.00</b> ·
+                            {{ __('Margin') }}
+                        </td>
+                        <td class="text-end fw-bold" id="marginValue">0.00</td>
                         <td></td>
                     </tr>
                     </tfoot>

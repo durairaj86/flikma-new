@@ -1,5 +1,5 @@
 <select name="{{ $name ?? 'account[]' }}" class="tom-select" data-live-search="true" required
-        placeholder="Search Account">
+        placeholder="Search Account" data-dropdown-width="{{ $dropdownWidth ?? '340' }}">
     <option value="">Select Account</option>
 
     @foreach($parentAccount as $parent)
@@ -11,8 +11,8 @@
         @if($children->count() > 0)
             <optgroup label="{{ $parent->name }} ({{ $parent->code }})">
                 @foreach($children as $child)
-                    <option value="{{ $child->id }}" @selected($child->id == ($value ?? null))>
-                        {{ $child->name }} - {{ $child->code }}
+                    <option value="{{ $child->id }}" data-subtext="{{ __('Code') }}: {{ $child->code }}" @selected($child->id == ($value ?? null))>
+                        {{ $child->name }}
                     </option>
                 @endforeach
             </optgroup>
@@ -26,7 +26,7 @@
     @if($orphans->count() > 0)
         <optgroup label="Other">
             @foreach($orphans as $orphan)
-                <option value="{{ $orphan->id }}" @selected($orphan->id == ($value ?? null))>
+                <option value="{{ $orphan->id }}" data-subtext="{{ __('Code') }}: {{ $orphan->code }}" @selected($orphan->id == ($value ?? null))>
                     {{ $orphan->name }}
                 </option>
             @endforeach

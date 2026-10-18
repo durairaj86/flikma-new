@@ -1,8 +1,15 @@
 @section('page-title', __('Journal Vouchers'))
 @section('js','journal_voucher')
+@push('page-title-action')
+    <button class="btn btn-link btn-sm p-0 text-decoration-none lh-1 ms-2" id="journalVoucherWatchVideo"
+            data-bs-toggle="modal" data-bs-target="#journalVoucherVideoModal" title="{{ __('Watch video') }}">
+        <i class="bi bi-play-circle-fill fs-6"></i><span class="d-none d-md-inline ms-1" style="font-size:0.8rem;">{{ __('Watch video') }}</span>
+    </button>
+@endpush
 <x-app-layout>
     <!-- Main Content -->
     <main class="gmail-content bg-white px-3">
+        <div class="d-flex align-items-center gap-2 pt-3">@stack('page-title-action')</div>
         <div class="d-flex justify-content-between align-items-start py-3">
             <div class="align-items-center flex-shrink-0">
                 <div class="gap-4">
@@ -182,4 +189,5 @@
             </div>
         </div>
     </main>
+    @include('modules.finance.journal_voucher._video')
 </x-app-layout>

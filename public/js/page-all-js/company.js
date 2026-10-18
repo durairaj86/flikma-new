@@ -91,6 +91,14 @@ COMPANY = {
 
         $('#vat_status').on('change', toggleVatFields);
 
+        // a server error disappears as soon as the field is edited
+        $('#company-form').on('input change', ':input', function () {
+            const wrap = this.tomselect ? this.tomselect.wrapper : this;
+            $(this).removeClass('is-invalid');
+            if (this.tomselect) wrap.classList.remove('is-invalid');
+            $(wrap).next('.server-error').remove();
+        });
+
         $('#submit').off().on('click', function (e) {
             e.preventDefault();
             const form = $('#company-form');
@@ -119,9 +127,33 @@ COMPANY = {
                 error: function (xhr) {
                     let errors = xhr.responseJSON && xhr.responseJSON.errors;
                     if (errors) {
+                        // Same as the other forms: mark every field that needs fixing and show ONE summary toast
+                        const $form = $('#company-form');
+                        $form.find('.is-invalid').removeClass('is-invalid');
+                        $form.find('.server-error').remove();
+                        const camel = k => k.replace(/_([a-z])/g, (m, c) => c.toUpperCase());
+                        let marked = [], first = null;
                         $.each(errors, function (key, value) {
-                            toastr.error(value[0]);
+                            const base = key.replace(/\.\d+$/, '');
+                            const $f = $form.find('[name="' + base + '"], [name="' + camel(base) + '"], [name="' + base + '[]"]').first();
+                            if (!$f.length) return;
+                            $f.addClass('is-invalid');
+                            const ts = $f[0].tomselect;
+                            if (ts) ts.wrapper.classList.add('is-invalid');
+                            $('<div class="invalid-feedback d-block server-error"></div>').text(value[0]).insertAfter(ts ? ts.wrapper : $f);
+                            marked.push($f);
+                            if (!first) first = $f;
                         });
+                        const n = marked.length || Object.keys(errors).length;
+                        let msg = trans('Validation Failed') + ': ' + n + ' field' + (n > 1 ? 's' : '') + ' need to be fixed.';
+                        if (first) {
+                            const label = (first.closest('[class*="col-"]').find('label').first().text() || '').replace(/\*/g, '').trim();
+                            if (label) msg += ' (' + trans('First') + ': ' + label + ')';
+                            try { first[0].scrollIntoView({block: 'center', behavior: 'smooth'}); } catch (e) {}
+                        } else {
+                            msg = Object.values(errors).flat().join(' | ');
+                        }
+                        toastr.error(msg, '', {positionClass: 'toast-bottom-center'});
                     } else {
                         toastr.error('Something went wrong!');
                     }

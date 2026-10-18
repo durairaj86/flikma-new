@@ -81,7 +81,7 @@
 </ul>
 <div class="tab-content">
 <div class="tab-pane fade show active" id="ciDetailsTab" role="tabpanel">
-<div class="invoice-no-heading">#{{ $customerInvoice->row_no }}</div>
+<div class="invoice-no-heading">{{ docNumber($customerInvoice, '#') }}</div>
 
 <div class="section">
     <h6>{{ __('Customer & Invoice Information') }}</h6>
@@ -127,7 +127,7 @@
                         <td>{{ $item->unit ?? '-' }}</td>
                         <td class="text-end">{{ number_format($item->unit_price, decimals()) }}</td>
                         <td class="text-end">{{ number_format($item->line_total, decimals()) }}</td>
-                        <td>{{ $item->tax_code ?? '-' }}</td>
+                        <td>{{ vatLabel($item->tax_code ?? null) }}</td>
                         <td class="text-end">{{ $item->tax_percent }}%</td>
                         <td class="text-end">{{ number_format($item->tax_amount, decimals()) }}</td>
                         <td class="text-end">{{ number_format($item->total_with_tax ?? $item->total, decimals()) }}</td>

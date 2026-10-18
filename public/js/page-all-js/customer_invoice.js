@@ -209,8 +209,9 @@ CUSTOMER_INVOICE = {
                 6: '<span class="badge bg-primary-subtle text-primary-emphasis">Converted</span>',
             },
             // One idea per column, each with a bold main line and a small grey line.
-            invoiceNumber: (row) => `<div class="cell-primary fw-bold text-primary customer-invoice-no-link" style="cursor:pointer;">${row.row_no ?? ''}</div>
-                <div class="d-flex align-items-center gap-2 mt-1">${CUSTOMER_INVOICE.list.templates.statusBadge[row.status] ?? ''}<span class="cell-secondary">${row.invoice_date ?? ''}</span></div>`,
+            // a draft has no real number yet: it just says "Draft" (no number, no second Draft badge)
+            invoiceNumber: (row) => `<div class="cell-primary fw-bold text-primary customer-invoice-no-link" style="cursor:pointer;">${Number(row.status) === 1 ? trans('Draft') : (row.row_no ?? '')}</div>
+                <div class="d-flex align-items-center gap-2 mt-1">${Number(row.status) === 1 ? '' : (CUSTOMER_INVOICE.list.templates.statusBadge[row.status] ?? '')}<span class="cell-secondary">${row.invoice_date ?? ''}</span></div>`,
 
             job: (row) => row.job_no
                 ? `<div class="cell-primary">${row.job_no}</div><div class="cell-secondary">${row.job_activity && row.job_activity !== '-' ? row.job_activity : ''}</div>`
@@ -363,6 +364,7 @@ CUSTOMER_INVOICE = {
 
                 // Clear values in cloned row
                 $newRow.find('input, select, textarea').val('');
+                $newRow.find('.cost-hint').addClass('d-none').text('');
                 $newRow.find('select').removeClass('tomselected').removeClass('ts-hidden-accessible');
                 $newRow.find('div.ts-wrapper').remove();
                 initTomSelectForm($newRow);
@@ -393,10 +395,12 @@ CUSTOMER_INVOICE = {
                 CALCULATION.finalTotals();
             })
         },
-        // Job cost: the supplier invoices raised against the selected job. Choosing one copies its
-        // lines into the invoice rows (editable — add your margin on the price).
+        // Pick up from the job: its quotation (selling lines, provisional) and its supplier invoices (cost lines, actual).
+        // Choosing one copies its lines into the invoice rows; every copied line remembers its source and, for supplier
+        // lines, its cost, so the invoice can show the margin and the reports can compare cost with revenue.
         jobCost: {
             bills: {},
+            quotes: {},
             added: new Set(),
             bind() {
                 const self = CUSTOMER_INVOICE.form.jobCost;
@@ -407,12 +411,18 @@ CUSTOMER_INVOICE = {
                     self.load($(this).val());
                 });
                 $('#jobCostSelect').off('change.jobCost').on('change.jobCost', function () {
-                    const id = $(this).val();
-                    if (!id) return;
-                    self.addBill(id);
+                    const v = $(this).val();
+                    if (!v) return;
+                    self.add(v);
                     const ts = this.tomselect;
                     if (ts) ts.clear(true);
                 });
+                // keep the cost hints and the margin line in step with what is typed
+                const $tb = $('#' + MODULE + '-tbody');
+                $tb.off('input.margin change.margin').on('input.margin change.margin', '.quantity, .unit_price', self.refresh);
+                $tb.off('click.margin').on('click.margin', '.remove-row', function () { setTimeout(self.refresh, 60); });
+                $(document).off('input.marginRate').on('input.marginRate', '#currency-rate', self.refresh);
+                self.refresh();
                 if ($job.val()) self.load($job.val());
             },
             load(jobId) {
@@ -420,34 +430,50 @@ CUSTOMER_INVOICE = {
                 const wrap = $('#jobCostWrap');
                 const sel = document.getElementById('jobCostSelect');
                 self.bills = {};
-                if (sel && sel.tomselect) { sel.tomselect.clear(true); sel.tomselect.clearOptions(); }
+                self.quotes = {};
+                if (sel && sel.tomselect) { sel.tomselect.clear(true); sel.tomselect.clearOptions(); sel.tomselect.clearOptionGroups && sel.tomselect.clearOptionGroups(); }
                 if (!jobId) { wrap.addClass('d-none'); return; }
-                $.get(GLOBAL_FN.buildUrl('invoice/customer/job/' + jobId + '/costs'), function (list) {
-                    if (!list.length) { wrap.addClass('d-none'); return; }
-                    list.forEach(b => { self.bills[b.id] = b; });
+                const invoiceId = $('input[name="data-id"]').val() || '';
+                $.get(GLOBAL_FN.buildUrl('invoice/customer/job/' + jobId + '/costs'), {invoice: invoiceId}, function (res) {
+                    const quotes = res.quotations || [], bills = res.bills || [];
+                    if (!quotes.length && !bills.length) { wrap.addClass('d-none'); return; }
+                    const money = (n) => Number(n).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    const billed = (x) => x.billed_in && x.billed_in.length ? ' · ' + trans('billed in') + ' ' + x.billed_in.join(', ') : '';
                     if (sel && sel.tomselect) {
-                        list.forEach(b => {
-                            sel.tomselect.addOption({
-                                value: String(b.id),
-                                text: b.row_no + ' — ' + (b.supplier || '') + ' — ' + b.grand_total.toFixed(2) + ' ' + (b.currency || '') + (b.status === 1 ? ' (draft)' : '')
-                            });
+                        const ts = sel.tomselect;
+                        if (quotes.length) ts.addOptionGroup('q', {label: trans('Quotation') + ' (' + trans('selling price') + ')'});
+                        if (bills.length) ts.addOptionGroup('s', {label: trans('Supplier invoices') + ' (' + trans('cost') + ')'});
+                        quotes.forEach(q => {
+                            self.quotes[q.id] = q;
+                            ts.addOption({value: 'q:' + q.id, optgroup: 'q', text: q.row_no + ' — ' + money(q.total) + ' SAR', subtext: (q.lines.length + ' ' + trans('lines')) + billed(q)});
                         });
-                        sel.tomselect.refreshOptions(false);
+                        bills.forEach(b => {
+                            self.bills[b.id] = b;
+                            ts.addOption({value: 's:' + b.id, optgroup: 's', text: b.row_no + ' — ' + (b.supplier || '') + ' — ' + money(b.grand_total) + ' ' + (b.currency || '') + (b.status === 1 ? ' (draft)' : ''), subtext: billed(b).replace(/^ · /, '')});
+                        });
+                        ts.refreshOptions(false);
                     }
                     wrap.removeClass('d-none');
                 });
             },
-            addBill(id) {
+            add(v) {
                 const self = CUSTOMER_INVOICE.form.jobCost;
-                const bill = self.bills[id];
-                if (!bill) return;
-                if (self.added.has(String(id))) {
-                    toastr.warning(trans('This supplier invoice is already added.'));
+                const kind = v.charAt(0), id = v.slice(2);
+                const doc = kind === 'q' ? self.quotes[id] : self.bills[id];
+                if (!doc) return;
+                const key = v;
+                if (self.added.has(key)) {
+                    toastr.warning(trans(kind === 'q' ? 'This quotation is already added.' : 'This supplier invoice is already added.'));
+                    return;
+                }
+                if (doc.billed_in && doc.billed_in.length &&
+                    !window.confirm(doc.row_no + ' ' + trans('is already billed in') + ' ' + doc.billed_in.join(', ') + '.\n' + trans('Add it again?'))) {
                     return;
                 }
                 const $tbody = $('#' + MODULE + '-tbody');
+                const rate = parseFloat(String($('#currency-rate').val() || '1').replace(/,/g, '')) || 1;
                 const blank = ($tr) => !$tr.find('select[name="description_id[]"]').val() && !(parseFloat(String($tr.find('.unit_price').val() || '').replace(/,/g, '')) > 0);
-                bill.lines.forEach(line => {
+                doc.lines.forEach(line => {
                     let $row;
                     const $first = $tbody.find('tr:first');
                     if ($tbody.find('tr').length === 1 && blank($first)) {
@@ -455,6 +481,7 @@ CUSTOMER_INVOICE = {
                     } else {
                         $row = $first.clone();
                         $row.find('input, select, textarea').val('');
+                        $row.find('.cost-hint').addClass('d-none').text('');
                         $row.find('select').removeClass('tomselected').removeClass('ts-hidden-accessible');
                         $row.find('div.ts-wrapper').remove();
                         initTomSelectForm($row);
@@ -468,13 +495,50 @@ CUSTOMER_INVOICE = {
                     setSel('account[]', line.account_id);
                     setSel('unit_id[]', line.unit_id);
                     setSel('tax[]', line.tax_code);
-                    $row.find('textarea[name="comment[]"]').val((bill.row_no + (line.comment ? ' — ' + line.comment : '')));
+                    const note = kind === 'q' ? (line.comment || '') : (doc.row_no + (line.comment ? ' — ' + line.comment : ''));
+                    $row.find('textarea[name="comment[]"]').val(note);
+                    const price = kind === 'q' ? (line.unit_price_local / rate) : line.unit_price;
                     $row.find('.quantity').val(line.quantity).trigger('input');
-                    $row.find('.unit_price').val(line.unit_price).trigger('input');
+                    $row.find('.unit_price').val(Number(price).toFixed(2)).trigger('input');
+                    // remember the source (and, for a supplier line, the cost behind it)
+                    $row.find('[name="source_type[]"]').val(kind === 'q' ? 'quotation' : 'supplier_invoice');
+                    $row.find('[name="source_id[]"]').val(doc.id);
+                    $row.find('[name="source_sub_id[]"]').val(line.source_sub_id);
+                    $row.find('[name="cost_base_amount[]"]').val(kind === 'q' ? '' : line.cost_base);
                 });
-                self.added.add(String(id));
+                self.added.add(key);
                 CALCULATION.finalTotals();
-                toastr.success(bill.row_no + ' ' + trans('added to the invoice lines.'));
+                self.refresh();
+                toastr.success(doc.row_no + ' ' + trans('added to the invoice lines.'));
+            },
+            // cost hint under each picked supplier line + the margin line under the totals
+            refresh() {
+                const rate = parseFloat(String($('#currency-rate').val() || '1').replace(/,/g, '')) || 1;
+                const num = (v) => parseFloat(String(v || '').replace(/,/g, '')) || 0;
+                const fmt = (n) => Number(n).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                let cost = 0, billed = 0;
+                $('#' + MODULE + '-tbody tr').each(function () {
+                    const $r = $(this), c = $r.find('[name="cost_base_amount[]"]').val();
+                    const $h = $r.find('.cost-hint');
+                    if (c === '' || c === undefined || $r.find('[name="source_type[]"]').val() !== 'supplier_invoice') { $h.addClass('d-none').text(''); return; }
+                    const line = num($r.find('.quantity').val()) * num($r.find('.unit_price').val()) * rate;   // company currency
+                    const cb = num(c);
+                    cost += cb; billed += line;
+                    const pct = cb > 0 ? ((line - cb) / cb * 100) : null;
+                    const cls = line - cb < 0 ? 'text-danger' : 'text-success';
+                    // "2 × 300.00 = 600.00": what the supplier charged per unit, in company currency, and the total behind this line
+                    const q = num($r.find('.quantity').val());
+                    const calc = q > 0 ? (fmt(q).replace(/\.00$/, '') + ' × ' + fmt(cb / q) + ' = ' + fmt(cb)) : fmt(cb);
+                    $h.removeClass('d-none').html('<span class="text-muted text-nowrap" title="' + trans('Cost') + '">' + calc + '</span> <span class="text-nowrap ' + cls + '">' + (pct === null ? '' : (pct >= 0 ? '+' : '') + pct.toFixed(0) + '%') + '</span>');
+                });
+                const $m = $('#marginRow');
+                if (cost > 0) {
+                    const margin = billed - cost;
+                    $('#marginCost').text(fmt(cost));
+                    $('#marginBilled').text(fmt(billed));
+                    $('#marginValue').text(fmt(margin)).toggleClass('text-danger', margin < 0).toggleClass('text-success', margin >= 0);
+                    $m.removeClass('d-none');
+                } else { $m.addClass('d-none'); }
             },
         },
         customer: {
