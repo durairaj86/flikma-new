@@ -99,6 +99,12 @@
                 <i class="bi bi-translate"></i>
             </a>
 
+            {{-- Keyboard shortcuts: opens the same list as F1 --}}
+            <button type="button" data-kb-help class="profile-menu-btn profile-menu-btn-bell"
+                    title="{{ __('Keyboard shortcuts') }} (F1)" aria-label="{{ __('Keyboard shortcuts') }}">
+                <i class="bi bi-keyboard"></i>
+            </button>
+
             @if(\App\Services\Briefing\OperationsBriefing::allowed($authUser))
                 {{-- Today's briefing: arrivals, departures and what needs attention --}}
                 <button type="button" data-briefing-open class="profile-menu-btn profile-menu-btn-bell position-relative"

@@ -111,10 +111,12 @@
                                 </div>
                                 <div class="col-md-4 form-group">
                                     <label class="form-label required">{{ __('Phone') }} <sup class="text-danger">*</sup></label>
-                                    <input type="text" name="phone" class="form-control" required
+                                    <input type="text" name="phone" class="form-control" required inputmode="tel" autocomplete="off"
                                            pattern="^\+?[0-9]{10,15}$" maxlength="16"
+                                           data-msg-pattern="{{ __('Enter 10 to 15 digits, with an optional + at the start (spaces and dashes are removed for you).') }}"
                                            value="{{ $customer->phone }}"
-                                           placeholder="{{ __('+966 1234567890 or 966 1234567890') }}">
+                                           oninput="var v=this.value.replace(/[\s\-().]/g,''); if(v!==this.value){this.value=v;}"
+                                           placeholder="{{ __('+966501234567') }}">
                                 </div>
                                 <div class="col-md-4 form-group">
                                     <label class="form-label">{{ __('Alternate Phone') }}</label>

@@ -307,6 +307,12 @@ class CustomerController extends Controller
         if ($request->input('salesperson_id')) {
             $request->merge(['salesperson_id' => decodeId($request->input('salesperson_id'))]);
         }
+        // phone numbers are typed with spaces / dashes / brackets: keep only digits and a leading +
+        foreach (['phone', 'alt_phone'] as $f) {
+            if (is_string($request->input($f))) {
+                $request->merge([$f => preg_replace('/[\s\-().]/', '', $request->input($f))]);
+            }
+        }
 
         $rules = [
             'name_en' => 'required|string|max:255',
@@ -368,6 +374,11 @@ class CustomerController extends Controller
         $validated = $request->validate($rules, [
             'document_file.*.uploaded' => __('A document could not be uploaded. Each attachment must be 2 MB or less.'),
             'document_file.*.max' => __('Each attachment must be 2 MB or less.'),
+            'phone.regex' => __('The phone number must be 10 to 15 digits, with an optional + at the start (for example +966501234567).'),
+            'phone.min' => __('The phone number must be at least 10 digits.'),
+            'phone.max' => __('The phone number must be at most 15 digits, plus an optional +.'),
+            'alt_phone.min' => __('The alternate phone number must be at least 10 digits.'),
+            'alt_phone.max' => __('The alternate phone number must be at most 15 digits, plus an optional +.'),
         ]);
 
         if (isset($request['data-id']) and filled($request['data-id'])) {

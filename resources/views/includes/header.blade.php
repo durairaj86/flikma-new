@@ -94,6 +94,11 @@
 
             @include('includes.language-toggle')
 
+            <button type="button" data-kb-help class="btn btn-light border-0 rounded-circle header-icon-btn"
+                    title="{{ __('Keyboard shortcuts') }} (F1)" aria-label="{{ __('Keyboard shortcuts') }}">
+                <i class="bi bi-keyboard fs-5 text-secondary"></i>
+            </button>
+
             @if(\App\Services\Briefing\OperationsBriefing::allowed(auth()->user()))
                 <button type="button" data-briefing-open class="btn btn-light border-0 rounded-circle header-icon-btn position-relative"
                         title="{{ __('Today\'s Briefing') }}" aria-label="{{ __('Today\'s Briefing') }}">
