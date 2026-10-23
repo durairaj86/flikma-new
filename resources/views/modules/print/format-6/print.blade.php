@@ -104,6 +104,7 @@
         }
 
         table.items th {
+            white-space: nowrap;
             font-size: 7.5pt;
             font-weight: bold;
             background: var(--accent);
@@ -291,31 +292,31 @@
         <table width="100%" cellpadding="0" cellspacing="0" border="0" class="items" style="margin-top: 12px;">
             <thead>
             <tr>
-                <th align="left" style="width: 5%;">SL<br><span style="font-size: 6pt; font-weight: normal;" class="ar">م</span>
+                <th align="left" style="width: 4%;">SL<br><span style="font-size: 6pt; font-weight: normal;" class="ar">م</span>
                 </th>
-                <th align="left" style="width: 37%;">Description<br><span
+                <th align="left" style="width: 28%;">Description<br><span
                         style="font-size: 6pt; font-weight: normal;" class="ar">بيان الصنف</span></th>
                 <th align="left" style="width: 8%;{{ ($settings->hsn_sac ?? false) ? '' : 'display:none' }}"
                     data-toggle="hsn_sac">HSN/SAC<br><span style="font-size: 6pt; font-weight: normal;" class="ar">الرمز</span></th>
-                <th align="left" style="width: 8%;{{ ($settings->unit ?? true) ? '' : 'display:none' }}"
+                <th align="left" style="width: 7%;{{ ($settings->unit ?? true) ? '' : 'display:none' }}"
                     data-toggle="unit">Unit<br><span style="font-size: 6pt; font-weight: normal;"
                                                         class="ar">الوحدة</span></th>
-                <th align="right" style="width: 10%;">Qty<br><span style="font-size: 6pt; font-weight: normal;"
+                <th align="right" style="width: 8%;">Qty<br><span style="font-size: 6pt; font-weight: normal;"
                                                                  class="ar">الكمية</span></th>
-                <th align="right" style="width: 13%;{{ ($settings->rate ?? true) ? '' : 'display:none' }}"
+                <th align="right" style="width: 11%;{{ ($settings->rate ?? true) ? '' : 'display:none' }}"
                     data-toggle="rate">Unit Price<br><span style="font-size: 6pt; font-weight: normal;"
                                                             class="ar">السعر</span></th>
-                <th align="right" style="width: 10%;{{ ($settings->discount ?? false) ? '' : 'display:none' }}"
+                <th align="right" style="width: 8%;{{ ($settings->discount ?? false) ? '' : 'display:none' }}"
                     data-toggle="discount">Disc<br><span style="font-size: 6pt; font-weight: normal;"
                                                       class="ar">الخصم</span></th>
-                <th align="right" style="width: 10%;">Total Price<br>
+                <th align="right" style="width: 11%;">Total Price<br>
                     <span style="font-size: 6pt; font-weight: normal;" class="ar">
         السعر الإجمالي
     </span>
                 </th>
-                <th align="right" style="width: 8%;">VAT<br><span style="font-size: 6pt; font-weight: normal;"
+                <th align="right" style="width: 7%;">VAT<br><span style="font-size: 6pt; font-weight: normal;"
                                                                   class="ar">النسبة</span></th>
-                <th align="right" style="width: 9%;">VAT Amt<br><span style="font-size: 6pt; font-weight: normal;"
+                <th align="right" style="width: 10%;">VAT Amt<br><span style="font-size: 6pt; font-weight: normal;"
                                                                       class="ar">قيمة الضريبة</span></th>
             </tr>
             </thead>
