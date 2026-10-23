@@ -85,7 +85,7 @@
                         <tr>
                             <td width="42" valign="middle">
                                 @if($company->logo)
-                                    <img src="{{ $company->logo }}" style="max-width: 38px; max-height: 38px; border-radius: 8px;">
+                                    <img src="{{ companyLogo() }}" style="max-width: 38px; max-height: 38px; border-radius: 8px;">
                                 @else
                                     <div style="width: 38px; height: 38px; background: var(--accent); border-radius: 8px; color: #fff; font-size: 18pt; font-weight: bold; text-align: center; line-height: 38px;">
                                         {{ strtoupper(substr($company->name ?? 'F', 0, 1)) }}

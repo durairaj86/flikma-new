@@ -163,7 +163,7 @@
             <tr>
                 <td width="30%" valign="top">
                     @if($company->logo)
-                        <img src="{{ $company->logo }}"
+                        <img src="{{ companyLogo() }}"
                              style="max-height: 50px; max-width: 200px; margin-bottom: 4px;">
                     @else
                         <div
