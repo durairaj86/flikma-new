@@ -283,6 +283,16 @@
             border-right: none;
         }
 
+        /* Header text is white, so the cells must show the accent colour behind them (the grey cell fill made it unreadable). */
+        .charges-table thead tr.dyn-color th { background-color: transparent !important; color: #fff; }
+        .charges-table thead tr.dyn-color { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        /* Header and body share one alignment per column: text/short codes centred, amounts right-aligned. */
+        .charges-table thead th.c-right { text-align: right; }
+        .charges-table thead th.c-center, .charges-table tbody td.c-center { text-align: center; }
+        .charges-table thead th.charge-desc { text-align: left; }
+        .charges-table thead th, .charges-table tbody td { white-space: nowrap; }
+        .charges-table tbody td.charge-desc { white-space: normal; }
+
         /* --- Total Summary Section (New Grid Structure) --- */
         .total-summary-section {
             margin-top: -1px;
@@ -931,18 +941,18 @@
                     </tr>
                     <tr class="dyn-color" style="color: #fff;">
                         <th class="charge-desc">Charge Description <br> بيان الرسوم</th>
-                        <th data-toggle="hsn_sac" style="width: 6%; {{ ($settings->hsn_sac ?? false) ? '' : 'display:none' }}">HSN/SAC <br> رمز التصنيف</th>
-                        <th style="width: 5%;">Curr. <br> العملة</th>
-                        <th data-toggle="rate" style="width: 8%; {{ ($settings->rate ?? true) ? '' : 'display:none' }}">Rate Per Unit <br> السعر لكل وحدة</th>
-                        <th style="width: 5%;">Qty <br> الكمية</th>
-                        <th data-toggle="unit" style="width: 5%; {{ ($settings->unit ?? true) ? '' : 'display:none' }}">Unit <br> وحدة</th>
-                        <th data-toggle="discount" style="width: 6%; {{ ($settings->discount ?? false) ? '' : 'display:none' }}">Discount <br> الخصم</th>
-                        <th style="width: 10%;">Curr. Amount <br> مبلغ العملة</th>
-                        <th style="width: 5%;">/ROE <br> سعر الصرف</th>
-                        <th style="width: 10%;">Total Price excl. VAT <br> السعر الجمالي بدون الضريبة</th>
-                        <th style="width: 5%;">VAT% <br> الضربة %</th>
-                        <th style="width: 10%;">VAT Amount <br> قيمة الضريبة</th>
-                        <th style="width: 12%;">Total <br> المجموع {{ $customerInvoice->currency }}</th>
+                        <th class="c-center" data-toggle="hsn_sac" style="width: 6%; {{ ($settings->hsn_sac ?? false) ? '' : 'display:none' }}">HSN/SAC <br> رمز التصنيف</th>
+                        <th class="c-center" style="width: 5%;">Curr. <br> العملة</th>
+                        <th class="c-right" data-toggle="rate" style="width: 8%; {{ ($settings->rate ?? true) ? '' : 'display:none' }}">Rate Per Unit <br> السعر لكل وحدة</th>
+                        <th class="c-right" style="width: 5%;">Qty <br> الكمية</th>
+                        <th class="c-center" data-toggle="unit" style="width: 5%; {{ ($settings->unit ?? true) ? '' : 'display:none' }}">Unit <br> وحدة</th>
+                        <th class="c-right" data-toggle="discount" style="width: 6%; {{ ($settings->discount ?? false) ? '' : 'display:none' }}">Discount <br> الخصم</th>
+                        <th class="c-right" style="width: 10%;">Curr. Amount <br> مبلغ العملة</th>
+                        <th class="c-right" style="width: 5%;">/ROE <br> سعر الصرف</th>
+                        <th class="c-right" style="width: 10%;">Total Price excl. VAT <br> السعر الجمالي بدون الضريبة</th>
+                        <th class="c-right" style="width: 5%;">VAT% <br> الضربة %</th>
+                        <th class="c-right" style="width: 10%;">VAT Amount <br> قيمة الضريبة</th>
+                        <th class="c-right" style="width: 12%;">Total <br> المجموع {{ $customerInvoice->currency }}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -951,12 +961,12 @@
                             <td class="charge-desc text-uppercase">{{ $items->description }} @if($items->comment)
                                     <span data-toggle="item_description" style="{{ ($settings->item_description ?? true) ? '' : 'display:none' }}">- {{ $items->comment }}</span>
                                 @endif</td>
-                            <td data-toggle="hsn_sac" style="{{ ($settings->hsn_sac ?? false) ? '' : 'display:none' }}">-</td>
-                            <td>{{ $customerInvoice->currency }}</td>
-                            <td data-toggle="rate" style="{{ ($settings->rate ?? true) ? '' : 'display:none' }}">{{ amountFormat($items->unit_price) }}</td>
-                            <td>{{ $items->quantity }}</td>
-                            <td data-toggle="unit" style="{{ ($settings->unit ?? true) ? '' : 'display:none' }}">{{ $items->unit }}</td>
-                            <td data-toggle="discount" style="{{ ($settings->discount ?? false) ? '' : 'display:none' }}">0.00</td>
+                            <td class="c-center" data-toggle="hsn_sac" style="{{ ($settings->hsn_sac ?? false) ? '' : 'display:none' }}">-</td>
+                            <td class="c-center">{{ $customerInvoice->currency }}</td>
+                            <td class="c-right" data-toggle="rate" style="{{ ($settings->rate ?? true) ? '' : 'display:none' }}">{{ amountFormat($items->unit_price) }}</td>
+                            <td class="c-right">{{ $items->quantity }}</td>
+                            <td class="c-center" data-toggle="unit" style="{{ ($settings->unit ?? true) ? '' : 'display:none' }}">{{ $items->unit }}</td>
+                            <td class="c-right" data-toggle="discount" style="{{ ($settings->discount ?? false) ? '' : 'display:none' }}">0.00</td>
                             <td>{{ amountFormat($items->total) }}</td>
                             <td>1.000000</td>
                             <td>{{ amountFormat($items->total) }}</td>

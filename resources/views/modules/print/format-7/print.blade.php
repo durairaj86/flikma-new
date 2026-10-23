@@ -52,6 +52,12 @@
             z-index: 999; white-space: nowrap; pointer-events: none;
         }
 
+        /* Header cells: one line per language, never wrapping, and the Arabic line aligned to the same side as the English one. */
+        table.items th { white-space: nowrap; line-height: 1.35; }
+        table.items th .ar { display: block; }
+        table.items th[align="left"] .ar { text-align: left; direction: ltr; unicode-bidi: isolate; }
+        table.items th[align="right"] .ar { text-align: right; }
+        table.items td[align="right"] { white-space: nowrap; }
         table.items th { font-size: 7.5pt; font-weight: bold; padding: 6px 8px; background: var(--accent); color: #ffffff; }
         table.items td { font-size: 8pt; padding: 6px 8px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
         table.items tr:nth-child(even) td { background: #f7f9fc; }
@@ -208,7 +214,7 @@
             <thead>
             <tr>
                 <th align="left" style="width: 4%;">#</th>
-                <th align="left" style="width: 24%;">DESCRIPTION<br><span class="ar" style="font-weight: normal;">وصف المنتج/الخدمة</span></th>
+                <th align="left" style="width: 20%;">DESCRIPTION<br><span class="ar" style="font-weight: normal;">وصف المنتج/الخدمة</span></th>
                 <th align="left" style="width: 8%;{{ ($settings->hsn_sac ?? false) ? '' : 'display:none' }}" data-toggle="hsn_sac">HSN/SAC<br><span class="ar" style="font-weight: normal;">الرمز</span></th>
                 <th align="left" style="width: 8%;{{ ($settings->unit ?? true) ? '' : 'display:none' }}" data-toggle="unit">UNIT<br><span class="ar" style="font-weight: normal;">الوحدة</span></th>
                 <th align="right" style="width: 7%;">QTY<br><span class="ar" style="font-weight: normal;">الكمية</span></th>
