@@ -2,9 +2,8 @@
 
 namespace App\Livewire\Report\Finance;
 
-use App\Services\Finance\LedgerReports;
+use App\Services\Finance\VatReturn;
 use App\Exports\ReportTableExport;
-use App\Models\Finance\FinanceSub;
 use Livewire\Component;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -65,80 +64,41 @@ class TaxSummary extends Component
 
     public function exportExcel()
     {
-        $child = new TaxSummaryTable();
-        $child->startDate = $this->startDate;
-        $child->endDate = $this->endDate;
-        $child->search = $this->search;
-        $data = $child->getTaxSummaryData();
-
+        $vr = VatReturn::compute($this->startDate, $this->endDate);
         $rows = [];
-        foreach ($data['tax_accounts'] as $acc) {
-            $rows[] = [$acc['account_code'], $acc['account_name'], $acc['type'], (float) $acc['balance']];
-        }
+        $add = function (string $no, string $label, array $b, bool $vat = true) use (&$rows) {
+            $rows[] = [$no, $label, (float) $b['amount'], (float) $b['adjustment'], $vat ? (float) $b['vat'] : ''];
+        };
+        $rows[] = ['', __('VAT on Sales'), '', '', ''];
+        $add('1', 'Standard rated sales', $vr['sales']['standard']);
+        $add('2', 'Private healthcare / private education sales to citizens', $vr['sales']['citizens'], false);
+        $add('3', 'Zero rated domestic sales', $vr['sales']['zero'], false);
+        $add('4', 'Exports', $vr['sales']['exports'], false);
+        $add('5', 'Exempt sales', $vr['sales']['exempt'], false);
+        $add('6', 'Total sales', $vr['salesTotal']);
+        $rows[] = ['', __('VAT on Purchases'), '', '', ''];
+        $add('7', 'Standard rated domestic purchases', $vr['purchases']['standard']);
+        $add('10', 'Zero rated purchases', $vr['purchases']['zero'], false);
+        $add('11', 'Exempt purchases', $vr['purchases']['exempt'], false);
+        $add('12', 'Total purchases', $vr['purchasesTotal']);
+        $rows[] = ['13', 'Total VAT due for current period', '', '', (float) $vr['vatDue']];
 
-        $columns = ['Code', 'Account Name', 'Type', 'Balance'];
-        $totalsRow = ['', '', 'Net Tax ' . ($data['net_tax'] >= 0 ? '(Payable)' : '(Refundable)'), (float) abs($data['net_tax'])];
-
+        $columns = ['Box', 'Description', 'Amount (SAR)', 'Adjustment (SAR)', 'VAT Amount (SAR)'];
+        $totalsRow = ['16', 'Net VAT ' . ($vr['vatDue'] >= 0 ? 'due' : 'claim (refund)'), '', '', (float) $vr['vatDue']];
         $meta = [
-            'title' => 'TAX SUMMARY (VAT)',
+            'title' => 'TAX SUMMARY (VAT RETURN)',
             'lines' => [
                 'Period: ' . \Carbon\Carbon::parse($this->startDate)->format('d M Y') . ' — ' . \Carbon\Carbon::parse($this->endDate)->format('d M Y'),
-                'Total Input VAT: ' . number_format($data['total_input_tax'], 2) . '  |  Total Output VAT: ' . number_format($data['total_output_tax'], 2),
                 'Generated on: ' . now()->format('d-m-Y H:i'),
             ],
-            'numeric_from' => 4,
+            'numeric_from' => 3,
         ];
 
-        $filename = 'TaxSummary-' . $this->startDate . '-' . $this->endDate . '.xlsx';
-
-        return Excel::download(new ReportTableExport($rows, $totalsRow, $columns, $meta), $filename);
+        return Excel::download(new ReportTableExport($rows, $totalsRow, $columns, $meta), 'TaxSummary-' . $this->startDate . '-' . $this->endDate . '.xlsx');
     }
 
     public function render()
     {
-        if (LedgerReports::enabled()) {
-            $d = LedgerReports::taxSummary($this->startDate, $this->endDate);
-
-            return view('livewire.report.finance.tax-summary', [
-                'summary' => [
-                    'total_input_tax' => $d['total_input_tax'],
-                    'total_output_tax' => $d['total_output_tax'],
-                    'net_tax' => $d['net_tax'],
-                    'is_payable' => $d['net_tax'] >= 0,
-                ],
-            ]);
-        }
-
-        $inputVatAccountId  = 7;
-        $outputVatAccountId = 20;
-
-        $baseQuery = FinanceSub::where('is_tax_line', 1)
-            ->whereBetween('reference_date', [$this->startDate, $this->endDate])
-            ->whereHas('finance', fn($q) => $q->where('is_approved', 1));
-
-        $inputData = (clone $baseQuery)
-            ->where('account_id', $inputVatAccountId)
-            ->selectRaw('SUM(base_debit) as total_debit, SUM(base_credit) as total_credit')
-            ->first();
-
-        $totalInputTax = ($inputData->total_debit ?? 0) - ($inputData->total_credit ?? 0);
-
-        $outputData = (clone $baseQuery)
-            ->where('account_id', $outputVatAccountId)
-            ->selectRaw('SUM(base_credit) as total_credit, SUM(base_debit) as total_debit')
-            ->first();
-
-        $totalOutputTax = ($outputData->total_credit ?? 0) - ($outputData->total_debit ?? 0);
-
-        $netTax = $totalOutputTax - $totalInputTax;
-
-        return view('livewire.report.finance.tax-summary', [
-            'summary' => [
-                'total_input_tax'  => $totalInputTax,
-                'total_output_tax' => $totalOutputTax,
-                'net_tax'          => $netTax,
-                'is_payable'       => $netTax >= 0,
-            ],
-        ]);
+        return view('livewire.report.finance.tax-summary', ['vr' => VatReturn::compute($this->startDate, $this->endDate)]);
     }
 }

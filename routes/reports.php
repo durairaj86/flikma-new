@@ -19,6 +19,14 @@ Route::get('/reports/supplier-ledger', \App\Livewire\Report\Finance\SupplierLedg
 
 // Tax Reports
 Route::get('/reports/tax-summary', \App\Livewire\Report\Finance\TaxSummary::class);
+Route::get('/reports/tax-summary/details', function (\Illuminate\Http\Request $r) {
+    return view('modules.finance.reports.tax-summary-details', \App\Services\Finance\VatReturn::details(
+        $r->input('side') === 'purchases' ? 'purchases' : 'sales',
+        strtoupper((string) $r->input('code')),
+        (string) $r->input('from', now()->startOfMonth()->format('Y-m-d')),
+        (string) $r->input('to', now()->format('Y-m-d'))
+    ));
+});
 Route::get('/reports/input-tax', \App\Livewire\Report\Finance\InputTax::class);
 Route::get('/reports/output-tax', \App\Livewire\Report\Finance\OutputTax::class);
 
