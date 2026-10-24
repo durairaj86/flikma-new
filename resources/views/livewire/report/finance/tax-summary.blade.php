@@ -24,7 +24,7 @@
                         <i class="bi bi-download me-2"></i>{{ __('Export') }}
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end border-0 shadow" :class="{ show: open }" x-cloak :style="pos" @click="open = false">
-                        <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'ts-print')"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
+                        <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'ts-print', {margin: 0.25, padding: '0'})"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
                         <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
                     </ul>
                 </div>
@@ -244,71 +244,83 @@
 
         {{-- Print / PDF layout (same figures as the return above) --}}
         <div id="ts-print" class="stmt-print d-none d-print-block" data-pdf-filename="TaxSummary-{{ $startDate }}-{{ $endDate }}.pdf">
-            <div class="stmt-head">
-                <div class="stmt-title">{{ __('TAX SUMMARY (VAT RETURN)') }}</div>
-                <div class="stmt-period">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->format('d-m-Y') }} {{ __('to') }} {{ \Carbon\Carbon::parse($endDate)->format('d-m-Y') }}</div>
-            </div>
-            <div class="stmt-band">
-                <div class="stmt-band-left"><div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div></div>
-                <div class="stmt-band-right">
-                    <div class="stmt-sub">{{ __('Currency:') }} SAR</div>
-                    <div class="stmt-sub">{{ __('Generated:') }} {{ now()->format('d-m-Y H:i') }}</div>
-                </div>
-            </div>
-            <div class="stmt-cards">
-                <div class="stmt-card tsp-c-sales"><div class="stmt-card-label">{{ __('VAT on sales') }}</div><div class="stmt-card-value">{{ $f($vr['salesTotal']['vat']) }}</div></div>
-                <div class="stmt-card tsp-c-purchases"><div class="stmt-card-label">{{ __('VAT on purchases') }}</div><div class="stmt-card-value">{{ $f($vr['purchasesTotal']['vat']) }}</div></div>
-                <div class="stmt-card {{ $vr['vatDue'] >= 0 ? 'tsp-c-due' : 'tsp-c-claim' }}"><div class="stmt-card-label">{{ $vr['vatDue'] >= 0 ? __('Net VAT due') : __('Net VAT claim (refund)') }}</div><div class="stmt-card-value">{{ $f(abs($vr['vatDue'])) }}</div></div>
-            </div>
-            @foreach([['VAT on Sales', $salesLines, 'sales'], ['VAT on Purchases', $purchaseLines, 'purchases']] as [$ptitle, $plines, $pside])
-                <table class="tsp-card tsp-{{ $pside }}"><tr>
-                <td class="tsp-band"><span>{{ __($ptitle) }}</span></td>
-                <td class="tsp-body">
-                <table class="stmt-table">
-                    <thead>
-                    <tr>
-                        <th style="width:7%">{{ __('Box') }}</th>
-                        <th>{{ __($ptitle) }}</th>
-                        <th class="text-end">{{ __('Amount (SAR)') }}</th>
-                        <th class="text-end">{{ __('Adjustment (SAR)') }}</th>
-                        <th class="text-end">{{ __('VAT Amount (SAR)') }}</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach($plines as [$no, $en, $ar, $b, $hasVat])
+            <table class="vp-top">
+                <tr>
+                    <td>
+                        <div class="vp-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
+                        <div class="vp-title">{{ __('VAT Return Summary') }}</div>
+                    </td>
+                    <td class="vp-meta">
+                        <div><span>{{ __('Period') }}</span> {{ \Carbon\Carbon::parse($startDate)->format('d-m-Y') }} &ndash; {{ \Carbon\Carbon::parse($endDate)->format('d-m-Y') }}</div>
+                        <div><span>{{ __('Currency') }}</span> SAR</div>
+                        <div><span>{{ __('Generated') }}</span> {{ now()->format('d-m-Y H:i') }}</div>
+                    </td>
+                </tr>
+            </table>
+
+            <table class="vp-key">
+                <tr>
+                    <td><div class="vp-key-l">{{ __('VAT on sales') }}</div><div class="vp-key-v">{{ $f($vr['salesTotal']['vat']) }}</div></td>
+                    <td><div class="vp-key-l">{{ __('VAT on purchases') }}</div><div class="vp-key-v">{{ $f($vr['purchasesTotal']['vat']) }}</div></td>
+                    <td class="vp-key-net"><div class="vp-key-l">{{ $vr['vatDue'] >= 0 ? __('Net VAT due') : __('Net VAT claim (refund)') }}</div><div class="vp-key-v">{{ $f(abs($vr['vatDue'])) }}</div></td>
+                </tr>
+            </table>
+
+            @foreach([['VAT on Sales', 'ضريبة القيمة المضافة على المبيعات', $salesLines, 'sales'], ['VAT on Purchases', 'ضريبة القيمة المضافة على المشتريات', $purchaseLines, 'purchases']] as [$ptitle, $ptitleAr, $plines, $pside])
+                @php $t = $pside === 'sales' ? $vr['salesTotal'] : $vr['purchasesTotal']; @endphp
+                <div class="vp-sec vp-{{ $pside }}">
+                    <div class="vp-sec-head"><span>{{ __($ptitle) }}</span><span class="vp-sec-ar" dir="rtl">{{ $ptitleAr }}</span></div>
+                    <table class="vp-table">
+                        <thead>
                         <tr>
-                            <td>{{ $no }}</td><td>{{ __($en) }}</td>
-                            <td class="text-end">{{ $b === null ? '—' : $f($b['amount']) }}</td>
-                            <td class="text-end">{{ $b === null ? '—' : $f($b['adjustment']) }}</td>
-                            <td class="text-end">{{ $b === null ? '—' : ($hasVat ? $f($b['vat']) : '') }}</td>
+                            <th class="vp-no">{{ __('Box') }}</th>
+                            <th>{{ __('Description') }}</th>
+                            <th class="vp-n">{{ __('Amount (SAR)') }}</th>
+                            <th class="vp-n">{{ __('Adjustment (SAR)') }}</th>
+                            <th class="vp-n">{{ __('VAT Amount (SAR)') }}</th>
                         </tr>
-                    @endforeach
-                    </tbody>
-                    <tfoot>
-                    @php $t = $pside === 'sales' ? $vr['salesTotal'] : $vr['purchasesTotal']; @endphp
-                    <tr class="stmt-strong">
-                        <td>{{ $pside === 'sales' ? 6 : 12 }}</td><td>{{ $pside === 'sales' ? __('Total sales') : __('Total purchases') }}</td>
-                        <td class="text-end">{{ $f($t['amount']) }}</td><td class="text-end">{{ $f($t['adjustment']) }}</td><td class="text-end">{{ $f($t['vat']) }}</td>
-                    </tr>
-                    @if($pside === 'purchases')
-                        <tr class="stmt-strong"><td>13</td><td colspan="3">{{ __('Total VAT due for current period') }}</td><td class="text-end">{{ $f($vr['vatDue']) }}</td></tr>
-                        <tr class="stmt-strong"><td>16</td><td colspan="3">{{ __('Net VAT due (or claim)') }} — {{ $vr['vatDue'] >= 0 ? __('Payable') : __('Refundable') }}</td><td class="text-end">{{ $f($vr['vatDue']) }}</td></tr>
-                    @endif
-                    </tfoot>
-                </table>
-                </td></tr></table>
-                <div style="height:10px"></div>
+                        </thead>
+                        <tbody>
+                        @foreach($plines as [$no, $en, $ar, $b, $hasVat])
+                            <tr>
+                                <td class="vp-no">{{ $no }}</td>
+                                <td>{{ __($en) }}<div class="vp-ar" dir="rtl">{{ $ar }}</div></td>
+                                <td class="vp-n">{{ $b === null ? '—' : $f($b['amount']) }}</td>
+                                <td class="vp-n">{{ $b === null ? '—' : $f($b['adjustment']) }}</td>
+                                <td class="vp-n">{{ $b === null ? '—' : ($hasVat ? $f($b['vat']) : '') }}</td>
+                            </tr>
+                        @endforeach
+                        <tr class="vp-total">
+                            <td class="vp-no">{{ $pside === 'sales' ? 6 : 12 }}</td>
+                            <td>{{ $pside === 'sales' ? __('Total sales') : __('Total purchases') }}<div class="vp-ar" dir="rtl">{{ $pside === 'sales' ? 'إجمالي المبيعات' : 'إجمالي المشتريات' }}</div></td>
+                            <td class="vp-n">{{ $f($t['amount']) }}</td><td class="vp-n">{{ $f($t['adjustment']) }}</td><td class="vp-n">{{ $f($t['vat']) }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
             @endforeach
-            <div class="stmt-footnote">{{ __('Adjustment = credit notes on sales and debit notes on purchases in this period. Boxes marked — are not tracked here.') }}</div>
-            <div class="stmt-signatures">
-                <table class="stmt-meta">
-                    <tr>
-                        <td>{{ __('Prepared By:') }} _________________</td>
-                        <td>{{ __('Verified By:') }} _________________</td>
-                        <td>{{ __('Approved By:') }} _________________</td>
-                    </tr>
-                </table>
-            </div>
+
+            <table class="vp-result">
+                <tr>
+                    <td class="vp-no">13</td>
+                    <td>{{ __('Total VAT due for current period') }}<div class="vp-ar" dir="rtl">إجمالي ضريبة القيمة المضافة المستحقة عن الفترة الحالية</div></td>
+                    <td class="vp-n">{{ $f($vr['vatDue']) }}</td>
+                </tr>
+                <tr class="vp-final">
+                    <td class="vp-no">16</td>
+                    <td>{{ __('Net VAT due (or claim)') }} &mdash; {{ $vr['vatDue'] >= 0 ? __('Payable') : __('Refundable') }}<div class="vp-ar" dir="rtl">صافي الضريبة المستحقة (أو المطالب بها)</div></td>
+                    <td class="vp-n">{{ $f($vr['vatDue']) }}</td>
+                </tr>
+            </table>
+
+            <div class="vp-note">{{ __('Adjustment = credit notes on sales and debit notes on purchases in this period. Boxes marked — are not tracked here.') }}</div>
+            <table class="vp-sign">
+                <tr>
+                    <td>{{ __('Prepared By') }}</td>
+                    <td>{{ __('Verified By') }}</td>
+                    <td>{{ __('Approved By') }}</td>
+                </tr>
+            </table>
         </div>
 
         {{-- Disclaimer --}}
@@ -456,23 +468,13 @@
         }
 
 
-        /* print: each section has a coloured side band with the title running up it (sales indigo, purchases amber) */
-        #ts-print table.tsp-card { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: 6px; overflow: hidden; }
-        #ts-print .tsp-band { width: 34px; text-align: center; vertical-align: middle; color: #fff; padding: 0; }
-        #ts-print .tsp-band span { writing-mode: vertical-rl; transform: rotate(180deg); display: inline-block; white-space: nowrap; font-weight: 700; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
-        #ts-print .tsp-body { padding: 0; }
-        #ts-print .tsp-sales .tsp-band { background: #4f46e5; } #ts-print .tsp-sales .tsp-body { background: #f5f5ff; }
-        #ts-print .tsp-purchases .tsp-band { background: #d97706; } #ts-print .tsp-purchases .tsp-body { background: #fffaf0; }
-        #ts-print .tsp-sales .stmt-table th { background: #4f46e5; } #ts-print .tsp-purchases .stmt-table th { background: #d97706; }
-        #ts-print .tsp-card .stmt-table { margin-top: 0; }
-        #ts-print .tsp-card .stmt-table tbody tr:nth-child(even) td { background: transparent; }
-        #ts-print .tsp-sales .stmt-table tfoot td { background: #e0e7ff; color: #312e81; border-color: #4f46e5; }
-        #ts-print .tsp-purchases .stmt-table tfoot td { background: #fde9c8; color: #78350f; border-color: #d97706; }
 
-        #ts-print .stmt-card.tsp-c-sales { background: #f5f5ff; border-top-color: #4f46e5; } #ts-print .tsp-c-sales .stmt-card-value { color: #312e81; }
-        #ts-print .stmt-card.tsp-c-purchases { background: #fffaf0; border-top-color: #d97706; } #ts-print .tsp-c-purchases .stmt-card-value { color: #78350f; }
-        #ts-print .stmt-card.tsp-c-due { background: #fee2e2; border-top-color: #dc2626; } #ts-print .tsp-c-due .stmt-card-value { color: #b91c1c; }
-        #ts-print .stmt-card.tsp-c-claim { background: #dcfce7; border-top-color: #16a34a; } #ts-print .tsp-c-claim .stmt-card-value { color: #15803d; }
+
+        @media print {
+            .provisional-wrapper { background: #fff !important; padding: 0 !important; min-height: 0 !important; }
+            .provisional-wrapper > .container-fluid { padding: 0 !important; }
+            #ts-print { padding: 0 !important; }
+        }
 
         @media print {
             body { background: white !important; }
@@ -482,5 +484,38 @@
         }
     </style>
     @include('includes.report-print-css', ['orientation' => 'portrait'])
-    @include('includes.statement-print-css', ['id' => 'ts-print'])
+    <style>
+        /* Print / PDF: a formal return — plain page, a thin colour accent per section, hairline rows */
+        #ts-print { --ink: #111827; --muted: #6b7280; --line: #e5e7eb; font-family: Arial, Helvetica, sans-serif; font-size: 11px; line-height: 1.45; color: var(--ink); background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        #ts-print table { width: 100%; border-collapse: collapse; }
+        #ts-print .vp-top td { vertical-align: bottom; padding: 0 0 10px; border-bottom: 2px solid #111827; }
+        #ts-print .vp-company { font-size: 19px; font-weight: 700; letter-spacing: .01em; }
+        #ts-print .vp-title { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+        #ts-print .vp-meta { text-align: right; font-size: 10.5px; line-height: 1.7; }
+        #ts-print .vp-meta span { display: inline-block; min-width: 62px; color: var(--muted); text-transform: uppercase; font-size: 8.5px; letter-spacing: .08em; margin-right: 6px; }
+        #ts-print .vp-key { margin: 12px 0 14px; }
+        #ts-print .vp-key td { width: 33.33%; padding: 2px 18px; border-left: 1px solid var(--line); }
+        #ts-print .vp-key td:first-child { padding-left: 0; border-left: 0; }
+        #ts-print .vp-key-l { font-size: 8.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+        #ts-print .vp-key-v { font-size: 19px; font-weight: 700; margin-top: 2px; }
+        #ts-print .vp-key-net .vp-key-v { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+        #ts-print .vp-sec { margin-bottom: 14px; }
+        #ts-print .vp-sec-head { display: flex; justify-content: space-between; align-items: baseline; padding: 0 0 5px 10px; margin-bottom: 2px; border-bottom: 2px solid var(--c); border-left: 5px solid var(--c); font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--c); }
+        #ts-print .vp-sec-ar { font-size: 11px; letter-spacing: 0; text-transform: none; }
+        #ts-print .vp-sales { --c: #4338ca; } #ts-print .vp-purchases { --c: #b45309; }
+        #ts-print .vp-table th { padding: 7px 8px; font-size: 8.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; text-align: left; border-bottom: 1px solid #9ca3af; }
+        #ts-print .vp-table td { padding: 4px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+        #ts-print .vp-n { text-align: right !important; white-space: nowrap; font-variant-numeric: tabular-nums; }
+        #ts-print .vp-no { width: 34px; color: var(--muted); }
+        #ts-print .vp-ar { font-size: 9px; color: var(--muted); text-align: left; margin-top: 1px; }
+        #ts-print .vp-total td { font-weight: 700; border-top: 1.5px solid var(--ink); border-bottom: 0; padding-top: 8px; }
+        #ts-print .vp-total .vp-ar { font-weight: 400; }
+        #ts-print .vp-result td { padding: 4px 8px; border-bottom: 1px solid var(--line); vertical-align: top; font-weight: 700; }
+        #ts-print .vp-result .vp-ar { font-weight: 400; }
+        #ts-print .vp-final td { border: 0; border-top: 2px solid #111827; border-bottom: 2px solid #111827; font-size: 12.5px; padding: 9px 8px; }
+        #ts-print .vp-note { margin-top: 12px; font-size: 9px; color: var(--muted); font-style: italic; }
+        #ts-print .vp-sign { margin-top: 30px; }
+        #ts-print .vp-sign td { width: 33.33%; padding: 0 18px 0 0; font-size: 9.5px; color: #374151; }
+        #ts-print .vp-sign td::before { content: ''; display: block; border-top: 1px solid #6b7280; margin-bottom: 4px; }
+    </style>
 </div>

@@ -3162,12 +3162,13 @@ function reportExportPdf(e, printElementId, opts) {
 
     var clone = area.cloneNode(true);
     clone.classList.remove('d-none');
-    clone.style.padding = '10px';
+    clone.style.padding = opts.padding ?? '10px';
+    clone.style.background = '#ffffff';
 
     var opt = {
         margin: opts.margin ?? 0.4,
         filename: opts.filename || area.dataset.pdfFilename || 'Report.pdf',
-        html2canvas: {scale: 2, useCORS: true},
+        html2canvas: {scale: 2, useCORS: true, backgroundColor: '#ffffff'},
         jsPDF: {unit: 'in', format: 'a4', orientation: opts.orientation || 'portrait'},
         pagebreak: {mode: ['avoid-all', 'css']}
     };
