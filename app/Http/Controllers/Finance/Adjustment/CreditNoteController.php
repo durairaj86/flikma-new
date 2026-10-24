@@ -41,7 +41,7 @@ class CreditNoteController extends Controller
         $parents = Account::where('type', '!=', 'Equity')->where('is_active', 1)->orderBy('name')->get();//2=>Bank & Cash sub accounts
 
         $subAccounts = Account::where('type', '!=', 'Equity')->where('is_grouped', 0)->orderBy('name')->get();
-        $customerInvoices = CustomerInvoice::where('status', 3)->get();
+        $customerInvoices = CustomerInvoice::where('status', 3)->with('customer:id,name_en')->get();
         return view('modules.finance.credit-note.credit-note-form', compact('creditNote', 'jobs', 'parents', 'subAccounts','customerInvoices', 'prefill'));
     }
 
@@ -330,7 +330,12 @@ class CreditNoteController extends Controller
         // invoice. Always derive it from the linked invoice, never the form.
         $linkedInvoice = CustomerInvoice::find($creditNote->invoice_id);
         $creditNote->currency = $linkedInvoice->currency ?? 'SAR';
-        $creditNote->currency_rate = $linkedInvoice->currency_rate ?? 1;
+        // The currency is the invoice's and cannot be changed; only the exchange rate may differ (today's rate), and
+        // it is always 1 when the invoice is already in the company's own currency.
+        $enteredRate = (float) $request->input('currency_rate');
+        $creditNote->currency_rate = strtoupper((string) $creditNote->currency) === strtoupper((string) (authUserCompany()->currency ?? 'SAR'))
+            ? 1
+            : ($enteredRate > 0 ? $enteredRate : (float) ($linkedInvoice->currency_rate ?: 1));
 
         $creditNote->terms = $validated['terms'] ?? null;
         $creditNote->base_sub_total = $creditNote->currency_rate * $subTotal;
@@ -470,20 +475,50 @@ class CreditNoteController extends Controller
     public function invoiceLines($invoice): \Illuminate\Http\JsonResponse
     {
         $inv = CustomerInvoice::with('customerInvoiceSubs')->findOrFail($invoice);
+
+        // What earlier (non-cancelled) credit notes already took back, so the form only offers what is still creditable.
+        $notes = CreditNote::where('invoice_id', $inv->id)->where('status', '!=', 3)->get(['id', 'grand_total']);
+        $alreadyCredited = (float) $notes->sum('grand_total');
+        $creditedQty = [];
+        if ($notes->isNotEmpty()) {
+            foreach (\Illuminate\Support\Facades\DB::table('credit_note_subs')->whereIn('credit_note_id', $notes->pluck('id'))->whereNull('deleted_at')->get(['description_id', 'quantity']) as $c) {
+                $creditedQty[$c->description_id] = ($creditedQty[$c->description_id] ?? 0) + (float) $c->quantity;
+            }
+        }
+
+        $lines = [];
+        foreach ($inv->customerInvoiceSubs as $l) {
+            $qty = (float) $l->quantity;
+            $left = $qty;
+            if (isset($creditedQty[$l->description_id])) {
+                $take = min($left, $creditedQty[$l->description_id]);
+                $left -= $take;
+                $creditedQty[$l->description_id] -= $take;
+            }
+            if ($left <= 0.0001) {
+                continue; // fully credited already
+            }
+            $lines[] = [
+                'description_id' => $l->description_id,
+                'account_id' => $l->account_id,
+                'unit_id' => $l->unit_id,
+                'tax_code' => $l->tax_code,
+                'quantity' => $left,
+                'unit_price' => $l->unit_price,
+                'comment' => $l->comment,
+            ];
+        }
+
         return response()->json([
             'customer_id' => $inv->customer_id,
             // the customer dropdown's option values are encoded ids
             'customer_code' => $inv->customer_id ? encodeId($inv->customer_id) : null,
             'job_id' => $inv->job_id,
-            'lines' => $inv->customerInvoiceSubs->map(fn($l) => [
-                'description_id' => $l->description_id,
-                'account_id' => $l->account_id,
-                'unit_id' => $l->unit_id,
-                'tax_code' => $l->tax_code,
-                'quantity' => $l->quantity,
-                'unit_price' => $l->unit_price,
-                'comment' => $l->comment,
-            ])->values(),
+            'currency' => $inv->currency ?? 'SAR',
+            'invoice_total' => round((float) $inv->grand_total, 2),
+            'already_credited' => round($alreadyCredited, 2),
+            'creditable' => round(max(0, (float) $inv->grand_total - $alreadyCredited), 2),
+            'lines' => $lines,
         ]);
     }
 

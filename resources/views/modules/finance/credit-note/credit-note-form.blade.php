@@ -20,8 +20,27 @@
             <div class="card-body">
                 <div class="row g-3">
 
-                    <!-- CREDIT NOTE TYPE -->
-                    <div class="col-md-4">
+                    <!-- REFERENCE INVOICE (Only If Linked) -->
+                    <div class="col-md-4" id="invoice-select-box">
+                        <label class="form-label fw-semibold">{{ __('Invoice') }} *</label>
+                        <select name="invoice_id" class="tom-select" required data-live-search="true"{!! !empty($prefill) ? ' data-prefill="1"' : '' !!}>
+                            <option value="">{{ __('Select Invoice') }}</option>
+                            @foreach($customerInvoices as $inv)
+                                <option value="{{ $inv->id }}" @selected($creditNote->invoice_id == $inv->id)
+                                        data-subtext="{{ $inv->customer->name_en ?? '' }} {{ $inv->job_no }}"
+                                        data-customer="{{ $inv->customer->name_en ?? '' }}"
+                                        data-job="{{ $inv->job_no }}"
+                                        data-amount="{{ number_format((float) $inv->grand_total, 2) }}"
+                                        data-short="{{ $inv->customer->name_en ?? '' }}{{ $inv->job_no ? '  ·  ' . $inv->job_no : '' }}">{{ $inv->row_no }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-md-8"><div class="row g-3">
+
+                    <!-- CREDIT NOTE TYPE: "Against Invoice" is the only type, so it is not asked for — choosing an invoice is the choice.
+                         The field stays in the form (hidden) so the type is still saved. -->
+                    <div class="col-md-4 d-none" id="cn-type-col">
                         <label class="form-label fw-semibold">{{ __('Credit Note Type') }} *</label>
                         <select class="tom-select" required name="credit_note_type" id="creditType">
                             <option value="invoice" @selected($creditNote->credit_note_type == 'invoice')>{{ __('Against Invoice') }}</option>
@@ -32,34 +51,21 @@
                         </select>
                     </div>
 
-                    <!-- CUSTOMER -->
-                    <div class="col-md-4">
+                    <!-- CUSTOMER (filled in from the chosen invoice; hidden for credit notes against an invoice) -->
+                    <div class="col-md-4 {{ ($creditNote->credit_note_type ?: 'invoice') === 'invoice' ? 'd-none' : '' }}" id="cn-customer-col">
                         <label class="form-label fw-semibold">{{ __('Customer') }} *</label>
                         <x-common.customers :value="$creditNote->customer_id" :new="false" :required="true"></x-common.customers>
                     </div>
 
-                    <!-- REFERENCE INVOICE (Only If Linked) -->
-                    <div class="col-md-4" id="invoice-select-box">
-                        <label class="form-label fw-semibold">{{ __('Invoice') }} *</label>
-                        <select name="invoice_id" class="tom-select" required data-live-search="true"{!! !empty($prefill) ? ' data-prefill="1"' : '' !!}>
-                            <option value="">{{ __('Select Invoice') }}</option>
-                            @foreach($customerInvoices as $inv)
-                                <option value="{{ $inv->id }}" @selected($creditNote->invoice_id == $inv->id)>
-                                    {{ $inv->row_no }} – {{ $inv->grand_total }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
                     <!-- CREDIT NOTE DATE -->
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label class="form-label fw-semibold">{{ __('Credit Note Date') }} *</label>
-                        <input type="text" class="form-control datepicker" name="credit_note_date"
-                               value="{{ $creditNote->posted_at }}">
+                        <input type="text" class="form-control datepicker" name="credit_note_date" required
+                               value="{{ $creditNote->posted_at }}"{!! $creditNote->posted_at ? '' : ' data-default-date="1"' !!}>
                     </div>
 
-                    <!-- JOB -->
-                    <div class="col-md-4">
+                    <!-- JOB (filled in from the chosen invoice; hidden for credit notes against an invoice) -->
+                    <div class="col-md-4 {{ ($creditNote->credit_note_type ?: 'invoice') === 'invoice' ? 'd-none' : '' }}" id="cn-job-col">
                         <label class="form-label fw-semibold">{{ __('Job / File No') }} *</label>
                         <select name="job_id" class="tom-select" required>
                             <option value="">{{ __('Select Job') }}</option>
@@ -79,7 +85,7 @@
                     </div>--}}
 
                     <!-- REASON CATEGORY -->
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label class="form-label fw-semibold">{{ __('Reason') }} *</label>
                         <select name="reason" class="tom-select" required>
                             <option value="">{{ __('Select Reason') }}</option>
@@ -92,7 +98,7 @@
                     </div>
 
                     <!-- CURRENCY -->
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label class="form-label fw-semibold">{{ __('Currency') }} *</label>
                         <x-common.currencies-exchange
                             :value="$creditNote->currency" width="auto"
@@ -100,7 +106,7 @@
                     </div>
 
                     <!-- ATTACHMENTS -->
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label class="form-label fw-semibold">{{ __('Attachments') }}</label>
                         <input type="file" class="form-control" multiple name="attachments[]">
 
@@ -111,6 +117,7 @@
                             </small>
                         @endif
                     </div>
+                    </div></div>
                 </div>
 
             </div>

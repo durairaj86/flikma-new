@@ -454,9 +454,22 @@ CUSTOMER_INVOICE = {
                 const self = CUSTOMER_INVOICE.form.jobCost;
                 const $job = $('select[name=job_id]');
                 self.added = new Set();
+                self.prevJob = $job.val() || '';
                 $job.off('change.jobCost').on('change.jobCost', function () {
-                    self.added = new Set();
-                    self.load($(this).val());
+                    if (self.revertingJob) return;
+                    const next = $(this).val() || '';
+                    if (next === self.prevJob) return;
+                    const apply = () => { self.prevJob = next; self.reset(); self.load(next); };
+                    // The lines came from the old job's quotation / supplier invoices: changing the job throws them away.
+                    if (!self.hasLines()) { apply(); return; }
+                    const el = this;
+                    const closeJob = () => { if (el.tomselect) { el.tomselect.close(); el.tomselect.blur(); } };
+                    closeJob();
+                    self.ask(trans('Do you want to change the job?'), trans('The lines already added will be cleared.'), apply, function () {
+                        self.revertingJob = true;
+                        if (el.tomselect) el.tomselect.setValue(self.prevJob, true); else $(el).val(self.prevJob);
+                        self.revertingJob = false;
+                    }, trans('Yes, change'), closeJob);
                 });
                 $('#jobCostSelect').off('change.jobCost').on('change.jobCost', function () {
                     const v = $(this).val();
@@ -472,6 +485,40 @@ CUSTOMER_INVOICE = {
                 $(document).off('input.marginRate').on('input.marginRate', '#currency-rate', self.refresh);
                 self.refresh();
                 if ($job.val()) self.load($job.val());
+            },
+            // the app's own confirm dialog (jquery-confirm), never the browser's
+            ask(title, content, onYes, onNo, yesText, onClosed) {
+                $.confirm({
+                    title: title, content: content, type: 'orange', escapeKey: 'cancel',
+                    onOpen: function () { if (onClosed) { onClosed(); setTimeout(onClosed, 100); } },
+                    onDestroy: function () { if (onClosed) { onClosed(); setTimeout(onClosed, 450); } },
+                    buttons: {
+                        cancel: {text: trans('Cancel'), action: function () { if (onNo) onNo(); }},
+                        confirm: {text: yesText || trans('Confirm'), btnClass: 'btn-primary', keys: ['enter'], action: function () { onYes(); }}
+                    }
+                });
+            },
+            // any line with a description or a price (the empty starter row does not count)
+            hasLines() {
+                let found = false;
+                $('#' + MODULE + '-tbody tr').each(function () {
+                    const $tr = $(this);
+                    if ($tr.find('select[name="description_id[]"]').val() || (parseFloat(String($tr.find('.unit_price').val() || '').replace(/,/g, '')) > 0)) found = true;
+                });
+                return found || this.added.size > 0;
+            },
+            // back to one empty row, nothing picked from the previous job
+            reset() {
+                const self = CUSTOMER_INVOICE.form.jobCost;
+                const $tbody = $('#' + MODULE + '-tbody');
+                $tbody.find('tr:not(:first)').remove();
+                const $first = $tbody.find('tr:first');
+                $first.find('select').each(function () { if (this.tomselect) this.tomselect.clear(true); });
+                $first.find('input:not([type=hidden][name="_token"]), textarea').val('');
+                $first.find('.cost-hint').addClass('d-none').text('');
+                self.added = new Set();
+                CALCULATION.finalTotals();
+                self.refresh();
             },
             load(jobId) {
                 const self = CUSTOMER_INVOICE.form.jobCost;
@@ -514,10 +561,7 @@ CUSTOMER_INVOICE = {
                     toastr.warning(trans(kind === 'q' ? 'This quotation is already added.' : 'This supplier invoice is already added.'));
                     return;
                 }
-                if (doc.billed_in && doc.billed_in.length &&
-                    !window.confirm(doc.row_no + ' ' + trans('is already billed in') + ' ' + doc.billed_in.join(', ') + '.\n' + trans('Add it again?'))) {
-                    return;
-                }
+                const insert = () => {
                 const $tbody = $('#' + MODULE + '-tbody');
                 const rate = parseFloat(String($('#currency-rate').val() || '1').replace(/,/g, '')) || 1;
                 const blank = ($tr) => !$tr.find('select[name="description_id[]"]').val() && !(parseFloat(String($tr.find('.unit_price').val() || '').replace(/,/g, '')) > 0);
@@ -558,6 +602,12 @@ CUSTOMER_INVOICE = {
                 CALCULATION.finalTotals();
                 self.refresh();
                 toastr.success(doc.row_no + ' ' + trans('added to the invoice lines.'));
+                };
+                if (doc.billed_in && doc.billed_in.length) {
+                    self.ask(trans('Already billed'), doc.row_no + ' ' + trans('is already billed in') + ' ' + doc.billed_in.join(', ') + '. ' + trans('Add it again?'), insert);
+                } else {
+                    insert();
+                }
             },
             // cost hint under each picked supplier line + the margin line under the totals
             refresh() {

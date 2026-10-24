@@ -3602,5 +3602,15 @@
     "has no :items for the selected period": "ليس لديه :items في الفترة المحددة",
     "No :items found for the selected period": "لا توجد :items في الفترة المحددة",
     "Try a different period or filter, or create a new one.": "جرّب فترة أو مرشحًا مختلفًا، أو أنشئ سجلًا جديدًا.",
-    "In other tabs:": "في علامات التبويب الأخرى:"
+    "In other tabs:": "في علامات التبويب الأخرى:",
+    "Already credited": "تم تخفيضه مسبقًا",
+    "Still creditable": "المتاح للتخفيض",
+    "this invoice is fully credited.": "هذه الفاتورة مخفّضة بالكامل.",
+    "Invoice Amount": "مبلغ الفاتورة",
+    "Changing the job will clear the lines already added. Do you want to change the job?": "تغيير الوظيفة سيمسح البنود المضافة بالفعل. هل تريد تغيير الوظيفة؟",
+    "Change job?": "تغيير الوظيفة؟",
+    "Already billed": "مفوتر مسبقاً",
+    "Do you want to change the job?": "هل تريد تغيير الوظيفة؟",
+    "The lines already added will be cleared.": "سيتم مسح البنود المضافة.",
+    "Yes, change": "نعم، غيّر"
 }

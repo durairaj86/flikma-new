@@ -66,12 +66,35 @@
 </style>
 
 
-<ul class="nav nav-tabs mb-3" role="tablist">
+<style>
+    /* Drawer tabs: flat, with an accent underline on the active one (no boxed tab borders). */
+    .ci-tabs { border-bottom: 1px solid #e5e7eb; gap: 0; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+    .ci-tabs::-webkit-scrollbar { display: none; }
+    .ci-tabs .nav-link { border: 0; border-bottom: 3px solid transparent; border-radius: 0; background: transparent; color: #64748b; padding: .65rem .8rem; margin-bottom: -1px; white-space: nowrap; font-size: .9rem; }
+    .ci-tabs .nav-link:hover { color: #0d6efd; background: rgba(13, 110, 253, .05); }
+    .ci-tabs .nav-link.active { color: #0d6efd; background: transparent; border-bottom-color: #0d6efd; }
+    .ci-tabs .nav-link .badge { background: #eef2f7 !important; color: #475467 !important; font-weight: 600; }
+    .ci-tabs .nav-link.active .badge { background: rgba(13, 110, 253, .12) !important; color: #0d6efd !important; }
+</style>
+<ul class="nav nav-tabs ci-tabs mb-3" role="tablist">
     <li class="nav-item">
         <button class="nav-link active fw-semibold" data-bs-toggle="tab" data-bs-target="#ciDetailsTab" type="button" role="tab">
             <i class="bi bi-receipt me-1"></i> {{ __('Details') }}
         </button>
     </li>
+    <li class="nav-item">
+        <button class="nav-link fw-semibold" data-bs-toggle="tab" data-bs-target="#ciTransactionsTab" type="button" role="tab">
+            <i class="bi bi-arrow-left-right me-1"></i> {{ __('Transactions') }}
+            <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis ms-1">{{ count($transactions) }}</span>
+        </button>
+    </li>
+    @if($customerInvoice->terms)
+    <li class="nav-item">
+        <button class="nav-link fw-semibold" data-bs-toggle="tab" data-bs-target="#ciTermsTab" type="button" role="tab">
+            <i class="bi bi-file-earmark-text me-1"></i> {{ __('Terms & Conditions') }}
+        </button>
+    </li>
+    @endif
     <li class="nav-item ms-auto">
         <button class="nav-link fw-semibold" data-bs-toggle="tab" data-bs-target="#ciTimeFrameTab" type="button" role="tab"
                 title="{{ __('Time Frame') }}" aria-label="{{ __('Time Frame') }}">
@@ -247,6 +270,11 @@
     </table>
 </div>
 
+
+
+</div>
+
+<div class="tab-pane fade" id="ciTransactionsTab" role="tabpanel">
 <div class="section">
     <h6>{{ __('Transactions') }}</h6>
     <div class="table-responsive">
@@ -299,15 +327,16 @@
         </table>
     </div>
 </div>
+</div>
 
 @if($customerInvoice->terms)
+<div class="tab-pane fade" id="ciTermsTab" role="tabpanel">
     <div class="section">
         <h6>{{ __('Terms & Conditions') }}</h6>
-        <p class="mb-0">{{ $customerInvoice->terms }}</p>
+        <p class="mb-0" style="white-space: pre-line;">{{ $customerInvoice->terms }}</p>
     </div>
-@endif
-
 </div>
+@endif
 
 <div class="tab-pane fade" id="ciTimeFrameTab" role="tabpanel">
     <div class="section">

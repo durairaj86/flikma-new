@@ -27,6 +27,13 @@
 @endif--}}
 @php
     $i18nKeys = [
+        'Do you want to change the job?',
+        'The lines already added will be cleared.',
+        'Yes, change',
+        'Change job?',
+        'Already billed',
+        'Changing the job will clear the lines already added. Do you want to change the job?',
+        'Invoice Amount',
         'Due tomorrow',
         'Due today',
         'days left',
@@ -206,6 +213,10 @@
         'No :items found for the selected period',
         'Try a different period or filter, or create a new one.',
         'In other tabs:',
+        'Already credited',
+        'Still creditable',
+        'this invoice is fully credited.',
+        'Customer',
     ];
     $i18nMap = collect($i18nKeys)->mapWithKeys(fn($key) => [$key => __($key)]);
 @endphp

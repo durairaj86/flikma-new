@@ -264,6 +264,17 @@ DEBIT_NOTE = {
             CALCULATION.load();
             CALCULATION.finalTotals();
         },
+        // Currency is the invoice's and cannot be changed; only the exchange rate (today's, fetched on change) may be edited.
+        lockCurrency(code) {
+            const el = document.getElementById('currency-code');
+            if (!el || !el.tomselect || !code) return;
+            if (el.value !== code) el.tomselect.setValue(code);   // fires the usual change → today's rate is fetched
+            el.tomselect.lock();
+            const base = (typeof baseCurrency !== 'undefined' ? baseCurrency : 'SAR');
+            const same = String(code).toUpperCase() === String(base).toUpperCase();
+            const rate = document.getElementById('currency-rate');
+            if (rate) { if (same) rate.value = 1; rate.readOnly = same; }
+        },
         // Choosing the supplier invoice fills the supplier and the job for you.
         invoiceChange() {
             $('#dn-invoice').off('change').on('change', function () {
@@ -272,6 +283,7 @@ DEBIT_NOTE = {
                 if (supplier && supplier.tomselect && opt.attr('data-supplier-id')) supplier.tomselect.setValue(opt.attr('data-supplier-id'));
                 const job = document.querySelector('#moduleForm select[name="job_id"]');
                 if (job && job.tomselect) job.tomselect.setValue(opt.attr('data-job-id') || '');
+                DEBIT_NOTE.form.lockCurrency(opt.attr('data-currency'));
             });
         },
         addRow() {

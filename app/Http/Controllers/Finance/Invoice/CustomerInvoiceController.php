@@ -1330,11 +1330,11 @@ class CustomerInvoiceController extends Controller
     {
         $exclude = (int) $request->get('invoice');
         $bills = \App\Models\Finance\SupplierInvoice\SupplierInvoice::where('job_id', $jobId)
-            ->whereIn('status', [\App\Enums\SupplierInvoiceEnum::DRAFT->value, \App\Enums\SupplierInvoiceEnum::APPROVED->value])
+            ->where('status', \App\Enums\SupplierInvoiceEnum::APPROVED->value)
             ->with(['supplier:id,name_en', 'supplierInvoiceSubs'])
             ->orderBy('id')->get();
         $quotes = \App\Models\Quotation\Quotation::where('job_id', $jobId)
-            ->whereNotIn('status', [\App\Enums\QuotationEnum::CANCELLED->value, \App\Enums\QuotationEnum::EXPIRED->value])
+            ->whereIn('status', [\App\Enums\QuotationEnum::ACCEPTED->value, \App\Enums\QuotationEnum::CONVERTED->value])   // approved only
             ->orderBy('id')->get(['id', 'row_no', 'quotation_no', 'currency', 'currency_rate', 'grand_total', 'status']);
         $charges = DB::table('quotation_charges')->whereIn('quotation_id', $quotes->pluck('id'))->orderBy('sort_order')->orderBy('line_no')->get()->groupBy('quotation_id');
 

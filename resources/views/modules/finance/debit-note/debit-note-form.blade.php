@@ -33,7 +33,7 @@
                             <option value="">{{ __('Select Invoice') }}</option>
                             @foreach($supplierInvoices as $inv)
                                 <option value="{{ $inv->id }}" @selected($debitNote->invoice_id == $inv->id)
-                                        data-supplier-id="{{ encodeId($inv->supplier_id) }}" data-job-id="{{ $inv->job_id }}">
+                                        data-supplier-id="{{ encodeId($inv->supplier_id) }}" data-job-id="{{ $inv->job_id }}" data-currency="{{ $inv->currency }}">
                                     {{ $inv->row_no }} – {{ $inv->grand_total }}
                                 </option>
                             @endforeach
@@ -43,8 +43,8 @@
                     <!-- DEBIT NOTE DATE -->
                     <div class="col-md-4">
                         <label class="form-label fw-semibold">{{ __('Debit Note Date') }} *</label>
-                        <input type="text" class="form-control datepicker" name="debit_note_date"
-                               value="{{ $debitNote->posted_at }}">
+                        <input type="text" class="form-control datepicker" name="debit_note_date" required
+                               value="{{ $debitNote->posted_at }}"{!! $debitNote->posted_at ? '' : ' data-default-date="1"' !!}>
                     </div>
 
                     <!-- JOB -->

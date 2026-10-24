@@ -2144,3 +2144,29 @@ th .ts-wrapper.single {
 .ci-empty .ci-empty-tabs { margin: 0 auto 14px; color: #667085; font-size: .85rem; }
 .ci-empty .ci-empty-tabs .btn { font-size: .8rem; margin-inline-start: .25rem; }
 .ci-empty .ci-empty-tabs .btn b { color: #4f46e5; }
+
+/* Credit note invoice list: Customer / Job / Amount under each invoice number wrap instead of being cut with "...". */
+#globalModal .ts-wrapper:has(select[name="invoice_id"]) .ts-subtext,
+.ts-dropdown.invoice-dropdown .ts-subtext { white-space: normal; overflow: visible; }
+
+/* Credit note invoice list rows: number + amount on one line, customer and job on their own lines. */
+.cn-inv-opt .cn-inv-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.cn-inv-opt .cn-inv-amount { font-weight: 600; color: #0f766e; white-space: nowrap; }
+.cn-inv-opt .cn-inv-line { font-size: .78rem; color: #475467; margin-top: 1px; }
+.cn-inv-opt .cn-inv-line span { color: #98a2b3; }
+
+/* Locked fields look disabled: the currency on credit / debit notes follows the invoice and cannot be changed. */
+.ts-wrapper.locked .ts-control,
+.ts-wrapper.locked .ts-control input,
+.ts-wrapper.locked .ts-control .item {
+    background-color: #e9ecef !important;
+    color: #6c757d !important;
+    cursor: not-allowed !important;
+}
+.ts-wrapper.locked .ts-control { opacity: .85; box-shadow: none !important; }
+.ts-wrapper.locked::after { opacity: .35; }
+input.form-control[readonly], input.form-control[readonly]:focus {
+    background-color: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+}

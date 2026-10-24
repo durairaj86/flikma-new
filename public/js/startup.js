@@ -899,8 +899,11 @@ let webModal = {
                     });
                 }
             } else {
-                const fieldCount = form.find('input.is-invalid, textarea.is-invalid, select.is-invalid').length || 1;
-                const firstBad = form.find('.is-invalid').first();
+                // Count / name only what the user can see (a hidden field that is filled in from another one, such as the
+                // customer on a credit note, is not something they can fix).
+                const visibleBad = form.find('input.is-invalid:visible, textarea.is-invalid:visible, .ts-wrapper.is-invalid:visible');
+                const fieldCount = visibleBad.length || form.find('input.is-invalid, textarea.is-invalid, select.is-invalid').length || 1;
+                const firstBad = visibleBad.length ? visibleBad.first() : form.find('.is-invalid').first();
                 const label = (firstBad.closest("[class*='col-'], .form-group, td").find('label').first().text() || '').replace(/\*/g, '').trim();
 
                 let consolidatedMessage = trans('Validation Failed')

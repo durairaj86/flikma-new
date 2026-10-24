@@ -268,6 +268,43 @@ CREDIT_NOTE = {
             CREDIT_NOTE.form.addRow();
             CREDIT_NOTE.form.removeRow();
             CREDIT_NOTE.form.invoiceChange();
+            // The invoice list shows "IN/26/0009" with Customer / Job / Amount underneath; once picked, the field itself
+            // reads "IN/26/0009 · Customer · Job".
+            setTimeout(function () {
+                const el = document.querySelector('select[name=invoice_id]');
+                if (!el || !el.tomselect || el.dataset.itemRendered) return;
+                el.dataset.itemRendered = '1';
+                if (el.tomselect.dropdown) el.tomselect.dropdown.classList.add('invoice-dropdown');
+                // Dropdown rows: invoice number with its amount beside it, then the customer, then the job.
+                el.tomselect.settings.render.option = function (data, escape) {
+                    if (!data.value) return '<div class="option ts-option-item ts-light-divider" data-value="">' + escape(data.text) + '</div>';
+                    return '<div class="option ts-option-item ts-light-divider cn-inv-opt" data-value="' + escape(data.value) + '">' +
+                        '<div class="cn-inv-top"><b>' + escape(data.text) + '</b><span class="cn-inv-amount">' + escape(data.amount || '') + '</span></div>' +
+                        (data.job ? '<div class="cn-inv-line"><span>' + escape(trans('Job')) + ':</span> ' + escape(data.job) + '</div>' : '') +
+                        (data.customer ? '<div class="cn-inv-line"><span>' + escape(trans('Customer')) + ':</span> ' + escape(data.customer) + '</div>' : '') +
+                        '</div>';
+                };
+                el.tomselect.settings.render.item = function (data, escape) {
+                    return '<div class="item">' + escape(data.text) + '</div>';
+                };
+                // Customer, job and amount of the chosen invoice, in full, under the field (too long to fit inside it).
+                const showInfo = function () {
+                    $('#cn-inv-info').remove();
+                    const d = el.tomselect.options[el.value];
+                    if (!el.value || !d) return;
+                    const row = (k, v) => v ? '<div><span class="text-muted">' + escape_(trans(k)) + ':</span> ' + escape_(v) + '</div>' : '';
+                    $(el).closest('div[class*=col-]').first().append('<div id="cn-inv-info" class="small mt-1">' +
+                        row('Customer', d.customer) + row('Job', d.job) + row('Invoice Amount', d.amount) + '</div>');
+                };
+                const escape_ = (t) => $('<div>').text(t == null ? '' : t).html();
+                el.tomselect.on('change', showInfo);
+                showInfo();
+                el.tomselect.refreshItems();
+            }, 150);
+            // Against an invoice, customer and job come from the invoice and are saved in the background.
+            const toggleParty = () => $('#cn-customer-col, #cn-job-col').toggleClass('d-none', ($('#creditType').val() || 'invoice') === 'invoice');
+            $('#creditType').off('change.cnParty').on('change.cnParty', toggleParty);
+            toggleParty();
             // opened for a given invoice (from the invoice's detail drawer): fill customer, job and lines straight away
             setTimeout(function () {
                 const $inv = $('select[name=invoice_id]');
@@ -275,6 +312,17 @@ CREDIT_NOTE = {
             }, 80);
             CALCULATION.load();
             CALCULATION.finalTotals();
+        },
+        // Currency is the invoice's and cannot be changed; only the exchange rate (today's, fetched on change) may be edited.
+        lockCurrency(code) {
+            const el = document.getElementById('currency-code');
+            if (!el || !el.tomselect || !code) return;
+            if (el.value !== code) el.tomselect.setValue(code);   // fires the usual change → today's rate is fetched
+            el.tomselect.lock();
+            const base = (typeof baseCurrency !== 'undefined' ? baseCurrency : 'SAR');
+            const same = String(code).toUpperCase() === String(base).toUpperCase();
+            const rate = document.getElementById('currency-rate');
+            if (rate) { if (same) rate.value = 1; rate.readOnly = same; }
         },
         // Choosing the invoice being credited copies its customer, job and every line into the form.
         invoiceChange() {
@@ -289,6 +337,7 @@ CREDIT_NOTE = {
                     const $form = $('select[name=invoice_id]').closest('form');
                     setTs($form, 'customer', inv.customer_code || inv.customer_id);
                     setTs($form, 'job_id', inv.job_id);
+                    CREDIT_NOTE.form.lockCurrency(inv.currency);
 
                     const $tbody = $('#CREDIT_NOTE-tbody');
                     const $first = $tbody.find('tr:first');
@@ -312,6 +361,14 @@ CREDIT_NOTE = {
                         $row.find('.unit_price').val(line.unit_price).trigger('input');
                     });
                     CALCULATION.finalTotals();
+                    // Say how much of this invoice is still creditable when earlier credit notes already took part of it.
+                    $('#cn-credit-hint').remove();
+                    if (inv.already_credited > 0) {
+                        const fmt = n => Number(n).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                        const msg = trans('Already credited') + ': <b>' + fmt(inv.already_credited) + '</b> &middot; ' + trans('Still creditable') + ': <b>' + fmt(inv.creditable) + '</b>' +
+                            (inv.lines.length ? '' : ' &mdash; ' + trans('this invoice is fully credited.'));
+                        $('select[name=invoice_id]').closest('.form-group, .mb-3, div[class*=col-]').first().append('<div id="cn-credit-hint" class="small text-warning-emphasis mt-1">' + msg + '</div>');
+                    }
                 });
             });
         },

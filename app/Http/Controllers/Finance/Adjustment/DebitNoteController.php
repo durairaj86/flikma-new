@@ -194,7 +194,12 @@ class DebitNoteController extends Controller
         $debitNote->terms = $validated['terms'] ?? null;
         // Always the currency of the invoice it adjusts, so the payable is reduced at the right rate.
         $debitNote->currency = $invoice->currency ?? 'SAR';
-        $debitNote->currency_rate = $invoice->currency_rate ?? 1;
+        // Currency is the invoice's and cannot be changed; only the exchange rate may differ (today's rate), and it is
+        // always 1 when the invoice is in the company's own currency.
+        $enteredRate = (float) request()->input('currency_rate');
+        $debitNote->currency_rate = strtoupper((string) $debitNote->currency) === strtoupper((string) (authUserCompany()->currency ?? 'SAR'))
+            ? 1
+            : ($enteredRate > 0 ? $enteredRate : (float) ($invoice->currency_rate ?: 1));
         $debitNote->sub_total = $subTotal;
         $debitNote->tax_total = $taxTotal;
         $debitNote->grand_total = $subTotal + $taxTotal;
