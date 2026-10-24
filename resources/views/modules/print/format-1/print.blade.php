@@ -69,6 +69,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr; /* 50%/50% split for col-6 */
             align-items: center;
+            padding-top: 5px;   /* keep the title off the border above */
             padding-bottom: 5px;
         }
 
@@ -288,7 +289,7 @@
             border-left: none;
             border-right: none;
 
-            padding: 5px;
+            padding: 17px 5px 5px;   /* room above the text when this block starts a page, right under the header line */
             /* Adjust position to align with the rest of the content within the p-4 padding */
             width: calc(100% - 1px);
         }
@@ -1090,7 +1091,7 @@
 
     <tfoot>
     <tr>
-        <td style="height: 60px; border: none !important;">
+        <td style="height: 84px; border: none !important;">   {{-- footer text box starts 70px above the page bottom: keep rows out of it --}}
             <div class="print-footer">
                 <div>
                     <p>This is a computer generated document and does not require a signature</p>
