@@ -243,7 +243,7 @@
                 <div id="filtered-data"></div>
             </div>
             <div class="flex-grow-1">
-                <table class="table align-middle dataTable" id="dataTable" data-min-height="min-height:75vh;" data-title="Job" data-model-size="lg">
+                <table class="table align-middle dataTable" id="dataTable" data-empty-noun="{{ __('proforma invoices') }}" data-min-height="min-height:75vh;" data-title="Job" data-model-size="lg">
                     <thead class="table-light">
                     <tr class="text-muted text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.03em;">
                         <th>{{ __('Invoice #') }}</th>

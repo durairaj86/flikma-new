@@ -1219,9 +1219,37 @@ let webModal = {
             }
         });
 
+        // Only ask "are you sure?" when the user actually changed something. Values the form fills in by itself while it
+        // loads (defaults, dropdown set-up, calculations) are not user changes: those events are not "trusted", and the
+        // number of fields is compared with what the form had once it had settled (rows added / removed count as a change).
+        let formDirty = false;
+        let baseFieldCount = null;
+        const fieldCount = () => modalEl.querySelectorAll('input, select, textarea').length;
+        const trustedChange = function (e) {
+            if (e.isTrusted && e.target && e.target.closest && e.target.closest('form')) formDirty = true;
+        };
+        modalEl.addEventListener('input', trustedChange, true);
+        modalEl.addEventListener('change', trustedChange, true);
+        modalEl.addEventListener('click', function (e) {
+            // picking an option in a Tom-Select list or a calendar day is a user change too
+            if (e.isTrusted && e.target && e.target.closest && e.target.closest('.ts-dropdown .option, .flatpickr-day')) formDirty = true;
+        }, true);
+        modalEl.addEventListener('shown.bs.modal', function () {
+            formDirty = false;
+            baseFieldCount = null;
+            setTimeout(function () { baseFieldCount = fieldCount(); }, 1500);
+        });
+        const hasUnsavedChanges = () => formDirty || (baseFieldCount !== null && fieldCount() !== baseFieldCount);
+
         setTimeout(function () {
             $('#globalModal .btn-close, #globalModal #btn-cancel').off('click').on('click', function (e) {
                 e.preventDefault(); // stop main modal from closing
+                if (!hasUnsavedChanges()) {
+                    const pm = bootstrap.Modal.getInstance(modalEl);
+                    if (pm) pm.hide();
+                    modalEl.removeEventListener('keydown', handler);
+                    return;
+                }
                 confirmDialog();
             });
         }, 800)
@@ -3388,3 +3416,33 @@ window.deleteRecord = function (url, onSuccess, opts) {
         }
     });
 })();
+
+
+/* Friendly empty state for list tables that name their records with data-empty-noun="payments" (translated, plural):
+   "No payments found for the selected period" / "<party> has no payments ...", with Change filters and New buttons.
+   Lists with their own message set data-empty-custom, and the Masters pages draw their own. */
+$(document).on('draw.dt.emptystate', '#dataTable', function () {
+    const $t = $(this);
+    const noun = $t.attr('data-empty-noun');
+    if (!noun || $t.attr('data-empty-custom') || $('.master-title-block').length) return;
+    const cell = $t.find('td.dataTables_empty');
+    if (!cell.length || cell.find('.ci-empty').length) return;
+    const esc = x => $('<span>').text(x).html();
+    const names = $('#customers option:selected, #suppliers option:selected').map(function () { return $.trim($(this).text()); }).get().filter(n => n && n !== '--Select--');
+    const from = $('#filter-from-date').val(), to = $('#filter-to-date').val();
+    const period = (from && to) ? ' <span class="ci-empty-period">(' + esc(from) + ' &ndash; ' + esc(to) + ')</span>' : '';
+    const title = names.length
+        ? '<b>' + esc(names.join(', ')) + '</b> ' + trans('has no :items for the selected period').replace(':items', noun)
+        : trans('No :items found for the selected period').replace(':items', noun);
+    const newBtn = $('#new').first();
+    cell.html('<div class="ci-empty">' +
+        '<span class="ci-empty-icon"><i class="bi bi-inbox"></i></span>' +
+        '<h6>' + title + period + '</h6>' +
+        '<p>' + trans('Try a different period or filter, or create a new one.') + '</p>' +
+        '<div class="d-flex justify-content-center gap-2 flex-wrap">' +
+        ($('#filter-box').length ? '<button type="button" class="btn btn-outline-secondary rounded-pill px-3 ci-empty-filter"><i class="bi bi-funnel me-1"></i>' + trans('Change filters') + '</button>' : '') +
+        (newBtn.length ? '<button type="button" class="btn btn-primary rounded-pill px-3 ci-empty-new"><i class="bi bi-plus-lg me-1"></i>' + esc($.trim(newBtn.text())) + '</button>' : '') +
+        '</div></div>');
+});
+$(document).on('click.ciEmptyGeneric', '.ci-empty-new', function () { $('#new').first().trigger('click'); })
+    .on('click.ciEmptyGeneric', '.ci-empty-filter', function () { $('#filter-box').first().trigger('click'); });

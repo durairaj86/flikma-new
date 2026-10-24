@@ -147,6 +147,7 @@ CUSTOMER_INVOICE = {
             $('#customSearch').on('keyup input', window.debounceSearch(function () {
                 table.search(this.value).draw();
             }));
+            $('#dataTable').attr('data-empty-custom', '1');
             // Empty list: say who/what was searched instead of a bare "No data available in table".
             $('#dataTable').off('draw.dt.empty').on('draw.dt.empty', function () {
                 const cell = $(this).find('td.dataTables_empty');

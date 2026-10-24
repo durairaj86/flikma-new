@@ -260,7 +260,7 @@
             {{-- Table --}}
             <div class="cn-card p-0">
                 <div id="filtered-data" class="px-3 pt-3"></div>
-                <table class="table align-middle mb-0 dataTable" id="dataTable">
+                <table class="table align-middle mb-0 dataTable" id="dataTable" data-empty-noun="{{ __('debit notes') }}">
                     <thead>
                         <tr class="text-muted text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.03em;">
                             <th>{{ __('Debit Note #') }}</th>

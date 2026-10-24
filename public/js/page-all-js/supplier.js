@@ -98,8 +98,8 @@ SUPPLIER = {
                     {data: 'DT_RowIndex', class: 'ps-4 text-muted small'},
                     {
                         data: 'name_en', render: function (data, type, row) {
-                            return '<a href="' + GLOBAL_FN.buildUrl('suppliers/' + row.id) + '" class="fw-bold text-dark text-decoration-none d-block">' + $('<span>').text(row.name_en).html() + '</a>' +
-                                   '<div class="text-primary x-small fw-semibold">' + row.row_no + '</div>';
+                            return '<a href="' + GLOBAL_FN.buildUrl('suppliers/' + row.id) + '" class="fw-bold text-primary text-decoration-none d-block">' + $('<span>').text(row.name_en).html() + '</a>' +
+                                   '<div class="text-muted x-small fw-semibold">' + row.row_no + '</div>';
                         }
                     },
                     {

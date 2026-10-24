@@ -64,7 +64,7 @@
 
                         <div class="col-md-6 col-xl-3 form-filter">
                             <label class="form-label fw-medium filter-label-row">{{ __('Supplier') }}</label>
-                            <x-common.suppliers multiple></x-common.suppliers>
+                            <x-common.suppliers multiple="true" :value="request()->query('supplier') ? [(int) request()->query('supplier')] : null"></x-common.suppliers>
                         </div>
 
                         <div class="col-md-6 col-xl-2 form-filter">

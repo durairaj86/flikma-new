@@ -157,7 +157,7 @@
                 <div id="filtered-data"></div>
             </div>
             <div class="">
-                <table class="table align-middle dataTable" id="dataTable">
+                <table class="table align-middle dataTable" id="dataTable" data-empty-noun="{{ __('collections') }}">
                     <thead class="table-light bg-white">
                     <tr>
                         <th>#</th>

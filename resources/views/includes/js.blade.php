@@ -201,6 +201,10 @@
         'Try a different period or customer, or create a new invoice.',
         'Change filters',
         'Create Invoice',
+        'Try a different period or supplier, or create a new invoice.',
+        'has no :items for the selected period',
+        'No :items found for the selected period',
+        'Try a different period or filter, or create a new one.',
     ];
     $i18nMap = collect($i18nKeys)->mapWithKeys(fn($key) => [$key => __($key)]);
 @endphp

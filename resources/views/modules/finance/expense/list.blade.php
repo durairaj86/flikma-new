@@ -161,7 +161,7 @@
                 <div id="filtered-data"></div>
             </div>
             <div class="flex-grow-1">
-                <table class="table align-middle dataTable" id="dataTable" data-module-url="expense" data-title="expense" data-model-size="lg"
+                <table class="table align-middle dataTable" id="dataTable" data-empty-noun="{{ __('expenses') }}" data-module-url="expense" data-title="expense" data-model-size="lg"
                        data-min-height="min-height:75vh;">
                     <thead class="table-light bg-white">
                     <tr>
