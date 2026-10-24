@@ -462,7 +462,7 @@
                 </table>
             </div>--}}
             <div class="flex-grow-1 d-none" id="tableWrapper">
-                <table class="table align-middle dataTable no-footer" id="dataTable" data-model-size="lg">
+                <table class="table align-middle dataTable no-footer" id="dataTable" data-empty-noun="{{ __('jobs') }}" data-model-size="lg">
                     <thead>
                     <tr id="dtTheadRow" class="text-secondary small text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;"></tr>
                     </thead>

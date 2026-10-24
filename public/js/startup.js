@@ -3426,7 +3426,7 @@ window.deleteRecord = function (url, onSuccess, opts) {
 /* On an empty tab, point at the tabs that do have records: "In other tabs: [Approved · 2]". Clicking one switches to it. */
 window.emptyTabHints = function () {
     const items = [];
-    $('#listTabs .status-btn').not('.active').each(function () {
+    $('#listTabs .status-btn, #basicListTabs .status-btn').not('.active').each(function () {
         const n = parseInt($(this).find('.status-count').first().text(), 10);
         if (!n) return;
         const label = $.trim($(this).clone().children('.status-count').remove().end().text()).replace(/\s*[-\u2013]\s*$/, '');
@@ -3439,12 +3439,7 @@ $(document).on('click.ciEmptyTab', '.ci-empty-tab', function () { document.getEl
 /* Friendly empty state for list tables that name their records with data-empty-noun="payments" (translated, plural):
    "No payments found for the selected period" / "<party> has no payments ...", with Change filters and New buttons.
    Lists with their own message set data-empty-custom, and the Masters pages draw their own. */
-$(document).on('draw.dt.emptystate', '#dataTable', function () {
-    const $t = $(this);
-    const noun = $t.attr('data-empty-noun');
-    if (!noun || $t.attr('data-empty-custom') || $('.master-title-block').length) return;
-    const cell = $t.find('td.dataTables_empty');
-    if (!cell.length || cell.find('.ci-empty').length) return;
+window.ciEmptyHtml = function (noun) {
     const esc = x => $('<span>').text(x).html();
     const names = $('#customers option:selected, #suppliers option:selected').map(function () { return $.trim($(this).text()); }).get().filter(n => n && n !== '--Select--');
     const from = $('#filter-from-date').val(), to = $('#filter-to-date').val();
@@ -3453,7 +3448,7 @@ $(document).on('draw.dt.emptystate', '#dataTable', function () {
         ? '<b>' + esc(names.join(', ')) + '</b> ' + trans('has no :items for the selected period').replace(':items', noun)
         : trans('No :items found for the selected period').replace(':items', noun);
     const newBtn = $('#new').first();
-    cell.html('<div class="ci-empty">' +
+    return '<div class="ci-empty">' +
         '<span class="ci-empty-icon"><i class="bi bi-inbox"></i></span>' +
         '<h6>' + title + period + '</h6>' +
         '<p>' + trans('Try a different period or filter, or create a new one.') + '</p>' +
@@ -3461,7 +3456,15 @@ $(document).on('draw.dt.emptystate', '#dataTable', function () {
         '<div class="d-flex justify-content-center gap-2 flex-wrap">' +
         ($('#filter-box').length ? '<button type="button" class="btn btn-outline-secondary rounded-pill px-3 ci-empty-filter"><i class="bi bi-funnel me-1"></i>' + trans('Change filters') + '</button>' : '') +
         (newBtn.length ? '<button type="button" class="btn btn-primary rounded-pill px-3 ci-empty-new"><i class="bi bi-plus-lg me-1"></i>' + esc($.trim(newBtn.text())) + '</button>' : '') +
-        '</div></div>');
+        '</div></div>';
+};
+$(document).on('draw.dt.emptystate', '#dataTable, #basicQuotationTable', function () {
+    const $t = $(this);
+    const noun = $t.attr('data-empty-noun');
+    if (!noun || $t.attr('data-empty-custom') || $('.master-title-block').length) return;
+    const cell = $t.find('td.dataTables_empty');
+    if (!cell.length || cell.find('.ci-empty').length) return;
+    cell.html(window.ciEmptyHtml(noun));
 });
 $(document).on('click.ciEmptyGeneric', '.ci-empty-new', function () { $('#new').first().trigger('click'); })
     .on('click.ciEmptyGeneric', '.ci-empty-filter', function () { $('#filter-box').first().trigger('click'); });

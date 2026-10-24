@@ -189,7 +189,7 @@
                 </div>
             </div>
             <div class="flex-grow-1">
-                <table class="table align-middle" id="basicQuotationTable">
+                <table class="table align-middle" id="basicQuotationTable" data-empty-noun="{{ __('quotations') }}">
                     <thead class="table-light sticky-top">
                     <tr>
                         <th>{{ __('Quote No') }}</th>

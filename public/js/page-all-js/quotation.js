@@ -727,6 +727,8 @@ QUOTATION = {
                         $('#tableWrapper').toggleClass('d-none', !hasRows);
                         $('#dtFooter').toggleClass('d-none', !hasRows);
                         $('#quotationEmptyState').toggleClass('d-none', hasRows);
+                        // nothing in this tab / period: the same friendly message as the other lists
+                        if (noData) $('#emptyStateNoData').html(window.ciEmptyHtml(trans('quotations')));
                         $('#emptyStateNoData').toggleClass('d-none', !noData);
                         $('#emptyStateNoResults').toggleClass('d-none', !noResults);
                     },

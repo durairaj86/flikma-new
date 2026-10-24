@@ -27,6 +27,7 @@
 @endif--}}
 @php
     $i18nKeys = [
+        'quotations',
         'Do you want to change the job?',
         'The lines already added will be cleared.',
         'Yes, change',
