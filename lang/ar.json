@@ -3601,5 +3601,6 @@
     "Try a different period or supplier, or create a new invoice.": "جرّب فترة أو مورّدًا مختلفًا، أو أنشئ فاتورة جديدة.",
     "has no :items for the selected period": "ليس لديه :items في الفترة المحددة",
     "No :items found for the selected period": "لا توجد :items في الفترة المحددة",
-    "Try a different period or filter, or create a new one.": "جرّب فترة أو مرشحًا مختلفًا، أو أنشئ سجلًا جديدًا."
+    "Try a different period or filter, or create a new one.": "جرّب فترة أو مرشحًا مختلفًا، أو أنشئ سجلًا جديدًا.",
+    "In other tabs:": "في علامات التبويب الأخرى:"
 }

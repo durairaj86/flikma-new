@@ -205,6 +205,7 @@
         'has no :items for the selected period',
         'No :items found for the selected period',
         'Try a different period or filter, or create a new one.',
+        'In other tabs:',
     ];
     $i18nMap = collect($i18nKeys)->mapWithKeys(fn($key) => [$key => __($key)]);
 @endphp

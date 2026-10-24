@@ -2140,3 +2140,7 @@ th .ts-wrapper.single {
 .ci-empty h6 b { color: #4f46e5; }
 .ci-empty .ci-empty-period { display: inline-block; color: #6b7280; font-weight: 500; font-size: .85rem; }
 .ci-empty p { color: #667085; font-size: .875rem; max-width: 460px; margin: 0 auto 16px; }
+
+.ci-empty .ci-empty-tabs { margin: 0 auto 14px; color: #667085; font-size: .85rem; }
+.ci-empty .ci-empty-tabs .btn { font-size: .8rem; margin-inline-start: .25rem; }
+.ci-empty .ci-empty-tabs .btn b { color: #4f46e5; }

@@ -3418,6 +3418,20 @@ window.deleteRecord = function (url, onSuccess, opts) {
 })();
 
 
+
+/* On an empty tab, point at the tabs that do have records: "In other tabs: [Approved · 2]". Clicking one switches to it. */
+window.emptyTabHints = function () {
+    const items = [];
+    $('#listTabs .status-btn').not('.active').each(function () {
+        const n = parseInt($(this).find('.status-count').first().text(), 10);
+        if (!n) return;
+        const label = $.trim($(this).clone().children('.status-count').remove().end().text()).replace(/\s*[-\u2013]\s*$/, '');
+        items.push('<button type="button" class="btn btn-sm btn-light border rounded-pill px-3 ci-empty-tab" data-tab-id="' + $('<span>').text(this.id).html() + '">' + $('<span>').text(label).html() + ' &middot; <b>' + n + '</b></button>');
+    });
+    return items.length ? '<div class="ci-empty-tabs">' + trans('In other tabs:') + ' ' + items.join(' ') + '</div>' : '';
+};
+$(document).on('click.ciEmptyTab', '.ci-empty-tab', function () { document.getElementById($(this).data('tab-id'))?.click(); });
+
 /* Friendly empty state for list tables that name their records with data-empty-noun="payments" (translated, plural):
    "No payments found for the selected period" / "<party> has no payments ...", with Change filters and New buttons.
    Lists with their own message set data-empty-custom, and the Masters pages draw their own. */
@@ -3439,6 +3453,7 @@ $(document).on('draw.dt.emptystate', '#dataTable', function () {
         '<span class="ci-empty-icon"><i class="bi bi-inbox"></i></span>' +
         '<h6>' + title + period + '</h6>' +
         '<p>' + trans('Try a different period or filter, or create a new one.') + '</p>' +
+        window.emptyTabHints() +
         '<div class="d-flex justify-content-center gap-2 flex-wrap">' +
         ($('#filter-box').length ? '<button type="button" class="btn btn-outline-secondary rounded-pill px-3 ci-empty-filter"><i class="bi bi-funnel me-1"></i>' + trans('Change filters') + '</button>' : '') +
         (newBtn.length ? '<button type="button" class="btn btn-primary rounded-pill px-3 ci-empty-new"><i class="bi bi-plus-lg me-1"></i>' + esc($.trim(newBtn.text())) + '</button>' : '') +
