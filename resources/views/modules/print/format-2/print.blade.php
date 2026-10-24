@@ -942,8 +942,8 @@
                     <tr class="dyn-color" style="color: #fff;">
                         <th class="charge-desc">Charge Description <br> بيان الرسوم</th>
                         <th class="c-center" data-toggle="hsn_sac" style="width: 6%; {{ ($settings->hsn_sac ?? false) ? '' : 'display:none' }}">HSN/SAC <br> رمز التصنيف</th>
-                        <th class="c-center" style="width: 5%;">Curr. <br> العملة</th>
-                        <th class="c-right" data-toggle="rate" style="width: 8%; {{ ($settings->rate ?? true) ? '' : 'display:none' }}">Rate Per Unit <br> السعر لكل وحدة</th><th class="c-right" data-toggle="currency" style="width: 6%; {{ ($settings->currency ?? false) ? '' : 'display:none' }}">Currency<br><span class="ar" style="font-weight: normal;">العملة</span></th>
+                        <th class="c-center" data-toggle="currency" style="width: 5%; {{ ($settings->currency ?? false) ? '' : 'display:none' }}">Curr. <br> العملة</th>
+                        <th class="c-right" data-toggle="rate" style="width: 8%; {{ ($settings->rate ?? true) ? '' : 'display:none' }}">Rate Per Unit <br> السعر لكل وحدة</th>
                         <th class="c-right" style="width: 5%;">Qty <br> الكمية</th>
                         <th class="c-center" data-toggle="unit" style="width: 5%; {{ ($settings->unit ?? true) ? '' : 'display:none' }}">Unit <br> وحدة</th>
                         <th class="c-right" data-toggle="discount" style="width: 6%; {{ ($settings->discount ?? false) ? '' : 'display:none' }}">Discount <br> الخصم</th>
@@ -962,8 +962,8 @@
                                     <span data-toggle="item_description" style="{{ ($settings->item_description ?? true) ? '' : 'display:none' }}">- {{ $items->comment }}</span>
                                 @endif</td>
                             <td class="c-center" data-toggle="hsn_sac" style="{{ ($settings->hsn_sac ?? false) ? '' : 'display:none' }}">-</td>
-                            <td class="c-center">{{ $customerInvoice->currency }}</td>
-                            <td class="c-right" data-toggle="rate" style="{{ ($settings->rate ?? true) ? '' : 'display:none' }}">{{ amountFormat($items->unit_price) }}</td><td class="c-right" data-toggle="currency" style="{{ ($settings->currency ?? false) ? '' : 'display:none' }}">{{ $customerInvoice->currency }}</td>
+                            <td class="c-center" data-toggle="currency" style="{{ ($settings->currency ?? false) ? '' : 'display:none' }}">{{ $customerInvoice->currency }}</td>
+                            <td class="c-right" data-toggle="rate" style="{{ ($settings->rate ?? true) ? '' : 'display:none' }}">{{ amountFormat($items->unit_price) }}</td>
                             <td class="c-right">{{ $items->quantity }}</td>
                             <td class="c-center" data-toggle="unit" style="{{ ($settings->unit ?? true) ? '' : 'display:none' }}">{{ $items->unit }}</td>
                             <td class="c-right" data-toggle="discount" style="{{ ($settings->discount ?? false) ? '' : 'display:none' }}">0.00</td>
