@@ -4,6 +4,19 @@
     <meta charset="UTF-8">
     <title>Invoice — {{ invoiceNumberLabel($customerInvoice) }}</title>
     <style>
+        /* print: the footer is fixed to the bottom of every page (the tfoot cell only keeps the content clear of it) */
+        @media print {
+            .repeat-wrap > tfoot > tr > td.foot-spacer { height: 46px; }
+            .page-foot { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 722px; background: #fff; margin-top: 0 !important; }
+        }
+
+        /* the closing blocks (totals, amount in words, payment / terms, footer) move to the next page whole, never cut in two */
+        .repeat-wrap { border-collapse: collapse; height: 1040px; }
+        .repeat-wrap > tfoot { display: table-footer-group; }
+        .repeat-wrap > tbody > tr > td { height: 100%; }
+        .repeat-wrap > thead { display: table-header-group; }
+        .keep-together, .keep-together > tbody > tr, .keep-together > tr { page-break-inside: avoid; break-inside: avoid; }
+
         @font-face {
             font-family: 'Body';
             src: url('file://{{ public_path('fonts/LiberationSans-Regular.ttf') }}');
@@ -138,14 +151,6 @@
     <script id="color-css-template" type="application/json">{!! json_encode($__colorCssTpl) !!}</script>
 </head>
 <body>
-<div class="paper">
-    <div>
-        @if($customerInvoice->status == 1)
-            <div class="watermark">DRAFT</div>
-        @elseif($customerInvoice->status == 4)
-            <div class="watermark" style="color: rgba(200,30,30,0.12);">CANCELLED</div>
-        @endif
-
         @php
             $docTitle = match (true) {
                 $customerInvoice->status == 1 => 'DRAFT INVOICE',
@@ -158,7 +163,10 @@
                 default => 'فاتورة ضريبية',
             };
         @endphp
-
+<div class="paper">
+    <table class="repeat-wrap" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <thead><tr><td style="padding-bottom: 8px;">
+<div>
         {{-- Top Header Table: Logo (Left), Tax Invoice Title (Center), Invoice Number (Right) --}}
         <table cellpadding="0" cellspacing="0" border="0" width="100%">
             <tr>
@@ -194,9 +202,22 @@
             </tr>
         </table>
 
+        </div>
+        {{-- a filled bar, not a border: Chrome drops a repeated header's bottom border on the next page --}}
+        <div style="height: 1px; background: #d1d5db; margin: 12px 0 0;"></div>
+        </td></tr></thead>
+        <tbody><tr><td valign="top">
+    <div>
+        @if($customerInvoice->status == 1)
+            <div class="watermark">DRAFT</div>
+        @elseif($customerInvoice->status == 4)
+            <div class="watermark" style="color: rgba(200,30,30,0.12);">CANCELLED</div>
+        @endif
+
+
         {{-- Dates & Summary Bar --}}
         <table cellpadding="0" cellspacing="0" border="0" width="100%"
-               style="margin-top: 12px; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb;">
+               style="border-bottom: 1px solid #e5e7eb;">
             <tr>
                 <td width="50%" valign="top" style="padding: 8px 0;">
                     <div class="muted" style="font-size: 7pt; text-transform: uppercase;">
@@ -275,6 +296,7 @@
                                 <span>CR Number : </span>{{ $customerInvoice->customer->cr_number }}
                             </div>
                         @endif
+                        <div style="margin-top: 4px;">@include('modules.print.partials.address-fields')</div>
                     </div>
                     @if($customerInvoice->customer?->name_ar)
                         <div class="ar" style="font-size: 8pt; margin-top: 6px; line-height: 1.6; ">
@@ -286,7 +308,7 @@
             </tr>
         </table>
 
-        @include('modules.print.partials.extra-details')
+        @include('modules.print.partials.extra-details', ['splitAddress' => true])
 
         {{-- Line Items Table --}}
         <table width="100%" cellpadding="0" cellspacing="0" border="0" class="items" style="margin-top: 12px;">
@@ -345,7 +367,7 @@
         </table>
 
         {{-- Totals Table --}}
-        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 14px;">
+        <table class="keep-together" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 14px;">
             <tr>
                 <td width="52%" valign="middle" align="center">
                     @include('modules.print.partials.zatca-qr')
@@ -386,7 +408,7 @@
         </table>
 
         {{-- Amount in words block --}}
-        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 8px;">
+        <table class="keep-together" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 8px;">
             <tr>
                 <td style="padding: 7px 10px; background: #f9fafb; border: 1px solid #e5e7eb;">
                     <div style="font-weight: bold; font-size: 7.5pt;">Amount in Words / إجمالي المبلغ كتابة:</div>
@@ -398,7 +420,7 @@
         </table>
 
         {{-- Payment Method (left) & Terms and Conditions (right) --}}
-        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 8px;">
+        <table class="keep-together" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 8px;">
             <tr>
                 <td width="48%" valign="top" style="padding: 7px 10px; border: 1px solid #e5e7eb;">
                     @if($bank)
@@ -460,10 +482,11 @@
             </tr>
         </table>
     </div>
-
+        </td></tr></tbody>
+        <tfoot><tr><td class="foot-spacer">
     {{-- Footer Email pinned to bottom --}}
-    <table cellpadding="0" cellspacing="0" border="0" width="100%"
-           style="margin-top: 25px; border-top: 1px solid #e5e7eb; padding-top: 15px;">
+    <table class="keep-together page-foot" cellpadding="0" cellspacing="0" border="0" width="100%"
+           style="margin-top: 8px; border-top: 1px solid #e5e7eb; padding-top: 10px;">
         <tr>
             <td width="55%" valign="bottom" class="muted" style="font-size: 6.5pt; line-height: 1.4;">
                 THANK YOU FOR YOUR BUSINESS! | <span class="ar" style="direction: ltr; display: inline-block;"> شكراً لتعاملكم معنا!</span>
@@ -478,6 +501,9 @@
             </td>
         </tr>
     </table>
+        </td></tr></tfoot>
+    </table>
+
 </div>
 </body>
 </html>

@@ -7,7 +7,7 @@
         $hidden = $field['visible'] ? '' : 'display:none;';
         return '<tr data-toggle="' . e($field['key']) . '" style="font-size: 8pt; line-height: 1.55; ' . $hidden . '">'
             . '<td dir="ltr" style="width: 34%; color: #6b7280; text-align: left; unicode-bidi: isolate; padding: 1px 4px 1px 0;">' . e($field['label_en']) . '</td>'
-            . '<td dir="ltr" style="width: 34%; font-weight: 700; text-align: left; unicode-bidi: isolate; padding: 1px 4px;">' . e($field['value']) . '</td>'
+            . '<td dir="ltr" style="width: 34%; font-weight: 700; text-align: left; unicode-bidi: isolate; padding: 1px 4px; overflow-wrap: anywhere; word-break: break-word;">' . e(filled($field['value']) ? $field['value'] : '-') . '</td>'
             . '<td dir="rtl" lang="ar" style="width: 32%; color: #6b7280; text-align: right; unicode-bidi: isolate; padding: 1px 0 1px 4px;">' . e($field['label_ar']) . '</td>'
             . '</tr>';
     };
@@ -15,7 +15,13 @@
 @php
     // Customer rows first, then job rows; the rows that are switched on are split evenly across the two columns.
     // Rows switched off stay in the markup (display:none) so the settings preview can still toggle them.
-    $allExtra = collect($extraPartyFields ?? [])->concat($extraJobFields ?? [])->values();
+    // $splitAddress: the contact / address rows are printed inside the Billed To block (partials.address-fields) and the legal
+    // VAT / CR numbers are already part of it, so they are left out of this list.
+    $party = collect($extraPartyFields ?? []);
+    if (!empty($splitAddress)) {
+        $party = $party->reject(fn ($f) => in_array($f['key'], ['email', 'alt_phone', 'postal_code', 'country', 'region', 'vat_number', 'cr_number'], true));
+    }
+    $allExtra = $party->concat($extraJobFields ?? [])->values();
     $shownExtra = $allExtra->filter(fn ($f) => $f['visible'])->values();
     $hiddenExtra = $allExtra->reject(fn ($f) => $f['visible'])->values();
     $half = (int) ceil($shownExtra->count() / 2);

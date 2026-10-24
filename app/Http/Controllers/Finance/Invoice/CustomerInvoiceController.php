@@ -1103,18 +1103,32 @@ class CustomerInvoiceController extends Controller
             ['key' => 'delivery_date', 'label_en' => 'Delivery Date', 'label_ar' => 'تاريخ التسليم', 'value' => $job?->delivery_date ? showDate($job->delivery_date) : null],
             ['key' => 'eta', 'label_en' => 'ETA', 'label_ar' => 'التاريخ المتوقع للوصول', 'value' => $job?->eta ? showDate($job->eta) : null],
             ['key' => 'etd', 'label_en' => 'ETD', 'label_ar' => 'التاريخ المتوقع للمغادرة', 'value' => $job?->etd ? showDate($job->etd) : null],
-        ])->filter(fn ($f) => filled($f['value']))
-          ->map(fn ($f) => $f + ['visible' => $invoiceDetailToggles[$f['key']] ?? false])
+        ])->map(fn ($f) => $f + ['visible' => $invoiceDetailToggles[$f['key']] ?? false])
           ->values();
+
+        // The shipment rows (AWB/HBL, origin / destination, carrier, voyage, incoterm, mode) are fixed rows in the Stylish /
+        // Luxury / Advanced / Billbook layouts; the other themes show them through this list, switched by the same settings.
+        $shipmentFields = collect([
+            ['key' => 'awb_hbl', 'label_en' => 'AWB / HBL No', 'label_ar' => 'رقم بوليصة الشحن الفرعية', 'value' => collect([$job?->awb_number, $job?->hbl_number])->filter()->implode(' / ')],
+            ['key' => 'pol_pod', 'label_en' => 'Place of Origin', 'label_ar' => 'بلد المنشأ', 'value' => $job?->pol],
+            ['key' => 'pol_pod', 'label_en' => 'Final Destination', 'label_ar' => 'الوجهة النهائية', 'value' => $job?->pod],
+            ['key' => 'carrier', 'label_en' => 'Vessel / Flight', 'label_ar' => 'الناقل / الرحلة', 'value' => $job?->carrier],
+            ['key' => 'voyage_flight', 'label_en' => 'Voyage / Flight No.', 'label_ar' => 'رقم الرحلة', 'value' => $job?->voyage_flight_no],
+            ['key' => 'incoterm', 'label_en' => 'Incoterm', 'label_ar' => 'شروط التسليم', 'value' => $job?->incoterm],
+            ['key' => 'shipment_mode', 'label_en' => 'Shipment Mode', 'label_ar' => 'وسيلة الشحن', 'value' => $job?->shipment_mode],
+        ])->map(fn ($f) => $f + ['visible' => (bool) ($settings->{$f['key']} ?? false)]);
+        $extraJobFields = $extraJobFields->concat($shipmentFields)->values();
 
         // Extra customer-detail rows, same rule.
         $extraPartyFields = collect([
             ['key' => 'code', 'label_en' => 'Customer Code', 'label_ar' => 'رمز العميل', 'value' => $customer->row_no ?? null],
+            ['key' => 'unique_code', 'label_en' => 'Unique Code', 'label_ar' => 'الرمز الفريد', 'value' => $customer->unique_row_no ?? null],
             ['key' => 'business_type', 'label_en' => 'Business Type', 'label_ar' => 'نوع النشاط', 'value' => $customer->business_type ?? null],
             ['key' => 'cr_number', 'label_en' => 'CR Number', 'label_ar' => 'رقم السجل التجاري', 'value' => $customer->cr_number ?? null],
             ['key' => 'vat_number', 'label_en' => 'VAT Number', 'label_ar' => 'الرقم الضريبي', 'value' => $customer->vat_number ?? null],
             ['key' => 'credit_limit', 'label_en' => 'Credit Limit', 'label_ar' => 'حد الائتمان', 'value' => $customer?->credit_limit ? amountFormat($customer->credit_limit) : null],
             ['key' => 'credit_days', 'label_en' => 'Credit Days', 'label_ar' => 'أيام الائتمان', 'value' => $customer->credit_days ?? null],
+            ['key' => 'region', 'label_en' => 'Region', 'label_ar' => 'المنطقة', 'value' => $customer->city_en ?? $customer->city ?? null],
             ['key' => 'postal_code', 'label_en' => 'Postal Code', 'label_ar' => 'الرمز البريدي', 'value' => $customer->postal_code ?? null],
             ['key' => 'country', 'label_en' => 'Country', 'label_ar' => 'الدولة', 'value' => $customer->country ?? null],
             ['key' => 'email', 'label_en' => 'Email', 'label_ar' => 'البريد الإلكتروني', 'value' => $customer->email ?? null],
@@ -1126,8 +1140,7 @@ class CustomerInvoiceController extends Controller
             ['key' => 'iban', 'label_en' => 'IBAN', 'label_ar' => 'الآيبان', 'value' => $customer->iban ?? null],
             ['key' => 'payment_terms', 'label_en' => 'Payment Terms', 'label_ar' => 'شروط الدفع', 'value' => $customer->payment_terms ?? null],
             ['key' => 'salesperson', 'label_en' => 'Salesperson', 'label_ar' => 'مندوب المبيعات', 'value' => optional($customer?->salesperson)->name],
-        ])->filter(fn ($f) => filled($f['value']))
-          ->map(fn ($f) => $f + ['visible' => $partyDetailToggles[$f['key']] ?? false])
+        ])->map(fn ($f) => $f + ['visible' => $partyDetailToggles[$f['key']] ?? false])
           ->values();
 
         $themeTemplates = [
