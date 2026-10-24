@@ -1049,6 +1049,26 @@
         padding-right: 0.75rem;
     }
 
+    /* The rule above is meant for the top-level rows. It also matched the submenu rows and replaced their padding, so on
+       Masters / Settings (where the menu is the hover-preview) the submenu items looked spaced differently from every other
+       page. Put the submenu rows back to their normal spacing. */
+    #sidebar-container.sidebar-collapsed:hover .sidebar-menu .nav-treeview .nav-link {
+        justify-content: flex-start;
+        padding: 11px 14px 11px 18px;
+        margin: 0 10px 0 26px;
+    }
+
+    [dir="rtl"] #sidebar-container.sidebar-collapsed:hover .sidebar-menu .nav-treeview .nav-link {
+        padding: 8px 18px 8px 14px;
+        margin: 0 26px 0 10px;
+    }
+
+    /* In the hover preview the label <p> became inline-block, which adds a few pixels of baseline gap under the text
+       and made every submenu row ~5px taller than on other pages. Keep it a normal block, as elsewhere. */
+    #sidebar-container.sidebar-collapsed:hover .sidebar-menu .nav-treeview .nav-link p {
+        display: block;
+    }
+
     #sidebar-container.sidebar-collapsed:hover .sidebar-menu .menu-open > .nav-treeview {
         display: block !important;
     }

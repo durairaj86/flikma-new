@@ -99,7 +99,7 @@
 
             <!-- Table with scroll -->
             <div class="flex-grow-1">
-                <table class="table align-middle dataTable" id="dataTable" data-title="Prospect">
+                <table class="table align-middle dataTable" id="dataTable" data-title="Prospect" data-model-size="smd" data-min-height="min-height:0;">
                     <thead class="table-light sticky-top bg-white">
                     <tr>
                         <th>#</th>

@@ -45,6 +45,7 @@
     /* Nothing in the list yet: explain what this master is for and offer the create button. */
     (function () {
         var info = @json($mEmptyInfo);
+        var path = @json(trim(request()->path(), '/'));
         var title = @json(strip_tags((string) View::yieldContent('page-title')));
         // "?" next to the page title with the same explanation as the empty state, shown once the list has records.
         function helpIcon(show) {
@@ -52,6 +53,15 @@
             var h = $('.master-title-block h4').first();
             if (!h.length) h = $('header h5').first();
             if (!h.length) return;
+            // Every Masters page: the explanation is plain text under the title (no "?" tooltip).
+            {
+                var holder = h.closest('.master-title-block');
+                if (!holder.length) holder = h.parent();
+                if (!holder.find('.ms-subtext').length) {
+                    $('<div class="ms-subtext text-muted small mt-1"></div>').text(info[1] + ' ' + info[2]).insertAfter(h);
+                }
+                return;
+            }
             var el = h.find('.ms-help');
             if (!el.length) {
                 el = $('<span class="ms-help ms-1" tabindex="0" role="img" aria-label="' + @json(__('What is this?')) + '"><i class="bi bi-question-circle"></i></span>').appendTo(h);
@@ -118,9 +128,11 @@
     </div>
     <style>
         /* Header off, pages with status tabs (Users, Seaports, Airports): title + search + New button first, tabs under them, then the table. */
-        section.d-flex.flex-column:has(#listTabs) > * { order: 1; }
-        section.d-flex.flex-column:has(#listTabs) > :has(#listTabs) { order: 2; }
-        section.d-flex.flex-column:has(#listTabs) > .shadow { order: 3; }
+        section.d-flex.flex-column:is(:has(#listTabs), :has(.status-tabs)) > * { order: 1; }
+        section.d-flex.flex-column:is(:has(#listTabs), :has(.status-tabs)) > :is(:has(#listTabs), :has(.status-tabs)) { order: 2; }
+        section.d-flex.flex-column:is(:has(#listTabs), :has(.status-tabs)) > .shadow, section.d-flex.flex-column:is(:has(#listTabs), :has(.status-tabs)) > .bdr-r-10 { order: 3; }
+        /* The title row sits right above the tabs, so it doesn't need its own bottom padding on top of the tabs' spacing. */
+        section.d-flex.flex-column:is(:has(#listTabs), :has(.status-tabs)) > :has(> .master-title-block) { padding-bottom: .25rem !important; }
     </style>
     <script>
         /* Header off: fold the title into the page's own toolbar row (search + New button), so the title sits on
@@ -134,19 +146,25 @@
             if (!row || row === titleRow || row.querySelector('.nav, .nav-link')) return;
             var block = titleRow.querySelector('.master-title-block');
             var right = document.createElement('div');
-            right.className = 'd-flex align-items-center gap-2';
+            right.className = 'd-flex align-items-center gap-2 ms-auto flex-shrink-0';
             if (!row.querySelector('.search-box')) {
                 // A toolbar with a description instead of a search box: the description moves under the title.
+                // (A toolbar with only the button — its search box sits in the tabs row — folds as it is.)
                 var note = row.querySelector('p.text-muted');
-                if (!note) return;
-                var holder = note.parentElement;
-                note.classList.add('mt-1');
-                block.appendChild(note);
-                if (holder && holder !== row && !holder.children.length) holder.remove();
+                if (note) {
+                    var holder = note.parentElement;
+                    note.classList.add('mt-1');
+                    block.appendChild(note);
+                    if (holder && holder !== row && !holder.children.length) holder.remove();
+                }
             }
             while (row.firstChild) right.appendChild(row.firstChild);
-            row.classList.remove('pb-3', 'mb-3', 'align-items-start');
-            row.classList.add('align-items-center', 'flex-wrap', 'gap-3', 'pt-3', 'pb-3');
+            // Title block takes the remaining width (at least 320px) and its text wraps inside it, so the search / button
+            // group stays on the title's row at the right end; it only drops under the title on a really narrow screen.
+            row.classList.remove('pb-3', 'mb-3', 'align-items-center');
+            row.classList.add('align-items-start', 'flex-wrap', 'gap-3', 'pt-3', 'pb-3');
+            block.style.flex = '1 1 320px';
+            block.style.minWidth = '0';
             row.appendChild(block);
             row.appendChild(right);
             titleRow.remove();

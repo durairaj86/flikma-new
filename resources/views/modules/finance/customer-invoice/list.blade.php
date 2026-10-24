@@ -347,17 +347,4 @@
     }
 </style>
 
-@if(request()->query('customer'))
-    <script>
-        // Deep-linked from a customer's "Find invoices" action — reveal the
-        // Advanced Filters panel so it's obvious the list is already filtered.
-        document.addEventListener('DOMContentLoaded', function () {
-            setTimeout(function () {
-                var panel = document.getElementById('filterPanel');
-                if (panel && panel.classList.contains('d-none')) {
-                    document.getElementById('filter-box')?.click();
-                }
-            }, 300);
-        });
-    </script>
-@endif
+{{-- Deep link with ?customer=: the list is filtered and the filter chip above the table says so; the panel stays closed. --}}

@@ -217,7 +217,7 @@ PROSPECT = {
                     title: 'Add Prospect',
                     url: GLOBAL_FN.buildUrl('prospect/create'),
                     content: null,
-                    size: 'md',
+                    size: 'smd',
                     callBack: null,
                     minHeight: '300'
                 });

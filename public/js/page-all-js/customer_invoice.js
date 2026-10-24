@@ -147,6 +147,28 @@ CUSTOMER_INVOICE = {
             $('#customSearch').on('keyup input', window.debounceSearch(function () {
                 table.search(this.value).draw();
             }));
+            // Empty list: say who/what was searched instead of a bare "No data available in table".
+            $('#dataTable').off('draw.dt.empty').on('draw.dt.empty', function () {
+                const cell = $(this).find('td.dataTables_empty');
+                if (!cell.length || cell.find('.ci-empty').length) return;
+                const names = $('#customers option:selected').map(function () { return $.trim($(this).text()); }).get().filter(n => n && n !== '--Select--');
+                const from = $('#filter-from-date').val(), to = $('#filter-to-date').val();
+                const esc = t => $('<span>').text(t).html();
+                const period = (from && to) ? ' <span class="ci-empty-period">(' + esc(from) + ' &ndash; ' + esc(to) + ')</span>' : '';
+                const title = names.length
+                    ? '<b>' + esc(names.join(', ')) + '</b> ' + trans('has no invoices for the selected period')
+                    : trans('No invoices found for the selected period');
+                cell.html('<div class="ci-empty">' +
+                    '<span class="ci-empty-icon"><i class="bi bi-receipt-cutoff"></i></span>' +
+                    '<h6>' + title + period + '</h6>' +
+                    '<p>' + trans('Try a different period or customer, or create a new invoice.') + '</p>' +
+                    '<div class="d-flex justify-content-center gap-2 flex-wrap">' +
+                    '<button type="button" class="btn btn-outline-secondary rounded-pill px-3 ci-empty-filter"><i class="bi bi-funnel me-1"></i>' + trans('Change filters') + '</button>' +
+                    '<button type="button" class="btn btn-primary rounded-pill px-3 ci-empty-new"><i class="bi bi-plus-lg me-1"></i>' + trans('Create Invoice') + '</button>' +
+                    '</div></div>');
+            });
+            $(document).off('click.ciEmpty').on('click.ciEmpty', '.ci-empty-new', function () { $('#new').trigger('click'); })
+                .on('click.ciEmpty', '.ci-empty-filter', function () { $('#filter-box').trigger('click'); });
             $('#dataTable_filter').closest('div.row').remove();
             webDataTable.loader(table);
             webDataTable.search(table);

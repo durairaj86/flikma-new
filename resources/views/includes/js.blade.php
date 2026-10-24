@@ -196,6 +196,11 @@
         'Are you sure you want to cancel this enquiry?',
         'Are you sure you want to move this enquiry back to Pending?',
         'Please fill in the required field',
+        'has no invoices for the selected period',
+        'No invoices found for the selected period',
+        'Try a different period or customer, or create a new invoice.',
+        'Change filters',
+        'Create Invoice',
     ];
     $i18nMap = collect($i18nKeys)->mapWithKeys(fn($key) => [$key => __($key)]);
 @endphp

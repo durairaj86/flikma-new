@@ -14,7 +14,7 @@
         #{{ $id }} table { width: 100%; border-collapse: collapse; }
         #{{ $id }} .text-end { text-align: right; }
         #{{ $id }} .text-center { text-align: center; }
-        #{{ $id }} .stmt-band { display: flex; justify-content: space-between; gap: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--accent); }
+        #{{ $id }} .stmt-band { display: flex; justify-content: space-between; gap: 16px; padding: 12px 16px; background: #f1f4f9; border-bottom: 3px solid var(--accent); border-radius: 6px 6px 0 0; }
         #{{ $id }} .stmt-band-right { text-align: right; }
         #{{ $id }} .stmt-company { font-size: 17px; font-weight: 700; color: var(--accent); }
         #{{ $id }} .stmt-head { text-align: center; margin-bottom: 10px; }
@@ -28,27 +28,28 @@
         #{{ $id }} .stmt-holder-name span { font-weight: 400; color: var(--muted); font-size: 11px; }
         #{{ $id }} .stmt-holder-line { font-size: 10px; color: var(--muted); }
         #{{ $id }} .stmt-cards { display: flex; margin: 6px 0 14px; border: 1px solid var(--line); }
-        #{{ $id }} .stmt-card { flex: 1; padding: 7px 12px; border-right: 1px solid var(--line); }
-        #{{ $id }} .stmt-card:last-child { border-right: 0; background: #f3f4f6; }
+        #{{ $id }} .stmt-card { flex: 1; padding: 7px 12px; border-right: 1px solid var(--line); border-top: 3px solid #cbd5e1; }
+        #{{ $id }} .stmt-card:last-child { border-right: 0; background: #eaeff7; border-top-color: var(--accent); }
         #{{ $id }} .stmt-card-label { font-size: 9px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
         #{{ $id }} .stmt-card-value { font-size: 13px; font-weight: 700; }
         #{{ $id }} .stmt-table { margin-top: 4px; }
         #{{ $id }} .stmt-table th {
-            padding: 6px 8px;
+            padding: 7px 8px;
             font-size: 9.5px;
             letter-spacing: .05em;
             text-transform: uppercase;
             text-align: left;
-            color: var(--ink);
-            background: #f3f4f6;
-            border-top: 1px solid var(--ink);
-            border-bottom: 1px solid var(--ink);
+            color: #ffffff;
+            background: var(--accent);
+            border: 0;
         }
         #{{ $id }} .stmt-table th.text-end { text-align: right; }
         #{{ $id }} .stmt-table td { border: 0; border-bottom: 1px solid #e5e7eb; padding: 6px 8px; vertical-align: top; }
+        #{{ $id }} .stmt-table tbody tr:nth-child(even) td { background: #f8fafc; }
         #{{ $id }} .stmt-table tr.stmt-bf td { font-weight: 700; background: #fafafa; border-bottom: 1px solid var(--line); }
+        #{{ $id }} .stmt-table td:first-child { white-space: nowrap; }
         #{{ $id }} .stmt-bal { font-weight: 700; }
-        #{{ $id }} .stmt-table tfoot td { font-weight: 700; padding: 7px 8px; border-top: 1px solid var(--ink); border-bottom: 2px solid var(--ink); background: #f3f4f6; }
+        #{{ $id }} .stmt-table tfoot td { font-weight: 700; padding: 7px 8px; border-top: 2px solid var(--accent); border-bottom: 2px solid var(--accent); background: #eaeff7; }
         #{{ $id }} .stmt-footnote { margin-top: 12px; font-size: 9px; color: var(--muted); font-style: italic; }
         #{{ $id }} .stmt-signatures { margin-top: 34px; font-size: 10px; color: #374151; }
         #{{ $id }} .stmt-meta td { vertical-align: top; padding: 2px 0; }

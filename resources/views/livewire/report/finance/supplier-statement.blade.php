@@ -162,7 +162,7 @@
 
                                 @forelse($transactions as $txn)
                                     <tr wire:key="txn-{{ $loop->index }}">
-                                        <td class="ps-4 small text-muted">{{ \Carbon\Carbon::parse($txn->reference_date)->format('d M Y') }}</td>
+                                        <td class="ps-4 small text-muted text-nowrap">{{ \Carbon\Carbon::parse($txn->reference_date)->format('d M Y') }}</td>
                                         <td>
                                             <span class="fw-medium d-block">{{ $txn->voucher_no }}</span>
                                             <span class="x-small text-muted uppercase">{{ $txn->voucher_type === 'SI' ? __('Supplier Invoice') : ($txn->voucher_type === 'PV' ? __('Payment Voucher') : $txn->voucher_type) }}</span>
@@ -220,6 +220,7 @@
                 <div class="stmt-head">
                     <div class="stmt-title">{{ __('SUPPLIER STATEMENT OF ACCOUNT') }}</div>
                     <div class="stmt-period">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->format('d-m-Y') }} {{ __('to') }} {{ \Carbon\Carbon::parse($endDate)->format('d-m-Y') }}</div>
+                    <div class="stmt-period">{{ __('Currency:') }} {{ $company->base_currency ?? 'SAR' }} &nbsp;|&nbsp; {{ __('Generated:') }} {{ now()->format('d-m-Y H:i') }}</div>
                 </div>
 
                 <div class="stmt-band">
@@ -234,17 +235,12 @@
                         @endif
                     </div>
                     <div class="stmt-band-right">
-                        <div class="stmt-sub">{{ __('Currency:') }} {{ $company->base_currency ?? 'SAR' }}</div>
-                        <div class="stmt-sub">{{ __('Generated:') }} {{ now()->format('d-m-Y H:i') }}</div>
-                    </div>
-                </div>
-
-                <div class="stmt-holder">
-                    <div class="stmt-holder-label">{{ __('Supplier') }}</div>
-                    <div class="stmt-holder-name">{{ $supplier->name_en }} <span>({{ $supplier->row_no }})</span></div>
-                    <div class="stmt-holder-line">
-                        @if($supplier->email) {{ $supplier->email }} @endif
-                        @if($supplier->phone) &nbsp;|&nbsp; {{ $supplier->phone }} @endif
+                        <div class="stmt-holder-label">{{ __('Supplier') }}</div>
+                        <div class="stmt-holder-name">{{ $supplier->name_en }} <span>({{ $supplier->row_no }})</span></div>
+                        <div class="stmt-sub">
+                            @if($supplier->email) {{ $supplier->email }} @endif
+                            @if($supplier->phone) &nbsp;|&nbsp; {{ $supplier->phone }} @endif
+                        </div>
                     </div>
                 </div>
 
@@ -258,7 +254,7 @@
                 <table class="stmt-table">
                     <thead>
                     <tr>
-                        <th style="width: 10%;">{{ __('Date') }}</th>
+                        <th style="width: 12%;">{{ __('Date') }}</th>
                         <th style="width: 12%;">{{ __('Voucher No') }}</th>
                         <th style="width: 12%;">{{ __('Type') }}</th>
                         <th>{{ __('Description') }}</th>
@@ -450,8 +446,14 @@
         #supplier-statement-print table { width: 100%; border-collapse: collapse; }
         #supplier-statement-print .text-end { text-align: right; }
         #supplier-statement-print .text-center { text-align: center; }
-        #supplier-statement-print .stmt-band { display: flex; justify-content: space-between; gap: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--accent); }
+        #supplier-statement-print .stmt-band { display: flex; justify-content: space-between; gap: 16px; padding: 12px 16px; background: #f1f4f9; border-bottom: 3px solid var(--accent); border-radius: 6px 6px 0 0; }
         #supplier-statement-print .stmt-band-right { text-align: right; }
+        #supplier-statement-print .stmt-band-right { text-align: right; max-width: 48%; }
+        #supplier-statement-print .stmt-band .stmt-holder-label { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+        #supplier-statement-print .stmt-band .stmt-holder-name { font-size: 13px; font-weight: 700; color: var(--ink); }
+        #supplier-statement-print .stmt-band .stmt-holder-name span { font-weight: 400; color: var(--muted); font-size: 11px; }
+        #supplier-statement-print .stmt-band .stmt-sub { color: var(--muted); }
+        #supplier-statement-print .stmt-band-left .stmt-sub { color: var(--muted); }
         #supplier-statement-print .stmt-company { font-size: 17px; font-weight: 700; color: var(--accent); }
         #supplier-statement-print .stmt-head { text-align: center; margin-bottom: 10px; }
         #supplier-statement-print .stmt-period { font-size: 11px; color: var(--muted); margin-top: 2px; }
@@ -464,27 +466,28 @@
         #supplier-statement-print .stmt-holder-name span { font-weight: 400; color: var(--muted); font-size: 11px; }
         #supplier-statement-print .stmt-holder-line { font-size: 10px; color: var(--muted); }
         #supplier-statement-print .stmt-cards { display: flex; margin: 6px 0 14px; border: 1px solid var(--line); }
-        #supplier-statement-print .stmt-card { flex: 1; padding: 7px 12px; border-right: 1px solid var(--line); }
-        #supplier-statement-print .stmt-card:last-child { border-right: 0; background: #f3f4f6; }
+        #supplier-statement-print .stmt-card { flex: 1; padding: 7px 12px; border-right: 1px solid var(--line); border-top: 3px solid #cbd5e1; }
+        #supplier-statement-print .stmt-card:last-child { border-right: 0; background: #eaeff7; border-top-color: var(--accent); }
         #supplier-statement-print .stmt-card-label { font-size: 9px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
         #supplier-statement-print .stmt-card-value { font-size: 13px; font-weight: 700; }
         #supplier-statement-print .stmt-table { margin-top: 4px; }
         #supplier-statement-print .stmt-table th {
-            padding: 6px 8px;
+            padding: 7px 8px;
             font-size: 9.5px;
             letter-spacing: .05em;
             text-transform: uppercase;
             text-align: left;
-            color: var(--ink);
-            background: #f3f4f6;
-            border-top: 1px solid var(--ink);
-            border-bottom: 1px solid var(--ink);
+            color: #ffffff;
+            background: var(--accent);
+            border: 0;
         }
         #supplier-statement-print .stmt-table th.text-end { text-align: right; }
         #supplier-statement-print .stmt-table td { border: 0; border-bottom: 1px solid #e5e7eb; padding: 6px 8px; vertical-align: top; }
+        #supplier-statement-print .stmt-table tbody tr:nth-child(even) td { background: #f8fafc; }
         #supplier-statement-print .stmt-table tr.stmt-bf td { font-weight: 700; background: #fafafa; border-bottom: 1px solid var(--line); }
+        #supplier-statement-print .stmt-table td:first-child { white-space: nowrap; }
         #supplier-statement-print .stmt-bal { font-weight: 700; }
-        #supplier-statement-print .stmt-table tfoot td { font-weight: 700; padding: 7px 8px; border-top: 1px solid var(--ink); border-bottom: 2px solid var(--ink); background: #f3f4f6; }
+        #supplier-statement-print .stmt-table tfoot td { font-weight: 700; padding: 7px 8px; border-top: 2px solid var(--accent); border-bottom: 2px solid var(--accent); background: #eaeff7; }
         #supplier-statement-print .stmt-footnote { margin-top: 12px; font-size: 9px; color: var(--muted); font-style: italic; }
         #supplier-statement-print .stmt-signatures { margin-top: 34px; font-size: 10px; color: #374151; }
         #supplier-statement-print .stmt-meta td { vertical-align: top; padding: 2px 0; }

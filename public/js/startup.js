@@ -641,18 +641,27 @@ let webModal = {
         $modalEl.off('keydown');
 
         // Remove previous size & scrollable classes
-        $modalDialog.removeClass('modal-sm modal-compact modal-mid modal-md modal-lg modal-xl modal-xxl modal-fullscreen modal-full-wrapper modal-dialog-scrollable');
+        $modalDialog.removeClass('modal-sm modal-mdl modal-compact modal-mid modal-md modal-lg modal-xl modal-xxl modal-fullscreen modal-full-wrapper modal-dialog-scrollable');
 
         // Add size class
         switch (settings.size) {
             case 'sm':
                 $modalDialog.addClass('modal-sm');
                 break;
+            // Standard size scale (wide screen): sm 300 < smd 600 < md 992 < mdl 1100 < l 1200 < xl 1320 < xxl 1400.
+            // (mid / lg are the older names for smd / l and keep working; compact (460) is a legacy in-between size.)
             case 'compact':
                 $modalDialog.addClass('modal-compact');
                 break;
+            case 'smd':
             case 'mid':
                 $modalDialog.addClass('modal-mid');
+                break;
+            case 'mdl':
+                $modalDialog.addClass('modal-mdl');
+                break;
+            case 'l':
+                $modalDialog.addClass('modal-lg');
                 break;
             case 'md':
                 $modalDialog.addClass('modal-md');

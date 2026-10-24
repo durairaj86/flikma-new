@@ -5,7 +5,7 @@
         @include('includes.master-navigation')
         <section class="flex-grow-1 px-4 d-flex flex-column">
             @include('includes.master-page-title')
-            <div class="align-items-center flex-shrink-0 py-3">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 flex-shrink-0 pt-0 pb-3">
                 <div class="gap-4">
                     <ul class="nav align-items-center" id="listTabs" role="tablist"
                         aria-label="Navigation 13">
@@ -35,17 +35,13 @@
                         </li>
                     </ul>
                 </div>
+                <div class="search-box position-relative">
+                    <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                    <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
+                           placeholder="{{ __('Search...') }}" aria-label="{{ __('Search...') }}">
+                </div>
             </div>
             <div class="d-flex justify-content-between py-3">
-                <div class="align-items-center gap-2">
-                    <div class="search-box position-relative me-2">
-                        <!-- Search icon -->
-                        <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-
-                        <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="{{ __('Search...') }}" aria-label="{{ __('Search...') }}">
-                    </div>
-                </div>
                 <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Employee') }}</button>
             </div>
             <div class="border bdr-r-10 pt-0 pb-3">

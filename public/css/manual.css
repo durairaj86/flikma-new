@@ -1892,6 +1892,12 @@ label.required.label-error {
 }
 
 
+/* Standard modal scale (widths on a wide screen): sm 300 < smd 600 < md 992 < mdl 1100 < l 1200 < xl 1320 < xxl 1400.
+   smd is the fixed 600px .modal-mid (between sm and md); mdl sits between md and l. */
+.modal-mdl {
+    max-width: min(1100px, 95vw);
+}
+
 /* Compact modal (small forms, e.g. HS Tariff): narrower than md (600px). */
 @media (min-width: 576px) {
     .modal-compact { --bs-modal-width: 460px; }
@@ -2116,3 +2122,21 @@ th .ts-wrapper.single {
 
 /* Collection form: the "Credit Applied" column of the invoice table only shows when the customer has credit to apply */
 #invoices-table:not(.has-credit) .credit-col { display: none; }
+
+/* Printing: full-height page wrappers (min-height: 100vh) made every printout one screen taller than the paper,
+   which pushed a blank second page after the content. */
+@media print {
+    .min-vh-100 { min-height: 0 !important; }
+    html, body { height: auto !important; min-height: 0 !important; }
+    /* the scrolling content area keeps 32px of bottom padding, which can tip a one-page printout onto a blank page */
+    .content-scroll-area { padding-bottom: 0 !important; height: auto !important; overflow: visible !important; }
+    .wrapper, .main-content { height: auto !important; min-height: 0 !important; }
+}
+
+/* Customer invoice list: friendly empty state (replaces "No data available in table"). */
+.ci-empty { text-align: center; padding: 34px 16px 28px; white-space: normal; }
+.ci-empty .ci-empty-icon { width: 60px; height: 60px; border-radius: 50%; background: #eef2ff; color: #4f46e5; display: inline-flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 14px; box-shadow: 0 6px 16px rgba(79, 70, 229, .15); }
+.ci-empty h6 { font-weight: 600; font-size: 1rem; color: #1f2937; margin-bottom: 6px; }
+.ci-empty h6 b { color: #4f46e5; }
+.ci-empty .ci-empty-period { display: inline-block; color: #6b7280; font-weight: 500; font-size: .85rem; }
+.ci-empty p { color: #667085; font-size: .875rem; max-width: 460px; margin: 0 auto 16px; }
