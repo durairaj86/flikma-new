@@ -312,7 +312,7 @@ class SupplierInvoiceController extends Controller
             $taxRate = vatPercent($request->tax[$i] ?? 0);
 
             $lineTotal = $qty * $price;
-            $lineTax = $lineTotal * ($taxRate / 100);
+            $lineTax = round($lineTotal * ($taxRate / 100), 2);   // VAT is rounded per line, as on the ZATCA invoice
 
             $subTotal += $lineTotal;
             $taxTotal += $lineTax;
@@ -379,7 +379,7 @@ class SupplierInvoiceController extends Controller
             $price = $request->unit_price[$i] ?? 0;
             $taxRate = vatPercent($request->tax[$i] ?? 0);
             $lineTotal = $qty * $price;
-            $lineTax = $lineTotal * ($taxRate / 100);
+            $lineTax = round($lineTotal * ($taxRate / 100), 2);   // VAT is rounded per line, as on the ZATCA invoice
             $netAmount = $lineTotal + $lineTax;
 
             $supplierSub[] = [

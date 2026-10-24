@@ -177,7 +177,7 @@ class ExpenseController extends Controller
             $taxRate = vatPercent($request->tax[$i] ?? 0);
 
             $lineTotal = amountToFloat($qty) * amountToFloat($price);
-            $lineTax = $lineTotal * ($taxRate / 100);
+            $lineTax = round($lineTotal * ($taxRate / 100), 2);   // VAT is rounded per line, as on the ZATCA invoice
 
             $subTotal += $lineTotal;
             $taxTotal += $lineTax;
@@ -253,7 +253,7 @@ class ExpenseController extends Controller
                 $rate = $request->unit_price[$index] ?? 0;
                 $taxRate = vatPercent($request->tax[$index] ?? 0);
                 $lineTotal = amountToFloat($quantity) * amountToFloat($rate);
-                $lineTax = $lineTotal * ($taxRate / 100);
+                $lineTax = round($lineTotal * ($taxRate / 100), 2);   // VAT is rounded per line, as on the ZATCA invoice
                 $netAmount = $lineTotal + $lineTax;
                 ExpenseSub::create([
                     'expense_id' => $expense->id,

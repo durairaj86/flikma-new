@@ -168,7 +168,7 @@ class DebitNoteController extends Controller
         foreach ($request->quantity as $i => $qty) {
             $lineTotal = $qty * ($request->unit_price[$i] ?? 0);
             $subTotal += $lineTotal;
-            $taxTotal += $lineTotal * (vatPercent($request->tax[$i] ?? 0) / 100);
+            $taxTotal += round($lineTotal * (vatPercent($request->tax[$i] ?? 0) / 100), 2);
         }
 
         // All debit notes on one invoice together can't be more than the invoice itself.
@@ -230,7 +230,7 @@ class DebitNoteController extends Controller
                 $price = $request->unit_price[$i] ?? 0;
                 $taxRate = vatPercent($request->tax[$i] ?? 0);
                 $lineTotal = $qty * $price;
-                $lineTax = $lineTotal * ($taxRate / 100);
+                $lineTax = round($lineTotal * ($taxRate / 100), 2);   // VAT is rounded per line, as on the ZATCA invoice
                 $lines[] = [
                     'debit_note_id' => $debitNote->id,
                     'account_id' => $request->account[$i],

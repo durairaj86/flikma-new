@@ -6,6 +6,8 @@ use App\Enums\JournalVoucherStatusEnum;
 use App\Enums\JournalVoucherTypeEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Finance\Account\Account;
+use App\Models\Finance\Finance;
+use App\Models\Finance\FinanceSub;
 use App\Models\Finance\JournalVoucher\JournalVoucher;
 use App\Models\Finance\JournalVoucher\JournalVoucherItem;
 use App\Models\Job\Job;
@@ -224,18 +226,37 @@ class JournalVoucherController extends Controller
     public function updateStatus($id, $status)
     {
         $journalVoucher = JournalVoucher::findOrFail($id);
+        $previous = (int) ($journalVoucher->status instanceof \BackedEnum ? $journalVoucher->status->value : $journalVoucher->status);
 
-        if ($status == JournalVoucherStatusEnum::APPROVED->value) {
-            $journalVoucher->status = JournalVoucherStatusEnum::APPROVED->value;
-            $journalVoucher->approved_by = Auth::id();
-            $journalVoucher->approved_at = now();
-        } elseif ($status == JournalVoucherStatusEnum::DISAPPROVED->value) {
-            $journalVoucher->status = JournalVoucherStatusEnum::DISAPPROVED->value;
-        } else {
-            $journalVoucher->status = JournalVoucherStatusEnum::DRAFT->value;
+        DB::beginTransaction();
+        try {
+            if ($status == JournalVoucherStatusEnum::APPROVED->value) {
+                if (abs($journalVoucher->base_debit_total - $journalVoucher->base_credit_total) > 0.005) {
+                    DB::rollBack();
+
+                    return response()->json(['status' => 'error', 'message' => __('The voucher does not balance: debit and credit must be equal.')], 422);
+                }
+                $this->assertPeriodOpen($journalVoucher->getRawOriginal('voucher_date'), 'voucher_date');
+                $journalVoucher->status = JournalVoucherStatusEnum::APPROVED->value;
+                $journalVoucher->approved_by = Auth::id();
+                $journalVoucher->approved_at = now();
+                $journalVoucher->save();
+                $this->postToLedger($journalVoucher);
+            } else {
+                $journalVoucher->status = $status == JournalVoucherStatusEnum::DISAPPROVED->value
+                    ? JournalVoucherStatusEnum::DISAPPROVED->value
+                    : JournalVoucherStatusEnum::DRAFT->value;
+                $journalVoucher->save();
+                // leaving Approved takes the entries out of the books again
+                if ($previous === JournalVoucherStatusEnum::APPROVED->value) {
+                    $this->removeFromLedger($journalVoucher->id);
+                }
+            }
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
         }
-
-        $journalVoucher->save();
 
         return response()->json([
             'status' => 'success',
@@ -245,6 +266,83 @@ class JournalVoucherController extends Controller
                 'status' => $journalVoucher->status,
             ],
         ]);
+    }
+
+    /**
+     * Approving a journal voucher posts it to the general ledger (voucher type JV): one line per item on its account,
+     * with the customer / supplier / job it names. A line that carries a tax account and tax amount is split: the tax
+     * part goes to the tax account (marked as a tax line, so VAT reports see it), the rest to the line's own account.
+     */
+    private function postToLedger(JournalVoucher $jv): void
+    {
+        $this->removeFromLedger($jv->id);
+        $jv->loadMissing('journalVoucherItems');
+        $rate = (float) ($jv->currency_rate ?: 1);
+
+        $finance = new Finance();
+        $finance->voucher_no = $jv->row_no;
+        $finance->voucher_type = 'JV';
+        $finance->reference_no = $jv->reference_no ?: $jv->row_no;
+        $date = $jv->getRawOriginal('voucher_date');   // the models show dates as d-m-Y
+        $finance->reference_date = $date;
+        $finance->narration = 'Journal Voucher: ' . $jv->row_no . ($jv->notes ? ' - ' . $jv->notes : '');
+        $finance->currency = $jv->currency ?: 'SAR';
+        $finance->exchange_rate = $rate;
+        $finance->total_debit = $jv->debit_total;
+        $finance->total_credit = $jv->credit_total;
+        $finance->base_currency = 'SAR';
+        $finance->base_total_debit = $jv->base_debit_total;
+        $finance->base_total_credit = $jv->base_credit_total;
+        $finance->job_id = $jv->job_id;
+        $finance->job_no = $jv->job_no ?? '';
+        $finance->is_approved = 1;
+        $finance->posted_at = now();
+        $finance->linked_id = $jv->id;
+        $finance->linked_type = JournalVoucher::class;
+        $finance->company_id = $jv->company_id;
+        $finance->user_id = Auth::id();
+        $finance->save();
+
+        $common = [
+            'finance_id' => $finance->id, 'voucher_no' => $finance->voucher_no, 'voucher_type' => 'JV',
+            'reference_no' => $finance->reference_no, 'reference_date' => $date,
+            'currency' => $finance->currency, 'exchange_rate' => $rate, 'base_currency' => 'SAR',
+            'job_id' => $jv->job_id, 'job_no' => $jv->job_no ?? '', 'company_id' => $jv->company_id, 'user_id' => Auth::id(),
+            'is_tax_line' => 0, 'is_auto_generated' => 1, 'linked_id' => $jv->id, 'linked_type' => JournalVoucher::class,
+            'created_at' => now(), 'updated_at' => now(),
+        ];
+
+        $subs = [];
+        foreach ($jv->journalVoucherItems as $item) {
+            $party = [
+                'customer_id' => $item->entity_type === 'customer' ? $item->entity_id : null,
+                'supplier_id' => $item->entity_type === 'supplier' ? $item->entity_id : null,
+            ];
+            $debit = (float) $item->debit_amount;
+            $credit = (float) $item->credit_amount;
+            $tax = min((float) $item->tax_amount, max($debit, $credit));
+            $line = fn (float $d, float $c, int $account, string $desc, int $isTax) => array_merge($common, $party, [
+                'account_id' => $account, 'description' => $desc, 'debit' => $d, 'credit' => $c,
+                'base_debit' => $d * $rate, 'base_credit' => $c * $rate, 'is_tax_line' => $isTax,
+            ]);
+            $desc = $item->description ?: 'Journal Voucher ' . $jv->row_no;
+
+            if ($tax > 0 && $item->tax_id) {
+                $subs[] = $line($debit ? $debit - $tax : 0, $credit ? $credit - $tax : 0, (int) $item->account_id, $desc, 0);
+                $subs[] = $line($debit ? $tax : 0, $credit ? $tax : 0, (int) $item->tax_id, 'VAT - ' . $desc, 1);
+            } else {
+                $subs[] = $line($debit, $credit, (int) $item->account_id, $desc, 0);
+            }
+        }
+        FinanceSub::insert($subs);
+    }
+
+    private function removeFromLedger($journalVoucherId): void
+    {
+        foreach (Finance::where('linked_id', $journalVoucherId)->where('linked_type', JournalVoucher::class)->get() as $finance) {
+            FinanceSub::where('finance_id', $finance->id)->delete();
+            $finance->delete();
+        }
     }
 
     /**

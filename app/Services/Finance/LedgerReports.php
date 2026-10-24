@@ -215,7 +215,7 @@ class LedgerReports
 
     /**
      * Detail lines of the Input Tax ($side 'input': debit - credit) or Output Tax ($side 'output': credit - debit) report,
-     * in the document currency like the screens always did.
+     * in company currency (SAR): the VAT return is always filed in SAR, so a USD invoice shows its SAR VAT.
      */
     public static function taxLines(string $side, string $start, string $end, ?string $search = null): array
     {
@@ -226,7 +226,7 @@ class LedgerReports
         $lines = [];
         $total = 0;
         foreach ($rows as $r) {
-            $amount = $input ? $r->debit - $r->credit : $r->credit - $r->debit;
+            $amount = $input ? $r->base_debit - $r->base_credit : $r->base_credit - $r->base_debit;
             if ($amount == 0) {
                 continue;
             }
@@ -251,8 +251,8 @@ class LedgerReports
     {
         $input = $side === 'input';
         $q = self::taxQuery($start, $end)->where('account_code', $input ? self::INPUT_VAT : self::OUTPUT_VAT);
-        $debit = (clone $q)->sum('debit');
-        $credit = (clone $q)->sum('credit');
+        $debit = (clone $q)->sum('base_debit');
+        $credit = (clone $q)->sum('base_credit');
 
         return [
             'total' => $input ? $debit - $credit : $credit - $debit,
