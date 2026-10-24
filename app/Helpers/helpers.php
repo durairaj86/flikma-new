@@ -503,3 +503,12 @@ function docNumber($doc, string $prefix = ''): string
     $status = $doc->status instanceof \BackedEnum ? $doc->status->value : $doc->status;
     return (int) $status === 1 ? __('Draft') : $prefix . $doc->row_no;
 }
+
+
+/** The number to show for a customer invoice: a draft has no real number yet, so it always reads DRAFT. */
+function invoiceNumberLabel($invoice): string
+{
+    $status = $invoice->status instanceof \BackedEnum ? $invoice->status->value : $invoice->status;
+
+    return (int) $status === \App\Enums\CustomerInvoiceEnum::DRAFT->value ? 'DRAFT' : (string) ($invoice->row_no ?: '-');
+}

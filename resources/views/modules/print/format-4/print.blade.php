@@ -119,7 +119,7 @@
 
     <table class="grid tg-meta-table">
         <tr>
-            <td><b>Invoice No.</b>{{ $customerInvoice->row_no }}</td>
+            <td><b>Invoice No.</b>{{ invoiceNumberLabel($customerInvoice) }}</td>
             <td><b>Invoice Date</b>{{ \Carbon\Carbon::parse($customerInvoice->invoice_date)->format('d-M-Y') }}@if(\Carbon\Carbon::parse($customerInvoice->invoice_date)->isToday())<span data-toggle="show_time" style="{{ ($settings->show_time ?? false) ? '' : 'display:none' }}"> {{ \Carbon\Carbon::parse($customerInvoice->created_at)->format('H:i') }}</span>@endif</td>
             <td><b>Due Date</b>{{ \Carbon\Carbon::parse($customerInvoice->due_date)->format('d-M-Y') }}</td>
             <td><b>Job No.</b>{{ $customerInvoice->job?->row_no }} / {{ \Carbon\Carbon::parse($customerInvoice->job?->posted_at)->format('d-M-Y') }}</td>

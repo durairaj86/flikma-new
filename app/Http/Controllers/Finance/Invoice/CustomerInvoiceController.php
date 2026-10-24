@@ -265,7 +265,7 @@ class CustomerInvoiceController extends Controller
             ->addIndexColumn()
             ->setRowAttr([
                 'data-id' => fn($model) => $model->id,
-                'data-name' => fn($model) => 'Customer Invoice #' . htmlspecialchars($model->invoice_no, ENT_QUOTES, 'UTF-8'),
+                'data-name' => fn($model) => 'Customer Invoice ' . htmlspecialchars((int) $model->status === 1 ? 'DRAFT' : $model->invoice_no, ENT_QUOTES, 'UTF-8'),
                 'class' => 'row-item',
                 'id' => fn($model) => 'customer-invoice-' . strtolower($model->invoice_no ?? $model->id),
             ])

@@ -128,7 +128,7 @@
         <div class="total-section d-flex justify-content-between mt-4">
             <div>
                 @php
-                    $qrData = "Customer Invoice: {$customerInvoice->row_no}\n"
+                    $qrData = "Customer Invoice: " . invoiceNumberLabel($customerInvoice) . "\n"
                         ."Customer: {$customerInvoice->customer->name}\n"
                         ."Date: {$customerInvoice->invoice_date}\n"
                         ."Total: ".amountFormat($customerInvoice->grand_total)." {$customerInvoice->currency}";

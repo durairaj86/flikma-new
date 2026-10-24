@@ -1,7 +1,7 @@
 <div class="px-1">
     <div class="d-flex justify-content-between align-items-start border-bottom pb-3 mb-3">
         <div>
-            <h5 class="fw-bold mb-1">{{ $customerInvoice->row_no }}</h5>
+            <h5 class="fw-bold mb-1">{{ invoiceNumberLabel($customerInvoice) }}</h5>
             <div class="text-muted small">{{ $customerInvoice->customer->name_en ?? '' }}</div>
         </div>
         <div class="text-end">

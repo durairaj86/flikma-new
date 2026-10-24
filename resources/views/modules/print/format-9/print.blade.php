@@ -2,7 +2,7 @@
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
-    <title>Tax Invoice — {{ $customerInvoice->row_no }}</title>
+    <title>Tax Invoice — {{ invoiceNumberLabel($customerInvoice) }}</title>
     <style>
         @font-face {
             font-family: 'Body';
@@ -128,7 +128,7 @@
                     <div class="ar dark-text" style="font-size: 12pt; font-weight: bold; margin-top: 2px;">{{ $docTitleAr }}</div>
                     <div style="font-size: 10pt; margin-top: 8px;">
                         <span class="muted"><span class="ar">رقم الفاتورة</span> / Invoice No:</span>
-                        <strong class="dark-text" style="font-size: 11pt;">{{ $customerInvoice->row_no ?: '-' }}</strong>
+                        <strong class="dark-text" style="font-size: 11pt;">{{ invoiceNumberLabel($customerInvoice) }}</strong>
                     </div>
                     <div style="margin-top:5px"></div>
                 </td>

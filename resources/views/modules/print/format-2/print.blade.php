@@ -726,7 +726,7 @@
                         </div>
                         <div class="metadata-grid-row">
                             <div class="label-english">Invoice No.:</div>
-                            <div class="data-value">{{ $customerInvoice->row_no }}</div>
+                            <div class="data-value">{{ invoiceNumberLabel($customerInvoice) }}</div>
                             <div class="label-arabic">رقم الفاتورة:</div>
                         </div>
                         <div class="metadata-grid-row">

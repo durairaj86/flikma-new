@@ -134,7 +134,7 @@
     </div>
 
     <div class="bb-info-strip">
-        <div class="item"><div class="label">Invoice No.</div><div class="value">{{ $customerInvoice->row_no }}</div></div>
+        <div class="item"><div class="label">Invoice No.</div><div class="value">{{ invoiceNumberLabel($customerInvoice) }}</div></div>
         <div class="item"><div class="label">Invoice Date</div><div class="value">{{ \Carbon\Carbon::parse($customerInvoice->invoice_date)->format('d M Y') }}@if(\Carbon\Carbon::parse($customerInvoice->invoice_date)->isToday())<span data-toggle="show_time" style="{{ ($settings->show_time ?? false) ? '' : 'display:none' }}"> {{ \Carbon\Carbon::parse($customerInvoice->created_at)->format('h:i A') }}</span>@endif</div></div>
         <div class="item"><div class="label">Due Date</div><div class="value">{{ \Carbon\Carbon::parse($customerInvoice->due_date)->format('d M Y') }}</div></div>
         <div class="item"><div class="label">Job No.</div><div class="value">{{ $customerInvoice->job?->row_no }}</div></div>
