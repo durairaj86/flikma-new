@@ -394,6 +394,12 @@
                                                         <label class="form-check-label" for="colDiscount">{{ __('Discount') }}</label>
                                                     </div>
                                                 </div>
+                                                <div class="col-md-4">
+                                                    <div class="form-check mt-2">
+                                                        <input class="form-check-input" type="checkbox" value="" id="colCurrency">
+                                                        <label class="form-check-label" for="colCurrency">{{ __('Currency') }}</label>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -554,6 +560,7 @@
                     colUnit: 'unit',
                     colRate: 'rate',
                     colDiscount: 'discount',
+                    colCurrency: 'currency',
                 };
 
                 function initializeSettings() {
@@ -609,6 +616,7 @@
                         document.getElementById('colUnit').checked = {{ $settings->unit ? 'true' : 'false' }};
                         document.getElementById('colRate').checked = {{ $settings->rate ? 'true' : 'false' }};
                         document.getElementById('colDiscount').checked = {{ $settings->discount ? 'true' : 'false' }};
+                        document.getElementById('colCurrency').checked = {{ ($settings->currency ?? false) ? 'true' : 'false' }};
 
                         // Initialize custom fields from JSON
                         @if(isset($settings->custom_fields) && $settings->custom_fields)
@@ -679,6 +687,7 @@
                         unit: document.getElementById('colUnit').checked ? 1 : 0,
                         rate: document.getElementById('colRate').checked ? 1 : 0,
                         discount: document.getElementById('colDiscount').checked ? 1 : 0,
+                        currency: document.getElementById('colCurrency').checked ? 1 : 0,
                         invoice_details: invoiceDetails,
                         party_details: partyDetails,
                         _token: '{{ csrf_token() }}'

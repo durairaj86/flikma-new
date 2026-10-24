@@ -234,7 +234,7 @@
         <tr>
             <th>Description</th>
             <th data-toggle="hsn_sac" style="{{ ($settings->hsn_sac ?? false) ? '' : 'display:none' }}">HSN/SAC</th>
-            <th class="num" data-toggle="rate" style="{{ ($settings->rate ?? true) ? '' : 'display:none' }}">Rate</th>
+            <th class="num" data-toggle="rate" style="{{ ($settings->rate ?? true) ? '' : 'display:none' }}">Rate</th><th class="num" data-toggle="currency" style="{{ ($settings->currency ?? false) ? '' : 'display:none' }}">Currency</th>
             <th class="num">Qty</th>
             <th data-toggle="unit" style="{{ ($settings->unit ?? true) ? '' : 'display:none' }}">Unit</th>
             <th class="num" data-toggle="discount" style="{{ ($settings->discount ?? false) ? '' : 'display:none' }}">Discount</th>
@@ -254,7 +254,7 @@
                     @endif
                 </td>
                 <td data-toggle="hsn_sac" style="{{ ($settings->hsn_sac ?? false) ? '' : 'display:none' }}">-</td>
-                <td class="num" data-toggle="rate" style="{{ ($settings->rate ?? true) ? '' : 'display:none' }}">{{ amountFormat($items->unit_price) }}</td>
+                <td class="num" data-toggle="rate" style="{{ ($settings->rate ?? true) ? '' : 'display:none' }}">{{ amountFormat($items->unit_price) }}</td><td class="num" data-toggle="currency" style="{{ ($settings->currency ?? false) ? '' : 'display:none' }}">{{ $customerInvoice->currency }}</td>
                 <td class="num">{{ $items->quantity }}</td>
                 <td data-toggle="unit" style="{{ ($settings->unit ?? true) ? '' : 'display:none' }}">{{ $items->unit }}</td>
                 <td class="num" data-toggle="discount" style="{{ ($settings->discount ?? false) ? '' : 'display:none' }}">0.00</td>

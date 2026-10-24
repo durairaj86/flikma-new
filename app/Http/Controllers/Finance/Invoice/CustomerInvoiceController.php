@@ -1037,7 +1037,7 @@ class CustomerInvoiceController extends Controller
         $settings = new \App\Models\Settings\InvoiceSettings($request->only([
             'theme', 'primary_color', 'party_balance', 'free_item_qty', 'item_description', 'alt_unit',
             'show_phone', 'show_time', 'awb_hbl', 'incoterm', 'pol_pod', 'voyage_flight', 'shipment_mode',
-            'carrier', 'hsn_sac', 'unit', 'rate', 'discount',
+            'carrier', 'hsn_sac', 'unit', 'rate', 'discount', 'currency',
         ]));
         $settings->custom_fields = json_encode([
             'invoice_details' => $request->input('invoice_details', []),

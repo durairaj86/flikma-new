@@ -30,6 +30,7 @@ class InvoiceSettings extends Model
         'unit',
         'rate',
         'discount',
+        'currency',
         'custom_fields'
     ];
 
@@ -50,6 +51,7 @@ class InvoiceSettings extends Model
         'unit' => 'boolean',
         'rate' => 'boolean',
         'discount' => 'boolean',
+        'currency' => 'boolean',
         'custom_fields' => 'json',
     ];
 
@@ -83,6 +85,7 @@ class InvoiceSettings extends Model
                     'unit' => true,
                     'rate' => true,
                     'discount' => false,
+                    'currency' => false,
                     'custom_fields' => '[]'
                 ]
             );

@@ -195,7 +195,8 @@
                     data-toggle="unit">UNIT<br><span class="ar" style="font-weight: normal; font-size: 7.5pt; direction: ltr; display: inline-block;">الوحدة</span></th>
                 <th align="right" style="width: 7%;">QTY<br><span class="ar" style="font-weight: normal; font-size: 7.5pt; direction: ltr; display: inline-block;">الكمية</span></th>
                 <th align="right" style="width: 12%;{{ ($settings->rate ?? true) ? '' : 'display:none' }}"
-                    data-toggle="rate">UNIT PRICE<br><span class="ar" style="font-weight: normal; font-size: 7.5pt; direction: ltr; display: inline-block;">سعر الوحدة</span></th>
+                    data-toggle="rate">UNIT PRICE<br><span class="ar" style="font-weight: normal; font-size: 7.5pt; direction: ltr; display: inline-block;">سعر الوحدة</span></th><th align="right" style="width: 6%;{{ ($settings->currency ?? false) ? '' : 'display:none' }}"
+                    data-toggle="currency">Currency<br><span class="ar" style="font-weight: normal;">العملة</span></th>
                 <th align="right" style="width: 8%;{{ ($settings->discount ?? false) ? '' : 'display:none' }}"
                     data-toggle="discount">DISC<br><span class="ar" style="font-weight: normal; font-size: 7.5pt; direction: ltr; display: inline-block;">الخصم</span></th>
                 <th align="right" style="width: 13%;">BEFORE VAT<br><span class="ar" style="font-weight: normal; font-size: 7.5pt; direction: ltr; display: inline-block;">قبل الضريبة</span></th>
@@ -214,7 +215,7 @@
                     <td data-toggle="hsn_sac" style="{{ ($settings->hsn_sac ?? false) ? '' : 'display:none' }}">-</td>
                     <td data-toggle="unit" style="{{ ($settings->unit ?? true) ? '' : 'display:none' }}">{{ $item->unit ?: '-' }}</td>
                     <td align="right">{{ amountFormat($item->quantity) }}</td>
-                    <td align="right" data-toggle="rate" style="{{ ($settings->rate ?? true) ? '' : 'display:none' }}">{{ amountFormat($item->unit_price) }}</td>
+                    <td align="right" data-toggle="rate" style="{{ ($settings->rate ?? true) ? '' : 'display:none' }}">{{ amountFormat($item->unit_price) }}</td><td align="right" data-toggle="currency" style="{{ ($settings->currency ?? false) ? '' : 'display:none' }}">{{ $customerInvoice->currency }}</td>
                     <td align="right" data-toggle="discount" style="{{ ($settings->discount ?? false) ? '' : 'display:none' }}">{{ amountFormat($customerInvoice->discount_total ?? 0) }}</td>
                     <td align="right">{{ amountFormat($item->total) }}</td>
                     <td align="right">{{ rtrim(rtrim(number_format((float) $item->tax_percent, 2), '0'), '.') }}%</td>

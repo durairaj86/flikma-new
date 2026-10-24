@@ -195,7 +195,7 @@ DEBIT_NOTE = {
                 2: '<span class="badge bg-success-subtle text-success-emphasis">Approved</span>',
                 3: '<span class="badge bg-danger-subtle text-danger-emphasis">Cancelled</span>',
             },
-            debitNoteNumber: (row) => `<div class="cell-primary">#${row.row_no ?? ''}</div><div class="mt-1">${DEBIT_NOTE.list.templates.statusBadge[row.status] ?? ''}</div>`,
+            debitNoteNumber: (row) => `<div class="cell-primary fw-bold text-primary debit-note-no-link" style="cursor:pointer;" title="${trans('View details')}">${row.row_no ?? ''}</div><div class="mt-1">${DEBIT_NOTE.list.templates.statusBadge[row.status] ?? ''}</div>`,
 
             supplier: (row) => `<div class="cell-primary">${row.supplier?.name_en ?? '—'}</div><div class="cell-secondary">${row.supplier?.row_no ?? ''}</div>`,
 
@@ -221,23 +221,18 @@ DEBIT_NOTE = {
             },
             view(row) {
                 $('#row_view').off().on('click', function () {
-                    let recordId = row.attr('data-id');
-                    let recordName = row.attr('data-name') || 'Debit Note';
-
-                    // Update drawer subtitle
-                    $('#drawerSubtitle').text(recordName);
-
-                    // Show drawer
-                    let drawer = bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer'));
-                    drawer.show();
-
-                    // Load overview content
-                    $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
-                    $.get('/adjustment/debit-note/' + recordId + '/overview', function (data) {
-                        $('#moduleOverview').html(data);
-                    }).fail(function () {
-                        $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load debit note details.</div>');
-                    });
+                    DEBIT_NOTE.list.actions.openDrawer(row.attr('data-id'), row.attr('data-name'));
+                });
+            },
+            /** The details drawer (same one the row menu's View opens). */
+            openDrawer(recordId, recordName) {
+                $('#drawerSubtitle').text(recordName || 'Debit Note');
+                bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer')).show();
+                $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
+                $.get('/adjustment/debit-note/' + recordId + '/overview', function (data) {
+                    $('#moduleOverview').html(data);
+                }).fail(function () {
+                    $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load debit note details.</div>');
                 });
             },
         }
@@ -318,3 +313,11 @@ DEBIT_NOTE = {
         },
     },
 }
+
+// the number in the list opens the details drawer
+$(document).off('click.debit_note').on('click.debit_note', '.debit-note-no-link', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const $row = $(this).closest('tr');
+    DEBIT_NOTE.list.actions.openDrawer($row.attr('data-id'), $row.attr('data-name'));
+});

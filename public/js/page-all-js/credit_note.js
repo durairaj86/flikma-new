@@ -195,7 +195,7 @@ CREDIT_NOTE = {
                 2: '<span class="badge bg-success-subtle text-success-emphasis">Approved</span>',
                 3: '<span class="badge bg-danger-subtle text-danger-emphasis">Cancelled</span>',
             },
-            creditNoteNumber: (row) => `<div class="cell-primary">#${row.row_no ?? ''}</div><div class="mt-1">${CREDIT_NOTE.list.templates.statusBadge[row.status] ?? ''}</div>`,
+            creditNoteNumber: (row) => `<div class="cell-primary fw-bold text-primary credit-note-no-link" style="cursor:pointer;" title="${trans('View details')}">${row.row_no ?? ''}</div><div class="mt-1">${CREDIT_NOTE.list.templates.statusBadge[row.status] ?? ''}</div>`,
 
             customer: (row) => `<div class="cell-primary">${row.customer?.name_en ?? '—'}</div><div class="cell-secondary">${row.customer?.row_no ?? ''}</div>`,
 
@@ -222,23 +222,18 @@ CREDIT_NOTE = {
             },
             view(row) {
                 $('#row_view').off().on('click', function () {
-                    let recordId = row.attr('data-id');
-                    let recordName = row.attr('data-name') || 'Credit Note';
-
-                    // Update drawer subtitle
-                    $('#drawerSubtitle').text(recordName);
-
-                    // Show drawer
-                    let drawer = bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer'));
-                    drawer.show();
-
-                    // Load overview content
-                    $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
-                    $.get('/adjustment/credit-note/' + recordId + '/overview', function (data) {
-                        $('#moduleOverview').html(data);
-                    }).fail(function () {
-                        $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load credit note details.</div>');
-                    });
+                    CREDIT_NOTE.list.actions.openDrawer(row.attr('data-id'), row.attr('data-name'));
+                });
+            },
+            /** The details drawer (same one the row menu's View opens). */
+            openDrawer(recordId, recordName) {
+                $('#drawerSubtitle').text(recordName || 'Credit Note');
+                bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer')).show();
+                $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
+                $.get('/adjustment/credit-note/' + recordId + '/overview', function (data) {
+                    $('#moduleOverview').html(data);
+                }).fail(function () {
+                    $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load credit note details.</div>');
                 });
             },
             email(row) {
@@ -404,3 +399,11 @@ CREDIT_NOTE = {
         },
     },
 }
+
+// the number in the list opens the details drawer
+$(document).off('click.credit_note').on('click.credit_note', '.credit-note-no-link', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const $row = $(this).closest('tr');
+    CREDIT_NOTE.list.actions.openDrawer($row.attr('data-id'), $row.attr('data-name'));
+});

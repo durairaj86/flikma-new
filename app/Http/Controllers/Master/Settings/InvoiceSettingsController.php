@@ -44,26 +44,27 @@ class InvoiceSettingsController extends Controller
         $settings->primary_color = $request->input('primary_color', '#16a34a');
 
         // Update boolean settings
-        $settings->party_balance = $request->has('party_balance');
-        $settings->free_item_qty = $request->has('free_item_qty');
-        $settings->item_description = $request->has('item_description');
-        $settings->alt_unit = $request->has('alt_unit');
-        $settings->show_phone = $request->has('show_phone');
-        $settings->show_time = $request->has('show_time');
+        $settings->party_balance = $request->boolean('party_balance');
+        $settings->free_item_qty = $request->boolean('free_item_qty');
+        $settings->item_description = $request->boolean('item_description');
+        $settings->alt_unit = $request->boolean('alt_unit');
+        $settings->show_phone = $request->boolean('show_phone');
+        $settings->show_time = $request->boolean('show_time');
 
         // Invoice details
-        $settings->awb_hbl = $request->has('awb_hbl');
-        $settings->incoterm = $request->has('incoterm');
-        $settings->pol_pod = $request->has('pol_pod');
-        $settings->voyage_flight = $request->has('voyage_flight');
-        $settings->shipment_mode = $request->has('shipment_mode');
-        $settings->carrier = $request->has('carrier');
+        $settings->awb_hbl = $request->boolean('awb_hbl');
+        $settings->incoterm = $request->boolean('incoterm');
+        $settings->pol_pod = $request->boolean('pol_pod');
+        $settings->voyage_flight = $request->boolean('voyage_flight');
+        $settings->shipment_mode = $request->boolean('shipment_mode');
+        $settings->carrier = $request->boolean('carrier');
 
         // Item table columns
-        $settings->hsn_sac = $request->has('hsn_sac');
-        $settings->unit = $request->has('unit');
-        $settings->rate = $request->has('rate');
-        $settings->discount = $request->has('discount');
+        $settings->hsn_sac = $request->boolean('hsn_sac');
+        $settings->unit = $request->boolean('unit');
+        $settings->rate = $request->boolean('rate');
+        $settings->discount = $request->boolean('discount');
+        $settings->currency = $request->boolean('currency');
 
         // Custom fields - structured as JSON
         $customFields = [

@@ -72,7 +72,7 @@ class CreditNoteController extends Controller
 
         // Base query for Credit Notes
         $rows = CreditNote::select(
-            'credit_notes.id as row_no',
+            'credit_notes.row_no as row_no',
             'credit_notes.id as id',
             'posted_at',
             'job_id',
@@ -108,7 +108,7 @@ class CreditNoteController extends Controller
             ->when(isset($filter['customSearch']) && !empty($filter['customSearch']), function ($query) use ($filter) {
                 $search = $filter['customSearch'];
                 $query->where(function ($q) use ($search) {
-                    $q->where('credit_notes.id', 'like', "%{$search}%")
+                    $q->where('credit_notes.row_no', 'like', "%{$search}%")
                         ->orWhere('job_no', 'like', "%{$search}%")
                         ->orWhereHas('customer', function ($q) use ($search) {
                             $q->where('name_en', 'like', "%{$search}%")
@@ -150,7 +150,7 @@ class CreditNoteController extends Controller
             ->when(isset($filter['customSearch']) && !empty($filter['customSearch']), function ($query) use ($filter) {
                 $search = $filter['customSearch'];
                 $query->where(function ($q) use ($search) {
-                    $q->where('credit_notes.id', 'like', "%{$search}%")
+                    $q->where('credit_notes.row_no', 'like', "%{$search}%")
                         ->orWhere('job_no', 'like', "%{$search}%")
                         ->orWhereHas('customer', function ($q) use ($search) {
                             $q->where('name_en', 'like', "%{$search}%")
@@ -201,7 +201,7 @@ class CreditNoteController extends Controller
             ->when(isset($filter['customSearch']) && !empty($filter['customSearch']), function ($query) use ($filter) {
                 $search = $filter['customSearch'];
                 $query->where(function ($q) use ($search) {
-                    $q->where('credit_notes.id', 'like', "%{$search}%")
+                    $q->where('credit_notes.row_no', 'like', "%{$search}%")
                         ->orWhere('job_no', 'like', "%{$search}%")
                         ->orWhereHas('customer', function ($q) use ($search) {
                             $q->where('name_en', 'like', "%{$search}%")
