@@ -175,9 +175,60 @@
                 </div>
             </div>
 
+            {{-- month by month: invoiced, gross profit and the commission it earned --}}
+            <?php
+                $byMonth = collect($sum['months'])->values();
+                $keys = collect($report['rows'])->pluck('month')->merge(
+                    collect(range(0, max(0, $byMonth->count() - 1)))->map(fn ($i) => \Carbon\Carbon::parse($from)->startOfMonth()->addMonths($i)->format('Y-m'))
+                )->unique()->sort()->values();
+                $rowsBy = collect($report['rows'])->groupBy('month');
+                $chart = [
+                    'labels' => $keys->map(fn ($k) => __(\Carbon\Carbon::parse($k . '-01')->format('M')) . ' ' . \Carbon\Carbon::parse($k . '-01')->format('Y'))->all(),
+                    'invoiced' => $keys->map(fn ($k) => round(($rowsBy[$k] ?? collect())->sum('invoiced'), 2))->all(),
+                    'cost' => $keys->map(fn ($k) => round(($rowsBy[$k] ?? collect())->sum('cost'), 2))->all(),
+                    'income' => $keys->map(fn ($k) => round(($rowsBy[$k] ?? collect())->sum('income'), 2))->all(),
+                    'commission' => $keys->map(fn ($k) => round(($rowsBy[$k] ?? collect())->sum('commission'), 2))->all(),
+                    'target' => $sum['target'] > 0 && $keys->count() ? round($sum['target'] / $keys->count(), 2) : null,
+                ];
+            ?>
+            <div class="sc-card mb-4">
+                <div class="sc-h"><i class="bi bi-bar-chart-line text-primary"></i>{{ __('Monthly trend') }}<span class="tag">{{ __('Invoiced, gross profit and commission by invoice month') }}</span></div>
+                <div style="position: relative; height: 300px;"><canvas id="scMonthChart" aria-label="{{ __('Monthly trend') }}" role="img"></canvas></div>
+            </div>
+
         </div>
     </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+        (function () {
+            const d = @json($chart);
+            const el = document.getElementById('scMonthChart');
+            if (!el || !window.Chart) return;
+            const money = v => Number(v).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            const sets = [
+                {type: 'bar', label: @json(__('Invoiced (ex VAT)')), data: d.invoiced, backgroundColor: '#c7d2fe', borderRadius: 4, order: 1},
+                {type: 'bar', label: @json(__('Job cost')), data: d.cost, backgroundColor: '#fde68a', borderRadius: 4, order: 1},
+                {type: 'bar', label: @json(__('Gross profit')), data: d.income, backgroundColor: '#4f46e5', borderRadius: 4, order: 1},
+                {type: 'line', label: @json(__('Commission')), data: d.commission, borderColor: '#16a34a', backgroundColor: '#16a34a', yAxisID: 'y2', tension: .3, pointRadius: 4, order: 0},
+            ];
+            if (d.target) sets.push({type: 'line', label: @json(__('Monthly target')), data: d.labels.map(() => d.target), borderColor: '#f59e0b', borderDash: [6, 4], pointRadius: 0, order: 0});
+            new Chart(el, {
+                data: {labels: d.labels, datasets: sets},
+                options: {
+                    responsive: true, maintainAspectRatio: false, interaction: {mode: 'index', intersect: false},
+                    plugins: {legend: {position: 'bottom', labels: {usePointStyle: true, boxWidth: 8}},
+                        tooltip: {callbacks: {label: c => c.dataset.label + ': ' + money(c.parsed.y)}}},
+                    scales: {
+                        x: {grid: {display: false}},
+                        y: {beginAtZero: true, ticks: {callback: v => money(v).replace(/\.00$/, '')}, grid: {color: '#f1f3f6'}},
+                        y2: {beginAtZero: true, position: 'right', grid: {display: false}, title: {display: true, text: @json(__('Commission'))},
+                            ticks: {callback: v => money(v).replace(/\.00$/, '')}},
+                    },
+                },
+            });
+        })();
+    </script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             if (window.initTomSelectForm && window.jQuery) initTomSelectForm($('.sc-filters'));

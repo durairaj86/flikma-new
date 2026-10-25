@@ -3643,5 +3643,8 @@
     "Customer Wise Commission": "العمولة حسب العميل",
     "Customer wise sales commission": "عمولة المبيعات حسب العميل",
     "Invoice Wise Sales": "المبيعات حسب الفاتورة",
-    "Invoiced, cost and gross profit per invoice": "المفوتر والتكلفة وإجمالي الربح لكل فاتورة"
+    "Invoiced, cost and gross profit per invoice": "المفوتر والتكلفة وإجمالي الربح لكل فاتورة",
+    "Monthly trend": "الاتجاه الشهري",
+    "Invoiced, gross profit and commission by invoice month": "المفوتر وإجمالي الربح والعمولة حسب شهر الفاتورة",
+    "Monthly target": "الهدف الشهري"
 }
