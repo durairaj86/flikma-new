@@ -26,7 +26,7 @@
 
                             <!-- Right side - Settings -->
                             <div class="col-md-6">
-                                <div class="d-flex justify-content-between align-items-center px-4 px-md-5 py-3 border-bottom bg-white sticky-top" style="top: 0; z-index: 10;">
+                                <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom bg-white sticky-top" style="top: 0; z-index: 10;">
                                     <span id="unsaved-indicator" class="small text-warning fw-medium" style="display:none;"><i class="bi bi-circle-fill me-1" style="font-size:6px;"></i>{{ __('Unsaved changes') }}</span>
                                     <span id="saved-indicator" class="small text-success fw-medium"><i class="bi bi-check-circle me-1"></i>{{ __('Saved') }}</span>
                                     <button type="button" id="saveSettingsBtn" class="btn btn-primary btn-sm px-4 fw-bold ms-auto">
@@ -34,19 +34,30 @@
                                     </button>
                                 </div>
                                 <div class="overflow-auto" style="max-height: 78vh;">
-                                    <div class="p-4 p-md-5 border-bottom">
-                                        <h5 class="fw-bold mb-4 text-primary d-flex align-items-center"><i class="bi bi-palette me-2"></i> {{ __('Design & Branding') }}</h5>
+                                    <div class="px-3 pt-3 pb-3 border-bottom">
+                                        <h5 class="fw-bold mb-3 text-primary d-flex align-items-center"><i class="bi bi-palette me-2"></i> {{ __('Design & Branding') }}</h5>
 
-                                <div class="mb-4 pb-4 border-bottom">
-                                    <div class="d-flex align-items-center mb-3">
-                                        <label class="form-check-label radio-container d-flex align-items-center me-3" for="defaultThemeRadio">
-                                            <input class="form-check-input" type="radio" name="themeMode" id="defaultThemeRadio" checked>
-                                            <span class="fw-bold fs-6 ms-2">{{ __('Select Default Theme') }}</span>
-                                        </label>
-                                    </div>
+                                <div class="mb-0 pb-0"> {{-- no divider / gap below while the accent colour picker is hidden --}}
 
+                                                                        <div class="modal fade" id="themeZoomModal" tabindex="-1" aria-hidden="true">
+                                                                            <div class="modal-dialog modal-dialog-centered" style="max-width: 640px;">
+                                                                                <div class="modal-content">
+                                                                                    <div class="modal-header py-2">
+                                                                                        <h6 class="modal-title" id="themeZoomTitle"></h6>
+                                                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                                    </div>
+                                                                                    <div class="modal-body p-2 text-center" style="max-height: 80vh; overflow:auto;">
+                                                                                        <img id="themeZoomImg" src="" alt="" style="width:100%; height:auto;">
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
                                                                         <style>
-                                                                            .theme-show { align-items: stretch; }
+                                                                            /* all templates in one row */
+                                                                            .theme-show { display: grid !important; grid-template-columns: repeat(5, minmax(78px, 1fr)); gap: .3rem !important; align-items: stretch; overflow-x: auto; padding-bottom: .5rem; }
+                                                                            .theme-show .theme { padding: .2rem !important; }
+                                                                            .theme-show .theme-name { font-size: .68rem; line-height: 1.2; min-height: 2.4em; }
+                                                                            .theme-show .theme-zoom { top: 2px !important; right: 2px !important; padding: 0 4px !important; font-size: .7rem; }
                                                                             .theme-show .theme-container { display: flex; }
                                                                             .theme-show .theme { display: flex; flex-direction: column; flex: 1 1 auto; }
                                                                             .theme-show .theme-name { min-height: 2.8em; display: flex; align-items: flex-end; justify-content: center; text-align: center; }
@@ -55,107 +66,61 @@
 
 
                                                                         <div class="d-flex flex-wrap theme-show gap-3 pt-2">
-                                        <div class="theme-container" style="width: 140px;">
+                                        <div class="theme-container">
                                             <div class="theme active border border-primary p-2 rounded-3 text-center shadow-sm" data-theme="stylish" style="cursor:pointer; transform: translateY(-3px);">
-                                                <div class="image-container" style="height: 80px; display:flex; align-items:center; justify-content:center;">
-                                                    <svg viewBox="0 0 100 80" width="100%" height="100%" style="max-height:100%;">
-                                                        <rect x="4" y="4" width="92" height="72" fill="#fff" stroke="#333" stroke-width="1.5"/>
-                                                        <rect x="4" y="4" width="92" height="14" fill="none" stroke="#333" stroke-width="1"/>
-                                                        <text x="50" y="13" font-size="7" font-weight="700" text-anchor="middle" fill="#333">TAX INVOICE</text>
-                                                        <line x1="4" y1="30" x2="96" y2="30" stroke="#999" stroke-width="0.5"/>
-                                                        <line x1="4" y1="38" x2="96" y2="38" stroke="#999" stroke-width="0.5"/>
-                                                        <rect x="8" y="46" width="84" height="8" fill="#e0e0e0"/>
-                                                        <line x1="8" y1="58" x2="92" y2="58" stroke="#ccc" stroke-width="0.5"/>
-                                                        <line x1="8" y1="64" x2="92" y2="64" stroke="#ccc" stroke-width="0.5"/>
-                                                    </svg>
+                                                <div class="image-container position-relative" style="display:block;">
+                                                    <img src="{{ asset('images/invoice-themes/stylish.png') }}" alt="{{ __('Print preview') }}" loading="lazy"
+                                                         style="display:block; width:100%; height:auto; border:1px solid #e5e7eb; border-radius:4px; background:#fff;">
+                                                    <button type="button" class="btn btn-sm btn-light border position-absolute theme-zoom" style="top:4px; right:4px; padding:1px 6px; line-height:1.2;"
+                                                            data-theme-zoom="stylish" title="{{ __('View larger') }}"><i class="bi bi-zoom-in"></i></button>
                                                 </div>
                                                 <div class="theme-name small fw-medium mt-2 text-primary">{{ __('Stylish') }}</div>
                                             </div>
                                         </div>
 
-                                        <div class="theme-container" style="width: 140px;">
+                                        <div class="theme-container">
                                             <div class="theme border p-2 rounded-3 text-center" data-theme="bilingual" style="cursor:pointer;">
-                                                <div class="image-container" style="height: 80px; display:flex; align-items:center; justify-content:center;">
-                                                    <svg viewBox="0 0 100 80" width="100%" height="100%" style="max-height:100%;">
-                                                        <rect x="4" y="4" width="92" height="72" fill="#fff" stroke="#2FA36B" stroke-width="1.5"/>
-                                                        <text x="50" y="14" font-size="6.5" font-weight="700" text-anchor="middle" fill="#2FA36B">فاتورة ضريبية</text>
-                                                        <text x="50" y="21" font-size="5" text-anchor="middle" fill="#2FA36B">TAX INVOICE</text>
-                                                        <rect x="66" y="8" width="26" height="12" rx="2" fill="#2FA36B"/>
-                                                        <line x1="4" y1="25" x2="96" y2="25" stroke="#2FA36B" stroke-width="1.5"/>
-                                                        <rect x="8" y="29" width="38" height="16" rx="2" fill="none" stroke="#2FA36B" stroke-width="0.75"/>
-                                                        <rect x="54" y="29" width="38" height="16" rx="2" fill="none" stroke="#2FA36B" stroke-width="0.75"/>
-                                                        <rect x="8" y="49" width="84" height="7" fill="#2FA36B"/>
-                                                        <line x1="8" y1="60" x2="92" y2="60" stroke="#e5e7eb" stroke-width="0.5"/>
-                                                        <line x1="8" y1="66" x2="92" y2="66" stroke="#e5e7eb" stroke-width="0.5"/>
-                                                        <rect x="8" y="70" width="84" height="4" fill="#2FA36B"/>
-                                                    </svg>
+                                                <div class="image-container position-relative" style="display:block;">
+                                                    <img src="{{ asset('images/invoice-themes/bilingual.png') }}" alt="{{ __('Print preview') }}" loading="lazy"
+                                                         style="display:block; width:100%; height:auto; border:1px solid #e5e7eb; border-radius:4px; background:#fff;">
+                                                    <button type="button" class="btn btn-sm btn-light border position-absolute theme-zoom" style="top:4px; right:4px; padding:1px 6px; line-height:1.2;"
+                                                            data-theme-zoom="bilingual" title="{{ __('View larger') }}"><i class="bi bi-zoom-in"></i></button>
                                                 </div>
                                                 <div class="theme-name small fw-medium mt-2">{{ __('Bilingual') }}</div>
                                             </div>
                                         </div>
 
-                                        <div class="theme-container" style="width: 140px;">
+                                        <div class="theme-container">
                                             <div class="theme border p-2 rounded-3 text-center" data-theme="fastfatoora" style="cursor:pointer;">
-                                                <div class="image-container" style="height: 80px; display:flex; align-items:center; justify-content:center;">
-                                                    <svg viewBox="0 0 100 80" width="100%" height="100%" style="max-height:100%;">
-                                                        <rect x="4" y="4" width="92" height="72" fill="#fff" stroke="#15803d" stroke-width="1.5"/>
-                                                        <text x="24" y="15" font-size="7" font-weight="700" text-anchor="middle" fill="#15803d">فاتورة ضريبية</text>
-                                                        <text x="24" y="22" font-size="5.5" text-anchor="middle" fill="#15803d">TAX INVOICE</text>
-                                                        <rect x="64" y="9" width="28" height="14" rx="2" fill="#15803d"/>
-                                                        <text x="78" y="18" font-size="5" font-weight="700" text-anchor="middle" fill="#fff">INV. NO.</text>
-                                                        <rect x="8" y="28" width="84" height="7" fill="#15803d"/>
-                                                        <line x1="8" y1="38" x2="92" y2="38" stroke="#e5e7eb" stroke-width="0.5"/>
-                                                        <line x1="8" y1="44" x2="92" y2="44" stroke="#e5e7eb" stroke-width="0.5"/>
-                                                        <rect x="52" y="50" width="40" height="14" rx="2" fill="none" stroke="#15803d" stroke-width="0.75"/>
-                                                        <rect x="72" y="52" width="14" height="10" fill="#111" opacity="0.85"/>
-                                                        <rect x="8" y="70" width="84" height="4" fill="#15803d"/>
-                                                    </svg>
+                                                <div class="image-container position-relative" style="display:block;">
+                                                    <img src="{{ asset('images/invoice-themes/fastfatoora.png') }}" alt="{{ __('Print preview') }}" loading="lazy"
+                                                         style="display:block; width:100%; height:auto; border:1px solid #e5e7eb; border-radius:4px; background:#fff;">
+                                                    <button type="button" class="btn btn-sm btn-light border position-absolute theme-zoom" style="top:4px; right:4px; padding:1px 6px; line-height:1.2;"
+                                                            data-theme-zoom="fastfatoora" title="{{ __('View larger') }}"><i class="bi bi-zoom-in"></i></button>
                                                 </div>
                                                 <div class="theme-name small fw-medium mt-2">{{ __('FastFatoora Style') }}</div>
                                             </div>
                                         </div>
 
-                                        <div class="theme-container" style="width: 140px;">
+                                        <div class="theme-container">
                                             <div class="theme border p-2 rounded-3 text-center" data-theme="ai-fatoora" style="cursor:pointer;">
-                                                <div class="image-container" style="height: 80px; display:flex; align-items:center; justify-content:center;">
-                                                    <svg viewBox="0 0 100 80" width="100%" height="100%" style="max-height:100%;">
-                                                        <rect x="4" y="4" width="92" height="72" fill="#fff" stroke="#0f2a52" stroke-width="1.5"/>
-                                                        <rect x="4" y="4" width="56" height="18" fill="#0f2a52"/>
-                                                        <text x="32" y="12" font-size="4.5" fill="#fff" text-anchor="middle" opacity="0.85">TAX INVOICE فاتورة ضريبية</text>
-                                                        <text x="32" y="19" font-size="5.5" font-weight="700" fill="#fff" text-anchor="middle">COMPANY NAME</text>
-                                                        <rect x="66" y="6" width="28" height="16" fill="none" stroke="#0f2a52" stroke-width="0.75"/>
-                                                        <rect x="4" y="22" width="92" height="1.5" fill="#b8860b"/>
-                                                        <rect x="8" y="27" width="40" height="18" fill="none" stroke="#0f2a52" stroke-width="0.75"/>
-                                                        <rect x="8" y="27" width="40" height="2" fill="#0f2a52"/>
-                                                        <rect x="54" y="27" width="38" height="18" fill="none" stroke="#0f2a52" stroke-width="0.75"/>
-                                                        <rect x="54" y="27" width="38" height="2" fill="#0f2a52"/>
-                                                        <rect x="8" y="49" width="84" height="7" fill="#0f2a52"/>
-                                                        <line x1="8" y1="60" x2="92" y2="60" stroke="#e5e7eb" stroke-width="0.5"/>
-                                                        <line x1="8" y1="66" x2="92" y2="66" stroke="#e5e7eb" stroke-width="0.5"/>
-                                                        <line x1="4" y1="72" x2="96" y2="72" stroke="#0f2a52" stroke-width="1.5"/>
-                                                    </svg>
+                                                <div class="image-container position-relative" style="display:block;">
+                                                    <img src="{{ asset('images/invoice-themes/ai-fatoora.png') }}" alt="{{ __('Print preview') }}" loading="lazy"
+                                                         style="display:block; width:100%; height:auto; border:1px solid #e5e7eb; border-radius:4px; background:#fff;">
+                                                    <button type="button" class="btn btn-sm btn-light border position-absolute theme-zoom" style="top:4px; right:4px; padding:1px 6px; line-height:1.2;"
+                                                            data-theme-zoom="ai-fatoora" title="{{ __('View larger') }}"><i class="bi bi-zoom-in"></i></button>
                                                 </div>
                                                 <div class="theme-name small fw-medium mt-2">{{ __('AI Fatoora') }}</div>
                                             </div>
                                         </div>
 
-                                        <div class="theme-container" style="width: 140px;">
+                                        <div class="theme-container">
                                             <div class="theme border p-2 rounded-3 text-center" data-theme="fastfatoora-classic" style="cursor:pointer;">
-                                                <div class="image-container" style="height: 80px; display:flex; align-items:center; justify-content:center;">
-                                                    <svg viewBox="0 0 100 80" width="100%" height="100%" style="max-height:100%;">
-                                                        <rect x="4" y="4" width="92" height="72" fill="#fff" stroke="#0d9488" stroke-width="1.5"/>
-                                                        <text x="8" y="14" font-size="7" font-weight="700" letter-spacing="0.5" fill="#0d9488">TAX INVOICE</text>
-                                                        <text x="8" y="20" font-size="4.5" fill="#9ca3af">فاتورة ضريبية</text>
-                                                        <rect x="8" y="23" width="84" height="2.5" fill="#0d9488"/>
-                                                        <line x1="8" y1="30" x2="48" y2="30" stroke="#e5e7eb" stroke-width="0.75"/>
-                                                        <line x1="54" y1="30" x2="92" y2="30" stroke="#e5e7eb" stroke-width="0.75"/>
-                                                        <line x1="8" y1="42" x2="92" y2="42" stroke="#0d9488" stroke-width="1.25"/>
-                                                        <line x1="8" y1="48" x2="92" y2="48" stroke="#f3f4f6" stroke-width="0.5"/>
-                                                        <line x1="8" y1="55" x2="92" y2="55" stroke="#f3f4f6" stroke-width="0.5"/>
-                                                        <line x1="52" y1="61" x2="92" y2="61" stroke="#0d9488" stroke-width="1.25"/>
-                                                        <line x1="8" y1="70" x2="92" y2="70" stroke="#e5e7eb" stroke-width="0.5"/>
-                                                        <rect x="8" y="73" width="84" height="2" fill="#0d9488"/>
-                                                    </svg>
+                                                <div class="image-container position-relative" style="display:block;">
+                                                    <img src="{{ asset('images/invoice-themes/fastfatoora-classic.png') }}" alt="{{ __('Print preview') }}" loading="lazy"
+                                                         style="display:block; width:100%; height:auto; border:1px solid #e5e7eb; border-radius:4px; background:#fff;">
+                                                    <button type="button" class="btn btn-sm btn-light border position-absolute theme-zoom" style="top:4px; right:4px; padding:1px 6px; line-height:1.2;"
+                                                            data-theme-zoom="fastfatoora-classic" title="{{ __('View larger') }}"><i class="bi bi-zoom-in"></i></button>
                                                 </div>
                                                 <div class="theme-name small fw-medium mt-2">{{ __('FastFatoora Classic Print') }}</div>
                                             </div>
@@ -164,7 +129,8 @@
 
                                 </div>
 
-                                <div class="select-color pt-3">
+                                {{-- accent colour picker: hidden for now, kept for later --}}
+                                <div class="select-color pt-3 d-none">
                                     <div class="fw-bold fs-6 mb-3">{{ __('Select Primary Accent Color') }}</div>
                                     @php
                                         // Tailwind palette (600 shades; slate-900 for black). The first one is the default.
@@ -184,7 +150,7 @@
                                 </div>
                             </div>
 
-                            <div class="p-4 p-md-5 border-bottom">
+                            <div class="px-3 py-4 border-bottom">
                                 <h5 class="fw-bold mb-4 text-primary d-flex align-items-center"><i class="bi bi-gear me-2"></i> {{ __('Display Options') }}</h5>
 
                                 <div class="row g-3">
@@ -259,7 +225,7 @@
                                 </div>
                             </div>
 
-                            <div class="p-4 p-md-5">
+                            <div class="px-3 py-4">
                                 <h5 class="fw-bold mb-4 text-primary d-flex align-items-center"><i class="bi bi-sliders me-2"></i> {{ __('Advanced Invoice Structure') }}</h5>
 
                                 <div class="card mb-3 border-secondary border-opacity-25">
@@ -415,6 +381,17 @@
                     });
 
                     // Add event listeners for theme selection
+                    // magnifier on a template thumbnail: shows the print preview large, without selecting the template
+                    document.querySelectorAll('[data-theme-zoom]').forEach(function(btn) {
+                        btn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            const card = this.closest('.theme');
+                            document.getElementById('themeZoomImg').src = card.querySelector('img').src;
+                            document.getElementById('themeZoomTitle').textContent = card.querySelector('.theme-name').textContent.trim();
+                            bootstrap.Modal.getOrCreateInstance(document.getElementById('themeZoomModal')).show();
+                        });
+                    });
+
                     document.querySelectorAll('.theme').forEach(function(theme) {
                         theme.addEventListener('click', function() {
                             document.querySelectorAll('.theme').forEach(function(t) {
