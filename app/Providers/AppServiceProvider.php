@@ -23,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // users.last_login: shown in the users list and counted on the admin dashboard
         \Illuminate\Support\Facades\Event::listen(\Illuminate\Auth\Events\Login::class, function ($event) {
+            if (session('impersonating')) return;   // an admin using "Login as" is not the user signing in
             \Illuminate\Support\Facades\DB::table('users')->where('id', $event->user->getAuthIdentifier())->update(['last_login' => now()]);
         });
 

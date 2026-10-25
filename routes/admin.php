@@ -22,12 +22,17 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('login', [LoginController::class, 'login'])->name('login.submit');
     });
 
+    // leaving "Login as": the signed-in user is the company user then, not the admin
+    Route::post('leave-impersonation', [CompanyController::class, 'leaveImpersonation'])->middleware('auth')->name('companies.leave-impersonation');
+
     Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
         Route::get('companies', [CompanyController::class, 'index'])->name('companies.index');
+        Route::get('companies/{company}', [CompanyController::class, 'show'])->name('companies.show');
+        Route::get('companies/{company}/impersonate', [CompanyController::class, 'impersonate'])->name('companies.impersonate');
 
         Route::prefix('enquiries')->name('enquiries.')->group(function () {
             Route::get('/', [EnquiryController::class, 'index'])->name('index');
