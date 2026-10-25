@@ -4,6 +4,20 @@
     <meta charset="UTF-8">
     <title>Tax Invoice — {{ invoiceNumberLabel($customerInvoice) }}</title>
     <style>
+
+        .repeat-wrap { border-collapse: collapse; height: calc(100vh - 24px); }
+        .repeat-wrap > thead { display: table-header-group; }
+        .repeat-wrap > tfoot { display: table-footer-group; }
+        .repeat-wrap > tbody > tr > td { height: 100%; }
+        .cell-pad td { padding: 5px 8px; }
+        /* the closing blocks move to the next page whole */
+        .keep-together, .keep-together > tbody > tr { page-break-inside: avoid; break-inside: avoid; }
+        /* print: the footer bar is fixed to the bottom of every page (the tfoot cell keeps the content clear of it) */
+        @media print {
+            .repeat-wrap > tfoot > tr > td.foot-spacer { height: 46px; }
+            .page-foot { position: fixed; bottom: 0; left: 24px; right: 24px; margin-top: 0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+
         @font-face {
             font-family: 'Body';
             src: url('file://{{ public_path('fonts/LiberationSans-Regular.ttf') }}');
@@ -33,8 +47,8 @@
         .ar, [class*="-ar"] { font-family: 'NotoArabic', 'Body', Arial, sans-serif !important; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Body', 'NotoArabic', Arial, sans-serif; color: #1f2937; font-size: 9.5pt; line-height: 1.2; background: #ffffff; }
-        @page { margin: 0; }
-        .paper { width: 100%; min-height: 100vh; padding: 10px 24px; background: #fff; position: relative; display: flex; flex-direction: column; justify-content: space-between; }
+        @page { margin: 12px 0; }   /* a top margin on every page, so the repeated header never touches the edge */
+        .paper { width: 100%; min-height: calc(100vh - 24px); padding: 0 24px; background: #fff; position: relative; display: flex; flex-direction: column; justify-content: space-between; }
         .ar { direction: rtl; text-align: right; unicode-bidi: embed; }
         .muted { color: #6b7280; }
         .navy { color: var(--accent); }
@@ -62,14 +76,6 @@
     <script id="color-css-template" type="application/json">{!! json_encode($__colorCssTpl) !!}</script>
 </head>
 <body>
-<div class="paper">
-    <div>
-        @if($customerInvoice->status == 1)
-            <div class="watermark">DRAFT</div>
-        @elseif($customerInvoice->status == 4)
-            <div class="watermark" style="color: rgba(200,30,30,0.12);">CANCELLED</div>
-        @endif
-
         @php
             $docTitle = match (true) {
                 $customerInvoice->status == 1 => 'DRAFT INVOICE',
@@ -82,64 +88,58 @@
                 default => 'فاتورة ضريبية',
             };
         @endphp
-
+<div class="paper">
+    <table class="repeat-wrap" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <thead><tr><td style="padding-bottom: 6px;">
         {{-- Header: logo | title | invoice no. box --}}
         <table cellpadding="0" cellspacing="0" border="0" width="100%">
             <tr>
-                <td width="34%" valign="top">
-                    <table cellpadding="0" cellspacing="0" border="0">
-                        <tr>
-                            <td width="42" valign="middle">
-                                @if($company->logo)
-                                    <img src="{{ companyLogo() }}" style="max-width: 38px; max-height: 38px; border-radius: 8px;">
-                                @else
-                                    <div style="width: 38px; height: 38px; background: var(--accent); border-radius: 8px; color: #fff; font-size: 18pt; font-weight: bold; text-align: center; line-height: 38px;">
-                                        {{ strtoupper(substr($company->name ?? 'F', 0, 1)) }}
-                                    </div>
-                                @endif
-                            </td>
-                            <td valign="top" style="padding-left: 6px;">
-                                <div class="navy" style="font-size: 12.5pt; font-weight: bold; line-height: 1.25;">{{ $company->name }}</div>
-                            </td>
-                        </tr>
-                    </table>
+                <td width="30%" valign="middle">
+                    @if($company->logo)
+                        <img src="{{ companyLogo() }}" style="display: block; max-width: 170px; max-height: 56px;">
+                    @else
+                        <div style="width: 42px; height: 42px; background: var(--accent); border-radius: 8px; color: #fff; font-size: 20pt; font-weight: bold; text-align: center; line-height: 42px;">{{ strtoupper(substr($company->name ?? 'F', 0, 1)) }}</div>
+                    @endif
                 </td>
-                <td width="33%" valign="top" align="center" style="padding-top: 6px;">
-                    <div class="ar navy" style="font-size: 16pt; font-weight: bold; line-height: 1.2;">{{ $docTitleAr }}</div>
-                    <div class="navy" style="font-size: 15pt; font-weight: bold; letter-spacing: 1px;">{{ $docTitle }}</div>
-                </td>
-                <td width="33%" valign="top" align="right">
-                    <div style="background: #f4b400; color: var(--accent); border-radius: 6px; padding: 8px 14px; display: inline-block; text-align: center; min-width: 190px;">
-                        <div style="font-size: 7pt; font-weight: bold;"><span class="ar">رقم الفاتورة</span> | INVOICE NO.</div>
-                        <div style="font-size: 12pt; font-weight: bold; margin-top: 3px;">{{ invoiceNumberLabel($customerInvoice) }}</div>
+                <td width="36%" valign="middle" align="center">
+                    <div class="navy" style="font-size: 11.5pt; font-weight: bold; line-height: 1.25;">{{ $company->name }}</div>
+                    <div class="muted" style="font-size: 8pt; line-height: 1.5; margin-top: 2px;">
+                        @if($company->address || $company->city)<div>@if($company->address){{ $company->address }}, @endif{{ $company->city }}</div>@endif
+                        <div>{{ $company->country ?: 'Kingdom of Saudi Arabia' }}</div>
+                        <div data-toggle="show_phone" style="{{ ($settings->show_phone ?? true) ? '' : 'display:none' }}">@if($company->phone)Tel: {{ $company->phone }}@endif</div>
+                        <div>@if($company->email)Email: {{ $company->email }}@endif</div>
                     </div>
                 </td>
-            </tr>
-        </table>
-
-        {{-- Contact info row --}}
-        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 6px; font-size: 8pt;">
-            <tr>
-                <td width="40%" valign="top">
-                    <div class="ar" style="font-size: 8pt;">{{ $company->country ?: 'Kingdom of Saudi Arabia' }}</div>
-                    <div class="muted" style="font-size: 8pt;">
-                        @if($company->address){{ $company->address }}, @endif{{ $company->city }}
+                <td width="34%" valign="middle" align="right">
+                    <div style="display: inline-block; text-align: center;">
+                        <div style="background: #f4b400; color: var(--accent); border-radius: 6px; padding: 8px 14px; text-align: center; min-width: 190px;">
+                            <div style="font-size: 7pt; font-weight: bold;"><span class="ar">رقم الفاتورة</span> | INVOICE NO.</div>
+                            <div style="font-size: 12pt; font-weight: bold; margin-top: 3px;">{{ invoiceNumberLabel($customerInvoice) }}</div>
+                        </div>
                     </div>
                 </td>
-                <td width="20%" valign="top" data-toggle="show_phone" style="{{ ($settings->show_phone ?? true) ? '' : 'display:none' }}">@if($company->phone)Tel: {{ $company->phone }}@endif</td>
-                <td width="25%" valign="top">@if($company->email)Email: {{ $company->email }}@endif</td>
-                <td width="15%" valign="top"></td>
             </tr>
         </table>
 
         <div style="border-top: 1px solid #e5e7eb; margin-top: 10px;"></div>
+
+
+        </td></tr></thead>
+        <tbody><tr><td valign="top">
+    <div>
+        @if($customerInvoice->status == 1)
+            <div class="watermark">DRAFT</div>
+        @elseif($customerInvoice->status == 4)
+            <div class="watermark" style="color: rgba(200,30,30,0.12);">CANCELLED</div>
+        @endif
+
 
         {{-- Bill To / Meta --}}
         <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 6px;">
             <tr>
                 <td width="48%" valign="top">
                     <div style="background: var(--accent); color: #fff; padding: 8px 14px; border-radius: 6px 6px 0 0; font-size: 9pt; font-weight: bold;">
-                        BILL TO <span class="ar">| الفاتورة إلى</span>
+                        BILL TO <span>|</span> <span class="ar">الفاتورة إلى</span>
                     </div>
                     <div style="border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 6px 6px; padding: 14px;">
                         <div style="font-weight: bold; font-size: 9.5pt;">{{ $customerInvoice->customer?->name_en }}</div>
@@ -157,35 +157,41 @@
                                 @endif
                             </tr>
                         </table>
+                        <div style="margin-top: 4px;">@include('modules.print.partials.address-fields')</div>
                     </div>
                 </td>
                 <td width="4%"></td>
                 <td width="48%" valign="top">
-                    <table cellpadding="4" cellspacing="0" border="0" width="100%" style="font-size: 8pt; border: 1px solid #e5e7eb; border-radius: 6px;">
+                    {{-- Document title: top of the right column, level with the Bill To card --}}
+                    <div style="text-align: right; padding-bottom: 6px;">
+                        <div class="ar navy" style="font-size: 15pt; font-weight: bold; line-height: 1.2;">{{ $docTitleAr }}</div>
+                        <div class="navy" style="font-size: 14pt; font-weight: bold; letter-spacing: 1px; line-height: 1.2;">{{ $docTitle }}</div>
+                    </div>
+                    <table class="cell-pad" cellpadding="4" cellspacing="0" border="0" style="font-size: 8pt; width: auto; margin-left: auto;">
                         <tr>
-                            <td class="muted" style="width: 58%; white-space: nowrap;">INVOICE DATE <span class="ar" style="font-size: 7pt;">| تاريخ الفاتورة</span></td>
-                            <td style="width: 4%;">:</td>
-                            <td style="font-weight: bold;">{{ $customerInvoice->invoice_date ? \Carbon\Carbon::parse($customerInvoice->invoice_date)->format('d/m/Y') : '-' }}<span data-toggle="show_time" style="{{ ($settings->show_time ?? false) ? '' : 'display:none' }}"> {{ \Carbon\Carbon::parse($customerInvoice->created_at)->format('H:i') }}</span></td>
+                            <td class="muted" style="white-space: nowrap;">INVOICE DATE <span>|</span> <span class="ar" style="font-size: 7pt;">تاريخ الفاتورة</span></td>
+                            <td style="width: 10px; padding: 5px 4px; text-align: center;">:</td>
+                            <td style="font-weight: bold; text-align: right; white-space: nowrap;">{{ $customerInvoice->invoice_date ? \Carbon\Carbon::parse($customerInvoice->invoice_date)->format('d/m/Y') : '-' }}<span data-toggle="show_time" style="{{ ($settings->show_time ?? false) ? '' : 'display:none' }}"> {{ \Carbon\Carbon::parse($customerInvoice->created_at)->format('H:i') }}</span></td>
                         </tr>
                         <tr>
-                            <td class="muted" style="white-space: nowrap;">DUE DATE <span class="ar" style="font-size: 7pt;">| تاريخ الاستحقاق</span></td>
-                            <td>:</td>
-                            <td style="font-weight: bold;">{{ $customerInvoice->due_date ? \Carbon\Carbon::parse($customerInvoice->due_date)->format('d/m/Y') : '-' }}</td>
+                            <td class="muted" style="white-space: nowrap;">DUE DATE <span>|</span> <span class="ar" style="font-size: 7pt;">تاريخ الاستحقاق</span></td>
+                            <td style="width: 10px; padding: 5px 4px; text-align: center;">:</td>
+                            <td style="font-weight: bold; text-align: right; white-space: nowrap;">{{ $customerInvoice->due_date ? \Carbon\Carbon::parse($customerInvoice->due_date)->format('d/m/Y') : '-' }}</td>
                         </tr>
                         <tr>
-                            <td class="muted" style="white-space: nowrap;">PLACE OF SUPPLY <span class="ar" style="font-size: 7pt;">| مكان التوريد</span></td>
-                            <td>:</td>
-                            <td style="font-weight: bold;">{{ $company->city ?: '-' }}</td>
+                            <td class="muted" style="white-space: nowrap;">PLACE OF SUPPLY <span>|</span> <span class="ar" style="font-size: 7pt;">مكان التوريد</span></td>
+                            <td style="width: 10px; padding: 5px 4px; text-align: center;">:</td>
+                            <td style="font-weight: bold; text-align: right; white-space: nowrap;">{{ $company->city ?: '-' }}</td>
                         </tr>
                         <tr>
-                            <td class="muted" style="white-space: nowrap;">CURRENCY <span class="ar" style="font-size: 7pt;">| العملة</span></td>
-                            <td>:</td>
-                            <td style="font-weight: bold;">{{ $customerInvoice->currency }}</td>
+                            <td class="muted" style="white-space: nowrap;">CURRENCY <span>|</span> <span class="ar" style="font-size: 7pt;">العملة</span></td>
+                            <td style="width: 10px; padding: 5px 4px; text-align: center;">:</td>
+                            <td style="font-weight: bold; text-align: right; white-space: nowrap;">{{ $customerInvoice->currency }}</td>
                         </tr>
                         <tr>
-                            <td class="muted" style="white-space: nowrap;">PAYMENT STATUS <span class="ar" style="font-size: 7pt;">| حالة السداد</span></td>
-                            <td>:</td>
-                            <td>
+                            <td class="muted" style="white-space: nowrap;">PAYMENT STATUS <span>|</span> <span class="ar" style="font-size: 7pt;">حالة السداد</span></td>
+                            <td style="width: 10px; padding: 5px 4px; text-align: center;">:</td>
+                            <td style="text-align: right;">
                                 @if((float) $customerBalance <= 0)
                                     <strong style="color: #15803d;">PAID</strong>
                                 @else
@@ -198,7 +204,7 @@
             </tr>
         </table>
 
-        @include('modules.print.partials.extra-details')
+        @include('modules.print.partials.extra-details', ['splitAddress' => true])
 
         {{-- Line Items --}}
         <table width="100%" cellpadding="0" cellspacing="0" border="0" class="items" style="margin-top: 10px;">
@@ -239,7 +245,7 @@
         </table>
 
         {{-- Total quantity pill --}}
-        <table cellpadding="0" cellspacing="0" border="0" style="margin-top: 10px;">
+        <table class="keep-together" cellpadding="0" cellspacing="0" border="0" style="margin-top: 10px;">
             <tr>
                 <td style="background: #f7f9fc; border: 1px solid #e5e7eb; border-radius: 20px; padding: 6px 16px; font-size: 8.5pt;">
                     <span class="ar muted">إجمالي الكمية</span> : <strong>{{ $customerInvoice->customerInvoiceSubs->sum('quantity') }}</strong> &nbsp;
@@ -248,17 +254,16 @@
             </tr>
         </table>
 
-        {{-- Scan to pay / totals --}}
-        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 6px;">
+        {{-- QR / totals --}}
+        <table class="keep-together" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 6px;">
             <tr>
                 <td width="24%" valign="top">
-                    <div style="border: 2px solid #f4b400; border-radius: 8px; padding: 8px; text-align: center;">
-                        <div class="gold" style="font-size: 7.5pt; font-weight: bold; margin-bottom: 4px;">SCAN TO PAY</div>
+                    <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px; text-align: center;">
                         @include('modules.print.partials.zatca-qr')
                     </div>
                 </td>
                 <td width="38%" valign="top" style="padding-left: 10px;">
-                    <table width="100%" cellpadding="8" cellspacing="0" border="0" style="border: 1px solid #e5e7eb; border-radius: 6px;">
+                    <table class="cell-pad" width="100%" cellpadding="8" cellspacing="0" border="0" style="border: 1px solid #e5e7eb; border-radius: 6px;">
                         <tr style="border-bottom: 1px solid #e5e7eb;">
                             <td style="font-size: 8pt;">TOTAL BEFORE TAX ({{ $customerInvoice->currency }})<br><span class="ar muted" style="font-size: 7.5pt;">الإجمالي قبل الضريبة</span></td>
                             <td align="right" style="font-weight: bold; font-size: 10pt;">{{ amountFormat($customerInvoice->sub_total) }}</td>
@@ -283,10 +288,10 @@
         </table>
 
         {{-- Amount in words --}}
-        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 6px;">
+        <table class="keep-together" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 6px;">
             <tr>
                 <td style="background: #f7f9fc; border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px 14px;">
-                    <div style="font-weight: bold; font-size: 8.5pt;">AMOUNT IN WORDS <span class="ar" style="font-size: 8pt;">| المبلغ كتابة</span></div>
+                    <div style="font-weight: bold; font-size: 8.5pt;">AMOUNT IN WORDS <span>|</span> <span class="ar" style="font-size: 8pt;">المبلغ كتابة</span></div>
                     <div class="ar" style="font-size: 8.5pt; margin-top: 6px;">{{ convert(round((float) $customerInvoice->grand_total, 2), $customerInvoice->currency) }}</div>
                     <div style="font-size: 8.5pt; margin-top: 4px;">{{ amountInWords(round((float) $customerInvoice->grand_total, 2)) }}</div>
                 </td>
@@ -294,10 +299,10 @@
         </table>
 
         {{-- Terms & Conditions --}}
-        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 6px;">
+        <table class="keep-together" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 6px;">
             <tr>
                 <td style="border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px 14px;">
-                    <div style="font-weight: bold; font-size: 8.5pt; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px;">TERMS &amp; CONDITIONS <span class="ar" style="font-size: 8pt;">| الشروط والأحكام</span></div>
+                    <div style="font-weight: bold; font-size: 8.5pt; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px;">TERMS &amp; CONDITIONS <span>|</span> <span class="ar" style="font-size: 8pt;">الشروط والأحكام</span></div>
                     <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 6px; font-size: 8pt;">
                         <tr>
                             <td width="50%" valign="top" style="padding: 2px 8px 2px 0;">&bull; Payment is due within 14 days from the invoice date.</td>
@@ -316,10 +321,10 @@
         </table>
 
         {{-- Bank / Signature --}}
-        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 6px;">
+        <table class="keep-together" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 6px;">
             <tr>
                 <td width="58%" valign="top">
-                    <div style="font-weight: bold; font-size: 9pt;">BANK DETAILS <span class="ar" style="font-size: 8pt;">| بيانات الحساب البنكي</span></div>
+                    <div style="font-weight: bold; font-size: 9pt;">BANK DETAILS <span>|</span> <span class="ar" style="font-size: 8pt;">بيانات الحساب البنكي</span></div>
                     @if($bank)
                         <table cellpadding="2" cellspacing="0" border="0" style="font-size: 8pt; margin-top: 4px;">
                             <tr><td class="muted" style="width: 35%;">BANK NAME</td><td>{{ $bank->name }}</td></tr>
@@ -334,7 +339,7 @@
                 </td>
                 <td width="4%"></td>
                 <td width="38%" valign="top">
-                    <div style="font-weight: bold; font-size: 9pt;">AUTHORISED SIGNATURE <span class="ar" style="font-size: 8pt;">| توقيع معتمد</span></div>
+                    <div style="font-weight: bold; font-size: 9pt;">AUTHORISED SIGNATURE <span>|</span> <span class="ar" style="font-size: 8pt;">توقيع معتمد</span></div>
                     <div style="font-size: 17pt; font-style: italic; font-weight: bold; color: var(--accent); margin-top: 6px;">
                         {{ $company->name }}
                     </div>
@@ -346,9 +351,10 @@
             </tr>
         </table>
     </div>
-
+        </td></tr></tbody>
+        <tfoot><tr><td class="foot-spacer">
     {{-- Footer bar pinned to bottom --}}
-    <div style="background: var(--accent); color: #fff; margin-top: 10px; padding: 8px 16px; border-radius: 6px; font-size: 8pt;">
+    <div class="page-foot" style="background: var(--accent); color: #fff; margin-top: 10px; padding: 8px 16px; border-radius: 6px; font-size: 8pt;">
         <table width="100%" cellpadding="0" cellspacing="0" border="0">
             <tr>
                 <td valign="middle">
@@ -356,11 +362,14 @@
                     @if($company->email)Email: {{ $company->email }}@endif
                 </td>
                 <td valign="middle" align="right">
-                    THANK YOU FOR YOUR BUSINESS! <span class="ar">| شكراً لتعاملكم معنا!</span>
+                    THANK YOU FOR YOUR BUSINESS! <span>|</span> <span class="ar">شكراً لتعاملكم معنا!</span>
                 </td>
             </tr>
         </table>
     </div>
+        </td></tr></tfoot>
+    </table>
+
 </div>
 </body>
 </html>

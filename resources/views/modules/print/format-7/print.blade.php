@@ -165,7 +165,7 @@
                 {{-- Left Side: Company Address --}}
                 <td width="48%" valign="top">
                     <div style="background: var(--accent); color: #fff; padding: 8px 12px; border-radius: 6px 6px 0 0; font-size: 8.5pt; font-weight: bold;">
-                        SUPPLIER <span class="ar">| المورد</span>
+                        SUPPLIER <span>|</span> <span class="ar">المورد</span>
                     </div>
                     <div style="border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 6px 6px; padding: 12px; font-size: 8.5pt; min-height: 135px;">
                         <div style="font-weight: bold; font-size: 9pt;">{{ $company->name }}</div>
@@ -194,7 +194,7 @@
                 {{-- Right Side: Bill To --}}
                 <td width="48%" valign="top">
                     <div style="background: var(--accent); color: #fff; padding: 8px 12px; border-radius: 6px 6px 0 0; font-size: 8.5pt; font-weight: bold;">
-                        BILL TO <span class="ar">| الفاتورة إلى</span>
+                        BILL TO <span>|</span> <span class="ar">الفاتورة إلى</span>
                     </div>
                     <div style="border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 6px 6px; padding: 12px; font-size: 8.5pt; min-height: 135px;">
                         <div style="font-weight: bold; font-size: 9pt;">{{ $customerInvoice->customer?->name_en }}</div>
@@ -346,7 +346,7 @@
                     @if($company->email)Email: {{ $company->email }}@endif
                 </td>
                 <td valign="middle" align="right">
-                    THANK YOU FOR YOUR BUSINESS! <span class="ar">| شكراً لتعاملكم معنا!</span>
+                    THANK YOU FOR YOUR BUSINESS! <span>|</span> <span class="ar">شكراً لتعاملكم معنا!</span>
                 </td>
             </tr>
         </table>
