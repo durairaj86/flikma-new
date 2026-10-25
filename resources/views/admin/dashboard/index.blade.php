@@ -58,7 +58,7 @@
         ['label' => 'Paid, expired', 'value' => number_format($paidExpired), 'sub' => 'need renewal', 'color' => '#dc2626', 'url' => route('admin.companies.index', ['access' => 'paid_expired'])],
         ['label' => 'On trial', 'value' => number_format($onTrial), 'sub' => 'trial running', 'color' => '#2563eb', 'url' => route('admin.companies.index', ['access' => 'trial'])],
         ['label' => 'Total revenue', 'value' => number_format($totalRevenue, 2), 'sub' => 'SAR, paid subscriptions', 'color' => '#4f46e5', 'url' => null],
-        ['label' => 'Logged in today', 'value' => number_format($loginsToday), 'sub' => $failedEmails > 0 ? $failedEmails . ' failed email' . ($failedEmails === 1 ? '' : 's') : 'app users', 'color' => '#0ea5e9', 'url' => $failedEmails > 0 ? route('admin.email-queue.index', ['status' => 'gave_up']) : null],
+        ['label' => 'Logged in today', 'value' => number_format($loginsToday), 'sub' => $failedEmails > 0 ? $failedEmails . ' failed email' . ($failedEmails === 1 ? '' : 's') : 'app users', 'color' => '#0ea5e9', 'url' => route('admin.companies.logged-users-today')],
     ];
     $months = range(1, 12);
     $regSeries = array_map(fn ($m) => (int) ($monthlyCompanyRegistrations[$m] ?? 0), $months);

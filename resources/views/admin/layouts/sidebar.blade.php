@@ -12,8 +12,11 @@
     </a>
 
     <div class="nav-section">Management</div>
-    <a href="{{ route('admin.companies.index') }}" class="nav-item nav-link {{ request()->routeIs('admin.companies.*') ? 'active' : '' }}">
+    <a href="{{ route('admin.companies.index') }}" class="nav-item nav-link {{ request()->routeIs('admin.companies.*') && !request()->routeIs('admin.companies.logged-users-today') ? 'active' : '' }}">
         <i class="bi bi-building"></i> <span>Companies</span>
+    </a>
+    <a href="{{ route('admin.companies.logged-users-today') }}" class="nav-item nav-link {{ request()->routeIs('admin.companies.logged-users-today') ? 'active' : '' }}">
+        <i class="bi bi-person-check"></i> <span>Logged Users Today</span>
     </a>
 
     <div class="nav-section">Communications</div>

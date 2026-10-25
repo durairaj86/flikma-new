@@ -25,6 +25,11 @@ class AppServiceProvider extends ServiceProvider
         \Illuminate\Support\Facades\Event::listen(\Illuminate\Auth\Events\Login::class, function ($event) {
             if (session('impersonating')) return;   // an admin using "Login as" is not the user signing in
             \Illuminate\Support\Facades\DB::table('users')->where('id', $event->user->getAuthIdentifier())->update(['last_login' => now()]);
+            \Illuminate\Support\Facades\DB::table('login_histories')->insert([
+                'user_id' => $event->user->getAuthIdentifier(), 'company_id' => $event->user->company_id ?? null,
+                'ip_address' => request()->ip(), 'user_agent' => (string) request()->userAgent(),
+                'logged_in_at' => now(), 'created_at' => now(), 'updated_at' => now(),
+            ]);
         });
 
         // /log-viewer (System Logs in the admin panel) is for platform admins only

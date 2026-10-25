@@ -122,9 +122,9 @@
             $endsPassed = $endsOn && $endsOn->isPast() && !$endsOn->isToday();
         @endphp
         <div class="cl-row">
-            <div class="cl-avatar">{{ $initials ?: '?' }}</div>
+            <a href="{{ route('admin.companies.show', $company) }}" class="cl-avatar text-decoration-none">{{ $initials ?: '?' }}</a>
             <div class="cl-main">
-                <div class="cl-name">{{ $company->name }}</div>
+                <a href="{{ route('admin.companies.show', $company) }}" class="cl-name text-decoration-none d-block">{{ $company->name }}</a>
                 <div class="cl-meta">
                     @if($company->email)<span><i class="bi bi-envelope"></i> <a href="mailto:{{ $company->email }}" class="text-reset text-decoration-none">{{ $company->email }}</a></span>@endif
                     @if($company->phone)<span>{{ $company->phone }}</span>@endif
@@ -169,6 +169,15 @@
                     {{ $company->last_login_at ? \Carbon\Carbon::parse($company->last_login_at)->diffForHumans() : 'Never' }}
                 </div>
             </div>
+            <div class="cl-actions">
+                <div class="dropdown">
+                    <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">Actions</button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ route('admin.companies.show', $company) }}"><i class="bi bi-eye text-primary me-2"></i>View details</a></li>
+                        <li><a class="dropdown-item" href="{{ route('admin.companies.impersonate', $company) }}" onclick="return confirm('Open the app as {{ addslashes($company->name) }}? You can come back with Return to admin.')"><i class="bi bi-box-arrow-in-right me-2"></i>Login as company</a></li>
+                    </ul>
+                </div>
+            </div>
         </div>
     @empty
         <div class="cl-row justify-content-center text-muted py-5">
@@ -200,9 +209,12 @@
     .cl-col-wide { min-width: 110px; }
     .cl-col-lbl { font-size: .66rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: #9ca3af; }
     .cl-col-val { font-size: .85rem; font-weight: 600; color: #1f2937; margin-top: 2px; white-space: nowrap; }
+    .cl-name:hover { color: #4f46e5; }
+    .cl-actions { flex: 0 0 auto; margin-left: auto; }
     @media (max-width: 1199.98px) {
         .cl-row { flex-wrap: wrap; gap: 12px 20px; }
         .cl-main { flex-basis: calc(100% - 66px); }
+        .cl-actions { margin-left: 0; }
     }
 </style>
 @endpush

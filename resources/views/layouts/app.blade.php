@@ -209,6 +209,7 @@
     $headerEnabled = headerEnabledForUser();
 @endphp
 <body data-module="@yield('js')" class="@if($headerEnabled) has-top-header @endif">
+@include('includes.impersonation-bar')
 <input type="hidden" value="@yield('extra-js')" id="extra-js">
 @php
     $segments = request()->segments();

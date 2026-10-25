@@ -33,7 +33,8 @@ class DashboardController extends Controller
             ->whereMonth('created_at', now()->subMonthNoOverflow()->month)->count();
 
         // users who signed in to the app today (users.last_login), not counting admins
-        $data['loginsToday'] = DB::table('users')->whereDate('last_login', today())->where('is_admin', false)->count();
+        $data['loginsToday'] = DB::table('users')->where('is_admin', false)
+            ->where(fn ($q) => $q->whereDate('last_login', today())->orWhereDate('last_seen_at', today()))->count();
         $data['failedEmails'] = EmailQueue::where('status', 'failed')->where('attempts', '>=', EmailQueueService::MAX_ATTEMPTS)->count();
 
         $data['recentActivities'] = ActivityLog::with('admin:id,name')->latest()->take(10)->get();

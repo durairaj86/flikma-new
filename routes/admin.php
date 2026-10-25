@@ -31,6 +31,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
         Route::get('companies', [CompanyController::class, 'index'])->name('companies.index');
+        Route::get('companies/logged-users-today', [CompanyController::class, 'loggedUsersToday'])->name('companies.logged-users-today');
         Route::get('companies/{company}', [CompanyController::class, 'show'])->name('companies.show');
         Route::get('companies/{company}/impersonate', [CompanyController::class, 'impersonate'])->name('companies.impersonate');
 

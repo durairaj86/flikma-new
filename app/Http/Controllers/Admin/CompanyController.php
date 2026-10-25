@@ -73,6 +73,38 @@ class CompanyController extends Controller
         return view('admin.companies.index', compact('companies', 'stats', 'filters', 'packages', 'countries'));
     }
 
+    /**
+     * Users active today: anyone who signed in today, plus "remember me" users who did not sign in again but used the
+     * app today (users.last_seen_at, stamped by TrackLastSeen). Platform admins are left out.
+     */
+    public function loggedUsersToday()
+    {
+        $todayLogins = DB::table('login_histories')->whereDate('logged_in_at', today())->groupBy('user_id')
+            ->select('user_id', DB::raw('MAX(logged_in_at) as logged_in_at'), DB::raw('COUNT(*) as login_count'));
+
+        $base = DB::table('users')
+            ->join('companies', 'companies.id', '=', 'users.company_id')
+            ->leftJoinSub($todayLogins, 'today_logins', 'today_logins.user_id', '=', 'users.id')
+            ->where('users.is_admin', false)
+            ->where(fn ($q) => $q->whereNotNull('today_logins.user_id')->orWhereDate('users.last_seen_at', today()));
+
+        $stats = [
+            'active' => (clone $base)->count(),
+            'logged_in' => (clone $base)->whereNotNull('today_logins.user_id')->count(),
+            'remembered' => (clone $base)->whereNull('today_logins.user_id')->count(),
+            'companies' => (clone $base)->distinct()->count('users.company_id'),
+        ];
+
+        $loggedUsersToday = $base->select(
+            'users.id as user_id', 'users.name', 'users.email', 'users.photo_path', 'users.last_login',
+            'companies.id as company_id', 'companies.name as company_name',
+            'today_logins.logged_in_at', 'today_logins.login_count',
+            DB::raw('GREATEST(COALESCE(users.last_seen_at, today_logins.logged_in_at), COALESCE(today_logins.logged_in_at, users.last_seen_at)) as last_active_at')
+        )->orderByDesc('last_active_at')->paginate(25);
+
+        return view('admin.companies.logged-users-today', compact('loggedUsersToday', 'stats'));
+    }
+
     /** One company: details, plan and access, users, latest jobs and invoices (read-only). */
     public function show(Company $company)
     {
