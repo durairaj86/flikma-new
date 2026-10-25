@@ -633,8 +633,24 @@ PAYMENT = {
          }*/
     },
 
+    // Print opens the browser's print preview straight away (hidden frame), instead of opening the voucher in a new tab.
     printPreview: function (id) {
-        window.open(`/${PAYMENT.baseUrl}/${id}/print`, '_blank');
+        let frame = document.getElementById('print-frame');
+        if (!frame) {
+            frame = document.createElement('iframe');
+            frame.id = 'print-frame';
+            frame.style.cssText = 'display:none;';
+            document.body.appendChild(frame);
+        }
+        frame.onload = function () {
+            try {
+                frame.contentWindow.focus();
+                frame.contentWindow.print();
+            } catch (e) {
+                window.open(`/${PAYMENT.baseUrl}/${id}/print`, '_blank');   // the frame cannot be printed here: fall back to a tab
+            }
+        };
+        frame.src = `/${PAYMENT.baseUrl}/${id}/print`;
     },
 
     downloadPDF: function (id) {

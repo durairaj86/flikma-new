@@ -339,7 +339,7 @@ class PaymentController extends Controller
      */
     public function show($id)
     {
-        $payment = Payment::with(['supplier', 'job', 'paymentInvoices.supplierInvoice', 'createdBy', 'approvedBy'])
+        $payment = Payment::with(['supplier', 'job', 'paymentInvoices.supplierInvoice', 'additionalTransactions.account', 'createdBy', 'approvedBy'])
             ->findOrFail($id);
 
         return view('modules.transaction.payment.show', compact('payment'));
@@ -575,7 +575,7 @@ class PaymentController extends Controller
      */
     public function print($id)
     {
-        $payment = Payment::with(['supplier', 'job', 'paymentInvoices.supplierInvoice', 'createdBy', 'approvedBy'])
+        $payment = Payment::with(['supplier', 'job', 'paymentInvoices.supplierInvoice', 'additionalTransactions.account', 'createdBy', 'approvedBy'])
             ->findOrFail($id);
 
         return view('modules.transaction.payment.print', compact('payment'));
@@ -586,7 +586,7 @@ class PaymentController extends Controller
      */
     public function download($id)
     {
-        $payment = Payment::with(['supplier', 'job', 'paymentInvoices.supplierInvoice', 'createdBy', 'approvedBy'])
+        $payment = Payment::with(['supplier', 'job', 'paymentInvoices.supplierInvoice', 'additionalTransactions.account', 'createdBy', 'approvedBy'])
             ->findOrFail($id);
 
         $html = view('modules.transaction.payment.print', compact('payment'))->render();
