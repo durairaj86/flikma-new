@@ -20,11 +20,14 @@
             <div class="border bdr-r-10 pt-0 pb-3">
                 <!-- Table with scroll -->
                 <div class="flex-grow-1">
-                    <table class="table align-middle dataTable" id="dataTable" data-model-size="compact">
+                    <table class="table align-middle dataTable" id="dataTable" data-model-size="smd" data-min-height="min-height:0;">
                         <thead class="table-light sticky-top bg-white">
                         <tr>
                             <th style="width: 10px">#</th>
                             <th>{{ __('Name') }}</th>
+                            <th>{{ __('Commission') }}</th>
+                            <th>{{ __('Late limit') }}</th>
+                            <th class="text-end">{{ __('Monthly target') }}</th>
                             <th>{{ __('Created By') }}</th>
                             <th>{{ __('Created Date') }}</th>
                             <th>{{ __('Status') }}</th>

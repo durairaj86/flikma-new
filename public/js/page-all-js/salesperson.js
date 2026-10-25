@@ -38,6 +38,9 @@ SALESPERSON = {
                 columns: [
                     {data: 'DT_RowIndex', class: 'text-center hide-tooltip fav-index'},
                     {data: 'name'},
+                    {data: 'commission', orderable: false, searchable: false},
+                    {data: 'late_limit', orderable: false, searchable: false},
+                    {data: 'target', class: 'text-end', orderable: false, searchable: false},
                     {data: 'user_id'},
                     {data: 'created_at'},
                     {data: 'status'},
@@ -86,7 +89,7 @@ SALESPERSON = {
                     title: 'Add Salesperson',
                     url: GLOBAL_FN.buildUrl('masters/salesperson/create'),
                     content: null,
-                    size: 'compact',
+                    size: 'smd',
                     callBack: null,
                     minHeight: 'min-height:0;'
                 });

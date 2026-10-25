@@ -16,7 +16,7 @@ class SalespersonController extends Controller
 
     public function fetchAllRows()
     {
-        $rows = Salesperson::select('id', 'name', 'status', 'user_id', 'company_id', 'created_at')->with('user:id,name');
+        $rows = Salesperson::select('id', 'name', 'status', 'user_id', 'company_id', 'created_at', 'commission_type', 'commission_rate', 'late_rate', 'late_days', 'monthly_target', 'commission_slabs')->with('user:id,name');
         return DataTables::eloquent($rows)
             ->addIndexColumn()
             ->setRowAttr([
@@ -25,6 +25,24 @@ class SalespersonController extends Controller
                 'class' => 'row-item',
                 'id' => fn($model) => 'salesperson-' . strtolower($model->row_no ?? $model->id),
             ])
+            // the commission scheme used by the Sales Commission report
+            ->addColumn('commission', function ($row) {
+                $pct = fn ($v) => rtrim(rtrim(number_format((float) $v, 2), '0'), '.') . '%';
+                if ($row->commission_type === 'slab') {
+                    $slabs = $row->commission_slabs ?: [];
+                    if (!$slabs) return '<span class="text-muted">' . e(__('Slab wise')) . ' · ' . e(__('no slabs')) . '</span>';
+                    $rates = collect($slabs)->pluck('rate');
+                    return '<span class="badge bg-primary-subtle text-primary-emphasis me-1">' . e(__('Slab wise')) . '</span>'
+                        . count($slabs) . ' ' . e(__('slabs')) . ' · ' . $pct($rates->min()) . ($rates->min() != $rates->max() ? ' – ' . $pct($rates->max()) : '');
+                }
+                if ($row->commission_rate === null && $row->late_rate === null) return '<span class="text-muted">' . e(__('Not set')) . '</span>';
+                return '<span class="badge bg-success-subtle text-success-emphasis me-1">' . e(__('Flat')) . '</span>'
+                    . $pct($row->commission_rate) . ' <span class="text-muted small">' . e(__('on time')) . '</span> · '
+                    . $pct($row->late_rate) . ' <span class="text-muted small">' . e(__('late')) . '</span>';
+            })
+            ->addColumn('late_limit', fn ($row) => ($row->late_days ?: 120) . ' ' . __('days'))
+            ->addColumn('target', fn ($row) => (float) $row->monthly_target > 0 ? number_format((float) $row->monthly_target, 2) : '<span class="text-muted">—</span>')
+            ->rawColumns(['commission', 'target'])
             ->editColumn('user_id', function ($row) {
                 return $row->user->name;
             })
@@ -54,9 +72,24 @@ class SalespersonController extends Controller
 
     public function store(Request $request)
     {
+        // amounts may be typed with thousands separators
+        $plain = fn ($v) => is_array($v) ? array_map(fn ($x) => is_string($x) ? str_replace(',', '', $x) : $x, $v) : (is_string($v) ? str_replace(',', '', $v) : $v);
+        foreach (['commission_rate', 'late_rate', 'late_days', 'monthly_target', 'slab_from', 'slab_to', 'slab_rate', 'slab_late_rate'] as $k) {
+            if ($request->has($k)) $request->merge([$k => $plain($request->input($k))]);
+        }
+
         // Common validation rules
         $rules = [
             'name' => 'required|string|max:128',
+            'commission_type' => 'nullable|in:flat,slab',
+            'commission_rate' => 'nullable|numeric|min:0|max:100',
+            'late_rate' => 'nullable|numeric|min:0|max:100',
+            'late_days' => 'nullable|integer|min:0|max:3650',
+            'monthly_target' => 'nullable|numeric|min:0',
+            'slab_from.*' => 'nullable|numeric|min:0',
+            'slab_to.*' => 'nullable|numeric|min:0',
+            'slab_rate.*' => 'nullable|numeric|min:0|max:100',
+            'slab_late_rate.*' => 'nullable|numeric|min:0|max:100',
         ];
 
         // Validate request
@@ -75,6 +108,23 @@ class SalespersonController extends Controller
         }
 
         $salesperson->name = $request->input('name');
+
+        // commission scheme (Sales Commission report): flat rates, or slabs picked by the period's gross profit
+        $num = fn ($v) => ($v === null || $v === '') ? null : (float) str_replace(',', '', $v);
+        $salesperson->commission_type = $request->input('commission_type') === 'slab' ? 'slab' : 'flat';
+        $salesperson->commission_rate = $num($request->input('commission_rate'));
+        $salesperson->late_rate = $num($request->input('late_rate'));
+        $salesperson->late_days = (int) ($request->input('late_days') ?: 120);
+        $salesperson->monthly_target = $num($request->input('monthly_target'));
+        $slabs = [];
+        foreach ((array) $request->input('slab_from', []) as $i => $from) {
+            $rate = $num($request->input('slab_rate')[$i] ?? null);
+            if ($rate === null || $salesperson->commission_type !== 'slab') continue;   // an empty row, or not a slab scheme
+            $slabs[] = ['from' => $num($from) ?? 0, 'to' => $num($request->input('slab_to')[$i] ?? null),
+                'rate' => $rate ?? 0, 'late_rate' => $num($request->input('slab_late_rate')[$i] ?? null) ?? 0];
+        }
+        usort($slabs, fn ($a, $b) => $a['from'] <=> $b['from']);
+        $salesperson->commission_slabs = $slabs ?: null;
         $salesperson->save();
         Cache::forget(self::$cache . cacheName());
         return response()->json([

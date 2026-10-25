@@ -16,8 +16,11 @@ class Salesperson extends Model
 
     protected $fillable = [
         'row_no', 'name', 'email', 'phone', 'designation',
-        'department', 'region', 'commission_rate', 'status'
+        'department', 'region', 'commission_rate', 'status',
+        'commission_type', 'late_rate', 'late_days', 'monthly_target', 'commission_slabs',
     ];
+
+    protected $casts = ['commission_slabs' => 'array'];
 
     protected static string $cache = 'activeSalesmen:';
     protected static array $cacheColumns = [

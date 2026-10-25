@@ -146,7 +146,7 @@
 
                 <!-- Sales -->
                 @php
-                    $salesOpen = $menu == 'sales' || ($menu == 'reports' && in_array($submenu, ['sale-report', 'shipment-volume', 'sales-by-salesperson']));
+                    $salesOpen = $menu == 'sales' || ($menu == 'reports' && in_array($submenu, ['sale-report', 'shipment-volume', 'sales-by-salesperson', 'sales-commission', 'customer-wise-sales', 'invoice-wise-sales', 'customer-wise-commission']));
                 @endphp
                 <li class="nav-item {{ $salesOpen ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link">
@@ -185,6 +185,21 @@
                         <li class="nav-item">
                             <a href="/reports/sales-by-salesperson" class="nav-link {{ $submenu == 'sales-by-salesperson' ? 'active' : '' }}">
                                 <p>{{ __('Sales by Salesperson') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/reports/sales-commission" class="nav-link {{ $submenu == 'sales-commission' ? 'active' : '' }}">
+                                <p>{{ __('Sales Commission') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/reports/customer-wise-sales" class="nav-link {{ $submenu == 'customer-wise-sales' ? 'active' : '' }}">
+                                <p>{{ __('Customer Wise Sales') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/reports/invoice-wise-sales" class="nav-link {{ $submenu == 'invoice-wise-sales' ? 'active' : '' }}">
+                                <p>{{ __('Invoice Wise Sales') }}</p>
                             </a>
                         </li>
                     </ul>
@@ -554,6 +569,24 @@
                                     <a href="/reports/output-tax"
                                        class="nav-link {{ $submenu == 'output-tax' ? 'active' : '' }}">
                                         <p>{{ __('Output Tax') }}</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/reports/sales-commission"
+                                       class="nav-link {{ $submenu == 'sales-commission' ? 'active' : '' }}">
+                                        <p>{{ __('Sales Commission') }}</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/reports/customer-wise-sales"
+                                       class="nav-link {{ $submenu == 'customer-wise-sales' ? 'active' : '' }}">
+                                        <p>{{ __('Customer Wise Sales') }}</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/reports/invoice-wise-sales"
+                                       class="nav-link {{ $submenu == 'invoice-wise-sales' ? 'active' : '' }}">
+                                        <p>{{ __('Invoice Wise Sales') }}</p>
                                     </a>
                                 </li>
                             </ul>

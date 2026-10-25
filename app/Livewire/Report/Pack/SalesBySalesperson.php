@@ -13,8 +13,8 @@ class SalesBySalesperson extends PackReport
 
     protected function rows(): array
     {
-        $q = $this->jobs()->leftJoin('users', 'users.id', '=', 'jobs.salesperson_id');
-        $g = "COALESCE(users.name, '—')";
+        $q = $this->jobs()->leftJoin('sales_persons as sp', 'sp.id', '=', 'jobs.salesperson_id');   // jobs.salesperson_id is a sales_persons id
+        $g = "COALESCE(sp.name, '—')";
         if ($this->groupBy === 'customer') {
             $q->leftJoin('customers', 'customers.id', '=', 'jobs.customer_id');
             $g = "COALESCE(customers.name_en,'—')";

@@ -48,3 +48,7 @@ Route::get('/reports/sale-report', \App\Livewire\Report\Sale\SaleReport::class);
 // Report pack
 Route::get('/reports/shipment-volume', \App\Livewire\Report\Pack\ShipmentVolume::class);
 Route::get('/reports/sales-by-salesperson', \App\Livewire\Report\Pack\SalesBySalesperson::class);
+Route::get('/reports/sales-commission', [\App\Http\Controllers\Finance\Report\SalesCommissionController::class, 'index']);
+Route::get('/reports/customer-wise-sales', [\App\Http\Controllers\Finance\Report\SalesCommissionController::class, 'customerWise']);
+Route::get('/reports/invoice-wise-sales', [\App\Http\Controllers\Finance\Report\SalesCommissionController::class, 'customerWise']);
+Route::get('/reports/customer-wise-commission', [\App\Http\Controllers\Finance\Report\SalesCommissionController::class, 'customerWise']);
