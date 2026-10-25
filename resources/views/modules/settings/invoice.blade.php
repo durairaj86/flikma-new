@@ -16,7 +16,7 @@
                                         <i class="bi bi-eye me-2"></i> {{ __('Invoice Preview') }}
                                         <span id="preview-loading" class="spinner-border spinner-border-sm text-primary ms-2" style="display:none;"></span>
                                     </h5>
-                                    <div id="invoice-preview" class="border rounded bg-light position-relative" style="height: 75vh; overflow-x: hidden; overflow-y: auto;">
+                                    <div id="invoice-preview" class="border rounded bg-light position-relative" style="height: calc(100vh - 170px); min-height: 360px; overflow-x: hidden; overflow-y: auto;">
                                         <div id="preview-spacer" class="position-relative" style="width:100%;">
                                         <iframe id="preview-frame" title="{{ __('Invoice preview') }}" scrolling="no" style="width:794px; height:1123px; border:0; background:#fff; position:absolute; top:0; left:0; transform-origin: top left;"></iframe>
                                         </div>
@@ -33,7 +33,7 @@
                                         <i class="bi bi-save me-1"></i> {{ __('Save') }}
                                     </button>
                                 </div>
-                                <div class="overflow-auto" style="max-height: 78vh;">
+                                <div class="overflow-auto" style="max-height: calc(100vh - 100px);">
                                     <div class="px-3 pt-3 pb-3 border-bottom">
                                         <h5 class="fw-bold mb-3 text-primary d-flex align-items-center"><i class="bi bi-palette me-2"></i> {{ __('Design & Branding') }}</h5>
 
