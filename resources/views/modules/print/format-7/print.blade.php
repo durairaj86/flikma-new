@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <title>Tax Invoice — {{ invoiceNumberLabel($customerInvoice) }}</title>
     <style>
+        .repeat-wrap { border-collapse: collapse; height: 1040px; }
+        .repeat-wrap > thead { display: table-header-group; }
+        .repeat-wrap > tfoot { display: table-footer-group; }
+        .repeat-wrap > tbody > tr > td { height: 100%; }
+        /* print: the footer bar is fixed to the bottom of every page (the tfoot cell keeps the content clear of it) */
+        @media print {
+            .repeat-wrap > tfoot > tr > td.foot-spacer { height: 52px; }
+            .page-foot { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 726px; margin-top: 0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+
         @font-face {
             font-family: 'Body';
             src: url('file://{{ public_path('fonts/LiberationSans-Regular.ttf') }}');
@@ -67,14 +77,6 @@
     <script id="color-css-template" type="application/json">{!! json_encode($__colorCssTpl) !!}</script>
 </head>
 <body>
-<div class="paper">
-    <div>
-        @if($customerInvoice->status == 1)
-            <div class="watermark">DRAFT</div>
-        @elseif($customerInvoice->status == 4)
-            <div class="watermark" style="color: rgba(200,30,30,0.12);">CANCELLED</div>
-        @endif
-
         @php
             $docTitle = match (true) {
                 $customerInvoice->status == 1 => 'DRAFT INVOICE',
@@ -87,7 +89,9 @@
                 default => 'فاتورة ضريبية',
             };
         @endphp
-
+<div class="paper">
+    <table class="repeat-wrap" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <thead><tr><td style="padding-bottom: 8px;">
         {{-- Header: wordmark logo | title | invoice no. box --}}
         <table cellpadding="0" cellspacing="0" border="0" width="100%">
             <tr>
@@ -120,6 +124,16 @@
         </table>
 
         <div style="border-top: 2px solid var(--accent); margin-top: 8px;"></div>
+
+        </td></tr></thead>
+        <tbody><tr><td valign="top">
+    <div>
+        @if($customerInvoice->status == 1)
+            <div class="watermark">DRAFT</div>
+        @elseif($customerInvoice->status == 4)
+            <div class="watermark" style="color: rgba(200,30,30,0.12);">CANCELLED</div>
+        @endif
+
 
         {{-- Meta Dates Row --}}
         <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 8px;">
@@ -202,12 +216,14 @@
                         @if($customerInvoice->customer?->cr_number)
                             <div style="font-size: 8pt; margin-top: 4px;"><span class="ar">رقم السجل التجاري</span> / CR NO: <strong>{{ $customerInvoice->customer->cr_number }}</strong></div>
                         @endif
+                        {{-- the ticked contact / address rows (alt. phone, postal code, region); email and country are printed above --}}
+                        <div style="margin-top: 4px;">@include('modules.print.partials.address-fields', ['skipAddressKeys' => ['email', 'country']])</div>
                     </div>
                 </td>
             </tr>
         </table>
 
-        @include('modules.print.partials.extra-details')
+        @include('modules.print.partials.extra-details', ['splitAddress' => true])
 
         {{-- Line Items --}}
         <table width="100%" cellpadding="0" cellspacing="0" border="0" class="items" style="margin-top: 10px;">
@@ -319,9 +335,10 @@
             </tr>
         </table>
     </div>
-
+        </td></tr></tbody>
+        <tfoot><tr><td class="foot-spacer">
     {{-- Footer Bar Pinned Strictly to Bottom --}}
-    <div style="background: var(--accent); color: #fff; margin-top: 10px; padding: 10px 14px; border-radius: 6px; font-size: 7.5pt;">
+    <div class="page-foot" style="background: var(--accent); color: #fff; margin-top: 10px; padding: 10px 14px; border-radius: 6px; font-size: 7.5pt;">
         <table width="100%" cellpadding="0" cellspacing="0" border="0">
             <tr>
                 <td valign="middle">
@@ -334,6 +351,9 @@
             </tr>
         </table>
     </div>
+        </td></tr></tfoot>
+    </table>
+
 </div>
 </body>
 </html>
