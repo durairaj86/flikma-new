@@ -3,7 +3,7 @@
 @section('page-subtitle'){{ __('What was asked, when, and how many tokens it used.') }}@endsection
 <x-app-layout>
 <main class="gmail-content bg-white">
-@include('includes.inline-page-title')
+<div class="px-4 pt-2">@include('includes.inline-page-title')</div>
 <div class="container-fluid px-4 py-4">
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">

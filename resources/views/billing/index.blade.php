@@ -4,7 +4,7 @@
 @section('js', 'billing')
 <x-app-layout>
 <main class="gmail-content bg-white">
-@include('includes.inline-page-title')
+<div class="px-4 pt-2">@include('includes.inline-page-title')</div>
 <style>
     .bl-hero { border-radius: 1rem; background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), .12), rgba(var(--bs-primary-rgb), .03)); }
     .bl-hero-icon { width: 56px; height: 56px; border-radius: 1rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }

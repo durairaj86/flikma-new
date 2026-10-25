@@ -138,12 +138,30 @@
 
             fetch(def.url(a.id), {headers: {'X-Requested-With': 'XMLHttpRequest'}})
                 .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
-                .then(html => { body.innerHTML = html; })
+                .then(html => { body.innerHTML = html; pullHeading(); })
                 .catch(() => { body.innerHTML = '<div class="alert alert-danger m-3">' + @json(__('Failed to load details.')) + '</div>'; });
         }
 
+        // The record number + status badge (and the Print / Collection ... buttons next to it) that open a record's overview are shown once,
+        // in this drawer's header, instead of again as the first line of the body.
+        function pullHeading() {
+            const heading = body.querySelector('.invoice-no-heading');
+            if (!heading) return;
+            const row = heading.parentElement;
+            const title = document.getElementById('linkedDrawerTitle');
+            const actions = document.getElementById('linkedDrawerActions');
+            title.textContent = '';
+            heading.classList.add('mb-0');
+            title.appendChild(heading);
+            document.getElementById('linkedDrawerSubtitle').textContent = '';
+            if (row && row !== body && row.classList.contains('d-flex')) {
+                Array.prototype.slice.call(row.children).forEach(function (c) { actions.appendChild(c); });
+                row.remove();
+            }
+        }
+
         // Print buttons inside a linked record: the owning page's JS isn't loaded here, so print the document through a hidden frame.
-        body.addEventListener('click', function (e) {
+        subEl.addEventListener('click', function (e) {   // the buttons sit in the header now, so listen on the whole drawer
             const btn = e.target.closest('.linked-print');
             if (!btn || !btn.dataset.printUrl) return;
             if (window.CREDIT_NOTE && CREDIT_NOTE.printPreview) return; // the page handles it (its own onclick)

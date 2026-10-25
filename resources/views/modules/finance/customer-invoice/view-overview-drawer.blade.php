@@ -110,9 +110,14 @@
 @endphp
 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
     <div class="invoice-no-heading">{{ docNumber($customerInvoice, '#') }}</div>
-    @if($ciApproved)
-        {{-- Collection opens the Collection form for this invoice; Credit Note opens the New Credit Note form for it --}}
-        <div class="d-flex gap-2">
+    {{-- Print (any status); Collection opens the Collection form for this invoice; Credit Note opens the New Credit Note form for it --}}
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-sm btn-outline-secondary linked-print"
+                data-print-url="{{ url('invoice/customer/' . $customerInvoice->id . '/print') }}"
+                onclick="if (window.CUSTOMER_INVOICE && CUSTOMER_INVOICE.printPreview) { CUSTOMER_INVOICE.printPreview('{{ $customerInvoice->id }}'); }">
+            <i class="bi bi-printer me-1"></i>{{ __('Print') }}
+        </button>
+        @if($ciApproved)
             @if($ciBalance > 0)
                 <button type="button" class="btn btn-sm btn-success" onclick="CUSTOMER_INVOICE.recordPayment('{{ $customerInvoice->id }}')">
                     <i class="bi bi-cash-coin me-1"></i>{{ __('Collection') }}
@@ -121,8 +126,8 @@
             <button type="button" class="btn btn-sm btn-outline-danger" onclick="CUSTOMER_INVOICE.newCreditNote('{{ $customerInvoice->id }}')">
                 <i class="bi bi-receipt-cutoff me-1"></i>{{ __('Credit Note') }}
             </button>
-        </div>
-    @endif
+        @endif
+    </div>
 </div>
 
 <div class="section">

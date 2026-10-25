@@ -3468,3 +3468,67 @@ $(document).on('draw.dt.emptystate', '#dataTable, #basicQuotationTable', functio
 });
 $(document).on('click.ciEmptyGeneric', '.ci-empty-new', function () { $('#new').first().trigger('click'); })
     .on('click.ciEmptyGeneric', '.ci-empty-filter', function () { $('#filter-box').first().trigger('click'); });
+
+
+/* View drawers (#moduleOverview inside an offcanvas): the document number, its status badge and the action buttons
+   (Print ...) that open the overview are shown once, in the drawer header, instead of again as the first line of the body.
+   Works for every overview that starts with <div class="d-flex ..."><div class="invoice-no-heading">#NO <badge></div> [actions]</div>.
+   The header goes back to its plain title while the next record loads. */
+(function () {
+    function restore(header) {
+        if (!header || header.dataset.headMoved !== '1') return;
+        const meta = header.firstElementChild;
+        if (meta && header._headDefault !== undefined) meta.innerHTML = header._headDefault;
+        if (meta) meta.classList.remove('flex-grow-1');
+        header.querySelectorAll('.drawer-head-actions').forEach(function (n) { n.remove(); });
+        delete header.dataset.headMoved;
+    }
+
+    function apply(ov) {
+        const drawer = ov.closest('.offcanvas');
+        const header = drawer && drawer.querySelector('.offcanvas-header');
+        if (!header || !header.firstElementChild) return;
+
+        const heading = ov.querySelector('.invoice-no-heading');
+        if (!heading) { restore(header); return; }
+        if (header.dataset.headMoved === '1') return;   // this record is already in the header
+
+        const row = heading.parentElement;
+        const meta = header.firstElementChild;
+        header._headDefault = meta.innerHTML;
+        meta.innerHTML = '';
+        meta.classList.add('flex-grow-1');   // pushes the action buttons to the right, next to the close button
+        heading.classList.add('mb-0');
+        meta.appendChild(heading);
+
+        const actions = [];
+        if (row && row !== ov && row.classList.contains('d-flex')) {
+            Array.prototype.slice.call(row.children).forEach(function (child) { actions.push(child); });
+            const holder = document.createElement('span');
+            holder.className = 'drawer-head-actions d-flex align-items-center gap-2 ms-auto me-3';
+            actions.forEach(function (a) { holder.appendChild(a); });
+            const closeBtn = header.querySelector('.btn-close');
+            if (closeBtn) closeBtn.parentNode.insertBefore(holder, closeBtn); else header.appendChild(holder);
+            row.remove();
+        }
+        header.dataset.headMoved = '1';
+        // the removal of the row above is our own change, not new content: do not react to it
+        if (ov._headObs) ov._headObs.takeRecords();
+    }
+
+    function watch(ov) {
+        if (ov._headWatched) return;
+        ov._headWatched = true;
+        ov._headObs = new MutationObserver(function () { apply(ov); });
+        ov._headObs.observe(ov, {childList: true});
+        apply(ov);
+    }
+
+    function start() {
+        const ov = document.getElementById('moduleOverview');
+        if (ov) watch(ov);
+    }
+    if (document.readyState !== 'loading') start(); else document.addEventListener('DOMContentLoaded', start);
+    // pages that inject the drawer later
+    new MutationObserver(start).observe(document.documentElement, {childList: true, subtree: true});
+})();
