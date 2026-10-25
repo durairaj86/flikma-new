@@ -35,7 +35,7 @@ class ContactController extends Controller
         // Stored in the email queue; the worker sends it (and retries if the mail server is down).
         try {
             app(\App\Services\Mail\EmailQueueService::class)->enqueue(
-                'support@flikma.com', 'New Contact Form Submission - ' . $contactMessage->name, 'emails.website.contact-message',
+                \App\Models\Admin\Setting::get('admin_email') ?: 'support@flikma.com', 'New Contact Form Submission - ' . $contactMessage->name, 'emails.website.contact-message',
                 ['contactMessage' => $contactMessage->only(['name', 'email', 'company', 'phone', 'interest', 'message']) + ['submitted' => $contactMessage->created_at?->format('d M Y, h:i A')]],
                 ['type' => 'contact', 'from_address' => config('mail.from.address'), 'from_name' => 'Flikma Website']
             );

@@ -21,6 +21,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // users.last_login: shown in the users list and counted on the admin dashboard
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Auth\Events\Login::class, function ($event) {
+            \Illuminate\Support\Facades\DB::table('users')->where('id', $event->user->getAuthIdentifier())->update(['last_login' => now()]);
+        });
+
+        // /log-viewer (System Logs in the admin panel) is for platform admins only
+        \Illuminate\Support\Facades\Gate::define('viewLogViewer', fn ($user = null) => (bool) $user?->is_admin);
+
         // Every document that belongs to a job is mirrored into job_links (one common table), and the job's
         // summary (jobs.invoice_json) is refreshed from it.
         foreach (array_keys(\App\Services\Job\JobLinks::TYPES) as $model) {

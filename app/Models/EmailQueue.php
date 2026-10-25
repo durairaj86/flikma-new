@@ -17,5 +17,6 @@ class EmailQueue extends Model
         'expires_at' => 'datetime',
         'sent_at' => 'datetime',
         'failed_at' => 'datetime',
+        'skipped_at' => 'datetime',
     ];
 }

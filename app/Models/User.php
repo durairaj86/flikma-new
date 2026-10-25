@@ -73,6 +73,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'joining_date' => 'date',
             'dob' => 'date',
             'terminated_at' => 'date',
+            'is_admin' => 'boolean',
         ];
     }
 
