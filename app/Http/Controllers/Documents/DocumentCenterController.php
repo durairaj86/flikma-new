@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Documents;
 
+use Illuminate\Support\Str;
+
 use App\Http\Controllers\Controller;
 use App\Models\Documents\Documents;
 use Illuminate\Http\Request;
@@ -115,9 +117,9 @@ class DocumentCenterController extends Controller
                 $o = $k ? self::OWNERS[$k] : null;
                 $name = $m->documentable ? ($m->documentable->{$o[2] ?? 'row_no'} ?? $m->documentable->row_no ?? $m->documentable->invoice_no ?? null) : null;
 
-                return ['type' => $o[1] ?? class_basename((string) $m->documentable_type), 'name' => $name];
+                return ['type' => __($o[1] ?? Str::headline(class_basename((string) $m->documentable_type))), 'name' => $name];
             })
-            ->addColumn('type_label', fn($m) => self::TYPES[$m->doc_type] ?? ($m->doc_type ?: null))
+            ->addColumn('type_label', fn($m) => isset(self::TYPES[$m->doc_type]) ? __(self::TYPES[$m->doc_type]) : ($m->doc_type ? __(Str::headline($m->doc_type)) : null))
             ->addColumn('expiry_f', fn($m) => $m->expiry_date?->format('d-m-Y'))
             ->addColumn('posted_f', fn($m) => $m->posted_date?->format('d-m-Y'))
             ->addColumn('expiry_state', fn($m) => $m->expiry_date ? ($m->expiry_date->lt(today()) ? 'expired' : ($m->expiry_date->lte($soon) ? 'soon' : 'ok')) : null)

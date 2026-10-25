@@ -1,5 +1,5 @@
 SUPPLIER_STATEMENT = {
-    title: 'Supplier Statement',
+    title: trans('Supplier Statement'),
     baseUrl: 'reports/supplier-statement',
     actionUrl: 'reports/supplier-statement',
     load() {

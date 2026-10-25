@@ -208,8 +208,8 @@
                     </td>
                     <td class="text-end">
                         <div class="stmt-title">{{ __('WAYBILL REPORT') }}</div>
-                        <div class="stmt-sub">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
-                        <div class="stmt-sub">{{ __('Generated:') }} {{ now()->format('d M Y H:i') }}</div>
+                        <div class="stmt-sub">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->translatedFormat('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->translatedFormat('d M Y') }}</div>
+                        <div class="stmt-sub">{{ __('Generated:') }} {{ now()->translatedFormat('d M Y H:i') }}</div>
                     </td>
                 </tr>
             </table>

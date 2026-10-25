@@ -1,5 +1,5 @@
 CUSTOMER_AGING = {
-    title: 'Customer Aging Report',
+    title: trans('Customer Aging Report'),
     baseUrl: 'reports/customer-aging',
     actionUrl: 'reports/customer-aging',
     load() {

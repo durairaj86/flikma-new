@@ -73,7 +73,7 @@
              and collapses to zero width via body.has-top-header instead of display:none. --}}
         @unless($headerOn)
             <div class="position-relative" @click.outside="createOpen = false">
-                <button @click="createOpen = !createOpen" class="profile-menu-btn profile-menu-btn-bell" title="Create" aria-label="Create">
+                <button @click="createOpen = !createOpen" class="profile-menu-btn profile-menu-btn-bell" title="{{ __('Create') }}" aria-label="{{ __('Create') }}">
                     <i class="bi bi-plus-lg"></i>
                 </button>
                 <div x-cloak x-show="createOpen" x-transition class="profile-menu-side-dropdown">
@@ -81,11 +81,11 @@
                         <button type="button"
                                 class="profile-menu-side-dropdown-item"
                                 data-create-url="{{ $link['url'] }}"
-                                data-create-title="{{ $link['title'] }}"
+                                data-create-title="{{ __($link['title']) }}"
                                 data-create-size="{{ $link['size'] }}"
                                 data-create-min-height="{{ $link['minHeight'] ?? '' }}"
                                 data-create-scroll="{{ array_key_exists('scroll', $link) && $link['scroll'] === false ? '0' : '1' }}">
-                            <i class="bi {{ $link['icon'] }}"></i> {{ $link['label'] }}
+                            <i class="bi {{ $link['icon'] }}"></i> {{ __($link['label']) }}
                         </button>
                     @endforeach
                 </div>
@@ -95,7 +95,7 @@
             <a href="{{ route('locale.switch', app()->getLocale() === 'ar' ? 'en' : 'ar') }}"
                class="profile-menu-btn profile-menu-btn-bell"
                title="{{ app()->getLocale() === 'ar' ? 'Switch to English' : 'Switch to العربية' }}"
-               aria-label="Switch language">
+               aria-label="{{ __('Switch language') }}">
                 <i class="bi bi-translate"></i>
             </a>
 
@@ -122,23 +122,23 @@
             </a>
 
             <div class="position-relative" @click.outside="themeOpen = false">
-                <button @click="themeOpen = !themeOpen" class="profile-menu-btn profile-menu-btn-bell" title="Sidebar Theme" aria-label="Sidebar theme">
+                <button @click="themeOpen = !themeOpen" class="profile-menu-btn profile-menu-btn-bell" title="{{ __('Sidebar Theme') }}" aria-label="{{ __('Sidebar theme') }}">
                     <i class="bi bi-palette2"></i>
                 </button>
                 <div x-cloak x-show="themeOpen" x-transition class="profile-menu-side-dropdown theme-picker-dropdown">
-                    <div class="theme-picker-heading">Sidebar Theme</div>
+                    <div class="theme-picker-heading">{{ __('Sidebar Theme') }}</div>
                     <div class="theme-swatch-grid">
                         @foreach($sidebarThemes as $theme)
                             <button type="button"
                                     @click="setSidebarTheme('{{ $theme['key'] }}')"
                                     class="theme-swatch-btn"
                                     :class="sidebarTheme === '{{ $theme['key'] }}' ? 'active' : ''"
-                                    title="{{ $theme['label'] }}">
+                                    title="{{ __($theme['label']) }}">
                                 <span class="theme-swatch-preview" style="background: {{ $theme['swatch'] }};">
                                     <span class="theme-swatch-accent" style="background: {{ $theme['accent'] }};"></span>
                                     <i class="bi bi-check-lg theme-swatch-check" x-show="sidebarTheme === '{{ $theme['key'] }}'"></i>
                                 </span>
-                                <span class="theme-swatch-label">{{ $theme['label'] }}</span>
+                                <span class="theme-swatch-label">{{ __($theme['label']) }}</span>
                             </button>
                         @endforeach
                     </div>
@@ -155,7 +155,7 @@
                 <button @click="profileMenuOpen = !profileMenuOpen"
                         class="profile-menu-btn"
                         title="{{ $authUser->name }}"
-                        aria-label="Account menu">
+                        aria-label="{{ __('Account menu') }}">
                     @if(! empty($authUser->photo_path))
                         <img src="{{ asset('storage/'.$authUser->photo_path) }}" alt="{{ $authUser->name }}">
                     @else
@@ -186,13 +186,13 @@
                             <div class="fw-bold text-dark text-truncate">{{ $authUser->name }}</div>
                             <div class="text-muted small text-truncate">{{ $authUser->email }}</div>
                         </div>
-                        <button type="button" @click="profileMenuOpen = false" class="profile-menu-close" aria-label="Close">
+                        <button type="button" @click="profileMenuOpen = false" class="profile-menu-close" aria-label="{{ __('Close') }}">
                             <i class="bi bi-x-lg"></i>
                         </button>
                     </div>
 
                     <div class="profile-menu-ids">
-                        User ID: {{ $authUser->id }} &nbsp;&bull;&nbsp; Organization ID: {{ $authUser->company_id }}
+                        {{ __('User ID') }}: {{ $authUser->id }} &nbsp;&bull;&nbsp; {{ __('Organization ID') }}: {{ $authUser->company_id }}
                     </div>
 
                     <div class="profile-menu-lang-row">
@@ -221,7 +221,7 @@
                                 <div class="profile-menu-grid-icon" style="background:{{ $link['bg'] }}; color:{{ $link['fg'] }};">
                                     <i class="bi {{ $link['icon'] }}"></i>
                                 </div>
-                                <span>{{ $link['label'] }}</span>
+                                <span>{{ __($link['label']) }}</span>
                             </a>
                         @endforeach
                     </div>
@@ -236,20 +236,20 @@
 
                     <div class="profile-menu-divider"></div>
 
-                    <div class="profile-menu-more-heading">More</div>
+                    <div class="profile-menu-more-heading">{{ __('More') }}</div>
                     <div class="pb-2">
                         @foreach($moreLinks as $link)
                             <a href="{{ $link['url'] }}" class="profile-menu-more-item">
                                 <i class="bi {{ $link['icon'] }}"></i>
-                                <span class="flex-grow-1">{{ $link['label'] }}</span>
+                                <span class="flex-grow-1">{{ __($link['label']) }}</span>
                                 <i class="bi bi-chevron-right small"></i>
                             </a>
                         @endforeach
                     </div>
 
                     <div class="profile-menu-help-card">
-                        <div class="profile-menu-help-title">Need help?</div>
-                        <a href="mailto:support@flikma.com" class="profile-menu-help-link">Email support@flikma.com</a>
+                        <div class="profile-menu-help-title">{{ __('Need help?') }}</div>
+                        <a href="mailto:support@flikma.com" class="profile-menu-help-link">{{ __("Email") }} support@flikma.com</a>
                         <a href="https://wa.me/966595555343" target="_blank" rel="noopener" class="profile-menu-help-link">WhatsApp +966 59 555 5343</a>
                     </div>
                 </div>

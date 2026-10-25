@@ -52,7 +52,7 @@
         </div>
         <div class="title">
             <h2>{{ __('Salary Slip') }}</h2>
-            <div class="muted">{{ \Illuminate\Support\Carbon::create($record->year, $record->month, 1)->format('F Y') }}</div>
+            <div class="muted">{{ \Illuminate\Support\Carbon::create($record->year, $record->month, 1)->translatedFormat('F Y') }}</div>
         </div>
     </div>
 

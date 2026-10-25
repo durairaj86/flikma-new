@@ -27,8 +27,8 @@ class PeriodClosingController extends Controller
             })
             ->editColumn('is_closed', function ($row) {
                 return $row->is_closed
-                    ? '<span class="badge bg-danger-subtle text-danger"><i class="bi bi-lock-fill me-1"></i>Closed</span>'
-                    : '<span class="badge bg-success-subtle text-success"><i class="bi bi-unlock-fill me-1"></i>Open</span>';
+                    ? '<span class="badge bg-danger-subtle text-danger"><i class="bi bi-lock-fill me-1"></i>' . __('Closed') . '</span>'
+                    : '<span class="badge bg-success-subtle text-success"><i class="bi bi-unlock-fill me-1"></i>' . __('Open') . '</span>';
             })
             ->rawColumns(['is_closed'])
             ->toJson();

@@ -13,14 +13,14 @@ enum SupplierInvoiceEnum: int
 
     public function label(): string
     {
-        return match ($this) {
+        return __(match ($this) {
             self::DRAFT => 'Draft',
             self::SENT => 'Sent',
             self::APPROVED => 'Approved',
             self::REJECTED => 'Rejected',
             self::CANCELLED => 'Cancelled',
             self::CONVERTED => 'Converted to Invoice',
-        };
+        });
     }
 
     public static function fromName(string $name): ?int

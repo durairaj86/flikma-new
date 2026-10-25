@@ -109,7 +109,7 @@ class RateSheetController extends Controller
             'carrier' => $r->carrier->name ?? null,
             'container_type' => $r->container_type,
             'basis' => $r->basis,
-            'basis_label' => RateSheet::BASIS[$r->basis] ?? $r->basis,
+            'basis_label' => __(RateSheet::BASIS[$r->basis] ?? $r->basis),
             'currency' => $r->currency,
             'sell_rate' => (float) $r->sell_rate,
             'min_charge' => (float) $r->min_charge,
@@ -166,7 +166,7 @@ class RateSheetController extends Controller
             ->addColumn('valid_from_f', fn($m) => $m->valid_from?->format('d-m-Y'))
             ->addColumn('valid_to_f', fn($m) => $m->valid_to?->format('d-m-Y'))
             ->addColumn('days_left', fn($m) => $m->valid_to ? today()->diffInDays($m->valid_to, false) : null)
-            ->addColumn('basis_label', fn($m) => RateSheet::BASIS[$m->basis] ?? $m->basis)
+            ->addColumn('basis_label', fn($m) => __(RateSheet::BASIS[$m->basis] ?? $m->basis))
             ->with(['statusCounts' => $counts, 'cards' => ['avg_margin' => $avg !== null ? round((float) $avg, 1) : 0]])
             ->toJson();
     }

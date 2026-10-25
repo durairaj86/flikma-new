@@ -44,7 +44,7 @@
                                                                                 <div class="modal-content">
                                                                                     <div class="modal-header py-2">
                                                                                         <h6 class="modal-title" id="themeZoomTitle"></h6>
-                                                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
                                                                                     </div>
                                                                                     <div class="modal-body p-2 text-center" style="max-height: 80vh; overflow:auto;">
                                                                                         <img id="themeZoomImg" src="" alt="" style="width:100%; height:auto;">

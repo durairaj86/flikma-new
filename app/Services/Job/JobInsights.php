@@ -39,7 +39,7 @@ class JobInsights
         }
         $d = today()->diffInDays($eta, false);
         if ($d < 0) {
-            return ['state' => 'delayed', 'label' => abs($d) . 'd late', 'days' => $d];
+            return ['state' => 'delayed', 'label' => __(':nd late', ['n' => abs($d)]), 'days' => $d];
         }
         if ($d <= self::SOON_DAYS) {
             return ['state' => 'soon', 'label' => $d === 0 ? 'Today' : "in {$d}d", 'days' => $d];

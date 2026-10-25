@@ -1,5 +1,5 @@
 QUOTATION = {
-    title: 'Quotation',
+    title: trans('Quotation'),
     baseUrl: 'sales/quotation',
     actionUrl: 'sales/quotation',
     load() {
@@ -106,29 +106,29 @@ QUOTATION = {
         // /column-settings/quotation request fails, so the list/modal never renders empty.
         _fallback: {
             fields: [
-                {key: 'row_no', label: 'Quote No', category: 'General', min_width: 140, fixed: true},
-                {key: 'linked_enquiry_no', label: 'Enquiry No', category: 'General', min_width: 140},
-                {key: 'linked_job_no', label: 'Job No', category: 'General', min_width: 140},
-                {key: 'client_name', label: 'Client', category: 'General', min_width: 200},
-                {key: 'posted_at', label: 'Date', category: 'General', min_width: 100, orderable: true},
-                {key: 'valid_until', label: 'Valid To', category: 'General', min_width: 90, orderable: true},
-                {key: 'status', label: 'Status', category: 'General', min_width: 90},
-                {key: 'activity_name', label: 'Department', category: 'General', min_width: 150},
-                {key: 'salesperson_name', label: 'Sales Person', category: 'General', min_width: 120},
-                {key: 'pol', label: 'Origin (POL)', category: 'Routing', min_width: 130, orderable: true},
-                {key: 'pod', label: 'Destination (POD)', category: 'Routing', min_width: 160, orderable: true},
-                {key: 'incoterm', label: 'INCO Term', category: 'Cargo', min_width: 90},
-                {key: 'carrier', label: 'Carrier', category: 'Cargo', min_width: 140},
+                {key: 'row_no', label: trans('Quote No'), category: 'General', min_width: 140, fixed: true},
+                {key: 'linked_enquiry_no', label: trans('Enquiry No'), category: 'General', min_width: 140},
+                {key: 'linked_job_no', label: trans('Job No'), category: 'General', min_width: 140},
+                {key: 'client_name', label: trans('Client'), category: 'General', min_width: 200},
+                {key: 'posted_at', label: trans('Date'), category: 'General', min_width: 100, orderable: true},
+                {key: 'valid_until', label: trans('Valid To'), category: 'General', min_width: 90, orderable: true},
+                {key: 'status', label: trans('Status'), category: 'General', min_width: 90},
+                {key: 'activity_name', label: trans('Department'), category: 'General', min_width: 150},
+                {key: 'salesperson_name', label: trans('Sales Person'), category: 'General', min_width: 120},
+                {key: 'pol', label: trans('Origin (POL)'), category: 'Routing', min_width: 130, orderable: true},
+                {key: 'pod', label: trans('Destination (POD)'), category: 'Routing', min_width: 160, orderable: true},
+                {key: 'incoterm', label: trans('INCO Term'), category: 'Cargo', min_width: 90},
+                {key: 'carrier', label: trans('Carrier'), category: 'Cargo', min_width: 140},
             ],
             columns: [
-                {key: 'row_no', label: 'Quote No', type: 'parent', children: [{key: 'linked_enquiry_no', label: 'Enquiry No'}, {key: 'linked_job_no', label: 'Job No'}]},
-                {key: 'client_name', label: 'Client', type: 'parent', children: []},
-                {key: 'posted_at', label: 'Date', type: 'parent', children: [{key: 'valid_until', label: 'Valid To'}]},
-                {key: 'status', label: 'Status', type: 'parent', children: []},
-                {key: 'activity_name', label: 'Department', type: 'parent', children: []},
-                {key: 'pol', label: 'Origin', type: 'parent', children: [{key: 'pod', label: 'Destination'}]},
-                {key: 'salesperson_name', label: 'Sales Person', type: 'parent', children: []},
-                {key: 'incoterm', label: 'INCO Term', type: 'parent', children: [{key: 'carrier', label: 'Carrier'}]},
+                {key: 'row_no', label: trans('Quote No'), type: 'parent', children: [{key: 'linked_enquiry_no', label: trans('Enquiry No')}, {key: 'linked_job_no', label: trans('Job No')}]},
+                {key: 'client_name', label: trans('Client'), type: 'parent', children: []},
+                {key: 'posted_at', label: trans('Date'), type: 'parent', children: [{key: 'valid_until', label: trans('Valid To')}]},
+                {key: 'status', label: trans('Status'), type: 'parent', children: []},
+                {key: 'activity_name', label: trans('Department'), type: 'parent', children: []},
+                {key: 'pol', label: trans('Origin'), type: 'parent', children: [{key: 'pod', label: trans('Destination')}]},
+                {key: 'salesperson_name', label: trans('Sales Person'), type: 'parent', children: []},
+                {key: 'incoterm', label: trans('INCO Term'), type: 'parent', children: [{key: 'carrier', label: trans('Carrier')}]},
             ],
             is_custom: false,
         },
@@ -203,9 +203,9 @@ QUOTATION = {
 
                     // Badges go OUTSIDE the label so search text stays clean
                     let badgeHtml = '';
-                    if (isFixed) badgeHtml += `<span class="badge bg-secondary" style="font-size:0.6rem;">Fixed</span>`;
-                    if (isParent) badgeHtml += `<span class="badge bg-primary" style="font-size:0.6rem;">Column</span>`;
-                    if (isChild) badgeHtml += `<span class="badge bg-info text-dark" style="font-size:0.6rem;">Sub</span>`;
+                    if (isFixed) badgeHtml += `<span class="badge bg-secondary" style="font-size:0.6rem;">${trans('Fixed')}</span>`;
+                    if (isParent) badgeHtml += `<span class="badge bg-primary" style="font-size:0.6rem;">${trans('Column')}</span>`;
+                    if (isChild) badgeHtml += `<span class="badge bg-info text-dark" style="font-size:0.6rem;">${trans('Sub')}</span>`;
 
                     const checked = selected.has(f.key) ? 'checked' : '';
                     const disabled = isFixed ? 'disabled' : '';
@@ -312,7 +312,7 @@ QUOTATION = {
                 const children = col.children || [];
                 if (children.length) {
                     html += `<div class="border-top mx-3 mb-2 pt-2 ps-2">
-                        <div class="text-muted" style="font-size:0.7rem;font-weight:600;text-transform:uppercase;margin-bottom:4px;">Sub-columns</div>`;
+                        <div class="text-muted" style="font-size:0.7rem;font-weight:600;text-transform:uppercase;margin-bottom:4px;">${trans('Sub-columns')}</div>`;
                     children.forEach((child, cIdx) => {
                         html += `<div class="d-flex align-items-center gap-2 mb-1">
                             <i class="bi bi-arrow-return-right text-muted" style="font-size:0.7rem;"></i>
@@ -344,7 +344,7 @@ QUOTATION = {
                 html += '</div>';
             });
 
-            const $list = $('#csColumnList').html(html || '<p class="text-muted small text-center pt-4">No columns selected. Click fields on the left to add them.</p>');
+            const $list = $('#csColumnList').html(html || '<p class="text-muted small text-center pt-4">' + trans('No columns selected. Click fields on the left to add them.') + '</p>');
 
             // Label rename
             $list.find('.cs-col-label').off('change').on('change', (e) => {
@@ -550,11 +550,11 @@ QUOTATION = {
             drawer.show();
 
             // Load all tabs' content in one call
-            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
+            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> ' + trans('Loading...') + '</div>');
             $.get('/sales/quotation/' + quotationId + '/overview-drawer', function (data) {
                 $('#moduleOverview').html(data);
             }).fail(function () {
-                $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load quotation details.</div>');
+                $('#moduleOverview').html('<div class="alert alert-danger m-3">' + trans('Failed to load quotation details.') + '</div>');
             });
         },
 
@@ -847,7 +847,7 @@ QUOTATION = {
             let enquiryId = localStorage.getItem('convert-enquiry');
             if (enquiryId) {
                 webModal.openGlobalModal({
-                    title: 'New Quotation',
+                    title: trans('New Quotation'),
                     url: GLOBAL_FN.buildUrl('sales/quotation/create'),
                     size: 'xxl',
                     scroll: false,
@@ -863,7 +863,7 @@ QUOTATION = {
                 let modelSize = dataTableData.data('model-size');
                 let minHeight = dataTableData.data('min-height');
                 webModal.openGlobalModal({
-                    title: 'New Quotation',
+                    title: trans('New Quotation'),
                     url: GLOBAL_FN.buildUrl('sales/quotation/create'),
                     content: null,
                     size: modelSize || 'lg',
@@ -1026,7 +1026,7 @@ QUOTATION = {
                 $row.find('.chg-qty').val(1);
                 $row.find('.chg-amt-qty').val(Number(r.sell_rate).toFixed(2)).trigger('input');
                 $row.find('input[name="chg_remarks[]"]').val('Rate sheet ' + r.row_no + (r.carrier ? ' - ' + r.carrier : '') + (r.container_type ? ' - ' + r.container_type : ''));
-                if (window.toastr) toastr.success('Rate ' + r.row_no + ' added to charges');
+                if (window.toastr) toastr.success(trans('Rate :no added to charges').replace(':no', r.row_no));
             };
 
             const render = () => {
@@ -1040,15 +1040,15 @@ QUOTATION = {
                         + '<div><div class="fw-semibold">' + r.row_no + ' &middot; ' + (r.carrier || 'Any carrier') + (r.container_type ? ' &middot; ' + r.container_type : '') + '</div>'
                         + '<div class="small text-muted">' + r.currency + ' ' + money(r.sell_rate) + ' / ' + r.basis_label.toLowerCase()
                         + (r.transit_days ? ' &middot; ' + r.transit_days + ' days' : '') + (r.valid_to ? ' &middot; valid till ' + r.valid_to : '')
-                        + (r.expiring ? ' <span class="badge bg-warning-subtle text-warning-emphasis">expiring</span>' : '') + '</div></div>'
-                        + '<button type="button" class="btn btn-sm btn-primary rounded-pill px-3 rs-add" data-i="' + i + '">Add to charges</button></div>';
+                        + (r.expiring ? ' <span class="badge bg-warning-subtle text-warning-emphasis">' + trans('expiring') + '</span>' : '') + '</div></div>'
+                        + '<button type="button" class="btn btn-sm btn-primary rounded-pill px-3 rs-add" data-i="' + i + '">' + trans('Add to charges') + '</button></div>';
                 }).join(''));
             };
 
             $('#btnRateSheets').off('click.rs').on('click.rs', function () {
                 const $p = $('#rateSheetPanel');
                 if ($p.is(':visible')) { $p.hide(); return; }
-                $p.html('<div class="text-muted small p-2">Loading...</div>').show();
+                $p.html('<div class="text-muted small p-2">' + trans('Loading...') + '</div>').show();
                 refresh().always(render);
             });
             $('#rateSheetPanel').off('click.rs').on('click.rs', '.rs-add', function () { addCharge(rates[parseInt($(this).data('i'), 10)]); });

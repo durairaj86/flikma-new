@@ -12,13 +12,13 @@ enum CustomerStatusEnum: int
 
     public function label(): string
     {
-        return match ($this) {
+        return __(match ($this) {
             self::PENDING => 'pending',
             self::VERIFIED => 'verified',
             self::CONFIRMED => 'confirmed',
             self::BLOCKED => 'blocked',
             self::REJECTED => 'rejected',
-        };
+        });
     }
 
     public function color(): string

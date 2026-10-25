@@ -1,7 +1,7 @@
 @section('js', 'balance_sheet')
 @section('page-title', __('Balance Sheet'))
 @section('hide-topbar', true)
-@section('page-subtitle'){{ __('As of') }} {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}@endsection
+@section('page-subtitle'){{ __('As of') }} {{ \Carbon\Carbon::parse($endDate)->translatedFormat('d M Y') }}@endsection
 
 <div class="provisional-wrapper min-vh-100 bg-light pt-1 pb-4">
     <div class="container-fluid px-3">
@@ -134,7 +134,7 @@
                     {{ __('Balance Sheet Detail') }}
                 </h6>
                 <span class="badge bg-pr-subtle text-pr border border-pr-subtle px-3 py-2 ms-auto flex-shrink-0">
-                    {{ __('As of') }} {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
+                    {{ __('As of') }} {{ \Carbon\Carbon::parse($endDate)->translatedFormat('d M Y') }}
                 </span>
             </div>
             <div class="p-3">

@@ -21,8 +21,8 @@ class ColumnSettingsController extends Controller
         $defaults = ModuleDefaultColumns::get($page);
 
         return response()->json([
-            'fields'    => $defaults['fields'],
-            'columns'   => $setting ? $setting->column_json : $defaults['columns'],
+            'fields'    => $this->translateFields($defaults['fields']),
+            'columns'   => $this->translateColumns($setting ? $setting->column_json : $defaults['columns'], $defaults['fields']),
             'is_custom' => (bool) $setting,
         ]);
     }
@@ -61,7 +61,27 @@ class ColumnSettingsController extends Controller
 
         return response()->json([
             'message' => __('Reset to defaults.'),
-            'columns' => $defaults['columns'],
+            'columns' => $this->translateColumns($defaults['columns'], $defaults['fields']),
         ]);
+    }
+
+    /** labels are stored in English; show them in the user's language */
+    private function translateFields(array $fields): array
+    {
+        return array_map(fn ($f) => array_merge($f, [
+            'label' => __($f['label'] ?? ''),
+            'category' => isset($f['category']) ? __($f['category']) : null,
+        ]), $fields);
+    }
+
+    /** a known field takes its label from the defaults by key (a layout saved in another language still reads right) */
+    private function translateColumns(array $columns, array $fields): array
+    {
+        $labels = collect($fields)->pluck('label', 'key');
+        return array_map(function ($c) use ($labels) {
+            if (isset($c['key'])) $c['label'] = __($labels[$c['key']] ?? ($c['label'] ?? ''));
+            if (!empty($c['children']) && is_array($c['children'])) $c['children'] = $this->translateColumns($c['children'], $labels->map(fn ($l, $k) => ['key' => $k, 'label' => $l])->values()->all());
+            return $c;
+        }, $columns);
     }
 }

@@ -4,7 +4,7 @@
 <div class="pr-wrap">
 
 @php
-    $period = \Illuminate\Support\Carbon::create($record->year, $record->month, 1)->format('F Y');
+    $period = \Illuminate\Support\Carbon::create($record->year, $record->month, 1)->translatedFormat('F Y');
     $statusClass = ['paid' => 'bg-success-subtle text-success border-success-subtle', 'draft' => 'bg-warning-subtle text-warning-emphasis border-warning-subtle'][$record->status] ?? 'bg-secondary-subtle text-secondary border-secondary-subtle';
     $money = fn ($v) => number_format((float) $v, 2);
 @endphp

@@ -1,5 +1,5 @@
 DELIVERY_ORDER = {
-    title: 'Delivery Order',
+    title: trans('Delivery Order'),
     baseUrl: 'operation/delivery-order',
     actionUrl: 'operation/delivery-order',
     load() {
@@ -91,10 +91,10 @@ DELIVERY_ORDER = {
         },
         templates: {
             badge: {
-                1: '<span class="badge bg-warning-subtle text-warning-emphasis">Pending</span>',
-                2: '<span class="badge bg-primary-subtle text-primary-emphasis">Dispatched</span>',
-                3: '<span class="badge bg-success-subtle text-success-emphasis">Delivered</span>',
-                4: '<span class="badge bg-danger-subtle text-danger-emphasis">Cancelled</span>',
+                1: '<span class="badge bg-warning-subtle text-warning-emphasis">' + trans('Pending') + '</span>',
+                2: '<span class="badge bg-primary-subtle text-primary-emphasis">' + trans('Dispatched') + '</span>',
+                3: '<span class="badge bg-success-subtle text-success-emphasis">' + trans('Delivered') + '</span>',
+                4: '<span class="badge bg-danger-subtle text-danger-emphasis">' + trans('Cancelled') + '</span>',
             },
             number: (row) => `<div class="cell-primary text-primary dlv-no-link" style="cursor:pointer;">${row.row_no ?? ''}</div><div class="mt-1">${DELIVERY_ORDER.list.templates.badge[row.status] ?? ''}</div>`,
             customer: (row) => `<div class="cell-primary">${row.customer?.name_en ?? '—'}</div><div class="cell-secondary">${row.job?.row_no ? 'Job ' + row.job.row_no : (row.customer?.row_no ?? '')}</div>`,
@@ -103,7 +103,7 @@ DELIVERY_ORDER = {
             transport: (row) => `<div class="cell-primary"><i class="bi bi-truck me-1 text-muted"></i>${row.vehicle_no || '—'}</div>`
                 + `<div class="cell-secondary">${[row.transporter, row.driver_name].filter(Boolean).join(' · ')}</div>`,
             dates: (row) => {
-                if (row.delivered_at_f) return `<div class="cell-primary text-success"><i class="bi bi-check2-circle me-1"></i>${row.delivered_at_f}</div><div class="cell-secondary">Delivered</div>`;
+                if (row.delivered_at_f) return `<div class="cell-primary text-success"><i class="bi bi-check2-circle me-1"></i>${row.delivered_at_f}</div><div class="cell-secondary">${trans('Delivered')}</div>`;
                 return `<div class="${row.is_late ? 'late' : 'cell-primary'}">${row.delivery_date_f ?? '—'}${row.is_late ? ' <i class="bi bi-exclamation-triangle-fill"></i>' : ''}</div>`
                     + `<div class="cell-secondary">${row.is_late ? 'Late' : 'Planned'}</div>`;
             },
@@ -140,11 +140,11 @@ DELIVERY_ORDER = {
         openDrawer(id, name) {
             $('#drawerSubtitle').text(name || '');
             bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer')).show();
-            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
+            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> ' + trans('Loading...') + '</div>');
             $.get('/' + DELIVERY_ORDER.baseUrl + '/' + id + '/overview', function (data) {
                 $('#moduleOverview').html(data);
             }).fail(function () {
-                $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load delivery order details.</div>');
+                $('#moduleOverview').html('<div class="alert alert-danger m-3">' + trans('Failed to load delivery order details.') + '</div>');
             });
         },
     },
@@ -168,7 +168,7 @@ DELIVERY_ORDER = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'New Delivery Order',
+                    title: trans('New Delivery Order'),
                     url: GLOBAL_FN.buildUrl(DELIVERY_ORDER.baseUrl + '/create'),
                     content: null,
                     size: 'xl',

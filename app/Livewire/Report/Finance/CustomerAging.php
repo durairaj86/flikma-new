@@ -119,8 +119,8 @@ class CustomerAging extends Component
 
             $agingRows[] = [
                 'invoice_no'   => $inv->row_no,
-                'invoice_date' => Carbon::parse($inv->invoice_date)->format('d M Y'),
-                'due_date'     => $dueDate->format('d M Y'),
+                'invoice_date' => Carbon::parse($inv->invoice_date)->translatedFormat('d M Y'),
+                'due_date'     => $dueDate->translatedFormat('d M Y'),
                 'days_overdue' => $daysOverdue,
                 'total'        => $balance,
                 'buckets'      => $buckets,

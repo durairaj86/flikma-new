@@ -1,13 +1,13 @@
 <ol class="breadcrumb">
     <li class="breadcrumb-item text-muted {{ $page1 == 'account' ? 'active' : 'link' }}" data-url="/settings/account">
-        Account
+        {{ __('Account') }}
     </li>
     <li class="breadcrumb-item text-muted {{ $page1 == 'company' ? 'active' : 'link' }}" data-url="/settings/company">
-        Manage Business
+        {{ __('Manage Business') }}
     </li>
     <li class="breadcrumb-item text-muted {{ $page1 == 'invoice' ? 'active' : 'link' }}" data-url="/settings/invoice">
-        Invoice Setting
+        {{ __('Invoice Setting') }}
     </li>
-    <li class="breadcrumb-item text-muted {{ $page1 == 'company' ? 'active' : 'link' }}" data-url="/settings/tax">Tax
+    <li class="breadcrumb-item text-muted {{ $page1 == 'company' ? 'active' : 'link' }}" data-url="/settings/tax">{{ __('Tax') }}
     </li>
 </ol>

@@ -15,11 +15,11 @@ enum PaymentEnum: int
      */
     public function label(): string
     {
-        return match ($this) {
+        return __(match ($this) {
             self::DRAFT => 'Draft',
             self::APPROVED => 'Approved',
             self::CANCELLED => 'Cancelled',
-        };
+        });
     }
 
     /**

@@ -85,7 +85,7 @@
                             <tr class="border-bottom-0">
                                 <td class="ps-3">
                                     <div class="text-dark font-mono small">{{ \Carbon\Carbon::parse($transaction->reference_date)->format('d/m/Y') }}</div>
-                                    <div class="text-muted x-small">{{ \Carbon\Carbon::parse($transaction->reference_date)->format('l') }}</div>
+                                    <div class="text-muted x-small">{{ \Carbon\Carbon::parse($transaction->reference_date)->translatedFormat('l') }}</div>
                                 </td>
                                 <td>
                                     <div class="fw-bold text-dark">{{ $transaction->voucher_no }}</div>

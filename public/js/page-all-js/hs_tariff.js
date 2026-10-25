@@ -1,5 +1,5 @@
 HS_TARIFF = {
-    title: 'HS Tariff',
+    title: trans('HS Tariff'),
     baseUrl: 'masters/hs-tariff',
     actionUrl: 'masters/hs-tariff',
     load() {
@@ -63,14 +63,14 @@ HS_TARIFF = {
             delete(row) {
                 $('#row_delete').off().on('click', function () {
                     $.confirm({
-                        title: 'Confirm Delete',
-                        content: 'Are you sure you want to delete this HS Tariff?',
+                        title: trans('Confirm Delete'),
+                        content: trans('Are you sure you want to delete this HS Tariff?'),
                         type: 'red',
                         buttons: {
                             cancel: function () {
                             },
                             delete: {
-                                text: 'Delete',
+                                text: trans('Delete'),
                                 btnClass: 'btn-red',
                                 action: function () {
                                     $.ajax({
@@ -99,7 +99,7 @@ HS_TARIFF = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'New HS Tariff',
+                    title: trans('New HS Tariff'),
                     url: GLOBAL_FN.buildUrl('masters/hs-tariff/create'),
                     content: null,
                     size: 'mid',

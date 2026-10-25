@@ -149,8 +149,8 @@ class SupplierAging extends Component
 
             $agingRows[] = array_merge([
                 'invoice_no'   => $inv->row_no,
-                'invoice_date' => Carbon::parse($inv->invoice_date)->format('d M Y'),
-                'due_date'     => $dueDate->format('d M Y'),
+                'invoice_date' => Carbon::parse($inv->invoice_date)->translatedFormat('d M Y'),
+                'due_date'     => $dueDate->translatedFormat('d M Y'),
                 'days_overdue' => $daysOverdue,
                 'total'        => $balance,
             ], $buckets);
@@ -172,8 +172,8 @@ class SupplierAging extends Component
         }
 
         $bucketLabels = [
-            'current' => 'Current', 'days_1_30' => '1-30 Days', 'days_31_60' => '31-60 Days',
-            'days_61_90' => '61-90 Days', 'days_91_120' => '91-120 Days', 'days_over_120' => 'Over 120 Days',
+            'current' => __('Current'), 'days_1_30' => __(':from-:to Days', ['from' => 1, 'to' => 30]), 'days_31_60' => __(':from-:to Days', ['from' => 31, 'to' => 60]),
+            'days_61_90' => __(':from-:to Days', ['from' => 61, 'to' => 90]), 'days_91_120' => __(':from-:to Days', ['from' => 91, 'to' => 120]), 'days_over_120' => __('Over :n Days', ['n' => 120]),
         ];
 
         $columns = array_merge(['Invoice #', 'Invoice Date', 'Due Date', 'Days Overdue'], array_values($bucketLabels), ['Total']);

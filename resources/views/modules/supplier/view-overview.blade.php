@@ -51,7 +51,7 @@
             {{-- Joined Date --}}
             <div class="col-md-6">
                 <h6 class="text-muted">{{ __('Joined') }}</h6>
-                <p class="mb-0"><i class="bi bi-calendar-check me-1"></i>{{ $supplier->created_at->format('d M, Y') }}</p>
+                <p class="mb-0"><i class="bi bi-calendar-check me-1"></i>{{ $supplier->created_at->translatedFormat('d M, Y') }}</p>
             </div>
         </div>
 

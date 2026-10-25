@@ -1,5 +1,5 @@
 PROFORMA_INVOICE = {
-    title: 'Proforma Invoice',
+    title: trans('Proforma Invoice'),
     baseUrl: 'invoice/proforma',
     actionUrl: 'invoice/proforma',
     load() {
@@ -246,11 +246,11 @@ PROFORMA_INVOICE = {
             let drawer = bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer'));
             drawer.show();
 
-            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
+            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> ' + trans('Loading...') + '</div>');
             $.get('/invoice/proforma/' + proformaId + '/overview-drawer', function (data) {
                 $('#moduleOverview').html(data);
             }).fail(function () {
-                $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load invoice details.</div>');
+                $('#moduleOverview').html('<div class="alert alert-danger m-3">' + trans('Failed to load invoice details.') + '</div>');
             });
         },
         cardSummary(data, counts) {
@@ -276,12 +276,12 @@ PROFORMA_INVOICE = {
             // Every cell below follows the same 2-line convention: a bold
             // primary line, and one small muted caption underneath.
             statusBadge: {
-                1: '<span class="badge bg-secondary-subtle text-secondary-emphasis">Draft</span>',
-                2: '<span class="badge bg-info-subtle text-info-emphasis">Sent</span>',
-                3: '<span class="badge bg-success-subtle text-success-emphasis">Approved</span>',
-                4: '<span class="badge bg-danger-subtle text-danger-emphasis">Rejected</span>',
-                5: '<span class="badge bg-danger-subtle text-danger-emphasis">Cancelled</span>',
-                6: '<span class="badge bg-primary-subtle text-primary-emphasis">Converted</span>',
+                1: '<span class="badge bg-secondary-subtle text-secondary-emphasis">' + trans('Draft') + '</span>',
+                2: '<span class="badge bg-info-subtle text-info-emphasis">' + trans('Sent') + '</span>',
+                3: '<span class="badge bg-success-subtle text-success-emphasis">' + trans('Approved') + '</span>',
+                4: '<span class="badge bg-danger-subtle text-danger-emphasis">' + trans('Rejected') + '</span>',
+                5: '<span class="badge bg-danger-subtle text-danger-emphasis">' + trans('Cancelled') + '</span>',
+                6: '<span class="badge bg-primary-subtle text-primary-emphasis">' + trans('Converted') + '</span>',
             },
             invoiceNumber: (row) => `<div class="cell-primary fw-bold text-primary proforma-invoice-no-link" style="cursor:pointer;">${row.row_no ?? ''}</div><div class="mt-1">${PROFORMA_INVOICE.list.templates.statusBadge[row.status] ?? ''}</div>`,
 
@@ -310,7 +310,7 @@ PROFORMA_INVOICE = {
                     }, $(this).attr('data-value'));
                 })
                 $('#row_converted').off().on('click', function () {
-                    alert("convert to invoice");
+                    alert(trans('convert to invoice'));
                 })
             },
             view(row) {
@@ -333,7 +333,7 @@ PROFORMA_INVOICE = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'New Proforma Invoice',
+                    title: trans('New Proforma Invoice'),
                     url: GLOBAL_FN.buildUrl('invoice/proforma/create'),
                     content: {
                         jobId: $(this).attr('data-loader-id')

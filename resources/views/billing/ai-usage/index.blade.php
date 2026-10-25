@@ -1,5 +1,5 @@
 @section('hide-topbar', true)
-@section('page-title', 'AI Usage')
+@section('page-title', __('AI Usage'))
 @section('page-subtitle'){{ __('What was asked, when, and how many tokens it used.') }}@endsection
 <x-app-layout>
 <main class="gmail-content bg-white">
@@ -105,9 +105,9 @@
                 <tbody>
                     @forelse($logs as $log)
                         <tr>
-                            <td class="text-nowrap">{{ $log->created_at->format('d M Y, h:i A') }}</td>
+                            <td class="text-nowrap">{{ $log->created_at->translatedFormat('d M Y, h:i A') }}</td>
                             <td>{{ $log->user->name ?? __('Unknown') }}</td>
-                            <td>{{ $log->feature ?: __('AI Request') }}</td>
+                            <td>{{ $log->feature ? __(Str::headline($log->feature)) : __('AI Request') }}</td>
                             <td class="text-end">{{ formatAiTokens($log->input_tokens) }}</td>
                             <td class="text-end">{{ formatAiTokens($log->output_tokens) }}</td>
                             <td class="text-end fw-bold">{{ formatAiTokens($log->total_tokens) }}</td>

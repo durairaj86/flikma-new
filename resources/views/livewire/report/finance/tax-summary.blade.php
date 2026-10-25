@@ -1,7 +1,7 @@
 @section('js', 'tax_summary')
 @section('page-title', __('Tax Summary'))
 @section('hide-topbar', true)
-@section('page-subtitle'){{ __('VAT reconciliation for') }} {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} &mdash; {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}@endsection
+@section('page-subtitle'){{ __('VAT reconciliation for') }} {{ \Carbon\Carbon::parse($startDate)->translatedFormat('d M Y') }} &mdash; {{ \Carbon\Carbon::parse($endDate)->translatedFormat('d M Y') }}@endsection
 
 <div class="provisional-wrapper min-vh-100 bg-light pt-1 pb-4">
     <div class="container-fluid px-3">

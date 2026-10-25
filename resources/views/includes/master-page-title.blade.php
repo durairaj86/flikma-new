@@ -25,6 +25,7 @@
         'masters/units' => ['bi-rulers', 'Units of measure such as Piece, Kg or Box.', 'Used on invoice lines, quotations and cargo details.'],
     ];
     $mEmptyInfo = $mEmpty[trim(request()->path(), '/')] ?? null;
+    if ($mEmptyInfo) { $mEmptyInfo[1] = __($mEmptyInfo[1]); $mEmptyInfo[2] = __($mEmptyInfo[2]); }
 @endphp
 <style>
     /* Empty list: the card shrinks to the message instead of keeping its table height. */

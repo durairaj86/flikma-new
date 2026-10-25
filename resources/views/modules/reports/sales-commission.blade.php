@@ -110,7 +110,7 @@
                 {{-- the incentive calculation, laid out like the sheet --}}
                 <div class="col-lg-7">
                     <div class="sc-card h-100">
-                        <div class="sc-h"><i class="bi bi-calculator text-primary"></i>{{ __('Incentive calculation') }}<span class="tag">{{ \Carbon\Carbon::parse($from)->format('d M Y') }} &ndash; {{ \Carbon\Carbon::parse($to)->format('d M Y') }}</span></div>
+                        <div class="sc-h"><i class="bi bi-calculator text-primary"></i>{{ __('Incentive calculation') }}<span class="tag">{{ \Carbon\Carbon::parse($from)->translatedFormat('d M Y') }} &ndash; {{ \Carbon\Carbon::parse($to)->translatedFormat('d M Y') }}</span></div>
                         <div class="sc-months mb-3">
                             @foreach($sum['months'] as $m)
                                 <div><div class="l">{{ __($m['label']) }}</div><div class="v {{ $m['income'] < 0 ? 'neg' : '' }}">{{ $f($m['income']) }}</div></div>
@@ -183,7 +183,7 @@
                 )->unique()->sort()->values();
                 $rowsBy = collect($report['rows'])->groupBy('month');
                 $chart = [
-                    'labels' => $keys->map(fn ($k) => __(\Carbon\Carbon::parse($k . '-01')->format('M')) . ' ' . \Carbon\Carbon::parse($k . '-01')->format('Y'))->all(),
+                    'labels' => $keys->map(fn ($k) => __(\Carbon\Carbon::parse($k . '-01')->translatedFormat('M')) . ' ' . \Carbon\Carbon::parse($k . '-01')->format('Y'))->all(),
                     'invoiced' => $keys->map(fn ($k) => round(($rowsBy[$k] ?? collect())->sum('invoiced'), 2))->all(),
                     'cost' => $keys->map(fn ($k) => round(($rowsBy[$k] ?? collect())->sum('cost'), 2))->all(),
                     'income' => $keys->map(fn ($k) => round(($rowsBy[$k] ?? collect())->sum('income'), 2))->all(),

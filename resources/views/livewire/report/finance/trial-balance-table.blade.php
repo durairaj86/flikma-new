@@ -117,7 +117,7 @@
                         ];
                         $icon = $typeIcons[$type] ?? 'bi-journal';
                     @endphp
-                    <i class="bi {{ $icon }} me-2"></i>{{ $type }}
+                    <i class="bi {{ $icon }} me-2"></i>{{ __($type) }}
                     <span class="rpt-section-count">{{ count($typeAccounts) }} {{ __(Str::plural('account', count($typeAccounts))) }}</span>
                 </td>
             </tr>
@@ -167,7 +167,7 @@
             {{-- Section subtotal --}}
             <tr class="rpt-subtotal-row">
                 <td colspan="2" class="ps-4 rpt-subtotal-label">
-                    {{ __('Subtotal —') }} {{ $type }}
+                    {{ __('Subtotal —') }} {{ __($type) }}
                 </td>
                 <td class="text-end tabular-nums rpt-dr-val fw-bold">
                     {{ number_format($typeTotals[$type]['debit'], 2) }}
@@ -233,8 +233,8 @@
             </td>
             <td class="text-end">
                 <div class="stmt-title">{{ __('TRIAL BALANCE') }}</div>
-                <div class="stmt-sub">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
-                <div class="stmt-sub">{{ __('Generated:') }} {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency:') }} SAR</div>
+                <div class="stmt-sub">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->translatedFormat('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->translatedFormat('d M Y') }}</div>
+                <div class="stmt-sub">{{ __('Generated:') }} {{ now()->translatedFormat('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency:') }} SAR</div>
             </td>
         </tr>
     </table>

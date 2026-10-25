@@ -202,11 +202,11 @@ class SupplierInvoiceController extends Controller
                 'class' => 'row-item',
                 'id' => fn($model) => 'supplier-' . strtolower($model->invoice_no ?? $model->id),
             ])
-            ->editColumn('invoice_date', fn($model) => Carbon::parse($model->invoice_date)->format('d-M-Y'))
+            ->editColumn('invoice_date', fn($model) => Carbon::parse($model->invoice_date)->translatedFormat('d-M-Y'))
             ->editColumn('currency', fn($model) => strtoupper($model->currency))
             ->editColumn('base_total', fn($model) => number_format($model->base_tax_total + $model->base_sub_total, $decimals))
             ->editColumn('grand_total', fn($model) => number_format($model->grand_total, $decimals))
-            ->editColumn('due_at', fn($model) => Carbon::parse($model->due_at)->format('d-M-Y'))
+            ->editColumn('due_at', fn($model) => Carbon::parse($model->due_at)->translatedFormat('d-M-Y'))
             ->addColumn('due_days', function ($model) {
                 $now = now()->startOfDay();
                 $dueAt = Carbon::parse($model->due_at)->startOfDay();
@@ -214,13 +214,13 @@ class SupplierInvoiceController extends Controller
                 $diff = $now->diffInDays($dueAt, false);
                 $class = 'bg-danger-subtle text-danger border border-danger';
                 if ($diff < 0) {
-                    $mess = 'OVERDUE: ' . abs($diff) . ' DAYS';
+                    $mess = __('OVERDUE: :n DAYS', ['n' => abs($diff)]);
                 } elseif ($diff == 0) {
-                    $mess = 'DUE: TODAY';
+                    $mess = __('DUE: TODAY');
                 } elseif ($diff == 1) {
-                    $mess = 'DUE: TOMORROW';
+                    $mess = __('DUE: TOMORROW');
                 } else {
-                    $mess = 'OPEN: ' . $diff . ' DAYS LEFT';
+                    $mess = __('OPEN: :n DAYS LEFT', ['n' => $diff]);
                     $class = 'bg-primary-subtle text-primary border-primary';
                 }
                 return [

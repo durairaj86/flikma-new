@@ -283,12 +283,12 @@ class EnquiryController extends Controller
             ->editColumn('activity_id', fn($model) => $model->activity->name)*/
             ->editColumn('status', function ($model) {
                 return match ($model->status) {
-                    1 => '<span class="badge bg-warning text-dark">Waiting</span>',
-                    2 => '<span class="badge bg-success">Confirmed</span>',
-                    3 => '<span class="badge bg-info text-dark">For Quotation</span>',
-                    4 => '<span class="badge bg-danger">Cancelled</span>',
-                    5 => '<span class="badge bg-primary">Quoted</span>',
-                    default => '<span class="badge bg-secondary">Unknown</span>',
+                    1 => '<span class="badge bg-warning text-dark">' . __('Waiting') . '</span>',
+                    2 => '<span class="badge bg-success">' . __('Confirmed') . '</span>',
+                    3 => '<span class="badge bg-info text-dark">' . __('For Quotation') . '</span>',
+                    4 => '<span class="badge bg-danger">' . __('Cancelled') . '</span>',
+                    5 => '<span class="badge bg-primary">' . __('Quoted') . '</span>',
+                    default => '<span class="badge bg-secondary">' . __('Unknown') . '</span>',
                 };
             })->rawColumns(['status'])
             ->editColumn('created_at', fn($model) => Carbon::parse($model->created_at)->format('d-m-Y'))

@@ -1,18 +1,18 @@
-@section('page-title', 'Loan Details')
+@section('page-title', __('Loan Details'))
 @section('hide-topbar', true)
 <x-app-layout>
 <div class="pr-wrap">
 
     <div class="d-flex align-items-center justify-content-between mb-4">
         <div>
-            <h1 class="h4 fw-bold text-dark mb-0">Loan Details</h1>
+            <h1 class="h4 fw-bold text-dark mb-0">{{ __('Loan Details') }}</h1>
         </div>
         <div>
             <a href="{{ route('employee-loans.index') }}" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-arrow-left me-1"></i> Back
+                <i class="bi bi-arrow-left me-1"></i> {{ __('Back') }}
             </a>
             <a href="{{ route('employee-loans.edit', $employeeLoan) }}" class="btn btn-primary btn-sm">
-                <i class="bi bi-pencil"></i> Edit
+                <i class="bi bi-pencil"></i> {{ __('Edit') }}
             </a>
         </div>
     </div>
@@ -27,48 +27,48 @@
         <div class="col-md-8">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white py-3">
-                    <h5 class="mb-0 fw-bold">Loan Information</h5>
+                    <h5 class="mb-0 fw-bold">{{ __('Loan Information') }}</h5>
                 </div>
                 <div class="card-body">
                     <table class="table table-sm">
                         <tr>
-                            <th class="text-muted">Employee</th>
+                            <th class="text-muted">{{ __('Employee') }}</th>
                             <td>{{ $employeeLoan->employee->name }}</td>
                         </tr>
                         <tr>
-                            <th class="text-muted">Loan Amount</th>
+                            <th class="text-muted">{{ __('Loan Amount') }}</th>
                             <td>{{ number_format($employeeLoan->loan_amount, 2) }}</td>
                         </tr>
                         <tr>
-                            <th class="text-muted">Total Installments</th>
+                            <th class="text-muted">{{ __('Total Installments') }}</th>
                             <td>{{ $employeeLoan->total_installments }}</td>
                         </tr>
                         <tr>
-                            <th class="text-muted">Installment Amount</th>
+                            <th class="text-muted">{{ __('Installment Amount') }}</th>
                             <td>{{ number_format($employeeLoan->installment_amount, 2) }}</td>
                         </tr>
                         <tr>
-                            <th class="text-muted">Paid Amount</th>
+                            <th class="text-muted">{{ __('Paid Amount') }}</th>
                             <td>{{ number_format($employeeLoan->paid_amount, 2) }}</td>
                         </tr>
                         <tr>
-                            <th class="text-muted">Remaining</th>
+                            <th class="text-muted">{{ __('Remaining') }}</th>
                             <td>{{ number_format($employeeLoan->remaining_amount, 2) }}</td>
                         </tr>
                         <tr>
-                            <th class="text-muted">Status</th>
+                            <th class="text-muted">{{ __('Status') }}</th>
                             <td>
                                 @if($employeeLoan->status == 'active')
-                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">Active</span>
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">{{ __('Active') }}</span>
                                 @elseif($employeeLoan->status == 'closed')
-                                    <span class="badge bg-success-subtle text-success border">Closed</span>
+                                    <span class="badge bg-success-subtle text-success border">{{ __('Closed') }}</span>
                                 @else
-                                    <span class="badge bg-secondary-subtle text-secondary border">Cancelled</span>
+                                    <span class="badge bg-secondary-subtle text-secondary border">{{ __('Cancelled') }}</span>
                                 @endif
                             </td>
                         </tr>
                         <tr>
-                            <th class="text-muted">Description</th>
+                            <th class="text-muted">{{ __('Description') }}</th>
                             <td>{{ $employeeLoan->description ?? '—' }}</td>
                         </tr>
                     </table>
@@ -80,7 +80,7 @@
             @if($employeeLoan->isActive())
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-white py-3">
-                        <h5 class="mb-0 fw-bold">Record Payment</h5>
+                        <h5 class="mb-0 fw-bold">{{ __('Record Payment') }}</h5>
                     </div>
                     <div class="card-body">
                         @if($errors->any())
@@ -89,28 +89,28 @@
                         <form action="{{ route('employee-loans.pay-installment', $employeeLoan) }}" method="POST" id="payInstForm">
                             @csrf
                             <div class="mb-3">
-                                <label class="form-label small fw-bold">Amount <span class="text-muted fw-normal">(max {{ number_format($employeeLoan->remaining_amount, 2) }})</span></label>
+                                <label class="form-label small fw-bold">{{ __('Amount') }} <span class="text-muted fw-normal">({{ __('max') }} {{ number_format($employeeLoan->remaining_amount, 2) }})</span></label>
                                 <input type="text" name="amount" class="decimal form-control" step="0.01"
                                     min="0.01" max="{{ $employeeLoan->remaining_amount }}" value="{{ old('amount') }}" required>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label small fw-bold">Payment Date</label>
+                                <label class="form-label small fw-bold">{{ __('Payment Date') }}</label>
                                 <input type="text" name="paid_date" class="form-control datepicker" value="{{ old('paid_date', now()->format('d-m-Y')) }}" autocomplete="off" required>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label small fw-bold">Received In</label>
-                                <select name="bank_account_id" class="form-select tom-select" data-live-search="true" data-placeholder="Select cash / bank account" required>
-                                    <option value="">Select cash / bank account</option>
+                                <label class="form-label small fw-bold">{{ __('Received In') }}</label>
+                                <select name="bank_account_id" class="form-select tom-select" data-live-search="true" data-placeholder="{{ __('Select cash / bank account') }}" required>
+                                    <option value="">{{ __('Select cash / bank account') }}</option>
                                     @foreach($paymentAccounts as $acc)
                                         <option value="{{ $acc->id }}" {{ (string) old('bank_account_id') === (string) $acc->id ? 'selected' : '' }}>{{ $acc->code }} — {{ $acc->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label small fw-bold">Remarks</label>
-                                <textarea name="remarks" class="form-control" rows="2" maxlength="500" placeholder="Description / remarks (optional)">{{ old('remarks') }}</textarea>
+                                <label class="form-label small fw-bold">{{ __('Remarks') }}</label>
+                                <textarea name="remarks" class="form-control" rows="2" maxlength="500" placeholder="{{ __('Description / remarks (optional)') }}">{{ old('remarks') }}</textarea>
                             </div>
-                            <button type="button" class="btn btn-success w-100" onclick="confirmLoanPayment()"><i class="bi bi-cash"></i> Record Payment</button>
+                            <button type="button" class="btn btn-success w-100" onclick="confirmLoanPayment()"><i class="bi bi-cash"></i> {{ __('Record Payment') }}</button>
                         </form>
                     </div>
                 </div>
@@ -120,17 +120,17 @@
 
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-white py-3">
-            <h5 class="mb-0 fw-bold">Installment History</h5>
+            <h5 class="mb-0 fw-bold">{{ __('Installment History') }}</h5>
         </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr class="small fw-bold text-uppercase text-secondary">
                         <th class="px-4 py-3">#</th>
-                        <th class="px-4 py-3">Amount</th>
-                        <th class="px-4 py-3">Date</th>
-                        <th class="px-4 py-3">Received In</th>
-                        <th class="px-4 py-3">Remarks</th>
+                        <th class="px-4 py-3">{{ __('Amount') }}</th>
+                        <th class="px-4 py-3">{{ __('Date') }}</th>
+                        <th class="px-4 py-3">{{ __('Received In') }}</th>
+                        <th class="px-4 py-3">{{ __('Remarks') }}</th>
                     </tr>
                 </thead>
                 <tbody class="small">
@@ -144,7 +144,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-4 py-4 text-center text-muted">No installments recorded yet.</td>
+                            <td colspan="5" class="px-4 py-4 text-center text-muted">{{ __('No installments recorded yet.') }}</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -155,20 +155,20 @@
 <div class="modal fade" id="confirmPayModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-delete-top">
         <div class="modal-content border-0 shadow">
-            <div class="modal-header py-2"><h6 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle text-warning me-1"></i>Confirm payment</h6>
+            <div class="modal-header py-2"><h6 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle text-warning me-1"></i>{{ __('Confirm payment') }}</h6>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body small">
-                <div class="mb-2">You are about to record this payment:</div>
+                <div class="mb-2">{{ __('You are about to record this payment:') }}</div>
                 <table class="table table-sm mb-2">
-                    <tr><td class="text-muted">Amount</td><td class="fw-bold" id="cpAmount"></td></tr>
-                    <tr><td class="text-muted">Date</td><td id="cpDate"></td></tr>
-                    <tr><td class="text-muted">Received in</td><td id="cpAcc"></td></tr>
+                    <tr><td class="text-muted">{{ __('Amount') }}</td><td class="fw-bold" id="cpAmount"></td></tr>
+                    <tr><td class="text-muted">{{ __('Date') }}</td><td id="cpDate"></td></tr>
+                    <tr><td class="text-muted">{{ __('Received in') }}</td><td id="cpAcc"></td></tr>
                 </table>
-                <div class="text-danger"><i class="bi bi-info-circle me-1"></i>It will be posted to the ledger and cannot be undone or edited afterwards.</div>
+                <div class="text-danger"><i class="bi bi-info-circle me-1"></i>{{ __('It will be posted to the ledger and cannot be undone or edited afterwards.') }}</div>
             </div>
             <div class="modal-footer py-2">
-                <button type="button" class="btn btn-light border btn-sm" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success btn-sm" id="cpGo">Yes, record payment</button>
+                <button type="button" class="btn btn-light border btn-sm" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                <button type="button" class="btn btn-success btn-sm" id="cpGo">{{ __('Yes, record payment') }}</button>
             </div>
         </div>
     </div>

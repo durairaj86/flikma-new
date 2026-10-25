@@ -1,5 +1,5 @@
 RATE_SHEET = {
-    title: 'Rate',
+    title: trans('Rate'),
     baseUrl: 'sales/rate-sheet',
     actionUrl: 'sales/rate-sheet',
     load() {
@@ -93,16 +93,16 @@ RATE_SHEET = {
         },
         templates: {
             badge: {
-                active: '<span class="badge bg-success-subtle text-success-emphasis">Active</span>',
-                expiring: '<span class="badge bg-warning-subtle text-warning-emphasis">Expiring</span>',
-                expired: '<span class="badge bg-danger-subtle text-danger-emphasis">Expired</span>',
-                upcoming: '<span class="badge bg-info-subtle text-info-emphasis">Upcoming</span>',
-                inactive: '<span class="badge bg-secondary-subtle text-secondary-emphasis">Inactive</span>',
+                active: '<span class="badge bg-success-subtle text-success-emphasis">' + trans('Active') + '</span>',
+                expiring: '<span class="badge bg-warning-subtle text-warning-emphasis">' + trans('Expiring') + '</span>',
+                expired: '<span class="badge bg-danger-subtle text-danger-emphasis">' + trans('Expired') + '</span>',
+                upcoming: '<span class="badge bg-info-subtle text-info-emphasis">' + trans('Upcoming') + '</span>',
+                inactive: '<span class="badge bg-secondary-subtle text-secondary-emphasis">' + trans('Inactive') + '</span>',
             },
             modeIcon: {sea: 'bi-water', air: 'bi-airplane', road: 'bi-truck'},
             number: (row) => `<div class="cell-primary text-primary rt-no-link" style="cursor:pointer;">${row.row_no ?? ''}</div><div class="mt-1">${RATE_SHEET.list.templates.badge[row.validity] ?? ''}</div>`,
             lane: (row) => `<div class="cell-primary rt-route"><i class="bi ${RATE_SHEET.list.templates.modeIcon[row.shipment_mode] ?? 'bi-box'} me-1 text-muted"></i>${row.origin} <i class="bi bi-arrow-right mx-1 text-muted"></i> ${row.destination}</div>`
-                + `<div class="cell-secondary">${row.carrier?.name ?? 'Any carrier'}${row.transit_days ? ' · ' + row.transit_days + ' days' : ''}</div>`,
+                + `<div class="cell-secondary">${row.carrier?.name ?? trans('Any carrier')}${row.transit_days ? ' · ' + row.transit_days + ' ' + trans('days') : ''}</div>`,
             equipment: (row) => `<div class="cell-primary">${row.container_type || '—'}</div><div class="cell-secondary">${row.basis_label ?? ''}</div>`,
             money: (row, v) => `<div class="cell-primary">${v}</div><div class="cell-secondary">${row.currency}</div>`,
             margin: (row) => `<div class="cell-primary ${row.margin_pct < 0 ? 'text-danger' : 'text-success'}">${row.margin_f}</div><div class="cell-secondary">${row.margin_pct}%</div>`,
@@ -110,7 +110,7 @@ RATE_SHEET = {
                 const left = row.days_left;
                 const cls = row.validity === 'expired' ? 'text-danger' : (row.validity === 'expiring' ? 'text-warning' : '');
                 return `<div class="cell-primary ${cls}">${row.valid_to_f ?? 'No end date'}</div>`
-                    + `<div class="cell-secondary">${row.valid_from_f ? 'from ' + row.valid_from_f : ''}${left !== null && left >= 0 ? ' · ' + left + ' days left' : ''}</div>`;
+                    + `<div class="cell-secondary">${row.valid_from_f ? trans('from') + ' ' + row.valid_from_f : ''}${left !== null && left >= 0 ? ' · ' + trans(':n days left').replace(':n', left) : ''}</div>`;
             },
         },
         extraActions(row) {
@@ -135,11 +135,11 @@ RATE_SHEET = {
         openDrawer(id, name) {
             $('#drawerSubtitle').text(name || '');
             bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer')).show();
-            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
+            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> ' + trans('Loading...') + '</div>');
             $.get('/' + RATE_SHEET.baseUrl + '/' + id + '/overview', function (data) {
                 $('#moduleOverview').html(data);
             }).fail(function () {
-                $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load rate details.</div>');
+                $('#moduleOverview').html('<div class="alert alert-danger m-3">' + trans('Failed to load rate details.') + '</div>');
             });
         },
     },
@@ -156,7 +156,7 @@ RATE_SHEET = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'New Rate',
+                    title: trans('New Rate'),
                     url: GLOBAL_FN.buildUrl(RATE_SHEET.baseUrl + '/create'),
                     content: null,
                     size: 'xl',

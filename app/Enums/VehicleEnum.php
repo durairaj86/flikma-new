@@ -10,11 +10,11 @@ enum VehicleEnum: int
 
     public function label(): string
     {
-        return match ($this) {
+        return __(match ($this) {
             self::ACTIVE => 'Active',
             self::MAINTENANCE => 'Maintenance',
             self::INACTIVE => 'Inactive',
-        };
+        });
     }
 
     public static function fromName(string $name): ?int

@@ -1,5 +1,5 @@
 JOURNAL_VOUCHER = {
-    title: 'Journal Voucher',
+    title: trans('Journal Voucher'),
     baseUrl: 'finance/journal-vouchers',
     actionUrl: 'finance/journal-vouchers',
     currentTab: 'all',
@@ -224,7 +224,7 @@ JOURNAL_VOUCHER = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'Create Journal Voucher',
+                    title: trans('Create Journal Voucher'),
                     url: GLOBAL_FN.buildUrl(`${JOURNAL_VOUCHER.baseUrl}/create`),
                     content: null,
                     size: 'xl',
@@ -236,7 +236,7 @@ JOURNAL_VOUCHER = {
 
         edit(id) {
             webModal.openGlobalModal({
-                title: 'Edit Journal Voucher',
+                title: trans('Edit Journal Voucher'),
                 url: GLOBAL_FN.buildUrl(`${JOURNAL_VOUCHER.baseUrl}/${id}/edit`),
                 content: null,
                 size: 'xl',

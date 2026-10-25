@@ -21,7 +21,7 @@
                             <td class="ps-4">
                                 <span class="fw-bold text-dark">{{ $sale->invoice_number ?? $sale->row_no }}</span>
                             </td>
-                            <td class="small text-muted">{{ \Carbon\Carbon::parse($sale->invoice_date)->format('d M Y') }}</td>
+                            <td class="small text-muted">{{ \Carbon\Carbon::parse($sale->invoice_date)->translatedFormat('d M Y') }}</td>
                             <td class="small">{{ $sale->customer->name ?? $sale->customer->name_en ?? __('N/A') }}</td>
                             <td class="small text-muted">{{ $sale->job->row_no ?? $sale->job->job_no ?? __('N/A') }}</td>
                             <td class="small">{{ $sale->currency ?? '—' }}</td>
@@ -84,8 +84,8 @@
                 </td>
                 <td class="text-end">
                     <div class="stmt-title">{{ __('SALE REPORT') }}</div>
-                    <div class="stmt-sub">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
-                    <div class="stmt-sub">{{ __('Generated:') }} {{ now()->format('d M Y H:i') }}</div>
+                    <div class="stmt-sub">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->translatedFormat('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->translatedFormat('d M Y') }}</div>
+                    <div class="stmt-sub">{{ __('Generated:') }} {{ now()->translatedFormat('d M Y H:i') }}</div>
                 </td>
             </tr>
         </table>
@@ -107,7 +107,7 @@
             @forelse($saleReportData['sales'] as $sale)
                 <tr>
                     <td>{{ $sale->invoice_number ?? $sale->row_no }}</td>
-                    <td>{{ \Carbon\Carbon::parse($sale->invoice_date)->format('d M Y') }}</td>
+                    <td>{{ \Carbon\Carbon::parse($sale->invoice_date)->translatedFormat('d M Y') }}</td>
                     <td>{{ $sale->customer->name ?? __('N/A') }}</td>
                     <td>{{ $sale->job->row_no ?? __('N/A') }}</td>
                     <td class="text-end">{{ number_format($sale->sub_total ?? 0, 2) }}</td>

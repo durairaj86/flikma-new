@@ -83,14 +83,14 @@
                                     <div class="metadata-grid-row">
                                         <div class="label-english">Invoice Date:</div>
                                         <div
-                                            class="data-value text-uppercase">{{ \Carbon\Carbon::parse($customerInvoice->invoice_date)->format('d-M-y') }}
+                                            class="data-value text-uppercase">{{ \Carbon\Carbon::parse($customerInvoice->invoice_date)->translatedFormat('d-M-y') }}
                                         </div>
                                         <div class="label-arabic">تاريخ:</div>
                                     </div>
                                     <div class="metadata-grid-row">
                                         <div class="label-english">Payment Due Date:</div>
                                         <div
-                                            class="data-value text-uppercase">{{ \Carbon\Carbon::parse($customerInvoice->due_date)->format('d-M-y') }}</div>
+                                            class="data-value text-uppercase">{{ \Carbon\Carbon::parse($customerInvoice->due_date)->translatedFormat('d-M-y') }}</div>
                                         <div class="label-arabic">تاريخ الاستحقاق للدفع:</div>
                                     </div>
                                 </div>
@@ -174,14 +174,14 @@
                                         <td class="label-col">Job Number</td>
                                         <td class="separator-col">:</td>
                                         <td class="data-col">{{ $job->row_no }}
-                                            / {{ \Carbon\Carbon::parse($job->posted_at)->format('d-M-y') }}</td>
+                                            / {{ \Carbon\Carbon::parse($job->posted_at)->translatedFormat('d-M-y') }}</td>
                                     </tr>
                                     @endif
                                     @if($this->invoiceDetails['job_date'] ?? false)
                                     <tr>
                                         <td class="label-col">Job Date</td>
                                         <td class="separator-col">:</td>
-                                        <td class="data-col text-uppercase">{{ \Carbon\Carbon::parse($job->posted_at)->format('d-M-y') }}</td>
+                                        <td class="data-col text-uppercase">{{ \Carbon\Carbon::parse($job->posted_at)->translatedFormat('d-M-y') }}</td>
                                     </tr>
                                     @endif
                                     @if($this->invoiceDetails['master_number'] ?? false)
@@ -189,7 +189,7 @@
                                         <td class="label-col">Master Number</td>
                                         <td class="separator-col">:</td>
                                         <td class="data-col text-uppercase">{{ $job->awb_no }}
-                                            / {{ \Carbon\Carbon::parse($job->posted_at)->format('d-M-y') }}</td>
+                                            / {{ \Carbon\Carbon::parse($job->posted_at)->translatedFormat('d-M-y') }}</td>
                                     </tr>
                                     @endif
                                     @if($this->invoiceDetails['house_no'] ?? false)
@@ -224,14 +224,14 @@
                                     <tr>
                                         <td class="label-col">ETD</td>
                                         <td class="separator-col">:</td>
-                                        <td class="data-col text-uppercase">{{ \Carbon\Carbon::parse($job->etd)->format('d-M-y') }}</td>
+                                        <td class="data-col text-uppercase">{{ \Carbon\Carbon::parse($job->etd)->translatedFormat('d-M-y') }}</td>
                                     </tr>
                                     @endif
                                     @if($this->invoiceDetails['eta'] ?? false)
                                     <tr>
                                         <td class="label-col">ETA</td>
                                         <td class="separator-col">:</td>
-                                        <td class="data-col text-uppercase">{{ \Carbon\Carbon::parse($job->eta)->format('d-M-y') }}</td>
+                                        <td class="data-col text-uppercase">{{ \Carbon\Carbon::parse($job->eta)->translatedFormat('d-M-y') }}</td>
                                     </tr>
                                     @endif
                                     @if($this->invoiceDetails['narration'] ?? false)

@@ -1,5 +1,5 @@
 BOOKING = {
-    title: 'Booking',
+    title: trans('Booking'),
     baseUrl: 'operation/booking',
     actionUrl: 'operation/booking',
     load() {
@@ -92,10 +92,10 @@ BOOKING = {
         },
         templates: {
             badge: {
-                1: '<span class="badge bg-warning-subtle text-warning-emphasis">Pending</span>',
-                2: '<span class="badge bg-success-subtle text-success-emphasis">Confirmed</span>',
-                3: '<span class="badge bg-primary-subtle text-primary-emphasis">Shipped</span>',
-                4: '<span class="badge bg-danger-subtle text-danger-emphasis">Cancelled</span>',
+                1: '<span class="badge bg-warning-subtle text-warning-emphasis">' + trans('Pending') + '</span>',
+                2: '<span class="badge bg-success-subtle text-success-emphasis">' + trans('Confirmed') + '</span>',
+                3: '<span class="badge bg-primary-subtle text-primary-emphasis">' + trans('Shipped') + '</span>',
+                4: '<span class="badge bg-danger-subtle text-danger-emphasis">' + trans('Cancelled') + '</span>',
             },
             modeIcon: {sea: 'bi-water', air: 'bi-airplane', road: 'bi-truck'},
             number: (row) => `<div class="cell-primary text-primary booking-no-link" style="cursor:pointer;">${row.row_no ?? ''}</div><div class="mt-1">${BOOKING.list.templates.badge[row.status] ?? ''}</div>`,
@@ -142,11 +142,11 @@ BOOKING = {
         openDrawer(id, name) {
             $('#drawerSubtitle').text(name || '');
             bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer')).show();
-            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
+            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> ' + trans('Loading...') + '</div>');
             $.get('/' + BOOKING.baseUrl + '/' + id + '/overview', function (data) {
                 $('#moduleOverview').html(data);
             }).fail(function () {
-                $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load booking details.</div>');
+                $('#moduleOverview').html('<div class="alert alert-danger m-3">' + trans('Failed to load booking details.') + '</div>');
             });
         },
     },
@@ -163,7 +163,7 @@ BOOKING = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'New Booking',
+                    title: trans('New Booking'),
                     url: GLOBAL_FN.buildUrl(BOOKING.baseUrl + '/create'),
                     content: null,
                     size: 'xl',

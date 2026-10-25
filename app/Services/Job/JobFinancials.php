@@ -53,6 +53,7 @@ class JobFinancials
             }])->orderBy('id')->get()->groupBy('doc_type');
 
         foreach (self::DOC as $docType => [$label, $type, $enum]) {
+            $label = __($label);
             $rows = ($links[$docType] ?? collect())->map(function ($l) use ($docType, $label, $type, $enum, &$docs, &$timeline) {
                 $m = $l->linkable;
                 $statusLabel = $enum && $l->status !== null ? ($enum::tryFrom((int) $l->status)?->label() ?? '') : '';

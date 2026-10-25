@@ -1,5 +1,5 @@
 COLLECTION = {
-    title: 'Collection',
+    title: trans('Collection'),
     baseUrl: 'transaction/collections',
     actionUrl: 'transaction/collections',
     currentTab: 'all',
@@ -152,11 +152,11 @@ COLLECTION = {
             let drawer = bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer'));
             drawer.show();
 
-            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
+            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> ' + trans('Loading...') + '</div>');
             $.get('/' + COLLECTION.baseUrl + '/' + collectionId + '/overview-drawer', function (data) {
                 $('#moduleOverview').html(data);
             }).fail(function () {
-                $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load collection details.</div>');
+                $('#moduleOverview').html('<div class="alert alert-danger m-3">' + trans('Failed to load collection details.') + '</div>');
             });
         },
 
@@ -300,7 +300,7 @@ COLLECTION = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'Create Collection',
+                    title: trans('Create Collection'),
                     url: GLOBAL_FN.buildUrl(`${COLLECTION.baseUrl}/create`),
                     content: null,
                     size: 'xl',
@@ -476,7 +476,7 @@ COLLECTION = {
                 method: 'GET',
                 success: function (response) {
                     if (response.length === 0) {
-                        $('#no-invoices-message').text('No approved invoices found for this customer.').show();
+                        $('#no-invoices-message').text(trans('No approved invoices found for this customer.')).show();
                         $('#invoices-table-container').hide();
                         return;
                     }

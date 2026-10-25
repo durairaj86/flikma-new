@@ -4,7 +4,7 @@
         <div class="fw-semibold fs-5">{{ $account->code }} &middot; {{ $account->name }}</div>
         <div class="small text-muted">
             <span class="badge {{ $type === 'debit' ? 'text-bg-primary' : 'text-bg-danger' }}">{{ $type === 'debit' ? __('Debit entries') : __('Credit entries') }}</span>
-            {{ __('up to') }} {{ \Carbon\Carbon::parse($to)->format('d M Y') }}
+            {{ __('up to') }} {{ \Carbon\Carbon::parse($to)->translatedFormat('d M Y') }}
             @if($multiple)<span class="ms-1">({{ __('including sub-accounts') }})</span>@endif
         </div>
     </div>

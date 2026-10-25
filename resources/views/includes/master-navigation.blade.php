@@ -30,7 +30,7 @@
             <li class="nav-item" data-url="/masters/departments">
                 <a href="{{ asset('/masters/departments') }}"
                    class="nav-link d-flex align-items-center py-2 {{ $page1 == 'departments' ? 'active' : 'text-dark' }}">
-                    <i class="bi bi-diagram-3 text-secondary me-2"></i> Departments
+                    <i class="bi bi-diagram-3 text-secondary me-2"></i> {{ __('Departments') }}
                 </a>
             </li>
 
@@ -38,7 +38,7 @@
             <li class="nav-item" data-url="/masters/quotation-terms">
                 <a href="{{ asset('/masters/quotation-terms') }}"
                    class="nav-link d-flex align-items-center py-2 {{ $page1 == 'quotation-terms' ? 'active' : 'text-dark' }}">
-                    <i class="bi bi-file-earmark-text text-secondary me-2"></i> Quotation Terms
+                    <i class="bi bi-file-earmark-text text-secondary me-2"></i> {{ __('Quotation Terms') }}
                 </a>
             </li>
 
@@ -46,7 +46,7 @@
             <li class="nav-item" data-url="/masters/hs-tariffs">
                 <a href="{{ asset('/masters/hs-tariffs') }}"
                    class="nav-link d-flex align-items-center py-2 {{ $page1 == 'hs-tariffs' ? 'active' : 'text-dark' }}">
-                    <i class="bi bi-receipt text-secondary me-2"></i> HS Tariff
+                    <i class="bi bi-receipt text-secondary me-2"></i> {{ __('HS Tariff') }}
                 </a>
             </li>
 
@@ -54,7 +54,7 @@
             <li class="nav-item" data-url="/masters/period-closing">
                 <a href="{{ asset('/masters/period-closing') }}"
                    class="nav-link d-flex align-items-center py-2 {{ $page1 == 'period-closing' ? 'active' : 'text-dark' }}">
-                    <i class="bi bi-lock text-secondary me-2"></i> Period Closing
+                    <i class="bi bi-lock text-secondary me-2"></i> {{ __('Period Closing') }}
                 </a>
             </li>
 
@@ -63,20 +63,20 @@
                 <button class="nav-link d-flex align-items-center py-2 w-100 border-0 bg-transparent text-dark"
                         data-bs-toggle="collapse" data-bs-target="#transportSubmenu"
                         aria-expanded="{{ $page1 == 'transport' ? 'true' : 'false' }}">
-                    <i class="bi bi-truck text-secondary me-2"></i> Transport Directory
+                    <i class="bi bi-truck text-secondary me-2"></i> {{ __('Transport Directory') }}
                     <i class="bi bi-chevron-down ms-auto small"></i>
                 </button>
                 <ul class="collapse ps-4 {{ $page1 == 'transport' ? 'show' : '' }}" id="transportSubmenu">
                     <li data-url="/masters/transport/directories/seaports">
                         <a href="/masters/transport/directories/seaports"
                            class="nav-link py-1 {{ $page3 == 'seaports' ? 'active' : 'text-dark' }}">
-                            <i class="bi bi-file-earmark-text me-2"></i> Seaports
+                            <i class="bi bi-file-earmark-text me-2"></i> {{ __('Seaports') }}
                         </a>
                     </li>
                     <li data-url="/masters/transport/directories/airports">
                         <a href="/masters/transport/directories/airports"
                            class="nav-link py-1 {{ $page3 == 'airports' ? 'active' : 'text-dark' }}">
-                            <i class="bi bi-airplane me-2"></i> Airports
+                            <i class="bi bi-airplane me-2"></i> {{ __('Airports') }}
                         </a>
                     </li>
                     {{--<li data-url="/masters/transport/directories/shippinglines">
@@ -99,38 +99,38 @@
                 <button class="nav-link d-flex align-items-center py-2 w-100 border-0 bg-transparent text-dark"
                         data-bs-toggle="collapse" data-bs-target="#convertedSubmenu"
                         aria-expanded="{{ in_array($page1,['services','package','container','incoterms','currencies']) ? 'true' : 'false' }}">
-                    <i class="bi bi-database-check text-secondary me-2"></i> Predefined Data
+                    <i class="bi bi-database-check text-secondary me-2"></i> {{ __('Predefined Data') }}
                     <i class="bi bi-chevron-down ms-auto small"></i>
                 </button>
                 <ul class="collapse ps-4 {{ in_array($page1,['services','package','container','incoterms','currencies']) ? 'show' : '' }}"
                     id="convertedSubmenu">
                     <li data-url="/masters/services"><a href="/masters/services"
                                                         class="nav-link py-1 {{ $page1 == 'services' ? 'active' : 'text-dark' }}"><i
-                                class="bi bi-tools me-2"></i> Logistic Departments</a></li>
+                                class="bi bi-tools me-2"></i> {{ __('Logistic Departments') }}</a></li>
                     <li data-url="/masters/package/codes"><a href="/masters/package/codes"
                                                              class="nav-link py-1 {{ $page1 == 'package' ? 'active' : 'text-dark' }}"><i
-                                class="bi bi-box me-2"></i> Package Codes</a></li>
+                                class="bi bi-box me-2"></i> {{ __('Package Codes') }}</a></li>
                     <li data-url="/masters/container/types"><a href="/masters/container/types"
                                                                class="nav-link py-1 {{ $page1 == 'container' ? 'active' : 'text-dark' }}"><i
-                                class="bi bi-grid-3x3-gap me-2"></i> Container Types</a></li>
+                                class="bi bi-grid-3x3-gap me-2"></i> {{ __('Container Types') }}</a></li>
                     <li data-url="/masters/incoterms"><a href="/masters/incoterms"
                                                          class="nav-link py-1 {{ $page1 == 'incoterms' ? 'active' : 'text-dark' }}"><i
-                                class="bi bi-globe me-2"></i> Incoterms</a></li>
+                                class="bi bi-globe me-2"></i> {{ __('Incoterms') }}</a></li>
                     <li data-url="/masters/currencies"><a href="/masters/currencies"
                                                           class="nav-link py-1 {{ $page1 == 'currencies' ? 'active' : 'text-dark' }}"><i
-                                class="bi bi-currency-exchange me-2"></i> Currencies</a></li>
+                                class="bi bi-currency-exchange me-2"></i> {{ __('Currencies') }}</a></li>
                 </ul>
             </li>
             <li class="nav-item" data-url="/masters/banks">
                 <a href="{{ asset('/masters/banks') }}"
                    class="nav-link d-flex align-items-center py-2 {{ $page1 == 'banks' ? 'active' : 'text-dark' }}">
-                    <i class="bi bi-bank text-secondary me-2"></i> Banks
+                    <i class="bi bi-bank text-secondary me-2"></i> {{ __('Banks') }}
                 </a>
             </li>
             <li class="nav-item" data-url="/masters/descriptions">
                 <a href="{{ asset('/masters/descriptions') }}"
                    class="nav-link d-flex align-items-center py-2 {{ $page1 == 'descriptions' ? 'active' : 'text-dark' }}">
-                    <i class="bi bi-file-text text-secondary me-2"></i> Descriptions
+                    <i class="bi bi-file-text text-secondary me-2"></i> {{ __('Descriptions') }}
                 </a>
             </li>
             <li class="nav-item" data-url="/masters/units">
@@ -142,7 +142,7 @@
             <li class="nav-item" data-url="/masters/salesperson">
                 <a href="{{ asset('/masters/salesperson') }}"
                    class="nav-link d-flex align-items-center py-2 {{ $page1 == 'salesperson' ? 'active' : 'text-dark' }}">
-                    <i class="bi bi-person-badge text-secondary me-2"></i> Salesperson
+                    <i class="bi bi-person-badge text-secondary me-2"></i> {{ __('Salesperson') }}
                 </a>
             </li>
             <li class="nav-item" data-url="/masters/vehicles">
@@ -160,7 +160,7 @@
             <li class="nav-item" data-url="/masters/finance/opening-balance">
                 <a href="{{ asset('/masters/finance/opening-balance') }}"
                    class="nav-link d-flex align-items-center py-2 {{ $page2 == 'opening-balance' ? 'active' : 'text-dark' }}">
-                    <i class="bi bi-person-badge text-secondary me-2"></i> Opening Balance
+                    <i class="bi bi-person-badge text-secondary me-2"></i> {{ __('Opening Balance') }}
                 </a>
             </li>
         </ul>

@@ -1,5 +1,5 @@
 ASSET = {
-    title: 'Asset',
+    title: trans('Asset'),
     baseUrl: 'finance/asset',
     actionUrl: 'finance/asset',
     load() {
@@ -204,7 +204,7 @@ ASSET = {
                     drawer.show();
 
                     // Load Overview
-                    $('#moduleOverview').html('<p>Loading...</p>');
+                    $('#moduleOverview').html('<p>' + trans('Loading...') + '</p>');
                     $.get('/finance/asset/' + assetId + '/overview', function (data) {
                         $('#moduleOverview').html(data);
                     });
@@ -251,7 +251,7 @@ ASSET = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'New Asset',
+                    title: trans('New Asset'),
                     url: GLOBAL_FN.buildUrl(ASSET.baseUrl + '/create'),
                     content: null,
                     size: 'md',

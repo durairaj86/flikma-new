@@ -63,7 +63,7 @@ class AssetController extends Controller
             ->addColumn('actions', function ($m) {
                 $id = $m->id;
                 return '<div class="btn-group btn-group-sm" role="group">'
-                    . '<a href="/finance/asset/' . $id . '/overview" class="btn btn-outline-primary">View</a>'
+                    . '<a href="/finance/asset/' . $id . '/overview" class="btn btn-outline-primary">' . __('View') . '</a>'
                     . '</div>';
             })
             ->rawColumns(['actions', 'status_badge'])

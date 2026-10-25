@@ -4,7 +4,7 @@
     {{-- Date Header --}}
     <div class="sticky-top bg-white pt-3 pb-2 date-header" style="top: -1px; z-index: 10;">
         <h6 class="fw-bold text-muted mb-0">
-            {{ \Carbon\Carbon::parse($date)->isToday() ? 'TODAY' : strtoupper(\Carbon\Carbon::parse($date)->format('F j, Y')) }}
+            {{ \Carbon\Carbon::parse($date)->isToday() ? 'TODAY' : strtoupper(\Carbon\Carbon::parse($date)->translatedFormat('F j, Y')) }}
         </h6>
     </div>
 
@@ -41,9 +41,9 @@
                                             </li>
                                         @endforeach
                                     </ul>
-                                    <span class="text-warning mt-2">By : {{ $actionByLog->name ?? '' }}</span>
+                                    <span class="text-warning mt-2">{{ __("By") }}: {{ $actionByLog->name ?? '' }}</span>
                                 @elseif ($log->action == 'created')
-                                    <span class="text-success mt-2">By : {{ $actionByLog->name ?? '' }}</span>
+                                    <span class="text-success mt-2">{{ __("By") }}: {{ $actionByLog->name ?? '' }}</span>
                                 @endif
                             </div>
 

@@ -19,7 +19,7 @@
         {{-- Loader/Message for Scrolling --}}
         <div id="feed-loader" class="text-center my-3" style="display: none;">
             <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
+                <span class="visually-hidden">{{ __('Loading...') }}</span>
             </div>
         </div>
         <div id="end-of-feed" class="text-center text-muted small my-3" style="display: none;">

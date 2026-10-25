@@ -10,11 +10,11 @@ enum AssetStatusEnum: int
 
     public function label(): string
     {
-        return match ($this) {
+        return __(match ($this) {
             self::CURRENT => 'Current',
             self::RUNNING => 'Running',
             self::CLOSED => 'Closed',
-        };
+        });
     }
 
     public static function fromName(string $name): ?int

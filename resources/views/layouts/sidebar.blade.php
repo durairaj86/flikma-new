@@ -22,7 +22,7 @@
     <div class="sidebar-wrapper">
         <nav class="mt-2">
             <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="navigation"
-                aria-label="Main navigation" data-accordion="false">
+                aria-label="{{ __('Main navigation') }}" data-accordion="false">
 
                 <!-- Dashboard -->
                 <li class="nav-item {{ $menu == 'dashboard' ? 'active' : '' }}">
@@ -1199,7 +1199,7 @@
 
             function applyState(collapsed) {
                 sidebarContainer.classList.toggle('sidebar-collapsed', collapsed);
-                toggleBtn.setAttribute('title', collapsed ? 'Expand menu' : 'Collapse menu');
+                toggleBtn.setAttribute('title', collapsed ? @json(__('Expand menu')) : @json(__('Collapse menu')));
             }
 
             var sectionState = readSectionState(AUTO_SECTION);
@@ -1229,12 +1229,12 @@
         if (themeBtn) {
             var THEMES = ['gray', 'light', 'dark', 'indigo', 'ocean', 'forest'];
             var THEME_LABELS = {
-                gray: 'Dark Gray',
-                light: 'Light',
-                dark: 'Dark',
-                indigo: 'Indigo',
-                ocean: 'Ocean',
-                forest: 'Forest'
+                gray: @json(__('Dark Gray')),
+                light: @json(__('Light')),
+                dark: @json(__('Dark')),
+                indigo: @json(__('Indigo')),
+                ocean: @json(__('Ocean')),
+                forest: @json(__('Forest'))
             };
             var THEME_KEY = 'flikma-sidebar-theme';
             var current = document.documentElement.getAttribute('data-sidebar-theme') || 'gray';
@@ -1243,9 +1243,9 @@
             }
 
             function describeTheme(theme) {
-                var label = 'Sidebar theme: ' + THEME_LABELS[theme];
+                var label = @json(__('Sidebar theme')) + ': ' + THEME_LABELS[theme];
                 themeBtn.setAttribute('title', label);
-                themeBtn.setAttribute('aria-label', 'Change ' + label.toLowerCase());
+                themeBtn.setAttribute('aria-label', label);
             }
 
             describeTheme(current);

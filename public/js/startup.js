@@ -210,7 +210,7 @@ let GLOBAL_FN = {
             drawer.show();
 
             // Load Overview
-            $('#feedOverview').html('<p>Loading...</p>');
+            $('#feedOverview').html('<p>' + trans('Loading...') + '</p>');
             $.get('/log/activities/feed', function (data) {
                 $('#feedOverview').html(data);
             });
@@ -574,14 +574,14 @@ function deleteFn(url, settings) {
     let message = trans("Are you sure you want to delete?");
 
     $.confirm({
-        title: 'Confirm!',
+        title: trans('Confirm!'),
         buttons: {
             cancel: {
-                text: 'No',
+                text: trans('No'),
                 btnClass: 'btn-secondary'
             },
             confirm: {
-                text: 'Yes',
+                text: trans('Yes'),
                 btnClass: 'btn-primary',
                 action: function () {
                     $.ajax({
@@ -702,7 +702,7 @@ let webModal = {
         $('#globalModalBody').html(`
         <div class="text-center p-4">
             <div class="spinner-border text-primary" role="status"></div>
-            <div class="mt-2">Loading...</div>
+            <div class="mt-2">${trans('Loading...')}</div>
         </div>
     `);
 
@@ -926,13 +926,13 @@ let webModal = {
         if (buttonsConfig.includes('cancel')) {
             html += `
             <button type="button" class="btn btn-outline-secondary" id="btn-cancel">
-                <i class="bi bi-x-circle me-1"></i> Cancel
+                <i class="bi bi-x-circle me-1"></i> ${trans('Cancel')}
             </button>`;
         }
         if (buttonsConfig.includes('saveNew')) {
             html += `
             <button type="button" class="btn btn-outline-secondary" id="modalSaveNewBtn">
-                <i class="bi bi-plus-circle me-1"></i> Save & New
+                <i class="bi bi-plus-circle me-1"></i> ${trans('Save & New')}
             </button>`;
         }
         if (buttonsConfig.includes('saveDraft') && form.length) {
@@ -976,7 +976,7 @@ let webModal = {
     quickModal: {
         open(options) {
             let defaults = {
-                title: 'Modal',
+                title: trans('Modal'),
                 content: null,
                 size: 'xl',
                 scroll: true,
@@ -1152,7 +1152,7 @@ let webModal = {
     id="modalSaveNewBtn"
     aria-label="${trans('Save and open new form')}"
   >
-    <i class="bi bi-x-circle me-1"></i> Save & New
+    <i class="bi bi-x-circle me-1"></i> ${trans('Save & New')}
   </button>
 
   <button
@@ -1161,7 +1161,7 @@ let webModal = {
     form="${formId}"
     aria-label="${trans('Submit the form')}"
   >
-    <i class="bi bi-check-circle me-1"></i> Save
+    <i class="bi bi-check-circle me-1"></i> ${trans('Save')}
   </button>
 </div>
 
@@ -1262,7 +1262,7 @@ let webModal = {
 
             $.confirm({
                 title: trans('Are you sure you want to exit?'),
-                content: 'Some information has been modified. Please save your changes or continue without saving.',
+                content: trans('Some information has been modified. Please save your changes or continue without saving.'),
                 autoClose: false,
                 backgroundDismiss: false,
                 escapeKey: false,
@@ -1747,7 +1747,7 @@ webDataTable = {
             dropdownDiv.append(`
         <li class="loader-item text-center p-2 pt-5 pb-5">
             <div class="spinner-border spinner-border-sm text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
+                <span class="visually-hidden">${trans('Loading...')}</span>
             </div>
         </li>
     `);
@@ -1934,6 +1934,8 @@ function loadJs(methodName = null, payload = '', config = {}, parentModuleName =
         let loadModule = parentModuleName ?? MODULE;
 
         const moduleRoot = window[loadModule];
+        // a page can name a module that has no script of its own
+        if (!moduleRoot || typeof moduleRoot !== 'object') return true;
         const resolvedMethod = methodName ?? loadModule + '.load';
         const methodParts = resolvedMethod.split('.');
 
@@ -1942,8 +1944,9 @@ function loadJs(methodName = null, payload = '', config = {}, parentModuleName =
 
         for (let i = 0; i < methodParts.length; i++) {
             parentContext = currentContext ?? moduleRoot;
+            if (!parentContext) return true;
 
-            if (typeof parentContext[methodParts[i]] === 'object') {
+            if (parentContext[methodParts[i]] && typeof parentContext[methodParts[i]] === 'object') {
                 currentContext = parentContext[methodParts[i]];
             } else if (
                 typeof moduleRoot === 'object' &&

@@ -1,5 +1,5 @@
 ENQUIRY = {
-    title: 'Enquiry',
+    title: trans('Enquiry'),
     baseUrl: 'sales/enquiry',
     actionUrl: 'sales/enquiry',
     load() {
@@ -113,11 +113,11 @@ ENQUIRY = {
             ENQUIRY.list.loadDrawerActions(enquiryId);
 
             // Load content
-            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
+            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> ' + trans('Loading...') + '</div>');
             $.get('/sales/enquiry/' + enquiryId + '/overview-drawer', function (data) {
                 $('#moduleOverview').html(data);
             }).fail(function () {
-                $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load enquiry details.</div>');
+                $('#moduleOverview').html('<div class="alert alert-danger m-3">' + trans('Failed to load enquiry details.') + '</div>');
             });
         },
         // Next-step buttons in the drawer header — the same actions the row menu offers:
@@ -326,7 +326,7 @@ ENQUIRY = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'Add Enquiry',
+                    title: trans('Add Enquiry'),
                     url: GLOBAL_FN.buildUrl('sales/enquiry/create'),
                     content: null,
                     size: 'md',

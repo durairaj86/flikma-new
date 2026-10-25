@@ -20,7 +20,7 @@
                             <td class="ps-4">
                                 <span class="fw-bold text-dark">{{ $job['job_number'] }}</span>
                             </td>
-                            <td class="small text-muted">{{ \Carbon\Carbon::parse($job['job_date'])->format('d M Y') }}</td>
+                            <td class="small text-muted">{{ \Carbon\Carbon::parse($job['job_date'])->translatedFormat('d M Y') }}</td>
                             <td class="small">{{ $job['customer'] }}</td>
                             <td class="small">{{ $job['activity'] }}</td>
                             <td class="text-end tabular-nums text-pr fw-medium">{{ number_format($job['income'], 2) }}</td>
@@ -81,8 +81,8 @@
                 </td>
                 <td class="text-end">
                     <div class="stmt-title">{{ __('JOB BALANCE REPORT') }}</div>
-                    <div class="stmt-sub">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
-                    <div class="stmt-sub">{{ __('Generated:') }} {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency:') }} {{ __('SAR') }}</div>
+                    <div class="stmt-sub">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->translatedFormat('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->translatedFormat('d M Y') }}</div>
+                    <div class="stmt-sub">{{ __('Generated:') }} {{ now()->translatedFormat('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency:') }} {{ __('SAR') }}</div>
                 </td>
             </tr>
         </table>
@@ -103,7 +103,7 @@
             @forelse($jobBalanceReportData['jobs'] as $job)
                 <tr>
                     <td>{{ $job['job_number'] }}</td>
-                    <td>{{ \Carbon\Carbon::parse($job['job_date'])->format('d M Y') }}</td>
+                    <td>{{ \Carbon\Carbon::parse($job['job_date'])->translatedFormat('d M Y') }}</td>
                     <td>{{ $job['customer'] }}</td>
                     <td>{{ $job['activity'] }}</td>
                     <td class="text-end">{{ number_format($job['income'], 2) }}</td>

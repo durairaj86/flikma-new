@@ -91,7 +91,7 @@ class ProfitAndLossTable extends Component
                 if ($balance != 0) {
                     $revenueAccounts[] = [
                         'account_code' => $account->code,
-                        'account_name' => $account->name,
+                        'account_name' => __($account->name),
                         'balance' => $balance
                     ];
                     $totalRevenue += $balance;
@@ -102,7 +102,7 @@ class ProfitAndLossTable extends Component
                 if ($balance != 0) {
                     $expenseAccounts[] = [
                         'account_code' => $account->code,
-                        'account_name' => $account->name,
+                        'account_name' => __($account->name),
                         'balance' => $balance
                     ];
                     $totalExpenses += $balance;

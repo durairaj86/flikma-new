@@ -188,9 +188,9 @@
                                         </td>
                                         <td>
                                             <span class="fw-medium d-block">{{ $txn->reference }}</span>
-                                            <span class="x-small text-muted uppercase">{{ $txn->type }}</span>
+                                            <span class="x-small text-muted uppercase">{{ __(Str::headline($txn->type)) }}</span>
                                         </td>
-                                        <td class="small">{{ $txn->description }}</td>
+                                        <td class="small">{{ __($txn->description) }}</td>
                                         <td class="small">
                                             @if($txn->fcy_amount !== null)
                                                 <span class="fw-medium d-block">{{ $txn->currency }} {{ number_format($txn->fcy_amount, 2) }}</span>
@@ -304,7 +304,7 @@
                                 @endif
                             </td>
                             <td>{{ $txn->reference }}</td>
-                            <td>{{ $txn->description }}</td>
+                            <td>{{ __($txn->description) }}</td>
                             <td>
                                 @if($txn->fcy_amount !== null)
                                     {{ $txn->currency }} {{ number_format($txn->fcy_amount, 2) }}<br>

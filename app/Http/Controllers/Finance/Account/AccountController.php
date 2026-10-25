@@ -220,6 +220,7 @@ class AccountController extends Controller
                 'class' => 'row-item',
             ])
             ->editColumn('is_active', fn($row) => (bool)$row->is_active)
+            ->editColumn('name', fn($row) => __($row->name)) // default chart-of-accounts names have Arabic
             ->with([
                 'statusCounts' => $allCounts,  // ✅ send to DataTables response
             ])

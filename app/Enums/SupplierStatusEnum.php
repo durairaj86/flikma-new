@@ -9,10 +9,10 @@ enum SupplierStatusEnum: int
 
     public function label(): string
     {
-        return match ($this) {
+        return __(match ($this) {
             self::CONFIRMED => 'confirmed',
             self::BLOCKED => 'blocked',
-        };
+        });
     }
 
     public function color(): string

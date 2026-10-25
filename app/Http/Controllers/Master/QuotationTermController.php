@@ -26,7 +26,7 @@ class QuotationTermController extends Controller
             ])
             ->editColumn('is_general', function ($row) {
                 return $row->is_general
-                    ? '<span class="badge bg-primary-subtle text-primary">General</span>'
+                    ? '<span class="badge bg-primary-subtle text-primary">' . __('General') . '</span>'
                     : '<span class="badge bg-secondary-subtle text-secondary">' . e($row->activity->name ?? '—') . '</span>';
             })
             ->editColumn('terms', function ($row) {

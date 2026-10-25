@@ -93,15 +93,15 @@
         <div class="d-flex align-items-center justify-content-between mb-3 px-1 d-print-none">
             <div class="small text-muted">
                 <i class="bi bi-calendar3 me-1"></i>
-                {{ __('Period:') }} <strong class="text-dark">{{ \Carbon\Carbon::parse($startDate)->format('d M Y') }}</strong>
-                — <strong class="text-dark">{{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</strong>
+                {{ __('Period:') }} <strong class="text-dark">{{ \Carbon\Carbon::parse($startDate)->translatedFormat('d M Y') }}</strong>
+                — <strong class="text-dark">{{ \Carbon\Carbon::parse($endDate)->translatedFormat('d M Y') }}</strong>
                 @php $selectedCustomer = collect($customers)->firstWhere('id', $customerId); @endphp
                 @if($selectedCustomer)
                     &nbsp;·&nbsp; {{ __('Customer:') }} <strong class="text-dark">{{ $selectedCustomer['name_en'] }}</strong>
                 @endif
             </div>
             <div class="small text-muted">
-                {{ __('Generated:') }} {{ now()->format('d M Y, H:i') }}
+                {{ __('Generated:') }} {{ now()->translatedFormat('d M Y, H:i') }}
             </div>
         </div>
 

@@ -47,7 +47,7 @@ class PayrollRunController extends Controller
             ->orderBy('code')
             ->get(['id', 'code', 'name', 'type']);
 
-        $monthLabel = Carbon::create($year, $month, 1)->format('F Y');
+        $monthLabel = Carbon::create($year, $month, 1)->translatedFormat('F Y');
 
         return view('modules.payroll.runs.index', compact('records', 'employees', 'month', 'year', 'monthLabel', 'paymentAccounts'));
     }
@@ -107,7 +107,7 @@ class PayrollRunController extends Controller
                 ];
             });
 
-        $monthLabel = Carbon::create($year, $month, 1)->format('F Y');
+        $monthLabel = Carbon::create($year, $month, 1)->translatedFormat('F Y');
 
         return view('modules.payroll.runs.create', compact('preview', 'month', 'year', 'monthLabel'));
     }

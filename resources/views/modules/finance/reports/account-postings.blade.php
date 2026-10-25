@@ -4,7 +4,7 @@
         <div class="fw-semibold fs-5">{{ $account->code }} &middot; {{ $account->name }}</div>
         <div class="small text-muted">
             <span class="badge text-bg-secondary">{{ $account->type }}</span>
-            @if($from){{ \Carbon\Carbon::parse($from)->format('d M Y') }} &ndash; @else{{ __('up to') }} @endif{{ \Carbon\Carbon::parse($to)->format('d M Y') }}
+            @if($from){{ \Carbon\Carbon::parse($from)->translatedFormat('d M Y') }} &ndash; @else{{ __('up to') }} @endif{{ \Carbon\Carbon::parse($to)->translatedFormat('d M Y') }}
         </div>
     </div>
     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle me-1"></i>{{ __('Close') }}</button>

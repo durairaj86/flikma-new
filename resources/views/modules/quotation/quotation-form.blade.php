@@ -378,7 +378,7 @@
                                         <div class="input-group">
                                             <input type="text" step="0.01" name="container_qty[]"
                                                    class="form-control integer" maxlength="6"
-                                                   placeholder="Qty"
+                                                   placeholder="{{ __('Qty') }}"
                                                    value="{{ $container->qty ?? '' }}">
                                             <select name="container_uom[]" class="tom-select">
                                                 <option value="PCS" {{ ($container->uom ?? '')=='PCS'?'selected':'' }}>

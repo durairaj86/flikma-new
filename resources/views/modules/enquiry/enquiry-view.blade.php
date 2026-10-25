@@ -6,7 +6,7 @@
         </div>
         <div class="d-flex align-items-center gap-3 ms-auto flex-shrink-0">
             <div class="d-flex align-items-center gap-2" id="drawerActions"></div>
-            <button type="button" class="btn-close m-0" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            <button type="button" class="btn-close m-0" data-bs-dismiss="offcanvas" aria-label="{{ __('Close') }}"></button>
         </div>
     </div>
 

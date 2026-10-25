@@ -107,7 +107,7 @@ BANK = {
                     drawer.show();
 
                     // Load Overview
-                    $('#customerOverview').html('<p>Loading...</p>');
+                    $('#customerOverview').html('<p>' + trans('Loading...') + '</p>');
                     $.get('/masters/bank/' + customerId + '/overview', function (data) {
                         $('#customerOverview').html(data);
                     });
@@ -119,7 +119,7 @@ BANK = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'Add Bank',
+                    title: trans('Add Bank'),
                     url: GLOBAL_FN.buildUrl('masters/bank/create'),
                     content: null,
                     size: 'md',

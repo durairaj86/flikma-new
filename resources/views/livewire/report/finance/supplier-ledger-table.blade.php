@@ -115,7 +115,7 @@
                         @endphp
                         <tr class="{{ $idx % 2 === 0 ? '' : 'gl-row-alt' }}">
                             <td class="ps-4 gl-date">
-                                {{ \Carbon\Carbon::parse($txn['date'])->format('d M Y') }}
+                                {{ \Carbon\Carbon::parse($txn['date'])->translatedFormat('d M Y') }}
                             </td>
                             <td class="gl-voucher">{{ $txn['voucher_no'] }}</td>
                             <td>
@@ -201,12 +201,12 @@
             </td>
             <td class="text-end">
                 <div class="stmt-title">{{ __('SUPPLIER LEDGER') }}</div>
-                <div class="stmt-sub">{{ __('Period') }}: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
+                <div class="stmt-sub">{{ __('Period') }}: {{ \Carbon\Carbon::parse($startDate)->translatedFormat('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->translatedFormat('d M Y') }}</div>
                 @if(count($activeSuppliers) > 0)
                     @php $printSupplier = reset($activeSuppliers); @endphp
                     <div class="stmt-sub">{{ __('Supplier') }}: {{ $printSupplier['supplier_code'] }} — {{ $printSupplier['supplier_name'] }}</div>
                 @endif
-                <div class="stmt-sub">{{ __('Generated') }}: {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency') }}: {{ optional(authUserCompany())->base_currency ?? 'SAR' }}</div>
+                <div class="stmt-sub">{{ __('Generated') }}: {{ now()->translatedFormat('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency') }}: {{ optional(authUserCompany())->base_currency ?? 'SAR' }}</div>
             </td>
         </tr>
     </table>

@@ -1,4 +1,4 @@
-@section('page-title', 'Employee Loans')
+@section('page-title', __('Employee Loans'))
 @section('hide-topbar', true)
 <x-app-layout>
 <div class="pr-wrap">
@@ -6,12 +6,12 @@
 <div id="payrollAjaxRoot">
     <div class="d-flex align-items-center justify-content-between mb-4">
         <div>
-            <h1 class="h4 fw-bold text-dark mb-0">Employee Loans</h1>
-            <p class="text-muted small mb-0">Manage employee loan records.</p>
+            <h1 class="h4 fw-bold text-dark mb-0">{{ __('Employee Loans') }}</h1>
+            <p class="text-muted small mb-0">{{ __('Manage employee loan records.') }}</p>
         </div>
         <div>
             <a href="{{ route('employee-loans.create') }}" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus"></i> New Loan
+                <i class="bi bi-plus"></i> {{ __('New Loan') }}
             </a>
         </div>
     </div>
@@ -35,14 +35,14 @@
         <div class="card-body">
             <form method="GET" class="row g-2">
                 <div class="col-md-4">
-                    <x-common.employees name="employee_id" class="form-select-sm" :value="request('employee_id')" placeholder="All Employees" />
+                    <x-common.employees name="employee_id" class="form-select-sm" :value="request('employee_id')" placeholder="{{ __('All Employees') }}" />
                 </div>
                 <div class="col-md-2">
                     <select name="status" class="form-select form-select-sm tom-select">
-                        <option value="">All Status</option>
-                        <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
-                        <option value="closed" {{ request('status') == 'closed' ? 'selected' : '' }}>Closed</option>
-                        <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                        <option value="">{{ __('All Status') }}</option>
+                        <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>{{ __('Active') }}</option>
+                        <option value="closed" {{ request('status') == 'closed' ? 'selected' : '' }}>{{ __('Closed') }}</option>
+                        <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>{{ __('Cancelled') }}</option>
                     </select>
                 </div>
                 <div class="col-md-1">
@@ -57,13 +57,13 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr class="small fw-bold text-uppercase text-secondary">
-                        <th class="px-4 py-3">Employee</th>
-                        <th class="px-4 py-3">Loan Amount</th>
-                        <th class="px-4 py-3">Installments</th>
-                        <th class="px-4 py-3">Paid</th>
-                        <th class="px-4 py-3">Remaining</th>
-                        <th class="px-4 py-3">Status</th>
-                        <th class="px-4 py-3 text-end">Actions</th>
+                        <th class="px-4 py-3">{{ __('Employee') }}</th>
+                        <th class="px-4 py-3">{{ __('Loan Amount') }}</th>
+                        <th class="px-4 py-3">{{ __('Installments') }}</th>
+                        <th class="px-4 py-3">{{ __('Paid') }}</th>
+                        <th class="px-4 py-3">{{ __('Remaining') }}</th>
+                        <th class="px-4 py-3">{{ __('Status') }}</th>
+                        <th class="px-4 py-3 text-end">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="small text-dark">
@@ -76,11 +76,11 @@
                             <td class="px-4 py-2">{{ number_format($loan->remaining_amount, 2) }}</td>
                             <td class="px-4 py-2">
                                 @if($loan->status == 'active')
-                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">Active</span>
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">{{ __('Active') }}</span>
                                 @elseif($loan->status == 'closed')
-                                    <span class="badge bg-success-subtle text-success border">Closed</span>
+                                    <span class="badge bg-success-subtle text-success border">{{ __('Closed') }}</span>
                                 @else
-                                    <span class="badge bg-secondary-subtle text-secondary border">Cancelled</span>
+                                    <span class="badge bg-secondary-subtle text-secondary border">{{ __('Cancelled') }}</span>
                                 @endif
                             </td>
                             <td class="px-4 py-2 text-end">
@@ -96,7 +96,7 @@
                         <tr>
                             <td colspan="7" class="px-4 py-5 text-center text-muted">
                                 <i class="bi bi-cash-stack display-6 d-block mb-2 opacity-25"></i>
-                                No loans found.
+                                {{ __('No loans found.') }}
                             </td>
                         </tr>
                     @endforelse

@@ -10,13 +10,13 @@
           class="position-absolute end-0 me-5 d-none"
           style="top: 50%; transform: translateY(-50%); z-index: 5;">
         <div class="spinner-border spinner-border-sm text-secondary" role="status">
-            <span class="visually-hidden">Loading...</span>
+            <span class="visually-hidden">{{ __('Loading...') }}</span>
         </div>
     </span>
 
     <!-- Currency Code -->
     <select name="currency" id="currency-code" @if(isset($wireModel)) wire:model.live="currency"
-            @endif placeholder="--Select Currency--" @disabled($disabled ?? false)
+            @endif placeholder="{{ __('--Select Currency--') }}" @disabled($disabled ?? false)
             class="tom-select" data-live-search="true" data-max-width="{{ $width ?? '150' }}" required>
         @foreach(currencies() as $code => $name)
             <option value="{{ $code }}" data-subtext="{{ $name }}" @selected($code == ($value ?? 'SAR'))>

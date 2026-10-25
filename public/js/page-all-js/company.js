@@ -1,5 +1,5 @@
 COMPANY = {
-    title: 'Company',
+    title: trans('Company'),
     baseUrl: 'settings/company',
     actionUrl: 'settings/company',
     load() {
@@ -16,8 +16,8 @@ COMPANY = {
         });
         // Logo and signature: choosing a file opens one shared crop modal; the cropped image replaces the file in the form.
         const targets = {
-            logo: { input: logoInput, preview: '#logoPreview', box: '#logoUploadBox', title: 'Crop your logo', max: 1200 },
-            signature: { input: signatureInput, preview: '#signaturePreview', box: '#signatureUploadBox', title: 'Crop your signature', max: 800 },
+            logo: { input: logoInput, preview: '#logoPreview', box: '#logoUploadBox', title: trans('Crop your logo'), max: 1200 },
+            signature: { input: signatureInput, preview: '#signaturePreview', box: '#signatureUploadBox', title: trans('Crop your signature'), max: 800 },
         };
         let cropper = null, cropFile = null, cropTarget = null;
         const cropModalEl = document.getElementById('logoCropModal');
@@ -155,7 +155,7 @@ COMPANY = {
                         }
                         toastr.error(msg, '', {positionClass: 'toast-bottom-center'});
                     } else {
-                        toastr.error('Something went wrong!');
+                        toastr.error(trans('Something went wrong!'));
                     }
                 },
                 complete: function () {

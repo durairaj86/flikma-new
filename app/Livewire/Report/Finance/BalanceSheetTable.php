@@ -94,7 +94,7 @@ class BalanceSheetTable extends Component
                 if ($balance != 0) {
                     $assetAccounts[] = [
                         'account_code' => $account->code,
-                        'account_name' => $account->name,
+                        'account_name' => __($account->name),
                         'balance'      => $balance,
                     ];
                     $totalAssets += $balance;
@@ -105,7 +105,7 @@ class BalanceSheetTable extends Component
                 if ($balance != 0) {
                     $liabilityAccounts[] = [
                         'account_code' => $account->code,
-                        'account_name' => $account->name,
+                        'account_name' => __($account->name),
                         'balance'      => $balance,
                     ];
                     $totalLiabilities += $balance;
@@ -116,7 +116,7 @@ class BalanceSheetTable extends Component
                 if ($balance != 0) {
                     $equityAccounts[] = [
                         'account_code' => $account->code,
-                        'account_name' => $account->name,
+                        'account_name' => __($account->name),
                         'balance'      => $balance,
                     ];
                     $totalEquity += $balance;
@@ -166,7 +166,7 @@ class BalanceSheetTable extends Component
         if ($netIncome != 0) {
             $equityAccounts[] = [
                 'account_code' => '',
-                'account_name' => 'Current Year Net Income / (Loss)',
+                'account_name' => __('Current Year Net Income / (Loss)'),
                 'balance'      => $netIncome,
             ];
             $totalEquity += $netIncome;

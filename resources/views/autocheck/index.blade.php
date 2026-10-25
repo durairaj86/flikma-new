@@ -1,4 +1,4 @@
-@section('page-title', 'Autocheck')
+@section('page-title', __('Autocheck'))
 @section('hide-topbar', true)
 <x-app-layout>
     <style>

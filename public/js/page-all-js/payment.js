@@ -1,5 +1,5 @@
 PAYMENT = {
-    title: 'Payment',
+    title: trans('Payment'),
     baseUrl: 'transaction/payments',
     actionUrl: 'transaction/payments',
     currentTab: 'all',
@@ -173,11 +173,11 @@ PAYMENT = {
             let drawer = bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer'));
             drawer.show();
 
-            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
+            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> ' + trans('Loading...') + '</div>');
             $.get('/' + PAYMENT.baseUrl + '/' + paymentId + '/overview-drawer', function (data) {
                 $('#moduleOverview').html(data);
             }).fail(function () {
-                $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load payment details.</div>');
+                $('#moduleOverview').html('<div class="alert alert-danger m-3">' + trans('Failed to load payment details.') + '</div>');
             });
         },
 
@@ -221,7 +221,7 @@ PAYMENT = {
                     const id = row.attr('data-id');
                     const name = row.attr('data-name');
 
-                    if (confirm(`Are you sure you want to delete ${name}?`)) {
+                    if (confirm(trans('Are you sure you want to delete :name?').replace(':name', name))) {
                         $.ajax({
                             url: GLOBAL_FN.buildUrl(`${PAYMENT.baseUrl}/${id}`),
                             method: 'DELETE',
@@ -324,7 +324,7 @@ PAYMENT = {
                 <tr class="additional-transaction-row">
                     <td>
                         <select class="form-select account-select" name="additional_transaction_accounts[]" required>
-                            <option value="">Select Account</option>
+                            <option value="">${trans('Select Account')}</option>
                             ${PAYMENT.form.getAccountOptions()}
                         </select>
                     </td>
@@ -336,8 +336,8 @@ PAYMENT = {
                     </td>
                     <td>
                         <select class="form-select" name="additional_transaction_types[]" required>
-                            <option value="debit">Debit</option>
-                            <option value="credit">Credit</option>
+                            <option value="debit">${trans('Debit')}</option>
+                            <option value="credit">${trans('Credit')}</option>
                         </select>
                     </td>
                     <td>
@@ -378,7 +378,7 @@ PAYMENT = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'Create Payment',
+                    title: trans('Create Payment'),
                     url: GLOBAL_FN.buildUrl(`${PAYMENT.baseUrl}/create`),
                     content: null,
                     size: 'xl',
@@ -462,7 +462,7 @@ PAYMENT = {
                 method: 'GET',
                 success: function (response) {
                     if (response.length === 0) {
-                        $('#no-invoices-message').text('No approved invoices found for this supplier.').show();
+                        $('#no-invoices-message').text(trans('No approved invoices found for this supplier.')).show();
                         $('#invoices-table-container').hide();
                         return;
                     }

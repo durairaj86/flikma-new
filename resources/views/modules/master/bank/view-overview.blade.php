@@ -59,7 +59,7 @@
                 <h6 class="section-title text-uppercase text-muted mb-2">{{ __('Additional Details') }}</h6>
                 <div class="info-list">
                     <div><i class="bi bi-wallet2 me-2 text-primary"></i> <strong>{{ __('Account Type:') }}</strong> {{ ucfirst($bank->account_type ?? __('N/A')) }}</div>
-                    <div><i class="bi bi-calendar-check me-2 text-primary"></i> <strong>{{ __('Added On:') }}</strong> {{ $bank->created_at?->format('d M, Y') }}</div>
+                    <div><i class="bi bi-calendar-check me-2 text-primary"></i> <strong>{{ __('Added On:') }}</strong> {{ $bank->created_at?->translatedFormat('d M, Y') }}</div>
                 </div>
             </div>
         </div>

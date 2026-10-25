@@ -16,7 +16,7 @@
                         <li class="breadcrumb-item active">{{ __('Attendance') }}</li>
                     </ol>
                 </nav>
-                <h1 class="h4 fw-bold text-dark mb-0">{{ __('Attendance Calendar') }} — {{ $month->format('F Y') }}</h1>
+                <h1 class="h4 fw-bold text-dark mb-0">{{ __('Attendance Calendar') }} — {{ $month->translatedFormat('F Y') }}</h1>
             </div>
 
             <div class="d-none d-md-flex flex-wrap gap-2">
@@ -79,7 +79,7 @@
                                 <label class="form-label small fw-bold text-muted">{{ __('Month') }}</label>
                                 <select class="form-select tom-select" id="calendarMonthSelect" onchange="updateCalendarDate()">
                                     @foreach(range(1, 12) as $m)
-                                        <option value="{{ $m }}" {{ $month->month === $m ? 'selected' : '' }}>{{ \Illuminate\Support\Carbon::create()->month($m)->format('F') }}</option>
+                                        <option value="{{ $m }}" {{ $month->month === $m ? 'selected' : '' }}>{{ \Illuminate\Support\Carbon::create()->month($m)->translatedFormat('F') }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -93,7 +93,7 @@
                             </div>
                             <div :class="calendarOpen ? 'mb-0' : 'col-md-4 mb-0'">
                                 <label class="form-label small fw-bold text-muted">{{ __('Employee') }}</label>
-                                <x-common.employees name="employee_id" :value="request('employee_id')" placeholder="All Employees" onchange="attendanceSubmitFilter()" />
+                                <x-common.employees name="employee_id" :value="request('employee_id')" placeholder="{{ __('All Employees') }}" onchange="attendanceSubmitFilter()" />
                             </div>
                         </form>
                     </div>
@@ -104,7 +104,7 @@
             <div class="col-lg-9" x-show="calendarOpen" x-cloak>
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-white d-flex align-items-center justify-content-between py-3">
-                        <h6 class="fw-bold mb-0">{{ $month->format('F Y') }}</h6>
+                        <h6 class="fw-bold mb-0">{{ $month->translatedFormat('F Y') }}</h6>
                         <div class="btn-group">
                             <a href="{{ route('payroll.attendance.index', array_filter(['date' => $prevMonth, 'employee_id' => request('employee_id')])) }}"
                                class="btn btn-sm btn-outline-secondary"><i class="bi bi-chevron-left me-1"></i>{{ __('Previous') }}</a>
@@ -222,9 +222,9 @@
                 <div class="d-flex flex-wrap align-items-center gap-3">
                     <span class="fw-bold small text-uppercase text-muted">
                         @if($viewMode === 'monthly')
-                            {{ __('Records for :month', ['month' => $month->format('F Y')]) }}
+                            {{ __('Records for :month', ['month' => $month->translatedFormat('F Y')]) }}
                         @else
-                            {{ __('Records for :date', ['date' => \Illuminate\Support\Carbon::parse($date)->format('d M Y')]) }}
+                            {{ __('Records for :date', ['date' => \Illuminate\Support\Carbon::parse($date)->translatedFormat('d M Y')]) }}
                         @endif
                     </span>
                     @if($viewMode === 'daily' && $selectedDaySummary->isNotEmpty())
@@ -483,7 +483,7 @@
                     <div class="modal-body">
                         <div class="mb-3">
                             <label class="form-label small fw-bold required">{{ __('Employee') }}</label>
-                            <x-common.employees name="employee_id" :class="$errors->has('employee_id') ? 'is-invalid' : ''" :value="old('employee_id')" placeholder="Select employee..." />
+                            <x-common.employees name="employee_id" :class="$errors->has('employee_id') ? 'is-invalid' : ''" :value="old('employee_id')" placeholder="{{ __('Select employee...') }}" />
                             @error('employee_id')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror

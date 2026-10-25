@@ -23,7 +23,7 @@
                             <td class="ps-4">
                                 <a href="/jobs/{{ $job->id }}" class="fw-bold text-pr text-decoration-none">{{ $job->row_no }}</a>
                             </td>
-                            <td class="small text-muted">{{ \Carbon\Carbon::parse($job->posted_at)->format('d M Y') }}</td>
+                            <td class="small text-muted">{{ \Carbon\Carbon::parse($job->posted_at)->translatedFormat('d M Y') }}</td>
                             <td class="small">{{ $job->customer->name ?? __('N/A') }}</td>
                             <td class="small">{{ $job->activity->name ?? __('N/A') }}</td>
                             <td class="small text-muted">{{ $job->awb_no ?? '—' }}</td>
@@ -72,8 +72,8 @@
                 </td>
                 <td class="text-end">
                     <div class="stmt-title">{{ __('JOB REPORT') }}</div>
-                    <div class="stmt-sub">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
-                    <div class="stmt-sub">{{ __('Generated:') }} {{ now()->format('d M Y H:i') }}</div>
+                    <div class="stmt-sub">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->translatedFormat('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->translatedFormat('d M Y') }}</div>
+                    <div class="stmt-sub">{{ __('Generated:') }} {{ now()->translatedFormat('d M Y H:i') }}</div>
                 </td>
             </tr>
         </table>
@@ -96,7 +96,7 @@
             @forelse($jobReportData['jobs'] as $job)
                 <tr>
                     <td>{{ $job->row_no }}</td>
-                    <td>{{ \Carbon\Carbon::parse($job->posted_at)->format('d M Y') }}</td>
+                    <td>{{ \Carbon\Carbon::parse($job->posted_at)->translatedFormat('d M Y') }}</td>
                     <td>{{ $job->customer->name ?? __('N/A') }}</td>
                     <td>{{ $job->activity->name ?? __('N/A') }}</td>
                     <td>{{ $job->awb_no ?? '—' }}</td>

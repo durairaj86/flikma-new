@@ -24,7 +24,7 @@
                                 </span>
                             </td>
                             <td class="small text-muted">
-                                {{ \Carbon\Carbon::parse($transaction['reference_date'])->format('d M Y') }}
+                                {{ \Carbon\Carbon::parse($transaction['reference_date'])->translatedFormat('d M Y') }}
                             </td>
                             <td class="small text-muted">{{ $transaction['description'] }}</td>
                             <td class="pe-4 text-end tabular-nums fw-bold text-indigo">
@@ -67,8 +67,8 @@
                 </td>
                 <td class="text-end">
                     <div class="stmt-title">{{ __('INPUT TAX REPORT') }}</div>
-                    <div class="stmt-sub">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
-                    <div class="stmt-sub">{{ __('Generated:') }} {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency:') }} SAR</div>
+                    <div class="stmt-sub">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->translatedFormat('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->translatedFormat('d M Y') }}</div>
+                    <div class="stmt-sub">{{ __('Generated:') }} {{ now()->translatedFormat('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency:') }} SAR</div>
                 </td>
             </tr>
         </table>
@@ -88,7 +88,7 @@
                 <tr>
                     <td>{{ $transaction['account_code'] }} {{ $transaction['account_name'] }}</td>
                     <td>{{ $transaction['reference_no'] }}</td>
-                    <td>{{ \Carbon\Carbon::parse($transaction['reference_date'])->format('d M Y') }}</td>
+                    <td>{{ \Carbon\Carbon::parse($transaction['reference_date'])->translatedFormat('d M Y') }}</td>
                     <td>{{ $transaction['description'] }}</td>
                     <td class="text-end">{{ number_format($transaction['amount'], 2) }}</td>
                 </tr>

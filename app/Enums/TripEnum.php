@@ -11,12 +11,12 @@ enum TripEnum: int
 
     public function label(): string
     {
-        return match ($this) {
+        return __(match ($this) {
             self::PLANNED => 'Planned',
             self::STARTED => 'Started',
             self::COMPLETED => 'Completed',
             self::CANCELLED => 'Cancelled',
-        };
+        });
     }
 
     public static function fromName(string $name): ?int

@@ -251,8 +251,8 @@ class WidgetData
             'labels' => range(1, max($start->daysInMonth, $ps->daysInMonth)),
             'this' => $cumulative($s, $thisLimit),
             'prev' => $cumulative($ps, $ps->daysInMonth),
-            'thisLabel' => $start->format('M'),
-            'prevLabel' => $ps->format('M'),
+            'thisLabel' => $start->translatedFormat('M'),
+            'prevLabel' => $ps->translatedFormat('M'),
         ];
     }
 

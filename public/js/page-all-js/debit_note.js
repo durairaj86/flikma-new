@@ -1,5 +1,5 @@
 DEBIT_NOTE = {
-    title: 'Debit Note',
+    title: trans('Debit Note'),
     baseUrl: 'adjustment/debit-note',
     actionUrl: 'adjustment/debit-note',
     load() {
@@ -191,9 +191,9 @@ DEBIT_NOTE = {
             // the customer/supplier/proforma invoice lists: a bold primary
             // line, and one small muted caption underneath.
             statusBadge: {
-                1: '<span class="badge bg-secondary-subtle text-secondary-emphasis">Draft</span>',
-                2: '<span class="badge bg-success-subtle text-success-emphasis">Approved</span>',
-                3: '<span class="badge bg-danger-subtle text-danger-emphasis">Cancelled</span>',
+                1: '<span class="badge bg-secondary-subtle text-secondary-emphasis">' + trans('Draft') + '</span>',
+                2: '<span class="badge bg-success-subtle text-success-emphasis">' + trans('Approved') + '</span>',
+                3: '<span class="badge bg-danger-subtle text-danger-emphasis">' + trans('Cancelled') + '</span>',
             },
             debitNoteNumber: (row) => `<div class="cell-primary fw-bold text-primary debit-note-no-link" style="cursor:pointer;" title="${trans('View details')}">${row.row_no ?? ''}</div><div class="mt-1">${DEBIT_NOTE.list.templates.statusBadge[row.status] ?? ''}</div>`,
 
@@ -228,11 +228,11 @@ DEBIT_NOTE = {
             openDrawer(recordId, recordName) {
                 $('#drawerSubtitle').text(recordName || 'Debit Note');
                 bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer')).show();
-                $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
+                $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> ' + trans('Loading...') + '</div>');
                 $.get('/adjustment/debit-note/' + recordId + '/overview', function (data) {
                     $('#moduleOverview').html(data);
                 }).fail(function () {
-                    $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load debit note details.</div>');
+                    $('#moduleOverview').html('<div class="alert alert-danger m-3">' + trans('Failed to load debit note details.') + '</div>');
                 });
             },
         }
@@ -244,7 +244,7 @@ DEBIT_NOTE = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'New Debit Note',
+                    title: trans('New Debit Note'),
                     url: GLOBAL_FN.buildUrl('adjustment/debit-note/create'),
                     content: null,
                     size: 'xl',

@@ -1,5 +1,5 @@
 JOB = {
-    title: 'Job',
+    title: trans('Job'),
     baseUrl: 'operation/job',
     actionUrl: 'operation/job',
     load() {
@@ -22,28 +22,28 @@ JOB = {
         // /column-settings/job request fails, so the list/modal never renders empty.
         _fallback: {
             fields: [
-                {key: 'row_no', label: 'Job No', category: 'General', min_width: 130, fixed: true},
-                {key: 'linked_quotation_no', label: 'Quote No', category: 'General', min_width: 140},
-                {key: 'customer_name', label: 'Customer', category: 'General', min_width: 180},
-                {key: 'status', label: 'Status', category: 'General', min_width: 90},
-                {key: 'services', label: 'Services', category: 'General', min_width: 140},
-                {key: 'activity_name', label: 'Activity', category: 'General', min_width: 150},
-                {key: 'shipment_mode', label: 'Shipment Mode', category: 'General', min_width: 120},
-                {key: 'posted_at', label: 'Job Date', category: 'General', min_width: 100, orderable: true},
-                {key: 'created_at', label: 'Created At', category: 'General', min_width: 130, orderable: true},
-                {key: 'pol', label: 'Origin (POL)', category: 'Routing', min_width: 130},
-                {key: 'pod', label: 'Destination (POD)', category: 'Routing', min_width: 160},
-                {key: 'carrier', label: 'Carrier', category: 'Vessel', min_width: 140},
-                {key: 'etd', label: 'ETD', category: 'Vessel', min_width: 100, orderable: true},
-                {key: 'eta', label: 'ETA', category: 'Vessel', min_width: 100, orderable: true},
+                {key: 'row_no', label: trans('Job No'), category: 'General', min_width: 130, fixed: true},
+                {key: 'linked_quotation_no', label: trans('Quote No'), category: 'General', min_width: 140},
+                {key: 'customer_name', label: trans('Customer'), category: 'General', min_width: 180},
+                {key: 'status', label: trans('Status'), category: 'General', min_width: 90},
+                {key: 'services', label: trans('Services'), category: 'General', min_width: 140},
+                {key: 'activity_name', label: trans('Activity'), category: 'General', min_width: 150},
+                {key: 'shipment_mode', label: trans('Shipment Mode'), category: 'General', min_width: 120},
+                {key: 'posted_at', label: trans('Job Date'), category: 'General', min_width: 100, orderable: true},
+                {key: 'created_at', label: trans('Created At'), category: 'General', min_width: 130, orderable: true},
+                {key: 'pol', label: trans('Origin (POL)'), category: 'Routing', min_width: 130},
+                {key: 'pod', label: trans('Destination (POD)'), category: 'Routing', min_width: 160},
+                {key: 'carrier', label: trans('Carrier'), category: 'Vessel', min_width: 140},
+                {key: 'etd', label: trans('ETD'), category: 'Vessel', min_width: 100, orderable: true},
+                {key: 'eta', label: trans('ETA'), category: 'Vessel', min_width: 100, orderable: true},
             ],
             columns: [
-                {key: 'row_no', label: 'Job No', type: 'parent', children: [{key: 'services', label: 'Services'}, {key: 'linked_quotation_no', label: 'Quote No'}]},
-                {key: 'customer_name', label: 'Customer', type: 'parent', children: []},
-                {key: 'pol', label: 'Origin', type: 'parent', children: [{key: 'pod', label: 'Destination'}]},
-                {key: 'carrier', label: 'Carrier', type: 'parent', children: [{key: 'etd', label: 'ETD'}, {key: 'eta', label: 'ETA'}]},
-                {key: 'status', label: 'Status', type: 'parent', children: []},
-                {key: 'posted_at', label: 'Job Date', type: 'parent', children: []},
+                {key: 'row_no', label: trans('Job No'), type: 'parent', children: [{key: 'services', label: trans('Services')}, {key: 'linked_quotation_no', label: trans('Quote No')}]},
+                {key: 'customer_name', label: trans('Customer'), type: 'parent', children: []},
+                {key: 'pol', label: trans('Origin'), type: 'parent', children: [{key: 'pod', label: trans('Destination')}]},
+                {key: 'carrier', label: trans('Carrier'), type: 'parent', children: [{key: 'etd', label: trans('ETD')}, {key: 'eta', label: trans('ETA')}]},
+                {key: 'status', label: trans('Status'), type: 'parent', children: []},
+                {key: 'posted_at', label: trans('Job Date'), type: 'parent', children: []},
             ],
             is_custom: false,
         },
@@ -119,9 +119,9 @@ JOB = {
                     const isChild  = !isParent && selected.has(f.key);
                     const isFixed  = f.fixed;
                     let badgeHtml  = '';
-                    if (isFixed)  badgeHtml += `<span class="badge bg-secondary" style="font-size:0.6rem;">Fixed</span>`;
-                    if (isParent) badgeHtml += `<span class="badge bg-primary"   style="font-size:0.6rem;">Column</span>`;
-                    if (isChild)  badgeHtml += `<span class="badge bg-info text-dark" style="font-size:0.6rem;">Sub</span>`;
+                    if (isFixed)  badgeHtml += `<span class="badge bg-secondary" style="font-size:0.6rem;">${trans('Fixed')}</span>`;
+                    if (isParent) badgeHtml += `<span class="badge bg-primary"   style="font-size:0.6rem;">${trans('Column')}</span>`;
+                    if (isChild)  badgeHtml += `<span class="badge bg-info text-dark" style="font-size:0.6rem;">${trans('Sub')}</span>`;
                     const checked  = selected.has(f.key) ? 'checked' : '';
                     const disabled = isFixed ? 'disabled' : '';
                     html += `<div class="d-flex align-items-center gap-2 px-2 py-1 cs-field-item rounded hover-bg"
@@ -188,7 +188,7 @@ JOB = {
                 const children = col.children || [];
                 if (children.length) {
                     html += `<div class="border-top mx-3 mb-2 pt-2 ps-2">
-                        <div class="text-muted" style="font-size:0.7rem;font-weight:600;text-transform:uppercase;margin-bottom:4px;">Sub-columns</div>`;
+                        <div class="text-muted" style="font-size:0.7rem;font-weight:600;text-transform:uppercase;margin-bottom:4px;">${trans('Sub-columns')}</div>`;
                     children.forEach((child, cIdx) => {
                         html += `<div class="d-flex align-items-center gap-2 mb-1">
                             <i class="bi bi-arrow-return-right text-muted" style="font-size:0.7rem;"></i>
@@ -212,7 +212,7 @@ JOB = {
                 }
                 html += '</div>';
             });
-            const $list = $('#csColumnList').html(html || '<p class="text-muted small text-center pt-4">No columns selected. Click fields on the left to add them.</p>');
+            const $list = $('#csColumnList').html(html || '<p class="text-muted small text-center pt-4">' + trans('No columns selected. Click fields on the left to add them.') + '</p>');
             $list.find('.cs-col-label').off('change').on('change', (e) => {
                 this._state[+$(e.currentTarget).data('idx')].label = $(e.currentTarget).val();
                 this.renderPreview();
@@ -481,11 +481,11 @@ JOB = {
             drawer.show();
 
             // Load all tabs' content in one call
-            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
+            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> ' + trans('Loading...') + '</div>');
             $.get('/operation/job/' + jobId + '/overview-drawer', function (data) {
                 $('#moduleOverview').html(data);
             }).fail(function () {
-                $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load job details.</div>');
+                $('#moduleOverview').html('<div class="alert alert-danger m-3">' + trans('Failed to load job details.') + '</div>');
             });
         },
 
@@ -669,7 +669,7 @@ JOB = {
                 // Clicking the job number itself also opens the details drawer,
                 // same as the "View" row action.
                 const openTracking = (row) => webModal.openGlobalModal({
-                    title: 'Update Tracking - ' + row.attr('data-name'),
+                    title: trans('Update Tracking') + ' - ' + row.attr('data-name'),
                     url: GLOBAL_FN.buildUrl('operation/tracking/' + row.attr('data-id')),
                     content: null, size: 'lg', scroll: true,
                 });
@@ -728,13 +728,13 @@ JOB = {
                     const none = {created: 0, approved: 0, draft: 0, cancelled: 0};
                     const si = j.si || none, ci = j.ci || none, cn = j.cn || none;
                     const badge = (n, cls, tip, split) => n ? `<span class="jd-n ${cls}" data-tip="${n} ${trans(tip)}${split ? ' (' + split + ')' : ''}">${n}</span>` : '<span class="jd-z">·</span>';
-                    const split = (k) => (ci[k] || cn[k]) ? `${ci[k] || 0} Cus Inv. + ${cn[k] || 0} CN` : '';
+                    const split = (k) => (ci[k] || cn[k]) ? `${ci[k] || 0} ${trans('Cus Inv.')} + ${cn[k] || 0} ${trans('CN')}` : '';
                     const sum = (k) => (ci[k] || 0) + (cn[k] || 0);
                     const total = sum('created');
                     return `<div class="jd">
                         <div class="jd-row ${si.created ? '' : 'jd-empty'}"><span class="jd-l"><i class="bi bi-box-arrow-in-down"></i>${trans('Supplier Inv.')}</span><span class="jd-g">${si.created
                             ? `<span class="jd-t">${si.created}</span>${badge(si.approved, 'ok', 'Approved')}${badge(si.draft, 'dr', 'Draft')}${badge(si.cancelled, 'cx', 'Cancelled')}` : '<span class="jd-z">—</span>'}</span></div>
-                        <div class="jd-row ${total ? '' : 'jd-empty'}"><span class="jd-l"><i class="bi bi-receipt"></i>Cus Inv./CN</span><span class="jd-g">${total
+                        <div class="jd-row ${total ? '' : 'jd-empty'}"><span class="jd-l"><i class="bi bi-receipt"></i>${trans('Cus Inv./CN')}</span><span class="jd-g">${total
                             ? `<span class="jd-t" title="${split('created')}">${total}</span>${badge(sum('approved'), 'ok', 'Approved', split('approved'))}${badge(sum('draft'), 'dr', 'Draft', split('draft'))}${badge(sum('cancelled'), 'cx', 'Cancelled', split('cancelled'))}` : '<span class="jd-z">—</span>'}</span></div>
                     </div>`;
                 };
@@ -743,7 +743,7 @@ JOB = {
                     if (!x) return '';
                     const bits = [];
                     if (x.bl) bits.push(`<span><b>B/L</b> ${S.esc(x.bl)}</span>`);
-                    if (x.awb) bits.push(`<span><b>AWB</b> ${S.esc(x.awb)}</span>`);
+                    if (x.awb) bits.push(`<span><b>${trans('AWB')}</b> ${S.esc(x.awb)}</span>`);
                     if (x.ref) bits.push(`<span><b>${trans('Ref')}</b> ${S.esc(x.ref)}</span>`);
                     const cs = x.containers || [];
                     if (cs.length) bits.push(`<span><i class="bi bi-box-seam"></i> ${cs.map(S.esc).join(', ')}${x.container_count > cs.length ? ' +' + (x.container_count - cs.length) : ''}</span>`);
@@ -927,14 +927,14 @@ JOB = {
         <div class="d-flex flex-wrap gap-1 mt-1">
         ${badges}
         </div>
-        <small class="text-muted d-block mt-1" style="font-size: 0.7rem;">Mode: <i class="bi bi-airplane-engines-fill"></i> ${row.activity_id}</small>
+        <small class="text-muted d-block mt-1" style="font-size: 0.7rem;">${trans('Mode:')} <i class="bi bi-airplane-engines-fill"></i> ${row.activity_id}</small>
         </div>
         <small class="text-muted d-block mt-1" style="font-size: 0.7rem;">Cust: ${row.customer.name_en}</small>`
             },
 
             polPod: (row) => `<div class="d-flex align-items-center gap-2"><div class="lh-1"><span class="fw-bold d-block">${row.polCode}</span><small class="text-muted" style="font-size: 0.65rem;">${row.etd}</small></div>${row.etd || row.polCode ? '<i class="bi bi-chevron-right text-muted small"></i>' : ''}<div class="lh-1"><span class="fw-bold d-block">${row.podCode}</span><small class="text-muted" style="font-size: 0.65rem;">${row.eta}</small></div></div><div class="mt-1 x-small text-secondary">${row.carrier ? '<i class="bi bi-info-circle me-1"></i>Flight: ' + row.carrier : ''}</div>`,
             payload: (row) => `<div class="small fw-bold text-dark">${row.weight ?? ''}</div><div class="text-muted" style="font-size: 0.65rem;">Vol: ${row.volume ?? '-'} ${row.no_of_pieces ? ' | ' + row.no_of_pieces : ''}</div><div class="text-muted" style="font-size: 0.65rem;">Commodity: ${row.commodity ?? '-'}</div>`,
-            tracking: (row) => `<div style="font-size: 0.7rem;"><span class="text-muted text-uppercase">AWB:</span> ${row.awb_no ?? '-'}</div><div style="font-size: 0.7rem;"><div style="font-size: 0.7rem;"><span class="text-muted">Bayan:</span> ${row.clearance?.bayan_no ?? '-'}</div>`,
+            tracking: (row) => `<div style="font-size: 0.7rem;"><span class="text-muted text-uppercase">${trans('AWB:')}</span> ${row.awb_no ?? '-'}</div><div style="font-size: 0.7rem;"><div style="font-size: 0.7rem;"><span class="text-muted">${trans('Bayan:')}</span> ${row.clearance?.bayan_no ?? '-'}</div>`,
             consignee: (row) => `<div class="lh-1"><span class="small fw-bold d-block text-truncate" style="max-width: 150px;">${row.shipper ?? ''}</span>${row.shipper ? '<i class="bi bi-arrow-down text-muted" style="font-size: 0.7rem;"></i>' : ''}<span class="small fw-bold d-block text-truncate text-primary" style="max-width: 150px;">${row.consignee ?? ''}</span></div>`,
             invoices: (data) => `<div class="text-end"><span class="text-muted">Draft : ${data.draft}</span></div><div class="text-end"><span class="text-success">Approved : ${data.approved}</span></div>`,
 
@@ -943,7 +943,7 @@ JOB = {
         extraActions(row) {
             $('#row_tracking').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'Update Tracking - ' + row.attr('data-name'),
+                    title: trans('Update Tracking') + ' - ' + row.attr('data-name'),
                     url: GLOBAL_FN.buildUrl('operation/tracking/' + row.attr('data-id')),
                     content: null, size: 'lg', scroll: true,
                 });
@@ -1011,7 +1011,7 @@ JOB = {
                 let modelSize = dataTableData.data('model-size');
                 let minHeight = dataTableData.data('min-height');
                 webModal.openGlobalModal({
-                    title: 'New Job',
+                    title: trans('New Job'),
                     url: GLOBAL_FN.buildUrl('operation/job/create'),
                     content: null,
                     minHeight: minHeight,

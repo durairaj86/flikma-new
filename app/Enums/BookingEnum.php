@@ -11,12 +11,12 @@ enum BookingEnum: int
 
     public function label(): string
     {
-        return match ($this) {
+        return __(match ($this) {
             self::PENDING => 'Pending',
             self::CONFIRMED => 'Confirmed',
             self::SHIPPED => 'Shipped',
             self::CANCELLED => 'Cancelled',
-        };
+        });
     }
 
     public static function fromName(string $name): ?int

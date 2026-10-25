@@ -1,5 +1,5 @@
 QUOTATION_TERM = {
-    title: 'Quotation Term',
+    title: trans('Quotation Term'),
     baseUrl: 'masters/quotation-term',
     actionUrl: 'masters/quotation-term',
     load() {
@@ -62,14 +62,14 @@ QUOTATION_TERM = {
             delete(row) {
                 $('#row_delete').off().on('click', function () {
                     $.confirm({
-                        title: 'Confirm Delete',
-                        content: 'Are you sure you want to delete this quotation term?',
+                        title: trans('Confirm Delete'),
+                        content: trans('Are you sure you want to delete this quotation term?'),
                         type: 'red',
                         buttons: {
                             cancel: function () {
                             },
                             delete: {
-                                text: 'Delete',
+                                text: trans('Delete'),
                                 btnClass: 'btn-red',
                                 action: function () {
                                     $.ajax({
@@ -98,7 +98,7 @@ QUOTATION_TERM = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'New Quotation Term',
+                    title: trans('New Quotation Term'),
                     url: GLOBAL_FN.buildUrl('masters/quotation-term/create'),
                     content: null,
                     size: 'md',

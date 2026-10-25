@@ -317,7 +317,7 @@
                             <small class="muted-sm">Overview of the company's performance</small>--}}
                         </div>
                         <div class="col-auto">
-                            <div class="btn-group" role="group" aria-label="Period">
+                            <div class="btn-group" role="group" aria-label="{{ __('Period') }}">
                                 <button class="btn btn-outline-secondary btn-sm">{{ __('Today') }}</button>
                                 <button class="btn btn-outline-secondary btn-sm">{{ __('Week') }}</button>
                                 <button class="btn btn-outline-secondary btn-sm active">{{ __('Month') }}</button>

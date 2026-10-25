@@ -1,5 +1,5 @@
 LOGISTICS_ACTIVITY = {
-    title: 'Department',
+    title: trans('Department'),
     baseUrl: 'masters/activities',
     actionUrl: 'masters/activities',
     load() {
@@ -83,7 +83,7 @@ LOGISTICS_ACTIVITY = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'New Department',
+                    title: trans('New Department'),
                     url: GLOBAL_FN.buildUrl('masters/activities/create'),
                     content: null,
                     size: 'md',

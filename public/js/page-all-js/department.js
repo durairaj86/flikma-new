@@ -78,7 +78,7 @@ DEPARTMENT = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'Add Department',
+                    title: trans('Add Department'),
                     url: GLOBAL_FN.buildUrl('masters/department/create'),
                     content: null,
                     size: 'md',

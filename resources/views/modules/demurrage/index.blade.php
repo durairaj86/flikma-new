@@ -44,7 +44,7 @@
                         <tr>
                             <td class="fw-semibold">{{ $c->container_no ?: $c->container_number }}<div class="small text-muted fw-normal">{{ $c->container_size }} {{ $c->container_type }}</div></td>
                             <td>{{ $c->job?->row_no }}</td>
-                            <td>{{ $c->discharged_at ? \Illuminate\Support\Carbon::parse($c->discharged_at)->format('d M Y') : '—' }}</td>
+                            <td>{{ $c->discharged_at ? \Illuminate\Support\Carbon::parse($c->discharged_at)->translatedFormat('d M Y') : '—' }}</td>
                             <td>@if($f['state'] !== 'waiting'){{ $f['used'] }} / {{ $f['free'] }}@else — @endif
                                 @if($f['state'] === 'detention')<div class="small text-danger">{{ $f['over'] }} {{ __('days over') }}</div>
                                 @elseif(in_array($f['state'], ['free','ending']))<div class="small text-muted">{{ $f['left'] }} {{ __('days left') }}</div>@endif</td>

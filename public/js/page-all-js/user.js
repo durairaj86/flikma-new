@@ -1,5 +1,5 @@
 USER = {
-    title: 'Employee',
+    title: trans('Employee'),
     baseUrl: 'masters/user',
     actionUrl: 'masters/user',
     load() {
@@ -57,7 +57,7 @@ USER = {
                     },
                     {
                         data: 'email', render: function (data, type, row) {
-                            return row.email + '<br>' + row.phone;
+                            return (row.email || '') + (row.phone ? '<br>' + row.phone : '');
                         }
                     },
                     {
@@ -130,7 +130,7 @@ USER = {
                     drawer.show();
 
                     // Load Overview
-                    $('#customerOverview').html('<p>Loading...</p>');
+                    $('#customerOverview').html('<p>' + trans('Loading...') + '</p>');
                     $.get('/' + USER.baseUrl + '/' + customerId + '/overview', function (data) {
                         $('#customerOverview').html(data);
                     });
@@ -146,7 +146,7 @@ USER = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'Add Employee',
+                    title: trans('Add Employee'),
                     url: GLOBAL_FN.buildUrl('masters/user/create'),
                     content: null,
                     size: 'md',
@@ -198,7 +198,7 @@ USER = {
                                     toastr.error(value[0]);
                                 });
                             } else {
-                                toastr.error("Something went wrong!");
+                                toastr.error(trans('Something went wrong!'));
                             }
                         },
                         /*error: function(xhr){
@@ -206,7 +206,7 @@ USER = {
                             setupModalFooter(); // Re-add footer buttons after validation errors
                         },*/
                         complete: function () {
-                            submitBtn.prop('disabled', false).html('Submit');
+                            submitBtn.prop('disabled', false).html(trans('Submit'));
                         }
                     });
                 }

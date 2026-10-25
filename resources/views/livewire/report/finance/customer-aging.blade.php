@@ -138,7 +138,7 @@
                             @endif
 
                             <div class="mt-3 text-center">
-                                <label class="small text-uppercase text-muted d-block mb-1 fw-bold">{{ __('As of') }} {{ \Carbon\Carbon::parse($asOfDate)->format('d M Y') }}</label>
+                                <label class="small text-uppercase text-muted d-block mb-1 fw-bold">{{ __('As of') }} {{ \Carbon\Carbon::parse($asOfDate)->translatedFormat('d M Y') }}</label>
                                 <h3 class="fw-bold text-customer mb-0 tabular-nums">
                                     <small class="h6">SAR</small> {{ number_format($summary['grand_total'], 2) }}
                                 </h3>
@@ -259,9 +259,9 @@
                         </td>
                         <td class="text-end">
                             <div class="stmt-title">{{ __('CUSTOMER AGING REPORT') }}</div>
-                            <div class="stmt-sub">{{ __('As of') }}: {{ \Carbon\Carbon::parse($asOfDate)->format('d M Y') }}</div>
+                            <div class="stmt-sub">{{ __('As of') }}: {{ \Carbon\Carbon::parse($asOfDate)->translatedFormat('d M Y') }}</div>
                             <div class="stmt-sub">{{ __('Aging') }}: {{ $agingInterval }}-{{ __('day buckets') }} &times; {{ $agingColumns }}</div>
-                            <div class="stmt-sub">{{ __('Generated') }}: {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency') }}: SAR</div>
+                            <div class="stmt-sub">{{ __('Generated') }}: {{ now()->translatedFormat('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency') }}: SAR</div>
                         </td>
                     </tr>
                 </table>

@@ -42,7 +42,7 @@ abstract class Widget extends Component
         $out = [];
         for ($i = 0; $i < 12; $i++) {
             $m = Carbon::now()->startOfMonth()->subMonths($i);
-            $out[$m->format('Y-m')] = $m->format('M Y');
+            $out[$m->format('Y-m')] = $m->translatedFormat('M Y');
         }
         return $out;
     }

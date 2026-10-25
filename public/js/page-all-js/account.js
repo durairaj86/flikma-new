@@ -1,5 +1,5 @@
 ACCOUNT = {
-    title: 'Accounts',
+    title: trans('Accounts'),
     baseUrl: 'finance/account',
     actionUrl: 'finance/accounts',
     load() {
@@ -148,7 +148,7 @@ ACCOUNT = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'New Account',
+                    title: trans('New Account'),
                     url: GLOBAL_FN.buildUrl('finance/account/create'),
                     content: null,
                     size: 'md',

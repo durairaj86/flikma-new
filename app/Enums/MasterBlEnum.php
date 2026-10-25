@@ -11,12 +11,12 @@ enum MasterBlEnum: int
 
     public function label(): string
     {
-        return match ($this) {
+        return __(match ($this) {
             self::DRAFT => 'Draft',
             self::ISSUED => 'Issued',
             self::CLOSED => 'Closed',
             self::CANCELLED => 'Cancelled',
-        };
+        });
     }
 
     public static function fromName(string $name): ?int

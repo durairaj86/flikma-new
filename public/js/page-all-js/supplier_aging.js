@@ -1,5 +1,5 @@
 SUPPLIER_AGING = {
-    title: 'Supplier Aging Report',
+    title: trans('Supplier Aging Report'),
     baseUrl: 'reports/supplier-aging',
     actionUrl: 'reports/supplier-aging',
     load() {

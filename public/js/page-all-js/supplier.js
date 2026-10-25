@@ -1,5 +1,5 @@
 SUPPLIER = {
-    title: 'Supplier',
+    title: trans('Supplier'),
     baseUrl: 'supplier',
     actionUrl: 'supplier',
     load() {
@@ -131,7 +131,7 @@ SUPPLIER = {
                     {
                         data: 'credit_limit', render: function (data, type, row) {
                             return '<div class="fw-bold">' + (row.credit_limit ?? '') + '</div>' +
-                                   '<div class="x-small text-danger">' + (row.credit_days ? row.credit_days + ' Days' : '') + '</div>';
+                                   '<div class="x-small text-danger">' + (row.credit_days ? row.credit_days + ' ' + trans('Days') : '') + '</div>';
                         }
                     },
                     {
@@ -142,8 +142,8 @@ SUPPLIER = {
                                 return '<div class="text-muted">0.00</div>';
                             }
                             const badge = overdueCount > 0
-                                ? '<span class="badge bg-danger-subtle text-danger border border-opacity-10 px-2 py-1" style="font-size:0.65rem;">' + overdueCount + ' Overdue</span>'
-                                : '<span class="badge bg-success-subtle text-success border border-opacity-10 px-2 py-1" style="font-size:0.65rem;">On Time</span>';
+                                ? '<span class="badge bg-danger-subtle text-danger border border-opacity-10 px-2 py-1" style="font-size:0.65rem;">' + overdueCount + ' ' + trans('Overdue') + '</span>'
+                                : '<span class="badge bg-success-subtle text-success border border-opacity-10 px-2 py-1" style="font-size:0.65rem;">' + trans('On Time') + '</span>';
                             return '<div class="fw-bold">' + amountFormat(due) + '</div><div class="mt-1">' + badge + '</div>';
                         }
                     },
@@ -222,7 +222,7 @@ SUPPLIER = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'Add Supplier',
+                    title: trans('Add Supplier'),
                     url: GLOBAL_FN.buildUrl('supplier/create'),
                     content: null,
                     size: 'md',
@@ -360,7 +360,7 @@ SUPPLIER = {
                         $('.import-step').addClass('d-none');
                         $('#step3').removeClass('d-none');
                         $('#importSuccess').removeClass('d-none');
-                        $('#successMessage').text(`Successfully imported ${response.imported} suppliers.`);
+                        $('#successMessage').text(trans('Successfully imported :n suppliers.').replace(':n', response.imported));
 
                         $('#importProgressBar').css('width', '100%').addClass('bg-success');
 
@@ -380,7 +380,7 @@ SUPPLIER = {
                         } else if (resp && resp.message) {
                             errorHtml = `<li>${resp.message}</li>`;
                         } else {
-                            errorHtml = '<li>An error occurred during import.</li>';
+                            errorHtml = '<li>' + trans('An error occurred during import.') + '</li>';
                         }
 
                         $('#errorList').html(errorHtml);

@@ -776,11 +776,11 @@
             const skipToMain = document.createElement('a');
             skipToMain.href = '#main';
             skipToMain.className = 'skip-link';
-            skipToMain.textContent = 'Skip to main content';
+            skipToMain.textContent = window.trans ? trans('Skip to main content') : 'Skip to main content';
             const skipToNav = document.createElement('a');
             skipToNav.href = '#navigation';
             skipToNav.className = 'skip-link';
-            skipToNav.textContent = 'Skip to navigation';
+            skipToNav.textContent = window.trans ? trans('Skip to navigation') : 'Skip to navigation';
             skipLinksContainer.append(skipToMain);
             skipLinksContainer.append(skipToNav);
             document.body.insertBefore(skipLinksContainer, document.body.firstChild);
@@ -998,7 +998,7 @@
                     if (label && !label.querySelector('.required-indicator')) {
                         const indicator = document.createElement('span');
                         indicator.className = 'required-indicator sr-only';
-                        indicator.textContent = ' (required)';
+                        indicator.textContent = ' (' + (window.trans ? trans('required') : 'required') + ')';
                         label.append(indicator);
                     }
                 }

@@ -55,7 +55,7 @@
 <div class="tab-pane fade show active" id="jobGeneralTab" role="tabpanel">
     <?php
         $v = fn($x) => filled($x) ? $x : '-';
-        $d = function ($x) { try { return filled($x) ? \Illuminate\Support\Carbon::parse($x)->format('d-M-Y') : '-'; } catch (\Throwable) { return $x ?: '-'; } };
+        $d = function ($x) { try { return filled($x) ? \Illuminate\Support\Carbon::parse($x)->translatedFormat('d-M-Y') : '-'; } catch (\Throwable) { return $x ?: '-'; } };
         $c = $job->clearance;
         $people = \App\Models\User::withoutGlobalScopes()->whereIn('id', array_filter([$job->salesperson_id, $job->prepared_by, $job->created_by]))->pluck('name', 'id');
         $jobStatus = ['1' => 'Pending', '2' => 'Completed', '3' => 'Cancelled', '4' => 'Trashed'][(string) (int) $job->status] ?? 'Pending';
@@ -207,9 +207,9 @@
                         <td>{{ $c->volume }}</td>
                         <td>{{ $c->hazardous == 'Yes' ? __('Yes') : __('No') }}</td>
                         <td>{{ $c->temp_controlled == 'Yes' ? __('Yes') : __('No') }}</td>
-                        <td>{{ $c->discharged_at ? \Illuminate\Support\Carbon::parse($c->discharged_at)->format('d-M-Y') : '-' }}</td>
-                        <td>{{ $c->gate_out_at ? \Illuminate\Support\Carbon::parse($c->gate_out_at)->format('d-M-Y') : '-' }}</td>
-                        <td>{{ $c->returned_at ? \Illuminate\Support\Carbon::parse($c->returned_at)->format('d-M-Y') : '-' }}</td>
+                        <td>{{ $c->discharged_at ? \Illuminate\Support\Carbon::parse($c->discharged_at)->translatedFormat('d-M-Y') : '-' }}</td>
+                        <td>{{ $c->gate_out_at ? \Illuminate\Support\Carbon::parse($c->gate_out_at)->translatedFormat('d-M-Y') : '-' }}</td>
+                        <td>{{ $c->returned_at ? \Illuminate\Support\Carbon::parse($c->returned_at)->translatedFormat('d-M-Y') : '-' }}</td>
                         <td>{{ $c->free_days ?: '-' }}</td>
                         <td>{{ $c->return_depot ?: '-' }}</td>
                         <td>{{ $c->remarks ?? $c->consignment_remarks ?? '-' }}</td>
@@ -289,7 +289,7 @@
                         @foreach($g['rows'] as $r)
                             <tr class="{{ $r['cancelled'] ? 'text-muted text-decoration-line-through' : '' }}">
                                 <td>@if($r['type'])<a href="#" class="open-linked fw-semibold" data-type="{{ $r['type'] }}" data-id="{{ $r['id'] }}" data-title="{{ $r['no'] }}">{{ $r['no'] }}</a>@else<span class="fw-semibold">{{ $r['no'] }}</span>@endif</td>
-                                <td>{{ $r['date']?->format('d-M-Y') }}</td>
+                                <td>{{ $r['date']?->translatedFormat('d-M-Y') }}</td>
                                 <td>{{ $r['party'] }}</td>
                                 <td><span class="badge bg-{{ $r['approved'] ? 'success' : ($r['cancelled'] ? 'danger' : 'secondary') }}-subtle text-{{ $r['approved'] ? 'success' : ($r['cancelled'] ? 'danger' : 'secondary') }}-emphasis">{{ __($r['status']) }}</span></td>
                                 <td class="text-end">{{ number_format($r['amount'], 2) }}</td>
@@ -335,7 +335,7 @@
                     <div class="tl-card">
                         <div class="fw-semibold small">{{ $t['title'] }}</div>
                         @if(!empty($t['text']))<div class="text-muted small">{{ $t['text'] }}</div>@endif
-                        <div class="text-muted" style="font-size:.72rem">{{ $t['at']->format('d-M-Y H:i') }} · {{ $t['at']->diffForHumans() }}</div>
+                        <div class="text-muted" style="font-size:.72rem">{{ $t['at']->translatedFormat('d-M-Y H:i') }} · {{ $t['at']->diffForHumans() }}</div>
                     </div>
                 </div>
             @endforeach
@@ -352,7 +352,7 @@
                 <li class="list-group-item d-flex justify-content-between align-items-center px-0">
                     <div>
                         <strong><i class="bi bi-paperclip me-1"></i>{{ $doc['title'] }}</strong>
-                        <small class="text-muted d-block">{{ $doc['source'] }} · {{ $doc['date']?->format('d-M-Y') }}@if(!empty($doc['expiry'])) · {{ __('Expires') }} {{ $doc['expiry']->format('d-M-Y') }}@endif</small>
+                        <small class="text-muted d-block">{{ $doc['source'] }} · {{ $doc['date']?->translatedFormat('d-M-Y') }}@if(!empty($doc['expiry'])) · {{ __('Expires') }} {{ $doc['expiry']->translatedFormat('d-M-Y') }}@endif</small>
                     </div>
                     @if($doc['path'])<a href="{{ Storage::url($doc['path']) }}" target="_blank" class="btn btn-outline-primary btn-sm">{{ __('View') }}</a>@endif
                 </li>

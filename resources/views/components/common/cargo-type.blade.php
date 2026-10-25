@@ -1,5 +1,5 @@
 <select class="form-control selectpicker" data-live-search="true" id="cargo_type" name="cargo_type">
-    <option value="">--Select--</option>
+    <option value="">{{ __('--Select--') }}</option>
     @foreach(cargoTypes() as $cargoTypeId => $cargoSubType)
         @php
             $cargoValue = array_key_first($cargoSubType);   // "General"

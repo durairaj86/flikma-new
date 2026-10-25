@@ -7,10 +7,10 @@
 <div class="card border-0 shadow-sm"><div class="card-body p-4">
 <div class="text-muted small">Shipment</div><h4 class="fw-bold">{{ $job->row_no }}</h4>
 <div class="mb-3">{{ $job->pol_name ?? $job->origin }} → {{ $job->pod_name ?? $job->destination }}
-@if($job->eta)<div class="small text-muted">ETA {{ \App\Services\Job\JobInsights::date($job->eta)?->format('d-M-Y') ?? $job->eta }}</div>@endif</div>
+@if($job->eta)<div class="small text-muted">ETA {{ \App\Services\Job\JobInsights::date($job->eta)?->translatedFormat('d-M-Y') ?? $job->eta }}</div>@endif</div>
 @foreach($steps as $s)
 <div class="step {{ $s['actual'] ? 'done' : '' }}"><div class="dot" @if($s['skipped']) style="background:#f59e0b" @endif>@if($s['actual'])&#10003;@endif</div>
 <div><div class="fw-semibold">{{ $s['label'] }}</div>
-@if($s['actual'])<div class="small text-muted">{{ $s['actual']->format('d-M-Y') }}@if($s['location']) · {{ $s['location'] }}@endif</div>@elseif($s['skipped'])<div class="small" style="color:#c2410c">Not required</div>@else<div class="small text-muted">Pending</div>@endif</div></div>
+@if($s['actual'])<div class="small text-muted">{{ $s['actual']->translatedFormat('d-M-Y') }}@if($s['location']) · {{ $s['location'] }}@endif</div>@elseif($s['skipped'])<div class="small" style="color:#c2410c">Not required</div>@else<div class="small text-muted">Pending</div>@endif</div></div>
 @endforeach
 </div></div></div></body></html>

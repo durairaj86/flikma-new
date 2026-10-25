@@ -10,11 +10,11 @@ enum ExpenseEnum: int
 
     public function label(): string
     {
-        return match ($this) {
+        return __(match ($this) {
             self::PENDING => 'Pending',
             self::APPROVED => 'Approved',
             self::CANCELLED => 'Cancelled',
-        };
+        });
     }
 
     public static function fromName(string $name): ?int

@@ -11,12 +11,12 @@ enum JobEnum: int
 
     public function label(): string
     {
-        return match ($this) {
+        return __(match ($this) {
             self::PENDING => 'Pending',
             self::COMPLETED => 'Completed',
             self::CANCELLED => 'Cancelled',
             self::TRASHED => 'Trashed',
-        };
+        });
     }
 
     public static function fromName(string $name): ?int

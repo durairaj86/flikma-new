@@ -6,11 +6,11 @@
 @endphp
 <ol class="breadcrumb">
     <li class="breadcrumb-item text-muted {{ $page1 == 'proforma' ? 'active' : 'link' }}" data-url="/invoice/proforma{{ $appendBreadCrumbUrl }}">
-        Proforma Invoices
+        {{ __('Proforma Invoices') }}
     </li>
     <li class="breadcrumb-item text-muted {{ $page1 == 'supplier' ? 'active' : 'link' }}" data-url="/invoice/supplier{{ $appendBreadCrumbUrl }}">
-        Supplier Invoices
+        {{ __('Supplier Invoices') }}
     </li>
-    <li class="breadcrumb-item text-muted {{ $page1 == 'customer' ? 'active' : 'link' }}" data-url="/invoice/customer{{ $appendBreadCrumbUrl }}">Customer Invoices</li>
+    <li class="breadcrumb-item text-muted {{ $page1 == 'customer' ? 'active' : 'link' }}" data-url="/invoice/customer{{ $appendBreadCrumbUrl }}">{{ __('Customer Invoices') }}</li>
 </ol>
 

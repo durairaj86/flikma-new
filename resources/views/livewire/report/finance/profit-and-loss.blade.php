@@ -1,7 +1,7 @@
 @section('js', 'profit_and_loss')
 @section('page-title', __('Profit and Loss'))
 @section('hide-topbar', true)
-@section('page-subtitle'){{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} &mdash; {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}@endsection
+@section('page-subtitle'){{ \Carbon\Carbon::parse($startDate)->translatedFormat('d M Y') }} &mdash; {{ \Carbon\Carbon::parse($endDate)->translatedFormat('d M Y') }}@endsection
 
 <div class="provisional-wrapper min-vh-100 bg-light pt-1 pb-4">
     <div class="container-fluid px-3">

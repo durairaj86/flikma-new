@@ -463,13 +463,13 @@ function roles(): array
 
 function roleDisplay($role)
 {
-    return match ($role) {
+    return __(match ($role) {
         1 => 'Super User',
         2 => 'User',
         3 => 'Admin',
         4 => 'Employee',
         default => 'Unknown', // optional fallback
-    };
+    });
 }
 
 /**

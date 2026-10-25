@@ -13,13 +13,13 @@ enum QuotationEnum: int
 
     public function label(): string
     {
-        return match ($this) {
+        return __(match ($this) {
             self::PENDING => 'Pending',
             self::ACCEPTED => 'Accepted',
             self::CANCELLED => 'Cancelled',
             self::EXPIRED => 'Expired',
             self::CONVERTED => 'Converted',
-        };
+        });
     }
 
     public static function fromName(string $name): ?int

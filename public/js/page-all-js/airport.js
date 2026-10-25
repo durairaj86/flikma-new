@@ -77,7 +77,7 @@ AIRPORT = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'Add Airport',
+                    title: trans('Add Airport'),
                     url: GLOBAL_FN.buildUrl('masters/transport/directories/airport/create'),
                     content: null,
                     size: 'compact',

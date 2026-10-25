@@ -222,7 +222,7 @@ function convert($amount, $currency = 'ريال سعودي')
 
 function appVersion(): string
 {
-    return "1.0.469";
+    return "1.0.471";
 }
 
 function toArabicNumber($number)
@@ -489,7 +489,7 @@ function currentPlanFor($company = null): \App\Models\Billing\Plan
 
 function planLabelFor($company = null, string $fallback = 'Free'): string
 {
-    return currentPlanFor($company)?->label ?: $fallback;
+    return __(currentPlanFor($company)?->label ?: $fallback);
 }
 
 

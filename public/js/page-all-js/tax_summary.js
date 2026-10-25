@@ -1,5 +1,5 @@
 TAX_SUMMARY = {
-    title: 'Tax Summary',
+    title: trans('Tax Summary'),
     baseUrl: 'reports/tax-summary',
     actionUrl: 'reports/tax-summary',
     load() {

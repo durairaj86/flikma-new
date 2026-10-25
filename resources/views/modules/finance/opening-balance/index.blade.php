@@ -82,7 +82,7 @@
                         @forelse($openingBalances as $ob)
                             <tr>
                                 <td class="ps-4">
-                                    {{ $ob->finance?->posted_at ? \Carbon\Carbon::parse($ob->finance->posted_at)->format('d M Y') : '—' }}
+                                    {{ $ob->finance?->posted_at ? \Carbon\Carbon::parse($ob->finance->posted_at)->translatedFormat('d M Y') : '—' }}
                                 </td>
                                 <td>
                                     <div class="fw-semibold">

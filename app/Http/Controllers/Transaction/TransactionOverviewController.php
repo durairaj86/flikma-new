@@ -295,14 +295,14 @@ class TransactionOverviewController extends Controller
 
         return [
             [
-                'type' => 'Customer Invoices',
+                'type' => __('Customer Invoices'),
                 'approved' => $ciApproved,
                 'settled' => $ciCollected,
                 'outstanding' => max(0, $ciApproved - $ciCollected),
                 'rate' => $ciApproved > 0 ? $ciCollected / $ciApproved : 0,
             ],
             [
-                'type' => 'Supplier Invoices',
+                'type' => __('Supplier Invoices'),
                 'approved' => $siApproved,
                 'settled' => $siPaid,
                 'outstanding' => max(0, $siApproved - $siPaid),

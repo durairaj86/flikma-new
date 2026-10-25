@@ -36,7 +36,7 @@
                         <span class="fw-bold">{{ $j->row_no }}</span>
                         <span class="text-muted ms-2">{{ $j->customer?->name_en }}</span>
                         <div class="small text-muted">{{ $j->pol_name ?? $j->origin }} → {{ $j->pod_name ?? $j->destination }}
-                            @if($j->eta) · ETA {{ \App\Services\Job\JobInsights::date($j->eta)?->format('d-M-Y') ?? $j->eta }} @endif</div>
+                            @if($j->eta) · ETA {{ \App\Services\Job\JobInsights::date($j->eta)?->translatedFormat('d-M-Y') ?? $j->eta }} @endif</div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
                         <span class="small text-muted">{{ $r['done'] }}/{{ $r['total'] }}@if($r['skipped']) · {{ $r['skipped'] }} {{ __('skipped') }}@endif @if($r['next']) · {{ __('Next') }}: {{ __($r['next']) }} @else · {{ __('Complete') }} @endif</span>
@@ -49,7 +49,7 @@
                         <div class="trk-step {{ $s['actual'] ? 'done' : ($s['skipped'] ? 'skip' : '') }}">
                             <div class="trk-dot">@if($s['actual'])<i class="bi bi-check"></i>@elseif($s['skipped'])<i class="bi bi-dash"></i>@endif</div>
                             <div>{{ __($s['label']) }}</div>
-                            @if($s['actual'])<div class="text-muted">{{ $s['actual']->format('d-M-Y') }}</div>@elseif($s['skipped'])<div>{{ __('Skipped') }}</div>@endif
+                            @if($s['actual'])<div class="text-muted">{{ $s['actual']->translatedFormat('d-M-Y') }}</div>@elseif($s['skipped'])<div>{{ __('Skipped') }}</div>@endif
                         </div>
                     @endforeach
                 </div>

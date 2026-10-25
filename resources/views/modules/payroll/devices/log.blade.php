@@ -73,7 +73,7 @@
             </div>
             <div class="col-12 col-md-4 col-lg-3">
                 <label class="form-label small fw-bold text-muted mb-1">{{ __('Employee') }}</label>
-                <x-common.employees class="form-select-sm" name="employee_id" :value="request('employee_id')" placeholder="All Employees" />
+                <x-common.employees class="form-select-sm" name="employee_id" :value="request('employee_id')" placeholder="{{ __('All Employees') }}" />
             </div>
             <div class="col-6 col-md-4 col-lg">
                 <label class="form-label small fw-bold text-muted mb-1">{{ __('Device') }}</label>
@@ -116,9 +116,9 @@
                             <td class="tabular-nums">{{ $p->punched_at->format('d-m-Y H:i:s') }}</td>
                             <td>{{ $p->employee->name ?? '—' }}@if($p->employee?->employee_code)<div class="text-muted extra-small">{{ $p->employee->employee_code }}</div>@endif</td>
                             <td class="font-monospace">{{ $p->device_user_id }}</td>
-                            <td>{{ $p->device->name ?? '—' }}</td>
-                            <td>{{ $p->direction ? strtoupper($p->direction) : '—' }}</td>
-                            <td><span @class(['badge border', 'bg-success-subtle text-success' => $p->status === 'processed', 'bg-danger-subtle text-danger' => $p->status === 'unmapped', 'bg-secondary-subtle text-secondary' => !in_array($p->status, ['processed', 'unmapped'])])>{{ ucfirst($p->status) }}</span>
+                            <td>{{ $p->device?->name ? __($p->device->name) : '—' }}</td>
+                            <td>{{ $p->direction ? __(strtoupper($p->direction)) : '—' }}</td>
+                            <td><span @class(['badge border', 'bg-success-subtle text-success' => $p->status === 'processed', 'bg-danger-subtle text-danger' => $p->status === 'unmapped', 'bg-secondary-subtle text-secondary' => !in_array($p->status, ['processed', 'unmapped'])])>{{ __(ucfirst($p->status)) }}</span>
                                 @if($p->status === 'locked')<span class="text-muted extra-small">{{ __('payroll already generated') }}</span>@endif</td>
                             <td style="min-width:200px;max-width:320px">
                                 @if($p->raw['manual'] ?? false)

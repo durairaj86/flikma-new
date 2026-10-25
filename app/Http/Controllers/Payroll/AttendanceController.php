@@ -142,7 +142,7 @@ class AttendanceController extends Controller
             $record = $records->get($dStr);
             $days[] = [
                 'date' => $dStr,
-                'label' => $cursor->format('D, d M'),
+                'label' => $cursor->translatedFormat('D, d M'),
                 'status' => $record->status ?? null,
                 'check_in' => $record && $record->check_in ? substr($record->check_in, 0, 5) : null,
                 'check_out' => $record && $record->check_out ? substr($record->check_out, 0, 5) : null,

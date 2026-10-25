@@ -102,7 +102,7 @@ class TrialBalanceTable extends Component
             if ($debit > 0 || $credit > 0) {
                 $trialBalanceData[] = [
                     'account_code' => $account->code,
-                    'account_name' => $account->name,
+                    'account_name' => __($account->name),
                     'account_type' => $account->type,
                     'debit' => $debit,
                     'credit' => $credit

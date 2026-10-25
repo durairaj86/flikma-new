@@ -118,7 +118,7 @@
                     <div class="modal-body">
                         <div class="mb-3">
                             <label class="form-label small fw-bold required">{{ __('Employee') }}</label>
-                            <x-common.employees name="employee_id" placeholder="Select employee..." :required="true" :active-only="true" />
+                            <x-common.employees name="employee_id" placeholder="{{ __('Select employee...') }}" :required="true" :active-only="true" />
                             <div class="form-text small">{{ __('Any currently open structure for this employee will be closed out on the day before this one starts.') }}</div>
                         </div>
                         @include('modules.payroll.salary-structures._fields')

@@ -18,14 +18,14 @@ enum JournalVoucherTypeEnum: int
      */
     public function label(): string
     {
-        return match($this) {
+        return __(match($this) {
             self::ACCOUNTING_FINANCE => 'Accounting / Finance',
             self::INVENTORY_STOCK => 'Inventory / Stock Adjustments',
             self::VAT_TAX => 'VAT / Tax Adjustments',
             self::BANK_RECONCILIATION => 'Bank Reconciliation',
             self::OPENING_BALANCES => 'Opening Balances',
             self::MISCELLANEOUS => 'Miscellaneous / Others',
-        };
+        });
     }
 
     /**

@@ -133,7 +133,7 @@
                             <h6 class="mb-0 fw-bold flex-grow-1"><i class="bi bi-journal-text me-2 text-supplier"></i>{{ __('Transaction Ledger') }}</h6>
                             <div class="d-flex align-items-center gap-2 ms-auto flex-shrink-0">
                                 <span class="badge bg-light text-dark border px-3 py-2">
-                                    {{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} &mdash; {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
+                                    {{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->translatedFormat('d M Y') }} &mdash; {{ \Carbon\Carbon::parse($endDate)->translatedFormat('d M Y') }}
                                 </span>
                                 <span class="badge bg-supplier-subtle text-supplier border border-supplier-subtle px-3 py-2">{{ __('Currency:') }} {{ $company->base_currency ?? 'SAR' }}</span>
                             </div>
@@ -162,7 +162,7 @@
 
                                 @forelse($transactions as $txn)
                                     <tr wire:key="txn-{{ $loop->index }}">
-                                        <td class="ps-4 small text-muted text-nowrap">{{ \Carbon\Carbon::parse($txn->reference_date)->format('d M Y') }}</td>
+                                        <td class="ps-4 small text-muted text-nowrap">{{ \Carbon\Carbon::parse($txn->reference_date)->translatedFormat('d M Y') }}</td>
                                         <td>
                                             <span class="fw-medium d-block">{{ $txn->voucher_no }}</span>
                                             <span class="x-small text-muted uppercase">{{ $txn->voucher_type === 'SI' ? __('Supplier Invoice') : ($txn->voucher_type === 'PV' ? __('Payment Voucher') : $txn->voucher_type) }}</span>
@@ -271,7 +271,7 @@
                     </tr>
                     @forelse($transactions as $txn)
                         <tr>
-                            <td>{{ \Carbon\Carbon::parse($txn->reference_date)->format('d M Y') }}</td>
+                            <td>{{ \Carbon\Carbon::parse($txn->reference_date)->translatedFormat('d M Y') }}</td>
                             <td>{{ $txn->voucher_no }}</td>
                             <td>{{ $this->voucherTypeLabel($txn->voucher_type) }}</td>
                             <td>{{ $txn->description }}</td>

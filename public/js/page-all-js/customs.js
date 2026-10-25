@@ -1,5 +1,5 @@
 CUSTOMS = {
-    title: 'Customs Clearance',
+    title: trans('Customs Clearance'),
     baseUrl: 'operation/customs',
     actionUrl: 'operation/customs',
     load() {
@@ -98,10 +98,10 @@ CUSTOMS = {
         },
         templates: {
             badge: {
-                'pending': '<span class="badge bg-warning-subtle text-warning-emphasis">Pending</span>',
-                'under-process': '<span class="badge bg-info-subtle text-info-emphasis">Under Process</span>',
-                'cleared': '<span class="badge bg-success-subtle text-success-emphasis">Cleared</span>',
-                'on-hold': '<span class="badge bg-danger-subtle text-danger-emphasis">On Hold</span>',
+                'pending': '<span class="badge bg-warning-subtle text-warning-emphasis">' + trans('Pending') + '</span>',
+                'under-process': '<span class="badge bg-info-subtle text-info-emphasis">' + trans('Under Process') + '</span>',
+                'cleared': '<span class="badge bg-success-subtle text-success-emphasis">' + trans('Cleared') + '</span>',
+                'on-hold': '<span class="badge bg-danger-subtle text-danger-emphasis">' + trans('On Hold') + '</span>',
             },
             job: (row) => `<div class="cell-primary text-primary customs-no-link" style="cursor:pointer;">${row.job_no ?? '—'}</div><div class="mt-1">${CUSTOMS.list.templates.badge[row.status_key] ?? ''}</div>`,
             customer: (row) => `<div class="cell-primary">${row.customer?.name_en ?? '—'}</div><div class="cell-secondary">${row.customer?.row_no ?? ''}</div>`,
@@ -111,9 +111,9 @@ CUSTOMS = {
                 + `<div class="cell-secondary">${[row.lab_clearance ? 'Lab' : '', row.inspection ? 'Inspection' : ''].filter(Boolean).join(' · ')}</div>`,
             duty: (row) => `<div class="cell-primary">${row.duty_f}</div><div class="cell-secondary">${row.duty_client_f}</div>`,
             progress: (row) => {
-                if (row.clearance_date_f) return `<div class="cell-primary text-success"><i class="bi bi-check-circle me-1"></i>${row.clearance_date_f}</div><div class="cell-secondary">Cleared</div>`;
-                if (row.do_date_f) return `<div class="cell-primary">${row.do_date_f}</div><div class="cell-secondary">D.O issued</div>`;
-                if (row.bayan_date_f) return `<div class="cell-primary">${row.bayan_date_f}</div><div class="cell-secondary">Bayan filed</div>`;
+                if (row.clearance_date_f) return `<div class="cell-primary text-success"><i class="bi bi-check-circle me-1"></i>${row.clearance_date_f}</div><div class="cell-secondary">${trans('Cleared')}</div>`;
+                if (row.do_date_f) return `<div class="cell-primary">${row.do_date_f}</div><div class="cell-secondary">${trans('D.O issued')}</div>`;
+                if (row.bayan_date_f) return `<div class="cell-primary">${row.bayan_date_f}</div><div class="cell-secondary">${trans('Bayan filed')}</div>`;
                 return '<div class="cell-secondary">—</div>';
             },
         },
@@ -133,11 +133,11 @@ CUSTOMS = {
         openDrawer(id, name) {
             $('#drawerSubtitle').text(name || '');
             bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer')).show();
-            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
+            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> ' + trans('Loading...') + '</div>');
             $.get('/' + CUSTOMS.baseUrl + '/' + id + '/overview', function (data) {
                 $('#moduleOverview').html(data);
             }).fail(function () {
-                $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load clearance details.</div>');
+                $('#moduleOverview').html('<div class="alert alert-danger m-3">' + trans('Failed to load clearance details.') + '</div>');
             });
         },
     },

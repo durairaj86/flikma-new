@@ -1,5 +1,5 @@
 WAYBILL = {
-    title: 'Waybill',
+    title: trans('Waybill'),
     baseUrl: 'bl/waybill',
     actionUrl: 'bl/waybill',
     load() {
@@ -81,11 +81,11 @@ WAYBILL = {
         openDrawer(id, name) {
             $('#drawerSubtitle').text(name || '');
             bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer')).show();
-            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
+            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> ' + trans('Loading...') + '</div>');
             $.get('/bl/waybill/' + id + '/overview', function (data) {
                 $('#moduleOverview').html(data);
             }).fail(function () {
-                $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load details.</div>');
+                $('#moduleOverview').html('<div class="alert alert-danger m-3">' + trans('Failed to load details.') + '</div>');
             });
         },
         load(activeTab = null) {
@@ -129,16 +129,16 @@ WAYBILL = {
 
                             if (row.status === 'delivered') {
                                 statusClass = 'text-success';
-                                statusBadge = '<span class="badge bg-success-subtle text-success me-2 text-xsmall">Delivered</span>';
+                                statusBadge = '<span class="badge bg-success-subtle text-success me-2 text-xsmall">' + trans('Delivered') + '</span>';
                             } else if (row.status === 'in_transit') {
                                 statusClass = 'text-primary';
-                                statusBadge = '<span class="badge bg-primary-subtle text-primary me-2 text-xsmall">In Transit</span>';
+                                statusBadge = '<span class="badge bg-primary-subtle text-primary me-2 text-xsmall">' + trans('In Transit') + '</span>';
                             } else if (row.status === 'pending') {
                                 statusClass = 'text-warning';
-                                statusBadge = '<span class="badge bg-warning-subtle text-warning me-2 text-xsmall">Pending</span>';
+                                statusBadge = '<span class="badge bg-warning-subtle text-warning me-2 text-xsmall">' + trans('Pending') + '</span>';
                             } else if (row.status === 'cancelled') {
                                 statusClass = 'text-danger';
-                                statusBadge = '<span class="badge bg-danger-subtle text-danger me-2 text-xsmall">Cancelled</span>';
+                                statusBadge = '<span class="badge bg-danger-subtle text-danger me-2 text-xsmall">' + trans('Cancelled') + '</span>';
                             }
 
                             return '<div class="' + statusClass + ' pb-1 fw-bold bl-no-link" style="cursor:pointer;">' + row.row_no + '</div>' + statusBadge;
@@ -158,13 +158,13 @@ WAYBILL = {
                         data: 'pol_pod', render: function (data, type, row) {
                             let pol_pod = '';
                             if (row.pol) {
-                                pol_pod = '<span class="text-secondary small me-1">POL:</span><span>' + row.pol + '</span>';
+                                pol_pod = '<span class="text-secondary small me-1">' + trans('POL:') + '</span><span>' + row.pol + '</span>';
                             }
                             if (row.pod) {
                                 if (pol_pod) {
                                     pol_pod += '<br>';
                                 }
-                                pol_pod += '<span class="text-secondary small me-1">POD:</span><span>' + row.pod + '</span>';
+                                pol_pod += '<span class="text-secondary small me-1">' + trans('POD:') + '</span><span>' + row.pod + '</span>';
                             }
                             return '<div class="text-wrap" style="min-width:180px;max-width:260px;white-space:normal;word-break:break-word;">' + pol_pod + '</div>';
                         }
@@ -253,7 +253,7 @@ WAYBILL = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'New Waybill',
+                    title: trans('New Waybill'),
                     url: GLOBAL_FN.buildUrl('bl/waybill/create'),
                     content: {
                         jobId: $(this).attr('data-loader-id')

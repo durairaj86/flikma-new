@@ -40,16 +40,16 @@ trait BuildsAgingBuckets
      */
     public function agingBucketDefs(): array
     {
-        $defs = [['key' => 'current', 'label' => 'Current', 'short' => 'Current']];
+        $defs = [['key' => 'current', 'label' => __('Current'), 'short' => __('Current')]];
 
         for ($i = 1; $i <= $this->agingColumns; $i++) {
             $from = ($i - 1) * $this->agingInterval + 1;
             $to = $i * $this->agingInterval;
-            $defs[] = ['key' => "b$i", 'label' => "$from-$to Days", 'short' => "$from-$to"];
+            $defs[] = ['key' => "b$i", 'label' => __(':from-:to Days', ['from' => $from, 'to' => $to]), 'short' => "$from-$to"];
         }
 
         $over = $this->agingColumns * $this->agingInterval;
-        $defs[] = ['key' => 'over', 'label' => "Over $over Days", 'short' => ">$over"];
+        $defs[] = ['key' => 'over', 'label' => __('Over :n Days', ['n' => $over]), 'short' => ">$over"];
 
         return $defs;
     }

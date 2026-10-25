@@ -1,6 +1,6 @@
 <select name="{{ $name ?? 'account[]' }}" class="tom-select" data-live-search="true" required
-        placeholder="Search Account" data-dropdown-width="{{ $dropdownWidth ?? '340' }}">
-    <option value="">Select Account</option>
+        placeholder="{{ __('Search Account') }}" data-dropdown-width="{{ $dropdownWidth ?? '340' }}">
+    <option value="">{{ __('Select Account') }}</option>
 
     @foreach($parentAccount as $parent)
         @php

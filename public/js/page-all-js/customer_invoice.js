@@ -1,5 +1,5 @@
 CUSTOMER_INVOICE = {
-    title: 'Customer Invoice',
+    title: trans('Customer Invoice'),
     baseUrl: 'invoice/customer',
     actionUrl: 'invoice/customer',
     load() {
@@ -191,7 +191,7 @@ CUSTOMER_INVOICE = {
         /** The collection history drawer (same one the row menu opens). */
         openHistory(invoiceId) {
             bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('paymentHistoryDrawer')).show();
-            $('#paymentHistoryBody').html('<p>Loading...</p>');
+            $('#paymentHistoryBody').html('<p>' + trans('Loading...') + '</p>');
             $.get('/invoice/customer/' + invoiceId + '/payment-history', function (data) {
                 $('#paymentHistoryBody').html(data);
             });
@@ -202,11 +202,11 @@ CUSTOMER_INVOICE = {
             let drawer = bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer'));
             drawer.show();
 
-            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
+            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> ' + trans('Loading...') + '</div>');
             $.get('/invoice/customer/' + customerId + '/overview-drawer', function (data) {
                 $('#moduleOverview').html(data);
             }).fail(function () {
-                $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load invoice details.</div>');
+                $('#moduleOverview').html('<div class="alert alert-danger m-3">' + trans('Failed to load invoice details.') + '</div>');
             });
         },
         cardSummary(data, counts) {
@@ -229,12 +229,12 @@ CUSTOMER_INVOICE = {
             // Every cell below follows the same 2-line convention: a bold
             // primary line, and one small muted caption underneath.
             statusBadge: {
-                1: '<span class="badge bg-secondary-subtle text-secondary-emphasis">Draft</span>',
-                2: '<span class="badge bg-info-subtle text-info-emphasis">Sent</span>',
-                3: '<span class="badge bg-success-subtle text-success-emphasis">Approved</span>',
-                4: '<span class="badge bg-danger-subtle text-danger-emphasis">Rejected</span>',
-                5: '<span class="badge bg-danger-subtle text-danger-emphasis">Cancelled</span>',
-                6: '<span class="badge bg-primary-subtle text-primary-emphasis">Converted</span>',
+                1: '<span class="badge bg-secondary-subtle text-secondary-emphasis">' + trans('Draft') + '</span>',
+                2: '<span class="badge bg-info-subtle text-info-emphasis">' + trans('Sent') + '</span>',
+                3: '<span class="badge bg-success-subtle text-success-emphasis">' + trans('Approved') + '</span>',
+                4: '<span class="badge bg-danger-subtle text-danger-emphasis">' + trans('Rejected') + '</span>',
+                5: '<span class="badge bg-danger-subtle text-danger-emphasis">' + trans('Cancelled') + '</span>',
+                6: '<span class="badge bg-primary-subtle text-primary-emphasis">' + trans('Converted') + '</span>',
             },
             // One idea per column, each with a bold main line and a small grey line.
             // a draft has no real number yet: it just says "Draft" (no number, no second Draft badge)
@@ -310,7 +310,7 @@ CUSTOMER_INVOICE = {
                     }, $(this).attr('data-value'));
                 })
                 $('#row_converted').off().on('click', function () {
-                    alert("convert to invoice");
+                    alert(trans('convert to invoice'));
                 })
             },
             view(row) {
@@ -386,7 +386,7 @@ CUSTOMER_INVOICE = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'New Customer Invoice',
+                    title: trans('New Customer Invoice'),
                     url: GLOBAL_FN.buildUrl('invoice/customer/create'),
                     content: {
                         jobId: $(this).attr('data-loader-id')

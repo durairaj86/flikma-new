@@ -1,4 +1,4 @@
-<select name="description_id[]" class="tom-select" placeholder="--Select Description--" data-live-search="true" {{ $required ?? '' }} data-max-width="{{ $width ?? 'auto' }}"
+<select name="description_id[]" class="tom-select" placeholder="{{ __('--Select Description--') }}" data-live-search="true" {{ $required ?? '' }} data-max-width="{{ $width ?? 'auto' }}"
         data-dropdown-width="{{ $dropdownWidth ?? 'auto' }}">
     <option value="">{{ __('Select Description') }}</option>
     @foreach(\App\Models\Master\Description::descriptions() as $desc)

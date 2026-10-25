@@ -9,10 +9,10 @@ enum DriverEnum: int
 
     public function label(): string
     {
-        return match ($this) {
+        return __(match ($this) {
             self::ACTIVE => 'Active',
             self::INACTIVE => 'Inactive',
-        };
+        });
     }
 
     public static function fromName(string $name): ?int

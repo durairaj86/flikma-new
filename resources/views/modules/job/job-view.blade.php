@@ -4,7 +4,7 @@
             <h5 id="moduleDrawerLabel" class="mb-0 fw-bold">{{ __('Job Details') }}</h5>
             <small class="text-muted" id="drawerSubtitle"></small>
         </div>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="{{ __('Close') }}"></button>
     </div>
 
     <div class="offcanvas-body p-0">

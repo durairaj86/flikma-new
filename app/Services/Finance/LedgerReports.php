@@ -68,7 +68,7 @@ class LedgerReports
             $debit = $t->total_debit ?? 0;
             $credit = $t->total_credit ?? 0;
             if ($debit > 0 || $credit > 0) {
-                $rows[] = ['account_code' => $account->code, 'account_name' => $account->name, 'account_type' => $account->type, 'debit' => $debit, 'credit' => $credit];
+                $rows[] = ['account_code' => $account->code, 'account_name' => __($account->name), 'account_type' => $account->type, 'debit' => $debit, 'credit' => $credit];
                 $totalDebit += $debit;
                 $totalCredit += $credit;
             }
@@ -93,13 +93,13 @@ class LedgerReports
             if ($account->type === 'Income') {
                 $balance = $credit - $debit;
                 if ($balance != 0) {
-                    $revenue[] = ['account_code' => $account->code, 'account_name' => $account->name, 'balance' => $balance];
+                    $revenue[] = ['account_code' => $account->code, 'account_name' => __($account->name), 'balance' => $balance];
                     $totalRevenue += $balance;
                 }
             } else {
                 $balance = $debit - $credit;
                 if ($balance != 0) {
-                    $expenses[] = ['account_code' => $account->code, 'account_name' => $account->name, 'balance' => $balance];
+                    $expenses[] = ['account_code' => $account->code, 'account_name' => __($account->name), 'balance' => $balance];
                     $totalExpenses += $balance;
                 }
             }
@@ -129,7 +129,7 @@ class LedgerReports
             if ($balance == 0) {
                 continue;
             }
-            $row = ['account_code' => $account->code, 'account_name' => $account->name, 'balance' => $balance];
+            $row = ['account_code' => $account->code, 'account_name' => __($account->name), 'balance' => $balance];
             if ($account->type === 'Asset') {
                 $assets[] = $row;
                 $totalAssets += $balance;
@@ -145,7 +145,7 @@ class LedgerReports
         // current-year result (all Income minus all Expense up to the end date) is part of equity, searched or not
         $netIncome = self::netIncomeTo($end);
         if ($netIncome != 0) {
-            $equity[] = ['account_code' => '', 'account_name' => 'Current Year Net Income / (Loss)', 'balance' => $netIncome];
+            $equity[] = ['account_code' => '', 'account_name' => __('Current Year Net Income / (Loss)'), 'balance' => $netIncome];
             $totalEquity += $netIncome;
         }
 
@@ -204,10 +204,10 @@ class LedgerReports
 
         $rows = [];
         if ($totalInput != 0) {
-            $rows[] = ['account_code' => '1150', 'account_name' => 'Input VAT', 'type' => 'Input Tax', 'balance' => $totalInput];
+            $rows[] = ['account_code' => '1150', 'account_name' => __('Input VAT'), 'type' => 'Input Tax', 'balance' => $totalInput];
         }
         if ($totalOutput != 0) {
-            $rows[] = ['account_code' => '2130', 'account_name' => 'Output VAT Payable', 'type' => 'Output Tax', 'balance' => $totalOutput];
+            $rows[] = ['account_code' => '2130', 'account_name' => __('Output VAT Payable'), 'type' => 'Output Tax', 'balance' => $totalOutput];
         }
 
         return ['tax_accounts' => $rows, 'total_input_tax' => $totalInput, 'total_output_tax' => $totalOutput, 'net_tax' => $totalOutput - $totalInput];
@@ -232,7 +232,7 @@ class LedgerReports
             }
             $lines[] = [
                 'account_code' => $input ? '1150' : '2130',
-                'account_name' => $input ? 'Input VAT' : 'Output VAT Payable',
+                'account_name' => $input ? __('Input VAT') : __('Output VAT Payable'),
                 'voucher_no' => $r->voucher_no,
                 'voucher_type' => $r->voucher_type,
                 'reference_no' => $r->reference_no,

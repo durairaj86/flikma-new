@@ -83,7 +83,7 @@ UNIT = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'Add Unit',
+                    title: trans('Add Unit'),
                     url: GLOBAL_FN.buildUrl('masters/unit/create'),
                     content: null,
                     size: 'compact',

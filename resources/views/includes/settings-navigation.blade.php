@@ -15,14 +15,14 @@
             <i class="bi bi-arrow-left me-2"></i> {{ __('Back to Dashboard') }}
         </a>
 
-        <h5 class="fw-semibold mb-3 text-secondary">Settings</h5>
+        <h5 class="fw-semibold mb-3 text-secondary">{{ __('Settings') }}</h5>
 
         <ul class="nav flex-column fw-medium" id="settings-navigation">
             <!-- Account -->
             <li class="nav-item" data-url="/settings/account">
                 <a href="{{ url('/settings/account') }}"
                    class="nav-link d-flex align-items-center py-2 {{ request()->is('settings/account*') ? 'active' : 'text-dark' }}">
-                    <i class="bi bi-person-circle text-secondary me-2"></i> Account
+                    <i class="bi bi-person-circle text-secondary me-2"></i> {{ __('Account') }}
                 </a>
             </li>
 
@@ -30,7 +30,7 @@
             <li class="nav-item" data-url="/settings/company">
                 <a href="{{ url('/settings/company') }}"
                    class="nav-link d-flex align-items-center py-2 {{ request()->is('settings/company*') ? 'active' : 'text-dark' }}">
-                    <i class="bi bi-building text-secondary me-2"></i> Manage Business
+                    <i class="bi bi-building text-secondary me-2"></i> {{ __('Manage Business') }}
                 </a>
             </li>
 
@@ -38,7 +38,7 @@
             <li class="nav-item" data-url="/settings/invoice">
                 <a href="{{ url('/settings/invoice') }}"
                    class="nav-link d-flex align-items-center py-2 {{ request()->is('settings/invoice*') ? 'active' : 'text-dark' }}">
-                    <i class="bi bi-receipt text-secondary me-2"></i> Invoice Settings
+                    <i class="bi bi-receipt text-secondary me-2"></i> {{ __('Invoice Settings') }}
                 </a>
             </li>
 
@@ -53,7 +53,7 @@
             <li class="nav-item" data-url="/settings/zatca/register">
                 <a href="{{ url('/settings/zatca/register') }}"
                    class="nav-link d-flex align-items-center py-2 {{ request()->is('settings/zatca*') ? 'active' : 'text-dark' }}">
-                    <i class="bi bi-upc-scan text-secondary me-2"></i> Zatca Integration
+                    <i class="bi bi-upc-scan text-secondary me-2"></i> {{ __('Zatca Integration') }}
                 </a>
             </li>
         </ul>

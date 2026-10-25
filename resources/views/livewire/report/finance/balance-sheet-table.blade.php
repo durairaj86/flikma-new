@@ -116,8 +116,8 @@
                 </td>
                 <td class="text-end">
                     <div class="stmt-title">{{ __('BALANCE SHEET') }}</div>
-                    <div class="stmt-sub">{{ __('As of:') }} {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
-                    <div class="stmt-sub">{{ __('Generated:') }} {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency:') }} SAR</div>
+                    <div class="stmt-sub">{{ __('As of:') }} {{ \Carbon\Carbon::parse($endDate)->translatedFormat('d M Y') }}</div>
+                    <div class="stmt-sub">{{ __('Generated:') }} {{ now()->translatedFormat('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency:') }} SAR</div>
                 </td>
             </tr>
         </table>

@@ -204,7 +204,7 @@ class DashboardController extends Controller
                             'route' => trim(($job->pol ?: $job->origin ?: '') . ' → ' . ($job->pod ?: $job->destination ?: ''), ' →') ?: '-',
                             'mode' => strtolower((string) ($job->shipment_mode ?: '')),
                             'event' => $label,
-                            'date' => $date->format('d M'),
+                            'date' => $date->translatedFormat('d M'),
                             'ts' => $date->timestamp,
                         ];
                     }
@@ -342,7 +342,7 @@ class DashboardController extends Controller
         $labels = [];
         for ($i = 0; $i < 10; $i++) {
             $month = Carbon::now()->subMonths($i);
-            $labels[] = $month->format('M');
+            $labels[] = $month->translatedFormat('M');
         }
         return array_reverse($labels);
     }
@@ -487,7 +487,7 @@ class DashboardController extends Controller
         };
         $today = Carbon::today();
         $week = Carbon::now()->startOfWeek();
-        $dayLabels = fn (Carbon $from, int $n) => collect(range(0, $n - 1))->map(fn ($i) => $from->copy()->addDays($i)->format('D'))->all();
+        $dayLabels = fn (Carbon $from, int $n) => collect(range(0, $n - 1))->map(fn ($i) => $from->copy()->addDays($i)->translatedFormat('D'))->all();
 
         return [
             'upcomingLabels' => $dayLabels($today, 7),

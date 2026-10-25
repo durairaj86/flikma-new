@@ -1,7 +1,7 @@
 @section('js', 'output_tax')
 @section('page-title', __('Output Tax Report'))
 @section('hide-topbar', true)
-@section('page-subtitle'){{ __('VAT collected on sales for') }} {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} &mdash; {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}@endsection
+@section('page-subtitle'){{ __('VAT collected on sales for') }} {{ \Carbon\Carbon::parse($startDate)->translatedFormat('d M Y') }} &mdash; {{ \Carbon\Carbon::parse($endDate)->translatedFormat('d M Y') }}@endsection
 
 <div class="provisional-wrapper min-vh-100 bg-light pt-1 pb-4">
     <div class="container-fluid px-3">

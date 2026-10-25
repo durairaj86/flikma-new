@@ -1,5 +1,5 @@
 JOB_REPORT = {
-    title: 'Job Report',
+    title: trans('Job Report'),
     baseUrl: 'reports/job-report',
     actionUrl: 'reports/job-report',
     load() {

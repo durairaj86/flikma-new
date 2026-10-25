@@ -230,7 +230,7 @@
                             <div class="stmt-title">{{ __('COLLECTION VOUCHER') }}</div>
                             <div class="stmt-sub">{{ $collection->row_no }}</div>
                             <div class="stmt-sub">{{ __('Date') }}: {{ $collection->collection_date }}</div>
-                            <div class="stmt-sub">{{ __('Generated') }}: {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency') }}: {{ strtoupper($collection->currency) }}</div>
+                            <div class="stmt-sub">{{ __('Generated') }}: {{ now()->translatedFormat('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency') }}: {{ strtoupper($collection->currency) }}</div>
                         </td>
                     </tr>
                 </table>

@@ -1,5 +1,5 @@
 DESCRIPTION = {
-    title: 'Description',
+    title: trans('Description'),
     baseUrl: 'masters/description',
     actionUrl: 'masters/description',
     load() {
@@ -98,7 +98,7 @@ DESCRIPTION = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'Add Description',
+                    title: trans('Add Description'),
                     url: GLOBAL_FN.buildUrl('masters/description/create'),
                     content: null,
                     size: 'md',

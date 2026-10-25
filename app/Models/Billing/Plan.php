@@ -44,15 +44,15 @@ class Plan
             $featureLabels = [];
 
             foreach ($plan['features'] as $module => $label) {
-                $featureLabels[] = $label ?: $moduleLabels->get($module, ucfirst($module));
+                $featureLabels[] = __($label ?: $moduleLabels->get($module, ucfirst($module)));
             }
 
             $plans[$id] = new self(
                 id: (int) $id,
                 key: $plan['key'],
                 name: $plan['name'],
-                label: $plan['label'],
-                tagline: $plan['tagline'],
+                label: __($plan['label']),
+                tagline: __($plan['tagline']),
                 monthly_price: (float) $plan['monthly_price'],
                 yearly_price: (float) $plan['yearly_price'],
                 is_active: (bool) $plan['is_active'],

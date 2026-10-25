@@ -50,7 +50,7 @@
                         @endphp
                         <div class="text-muted" style="font-size:.7rem;line-height:1.35;">
                             <i class="bi bi-person me-1"></i>{{ $by ?? '—' }}<br>
-                            <i class="bi bi-clock me-1"></i>{{ $col?->created_at?->format('d-M-Y H:i') ?? '—' }}
+                            <i class="bi bi-clock me-1"></i>{{ $col?->created_at?->translatedFormat('d-M-Y H:i') ?? '—' }}
                         </div>
                     </td>
                     <td>{{ $ci->collection->collection_date ?? '—' }}</td>

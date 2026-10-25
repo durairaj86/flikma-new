@@ -13,13 +13,13 @@ enum EnquiryEnum: int
 
     public function label(): string
     {
-        return match ($this) {
+        return __(match ($this) {
             self::PENDING => 'Pending',
             self::CONFIRMED => 'Confirmed',
             self::QUOTATION => 'Quotation',
             self::CANCELLED => 'Cancelled',
             self::COMPLETED => 'Completed',
-        };
+        });
     }
 
     public static function fromName(string $name): ?int

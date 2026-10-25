@@ -1,5 +1,5 @@
 BALANCE_SHEET = {
-    title: 'Balance Sheet',
+    title: trans('Balance Sheet'),
     baseUrl: 'reports/balance-sheet',
     actionUrl: 'reports/balance-sheet',
     load() {

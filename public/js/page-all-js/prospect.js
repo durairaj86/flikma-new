@@ -1,5 +1,5 @@
 PROSPECT = {
-    title: 'Prospect',
+    title: trans('Prospect'),
     baseUrl: 'prospect',
     actionUrl: 'prospect',
     load() {
@@ -167,15 +167,15 @@ PROSPECT = {
                 $('#row_delete').off().on('click', function () {
 
                     $.confirm({
-                        title: 'Confirm Delete',
-                        content: 'Are you sure you want to delete this record?',
+                        title: trans('Confirm Delete'),
+                        content: trans('Are you sure you want to delete this record?'),
                         type: 'red',
                         buttons: {
                             cancel: function () {
                             },
 
                             delete: {
-                                text: 'Delete',
+                                text: trans('Delete'),
                                 btnClass: 'btn-red',
                                 action: function () {
 
@@ -214,7 +214,7 @@ PROSPECT = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'Add Prospect',
+                    title: trans('Add Prospect'),
                     url: GLOBAL_FN.buildUrl('prospect/create'),
                     content: null,
                     size: 'smd',
@@ -226,7 +226,7 @@ PROSPECT = {
         quick: {
             open() {
                 webModal.quickModal.open({
-                    title: 'Add Quick Prospect',
+                    title: trans('Add Quick Prospect'),
                     url: GLOBAL_FN.buildUrl('prospect/create/quick'),
                     content: null,
                     size: 'md',

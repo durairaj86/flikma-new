@@ -1,5 +1,5 @@
 <select name="{{ $name ?? 'container_type[]' }}" class="tom-select" data-max-width="150" data-dropdown-width="250" data-live-search="true">
-    <option value="">Select</option>
+    <option value="">{{ __('Select') }}</option>
     @foreach(containerTypes() as $containerTypeId => $containerType)
         @php
             $containerValue = array_key_first($containerType);   // "General"

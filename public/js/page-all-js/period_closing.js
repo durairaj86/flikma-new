@@ -1,5 +1,5 @@
 PERIOD_CLOSING = {
-    title: 'Period Closing',
+    title: trans('Period Closing'),
     baseUrl: 'masters/period-closing',
     actionUrl: 'masters/period-closing',
     load() {
@@ -65,14 +65,14 @@ PERIOD_CLOSING = {
             delete(row) {
                 $('#row_delete').off().on('click', function () {
                     $.confirm({
-                        title: 'Confirm Delete',
-                        content: 'Are you sure you want to delete this period?',
+                        title: trans('Confirm Delete'),
+                        content: trans('Are you sure you want to delete this period?'),
                         type: 'red',
                         buttons: {
                             cancel: function () {
                             },
                             delete: {
-                                text: 'Delete',
+                                text: trans('Delete'),
                                 btnClass: 'btn-red',
                                 action: function () {
                                     $.ajax({
@@ -98,14 +98,14 @@ PERIOD_CLOSING = {
             close(row) {
                 $('#row_close').off().on('click', function () {
                     $.confirm({
-                        title: 'Close Period',
-                        content: 'Closing this period LOCKS every transaction dated on or before its closing date. This cannot be undone by regular users. Continue?',
+                        title: trans('Close Period'),
+                        content: trans('Closing this period LOCKS every transaction dated on or before its closing date. This cannot be undone by regular users. Continue?'),
                         type: 'orange',
                         buttons: {
                             cancel: function () {
                             },
                             close: {
-                                text: 'Close Period',
+                                text: trans('Close Period'),
                                 btnClass: 'btn-warning',
                                 action: function () {
                                     $.ajax({
@@ -132,14 +132,14 @@ PERIOD_CLOSING = {
             reopen(row) {
                 $('#row_reopen').off().on('click', function () {
                     $.confirm({
-                        title: 'Reopen Period',
-                        content: 'Reopening this period unlocks every transaction dated on or before its closing date for editing again. Continue?',
+                        title: trans('Reopen Period'),
+                        content: trans('Reopening this period unlocks every transaction dated on or before its closing date for editing again. Continue?'),
                         type: 'orange',
                         buttons: {
                             cancel: function () {
                             },
                             reopen: {
-                                text: 'Reopen Period',
+                                text: trans('Reopen Period'),
                                 btnClass: 'btn-warning',
                                 action: function () {
                                     $.ajax({
@@ -169,7 +169,7 @@ PERIOD_CLOSING = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'New Period',
+                    title: trans('New Period'),
                     url: GLOBAL_FN.buildUrl('masters/period-closing/create'),
                     content: null,
                     size: 'compact',

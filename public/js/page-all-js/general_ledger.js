@@ -1,5 +1,5 @@
 GENERAL_LEDGER = {
-    title: 'General Ledger',
+    title: trans('General Ledger'),
     baseUrl: 'reports/general-ledger',
     actionUrl: 'reports/general-ledger',
     load() {

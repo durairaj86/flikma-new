@@ -37,7 +37,7 @@
                         <label class="form-label small fw-bold text-muted">{{ __('Month') }}</label>
                         <select name="month" class="form-select" onchange="this.form.submit()">
                             @foreach(range(1, 12) as $m)
-                                <option value="{{ $m }}" {{ $month === $m ? 'selected' : '' }}>{{ \Illuminate\Support\Carbon::create()->month($m)->format('F') }}</option>
+                                <option value="{{ $m }}" {{ $month === $m ? 'selected' : '' }}>{{ \Illuminate\Support\Carbon::create()->month($m)->translatedFormat('F') }}</option>
                             @endforeach
                         </select>
                     </div>

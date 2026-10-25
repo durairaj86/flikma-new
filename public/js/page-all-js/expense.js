@@ -1,5 +1,5 @@
 EXPENSE = {
-    title: 'Expense',
+    title: trans('Expense'),
     baseUrl: 'finance/expense',
     actionUrl: 'finance/expense',
     load() {
@@ -177,11 +177,11 @@ EXPENSE = {
             let drawer = bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer'));
             drawer.show();
 
-            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
+            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> ' + trans('Loading...') + '</div>');
             $.get('/finance/expense/' + expenseId + '/overview-drawer', function (data) {
                 $('#moduleOverview').html(data);
             }).fail(function () {
-                $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load expense details.</div>');
+                $('#moduleOverview').html('<div class="alert alert-danger m-3">' + trans('Failed to load expense details.') + '</div>');
             });
         },
         extraActions(row) {
@@ -238,7 +238,7 @@ EXPENSE = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'New Expense',
+                    title: trans('New Expense'),
                     url: GLOBAL_FN.buildUrl(EXPENSE.baseUrl + '/create'),
                     content: null,
                     size: 'lg',

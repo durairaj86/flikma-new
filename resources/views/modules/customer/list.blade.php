@@ -183,13 +183,5 @@
     @include('modules.email.send-email')
     @include('modules.customer.customer-import')
 
-    @push('scripts')
-        <script>
-            // Sidebar collapse toggle
-            document.getElementById('toggleSidebar').addEventListener('click', function () {
-                document.getElementById('gmailSidebar').classList.toggle('collapsed');
-            });
-        </script>
-    @endpush
 
 </x-app-layout>

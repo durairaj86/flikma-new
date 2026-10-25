@@ -1,4 +1,3 @@
-@section('js', 'supplier_aging_summary')
 @section('page-title', __('Supplier Aging Summary'))
 @section('page-subtitle', __('Outstanding payables across all suppliers, by aging period'))
 @section('hide-topbar', true)
@@ -180,9 +179,9 @@
                     </td>
                     <td class="text-end">
                         <div class="stmt-title">{{ __('SUPPLIER AGING SUMMARY') }}</div>
-                        <div class="stmt-sub">{{ __('As of') }}: {{ \Carbon\Carbon::parse($asOfDate)->format('d M Y') }}</div>
+                        <div class="stmt-sub">{{ __('As of') }}: {{ \Carbon\Carbon::parse($asOfDate)->translatedFormat('d M Y') }}</div>
                         <div class="stmt-sub">{{ __('Aging') }}: {{ $agingInterval }}-{{ __('day buckets') }} &times; {{ $agingColumns }}</div>
-                        <div class="stmt-sub">{{ __('Generated') }}: {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency') }}: SAR</div>
+                        <div class="stmt-sub">{{ __('Generated') }}: {{ now()->translatedFormat('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency') }}: SAR</div>
                     </td>
                 </tr>
             </table>

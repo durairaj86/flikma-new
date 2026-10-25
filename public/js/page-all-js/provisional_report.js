@@ -1,5 +1,5 @@
 PROVISIONAL_REPORT = {
-    title: 'Provisional Report',
+    title: trans('Provisional Report'),
     baseUrl: 'reports/provisional-report',
     actionUrl: 'reports/provisional-report',
     load() {

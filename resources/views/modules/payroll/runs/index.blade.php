@@ -56,7 +56,7 @@
                         <label class="form-label small fw-bold text-muted">{{ __('Month') }}</label>
                         <select name="month" class="form-select tom-select" onchange="this.form.requestSubmit()">
                             @foreach(range(1, 12) as $m)
-                                <option value="{{ $m }}" {{ $month === $m ? 'selected' : '' }}>{{ \Illuminate\Support\Carbon::create()->month($m)->format('F') }}</option>
+                                <option value="{{ $m }}" {{ $month === $m ? 'selected' : '' }}>{{ \Illuminate\Support\Carbon::create()->month($m)->translatedFormat('F') }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -70,7 +70,7 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label small fw-bold text-muted">{{ __('Employee') }}</label>
-                        <x-common.employees name="employee_id" :value="request('employee_id')" placeholder="All Employees" onchange="this.form.requestSubmit()" />
+                        <x-common.employees name="employee_id" :value="request('employee_id')" placeholder="{{ __('All Employees') }}" onchange="this.form.requestSubmit()" />
                     </div>
                 </form>
             </div>

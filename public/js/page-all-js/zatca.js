@@ -63,7 +63,7 @@ ZATCA = {
         $('.test-run').on('click', function () {
             let btnId = $(this).attr('data-type');
             stickLoader('Testing', __('Testing ' + (btnId).toUpperCase() + ' invoices...'));
-            $('#' + btnId).text('Testing...');
+            $('#' + btnId).text(trans('Testing...'));
             $('#label-' + btnId).empty();
             MODEL.options({
                 type: 'fetch',
@@ -91,7 +91,7 @@ ZATCA = {
 
             if ($('#' + mode + '_otp').val() > 0 || mode === 'developer-portal') {
                 //stickLoader('Installing', __('Installing Zatca Please wait...'));
-                $('#' + btnId).text('Validating...');
+                $('#' + btnId).text(trans('Validating...'));
                 if ($('#simulation-form').valid()) {
 
                     const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
@@ -147,7 +147,7 @@ ZATCA = {
                             const successContent = `
                         <div id="simulation-success-message-container" class="text-center p-4 rounded bg-success-subtle">
                             <i class="bi bi-check-circle-fill display-4 text-success mb-3"></i>
-                            <h5 class="fw-bold text-success">STAGE 1: ACTIVATED</h5>
+                            <h5 class="fw-bold text-success">${trans('STAGE 1: ACTIVATED')}</h5>
                             <p class="small text-success mb-0">
                                 The Compliance CSID has been successfully issued and registered.
                                 **You may now proceed to Stage 2: Production Activation.**
@@ -157,8 +157,8 @@ ZATCA = {
 
                             // Replace the inner content of the simulation card body
                             simulationCardBody.innerHTML = `
-                        <span class="badge bg-warning text-dark mb-3 fs-6">STAGE 1: SIMULATION</span>
-                        <h4 class="card-title fw-bold text-warning-emphasis mb-3 me-3">Compliance Certification</h4>
+                        <span class="badge bg-warning text-dark mb-3 fs-6">${trans('STAGE 1: SIMULATION')}</span>
+                        <h4 class="card-title fw-bold text-warning-emphasis mb-3 me-3">${trans('Compliance Certification')}</h4>
                         <p class="small text-muted mb-4">
                             This phase validates your system's technical compatibility with ZATCA's standards. Successful validation generates the **Compliance CSID**.
                         </p>
@@ -178,7 +178,7 @@ ZATCA = {
                             if (error) {
                                 toastr.error(error);
                             } else {
-                                toastr.error("Something went wrong!");
+                                toastr.error(trans('Something went wrong!'));
                             }
                         },
                         /*error: function(xhr){
@@ -206,7 +206,7 @@ ZATCA = {
             }
             if ($('#' + mode + '_otp').val() > 0 || mode === 'developer-portal') {
                 //stickLoader('Installing', __('Installing Zatca Please wait...'));
-                $('#' + btnId).text('Validating...');
+                $('#' + btnId).text(trans('Validating...'));
                 if ($('#production-form').valid()) {
                     MODEL.options({
                         type: 'send',
@@ -233,11 +233,11 @@ ZATCA = {
                 //pageReload()
             }, 500)
         } else {
-            $('#submit-simulation-validate,#submit-core-validate').text('Validate');
+            $('#submit-simulation-validate,#submit-core-validate').text(trans('Validate'));
         }
     },
     testResponse(data, btnId) {
-        $('#' + btnId.data).text('Test Again');
+        $('#' + btnId.data).text(trans('Test Again'));
         $('#label-' + btnId.data).html('<i class="fa fa-check-circle"></i>' + ' Sample Invoice ' + data.message);
         showToastr('Success', data.message);
     }

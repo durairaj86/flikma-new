@@ -1,5 +1,5 @@
 PACKAGE_CODE = {
-    title: 'Package Code',
+    title: trans('Package Code'),
     baseUrl: 'masters/package/code',
     actionUrl: 'masters/package/codes',
     load() {
@@ -78,7 +78,7 @@ PACKAGE_CODE = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'Add Package Code',
+                    title: trans('Add Package Code'),
                     url: GLOBAL_FN.buildUrl('masters/package/code/create'),
                     content: null,
                     size: 'mid',

@@ -262,8 +262,8 @@
         <div class="modal-content">
             <div id="quickModalBody"></div>
             <div class="modal-footer" id="quickModalFooter">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary" form="quickModuleForm">Save</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                <button type="submit" class="btn btn-primary" form="quickModuleForm">{{ __('Save') }}</button>
             </div>
         </div>
     </div>

@@ -1,5 +1,5 @@
 SEAWAY_BILL = {
-    title: 'Seaway Bill',
+    title: trans('Seaway Bill'),
     baseUrl: 'bl/seaway',
     actionUrl: 'bl/seaway',
     load() {
@@ -81,11 +81,11 @@ SEAWAY_BILL = {
         openDrawer(id, name) {
             $('#drawerSubtitle').text(name || '');
             bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer')).show();
-            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
+            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> ' + trans('Loading...') + '</div>');
             $.get('/bl/seaway/' + id + '/overview', function (data) {
                 $('#moduleOverview').html(data);
             }).fail(function () {
-                $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load details.</div>');
+                $('#moduleOverview').html('<div class="alert alert-danger m-3">' + trans('Failed to load details.') + '</div>');
             });
         },
         load(activeTab = null) {
@@ -129,16 +129,16 @@ SEAWAY_BILL = {
 
                             if (row.status === 'delivered') {
                                 statusClass = 'text-success';
-                                statusBadge = '<span class="badge bg-success-subtle text-success me-2 text-xsmall">Delivered</span>';
+                                statusBadge = '<span class="badge bg-success-subtle text-success me-2 text-xsmall">' + trans('Delivered') + '</span>';
                             } else if (row.status === 'in_transit') {
                                 statusClass = 'text-primary';
-                                statusBadge = '<span class="badge bg-primary-subtle text-primary me-2 text-xsmall">In Transit</span>';
+                                statusBadge = '<span class="badge bg-primary-subtle text-primary me-2 text-xsmall">' + trans('In Transit') + '</span>';
                             } else if (row.status === 'pending') {
                                 statusClass = 'text-warning';
-                                statusBadge = '<span class="badge bg-warning-subtle text-warning me-2 text-xsmall">Pending</span>';
+                                statusBadge = '<span class="badge bg-warning-subtle text-warning me-2 text-xsmall">' + trans('Pending') + '</span>';
                             } else if (row.status === 'cancelled') {
                                 statusClass = 'text-danger';
-                                statusBadge = '<span class="badge bg-danger-subtle text-danger me-2 text-xsmall">Cancelled</span>';
+                                statusBadge = '<span class="badge bg-danger-subtle text-danger me-2 text-xsmall">' + trans('Cancelled') + '</span>';
                             }
 
                             return '<div class="' + statusClass + ' pb-1 fw-bold bl-no-link" style="cursor:pointer;">' + row.row_no + '</div>' + statusBadge;
@@ -158,13 +158,13 @@ SEAWAY_BILL = {
                         data: 'origin_destination', render: function (data, type, row) {
                             let origin_destination = '';
                             if (row.origin_port) {
-                                origin_destination = '<span class="text-secondary small me-1">Origin:</span><span>' + row.origin_port + '</span>';
+                                origin_destination = '<span class="text-secondary small me-1">' + trans('Origin:') + '</span><span>' + row.origin_port + '</span>';
                             }
                             if (row.destination_port) {
                                 if (origin_destination) {
                                     origin_destination += '<br>';
                                 }
-                                origin_destination += '<span class="text-secondary small me-1">Destination:</span><span>' + row.destination_port + '</span>';
+                                origin_destination += '<span class="text-secondary small me-1">' + trans('Destination:') + '</span><span>' + row.destination_port + '</span>';
                             }
                             return '<div class="text-wrap" style="min-width:180px;max-width:260px;white-space:normal;word-break:break-word;">' + origin_destination + '</div>';
                         }
@@ -253,7 +253,7 @@ SEAWAY_BILL = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'New Seaway Bill',
+                    title: trans('New Seaway Bill'),
                     url: GLOBAL_FN.buildUrl('bl/seaway/create'),
                     content: {
                         jobId: $(this).attr('data-loader-id')

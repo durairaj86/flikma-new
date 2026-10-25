@@ -1,5 +1,5 @@
 CREDIT_NOTE = {
-    title: 'Credit Note',
+    title: trans('Credit Note'),
     baseUrl: 'adjustment/credit-note',
     actionUrl: 'adjustment/credit-note',
     load() {
@@ -191,9 +191,9 @@ CREDIT_NOTE = {
             // the customer/supplier/proforma invoice lists: a bold primary
             // line, and one small muted caption underneath.
             statusBadge: {
-                1: '<span class="badge bg-secondary-subtle text-secondary-emphasis">Draft</span>',
-                2: '<span class="badge bg-success-subtle text-success-emphasis">Approved</span>',
-                3: '<span class="badge bg-danger-subtle text-danger-emphasis">Cancelled</span>',
+                1: '<span class="badge bg-secondary-subtle text-secondary-emphasis">' + trans('Draft') + '</span>',
+                2: '<span class="badge bg-success-subtle text-success-emphasis">' + trans('Approved') + '</span>',
+                3: '<span class="badge bg-danger-subtle text-danger-emphasis">' + trans('Cancelled') + '</span>',
             },
             creditNoteNumber: (row) => `<div class="cell-primary fw-bold text-primary credit-note-no-link" style="cursor:pointer;" title="${trans('View details')}">${row.row_no ?? ''}</div><div class="mt-1">${CREDIT_NOTE.list.templates.statusBadge[row.status] ?? ''}</div>`,
 
@@ -217,7 +217,7 @@ CREDIT_NOTE = {
                     }, $(this).attr('data-value'));
                 })
                 $('#row_converted').off().on('click', function () {
-                    alert("convert to invoice");
+                    alert(trans('convert to invoice'));
                 })
             },
             view(row) {
@@ -229,11 +229,11 @@ CREDIT_NOTE = {
             openDrawer(recordId, recordName) {
                 $('#drawerSubtitle').text(recordName || 'Credit Note');
                 bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer')).show();
-                $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
+                $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> ' + trans('Loading...') + '</div>');
                 $.get('/adjustment/credit-note/' + recordId + '/overview', function (data) {
                     $('#moduleOverview').html(data);
                 }).fail(function () {
-                    $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load credit note details.</div>');
+                    $('#moduleOverview').html('<div class="alert alert-danger m-3">' + trans('Failed to load credit note details.') + '</div>');
                 });
             },
             email(row) {
@@ -251,7 +251,7 @@ CREDIT_NOTE = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'New Credit Note',
+                    title: trans('New Credit Note'),
                     url: GLOBAL_FN.buildUrl('adjustment/credit-note/create'),
                     content: null,
                     size: 'xl',

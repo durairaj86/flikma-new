@@ -1,7 +1,6 @@
 @section('hide-topbar', true)
-@section('page-title', 'Billing & Subscription')
-@section('page-subtitle', 'Manage your plan, payment history, and subscription status.')
-@section('js', 'billing')
+@section('page-title', __('Billing & Subscription'))
+@section('page-subtitle', __('Manage your plan, payment history, and subscription status.'))
 <x-app-layout>
 <main class="gmail-content bg-white">
 <div class="px-4 pt-2">@include('includes.inline-page-title')</div>
@@ -121,11 +120,11 @@
             </div>
             @if($isInTrial)
                 <p class="text-muted small mb-0">
-                    <i class="bi bi-clock me-1"></i>{{ __('Free trial ends :date', ['date' => $company->trial_ends_at?->format('d M Y')]) }}
+                    <i class="bi bi-clock me-1"></i>{{ __('Free trial ends :date', ['date' => $company->trial_ends_at?->translatedFormat('d M Y')]) }}
                 </p>
             @elseif($hasActivePaidPlan)
                 <p class="text-muted small mb-0">
-                    <i class="bi bi-arrow-repeat me-1"></i>{{ __('Renews on :date', ['date' => $subscriptionExpiry?->format('d M Y')]) }}
+                    <i class="bi bi-arrow-repeat me-1"></i>{{ __('Renews on :date', ['date' => $subscriptionExpiry?->translatedFormat('d M Y')]) }}
                 </p>
             @else
                 <p class="text-muted small mb-0">{{ __('Your subscription has lapsed — choose a plan below to reactivate.') }}</p>
@@ -203,7 +202,7 @@
                                 <div class="bl-radio-circle"></div>
                                 <div class="bl-plan-details">
                                     <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
-                                        <h6 class="fw-bold mb-0 text-capitalize" x-text="plan.name"></h6>
+                                        <h6 class="fw-bold mb-0 text-capitalize" x-text="plan.label"></h6>
                                         <div class="bl-plan-price-tag">
                                             <span>SAR <span x-text="Number(priceFor(plan.id)).toLocaleString()"></span></span>
                                             <span class="text-muted small fw-normal">/ <span x-text="cycle === 'monthly' ? '{{ __('month') }}' : '{{ __('year') }}'"></span></span>
@@ -278,7 +277,7 @@
 
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-secondary">{{ __('Selected Plan') }}</span>
-                            <span class="fw-bold text-capitalize" x-text="selectedPlan ? selectedPlan.name : '—'"></span>
+                            <span class="fw-bold text-capitalize" x-text="selectedPlan ? selectedPlan.label : '—'"></span>
                         </div>
                         <div class="d-flex justify-content-between mb-4">
                             <span class="text-secondary">{{ __('Billing Cycle') }}</span>
@@ -341,8 +340,8 @@
                             <tbody>
                                 @foreach($payments as $payment)
                                     <tr>
-                                        <td class="px-3 small text-muted">{{ $payment->created_at->format('d M Y') }}</td>
-                                        <td class="fw-medium">{{ $payment->package?->name ?? '—' }}</td>
+                                        <td class="px-3 small text-muted">{{ $payment->created_at->translatedFormat('d M Y') }}</td>
+                                        <td class="fw-medium">{{ $payment->package?->label ?? '—' }}</td>
                                         <td class="small text-muted">{{ $payment->invoice_number ?? '—' }}</td>
                                         <td class="text-end fw-semibold">SAR {{ number_format((float) $payment->amount, 2) }}</td>
                                         <td class="px-3 text-end">
@@ -371,7 +370,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title fw-bold" id="blContactModalLabel">{{ __('Contact us to upgrade') }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
             </div>
             <form :action="'{{ route('billing.contact', ['package' => 'PLAN_ID']) }}'.replace('PLAN_ID', selectedPlanId)" method="POST">
                 @csrf
@@ -381,7 +380,7 @@
                         <div class="bg-light rounded-3 p-3 mb-3 small">
                             <div class="d-flex justify-content-between py-1">
                                 <span class="text-muted">{{ __('Plan') }}</span>
-                                <span class="fw-bold text-capitalize" x-text="selectedPlan.name"></span>
+                                <span class="fw-bold text-capitalize" x-text="selectedPlan.label"></span>
                             </div>
                             <div class="d-flex justify-content-between py-1">
                                 <span class="text-muted">{{ __('Billing Cycle') }}</span>

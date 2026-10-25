@@ -77,7 +77,7 @@ SEAPORT = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'Add Seaport',
+                    title: trans('Add Seaport'),
                     url: GLOBAL_FN.buildUrl('masters/transport/directories/seaport/create'),
                     content: null,
                     size: 'compact',

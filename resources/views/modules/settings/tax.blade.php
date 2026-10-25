@@ -1,5 +1,5 @@
 @section('js','user')
-@section('page-title','Users')
+@section('page-title', __('Tax'))
 <x-app-layout>
     <main class="gmail-content bg-white d-flex ">
         @include('includes.settings-navigation')

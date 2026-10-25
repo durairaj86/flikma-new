@@ -86,7 +86,7 @@ SALESPERSON = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'Add Salesperson',
+                    title: trans('Add Salesperson'),
                     url: GLOBAL_FN.buildUrl('masters/salesperson/create'),
                     content: null,
                     size: 'smd',

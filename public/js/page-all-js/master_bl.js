@@ -1,5 +1,5 @@
 MASTER_BL = {
-    title: 'Master B/L',
+    title: trans('Master B/L'),
     baseUrl: 'bl/master-bl',
     actionUrl: 'bl/master-bl',
     load() {
@@ -91,10 +91,10 @@ MASTER_BL = {
         },
         templates: {
             badge: {
-                1: '<span class="badge bg-warning-subtle text-warning-emphasis">Draft</span>',
-                2: '<span class="badge bg-success-subtle text-success-emphasis">Issued</span>',
-                3: '<span class="badge bg-primary-subtle text-primary-emphasis">Closed</span>',
-                4: '<span class="badge bg-danger-subtle text-danger-emphasis">Cancelled</span>',
+                1: '<span class="badge bg-warning-subtle text-warning-emphasis">' + trans('Draft') + '</span>',
+                2: '<span class="badge bg-success-subtle text-success-emphasis">' + trans('Issued') + '</span>',
+                3: '<span class="badge bg-primary-subtle text-primary-emphasis">' + trans('Closed') + '</span>',
+                4: '<span class="badge bg-danger-subtle text-danger-emphasis">' + trans('Cancelled') + '</span>',
             },
             modeIcon: {sea: 'bi-water', air: 'bi-airplane'},
             number: (row) => `<div class="cell-primary text-primary master-bl-no-link" style="cursor:pointer;">${row.row_no ?? ''}</div><div class="mt-1">${MASTER_BL.list.templates.badge[row.status] ?? ''}</div>`,
@@ -135,11 +135,11 @@ MASTER_BL = {
         openDrawer(id, name) {
             $('#drawerSubtitle').text(name || '');
             bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer')).show();
-            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...</div>');
+            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> ' + trans('Loading...') + '</div>');
             $.get('/' + MASTER_BL.baseUrl + '/' + id + '/overview', function (data) {
                 $('#moduleOverview').html(data);
             }).fail(function () {
-                $('#moduleOverview').html('<div class="alert alert-danger m-3">Failed to load master B/L details.</div>');
+                $('#moduleOverview').html('<div class="alert alert-danger m-3">' + trans('Failed to load master B/L details.') + '</div>');
             });
         },
     },
@@ -156,7 +156,7 @@ MASTER_BL = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'New Master B/L',
+                    title: trans('New Master B/L'),
                     url: GLOBAL_FN.buildUrl(MASTER_BL.baseUrl + '/create'),
                     content: null,
                     size: 'xl',
@@ -169,10 +169,10 @@ MASTER_BL = {
             const masterId = $('#mbl-master-id').val() || '';
             const loadHouses = (mode) => {
                 const $box = $('#mbl-houses');
-                $box.html('<div class="text-muted small p-2">Loading...</div>');
+                $box.html('<div class="text-muted small p-2">' + trans('Loading...') + '</div>');
                 $.get(GLOBAL_FN.buildUrl('bl/master-bl/house-bills/' + mode + (masterId ? '/' + masterId : '')), function (rows) {
                     if (!rows.length) {
-                        $box.html('<div class="text-muted small p-2">No free house bills for this mode.</div>');
+                        $box.html('<div class="text-muted small p-2">' + trans('No free house bills for this mode.') + '</div>');
                         return;
                     }
                     $box.html(rows.map(r => `<label class="d-flex align-items-center gap-2 py-1 px-2 border-bottom">

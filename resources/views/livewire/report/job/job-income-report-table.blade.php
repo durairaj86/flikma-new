@@ -43,7 +43,7 @@
                             <td class="ps-2">
                                 <span class="fw-bold text-dark">{{ $job['job_number'] }}</span>
                             </td>
-                            <td class="small text-muted">{{ \Carbon\Carbon::parse($job['job_date'])->format('d M Y') }}</td>
+                            <td class="small text-muted">{{ \Carbon\Carbon::parse($job['job_date'])->translatedFormat('d M Y') }}</td>
                             <td class="small">{{ $job['customer'] }}</td>
                             <td class="small">{{ $job['activity'] }}</td>
                             <td class="text-center small">
@@ -83,7 +83,7 @@
                                                     @endphp
                                                     <tr wire:key="jir-{{ $job['job_number'] }}-{{ $dIndex }}">
                                                         <td class="small">{{ $detail['invoice_number'] }}</td>
-                                                        <td class="small text-muted">{{ \Carbon\Carbon::parse($detail['invoice_date'])->format('d M Y') }}</td>
+                                                        <td class="small text-muted">{{ \Carbon\Carbon::parse($detail['invoice_date'])->translatedFormat('d M Y') }}</td>
                                                         <td class="small">{{ $detail['description'] }}</td>
                                                         <td class="text-end tabular-nums small">{{ number_format($detail['amount'], 2) }}</td>
                                                         <td class="text-center">
@@ -133,8 +133,8 @@
                 </td>
                 <td class="text-end">
                     <div class="stmt-title">{{ __('JOB INCOME REPORT') }}</div>
-                    <div class="stmt-sub">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
-                    <div class="stmt-sub">{{ __('Generated:') }} {{ now()->format('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency:') }} {{ __('SAR') }}</div>
+                    <div class="stmt-sub">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->translatedFormat('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->translatedFormat('d M Y') }}</div>
+                    <div class="stmt-sub">{{ __('Generated:') }} {{ now()->translatedFormat('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency:') }} {{ __('SAR') }}</div>
                 </td>
             </tr>
         </table>

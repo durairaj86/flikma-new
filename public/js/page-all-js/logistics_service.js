@@ -1,5 +1,5 @@
 LOGISTICS_SERVICE = {
-    title: 'Services',
+    title: trans('Services'),
     baseUrl: 'masters/services',
     actionUrl: 'masters/services',
     load() {
@@ -88,7 +88,7 @@ LOGISTICS_SERVICE = {
         open() {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: 'Add Service',
+                    title: trans('Add Service'),
                     url: GLOBAL_FN.buildUrl('masters/services/create'),
                     content: null,
                     size: 'md',

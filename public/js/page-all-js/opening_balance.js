@@ -48,7 +48,7 @@ const OPENING_BALANCE = {
                 accountSelects.forEach(select => {
                     new TomSelect(select, {
                         plugins: ['dropdown_input'],
-                        placeholder: 'Select Account',
+                        placeholder: trans('Select Account'),
                         allowEmptyOption: true,
                         create: false
                     });
@@ -61,7 +61,7 @@ const OPENING_BALANCE = {
                 customerSelects.forEach(select => {
                     new TomSelect(select, {
                         plugins: ['dropdown_input'],
-                        placeholder: 'Select Customer',
+                        placeholder: trans('Select Customer'),
                         allowEmptyOption: true,
                         create: false
                     });
@@ -74,7 +74,7 @@ const OPENING_BALANCE = {
                 supplierSelects.forEach(select => {
                     new TomSelect(select, {
                         plugins: ['dropdown_input'],
-                        placeholder: 'Select Supplier',
+                        placeholder: trans('Select Supplier'),
                         allowEmptyOption: true,
                         create: false
                     });
@@ -87,7 +87,7 @@ const OPENING_BALANCE = {
                 entryTypeSelects.forEach(select => {
                     new TomSelect(select, {
                         plugins: ['dropdown_input'],
-                        placeholder: 'Select Type',
+                        placeholder: trans('Select Type'),
                         allowEmptyOption: false,
                         create: false
                     });
@@ -147,7 +147,7 @@ const OPENING_BALANCE = {
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('An error occurred while deleting the opening balance entry.');
+                    alert(trans('An error occurred while deleting the opening balance entry.'));
                 });
             }
         }
