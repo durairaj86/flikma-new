@@ -518,78 +518,14 @@
                                 </li>
                             </ul>
                         </li>
-                        <li class="nav-item {{ $menu == 'reports' && !in_array($submenu, $jobReportSlugs) ? 'menu-open' : '' }}">
-                            <a href="#" class="nav-link">
-                                <p>{{ __('Finance Report') }} <i class="nav-arrow bi bi-chevron-right"></i></p>
+                        @php
+                            $financeReportSlugs = ['finance', 'trial-balance', 'balance-sheet', 'profit-and-loss', 'general-ledger', 'supplier-ledger', 'tax-summary', 'input-tax', 'output-tax', 'sales-commission', 'customer-wise-sales', 'invoice-wise-sales', 'customer-wise-commission'];
+                        @endphp
+                        <li class="nav-item">
+                            <a href="/reports/finance"
+                               class="nav-link {{ $menu == 'reports' && in_array($submenu, $financeReportSlugs) ? 'active' : '' }}">
+                                <p>{{ __('Finance Report') }}</p>
                             </a>
-                            <ul class="nav nav-treeview ms-3">
-                                <li class="nav-item">
-                                    <a href="/reports/trial-balance"
-                                       class="nav-link {{ $submenu == 'trial-balance' ? 'active' : '' }}">
-                                        <p>{{ __('Trial Balance') }}</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/reports/balance-sheet"
-                                       class="nav-link {{ $submenu == 'balance-sheet' ? 'active' : '' }}">
-                                        <p>{{ __('Balance Sheet') }}</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/reports/profit-and-loss"
-                                       class="nav-link {{ $submenu == 'profit-and-loss' ? 'active' : '' }}">
-                                        <p>{{ __('Profit & Loss Report') }}</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/reports/general-ledger"
-                                       class="nav-link {{ $submenu == 'general-ledger' ? 'active' : '' }}">
-                                        <p>{{ __('Customer Ledger') }}</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/reports/supplier-ledger"
-                                       class="nav-link {{ $submenu == 'supplier-ledger' ? 'active' : '' }}">
-                                        <p>{{ __('Supplier Ledger') }}</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/reports/tax-summary"
-                                       class="nav-link {{ $submenu == 'tax-summary' ? 'active' : '' }}">
-                                        <p>{{ __('Tax Summary') }}</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/reports/input-tax"
-                                       class="nav-link {{ $submenu == 'input-tax' ? 'active' : '' }}">
-                                        <p>{{ __('Input Tax') }}</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/reports/output-tax"
-                                       class="nav-link {{ $submenu == 'output-tax' ? 'active' : '' }}">
-                                        <p>{{ __('Output Tax') }}</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/reports/sales-commission"
-                                       class="nav-link {{ $submenu == 'sales-commission' ? 'active' : '' }}">
-                                        <p>{{ __('Sales Commission') }}</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/reports/customer-wise-sales"
-                                       class="nav-link {{ $submenu == 'customer-wise-sales' ? 'active' : '' }}">
-                                        <p>{{ __('Customer Wise Sales') }}</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/reports/invoice-wise-sales"
-                                       class="nav-link {{ $submenu == 'invoice-wise-sales' ? 'active' : '' }}">
-                                        <p>{{ __('Invoice Wise Sales') }}</p>
-                                    </a>
-                                </li>
-                            </ul>
                         </li>
                         <li class="nav-item">
                             <a href="/reports/waybill-report"

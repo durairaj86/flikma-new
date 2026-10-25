@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flikma — Intro styles</title>
+<style>
+  :root{--navy:#0b1f4d;--blue:#0d6efd;--orange:#f79009}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Figtree,"Segoe UI",system-ui,sans-serif;background:#0e1117;color:#e7edf6}
+  header{padding:28px 40px 6px}
+  h1{margin:0 0 6px;font-size:1.7rem}
+  p.sub{margin:0;opacity:.7}
+  h2{margin:30px 40px 6px;font-size:1.15rem;color:#9db4d6;text-transform:uppercase;letter-spacing:.08em}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:22px;padding:16px 40px 40px}
+  .card{background:#151b26;border:1px solid #232c3b;border-radius:16px;overflow:hidden}
+  .card video{width:100%;display:block;background:#000;aspect-ratio:16/9}
+  .meta{padding:12px 16px 16px}
+  .meta b{font-size:1.02rem}
+  .meta code{display:block;margin-top:6px;font-size:.8rem;color:#8fa6c7;background:#0e131c;border:1px solid #232c3b;border-radius:7px;padding:6px 8px}
+  .tag{display:inline-block;font-size:.72rem;background:var(--orange);color:#0b1f4d;font-weight:800;border-radius:20px;padding:2px 10px;margin-left:8px;vertical-align:middle}
+</style>
+</head>
+<body>
+<header>
+  <h1>Flikma — starting animation &amp; music</h1>
+  <p class="sub">Watch each clip, then tell me the numbers you want (e.g. “animation 3, music 2”).</p>
+</header>
+
+<h2>Animation styles (same music: cinematic)</h2>
+<div class="grid">
+  <div class="card"><video src="intro-anim-1-fade.mp4" controls loop muted></video><div class="meta"><b>1 · Fade &amp; settle</b><span class="tag">current</span><code>animation 1 — fade</code></div></div>
+  <div class="card"><video src="intro-anim-2-slide.mp4" controls loop muted></video><div class="meta"><b>2 · Slide up</b><code>animation 2 — slide</code></div></div>
+  <div class="card"><video src="intro-anim-3-zoom.mp4" controls loop muted></video><div class="meta"><b>3 · Zoom / punch</b><code>animation 3 — zoom</code></div></div>
+  <div class="card"><video src="intro-anim-4-wipe.mp4" controls loop muted></video><div class="meta"><b>4 · Light wipe</b><code>animation 4 — wipe</code></div></div>
+  <div class="card"><video src="intro-anim-5-tilt.mp4" controls loop muted></video><div class="meta"><b>5 · Tilt drop</b><code>animation 5 — tilt</code></div></div>
+</div>
+
+<h2>Music styles (same animation: fade)</h2>
+<div class="grid">
+  <div class="card"><video src="intro-music-1-cinematic.mp4" controls loop></video><div class="meta"><b>1 · Cinematic</b><span class="tag">current</span><code>music 1 — cinematic</code></div></div>
+  <div class="card"><video src="intro-music-2-corporate.mp4" controls loop></video><div class="meta"><b>2 · Corporate upbeat</b><code>music 2 — corporate</code></div></div>
+  <div class="card"><video src="intro-music-3-ambient.mp4" controls loop></video><div class="meta"><b>3 · Soft ambient</b><code>music 3 — ambient</code></div></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flikma — Intro styles v2</title>
+<style>
+  :root{--teal:#0d9488;--teal-d:#0f766e;--orange:#f79009}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Figtree,"Segoe UI",system-ui,sans-serif;background:#0e1117;color:#e9f1ef}
+  header{padding:26px 40px 4px}
+  h1{margin:0 0 6px;font-size:1.7rem}
+  p.sub{margin:0;opacity:.7}
+  .note{margin:14px 40px;padding:10px 14px;border-radius:10px;background:#12261f;border:1px solid #1d4438;color:#a7e3d4;font-size:.9rem}
+  h2{margin:28px 40px 6px;font-size:1.12rem;color:#8fd8cb;text-transform:uppercase;letter-spacing:.08em}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:22px;padding:14px 40px 40px}
+  .card{background:#151b26;border:1px solid #232c3b;border-radius:16px;overflow:hidden}
+  .card video{width:100%;display:block;background:#000;aspect-ratio:16/9}
+  .meta{padding:12px 16px 16px}
+  .meta b{font-size:1.02rem}
+  .tag{display:inline-block;font-size:.72rem;background:var(--orange);color:#0b1f4d;font-weight:800;border-radius:20px;padding:2px 10px;margin-left:8px;vertical-align:middle}
+  .tag.teal{background:var(--teal);color:#fff}
+  .meta code{display:block;margin-top:6px;font-size:.8rem;color:#8fa6c7;background:#0e131c;border:1px solid #232c3b;border-radius:7px;padding:6px 8px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Flikma — starting video set v2</h1>
+  <p class="sub">Teal‑green palette (matches the site’s finance/login accent <code>#0d9488</code>) with moving backgrounds.</p>
+</header>
+<div class="note">Tell me the numbers you want, e.g. <b>“background 2, colour green, music 4”</b>. Different videos can use different music.</div>
+
+<h2>★ Improved transport scene (plane + ship + truck) · music: Corporate upbeat</h2>
+<div class="grid">
+  <div class="card"><video src="transport-green.mp4" controls loop></video><div class="meta"><b>Transport · teal‑green</b><span class="tag teal">your pick</span><code>concept transport · colour green · music 2</code></div></div>
+  <div class="card"><video src="transport-white.mp4" controls loop></video><div class="meta"><b>Transport · white</b><code>concept transport · colour white · music 2</code></div></div>
+</div>
+
+<h2>1 · Background / animation (on teal‑green)</h2>
+<div class="grid">
+  <div class="card"><video src="c1-particles.mp4" controls loop></video><div class="meta"><b>1 · Drifting particles</b><code>background 1 — particles</code></div></div>
+  <div class="card"><video src="c2-routes.mp4" controls loop></video><div class="meta"><b>2 · Flying plane on trade route</b><span class="tag teal">flying</span><code>background 2 — routes</code></div></div>
+  <div class="card"><video src="c3-waves.mp4" controls loop></video><div class="meta"><b>3 · Flowing waves</b><code>background 3 — waves</code></div></div>
+  <div class="card"><video src="c4-shapes.mp4" controls loop></video><div class="meta"><b>4 · Floating shapes</b><code>background 4 — shapes</code></div></div>
+</div>
+
+<h2>2 · Colour: teal‑green vs white</h2>
+<div class="grid">
+  <div class="card"><video src="c1-particles.mp4" controls loop muted></video><div class="meta"><b>Green + particles</b><code>colour green</code></div></div>
+  <div class="card"><video src="c5-particles-white.mp4" controls loop muted></video><div class="meta"><b>White + particles</b><code>colour white</code></div></div>
+  <div class="card"><video src="c6-routes-white.mp4" controls loop muted></video><div class="meta"><b>White + flying plane</b><code>colour white</code></div></div>
+</div>
+
+<h2>3 · Music (same background so only the sound changes)</h2>
+<div class="grid">
+  <div class="card"><video src="m1-cinematic.mp4" controls loop></video><div class="meta"><b>1 · Cinematic</b><code>music 1 — cinematic</code></div></div>
+  <div class="card"><video src="m2-corporate.mp4" controls loop></video><div class="meta"><b>2 · Corporate upbeat</b><code>music 2 — corporate</code></div></div>
+  <div class="card"><video src="m3-ambient.mp4" controls loop></video><div class="meta"><b>3 · Soft ambient</b><code>music 3 — ambient</code></div></div>
+  <div class="card"><video src="m4-tech.mp4" controls loop></video><div class="meta"><b>4 · Tech / electronic</b><code>music 4 — tech</code></div></div>
+  <div class="card"><video src="m5-uplifting.mp4" controls loop></video><div class="meta"><b>5 · Uplifting</b><code>music 5 — uplifting</code></div></div>
+  <div class="card"><video src="m6-minimal.mp4" controls loop></video><div class="meta"><b>6 · Minimal</b><code>music 6 — minimal</code></div></div>
+</div>
+</body>
+</html>

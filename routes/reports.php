@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 // Finance Reports
+Route::view('/reports/finance', 'modules.reports.finance');
 Route::get('/reports/trial-balance', \App\Livewire\Report\Finance\TrialBalance::class);
 Route::get('/reports/account-postings', [\App\Http\Controllers\Finance\Report\AccountPostingsController::class, 'show']);
 Route::get('/reports/trial-balance/details', [\App\Http\Controllers\Finance\Report\TrialBalanceDetailController::class, 'show']);
