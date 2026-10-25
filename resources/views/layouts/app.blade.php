@@ -88,7 +88,6 @@
 
     {{-- Alpine is bundled with Livewire v3 (@livewireScripts) — do not load it separately --}}
 
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     @livewireStyles
     <style>
         body {
