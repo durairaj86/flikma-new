@@ -139,6 +139,10 @@ COLLECTION = {
                 $('#cardAllCount').text(counts.all ?? 0);
                 $('#cardApprovedCount').text(counts.APPROVED ?? 0);
                 $('#cardDraftCount').text(counts.DRAFT ?? 0);
+                // the split bar of the Summary card: approved vs draft share of the documents that are one or the other
+                const ap = Number(counts.APPROVED ?? 0), dr = Number(counts.DRAFT ?? 0), sum = ap + dr;
+                $('#cardApprovedBar').css('width', sum ? (ap / sum * 100) + '%' : '0');
+                $('#cardDraftBar').css('width', sum ? (dr / sum * 100) + '%' : '0');
             }
         },
 

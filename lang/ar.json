@@ -3613,5 +3613,8 @@
     "Do you want to change the job?": "هل تريد تغيير الوظيفة؟",
     "The lines already added will be cleared.": "سيتم مسح البنود المضافة.",
     "Yes, change": "نعم، غيّر",
-    "View details": "عرض التفاصيل"
+    "View details": "عرض التفاصيل",
+    "Debit Note Details": "تفاصيل إشعار المدين",
+    "Paid from": "مدفوع من",
+    "No payments or debit notes recorded against this invoice yet.": "لا توجد مدفوعات أو إشعارات مدين مسجلة على هذه الفاتورة بعد."
 }

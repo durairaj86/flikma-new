@@ -249,6 +249,7 @@
     </script>
     @include('modules.email.send-email')
     @include('modules.finance.supplier-invoice.supplier-invoice-view')
+    @include('modules.common.linked-drawer', ['mainWidth' => 60, 'subWidth' => 35])
 
     <!-- OCR Modal -->
     <div class="modal fade show" id="ocrModal1" tabindex="-1" aria-labelledby="ocrModalLabel" aria-hidden="true" data-bs-backdrop="static">

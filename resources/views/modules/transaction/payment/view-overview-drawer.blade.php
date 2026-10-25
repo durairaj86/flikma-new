@@ -68,11 +68,24 @@
     .pay-timeline .t-label { font-weight: 600; color: #0f172a; }
     .pay-timeline .t-meta { color: #64748b; font-size: 12.5px; }
     .x-small { font-size: .75rem; }
+    /* tabs styled like the Job view tabs */
+    .pay-tabs { border-bottom: 1px solid #dee2e6; }
+    .pay-tabs .nav-link { border: none; color: #495057; padding: 0.5rem 1rem; font-size: 0.875rem; border-radius: 0; transition: all 0.2s ease; background: transparent; }
+    .pay-tabs .nav-link.active { color: #0b6aa0; border-bottom: 2px solid #0b6aa0; font-weight: 600; background: transparent; }
+    .pay-tabs .nav-link:hover:not(.active) { color: #0b6aa0; background: rgba(11, 106, 160, 0.05); }
 </style>
-<ul class="nav nav-tabs mb-3" role="tablist">
+<ul class="nav nav-tabs pay-tabs mb-3" role="tablist">
     <li class="nav-item">
         <button class="nav-link active fw-semibold" data-bs-toggle="tab" data-bs-target="#payDetailsTab" type="button" role="tab">
             <i class="bi bi-cash-coin me-1"></i> {{ __('Details') }}
+        </button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link fw-semibold" data-bs-toggle="tab" data-bs-target="#payDocumentsTab" type="button" role="tab">
+            <i class="bi bi-paperclip me-1"></i> {{ __('Documents') }}
+            @if($payment->documents && $payment->documents->count())
+                <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill ms-1">{{ $payment->documents->count() }}</span>
+            @endif
         </button>
     </li>
     <li class="nav-item ms-auto">
@@ -227,6 +240,21 @@
 @endif
 
 <div class="section">
+    <h6>{{ __('Audit Information') }}</h6>
+    <div class="info-grid">
+        <div><strong>{{ __('Created By') }}:</strong><span>{{ $payment->createdBy->name ?? '-' }}</span></div>
+        <div><strong>{{ __('Created At') }}:</strong><span>{{ $payment->created_at ? $payment->created_at->format('d-m-Y H:i:s') : '-' }}</span></div>
+        @if($payment->status == \App\Enums\PaymentEnum::APPROVED->value)
+            <div><strong>{{ __('Approved By') }}:</strong><span>{{ $payment->approvedBy->name ?? '-' }}</span></div>
+            <div><strong>{{ __('Approved At') }}:</strong><span>{{ $payment->approved_at ?? '-' }}</span></div>
+        @endif
+    </div>
+</div>
+
+</div>
+
+<div class="tab-pane fade" id="payDocumentsTab" role="tabpanel">
+<div class="section">
     <h6>{{ __('Documents') }}</h6>
     @if($payment->documents && $payment->documents->count())
         <ul class="list-group list-group-flush">
@@ -243,18 +271,6 @@
     @else
         <div class="text-center py-4 text-muted">{{ __('No documents uploaded for this payment.') }}</div>
     @endif
-</div>
-
-<div class="section">
-    <h6>{{ __('Audit Information') }}</h6>
-    <div class="info-grid">
-        <div><strong>{{ __('Created By') }}:</strong><span>{{ $payment->createdBy->name ?? '-' }}</span></div>
-        <div><strong>{{ __('Created At') }}:</strong><span>{{ $payment->created_at ? $payment->created_at->format('d-m-Y H:i:s') : '-' }}</span></div>
-        @if($payment->status == \App\Enums\PaymentEnum::APPROVED->value)
-            <div><strong>{{ __('Approved By') }}:</strong><span>{{ $payment->approvedBy->name ?? '-' }}</span></div>
-            <div><strong>{{ __('Approved At') }}:</strong><span>{{ $payment->approved_at ?? '-' }}</span></div>
-        @endif
-    </div>
 </div>
 
 </div>

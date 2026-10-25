@@ -626,7 +626,80 @@ class SupplierInvoiceController extends Controller
         $supplierInvoice = SupplierInvoice::with('supplierInvoiceSubs', 'supplier')->findOrFail($id);
         $descriptions = Description::descriptions()->pluck('description', 'id')->toArray();
         [$origin, $timeline] = $this->invoiceTimeline($supplierInvoice);
-        return view('modules.finance.supplier-invoice.view-overview-drawer', compact('supplierInvoice', 'descriptions', 'origin', 'timeline'));
+        $transactions = $this->invoiceTransactions($id);
+        $audit = $this->invoiceAudit($supplierInvoice);
+        return view('modules.finance.supplier-invoice.view-overview-drawer', compact('supplierInvoice', 'descriptions', 'origin', 'timeline', 'transactions', 'audit'));
+    }
+
+    /**
+     * Who created the invoice and who approved it, and when. The table keeps no approver columns, so both come from the change log
+     * (the "created" entry, and the entry that moved the status to Approved while it is still approved).
+     */
+    private function invoiceAudit(SupplierInvoice $inv): array
+    {
+        $logs = \App\Models\Log\LogHistory::where('loggable_type', SupplierInvoice::class)->where('loggable_id', $inv->id)->orderBy('id')->get();
+        $fmt = fn ($d) => $d ? Carbon::parse($d)->format('d-m-Y H:i') : null;
+        $created = $logs->firstWhere('action', 'created');
+        $approved = (int) ($inv->status instanceof \BackedEnum ? $inv->status->value : $inv->status) === 3
+            ? $logs->where('action', 'updated')->filter(fn ($l) => (int) ($l->changes['new']['status'] ?? 0) === 3)->last()
+            : null;
+        $creatorName = $created->user_id['name'] ?? ($inv->user_id ? \App\Models\User::withoutGlobalScopes()->where('id', $inv->user_id)->value('name') : null);
+
+        return [
+            'created_by' => $creatorName,
+            'created_at' => $fmt($created->created_at ?? $inv->created_at),
+            'approved_by' => $approved->user_id['name'] ?? null,
+            'approved_at' => $fmt($approved->created_at ?? null),
+        ];
+    }
+
+    /**
+     * Payments and debit notes recorded against this supplier invoice, newest first (the supplier-side twin of the customer
+     * invoice's Transactions tab): who created / approved each one, where the money came from, and its status.
+     */
+    private function invoiceTransactions($id): \Illuminate\Support\Collection
+    {
+        $labels = [1 => ['Draft', 'secondary'], 2 => ['Approved', 'success'], 3 => ['Cancelled', 'danger']];
+        $fmt = fn ($d) => $d ? Carbon::parse($d)->format('d-m-Y H:i') : null;
+
+        $paymentRows = \App\Models\Finance\Payment\PaymentInvoice::where('supplier_invoice_id', $id)
+            ->with('payment:id,row_no,payment_date,account,status,created_by,created_at,approved_by,approved_at')->get();
+        $debitNotes = \App\Models\Finance\Adjustment\DebitNote::where('invoice_id', $id)->get();
+
+        $userIds = $paymentRows->flatMap(fn ($r) => [$r->payment->created_by ?? null, $r->payment->approved_by ?? null])
+            ->merge($debitNotes->pluck('user_id'))->filter()->unique()->values();
+        $names = $userIds->isEmpty() ? collect() : \App\Models\User::withoutGlobalScopes()->whereIn('id', $userIds)->pluck('name', 'id');
+        $accountIds = $paymentRows->map(fn ($r) => $r->payment->account ?? null)->filter()->unique()->values();
+        $accounts = $accountIds->isEmpty() ? collect() : DB::table('accounts')->whereIn('id', $accountIds)->pluck('name', 'id');
+
+        $tx = collect();
+        foreach ($paymentRows as $r) {
+            $pay = $r->payment;
+            $label = $labels[(int) ($pay->status ?? 0)] ?? ['Unknown', 'secondary'];
+            $tx->push([
+                'type' => 'Payment', 'kind' => 'payment', 'id' => $r->payment_id, 'type_color' => 'primary',
+                'reference' => $pay->row_no ?? '—', 'url' => null,
+                'date' => $pay->payment_date ?? null, 'amount' => $r->amount,
+                'note' => ($accounts[$pay->account ?? 0] ?? null) ? __('Paid from') . ' ' . $accounts[$pay->account] : null, 'note_color' => 'success',
+                'by' => $names[$pay->created_by ?? 0] ?? null, 'created_on' => $fmt($pay->created_at ?? $pay->payment_date ?? null),
+                'approved_by' => $names[$pay->approved_by ?? 0] ?? null, 'approved_on' => $fmt($pay->approved_at ?? null),
+                'status_label' => $label[0], 'status_color' => $label[1],
+            ]);
+        }
+        foreach ($debitNotes as $dn) {
+            $label = $labels[(int) $dn->status] ?? ['Unknown', 'secondary'];
+            $tx->push([
+                'type' => 'Debit Note', 'kind' => 'debit_note', 'id' => $dn->id, 'type_color' => 'info',
+                'reference' => $dn->row_no ?? '—', 'url' => null,
+                'date' => $dn->created_at, 'amount' => $dn->grand_total,
+                'note' => __('Applied to this invoice') . ($dn->reason ? ' · ' . \Illuminate\Support\Str::headline($dn->reason) : ''), 'note_color' => 'info',
+                'by' => $names[$dn->user_id ?? 0] ?? null, 'created_on' => $fmt($dn->created_at),
+                'approved_by' => null, 'approved_on' => null,
+                'status_label' => $label[0], 'status_color' => $label[1],
+            ]);
+        }
+
+        return $tx->sortByDesc(fn ($t) => $t['date'])->values();
     }
 
     /**

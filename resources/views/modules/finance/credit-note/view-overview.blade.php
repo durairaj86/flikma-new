@@ -74,12 +74,25 @@
     .cn-timeline .t-label { font-weight: 600; color: #0f172a; }
     .cn-timeline .t-meta { color: #64748b; font-size: 12.5px; }
     .x-small { font-size: .75rem; }
+    /* tabs styled like the Job view tabs */
+    .cn-tabs { border-bottom: 1px solid #dee2e6; }
+    .cn-tabs .nav-link { border: none; color: #495057; padding: 0.5rem 1rem; font-size: 0.875rem; border-radius: 0; transition: all 0.2s ease; background: transparent; }
+    .cn-tabs .nav-link.active { color: #0b6aa0; border-bottom: 2px solid #0b6aa0; font-weight: 600; background: transparent; }
+    .cn-tabs .nav-link:hover:not(.active) { color: #0b6aa0; background: rgba(11, 106, 160, 0.05); }
 </style>
 
-<ul class="nav nav-tabs mb-3" role="tablist">
+<ul class="nav nav-tabs cn-tabs mb-3" role="tablist">
     <li class="nav-item">
         <button class="nav-link active fw-semibold" data-bs-toggle="tab" data-bs-target="#cnDetailsTab" type="button" role="tab">
             <i class="bi bi-receipt-cutoff me-1"></i> {{ __('Details') }}
+        </button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link fw-semibold" data-bs-toggle="tab" data-bs-target="#cnDocumentsTab" type="button" role="tab">
+            <i class="bi bi-paperclip me-1"></i> {{ __('Documents') }}
+            @if($creditNote->documents && $creditNote->documents->count())
+                <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill ms-1">{{ $creditNote->documents->count() }}</span>
+            @endif
         </button>
     </li>
     <li class="nav-item ms-auto">
@@ -187,9 +200,13 @@
     </div>
 @endif
 
-@if($creditNote->documents && $creditNote->documents->count())
-    <div class="section">
-        <h6>{{ __('Documents') }} ({{ $creditNote->documents->count() }})</h6>
+
+</div>
+
+<div class="tab-pane fade" id="cnDocumentsTab" role="tabpanel">
+<div class="section">
+    <h6>{{ __('Documents') }}</h6>
+    @if($creditNote->documents && $creditNote->documents->count())
         @foreach($creditNote->documents as $doc)
             <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank"
                class="d-flex align-items-center gap-2 text-decoration-none p-2 rounded mb-2"
@@ -199,9 +216,10 @@
                 <i class="bi bi-box-arrow-up-right ms-auto text-muted x-small"></i>
             </a>
         @endforeach
-    </div>
-@endif
-
+    @else
+        <div class="text-center py-4 text-muted">{{ __('No documents uploaded.') }}</div>
+    @endif
+</div>
 </div>
 
 <div class="tab-pane fade" id="cnTimeFrameTab" role="tabpanel">
