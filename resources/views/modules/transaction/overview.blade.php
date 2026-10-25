@@ -1,6 +1,6 @@
 @section('page-title', __('Transactions Overview'))
 @section('hide-topbar', true)
-@section('page-subtitle', __('Real-time payments & collections dashboard'))
+@section('page-subtitle', __('Money in and out: collections, payments and what is still open'))
 @section('print-footer')
 <script>
     window.printFooter = {
@@ -10,199 +10,177 @@
 </script>
 @endsection
 <x-app-layout>
-    <div class="bg-light pb-4">
-    <div class="jw-page pt-2">
+    <div class="bg-light pb-5">
+    <div class="to-page pt-3">
         <style>
-            :root { --txn_bg: #f8fafc; }
-            body { background: var(--txn_bg); }
-            .jw {
-                --kbg: color-mix(in srgb, var(--kc) 8%, #fff);
-                background: var(--kbg); border-radius: 16px; padding: 12px 14px; height: 100%;
-                box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(15,23,42,.07);
-            }
-            .jw.white { background: #fff; }
-            .jw-head { display: flex; align-items: center; gap: 10px; }
-            .jw-icon { width: 26px; height: 26px; border-radius: 50%; background: var(--kc); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: .75rem; flex-shrink: 0; box-shadow: 0 3px 8px color-mix(in srgb, var(--kc) 38%, transparent); }
-            .jw-title { font-weight: 600; font-size: .82rem; color: #344054; flex: 1; min-width: 0; line-height: 1.2; }
-            .jw-tag { font-size: .66rem; font-weight: 600; background: #fff; border: 1px solid #e5e7eb; color: #475467; border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
-            .jw-value-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
-            .jw-value { font-size: 1.55rem; font-weight: 700; letter-spacing: -.02em; color: #101828; line-height: 1.1; }
-            .jw-pill { font-size: .66rem; font-weight: 600; border-radius: 8px; padding: 2px 8px; background: #e0f2fe; color: #0369a1; }
-            .jw-pill.up { background: #dcfce7; color: #15803d; }
-            .jw-pill.down { background: #fee2e2; color: #b91c1c; }
-            .jw-note { font-size: .72rem; color: #667085; margin-top: 2px; }
-            .jw-track { height: 5px; border-radius: 99px; background: color-mix(in srgb, var(--kc, #94a3b8) 16%, #e5e7eb); overflow: hidden; margin-top: 8px; }
-            .jw-track > span { display: block; height: 100%; border-radius: 99px; background: var(--kc, #0b6aa0); transition: width .5s; }
-            .jw-legend { display: flex; justify-content: space-between; gap: 6px; margin-top: 8px; }
-            .jw-legend > div { flex: 1; background: rgba(255,255,255,.75); border-radius: 9px; padding: 4px 8px; font-size: .68rem; color: #667085; display: flex; align-items: center; justify-content: space-between; gap: 4px; }
-            .jw-legend strong { font-size: .8rem; color: #101828; margin-left: auto; }
-            .jw-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; background: var(--kc); }
-            .jw-split { display: flex; align-items: center; gap: 8px; }
-            .jw-left { flex: 1; min-width: 0; }
-            .jw-mini { position: relative; width: 96px; height: 96px; flex-shrink: 0; }
-            /* compact stat widgets */
-            .jw-sm { padding: 12px 14px; border-radius: 16px; display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 12px; }
-            .jw-sm .jw-txt { display: flex; flex-direction: column; min-width: 0; width: 100%; }
-            .jw-sm .jw-title { font-size: .72rem; color: #667085; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-            .jw-sm-value { font-size: 1.3rem; font-weight: 700; color: #101828; line-height: 1.1; }
-            .trend-up { color: #16a34a !important; }
-            .trend-down { color: #dc2626 !important; }
-            /* chart / list widgets */
-            .jw-body { margin-top: 8px; }
-            .jw-row { display: flex; align-items: flex-start; gap: 8px; padding: 5px 0; }
-            .jw-row + .jw-row { border-top: 1px dashed #eef0f3; }
-            .jw-rank { width: 20px; height: 20px; border-radius: 50%; background: #f1f5f9; color: #475467; font-size: .66rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
-            .jw-row-main { flex: 1; min-width: 0; }
-            .jw-row-top { display: flex; justify-content: space-between; gap: 8px; font-size: .78rem; }
-            .jw-row-name { font-weight: 600; color: #1e293b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-            .jw-row-val { font-weight: 700; color: #101828; }
-            .jw-row-sub { font-size: .66rem; color: #94a3b8; }
-            .jw-row .jw-track { margin-top: 3px; height: 4px; }
-            .jw-stack { display: flex; height: 10px; border-radius: 99px; overflow: hidden; background: #eef0f3; }
-            .jw-stack > span { display: block; height: 100%; }
-            .jw-legend-item { display: inline-flex; align-items: center; gap: 6px; background: #f8fafc; border-radius: 999px; padding: 3px 10px; font-size: .72rem; margin: 8px 6px 0 0; color: #475467; }
-            .jw-legend-item .jw-dot { margin: 0; }
-            .jw-chart { position: relative; height: 150px; }
-            .jw-chart.sm { height: 140px; }
+            body { background: #f8fafc; }
+            .to-wrap { max-width: 1320px; margin: 0 auto; padding: 0 1.5rem; }
+            .to-title { display: none; }
+            body:not(.has-top-header) .to-title { display: block; }
+
+            .to-card { background: #fff; border: 1px solid #e8ecf1; border-radius: 14px; padding: 1.25rem 1.4rem; height: 100%; }
+            .to-card-h { display: flex; align-items: center; gap: .6rem; margin-bottom: 1rem; }
+            .to-card-h .t { font-weight: 600; font-size: .95rem; color: #1f2937; flex: 1; min-width: 0; }
+            .to-card-h .tag { font-size: .72rem; color: #6b7280; background: #f3f4f6; border-radius: 999px; padding: .15rem .6rem; white-space: nowrap; }
+            .to-ico { width: 34px; height: 34px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0;
+                      background: color-mix(in srgb, var(--c) 12%, #fff); color: var(--c); }
+
+            /* period switch */
+            .to-seg { display: inline-flex; background: #eef1f5; border-radius: 10px; padding: 3px; }
+            .to-seg a { padding: .35rem .95rem; border-radius: 8px; font-size: .84rem; font-weight: 500; color: #4b5563; text-decoration: none; white-space: nowrap; }
+            .to-seg a.on { background: #fff; color: #111827; box-shadow: 0 1px 2px rgba(0, 0, 0, .08); font-weight: 600; }
+            .to-seg a:not(.on):hover { color: #111827; }
+
+            /* the three headline figures */
+            .to-kpi .lbl { font-size: .82rem; color: #6b7280; font-weight: 500; }
+            .to-kpi .val { font-size: 1.95rem; font-weight: 700; letter-spacing: -.02em; color: #111827; line-height: 1.15; margin-top: .15rem; }
+            .to-kpi .val small { font-size: .95rem; font-weight: 600; color: #6b7280; margin-right: .25rem; letter-spacing: 0; }
+            .to-kpi .sub { font-size: .8rem; color: #6b7280; margin-top: .35rem; }
+            .to-kpi .sub b { color: #374151; font-weight: 600; }
+            .to-kpi .spark { height: 54px; margin-top: .9rem; }
+            .to-delta { font-size: .74rem; font-weight: 600; border-radius: 999px; padding: .12rem .55rem; margin-left: .4rem; vertical-align: middle; }
+            .to-delta.up { background: #dcfce7; color: #166534; } .to-delta.down { background: #fee2e2; color: #991b1b; }
+
+            /* secondary figures in one strip */
+            .to-strip { display: flex; flex-wrap: wrap; }
+            .to-strip > div { flex: 1 1 200px; display: flex; align-items: center; gap: .8rem; padding: .35rem 1.2rem; border-left: 1px solid #eef0f3; }
+            .to-strip > div:first-child { border-left: 0; padding-left: 0; }
+            .to-strip .v { font-size: 1.25rem; font-weight: 700; color: #111827; line-height: 1.2; }
+            .to-strip .l { font-size: .78rem; color: #6b7280; }
+
+            /* lists */
+            .to-row { padding: .65rem 0; }
+            .to-row + .to-row { border-top: 1px solid #f1f3f6; }
+            .to-row-top { display: flex; justify-content: space-between; gap: .75rem; align-items: baseline; }
+            .to-row-name { font-weight: 600; color: #1f2937; font-size: .88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .to-row-val { font-weight: 700; color: #111827; font-size: .88rem; white-space: nowrap; }
+            .to-row-sub { font-size: .74rem; color: #9ca3af; margin-top: .1rem; }
+            .to-bar { height: 6px; background: #eef1f5; border-radius: 99px; overflow: hidden; margin-top: .45rem; }
+            .to-bar > span { display: block; height: 100%; border-radius: 99px; }
+            .to-rank { display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: #f3f4f6; color: #4b5563; font-size: .72rem; font-weight: 700; align-items: center; justify-content: center; margin-right: .55rem; flex-shrink: 0; }
+
+            .to-stack { display: flex; height: 12px; border-radius: 99px; overflow: hidden; background: #eef1f5; }
+            .to-stack > span { display: block; height: 100%; }
+            .to-leg { display: flex; flex-wrap: wrap; gap: .35rem 1rem; margin-top: .55rem; font-size: .78rem; color: #4b5563; }
+            .to-leg i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: .35rem; }
+            .to-leg b { color: #111827; margin-left: .25rem; }
+            .to-empty { text-align: center; color: #9ca3af; font-size: .85rem; padding: 2rem 0; }
+            .to-chart { position: relative; }
+            @media (max-width: 767.98px) { .to-wrap { padding: 0 1rem; } .to-strip > div { border-left: 0; padding-left: 0; } }
         </style>
 
-        <div class="container-fluid px-lg-5" style="max-width:1300px;margin-left:auto;margin-right:auto;">
-            <style>
-                .jo-title { display: none; }
-                body:not(.has-top-header) .jo-title { display: block; }
-            </style>
-            @php($rangeLabel = ['this_month' => __('This Month'), 'last_month' => __('Last Month'), 'this_year' => __('This Year')][$range] ?? '')
-            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-                <div class="jo-title">
+        @php($ranges = ['this_month' => __('This Month'), 'last_month' => __('Last Month'), 'this_year' => __('This Year')])
+        <div class="to-wrap">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                <div class="to-title">
                     <h4 class="fw-bold text-dark mb-0">@yield('page-title')</h4>
                     <div class="text-muted small mt-1">@yield('page-subtitle')</div>
                 </div>
-                <div class="d-flex align-items-center gap-2 ms-auto">
-                    <div id="dateRangeWrap" style="min-width:170px;"><select id="dateRange" class="tom-select" data-placeholder="{{ __('This Month') }}">
-                        <option value="this_month" {{ $range==='this_month' ? 'selected' : '' }}>{{ __('This Month') }}</option>
-                        <option value="last_month" {{ $range==='last_month' ? 'selected' : '' }}>{{ __('Last Month') }}</option>
-                        <option value="this_year" {{ $range==='this_year' ? 'selected' : '' }}>{{ __('This Year') }}</option>
-                    </select></div>
-                    <button class="btn btn-primary btn-sm px-3" id="btn-apply"><i class="bi bi-arrow-repeat me-1"></i> {{ __('Apply') }}</button>
+                <div class="to-seg ms-auto" role="tablist" aria-label="{{ __('Period') }}">
+                    @foreach($ranges as $key => $label)
+                        <a href="{{ url('/transaction/overview?range=' . $key) }}" class="{{ $range === $key ? 'on' : '' }}">{{ $label }}</a>
+                    @endforeach
                 </div>
             </div>
 
-            {{-- Main widgets --}}
-            <div class="row g-2 mb-2">
-                <div class="col-xl-3 col-md-6">
-                    <div class="jw" style="--kc:#16a34a;">
-                        <div class="jw-head"><span class="jw-icon"><i class="bi bi-wallet2"></i></span><span class="jw-title">{{ __('Total Collected') }}</span></div>
-                        <div class="jw-split"><div class="jw-left">
-                            <div class="jw-value-row"><span class="jw-value" id="kpiCollected">0</span></div>
-                            <div class="jw-note">{{ $rangeLabel }} &middot; {{ __('from customers') }}</div>
-                        </div><div class="jw-mini"><canvas id="miniCollected"></canvas></div></div>
-                        <div class="jw-legend">
-                            <div>{{ __('Collections') }}<strong id="colCount">0</strong></div>
-                            <div><span class="jw-dot" style="background:#f59e0b"></span>{{ __('Pending') }}<strong id="colPending">0</strong></div>
-                        </div>
+            {{-- 1. Headline figures --}}
+            <div class="row g-4 mb-4">
+                <div class="col-lg-4">
+                    <div class="to-card to-kpi" style="--c:#16a34a;">
+                        <div class="to-card-h mb-2"><span class="to-ico"><i class="bi bi-arrow-down-left"></i></span><span class="t">{{ __('Money in') }}</span><span class="tag">{{ $ranges[$range] ?? '' }}</span></div>
+                        <div class="lbl">{{ __('Total collected from customers') }}</div>
+                        <div class="val" id="kpiCollected"><small>SAR</small>0</div>
+                        <div class="sub"><b id="colCount">0</b> {{ __('collections') }} &middot; <b id="colPending">0</b> {{ __('pending') }}</div>
+                        <div class="spark"><canvas id="sparkIn"></canvas></div>
                     </div>
                 </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="jw" style="--kc:#dc2626;">
-                        <div class="jw-head"><span class="jw-icon"><i class="bi bi-cash-coin"></i></span><span class="jw-title">{{ __('Total Paid') }}</span></div>
-                        <div class="jw-split"><div class="jw-left">
-                            <div class="jw-value-row"><span class="jw-value" id="kpiPaid">0</span></div>
-                            <div class="jw-note">{{ $rangeLabel }} &middot; {{ __('to suppliers') }}</div>
-                        </div><div class="jw-mini"><canvas id="miniPaid"></canvas></div></div>
-                        <div class="jw-legend">
-                            <div>{{ __('Payments') }}<strong id="payCount">0</strong></div>
-                            <div><span class="jw-dot" style="background:#f59e0b"></span>{{ __('Pending') }}<strong id="payPending">0</strong></div>
-                        </div>
+                <div class="col-lg-4">
+                    <div class="to-card to-kpi" style="--c:#dc2626;">
+                        <div class="to-card-h mb-2"><span class="to-ico"><i class="bi bi-arrow-up-right"></i></span><span class="t">{{ __('Money out') }}</span><span class="tag">{{ $ranges[$range] ?? '' }}</span></div>
+                        <div class="lbl">{{ __('Total paid to suppliers') }}</div>
+                        <div class="val" id="kpiPaid"><small>SAR</small>0</div>
+                        <div class="sub"><b id="payCount">0</b> {{ __('payments') }} &middot; <b id="payPending">0</b> {{ __('pending') }}</div>
+                        <div class="spark"><canvas id="sparkOut"></canvas></div>
                     </div>
                 </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="jw" style="--kc:#0b6aa0;">
-                        <div class="jw-head"><span class="jw-icon"><i class="bi bi-arrow-left-right"></i></span><span class="jw-title">{{ __('Net Cash Flow') }}</span></div>
-                        <div class="jw-split"><div class="jw-left">
-                            <div class="jw-value-row"><span class="jw-value" id="kpiNetCashFlow">0</span><span class="jw-pill" id="netDelta"></span></div>
-                            <div class="jw-note">{{ __('Collected minus paid') }}</div>
-                        </div><div class="jw-mini"><canvas id="miniNet"></canvas></div></div>
-                        <div class="jw-legend">
-                            <div><span class="jw-dot" style="background:#16a34a"></span>{{ __('Collected') }}<strong id="netIn">0</strong></div>
-                            <div><span class="jw-dot" style="background:#dc2626"></span>{{ __('Paid') }}<strong id="netOut">0</strong></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="jw" style="--kc:#5b57ae;">
-                        <div class="jw-head"><span class="jw-icon"><i class="bi bi-bar-chart-line"></i></span><span class="jw-title">{{ __('Avg Transaction') }}</span></div>
-                        <div class="jw-split"><div class="jw-left">
-                            <div class="jw-value-row"><span class="jw-value" id="kpiAvgTransaction">0</span></div>
-                            <div class="jw-note">{{ __('Avg value per transaction') }}</div>
-                        </div><div class="jw-mini"><canvas id="miniMix"></canvas></div></div>
-                        <div class="jw-legend">
-                            <div><span class="jw-dot" style="background:#16a34a"></span>{{ __('Collections') }}<strong id="mixIn">0</strong></div>
-                            <div><span class="jw-dot" style="background:#dc2626"></span>{{ __('Payments') }}<strong id="mixOut">0</strong></div>
-                        </div>
+                <div class="col-lg-4">
+                    <div class="to-card to-kpi" style="--c:#2563eb;">
+                        <div class="to-card-h mb-2"><span class="to-ico"><i class="bi bi-arrow-left-right"></i></span><span class="t">{{ __('Net cash flow') }}</span><span class="tag">{{ $ranges[$range] ?? '' }}</span></div>
+                        <div class="lbl">{{ __('Collected minus paid') }}<span class="to-delta" id="netDelta" style="display:none;"></span></div>
+                        <div class="val" id="kpiNet"><small>SAR</small>0</div>
+                        <div class="sub" id="netNote">&nbsp;</div>
+                        <div class="spark"><canvas id="sparkNet"></canvas></div>
                     </div>
                 </div>
             </div>
 
-            {{-- Small widgets --}}
-            <div class="row g-2 mb-2">
-                @foreach([
-                    ['kpiPaymentsCount', '#dc2626', 'bi-arrow-up-right-circle', __('Payments'), '0'],
-                    ['kpiCollectionsCount', '#16a34a', 'bi-arrow-down-left-circle', __('Collections'), '0'],
-                    ['kpiPendingPayments', '#f59e0b', 'bi-hourglass-split', __('Pending Payments'), '0'],
-                    ['kpiPendingCollections', '#f59e0b', 'bi-hourglass-bottom', __('Pending Collections'), '0'],
-                    ['kpiNetChange', '#0b6aa0', 'bi-graph-up', __('vs Last Month (Net)'), '0%'],
-                    ['kpiOutstanding', '#5b57ae', 'bi-receipt', __('Receivables Outstanding'), '0'],
-                ] as [$id, $c, $ic, $label, $zero])
-                    <div class="col-xl-2 col-md-4 col-6">
-                        <div class="jw jw-sm" style="--kc:{{ $c }};">
-                            <span class="jw-icon"><i class="bi {{ $ic }}"></i></span>
-                            <div class="jw-txt"><span class="jw-sm-value" id="{{ $id }}">{{ $zero }}</span><span class="jw-title" style="flex:none;">{{ $label }}</span></div>
-                        </div>
-                    </div>
-                @endforeach
+            {{-- 2. Secondary figures --}}
+            <div class="to-card mb-4" style="padding-top: 1rem; padding-bottom: 1rem;">
+                <div class="to-strip">
+                    <div><span class="to-ico" style="--c:#f59e0b;"><i class="bi bi-hourglass-split"></i></span><div><div class="v" id="kpiPendingCollections">0</div><div class="l">{{ __('Pending collections') }}</div></div></div>
+                    <div><span class="to-ico" style="--c:#f59e0b;"><i class="bi bi-hourglass-bottom"></i></span><div><div class="v" id="kpiPendingPayments">0</div><div class="l">{{ __('Pending payments') }}</div></div></div>
+                    <div><span class="to-ico" style="--c:#7c3aed;"><i class="bi bi-bar-chart-line"></i></span><div><div class="v" id="kpiAvg">0</div><div class="l">{{ __('Average transaction') }}</div></div></div>
+                    <div><span class="to-ico" style="--c:#0891b2;"><i class="bi bi-receipt"></i></span><div><div class="v" id="kpiOutstanding">0</div><div class="l">{{ __('Receivables outstanding') }}</div></div></div>
+                </div>
             </div>
 
-            {{-- Eight widgets, one medium width each --}}
-            <div class="row g-2 mb-2">
-                @foreach([
-                    ['chartCashFlow', '#0b6aa0', 'bi-graph-up', __('Cash Flow Trend'), $range === 'this_year' ? __('Monthly') : __('Weekly')],
-                    ['chartCollectionsByAccount', '#16a34a', 'bi-pie-chart', __('Collections by Account'), __('Top 6')],
-                    ['chartPaymentsByAccount', '#dc2626', 'bi-bank', __('Payments by Account'), null],
-                ] as [$id, $c, $ic, $label, $tag])
-                    <div class="col-xl-3 col-md-6">
-                        <div class="jw white" style="--kc:{{ $c }};">
-                            <div class="jw-head"><span class="jw-icon"><i class="bi {{ $ic }}"></i></span><span class="jw-title">{{ $label }}</span>@if($tag)<span class="jw-tag">{{ $tag }}</span>@endif</div>
-                            <div class="jw-body jw-chart"><canvas id="{{ $id }}"></canvas></div>
-                        </div>
-                    </div>
-                @endforeach
-                <div class="col-xl-3 col-md-6">
-                    <div class="jw white" style="--kc:#0b6aa0;">
-                        <div class="jw-head"><span class="jw-icon"><i class="bi bi-link-45deg"></i></span><span class="jw-title">{{ __('Invoice Settlement') }}</span><span class="jw-tag">{{ __('All-time') }}</span></div>
-                        <div class="jw-body" id="listSettlement" style="min-height:150px;"></div>
+            {{-- 3. Trend + settlement --}}
+            <div class="row g-4 mb-4">
+                <div class="col-lg-8">
+                    <div class="to-card">
+                        <div class="to-card-h"><span class="to-ico" style="--c:#2563eb;"><i class="bi bi-graph-up"></i></span><span class="t">{{ __('Cash flow trend') }}</span><span class="tag">{{ $range === 'this_year' ? __('Monthly') : __('Weekly') }}</span></div>
+                        <div class="to-chart" style="height: 280px;"><canvas id="chartCashFlow"></canvas></div>
                     </div>
                 </div>
-                @foreach([
-                    ['chartPaymentStatus', '#f59e0b', 'bi-cash-coin', __('Payment Status')],
-                    ['chartCollectionStatus', '#8b5cf6', 'bi-wallet2', __('Collection Status')],
-                ] as [$id, $c, $ic, $label])
-                    <div class="col-xl-3 col-md-6">
-                        <div class="jw white" style="--kc:{{ $c }};">
-                            <div class="jw-head"><span class="jw-icon"><i class="bi {{ $ic }}"></i></span><span class="jw-title">{{ $label }}</span></div>
-                            <div class="jw-body jw-chart"><canvas id="{{ $id }}"></canvas></div>
-                        </div>
-                    </div>
-                @endforeach
-                <div class="col-xl-3 col-md-6">
-                    <div class="jw white" style="--kc:#f59e0b;">
-                        <div class="jw-head"><span class="jw-icon"><i class="bi bi-truck"></i></span><span class="jw-title">{{ __('Top Suppliers by Payment') }}</span></div>
-                        <div class="jw-body" id="listSuppliers" style="max-height:210px;overflow:auto;"></div>
+                <div class="col-lg-4">
+                    <div class="to-card">
+                        <div class="to-card-h"><span class="to-ico" style="--c:#0891b2;"><i class="bi bi-link-45deg"></i></span><span class="t">{{ __('Invoice settlement') }}</span><span class="tag">{{ __('All time') }}</span></div>
+                        <div id="listSettlement"></div>
                     </div>
                 </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="jw white" style="--kc:#0b6aa0;">
-                        <div class="jw-head"><span class="jw-icon"><i class="bi bi-people"></i></span><span class="jw-title">{{ __('Top Customers by Collection') }}</span></div>
-                        <div class="jw-body" id="listCustomers" style="max-height:210px;overflow:auto;"></div>
+            </div>
+
+            {{-- 4. By account --}}
+            <div class="row g-4 mb-4">
+                <div class="col-lg-6">
+                    <div class="to-card">
+                        <div class="to-card-h"><span class="to-ico" style="--c:#16a34a;"><i class="bi bi-bank"></i></span><span class="t">{{ __('Collections by account') }}</span></div>
+                        <div class="to-chart" style="height: 220px;"><canvas id="chartCollectionsByAccount"></canvas></div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="to-card">
+                        <div class="to-card-h"><span class="to-ico" style="--c:#dc2626;"><i class="bi bi-bank2"></i></span><span class="t">{{ __('Payments by account') }}</span></div>
+                        <div class="to-chart" style="height: 220px;"><canvas id="chartPaymentsByAccount"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- 5. People and status --}}
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="to-card">
+                        <div class="to-card-h"><span class="to-ico" style="--c:#2563eb;"><i class="bi bi-people"></i></span><span class="t">{{ __('Top customers') }}</span><span class="tag">{{ __('by collection') }}</span></div>
+                        <div id="listCustomers"></div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="to-card">
+                        <div class="to-card-h"><span class="to-ico" style="--c:#f59e0b;"><i class="bi bi-truck"></i></span><span class="t">{{ __('Top suppliers') }}</span><span class="tag">{{ __('by payment') }}</span></div>
+                        <div id="listSuppliers"></div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="to-card">
+                        <div class="to-card-h"><span class="to-ico" style="--c:#7c3aed;"><i class="bi bi-pie-chart"></i></span><span class="t">{{ __('Status') }}</span></div>
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between small mb-2"><span class="fw-semibold">{{ __('Collections') }}</span><span class="text-muted" id="colTotal"></span></div>
+                            <div id="statusCollections"></div>
+                        </div>
+                        <div>
+                            <div class="d-flex justify-content-between small mb-2"><span class="fw-semibold">{{ __('Payments') }}</span><span class="text-muted" id="payTotal"></span></div>
+                            <div id="statusPayments"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -213,235 +191,110 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
     const DATA = @json($data);
+    const RANGE = @json($range);
 
-    function fmt(n) { return new Intl.NumberFormat('en-IN').format(Math.round(n)); }
-    function fmtCurrency(n) { return 'SAR ' + fmt(n); }
-    // compact money for the small widgets: 1.2M, 340K
+    const fmt = n => new Intl.NumberFormat('en-IN').format(Math.round(n));
+    const money = n => '<small>SAR</small>' + fmt(n);
     function fmtShort(n) {
         const a = Math.abs(n), s = n < 0 ? '-' : '';
         if (a >= 1e6) return s + (a / 1e6).toFixed(a >= 1e7 ? 0 : 1) + 'M';
         if (a >= 1e4) return s + (a / 1e3).toFixed(0) + 'K';
         return s + fmt(a);
     }
+    const esc = t => String(t ?? '').replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+    const emptyHtml = '<div class="to-empty">{{ __('No data for this period') }}</div>';
+    const statusColor = s => s === 'approved' ? '#16a34a' : s === 'draft' ? '#94a3b8' : s === 'cancelled' ? '#dc2626' : '#f59e0b';
 
     function render() {
         const d = DATA;
-        const setText = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v; };
-        const empty = '<div class="text-center text-muted py-4 small">{{ __('No data') }}</div>';
+        const el = id => document.getElementById(id);
+        const html = (id, v) => { const e = el(id); if (e) e.innerHTML = v; };
+        const text = (id, v) => { const e = el(id); if (e) e.textContent = v; };
 
-        // Main widgets
-        setText('kpiCollected', fmtShort(d.totalCollected));
-        setText('kpiPaid', fmtShort(d.totalPaid));
-        const netEl = document.getElementById('kpiNetCashFlow');
-        netEl.innerText = fmtShort(d.netCashFlow);
-        netEl.style.color = d.netCashFlow >= 0 ? '#16a34a' : '#dc2626';
-        setText('kpiAvgTransaction', fmtShort(d.avgTransactionValue));
-        setText('colCount', fmt(d.collectionsCount)); setText('colPending', fmt(d.pendingCollections));
-        setText('payCount', fmt(d.paymentsCount)); setText('payPending', fmt(d.pendingPayments));
-        setText('netIn', fmtShort(d.totalCollected)); setText('netOut', fmtShort(d.totalPaid));
-        setText('mixIn', fmt(d.collectionsCount)); setText('mixOut', fmt(d.paymentsCount));
-
-        // Change versus last month
-        const mc = d.monthlyComparison || {};
-        const prevNet = mc.previous?.net || 0;
-        const netChange = prevNet !== 0 ? ((d.netCashFlow - prevNet) / Math.abs(prevNet)) * 100 : 0;
-        const chgEl = document.getElementById('kpiNetChange');
-        chgEl.innerText = (netChange >= 0 ? '+' : '') + netChange.toFixed(1) + '%';
-        chgEl.className = 'jw-sm-value ' + (netChange >= 0 ? 'trend-up' : 'trend-down');
-        const pill = document.getElementById('netDelta');
-        if ('{{ $range }}' === 'this_month' && prevNet !== 0) {
-            pill.className = 'jw-pill ' + (netChange >= 0 ? 'up' : 'down');
-            pill.innerHTML = (netChange >= 0 ? '&#9650; ' : '&#9660; ') + Math.abs(netChange).toFixed(1) + '%';
-        } else { pill.style.display = 'none'; }
-
-        // Small widgets
-        setText('kpiPaymentsCount', fmt(d.paymentsCount));
-        setText('kpiCollectionsCount', fmt(d.collectionsCount));
-        setText('kpiPendingPayments', fmt(d.pendingPayments));
-        setText('kpiPendingCollections', fmt(d.pendingCollections));
+        // headline figures
+        html('kpiCollected', money(d.totalCollected)); html('kpiPaid', money(d.totalPaid)); html('kpiNet', money(d.netCashFlow));
+        el('kpiNet').style.color = d.netCashFlow >= 0 ? '#166534' : '#991b1b';
+        text('colCount', fmt(d.collectionsCount)); text('colPending', fmt(d.pendingCollections));
+        text('payCount', fmt(d.paymentsCount)); text('payPending', fmt(d.pendingPayments));
+        text('kpiPendingCollections', fmt(d.pendingCollections)); text('kpiPendingPayments', fmt(d.pendingPayments));
+        text('kpiAvg', 'SAR ' + fmtShort(d.avgTransactionValue));
         const settle = d.settlementSummary || [];
-        setText('kpiOutstanding', fmtShort(settle.length ? settle[0].outstanding : 0));
+        text('kpiOutstanding', 'SAR ' + fmtShort(settle.length ? settle[0].outstanding : 0));
 
-        // Ranked lists with a share bar behind each row
-        const rankRows = (rows, nameFn, subFn, valFn, color) => {
-            const max = Math.max(1, ...rows.map(valFn));
-            return rows.map((r, i) => `<div class="jw-row">
-                <span class="jw-rank">${i + 1}</span>
-                <div class="jw-row-main">
-                    <div class="jw-row-top"><span class="jw-row-name">${nameFn(r)}</span><span class="jw-row-val">${fmtShort(valFn(r))}</span></div>
-                    ${subFn ? `<div class="jw-row-sub">${subFn(r)}</div>` : ''}
-                    <div class="jw-track"><span style="width:${Math.max(4, valFn(r) / max * 100)}%;background:${color};"></span></div>
-                </div></div>`).join('');
+        // change against last month (this-month view only)
+        const prevNet = d.monthlyComparison?.previous?.net || 0;
+        if (RANGE === 'this_month' && prevNet !== 0) {
+            const ch = (d.netCashFlow - prevNet) / Math.abs(prevNet) * 100;
+            const p = el('netDelta'); p.style.display = ''; p.className = 'to-delta ' + (ch >= 0 ? 'up' : 'down');
+            p.innerHTML = (ch >= 0 ? '&#9650; ' : '&#9660; ') + Math.abs(ch).toFixed(1) + '%';
+            text('netNote', '{{ __('Compared with last month') }}: SAR ' + fmt(prevNet));
+        } else {
+            html('netNote', d.netCashFlow >= 0 ? '{{ __('More came in than went out') }}' : '{{ __('More went out than came in') }}');
+        }
+
+        // sparklines
+        const flow = d.cashFlowTrend || {collected: [], paid: []};
+        const spark = (id, data, color) => {
+            const c = el(id); if (!c) return;
+            new Chart(c.getContext('2d'), {type: 'line', data: {labels: data.map((_, i) => i + 1), datasets: [{data, borderColor: color, backgroundColor: color + '22', fill: true, tension: .4, pointRadius: 0, borderWidth: 2}]},
+                options: {plugins: {legend: {display: false}, tooltip: {enabled: false}}, scales: {x: {display: false}, y: {display: false, beginAtZero: true}}, maintainAspectRatio: false}});
         };
-        document.getElementById('listSuppliers').innerHTML = rankRows(d.topSuppliers || [], s => s.name, s => fmt(s.payments) + ' {{ __('Payments') }}', s => s.total, '#f59e0b') || empty;
-        document.getElementById('listCustomers').innerHTML = rankRows(d.topCustomers || [], c => c.name, c => fmt(c.collections) + ' {{ __('Collections') }}', c => c.total, '#0b6aa0') || empty;
+        spark('sparkIn', flow.collected, '#16a34a'); spark('sparkOut', flow.paid, '#dc2626');
+        spark('sparkNet', flow.collected.map((v, i) => v - (flow.paid[i] || 0)), '#2563eb');
 
-        // Settlement: one row per invoice type with its settlement rate
-        document.getElementById('listSettlement').innerHTML = settle.map(s => {
-            const ratePct = (s.rate * 100).toFixed(1);
-            const color = s.rate >= 0.8 ? '#16a34a' : s.rate >= 0.4 ? '#f59e0b' : '#dc2626';
-            return `<div class="jw-row" style="display:block;">
-                <div class="jw-row-top"><span class="jw-row-name">${s.type}</span><span class="jw-row-val" style="color:${color};">${ratePct}%</span></div>
-                <div class="jw-track"><span style="width:${Math.max(2, ratePct)}%;background:${color};"></span></div>
-                <div class="jw-row-sub">{{ __('Settled') }} ${fmtShort(s.settled)} / ${fmtShort(s.approved)} &middot; <span class="${s.outstanding > 0 ? 'text-danger' : ''}">{{ __('Outstanding') }} ${fmtShort(s.outstanding)}</span></div>
-            </div>`;
-        }).join('') || empty;
-
-        // Mini charts inside the main widgets
-        const flow = d.cashFlowTrend || { collected: [], paid: [] };
-        const mini = (id, cfg) => { const el = document.getElementById(id); if (el) new Chart(el.getContext('2d'), cfg); };
-        const spark = (data, color, fill) => ({ type: 'line', data: { labels: data.map((_, i) => i + 1), datasets: [{ data, borderColor: color, backgroundColor: fill, fill: true, tension: .4, pointRadius: 0, borderWidth: 2 }] },
-            options: { plugins: { legend: { display: false }, tooltip: { enabled: false } }, scales: { x: { display: false }, y: { display: false, beginAtZero: true } }, maintainAspectRatio: false } });
-        const dn = (vals, colors) => ({ type: 'doughnut', data: { datasets: [{ data: vals, backgroundColor: colors, borderWidth: 0 }] },
-            options: { cutout: '70%', plugins: { legend: { display: false }, tooltip: { enabled: false } }, maintainAspectRatio: false } });
-        mini('miniCollected', spark(flow.collected, '#16a34a', 'rgba(22,163,74,.15)'));
-        mini('miniPaid', spark(flow.paid, '#dc2626', 'rgba(220,38,38,.15)'));
-        const inV = Math.max(0, d.totalCollected), outV = Math.max(0, d.totalPaid);
-        mini('miniNet', dn(inV + outV ? [inV, outV] : [1], inV + outV ? ['#16a34a', '#dc2626'] : ['#e5e7eb']));
-        const cIn = d.collectionsCount || 0, cOut = d.paymentsCount || 0;
-        mini('miniMix', dn(cIn + cOut ? [cIn, cOut] : [1], cIn + cOut ? ['#16a34a', '#dc2626'] : ['#e5e7eb']));
-
-        // --- Charts ---
-        const colorPalette = ['#0b6aa0','#5b57ae','#16a34a','#f59e0b','#dc2626','#8b5cf6','#06b6d4','#f97316'];
-
-        // Cash Flow Trend (dual line)
-        const ctxTrend = document.getElementById('chartCashFlow').getContext('2d');
-        const trend = d.cashFlowTrend || { collected: [], paid: [] };
-        const trendLabels = '{{ $range }}' === 'this_year'
-            ? ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].slice(0, trend.collected.length)
-            : Array.from({length: trend.collected.length}, (_, i) => 'W' + (i + 1));
-        new Chart(ctxTrend, {
+        // trend chart
+        const labels = RANGE === 'this_year'
+            ? ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].slice(0, flow.collected.length)
+            : flow.collected.map((_, i) => 'W' + (i + 1));
+        new Chart(el('chartCashFlow').getContext('2d'), {
             type: 'line',
-            data: {
-                labels: trendLabels,
-                datasets: [
-                    {
-                        label: '{{ __('Collected') }}',
-                        data: trend.collected,
-                        borderColor: '#16a34a',
-                        backgroundColor: 'rgba(22,163,74,0.1)',
-                        fill: true,
-                        tension: 0.35,
-                        pointRadius: 3,
-                        borderWidth: 2.5
-                    },
-                    {
-                        label: '{{ __('Paid') }}',
-                        data: trend.paid,
-                        borderColor: '#dc2626',
-                        backgroundColor: 'rgba(220,38,38,0.1)',
-                        fill: true,
-                        tension: 0.35,
-                        pointRadius: 3,
-                        borderWidth: 2.5
-                    }
-                ]
-            },
-            options: {
-                plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 8, font: { size: 11 } } } },
-                scales: {
-                    x: { grid: { display: false } },
-                    y: { grid: { color: 'rgba(0,0,0,0.05)' }, beginAtZero: true, ticks: { callback: v => 'SAR ' + fmt(v) } }
-                },
-                maintainAspectRatio: false
-            }
+            data: {labels, datasets: [
+                {label: '{{ __('Collected') }}', data: flow.collected, borderColor: '#16a34a', backgroundColor: 'rgba(22,163,74,.10)', fill: true, tension: .35, pointRadius: 3, borderWidth: 2.5},
+                {label: '{{ __('Paid') }}', data: flow.paid, borderColor: '#dc2626', backgroundColor: 'rgba(220,38,38,.08)', fill: true, tension: .35, pointRadius: 3, borderWidth: 2.5}]},
+            options: {plugins: {legend: {position: 'top', align: 'end', labels: {boxWidth: 10, usePointStyle: true, padding: 14, font: {size: 12}}}},
+                scales: {x: {grid: {display: false}}, y: {grid: {color: 'rgba(0,0,0,.05)'}, beginAtZero: true, ticks: {callback: v => fmtShort(v)}}}, maintainAspectRatio: false, interaction: {mode: 'index', intersect: false}}
         });
 
-        // Collections by account — vertical bar
-        new Chart(document.getElementById('chartCollectionsByAccount').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: (d.collectionsByAccount || []).map(c => c.label),
-                datasets: [{
-                    data: (d.collectionsByAccount || []).map(c => c.value),
-                    backgroundColor: colorPalette.slice(0, Math.max((d.collectionsByAccount || []).length, 1)),
-                    borderRadius: 4
-                }]
-            },
-            options: {
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 9 } } },
-                    y: { grid: { color: 'rgba(0,0,0,0.05)' }, beginAtZero: true, ticks: { callback: v => 'SAR ' + fmt(v) } }
-                },
-                maintainAspectRatio: false
-            }
-        });
+        // by account: horizontal bars
+        const bars = (id, rows, color) => {
+            const c = el(id); if (!c) return;
+            if (!rows.length) { c.parentElement.innerHTML = emptyHtml; return; }
+            new Chart(c.getContext('2d'), {type: 'bar', data: {labels: rows.map(r => r.label), datasets: [{data: rows.map(r => r.value), backgroundColor: color, borderRadius: 6, barThickness: 22}]},
+                options: {indexAxis: 'y', plugins: {legend: {display: false}, tooltip: {callbacks: {label: i => 'SAR ' + fmt(i.parsed.x)}}},
+                    scales: {x: {grid: {color: 'rgba(0,0,0,.05)'}, beginAtZero: true, ticks: {callback: v => fmtShort(v)}}, y: {grid: {display: false}}}, maintainAspectRatio: false}});
+        };
+        bars('chartCollectionsByAccount', d.collectionsByAccount || [], '#16a34a');
+        bars('chartPaymentsByAccount', d.paymentsByAccount || [], '#dc2626');
 
-        // Payments by account — horizontal bar
-        new Chart(document.getElementById('chartPaymentsByAccount').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: (d.paymentsByAccount || []).map(c => c.label),
-                datasets: [{
-                    data: (d.paymentsByAccount || []).map(c => c.value),
-                    backgroundColor: colorPalette.slice(0, Math.max((d.paymentsByAccount || []).length, 1)),
-                    borderRadius: 4
-                }]
-            },
-            options: {
-                indexAxis: 'y',
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { grid: { color: 'rgba(0,0,0,0.05)' }, beginAtZero: true, ticks: { callback: v => 'SAR ' + fmt(v) } },
-                    y: { grid: { display: false } }
-                },
-                maintainAspectRatio: false
-            }
-        });
+        // settlement
+        html('listSettlement', settle.map(s => {
+            const pct = (s.rate * 100).toFixed(1), c = s.rate >= .8 ? '#16a34a' : s.rate >= .4 ? '#f59e0b' : '#dc2626';
+            return `<div class="to-row"><div class="to-row-top"><span class="to-row-name">${esc(s.type)}</span><span class="to-row-val" style="color:${c}">${pct}%</span></div>
+                <div class="to-bar"><span style="width:${Math.max(2, pct)}%;background:${c}"></span></div>
+                <div class="to-row-sub">{{ __('Settled') }} ${fmtShort(s.settled)} / ${fmtShort(s.approved)} &middot; <span class="${s.outstanding > 0 ? 'text-danger' : ''}">{{ __('Outstanding') }} ${fmtShort(s.outstanding)}</span></div></div>`;
+        }).join('') || emptyHtml);
 
-        // Payment status — doughnut
-        const paymentStatuses = d.paymentStatuses || [];
-        new Chart(document.getElementById('chartPaymentStatus').getContext('2d'), {
-            type: 'doughnut',
-            data: {
-                labels: paymentStatuses.map(s => s.label),
-                datasets: [{
-                    data: paymentStatuses.map(s => s.count),
-                    backgroundColor: paymentStatuses.map(s =>
-                        s.status === 'approved' ? '#16a34a' : s.status === 'draft' ? '#94a3b8' : s.status === 'cancelled' ? '#dc2626' : '#f59e0b'
-                    ),
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 6, font: { size: 10 } } } },
-                maintainAspectRatio: false
-            }
-        });
+        // ranked lists
+        const rank = (rows, nameFn, subFn, valFn, color) => {
+            const max = Math.max(1, ...rows.map(valFn));
+            return rows.map((r, i) => `<div class="to-row"><div class="to-row-top"><span class="d-flex align-items-center" style="min-width:0"><span class="to-rank">${i + 1}</span><span class="to-row-name">${esc(nameFn(r))}</span></span><span class="to-row-val">${fmtShort(valFn(r))}</span></div>
+                <div class="to-row-sub" style="margin-left:2rem">${subFn(r)}</div><div class="to-bar" style="margin-left:2rem"><span style="width:${Math.max(4, valFn(r) / max * 100)}%;background:${color}"></span></div></div>`).join('');
+        };
+        html('listCustomers', rank(d.topCustomers || [], c => c.name, c => fmt(c.collections) + ' {{ __('collections') }}', c => c.total, '#2563eb') || emptyHtml);
+        html('listSuppliers', rank(d.topSuppliers || [], s => s.name, s => fmt(s.payments) + ' {{ __('payments') }}', s => s.total, '#f59e0b') || emptyHtml);
 
-        // Collection status — "split" doughnut with gaps between segments
-        const collectionStatuses = d.collectionStatuses || [];
-        new Chart(document.getElementById('chartCollectionStatus').getContext('2d'), {
-            type: 'doughnut',
-            data: {
-                labels: collectionStatuses.map(s => s.label),
-                datasets: [{
-                    data: collectionStatuses.map(s => s.count),
-                    backgroundColor: collectionStatuses.map(s =>
-                        s.status === 'approved' ? '#16a34a' : s.status === 'draft' ? '#94a3b8' : s.status === 'cancelled' ? '#dc2626' : '#f59e0b'
-                    ),
-                    borderWidth: 0,
-                    spacing: 6,
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 6, font: { size: 10 } } } },
-                maintainAspectRatio: false
-            }
-        });
+        // status: one stacked bar each, with counts underneath
+        const status = (id, totalId, rows) => {
+            const total = rows.reduce((a, r) => a + r.count, 0);
+            text(totalId, total ? fmt(total) + ' {{ __('in total') }}' : '');
+            html(id, total
+                ? `<div class="to-stack">${rows.map(r => `<span style="width:${r.count / total * 100}%;background:${statusColor(r.status)}" title="${esc(r.label)}: ${r.count}"></span>`).join('')}</div>
+                   <div class="to-leg">${rows.map(r => `<span><i style="background:${statusColor(r.status)}"></i>${esc(r.label)}<b>${fmt(r.count)}</b></span>`).join('')}</div>`
+                : '<div class="to-empty" style="padding:.6rem 0">{{ __('No data for this period') }}</div>');
+        };
+        status('statusCollections', 'colTotal', d.collectionStatuses || []);
+        status('statusPayments', 'payTotal', d.paymentStatuses || []);
     }
-
     document.addEventListener('DOMContentLoaded', render);
-    // Period dropdown: shared tom-select styling (the underlying <select> still holds the value).
-    document.addEventListener('DOMContentLoaded', function () {
-        if (window.initTomSelectForm && window.jQuery) { initTomSelectForm($('#dateRangeWrap')); }
-    });
-
-    document.getElementById('btn-apply').addEventListener('click', () => {
-        const range = document.getElementById('dateRange').value;
-        window.location.href = '/transaction/overview?range=' + range;
-    });
     </script>
 </x-app-layout>
