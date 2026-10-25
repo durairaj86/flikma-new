@@ -160,32 +160,6 @@
                                                 <div class="theme-name small fw-medium mt-2">{{ __('FastFatoora Classic Print') }}</div>
                                             </div>
                                         </div>
-
-                                        <div class="theme-container" style="width: 140px;">
-                                            <div class="theme border p-2 rounded-3 text-center" data-theme="advance-gst-tally" style="cursor:pointer;">
-                                                <div class="image-container" style="height: 80px; display:flex; align-items:center; justify-content:center;">
-                                                    <svg viewBox="0 0 100 80" width="100%" height="100%" style="max-height:100%;">
-                                                        <rect x="4" y="4" width="92" height="72" fill="#fff" stroke="#000" stroke-width="2"/>
-                                                        <rect x="4" y="4" width="92" height="10" fill="#eee" stroke="#000" stroke-width="1"/>
-                                                        <text x="50" y="11.5" font-size="6" font-family="monospace" font-weight="700" text-anchor="middle" fill="#000">TAX INVOICE</text>
-                                                        <line x1="4" y1="24" x2="96" y2="24" stroke="#000" stroke-width="1"/>
-                                                        <line x1="50" y1="14" x2="50" y2="24" stroke="#000" stroke-width="0.5"/>
-                                                        <line x1="4" y1="38" x2="96" y2="38" stroke="#000" stroke-width="1"/>
-                                                        <line x1="50" y1="24" x2="50" y2="38" stroke="#000" stroke-width="0.5"/>
-                                                        <rect x="4" y="44" width="92" height="7" fill="#000"/>
-                                                        <line x1="4" y1="58" x2="96" y2="58" stroke="#666" stroke-width="0.5"/>
-                                                        <line x1="4" y1="65" x2="96" y2="65" stroke="#666" stroke-width="0.5"/>
-                                                    </svg>
-                                                </div>
-                                                <div class="theme-name small fw-medium mt-2">{{ __('Advanced GST (Tally)') }}</div>
-                                            </div>
-                                        </div>
-
-                                        <div class="theme-container" style="width: 140px;">
-                                            <button class="btn btn-outline-secondary w-100 h-100 border-2 border-dashed" style="height: 100%; min-height: 120px;">
-                                                <i class="bi bi-grid-3x3-gap me-1"></i> {{ __('See All Themes') }}
-                                            </button>
-                                        </div>
                                     </div>
 
                                 </div>
