@@ -2342,6 +2342,8 @@ function initTomSelectForm(form = null, destroy = false, individualId = null) {
             placeholder: placeholder,
             searchField: liveSearch ? ['text', 'subtext'] : [],
             hideSelected: false,
+            // data-dropdown-parent="body": open the list outside a scrolling box (e.g. a .table-responsive) so it isn't clipped
+            dropdownParent: $el.data('dropdown-parent') || null,
 
             plugins: [
                 'dropdown_input',

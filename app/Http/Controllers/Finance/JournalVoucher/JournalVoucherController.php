@@ -34,12 +34,12 @@ class JournalVoucherController extends Controller
     {
         $journalVoucher = new JournalVoucher();
         $jobs = Job::select('id', 'row_no')->orderBy('row_no', 'desc')->get();
-        $accounts = Account::select('id', 'name', 'code')->orderBy('name')->get();
+        $accounts = $this->postableAccounts();
         $voucherTypes = JournalVoucherTypeEnum::cases();
 
         // Get customers, suppliers for entity selection
-        $customers = \App\Models\Customer\Customer::select('id', 'name_en as name')->orderBy('name_en')->get();
-        $suppliers = \App\Models\Supplier\Supplier::select('id', 'name_en as name')->orderBy('name_en')->get();
+        $customers = \App\Models\Customer\Customer::select('id', 'name_en')->orderBy('name_en')->get();
+        $suppliers = \App\Models\Supplier\Supplier::select('id', 'name_en')->orderBy('name_en')->get();
 
         // Initialize empty journal voucher items collection for new journal voucher
         $journalVoucherItems = collect();
@@ -207,12 +207,12 @@ class JournalVoucherController extends Controller
     {
         $journalVoucher = JournalVoucher::with('journalVoucherItems.account')->findOrFail($id);
         $jobs = Job::select('id', 'row_no')->orderBy('row_no', 'desc')->get();
-        $accounts = Account::select('id', 'name', 'code')->orderBy('name')->get();
+        $accounts = $this->postableAccounts($journalVoucher->journalVoucherItems->pluck('account_id')->merge($journalVoucher->journalVoucherItems->pluck('tax_id'))->filter()->all());
         $voucherTypes = JournalVoucherTypeEnum::cases();
 
         // Get customers, suppliers for entity selection
-        $customers = \App\Models\Customer\Customer::select('id', 'name_en as name')->orderBy('name_en')->get();
-        $suppliers = \App\Models\Supplier\Supplier::select('id', 'name_en as name')->orderBy('name_en')->get();
+        $customers = \App\Models\Customer\Customer::select('id', 'name_en')->orderBy('name_en')->get();
+        $suppliers = \App\Models\Supplier\Supplier::select('id', 'name_en')->orderBy('name_en')->get();
 
         return view('modules.finance.journal_voucher.journal-voucher-form', compact(
             'journalVoucher', 'jobs', 'accounts', 'voucherTypes',
@@ -587,5 +587,23 @@ class JournalVoucherController extends Controller
             'status' => 'success',
             'message' => __('Journal voucher deleted successfully'),
         ]);
+    }
+
+    /**
+     * Accounts a journal line can post to: active leaf accounts (no child accounts, so group headings are left out),
+     * by code. $keep holds accounts already used on the voucher being edited, so an old line still shows its account.
+     */
+    private function postableAccounts(array $keep = [])
+    {
+        return Account::select('id', 'name', 'code')
+            ->where(function ($q) use ($keep) {
+                $q->where('is_active', 1)
+                    ->whereNotExists(fn ($c) => $c->from('accounts as child')->whereColumn('child.parent_id', 'accounts.id'));
+                if ($keep) {
+                    $q->orWhereIn('id', $keep);
+                }
+            })
+            ->orderBy('code')
+            ->get();
     }
 }

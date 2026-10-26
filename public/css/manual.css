@@ -2170,3 +2170,6 @@ input.form-control[readonly], input.form-control[readonly]:focus {
     color: #6c757d;
     cursor: not-allowed;
 }
+
+/* tom-select lists opened on <body> (data-dropdown-parent="body") must sit above an open modal */
+body > .ts-dropdown { z-index: 1065; }

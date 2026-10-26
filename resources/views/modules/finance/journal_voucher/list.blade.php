@@ -1,5 +1,6 @@
 @section('page-title', __('Journal Vouchers'))
 @section('js','journal_voucher')
+@section('hide-topbar', true)
 @push('page-title-action')
     <button class="btn btn-link btn-sm p-0 text-decoration-none lh-1 ms-2" id="journalVoucherWatchVideo"
             data-bs-toggle="modal" data-bs-target="#journalVoucherVideoModal" title="{{ __('Watch video') }}">
@@ -9,140 +10,53 @@
 <x-app-layout>
     <!-- Main Content -->
     <main class="gmail-content bg-white px-3">
-        <div class="d-flex align-items-center gap-2 pt-3">@stack('page-title-action')</div>
-        <div class="d-flex justify-content-between align-items-start py-3">
-            <div class="align-items-center flex-shrink-0">
-                <div class="gap-4">
-                    <ul class="nav align-items-center" id="listTabs" role="tablist"
-                        aria-label="Navigation 13">
-                        <li class="nav-item me-2">
-                            <button
-                                class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn active"
-                                data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="draft">
-                                <span><i class="bi bi-clock me-1"></i> {{ __('Draft') }} -</span>
-                                <span class="status-count ms-2" id="draftCount">0</span>
-                            </button>
-                        </li>
-                        <li class="nav-item me-2">
-                            <button
-                                class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
-                                data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="approved">
-                                <span><i class="bi bi-check-circle me-1"></i> {{ __('Approved') }} -</span>
-                                <span class="status-count ms-2" id="approvedCount">0</span>
-                            </button>
-                        </li>
-                    </ul>
-                </div>
+        <style>
+            .jv-title { display: none; }
+            body:not(.has-top-header) .jv-title { display: block; }
+            #dataTable thead th { background-color: #f8f9fa !important; }
+            #dataTable thead th:first-child { border-top-left-radius: 8px; }
+            #dataTable thead th:last-child { border-top-right-radius: 8px; }
+            #listTabs .status-btn:not(.active) { background: #f1f3f5; color: #495057; }
+            #listTabs .status-btn:not(.active) > span:first-child > i { color: var(--bs-warning) !important; }
+            #listTabs .status-btn.active { background: rgb(13, 110, 253) !important; color: #fff !important; }
+            #listTabs .status-btn.active > span:first-child > i { color: #fff !important; }
+        </style>
+        {{-- same header as the other lists: title + video link (only when the top header is off), New on the right --}}
+        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap pt-2 pb-0">
+            <div class="d-flex align-items-center gap-2 jv-title">
+                <h4 class="fw-bold text-dark mb-0">@yield('page-title')</h4>
+                @stack('page-title-action')
             </div>
-            <div class="d-flex justify-content-between">
-                <div class="position-relative">
-                    <!-- Compact Filter button -->
-                    <button class="btn btn-outline-secondary me-2" onclick="toggleFilter()"><i class="bi bi-funnel"></i>
-                        {{ __('Filter') }}
-                    </button>
-
-                    <!-- Filter panel (dropdown style) -->
-                    <div id="filterPanel" class="card p-3 d-none"
-                         style="position: absolute; top: 100%; right: 0; width: 20rem; z-index: 1000; box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);">
-                        <!-- Date range -->
-                        <div class="mb-3">
-                            {{--<div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">Date range</span>
-                                <button class="btn btn-link btn-sm p-0" onclick="resetField('date')">Reset</button>
-                            </div>
-
-                            <!-- Predefined date ranges -->
-                            <select class="form-control selectpicker mb-2" id="presetDateRange"
-                                    onchange="setPresetDateRange()">
-                                <option value="">Custom</option>
-                                <option value="today">Today</option>
-                                <option value="yesterday">Yesterday</option>
-                                <option value="thisMonth">This Month</option>
-                                <option value="lastMonth">Last Month</option>
-                                <option value="thisQuarter">This Quarter</option>
-                                <option value="lastQuarter">Last Quarter</option>
-                                <option value="thisYear">This Year</option>
-                                <option value="lastYear">Last Year</option>
-                            </select>--}}
-
-                            <div class="d-flex gap-2">
-                                <input type="date" class="form-control datepicker" id="fromDate">
-                                <input type="date" class="form-control datepicker" id="toDate">
-                            </div>
-                        </div>
-
-                        <!-- Voucher Type -->
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">{{ __('Voucher Type') }}</span>
-                                <button class="btn btn-link btn-sm p-0" onclick="resetField('voucherType')">{{ __('Reset') }}</button>
-                            </div>
-                            <select class="form-select" id="voucherType">
-                                <option value="">{{ __('All Types') }}</option>
-                                <option value="1">{{ __('Accounting / Finance') }}</option>
-                                <option value="2">{{ __('Inventory / Stock Adjustments') }}</option>
-                                <option value="3">{{ __('VAT / Tax Adjustments') }}</option>
-                                <option value="4">{{ __('Bank Reconciliation') }}</option>
-                                <option value="5">{{ __('Opening Balances') }}</option>
-                                <option value="6">{{ __('Miscellaneous / Others') }}</option>
-                            </select>
-                        </div>
-
-                        <!-- Status -->
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">{{ __('Status') }}</span>
-                                <button class="btn btn-link btn-sm p-0" onclick="resetField('status')">{{ __('Reset') }}</button>
-                            </div>
-                            <select class="form-select" id="status">
-                                <option value="">{{ __('All Statuses') }}</option>
-                                <option value="1">{{ __('Draft') }}</option>
-                                <option value="2">{{ __('Approved') }}</option>
-                                <option value="3">{{ __('Disapproved') }}</option>
-                            </select>
-                        </div>
-
-                        <!-- Keyword search -->
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">{{ __('Keyword search') }}</span>
-                                <button class="btn btn-link btn-sm p-0" onclick="resetField('keyword')">{{ __('Reset') }}</button>
-                            </div>
-                            <input type="text" class="form-control" placeholder="{{ __('Search...') }}" id="keyword">
-                        </div>
-
-                        <!-- Buttons -->
-                        <div class="d-flex justify-content-between">
-                            <button class="btn btn-outline-secondary" onclick="resetAll()">{{ __('Reset all') }}</button>
-                            <button class="btn btn-success">{{ __('Apply now') }}</button>
-                        </div>
-                    </div>
-                </div>
+            <div class="d-flex align-items-center gap-2 ms-auto">
                 <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Journal Voucher') }}</button>
             </div>
         </div>
 
-        <div class="shadow bdr-r-10 py-3 flex-grow-1">
-            <div class="d-flex justify-content-between px-3 flex-shrink-0">
-                <div class="d-inline-flex align-items-center bg-light border rounded-pill px-2 py-1 me-2 mb-2 small"
-                     style="font-size: 0.8rem;">
-                    <span class="me-2">{{ __('Date') }}: 10-12-2024 / 10-12-2025</span>
-                    <button type="button"
-                            class="btn btn-sm btn-light p-0 border-0 d-flex align-items-center justify-content-center"
-                            style="width: 16px; height: 16px; line-height: 1;" aria-label="{{ __('Close') }}"
-                            onclick="clearDateLabel()">
-                        &times;
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 py-3">
+            <ul class="nav align-items-center" id="listTabs" role="tablist" aria-label="{{ __('Journal voucher status') }}">
+                <li class="nav-item me-2">
+                    <button class="nav-link px-3 py-2 d-flex align-items-center justify-content-between status-btn active"
+                            data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="draft">
+                        <span><i class="bi bi-clock me-1"></i> {{ __('Draft') }} -</span>
+                        <span class="status-count ms-2" id="draftCount">0</span>
                     </button>
-                </div>
-                <div class="align-items-center gap-2">
-                    <div class="search-box position-relative me-2">
-                        <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-
-                        <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
-                               placeholder="{{ __('Search journal vouchers...') }}" aria-label="{{ __('Search journal vouchers...') }}">
-                    </div>
-                </div>
+                </li>
+                <li class="nav-item me-2">
+                    <button class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
+                            data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="approved">
+                        <span><i class="bi bi-check-circle me-1"></i> {{ __('Approved') }} -</span>
+                        <span class="status-count ms-2" id="approvedCount">0</span>
+                    </button>
+                </li>
+            </ul>
+            <div class="search-box position-relative">
+                <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
+                       placeholder="{{ __('Search journal vouchers...') }}" aria-label="{{ __('Search journal vouchers...') }}">
             </div>
+        </div>
+
+        <div class="shadow bdr-r-10 py-3 flex-grow-1">
             <div class="">
                 <table class="table align-middle dataTable" id="dataTable" data-empty-noun="{{ __('journal vouchers') }}">
                     <thead class="table-light bg-white">

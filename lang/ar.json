@@ -5268,5 +5268,7 @@
     "The invoice could not be created.": "تعذر إنشاء الفاتورة.",
     "Draft invoice created from the proforma. Check it and approve it to post it.": "تم إنشاء فاتورة مسودة من الفاتورة المبدئية. راجعها واعتمدها لترحيلها.",
     "Opening balance": "الرصيد الافتتاحي",
-    "Exchange Gain / Loss": "أرباح / خسائر فروق العملة"
+    "Exchange Gain / Loss": "أرباح / خسائر فروق العملة",
+    "Journal voucher status": "حالة قيد اليومية",
+    "Select entity type first": "اختر نوع الجهة أولاً"
 }
