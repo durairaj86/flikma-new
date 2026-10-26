@@ -309,8 +309,22 @@ PROFORMA_INVOICE = {
                         callBack: 'datatable'
                     }, $(this).attr('data-value'));
                 })
+                // creates a DRAFT customer invoice with the proforma's lines; the answer names it
                 $('#row_converted').off().on('click', function () {
-                    alert(trans('convert to invoice'));
+                    const url = GLOBAL_FN.buildUrl('invoice/proforma/' + row.attr('data-id') + '/status/' + $(this).attr('data-value'));
+                    appConfirm({
+                        title: trans('Convert to invoice?'),
+                        message: trans('A draft customer invoice is created with these lines. Check it and approve it to post it.'),
+                        button: trans('Convert'), icon: 'bi-receipt',
+                        onConfirm: function () {
+                            $.post(url).done(function (res) {
+                                toastr.success(res.message + (res.data && res.data.invoice_no ? ' (' + res.data.invoice_no + ')' : ''));
+                                PROFORMA_INVOICE.list.dataTable();
+                            }).fail(function (xhr) {
+                                toastr.error((xhr.responseJSON && xhr.responseJSON.message) || trans('Something went wrong!'));
+                            });
+                        },
+                    });
                 })
             },
             view(row) {

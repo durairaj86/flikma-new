@@ -105,11 +105,12 @@ class CustomerAging extends Component
             $dueDate = Carbon::parse($inv->due_at ?? $inv->due_date ?? $inv->invoice_date);
             $balance = (float)$inv->grand_total - ($settled[$inv->id] ?? 0.0);
 
-            if ($balance <= 0) {
+            if (abs($balance) < 0.005) {
                 continue;
             }
 
-            $daysOverdue = (int)$dueDate->diffInDays($asOfDate, false);
+            // settled for more than it was worth: the excess is customer credit, owed back (a negative, not yet due)
+            $daysOverdue = $balance < 0 ? 0 : (int)$dueDate->diffInDays($asOfDate, false);
 
             $buckets = $this->emptyAgingBuckets();
             $bucketKey = $this->agingBucketKey($daysOverdue);
@@ -118,13 +119,28 @@ class CustomerAging extends Component
             $summary['grand_total'] += $balance;
 
             $agingRows[] = [
-                'invoice_no'   => $inv->row_no,
+                'invoice_no'   => $inv->row_no . ($balance < 0 ? ' — ' . __('Customer credit') : ''),
                 'invoice_date' => Carbon::parse($inv->invoice_date)->translatedFormat('d M Y'),
                 'due_date'     => $dueDate->translatedFormat('d M Y'),
                 'days_overdue' => $daysOverdue,
                 'total'        => $balance,
                 'buckets'      => $buckets,
             ];
+        }
+
+        // the customer's opening balance is owed too (aged from its date), so aging = statement
+        foreach ($this->openingBalancesAsOf('customer', $asOfDate, $customer->id) as $ob) {
+            $obDate = Carbon::parse($ob['date']);
+            $daysOverdue = (int) $obDate->diffInDays($asOfDate, false);
+            $bucketKey = $this->agingBucketKey($daysOverdue);
+            $buckets = $this->emptyAgingBuckets();
+            $buckets[$bucketKey] = $ob['amount'];
+            $summary[$bucketKey] += $ob['amount'];
+            $summary['grand_total'] += $ob['amount'];
+            array_unshift($agingRows, [
+                'invoice_no' => __('Opening balance'), 'invoice_date' => $obDate->translatedFormat('d M Y'), 'due_date' => $obDate->translatedFormat('d M Y'),
+                'days_overdue' => $daysOverdue, 'total' => $ob['amount'], 'buckets' => $buckets,
+            ]);
         }
 
         return [

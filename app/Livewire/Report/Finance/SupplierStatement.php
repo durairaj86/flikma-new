@@ -92,7 +92,7 @@ class SupplierStatement extends Component
         }
 
         $baseCurrency = optional(authUserCompany())->base_currency ?: 'SAR';
-        $columns = ['Date', 'Voucher No', 'Type', 'Description', 'FCY Amount', 'Invoiced', 'Paid', 'Balance'];
+        $columns = ['Date', 'Voucher No', 'Type', 'Description', 'FCY Amount', 'Credit (owed)', 'Debit (paid / adjusted)', 'Balance'];
 
         $rows = [[
             '', 'Balance Brought Forward', '', '', '', '', '', (float)$data['openingBalance'],
@@ -108,8 +108,8 @@ class SupplierStatement extends Component
                 $this->voucherTypeLabel($txn->voucher_type),
                 $txn->description,
                 $fcy,
-                $txn->voucher_type === 'SI' ? (float)$txn->base_credit : '',
-                $txn->voucher_type === 'PV' ? (float)$txn->base_debit : '',
+                (float)$txn->base_credit > 0 ? (float)$txn->base_credit : '',
+                (float)$txn->base_debit > 0 ? (float)$txn->base_debit : '',
                 (float)$txn->balance,
             ];
         }
@@ -143,6 +143,10 @@ class SupplierStatement extends Component
         return match ($type) {
             'SI' => 'Supplier Invoice',
             'PV' => 'Payment Voucher',
+            'DN' => 'Debit Note',
+            'OB' => 'Opening Balance',
+            'JV' => 'Journal Voucher',
+            'EV' => 'Expense',
             default => (string)$type,
         };
     }
@@ -188,61 +192,40 @@ class SupplierStatement extends Component
         // AP is a liability → CR = invoice posted, DR = payment made
         $openingBalance = (float) $openingCredit - (float) $openingDebit;
 
-        // ── Period transactions ──
-        $transactions = DB::table('finance as f')
-            ->leftJoin('jobs as j', 'f.job_id', '=', 'j.id')
-            ->where('f.company_id', $companyId)
-            ->where('f.supplier_id', $this->supplierId)
+        // ── Period transactions: the payable (2110) lines, so every movement counts — invoices, payments, debit notes,
+        //    opening balances, exchange differences — and the running balance is what is owed (the voucher headers used
+        //    before have debit = credit, which made a debit note move nothing) ──
+        $transactions = DB::table('finance_subs as fs')
+            ->join('finance as f', 'fs.finance_id', '=', 'f.id')
+            ->leftJoin('jobs as j', 'fs.job_id', '=', 'j.id')
+            ->where('fs.company_id', $companyId)
+            ->where('fs.supplier_id', $this->supplierId)
+            ->where('fs.account_id', self::AP_ACCOUNT_ID)
             ->where('f.is_approved', 1)
-            ->whereBetween('f.reference_date', [$this->startDate, $this->endDate])
-            ->select(
-                'f.id',
-                'f.reference_date',
-                'f.voucher_no',
-                'f.voucher_type',
-                'f.reference_no',
-                'j.row_no as job_number',
-                'f.narration as description',
-                'f.currency',
-                'f.exchange_rate',
-                'f.total_credit',                      // FCY: invoice/payment amount in its own currency
-                'f.total_debit',
-                'f.base_total_credit as base_credit',  // SI: AP credited (invoice)
-                'f.base_total_debit  as base_debit'    // PV: AP debited  (payment)
-            )
-            ->orderBy('f.reference_date')
-            ->orderBy('f.id')
+            ->whereBetween('fs.reference_date', [$this->startDate, $this->endDate])
+            ->select('fs.id', 'fs.reference_date', 'fs.voucher_no', 'fs.voucher_type', 'fs.reference_no', 'j.row_no as job_number',
+                DB::raw('COALESCE(fs.description, f.narration) as description'), 'fs.currency', 'fs.exchange_rate',
+                'fs.debit', 'fs.credit', 'fs.base_debit', 'fs.base_credit')
+            ->orderBy('fs.reference_date')
+            ->orderBy('fs.id')
             ->get();
 
         $baseCurrency = optional(authUserCompany())->base_currency ?: 'SAR';
 
-        // Running balance (supplier AP perspective: credit increases, debit decreases)
+        // Running balance (what is owed: a credit raises it, a debit lowers it)
         $runningBalance = $openingBalance;
         $transactions = $transactions->map(function ($txn) use (&$runningBalance, $baseCurrency) {
-            if ($txn->voucher_type === 'SI') {
-                // Invoice: we owe more to supplier → balance goes up
-                $runningBalance += (float) $txn->base_credit;
-            } elseif ($txn->voucher_type === 'PV') {
-                // Payment: we pay supplier → balance goes down
-                $runningBalance -= (float) $txn->base_debit;
-            } else {
-                $runningBalance += (float) $txn->base_credit - (float) $txn->base_debit;
-            }
+            $runningBalance += (float) $txn->base_credit - (float) $txn->base_debit;
             $txn->balance = $runningBalance;
-
-            // FCY Amount column — only shown when the transaction's own
-            // currency differs from the company's base currency.
-            $isForeign = $txn->currency && $txn->currency !== $baseCurrency;
-            $fcyAmount = $txn->voucher_type === 'SI' ? (float) $txn->total_credit
-                : ($txn->voucher_type === 'PV' ? (float) $txn->total_debit
-                    : (float) $txn->total_credit - (float) $txn->total_debit);
-            $txn->fcy_amount = $isForeign ? $fcyAmount : null;
+            // FCY column only when the line's own currency differs from the company's
+            $isForeign = $txn->currency && $txn->currency !== $baseCurrency && ((float) $txn->credit + (float) $txn->debit) > 0;
+            $txn->fcy_amount = $isForeign ? abs((float) $txn->credit - (float) $txn->debit) : null;
 
             return $txn;
         });
 
-        $invoicedAmount = $transactions->where('voucher_type', 'SI')->sum('base_credit');
-        $paidAmount     = $transactions->where('voucher_type', 'PV')->sum('base_debit');
+        $invoicedAmount = $transactions->sum('base_credit');
+        $paidAmount     = $transactions->sum('base_debit');
         $closingBalance = $openingBalance + $invoicedAmount - $paidAmount;
 
         return [

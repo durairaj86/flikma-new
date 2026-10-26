@@ -570,6 +570,9 @@ class SupplierInvoiceController extends Controller
     {
         $supplier = SupplierInvoice::findOrFail($id);
         $previousStatus = $supplier->status;
+        if ($locked = $this->refuseInClosedPeriod($supplier->getRawOriginal('invoice_date'), $previousStatus, $status, SupplierInvoiceEnum::APPROVED->value)) {
+            return $locked;
+        }
 
         DB::beginTransaction();
         try {

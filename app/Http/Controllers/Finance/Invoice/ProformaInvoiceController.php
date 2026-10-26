@@ -438,6 +438,9 @@ class ProformaInvoiceController extends Controller
     public function updateStatus($id, $status): \Illuminate\Http\JsonResponse
     {
         $proforma = ProformaInvoice::findOrFail($id);
+        if ((int) $status === ProformaInvoiceEnum::CONVERTED->value) {
+            return $this->convertToInvoice($proforma);
+        }
         $proforma->status = $status;
         $proforma->save();
 
@@ -448,6 +451,68 @@ class ProformaInvoiceController extends Controller
                 'id' => $proforma->id,
                 'status' => $proforma->status,
             ],
+        ]);
+    }
+
+    /**
+     * "Convert to invoice": a DRAFT customer invoice with the proforma's lines (saved through the invoice's own store, so
+     * numbering, rates and VAT work exactly as for a typed invoice). The proforma is marked converted only when that worked.
+     */
+    private function convertToInvoice(ProformaInvoice $proforma): \Illuminate\Http\JsonResponse
+    {
+        if ((int) $proforma->status === ProformaInvoiceEnum::CONVERTED->value) {
+            return response()->json(['status' => 'error', 'message' => __('This proforma has already been converted to an invoice.')], 422);
+        }
+        if (!$proforma->job_id || !$proforma->customer_id) {
+            return response()->json(['status' => 'error', 'message' => __('Only a proforma raised on a job can be converted to an invoice.')], 422);
+        }
+        $subs = $proforma->proformaInvoiceSubs()->get();
+        if ($subs->isEmpty()) {
+            return response()->json(['status' => 'error', 'message' => __('This proforma has no lines to invoice.')], 422);
+        }
+        $saleAccounts = DB::table('descriptions')->whereIn('id', $subs->pluck('description_id'))->pluck('sale_account_id', 'id');
+        $date = now()->format('Y-m-d');
+        $request = Request::create('/invoice/customer', 'POST', [
+            'job_id' => $proforma->job_id,
+            'customer' => encodeId($proforma->customer_id),
+            'invoice_date' => $date,
+            'due_date' => $date,
+            'currency' => $proforma->currency ?: 'SAR',
+            'currency_rate' => (float) $proforma->currency_rate ?: 1,
+            'terms' => $proforma->terms,
+            'description_id' => $subs->pluck('description_id')->map(fn ($v) => (string) $v)->all(),
+            'comment' => $subs->map(fn ($l) => $l->comment ?: $l->description)->all(),
+            'unit_id' => $subs->map(fn ($l) => (string) ($l->unit_id ?: 1))->all(),
+            'quantity' => $subs->pluck('quantity')->all(),
+            'unit_price' => $subs->map(fn ($l) => number_format((float) $l->unit_price, 2, '.', ''))->all(),
+            'tax' => $subs->map(fn ($l) => $l->tax_code ?: 'STANDARD')->all(),
+            'account' => $subs->map(fn ($l) => (int) ($saleAccounts[$l->description_id] ?? 0) ?: 32)->all(),
+        ]);
+        $request->setLaravelSession(request()->session());
+
+        DB::beginTransaction();
+        try {
+            $result = app(CustomerInvoiceController::class)->store($request)->getData(true);
+            $invoiceId = $result['customer_id'] ?? null;   // the invoice store returns the new invoice's id under this key
+            if (($result['status'] ?? '') !== 'success' || !$invoiceId) {
+                throw new \RuntimeException($result['message'] ?? __('The invoice could not be created.'));
+            }
+            $proforma->status = ProformaInvoiceEnum::CONVERTED->value;
+            $proforma->save();
+            DB::commit();
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            return response()->json(['status' => 'error', 'message' => collect($e->errors())->flatten()->first()], 422);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 422);
+        }
+        $invoice = \App\Models\Finance\CustomerInvoice\CustomerInvoice::find($invoiceId);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => __('Draft invoice created from the proforma. Check it and approve it to post it.'),
+            'data' => ['id' => $proforma->id, 'status' => $proforma->status, 'invoice_id' => $invoiceId, 'invoice_no' => $invoice?->row_no],
         ]);
     }
 

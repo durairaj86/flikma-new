@@ -50,12 +50,13 @@ class SupplierAgingAll extends Component
         foreach ($invoices as $invoice) {
             $balance = (float)$invoice->grand_total - ($settled[$invoice->id] ?? 0.0);
 
-            if ($balance <= 0 || !$invoice->supplier) {
+            if (abs($balance) < 0.005 || !$invoice->supplier) {
                 continue;
             }
 
+            // a negative balance (bill settled for more than it was worth) lowers what is owed, not yet due
             $dueDate = Carbon::parse($invoice->due_at ?? $invoice->invoice_date);
-            $daysOverdue = (int)$dueDate->diffInDays($asOfDate, false);
+            $daysOverdue = $balance < 0 ? 0 : (int)$dueDate->diffInDays($asOfDate, false);
             $bucketKey = $this->agingBucketKey($daysOverdue);
 
             $suppId = $invoice->supplier_id;
@@ -72,6 +73,20 @@ class SupplierAgingAll extends Component
             $bySupplier[$suppId]['total'] += $balance;
             $totals[$bucketKey] += $balance;
             $totals['grand_total'] += $balance;
+        }
+
+        // opening balances are owed too (aged from their date), so each row = that supplier's statement balance
+        $obs = $this->openingBalancesAsOf('supplier', $asOfDate, $this->supplierId ?: null);
+        $names = $obs ? \App\Models\Supplier\Supplier::whereIn('id', array_keys($obs))->get(['id', 'name_en', 'row_no'])->keyBy('id') : collect();
+        foreach ($obs as $suppId => $ob) {
+            $bucketKey = $this->agingBucketKey((int) Carbon::parse($ob['date'])->diffInDays($asOfDate, false));
+            $bySupplier[$suppId] ??= array_merge($this->emptyAgingBuckets(), [
+                'supplier_id' => $suppId, 'supplier_name' => $names[$suppId]->name_en ?? '', 'supplier_code' => $names[$suppId]->row_no ?? '', 'total' => 0.0,
+            ]);
+            $bySupplier[$suppId][$bucketKey] += $ob['amount'];
+            $bySupplier[$suppId]['total'] += $ob['amount'];
+            $totals[$bucketKey] += $ob['amount'];
+            $totals['grand_total'] += $ob['amount'];
         }
 
         $suppliers = array_values($bySupplier);

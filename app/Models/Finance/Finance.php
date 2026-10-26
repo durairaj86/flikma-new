@@ -13,6 +13,14 @@ class Finance extends Model
 
     protected $table = 'finance';
 
+    /** A voucher posted or removed: the next aging / settlement report re-syncs allocations instead of waiting a minute. */
+    protected static function booted(): void
+    {
+        $stale = fn () => \Illuminate\Support\Facades\Cache::forget('finance-ledger-sync-fresh');
+        static::saved($stale);
+        static::deleted($stale);
+    }
+
     protected $fillable = [
         'voucher_no',
         'voucher_type',

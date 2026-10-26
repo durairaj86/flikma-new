@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Report\Finance;
 
+use Illuminate\Support\Facades\DB;
+
 use App\Exports\Customer\CustomerStatementReportExport;
 use App\Models\Customer\Customer;
 use Livewire\Component;
@@ -9,6 +11,8 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class CustomerStatement extends Component
 {
+    private const AR_ACCOUNT_ID = 5; // 1130 Accounts Receivable
+
     public string $startDate = '';
     public string $endDate = '';
     public string $search = '';
@@ -173,123 +177,55 @@ class CustomerStatement extends Component
                     ])) ?: 'N/A',
                 ];
 
-                $companyId = auth()->user()->company_id ?? 1;
+                $companyId = companyId();
                 $baseCurrency = optional(authUserCompany())->base_currency ?: 'SAR';
 
-                // Opening balance: everything before startDate. Uses
-                // base_grand_total (company-currency amount), not
-                // grand_total (the invoice's own currency) — a foreign
-                // currency invoice would otherwise silently corrupt the
-                // running balance by mixing currencies together.
-                $openingInvoices    = \App\Models\Finance\CustomerInvoice\CustomerInvoice::where('customer_id', $this->customerId)
-                    ->where('company_id', $companyId)
-                    ->where('invoice_date', '<', $this->startDate)
-                    ->sum('base_grand_total');
+                // From the receivable (1130) lines of approved vouchers — the books, like the trial balance: drafts and
+                // cancelled documents never appear, opening balances, journal vouchers and exchange differences do.
+                $ar = fn () => DB::table('finance_subs as fs')->join('finance as f', 'fs.finance_id', '=', 'f.id')
+                    ->where('fs.company_id', $companyId)->where('fs.customer_id', $this->customerId)
+                    ->where('fs.account_id', self::AR_ACCOUNT_ID)->where('f.is_approved', 1);
+                $opening = $ar()->where('fs.reference_date', '<', $this->startDate)->selectRaw('COALESCE(SUM(fs.base_debit - fs.base_credit), 0) n')->value('n');
+                $openingBalance = (float) $opening;
 
-                $openingCollections = \App\Models\Finance\Collection\Collection::where('customer_id', $this->customerId)
-                    ->where('company_id', $companyId)
-                    ->where('collection_date', '<', $this->startDate)
-                    ->sum('base_grand_total');
+                $lines = $ar()->whereBetween('fs.reference_date', [$this->startDate, $this->endDate])
+                    ->orderBy('fs.reference_date')->orderBy('fs.id')
+                    ->get(['fs.reference_date', 'fs.voucher_no', 'fs.voucher_type', 'fs.reference_no', 'fs.description', 'fs.currency', 'fs.exchange_rate',
+                        'fs.debit', 'fs.credit', 'fs.base_debit', 'fs.base_credit']);
 
-                // Credit notes reduce AR exactly like a collection does — a
-                // statement that omits them overstates what the customer
-                // still owes by the full credited amount.
-                $openingCreditNotes = \App\Models\Finance\Adjustment\CreditNote::where('customer_id', $this->customerId)
-                    ->where('company_id', $companyId)
-                    ->where('posted_at', '<', $this->startDate)
-                    ->sum('base_grand_total');
-
-                $openingBalance = (float)$openingInvoices - (float)$openingCollections - (float)$openingCreditNotes;
-
-                // Period invoices (debit)
+                // overdue days for invoices still open
                 $invoices = \App\Models\Finance\CustomerInvoice\CustomerInvoice::where('customer_id', $this->customerId)
-                    ->where('company_id', $companyId)
-                    ->whereBetween('invoice_date', [$this->startDate, $this->endDate])
-                    ->orderBy('invoice_date')
-                    ->get();
+                    ->whereIn('row_no', $lines->where('voucher_type', 'CI')->pluck('voucher_no'))->get()->keyBy('row_no');
+                $types = ['CI' => ['invoice', 'Customer Invoice'], 'CV' => ['payment', 'Payment Received'], 'CN' => ['credit_note', 'Credit Note'],
+                    'OB' => ['opening_balance', 'Opening balance'], 'JV' => ['journal', 'Journal Voucher']];
 
-                // Period collections (credit)
-                $collections = \App\Models\Finance\Collection\Collection::where('customer_id', $this->customerId)
-                    ->where('company_id', $companyId)
-                    ->whereBetween('collection_date', [$this->startDate, $this->endDate])
-                    ->orderBy('collection_date')
-                    ->get();
-
-                // Period credit notes (credit)
-                $creditNotes = \App\Models\Finance\Adjustment\CreditNote::where('customer_id', $this->customerId)
-                    ->where('company_id', $companyId)
-                    ->whereBetween('posted_at', [$this->startDate, $this->endDate])
-                    ->orderBy('posted_at')
-                    ->get();
-
-                $totalDebit  = (float)$invoices->sum('base_grand_total');
-                $totalCredit = (float)$collections->sum('base_grand_total') + (float)$creditNotes->sum('base_grand_total');
-
-                foreach ($invoices as $inv) {
-                    $isForeign = $inv->currency && $inv->currency !== $baseCurrency;
-
-                    // Overdue = past due date with an outstanding balance —
-                    // a fully-paid invoice past its due date isn't overdue.
+                foreach ($lines as $l) {
+                    $isForeign = $l->currency && $l->currency !== $baseCurrency && ((float) $l->debit + (float) $l->credit) > 0;
                     $daysOverdue = 0;
-                    $outstanding = (float)($inv->base_grand_total ?? 0) - (float)($inv->base_paid_amount ?? 0);
-                    if ($inv->due_date && $outstanding > 0.01) {
-                        $dueDate = \Carbon\Carbon::parse($inv->due_date)->startOfDay();
-                        if ($dueDate->lessThan(now()->startOfDay())) {
-                            $daysOverdue = $dueDate->diffInDays(now()->startOfDay());
+                    if ($l->voucher_type === 'CI' && ($inv = $invoices[$l->voucher_no] ?? null)) {
+                        $outstanding = (float) $inv->grand_total - (float) $inv->paid_amount;
+                        $due = $inv->due_at ?? $inv->due_date;
+                        if ($due && $outstanding > 0.01 && \Carbon\Carbon::parse($due)->startOfDay()->lessThan(now()->startOfDay())) {
+                            $daysOverdue = \Carbon\Carbon::parse($due)->startOfDay()->diffInDays(now()->startOfDay());
                         }
                     }
-
-                    $transactions[] = (object)[
-                        'date'          => $inv->getRawOriginal('invoice_date') ?? $inv->invoice_date,
-                        'display_date'  => \Carbon\Carbon::parse($inv->invoice_date)->format('d-m-Y'),
-                        'type'          => 'invoice',
-                        'reference'     => $inv->row_no ?? $inv->invoice_no,
-                        'description'   => 'Customer Invoice',
-                        'debit'         => (float)($inv->base_grand_total ?? $inv->grand_total ?? 0),
-                        'credit'        => 0,
-                        'currency'      => $inv->currency,
-                        'fcy_amount'    => $isForeign ? (float)($inv->grand_total ?? 0) : null,
-                        'currency_rate' => $isForeign ? (float)($inv->currency_rate ?? 0) : null,
+                    [$type, $label] = $types[$l->voucher_type] ?? [strtolower((string) $l->voucher_type), $l->description ?: (string) $l->voucher_type];
+                    $transactions[] = (object) [
+                        'date'          => $l->reference_date,
+                        'display_date'  => \Carbon\Carbon::parse($l->reference_date)->format('d-m-Y'),
+                        'type'          => $type,
+                        'reference'     => $l->voucher_no ?: $l->reference_no,
+                        'description'   => $l->voucher_type === 'CV' && $l->reference_no ? 'Payment Received' : $label,
+                        'debit'         => (float) $l->base_debit,
+                        'credit'        => (float) $l->base_credit,
+                        'currency'      => $l->currency,
+                        'fcy_amount'    => $isForeign ? abs((float) $l->debit - (float) $l->credit) : null,
+                        'currency_rate' => $isForeign ? (float) $l->exchange_rate : null,
                         'days_overdue'  => $daysOverdue,
                     ];
                 }
-
-                foreach ($collections as $col) {
-                    $isForeign = $col->currency && $col->currency !== $baseCurrency;
-                    $transactions[] = (object)[
-                        'date'          => $col->getRawOriginal('collection_date') ?? $col->collection_date,
-                        'display_date'  => \Carbon\Carbon::parse($col->collection_date)->format('d-m-Y'),
-                        'type'          => 'payment',
-                        'reference'     => $col->row_no ?? $col->reference_no ?? 'COL-' . $col->id,
-                        'description'   => 'Payment Received',
-                        'debit'         => 0,
-                        'credit'        => (float)($col->base_grand_total ?? $col->grand_total ?? 0),
-                        'currency'      => $col->currency,
-                        'fcy_amount'    => $isForeign ? (float)($col->grand_total ?? 0) : null,
-                        'currency_rate' => $isForeign ? (float)($col->currency_rate ?? 0) : null,
-                        'days_overdue'  => 0, // payments have no due date of their own
-                    ];
-                }
-
-                foreach ($creditNotes as $cn) {
-                    $isForeign = $cn->currency && $cn->currency !== $baseCurrency;
-                    $transactions[] = (object)[
-                        'date'          => $cn->getRawOriginal('posted_at') ?? $cn->posted_at,
-                        'display_date'  => \Carbon\Carbon::parse($cn->posted_at)->format('d-m-Y'),
-                        'type'          => 'credit_note',
-                        'reference'     => $cn->row_no,
-                        'description'   => 'Credit Note',
-                        'debit'         => 0,
-                        'credit'        => (float)($cn->base_grand_total ?? $cn->grand_total ?? 0),
-                        'currency'      => $cn->currency,
-                        'fcy_amount'    => $isForeign ? (float)($cn->grand_total ?? 0) : null,
-                        'currency_rate' => $isForeign ? (float)($cn->currency_rate ?? 0) : null,
-                        'days_overdue'  => 0,
-                    ];
-                }
-
-                // Sort all transactions by date ascending
-                usort($transactions, fn($a, $b) => strcmp($a->date ?? '', $b->date ?? ''));
+                $totalDebit = (float) $lines->sum('base_debit');
+                $totalCredit = (float) $lines->sum('base_credit');
 
                 $closingBalance = $openingBalance + $totalDebit - $totalCredit;
             }

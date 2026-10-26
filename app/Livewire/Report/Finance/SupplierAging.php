@@ -118,11 +118,12 @@ class SupplierAging extends Component
             $dueDate = Carbon::parse($inv->due_at ?? $inv->due_date ?? $inv->invoice_date);
             $balance = (float)$inv->grand_total - ($settled[$inv->id] ?? 0.0);
 
-            if ($balance <= 0) {
+            if (abs($balance) < 0.005) {
                 continue;
             }
 
-            $daysOverdue = (int)$dueDate->diffInDays($asOfDate, false);
+            // settled for more than it was worth: a negative that lowers what is owed, not yet due
+            $daysOverdue = $balance < 0 ? 0 : (int)$dueDate->diffInDays($asOfDate, false);
 
             $buckets = array_fill_keys(['current', 'days_1_30', 'days_31_60', 'days_61_90', 'days_91_120', 'days_over_120'], 0.0);
 
@@ -155,6 +156,24 @@ class SupplierAging extends Component
                 'days_overdue' => $daysOverdue,
                 'total'        => $balance,
             ], $buckets);
+        }
+
+        // the supplier's opening balance is owed too (aged from its date), so aging = statement
+        foreach ($this->openingBalancesAsOf('supplier', $asOfDate, $supplier->id) as $ob) {
+            $obDate = Carbon::parse($ob['date']);
+            $daysOverdue = (int) $obDate->diffInDays($asOfDate, false);
+            $key = match (true) {
+                $daysOverdue <= 0 => 'current', $daysOverdue <= 30 => 'days_1_30', $daysOverdue <= 60 => 'days_31_60',
+                $daysOverdue <= 90 => 'days_61_90', $daysOverdue <= 120 => 'days_91_120', default => 'days_over_120',
+            };
+            $buckets = array_fill_keys(['current', 'days_1_30', 'days_31_60', 'days_61_90', 'days_91_120', 'days_over_120'], 0.0);
+            $buckets[$key] = $ob['amount'];
+            $summary[$key] += $ob['amount'];
+            $summary['grand_total'] += $ob['amount'];
+            array_unshift($agingRows, array_merge([
+                'invoice_no' => __('Opening balance'), 'invoice_date' => $obDate->translatedFormat('d M Y'), 'due_date' => $obDate->translatedFormat('d M Y'),
+                'days_overdue' => $daysOverdue, 'total' => $ob['amount'],
+            ], $buckets));
         }
 
         return [

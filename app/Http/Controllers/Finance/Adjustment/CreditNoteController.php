@@ -629,6 +629,9 @@ class CreditNoteController extends Controller
         $creditNote = CreditNote::findOrFail($id);
         $previousStatus = $creditNote->status;
         $message = 'Credit note status updated successfully!';
+        if ($locked = $this->refuseInClosedPeriod($creditNote->getRawOriginal('posted_at'), $previousStatus, $status, CreditNoteEnum::APPROVED->value)) {
+            return $locked;
+        }
 
         DB::beginTransaction();
         try {

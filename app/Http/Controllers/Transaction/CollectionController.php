@@ -634,6 +634,9 @@ class CollectionController extends Controller
     {
         $collection = Collection::findOrFail($id);
         $previousStatus = $collection->status;
+        if ($locked = $this->refuseInClosedPeriod(formDate($collection->collection_date), $previousStatus, $status, CollectionEnum::APPROVED->value)) {
+            return $locked;
+        }
 
         DB::beginTransaction();
         try {
@@ -1133,8 +1136,16 @@ class CollectionController extends Controller
         // approved (DR AR / CR Revenue / CR Output VAT), so the collection
         // must clear AR for the gross amount — crediting Output VAT again
         // here would double-count the tax and leave a phantom AR balance.
+        // A foreign-currency invoice is cleared at the rate it was booked at; the bank gets today's rate and the
+        // difference is an exchange gain (credit) or loss (debit), so the customer ends at 0 in SAR as well.
+        $fxDifference = 0.0;
         foreach ($collectionInvoices as $collectionInvoice) {
             $invoice = $collectionInvoice->customerInvoice;
+            $bookedRate = (float) $invoice->grand_total > 0 && (float) $invoice->base_grand_total > 0
+                ? (float) $invoice->base_grand_total / (float) $invoice->grand_total
+                : (float) $collection->currency_rate;
+            $arBase = round($collectionInvoice->amount * $bookedRate, 2);
+            $fxDifference += round($collectionInvoice->amount * $collection->currency_rate, 2) - $arBase;
 
             $financeSubs[] = array_merge($commonData, [
                 'account_id'     => 5, // 1130 Accounts Receivable
@@ -1144,12 +1155,29 @@ class CollectionController extends Controller
                 'debit'          => 0,
                 'credit'         => $collectionInvoice->amount,
                 'base_debit'     => 0,
-                'base_credit'    => $collectionInvoice->amount * $collection->currency_rate,
+                'base_credit'    => $arBase,
                 'job_id'         => $invoice->job_id ?? null,
                 'job_no'         => $invoice->job_no ?? '',
                 'linked_id'      => $collectionInvoice->id,
                 'linked_type'    => CollectionInvoice::class,
             ]);
+        }
+
+        $fxDifference = round($fxDifference, 2);
+        if (abs($fxDifference) >= 0.01) {
+            $financeSubs[] = array_merge($commonData, [
+                'account_id'     => \App\Models\Finance\Account\Account::exchangeAccountId(), // 4180 Exchange Gain / Loss
+                'reference_date' => formDate($collection->collection_date),
+                'description'    => 'Exchange ' . ($fxDifference > 0 ? 'gain' : 'loss') . ' on collection ' . $collection->row_no,
+                'debit'          => 0,
+                'credit'         => 0,
+                'base_debit'     => $fxDifference < 0 ? -$fxDifference : 0,
+                'base_credit'    => $fxDifference > 0 ? $fxDifference : 0,
+                'exchange_rate'  => 1,
+            ]);
+            $finance->base_total_debit = round($baseInvoiceTotal + max(0, -$fxDifference), 2);
+            $finance->base_total_credit = $finance->base_total_debit;
+            $finance->save();
         }
 
         // Insert all finance sub entries

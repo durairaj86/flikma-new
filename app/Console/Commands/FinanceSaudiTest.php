@@ -404,11 +404,11 @@ class FinanceSaudiTest extends Command
         $after2 = $this->partyBalances(1, 1);
         $this->chk('Customer', 'Customer receivable movement (debits − 6,150.00)', 21312.50 + 1850.00 + $rGrand - 6150.00, $after2['customer'] - $stmtBefore['customer']);
         $this->chk('Supplier', 'Supplier payable movement (4,350 − 3,230)', 1120.00, $after2['supplier'] - $stmtBefore['supplier']);
-        $cs = $this->tableText(\App\Livewire\Report\Finance\CustomerStatementTable::class, ['customerId' => '1']);
+        $cs = $this->reportText(\App\Livewire\Report\Finance\CustomerStatement::class, ['startDate' => self::FROM, 'endDate' => self::TO, 'customerId' => encodeId(1)]);
         foreach (['11,500.00', '4,000.00', '4,312.50', '1,850.00', '1,150.00', '5,000.00'] as $n) {
             $this->has('Customer statement', 'Page shows ' . $n, $cs, $n);
         }
-        $ss = $this->tableText(\App\Livewire\Report\Finance\SupplierStatementTable::class, ['supplierId' => '1']);
+        $ss = $this->reportText(\App\Livewire\Report\Finance\SupplierStatement::class, ['startDate' => self::FROM, 'endDate' => self::TO, 'supplierId' => encodeId(1)]);
         foreach (['3,450.00', '600.00', '300.00', '230.00', '3,000.00'] as $n) {
             $this->has('Supplier statement', 'Page shows ' . $n, $ss, $n);
         }

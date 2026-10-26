@@ -146,8 +146,8 @@
                                     <th class="border-0">{{ __('Voucher No') }}</th>
                                     <th class="border-0">{{ __('Description') }}</th>
                                     <th class="border-0">{{ __('FCY Amount') }}</th>
-                                    <th class="text-end border-0">{{ __('Invoiced') }}</th>
-                                    <th class="text-end border-0">{{ __('Paid') }}</th>
+                                    <th class="text-end border-0">{{ __('Credit (owed)') }}</th>
+                                    <th class="text-end border-0">{{ __('Debit (paid / adjusted)') }}</th>
                                     <th class="text-end pe-4 border-0">{{ __('Balance') }}</th>
                                 </tr>
                                 </thead>
@@ -165,7 +165,7 @@
                                         <td class="ps-4 small text-muted text-nowrap">{{ \Carbon\Carbon::parse($txn->reference_date)->translatedFormat('d M Y') }}</td>
                                         <td>
                                             <span class="fw-medium d-block">{{ $txn->voucher_no }}</span>
-                                            <span class="x-small text-muted uppercase">{{ $txn->voucher_type === 'SI' ? __('Supplier Invoice') : ($txn->voucher_type === 'PV' ? __('Payment Voucher') : $txn->voucher_type) }}</span>
+                                            <span class="x-small text-muted uppercase">{{ __($this->voucherTypeLabel($txn->voucher_type)) }}</span>
                                         </td>
                                         <td class="small">{{ $txn->description }}</td>
                                         <td class="small">
@@ -177,10 +177,10 @@
                                             @endif
                                         </td>
                                         <td class="text-end tabular-nums text-supplier">
-                                            {{ $txn->voucher_type === 'SI' && (float)$txn->base_credit > 0 ? number_format((float)$txn->base_credit, 2) : '—' }}
+                                            {{ (float)$txn->base_credit > 0 ? number_format((float)$txn->base_credit, 2) : '—' }}
                                         </td>
                                         <td class="text-end tabular-nums text-success">
-                                            {{ $txn->voucher_type === 'PV' && (float)$txn->base_debit > 0 ? number_format((float)$txn->base_debit, 2) : '—' }}
+                                            {{ (float)$txn->base_debit > 0 ? number_format((float)$txn->base_debit, 2) : '—' }}
                                         </td>
                                         <td class="text-end pe-4 fw-bold tabular-nums">{{ number_format((float)$txn->balance, 2) }}</td>
                                     </tr>
@@ -259,8 +259,8 @@
                         <th style="width: 12%;">{{ __('Type') }}</th>
                         <th>{{ __('Description') }}</th>
                         <th style="width: 13%;">{{ __('FCY Amount') }}</th>
-                        <th class="text-end" style="width: 12%;">{{ __('Invoiced') }}</th>
-                        <th class="text-end" style="width: 12%;">{{ __('Paid') }}</th>
+                        <th class="text-end" style="width: 12%;">{{ __('Credit (owed)') }}</th>
+                        <th class="text-end" style="width: 12%;">{{ __('Debit (paid / adjusted)') }}</th>
                         <th class="text-end" style="width: 13%;">{{ __('Balance') }}</th>
                     </tr>
                     </thead>
@@ -281,8 +281,8 @@
                                     <span style="font-size:10px;color:#666;">{{ $company->base_currency ?? 'SAR' }} {{ number_format($txn->exchange_rate, 4) }}</span>
                                 @endif
                             </td>
-                            <td class="text-end">{{ $txn->voucher_type === 'SI' && (float)$txn->base_credit > 0 ? number_format((float)$txn->base_credit, 2) : '' }}</td>
-                            <td class="text-end">{{ $txn->voucher_type === 'PV' && (float)$txn->base_debit > 0 ? number_format((float)$txn->base_debit, 2) : '' }}</td>
+                            <td class="text-end">{{ (float)$txn->base_credit > 0 ? number_format((float)$txn->base_credit, 2) : '' }}</td>
+                            <td class="text-end">{{ (float)$txn->base_debit > 0 ? number_format((float)$txn->base_debit, 2) : '' }}</td>
                             <td class="text-end stmt-bal">{{ number_format((float)$txn->balance, 2) }}</td>
                         </tr>
                     @empty

@@ -5258,5 +5258,15 @@
     "Incentive on gross profit, paid by when the customer paid.": "حافز على إجمالي الربح، يُدفع حسب وقت سداد العميل.",
     "Invoiced, cost and gross profit per invoice.": "المفوتر والتكلفة وإجمالي الربح لكل فاتورة.",
     "The selected invoice belongs to another customer.": "الفاتورة المختارة تخص عميلاً آخر.",
-    "The selected invoice belongs to another supplier.": "الفاتورة المختارة تخص مورداً آخر."
+    "The selected invoice belongs to another supplier.": "الفاتورة المختارة تخص مورداً آخر.",
+    "This document is dated in a closed accounting period (locked through :date). Reopen the period to change its status.": "هذا المستند مؤرخ في فترة محاسبية مغلقة (مقفلة حتى :date). أعد فتح الفترة لتغيير حالته.",
+    "Convert to invoice?": "تحويل إلى فاتورة؟",
+    "A draft customer invoice is created with these lines. Check it and approve it to post it.": "سيتم إنشاء فاتورة عميل مسودة بهذه البنود. راجعها واعتمدها لترحيلها.",
+    "This proforma has already been converted to an invoice.": "تم تحويل هذه الفاتورة المبدئية إلى فاتورة مسبقاً.",
+    "Only a proforma raised on a job can be converted to an invoice.": "يمكن تحويل الفاتورة المبدئية المرتبطة بمهمة فقط إلى فاتورة.",
+    "This proforma has no lines to invoice.": "لا توجد بنود في هذه الفاتورة المبدئية لفوترتها.",
+    "The invoice could not be created.": "تعذر إنشاء الفاتورة.",
+    "Draft invoice created from the proforma. Check it and approve it to post it.": "تم إنشاء فاتورة مسودة من الفاتورة المبدئية. راجعها واعتمدها لترحيلها.",
+    "Opening balance": "الرصيد الافتتاحي",
+    "Exchange Gain / Loss": "أرباح / خسائر فروق العملة"
 }

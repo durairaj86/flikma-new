@@ -50,12 +50,13 @@ class CustomerAgingAll extends Component
         foreach ($invoices as $invoice) {
             $balance = (float)$invoice->grand_total - ($settled[$invoice->id] ?? 0.0);
 
-            if ($balance <= 0 || !$invoice->customer) {
+            if (abs($balance) < 0.005 || !$invoice->customer) {
                 continue;
             }
 
+            // a negative balance is customer credit (settled for more than it was worth): it lowers what is owed, not yet due
             $dueDate = Carbon::parse($invoice->due_at ?? $invoice->due_date ?? $invoice->invoice_date);
-            $daysOverdue = (int)$dueDate->diffInDays($asOfDate, false);
+            $daysOverdue = $balance < 0 ? 0 : (int)$dueDate->diffInDays($asOfDate, false);
             $bucketKey = $this->agingBucketKey($daysOverdue);
 
             $custId = $invoice->customer_id;
@@ -72,6 +73,20 @@ class CustomerAgingAll extends Component
             $byCustomer[$custId]['total'] += $balance;
             $totals[$bucketKey] += $balance;
             $totals['grand_total'] += $balance;
+        }
+
+        // opening balances are owed too (aged from their date), so each row = that customer's statement balance
+        $obs = $this->openingBalancesAsOf('customer', $asOfDate, $this->customerId ?: null);
+        $names = $obs ? \App\Models\Customer\Customer::whereIn('id', array_keys($obs))->get(['id', 'name_en', 'row_no'])->keyBy('id') : collect();
+        foreach ($obs as $custId => $ob) {
+            $bucketKey = $this->agingBucketKey((int) Carbon::parse($ob['date'])->diffInDays($asOfDate, false));
+            $byCustomer[$custId] ??= array_merge($this->emptyAgingBuckets(), [
+                'customer_id' => $custId, 'customer_name' => $names[$custId]->name_en ?? '', 'customer_code' => $names[$custId]->row_no ?? '', 'total' => 0.0,
+            ]);
+            $byCustomer[$custId][$bucketKey] += $ob['amount'];
+            $byCustomer[$custId]['total'] += $ob['amount'];
+            $totals[$bucketKey] += $ob['amount'];
+            $totals['grand_total'] += $ob['amount'];
         }
 
         $customers = array_values($byCustomer);

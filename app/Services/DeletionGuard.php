@@ -71,7 +71,7 @@ class DeletionGuard
                     $this->linked('account', $id, [], true),
                     $this->linked('cost_account_id', $id, [], true)
                 );
-                if (in_array($id, self::SYSTEM_ACCOUNT_IDS, true)) {
+                if (in_array($id, self::SYSTEM_ACCOUNT_IDS, true) || $id === \App\Models\Finance\Account\Account::exchangeAccountId()) {
                     $why[] = __('it is a system account used for automatic postings');
                 }
                 break;

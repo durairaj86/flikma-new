@@ -57,4 +57,22 @@ abstract class Controller
             $field => "This date falls within a closed accounting period (locked through {$lockedThrough}). Contact your administrator to reopen the period before saving.",
         ]);
     }
+
+    /**
+     * Approving a document, or taking an approved one back (draft / cancel), writes or removes ledger entries on its
+     * date: refused (422) when that date is in a closed period. Returns null when the change may go ahead.
+     */
+    protected function refuseInClosedPeriod($date, $previousStatus, $newStatus, int $approved): ?\Illuminate\Http\JsonResponse
+    {
+        $touchesLedger = (int) $newStatus === $approved || (int) $previousStatus === $approved;
+        if (!$touchesLedger || (int) $newStatus === (int) $previousStatus || !PeriodClosing::isLocked($date)) {
+            return null;
+        }
+        $lockedThrough = PeriodClosing::lockedThroughDate()->format('d-m-Y');
+
+        return response()->json([
+            'status' => 'error',
+            'message' => __('This document is dated in a closed accounting period (locked through :date). Reopen the period to change its status.', ['date' => $lockedThrough]),
+        ], 422);
+    }
 }

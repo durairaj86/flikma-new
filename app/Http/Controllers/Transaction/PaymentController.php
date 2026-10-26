@@ -460,6 +460,9 @@ class PaymentController extends Controller
     {
         $payment = Payment::findOrFail($id);
         $previousStatus = $payment->status;
+        if ($locked = $this->refuseInClosedPeriod(formDate($payment->payment_date), $previousStatus, $status, PaymentEnum::APPROVED->value)) {
+            return $locked;
+        }
 
         DB::beginTransaction();
         try {
@@ -917,8 +920,16 @@ class PaymentController extends Controller
         ]);
 
         // DR Accounts Payable (full invoice amounts being settled, including VAT)
+        // A foreign-currency bill is cleared at the rate it was booked at; the bank pays today's rate and the difference
+        // is an exchange loss (debit) or gain (credit), so the supplier ends at 0 in SAR as well.
+        $fxDifference = 0.0;
         foreach ($paymentInvoices as $paymentInvoice) {
             $invoice = $paymentInvoice->supplierInvoice;
+            $bookedRate = (float) $invoice->grand_total > 0 && (float) $invoice->base_grand_total > 0
+                ? (float) $invoice->base_grand_total / (float) $invoice->grand_total
+                : (float) $payment->currency_rate;
+            $apBase = round($paymentInvoice->amount * $bookedRate, 2);
+            $fxDifference += round($paymentInvoice->amount * $payment->currency_rate, 2) - $apBase;   // > 0 = loss
 
             $financeSubs[] = array_merge($commonData, [
                 'account_id'     => 18, // 2110 Accounts Payable
@@ -927,7 +938,7 @@ class PaymentController extends Controller
                 'description'    => 'Payment for invoice ' . $invoice->row_no,
                 'debit'          => $paymentInvoice->amount,
                 'credit'         => 0,
-                'base_debit'     => $paymentInvoice->amount * $payment->currency_rate,
+                'base_debit'     => $apBase,
                 'base_credit'    => 0,
                 'job_id'         => $invoice->job_id ?? null,
                 'job_no'         => $invoice->job_no ?? '',
@@ -976,6 +987,22 @@ class PaymentController extends Controller
                 'linked_id'      => $transaction->id,
                 'linked_type'    => PaymentAdditionalTransaction::class,
             ]);
+        }
+
+        $fxDifference = round($fxDifference, 2);
+        if (abs($fxDifference) >= 0.01) {
+            $financeSubs[] = array_merge($commonData, [
+                'account_id'     => \App\Models\Finance\Account\Account::exchangeAccountId(), // 4180 Exchange Gain / Loss
+                'reference_date' => formDate($payment->payment_date),
+                'description'    => 'Exchange ' . ($fxDifference > 0 ? 'loss' : 'gain') . ' on payment ' . $payment->row_no,
+                'debit'          => 0,
+                'credit'         => 0,
+                'base_debit'     => $fxDifference > 0 ? $fxDifference : 0,
+                'base_credit'    => $fxDifference < 0 ? -$fxDifference : 0,
+                'exchange_rate'  => 1,
+            ]);
+            $total = round((float) $payment->base_grand_total + max(0, -$fxDifference), 2);
+            \App\Models\Finance\Finance::whereKey($commonData['finance_id'])->update(['base_total_debit' => $total, 'base_total_credit' => $total]);
         }
 
         // Insert all finance sub entries

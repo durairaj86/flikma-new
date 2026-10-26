@@ -66,4 +66,12 @@ class Account extends BaseModel
 
         return $q->whereIn('accounts.id', $all);
     }
+
+    /** 4180 Exchange Gain / Loss: where the booking-rate vs settlement-rate difference of foreign-currency documents goes. */
+    public static function exchangeAccountId(): int
+    {
+        static $id = null;
+
+        return $id ??= (int) static::withoutGlobalScopes()->whereNull('company_id')->where('code', '4180')->value('id');
+    }
 }

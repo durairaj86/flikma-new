@@ -166,6 +166,9 @@ class ExpenseController extends Controller
         $request->merge([
             'item_ids' => decodeIds($request->item_id)
         ]);
+        $request->validate(['posted_at' => 'required|date']);
+        // an expense posts on its date: never into a closed period (same rule as every other document)
+        $this->assertPeriodOpen(formDate($request->input('posted_at')), 'posted_at');
         $companyId = companyId();
         $branchId = 1;
 
@@ -449,6 +452,9 @@ class ExpenseController extends Controller
     {
         $expense = Expense::findOrFail($id);
         $previousStatus = $expense->status;
+        if ($locked = $this->refuseInClosedPeriod($expense->getRawOriginal('posted_at'), $previousStatus, $status, ExpenseEnum::APPROVED->value)) {
+            return $locked;
+        }
 
         DB::beginTransaction();
         try {
@@ -775,7 +781,7 @@ class ExpenseController extends Controller
                     // Skip if difference is negligible
                     if (abs($exchangeDifference) > 0.01) {
                         // Add entry for currency exchange difference
-                        // Account ID 60 is assumed to be the Currency Exchange Difference account
+                        // 4180 Exchange Gain / Loss (id 60 is the VAT Clearing Account and must never take this)
                         $financeSubs[] = [
                             'finance_id' => $finance->id,
                             'voucher_no' => $finance->voucher_no,
@@ -783,7 +789,7 @@ class ExpenseController extends Controller
                             'reference_no' => $finance->reference_no,
                             'supplier_id' => $expense->vendor_id,
                             'customer_id' => $expense->customer_id,
-                            'account_id' => 60, // Currency Exchange Difference account
+                            'account_id' => \App\Models\Finance\Account\Account::exchangeAccountId(),
                             'reference_date' => formDate($expense->posted_at),
                             'description' => 'Currency exchange difference for expense ' . $expense->row_no,
                             'debit' => $exchangeDifference > 0 ? $exchangeDifference : 0,

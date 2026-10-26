@@ -27,6 +27,7 @@
 @endif--}}
 @php
     $i18nKeys = [
+        'Convert to invoice?', 'A draft customer invoice is created with these lines. Check it and approve it to post it.', 'Convert',
         'required',
         'Any carrier', 'days', 'from',
         'Due',

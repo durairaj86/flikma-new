@@ -678,6 +678,9 @@ class CustomerInvoiceController extends Controller
         $customerInvoice = CustomerInvoice::findOrFail($id);
         $previousStatus = $customerInvoice->status;
         $message = 'Invoice status updated successfully!';
+        if ($locked = $this->refuseInClosedPeriod($customerInvoice->getRawOriginal('invoice_date'), $previousStatus, $status, CustomerInvoiceEnum::APPROVED->value)) {
+            return $locked;
+        }
 
         DB::beginTransaction();
         try {

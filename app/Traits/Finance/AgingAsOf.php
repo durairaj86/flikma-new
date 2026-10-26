@@ -47,4 +47,24 @@ trait AgingAsOf
 
         return $q->pluck('paid', 'invoice_id')->map(fn ($v) => (float) $v)->all();
     }
+
+    /**
+     * Opening balances still owed on $asOf, per customer / supplier: the receivable (1130) / payable (2110) lines of the
+     * opening balance voucher, so aging agrees with the statement. They are aged from the opening balance date.
+     * @return array<int, array{amount: float, date: string}>
+     */
+    protected function openingBalancesAsOf(string $kind, Carbon $asOf, $partyId = null): array
+    {
+        $col = $kind === 'customer' ? 'customer_id' : 'supplier_id';
+        $sign = $kind === 'customer' ? 'base_debit - base_credit' : 'base_credit - base_debit';
+
+        return DB::table('finance_subs as s')->join('finance as f', 'f.id', '=', 's.finance_id')
+            ->where('s.voucher_type', 'OB')->where('f.is_approved', 1)->where('s.company_id', companyId())
+            ->where('s.account_id', $kind === 'customer' ? 5 : 18)->whereNotNull("s.$col")
+            ->whereDate('s.reference_date', '<=', $asOf)
+            ->when($partyId, fn ($q) => $q->where("s.$col", $partyId))
+            ->groupBy("s.$col")->selectRaw("s.$col as party, SUM($sign) as amount, MIN(s.reference_date) as date")
+            ->get()->filter(fn ($r) => abs((float) $r->amount) >= 0.005)
+            ->mapWithKeys(fn ($r) => [(int) $r->party => ['amount' => round((float) $r->amount, 2), 'date' => (string) $r->date]])->all();
+    }
 }
