@@ -132,7 +132,13 @@ class DebitNoteController extends Controller
 
         $validated = $request->validate([
             'invoice_id' => 'required|exists:supplier_invoices,id',
-            'supplier' => 'required|exists:suppliers,id',
+            // the debited bill must be this supplier's
+            'supplier' => ['required', 'exists:suppliers,id', function ($attr, $value, $fail) use ($request) {
+                $owner = SupplierInvoice::whereKey($request->input('invoice_id'))->value('supplier_id');
+                if ($owner && (int) $owner !== (int) $value) {
+                    $fail(__('The selected invoice belongs to another supplier.'));
+                }
+            }],
             'debit_note_date' => 'required|date',
             'job_id' => 'nullable|exists:jobs,id',
             'reason' => 'required',

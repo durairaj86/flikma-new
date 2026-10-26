@@ -259,8 +259,14 @@ class CreditNoteController extends Controller
 
         $validated = $request->validate([
             'credit_note_type' => 'required',
-            'invoice_id' => 'required',
-            'customer' => 'required|exists:customers,id',
+            'invoice_id' => 'required|exists:customer_invoices,id',
+            // the credited invoice must be this customer's: otherwise one customer's note settles another's invoice
+            'customer' => ['required', 'exists:customers,id', function ($attr, $value, $fail) use ($request) {
+                $owner = CustomerInvoice::whereKey($request->input('invoice_id'))->value('customer_id');
+                if ($owner && (int) $owner !== (int) $value) {
+                    $fail(__('The selected invoice belongs to another customer.'));
+                }
+            }],
             'credit_note_date' => 'required|date',
             'job_id' => 'required|exists:jobs,id',
             'reason' => 'required',

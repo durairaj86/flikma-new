@@ -33,8 +33,9 @@ class SupplierAging extends Component
 
     public function loadSuppliers(): void
     {
+        // active suppliers (supplier status 1 = confirmed; 3 is the customer value and matched almost nobody)
         $query = Supplier::select('id', 'name_en', 'name_ar', 'row_no', 'email', 'phone')
-            ->where('status', 3)
+            ->where('status', \App\Enums\SupplierStatusEnum::CONFIRMED->value)
             ->orderBy('name_en');
 
         if (!empty($this->search)) {

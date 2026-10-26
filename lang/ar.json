@@ -5256,5 +5256,7 @@
     "No report matches your search": "لا يوجد تقرير يطابق بحثك",
     "Try another word, for example VAT, ledger or profit.": "جرب كلمة أخرى، مثل الضريبة أو الأستاذ أو الربح.",
     "Incentive on gross profit, paid by when the customer paid.": "حافز على إجمالي الربح، يُدفع حسب وقت سداد العميل.",
-    "Invoiced, cost and gross profit per invoice.": "المفوتر والتكلفة وإجمالي الربح لكل فاتورة."
+    "Invoiced, cost and gross profit per invoice.": "المفوتر والتكلفة وإجمالي الربح لكل فاتورة.",
+    "The selected invoice belongs to another customer.": "الفاتورة المختارة تخص عميلاً آخر.",
+    "The selected invoice belongs to another supplier.": "الفاتورة المختارة تخص مورداً آخر."
 }

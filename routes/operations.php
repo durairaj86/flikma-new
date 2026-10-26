@@ -66,7 +66,8 @@ Route::namespace('operations')->prefix('operation')->group(function () {
     Route::post('/job/{id}/status/{status}', [\App\Http\Controllers\Job\JobController::class, 'updateStatus']);
     Route::get('/job/{id}/overview', [\App\Http\Controllers\Job\JobController::class, 'overview']);
     Route::get('/job/{id}/overview-drawer', [\App\Http\Controllers\Job\JobController::class, 'overviewDrawer']);
-    Route::get('/job/{id}/delete', [\App\Http\Controllers\Job\JobController::class, 'delete']);
+    // DELETE (not GET): a link must never delete a job; refusals come back as 422 with the reasons
+    Route::delete('/job/{id}/delete', [\App\Http\Controllers\Job\JobController::class, 'delete']);
     Route::get('/job/{id}/print', [JobController::class, 'print']);
 
     // Drivers

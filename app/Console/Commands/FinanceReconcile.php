@@ -78,10 +78,19 @@ class FinanceReconcile extends Command
 
         // 8. settlements (phase 2)
         if (Schema::hasTable('finance_allocations')) {
-            $n = $scope(DB::table('finance_allocations as a'), 'a.company_id')->join('finance_subs as l', 'l.id', '=', 'a.settled_line_id')
+            $over = $scope(DB::table('finance_allocations as a'), 'a.company_id')->join('finance_subs as l', 'l.id', '=', 'a.settled_line_id')
                 ->where('a.status', 'active')->groupBy('a.settled_line_id', 'l.debit', 'l.credit')
-                ->havingRaw('sum(a.amount) > greatest(l.debit, l.credit) + 0.005')->select('a.settled_line_id')->get()->count();
-            $this->check('8a. A line is settled for more than its amount', $n);
+                ->havingRaw('sum(a.amount) > greatest(l.debit, l.credit) + 0.005')
+                ->selectRaw('a.settled_line_id, max(a.settled_doc_type) doc_type, max(a.settled_doc_id) doc_id')->get();
+            // a customer invoice paid in full and then credited keeps the excess as customer credit (by design): only
+            // when every allocation on it is from its own customer; anything else is an error
+            $credit = $over->filter(fn ($r) => $r->doc_type === 'customer_invoice' && !DB::table('finance_allocations as a')
+                ->join('customer_invoices as i', 'i.id', '=', 'a.settled_doc_id')->where('a.settled_line_id', $r->settled_line_id)
+                ->where('a.status', 'active')->whereColumn('a.partner_id', '<>', 'i.customer_id')->exists());
+            $this->line('   info: invoices carrying customer credit (settled for more than their amount on purpose): ' . $credit->count());
+            $bad = $over->reject(fn ($r) => $credit->contains('settled_line_id', $r->settled_line_id));
+            $this->check('8a. A line is settled for more than its amount (customer credit excluded)', $bad->count(),
+                $bad->map(fn ($r) => "{$r->doc_type} #{$r->doc_id}")->all());
 
             $n = DB::table('finance_allocations as a')->join('finance_subs as l', 'l.id', '=', 'a.settled_line_id')->join('finance_subs as m', 'm.id', '=', 'a.settling_line_id')
                 ->whereRaw('l.partner_id <> a.partner_id or m.partner_id <> a.partner_id or l.account_id <> m.account_id')->count();

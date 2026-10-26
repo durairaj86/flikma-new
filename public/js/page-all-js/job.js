@@ -974,11 +974,9 @@ JOB = {
             },
             delete(row) {
                 $('#row_delete').off().on('click', function () {
-                    let jobId = row.attr('data-id');
-                    deleteFn(GLOBAL_FN.buildUrl('operation/job/' + jobId + '/delete'), {
-                        method: 'GET',
-                        callBack: 'datatable'
-                    });
+                    // shared delete: confirm, DELETE, and the reasons in a dialog when the job still has documents
+                    deleteRecord(GLOBAL_FN.buildUrl('operation/job/' + row.attr('data-id') + '/delete'), function () { JOB.list.dataTable(); },
+                        {name: row.attr('data-name')});
                 });
             },
             email(row) {

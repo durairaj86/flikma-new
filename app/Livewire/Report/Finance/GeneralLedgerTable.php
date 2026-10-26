@@ -90,9 +90,7 @@ class GeneralLedgerTable extends Component
             // Get opening balance (transactions before start date)
             $openingBalance = $this->getOpeningBalance($customer->id, $this->startDate);
 
-            // Get every ledger line for this customer within the date range,
-            // across every account it touched (AR, Revenue, Tax, ...) — a
-            // flat customer sub-ledger, not grouped by account.
+            // The customer's receivable lines in the date range (see getCustomerTransactions).
             $transactions = $this->getCustomerTransactions($customer->id, $this->startDate, $this->endDate);
 
             // Calculate running balance and totals. Customers are always
@@ -159,6 +157,12 @@ class GeneralLedgerTable extends Component
 
     private function getOpeningBalance($customerId, $startDate)
     {
+        if (\App\Services\Finance\LedgerReports::enabled()) {
+            $lines = \App\Services\Finance\LedgerReports::customerLines((int) $customerId, null, $startDate);
+
+            return (float) ($lines->sum('base_debit') - $lines->sum('base_credit'));
+        }
+
         $financeSub = FinanceSub::where('customer_id', $customerId)
             ->where('reference_date', '<', $startDate)
             ->whereHas('finance', function ($query) {
@@ -178,6 +182,17 @@ class GeneralLedgerTable extends Component
 
     private function getCustomerTransactions($customerId, $startDate, $endDate)
     {
+        if (\App\Services\Finance\LedgerReports::enabled()) {
+            // receivable lines only (the voucher's revenue / VAT / bank lines would cancel the balance back to 0);
+            // same fields the screen reads from a FinanceSub
+            return \App\Services\Finance\LedgerReports::customerLines((int) $customerId, $startDate, $endDate)->map(function ($l) {
+                $l->reference_date = $l->transaction_date?->format('d-m-Y');
+                $l->account = (object) ['code' => $l->account_code, 'name' => $l->account_name];
+
+                return $l;
+            });
+        }
+
         return FinanceSub::where('customer_id', $customerId)
             ->whereBetween('reference_date', [$startDate, $endDate])
             ->whereHas('finance', function ($query) {

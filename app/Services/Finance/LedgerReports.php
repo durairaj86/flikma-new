@@ -272,6 +272,15 @@ class LedgerReports
         return $q->orderBy('transaction_date')->orderBy('id')->get();
     }
 
+    /** A customer's receivable (1130) lines: what the customer ledger lists, so its running balance is what the customer owes. */
+    public static function customerLines(int $customerId, ?string $from, string $to)
+    {
+        $q = FinanceLedger::query()->actual()->where('customer_id', $customerId)->where('account_code', self::controlCode('customer'));
+        $from ? $q->whereBetween('transaction_date', [$from, $to]) : $q->where('transaction_date', '<', $to);
+
+        return $q->orderBy('transaction_date')->orderBy('id')->get();
+    }
+
     /** Receivable (customer) / payable (supplier) control account code. */
     private static function controlCode(string $partner): string
     {
