@@ -82,10 +82,16 @@ class LedgerReports
         $accounts = self::accounts(['Income', 'Expense'], $search)->orderBy('type')->orderBy('code')->get();
         $totals = self::totals($accounts->pluck('id')->all(), $start, $end);
 
+        // direct expenses (cost of sales) = the accounts under the "Direct Expenses" group, code 5100
+        $directGroupIds = \App\Models\Finance\Account\Account::where('code', '5100')->pluck('id')->all();
+
         $revenue = [];
         $expenses = [];
+        $directExpenses = [];
+        $operatingExpenses = [];
         $totalRevenue = 0;
         $totalExpenses = 0;
+        $totalDirect = 0;
         foreach ($accounts as $account) {
             $t = $totals->get($account->id);
             $debit = $t->total_debit ?? 0;
@@ -99,8 +105,15 @@ class LedgerReports
             } else {
                 $balance = $debit - $credit;
                 if ($balance != 0) {
-                    $expenses[] = ['account_code' => $account->code, 'account_name' => __($account->name), 'balance' => $balance];
+                    $row = ['account_code' => $account->code, 'account_name' => __($account->name), 'balance' => $balance];
+                    $expenses[] = $row;
                     $totalExpenses += $balance;
+                    if (in_array($account->parent_id, $directGroupIds)) {
+                        $directExpenses[] = $row;
+                        $totalDirect += $balance;
+                    } else {
+                        $operatingExpenses[] = $row;
+                    }
                 }
             }
         }
@@ -111,6 +124,12 @@ class LedgerReports
             'total_revenue' => $totalRevenue,
             'total_expenses' => $totalExpenses,
             'net_income' => $totalRevenue - abs($totalExpenses),
+            // the same expenses split for the statement: direct costs, gross profit, then the running costs
+            'direct_expenses' => $directExpenses,
+            'operating_expenses' => $operatingExpenses,
+            'total_direct' => $totalDirect,
+            'total_operating' => $totalExpenses - $totalDirect,
+            'gross_profit' => $totalRevenue - $totalDirect,
         ];
     }
 

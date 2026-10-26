@@ -46,6 +46,53 @@
                     <tr><td colspan="3" class="py-3 border-0"></td></tr>
                     @endif
 
+                    @php
+                        $direct = $profitAndLossData['direct_expenses'] ?? [];
+                        $operating = $profitAndLossData['operating_expenses'] ?? ($profitAndLossData['expenses'] ?? []);
+                        $grossProfit = $profitAndLossData['gross_profit'] ?? (($profitAndLossData['total_revenue'] ?? 0) - ($profitAndLossData['total_direct'] ?? 0));
+                    @endphp
+
+                    <thead class="bg-light">
+                    <tr class="small text-uppercase fw-bold ls-1 text-muted">
+                        <th class="ps-4 py-3 border-0">{{ __('Code') }}</th>
+                        <th class="py-3 border-0">{{ __('Direct Expenses') }}</th>
+                        <th class="pe-4 py-3 text-end border-0">{{ __('Amount') }}</th>
+                    </tr>
+                    </thead>
+                    @forelse($direct as $account)
+                        <tr wire:key="pl-dir-{{ $loop->index }}">
+                            <td class="ps-4 text-secondary small">{{ $account['account_code'] }}</td>
+                            <td class="text-dark">{{ $account['account_name'] }}</td>
+                            <td class="pe-4 text-end tabular-nums text-danger rpt-drill" title="{{ __('Click to see the entries') }}"
+                                onclick="reportDrill(@js($account['account_code']), @js($account['account_code'] . ' ' . $account['account_name']), @js($startDate), @js($endDate))">
+                                ({{ number_format(abs($account['balance']), 2) }})
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="3" class="text-center py-3 text-muted small">{{ __('No direct expense activity recorded') }}</td>
+                        </tr>
+                    @endforelse
+
+                    @if(count($direct) > 0)
+                    <tr class="fw-bold bg-light-subtle">
+                        <td colspan="2" class="ps-4 py-3 small">{{ __('Total Direct Expenses') }}</td>
+                        <td class="pe-4 text-end border-top border-dark py-3 tabular-nums text-danger">
+                            ({{ number_format($profitAndLossData['total_direct'] ?? 0, 2) }})
+                        </td>
+                    </tr>
+                    @endif
+
+                    <tr><td colspan="3" class="py-2 border-0"></td></tr>
+
+                    <tr class="fw-bold text-white" style="background-color: #6366f1;">
+                        <td colspan="2" class="ps-4 py-3 h6 mb-0">{{ __('GROSS PROFIT') }}</td>
+                        <td class="pe-4 py-3 text-end h6 mb-0 tabular-nums">
+                            {{ $grossProfit < 0 ? '(' : '' }}{{ number_format(abs($grossProfit), 2) }}{{ $grossProfit < 0 ? ')' : '' }}
+                        </td>
+                    </tr>
+                    <tr><td colspan="3" class="py-3 border-0"></td></tr>
+
                     <thead class="bg-light">
                     <tr class="small text-uppercase fw-bold ls-1 text-muted">
                         <th class="ps-4 py-3 border-0">{{ __('Code') }}</th>
@@ -53,7 +100,7 @@
                         <th class="pe-4 py-3 text-end border-0">{{ __('Amount') }}</th>
                     </tr>
                     </thead>
-                    @forelse($profitAndLossData['expenses'] ?? [] as $account)
+                    @forelse($operating as $account)
                         <tr wire:key="pl-exp-{{ $loop->index }}">
                             <td class="ps-4 text-secondary small">{{ $account['account_code'] }}</td>
                             <td class="text-dark">{{ $account['account_name'] }}</td>
@@ -68,11 +115,11 @@
                         </tr>
                     @endforelse
 
-                    @if(count($profitAndLossData['expenses'] ?? []) > 0)
+                    @if(count($operating) > 0)
                     <tr class="fw-bold bg-light-subtle">
                         <td colspan="2" class="ps-4 py-3 small">{{ __('Total Operating Expenses') }}</td>
                         <td class="pe-4 text-end border-top border-dark py-3 tabular-nums text-danger">
-                            {{ number_format($profitAndLossData['total_expenses'] ?? 0, 2) }}
+                            ({{ number_format($profitAndLossData['total_operating'] ?? ($profitAndLossData['total_expenses'] ?? 0), 2) }})
                         </td>
                     </tr>
                     @endif
@@ -143,10 +190,30 @@
 
         <table class="stmt-table">
             <thead>
-            <tr><th colspan="2">{{ __('EXPENSES') }}</th></tr>
+            <tr><th colspan="2">{{ __('DIRECT EXPENSES') }}</th></tr>
             </thead>
             <tbody>
-            @forelse($profitAndLossData['expenses'] as $account)
+            @forelse($direct as $account)
+                <tr>
+                    <td>{{ $account['account_code'] }} {{ $account['account_name'] }}</td>
+                    <td class="text-end">{{ number_format($account['balance'], 2) }}</td>
+                </tr>
+            @empty
+                <tr><td colspan="2" class="text-center">{{ __('No direct expense activity recorded') }}</td></tr>
+            @endforelse
+            </tbody>
+            <tfoot>
+            <tr class="stmt-strong"><td>{{ __('Total Direct Expenses') }}</td><td class="text-end">{{ number_format($profitAndLossData['total_direct'] ?? 0, 2) }}</td></tr>
+            <tr class="stmt-strong"><td>{{ __('GROSS PROFIT') }}</td><td class="text-end">{{ number_format($grossProfit, 2) }}</td></tr>
+            </tfoot>
+        </table>
+
+        <table class="stmt-table">
+            <thead>
+            <tr><th colspan="2">{{ __('OPERATING EXPENSES') }}</th></tr>
+            </thead>
+            <tbody>
+            @forelse($operating as $account)
                 <tr>
                     <td>{{ $account['account_code'] }} {{ $account['account_name'] }}</td>
                     <td class="text-end">{{ number_format($account['balance'], 2) }}</td>
@@ -156,6 +223,7 @@
             @endforelse
             </tbody>
             <tfoot>
+            <tr class="stmt-strong"><td>{{ __('Total Operating Expenses') }}</td><td class="text-end">{{ number_format($profitAndLossData['total_operating'] ?? ($profitAndLossData['total_expenses'] ?? 0), 2) }}</td></tr>
             <tr class="stmt-strong"><td>{{ __('Total Expenses') }}</td><td class="text-end">{{ number_format($profitAndLossData['total_expenses'] ?? 0, 2) }}</td></tr>
             <tr class="stmt-strong"><td>{{ __('Net Income / (Loss)') }}</td><td class="text-end">{{ number_format($profitAndLossData['net_income'] ?? 0, 2) }}</td></tr>
             </tfoot>
@@ -185,7 +253,7 @@
                 border: 2px solid #000 !important;
                 -webkit-print-color-adjust: exact;
             }
-            [style*="background-color: #0ea5e9"] {
+            [style*="background-color: #0ea5e9"], [style*="background-color: #6366f1"] {
                 background-color: transparent !important;
                 color: black !important;
                 border: 2px solid #000 !important;

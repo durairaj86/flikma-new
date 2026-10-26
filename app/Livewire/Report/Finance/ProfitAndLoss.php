@@ -80,8 +80,14 @@ class ProfitAndLoss extends Component
         foreach ($data['revenue'] as $acc) {
             $rows[] = ['Revenue', $acc['account_code'], $acc['account_name'], (float) $acc['balance']];
         }
-        foreach ($data['expenses'] as $acc) {
-            $rows[] = ['Expense', $acc['account_code'], $acc['account_name'], (float) $acc['balance']];
+        foreach ($data['direct_expenses'] ?? [] as $acc) {
+            $rows[] = ['Direct Expense', $acc['account_code'], $acc['account_name'], (float) $acc['balance']];
+        }
+        if (isset($data['gross_profit'])) {
+            $rows[] = ['Gross Profit', '', '', (float) $data['gross_profit']];
+        }
+        foreach ($data['operating_expenses'] ?? $data['expenses'] as $acc) {
+            $rows[] = ['Operating Expense', $acc['account_code'], $acc['account_name'], (float) $acc['balance']];
         }
 
         $columns = ['Section', 'Code', 'Account Name', 'Balance'];
