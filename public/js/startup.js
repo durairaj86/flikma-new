@@ -3020,6 +3020,20 @@ const INPUT = {
             }
         });
 
+        // The comma is display only: forms and FormData(form) send the plain number (123,456.00 → 123456.00),
+        // otherwise "numeric" validation refuses it (e.g. quotation gross weight).
+        document.addEventListener('formdata', function (e) {
+            const form = e.target;
+            if (!form || !form.querySelectorAll) return;
+            const names = new Set([...form.querySelectorAll('input.float[name], input.integer[name]')].filter(el => !el.disabled).map(el => el.name));
+            names.forEach(name => {
+                const values = e.formData.getAll(name);
+                if (!values.some(v => typeof v === 'string' && v.includes(','))) return;
+                e.formData.delete(name);
+                values.forEach(v => e.formData.append(name, typeof v === 'string' ? v.replace(/,/g, '') : v));
+            });
+        });
+
         // Blur: format the value + set zero default
         document.addEventListener('blur', function (e) {
             const el = e.target;
