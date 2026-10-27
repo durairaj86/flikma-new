@@ -41,6 +41,23 @@
         /* Swatch colours are copied from the --sb-* blocks in layouts/sidebar.blade.php
            so the rail preview shows exactly the sidebar the user is about to get.
            Keys must stay in sync with that file's THEMES array. */
+        // Info panel: plan, trial / subscription dates and AI token use of the signed-in user's company.
+        $company = authUserCompany();
+        $plan = currentPlanFor($company);
+        $planLabel = planLabelFor($company);
+        $isInTrial = (bool) ($company?->is_in_trial);
+        $trialEndsAt = $company?->trial_ends_at;
+        $isExpiredSub = (bool) ($company?->subscription_expired);
+        $subscriptionExpiry = $company?->subscription_expiry_date;
+        $subscriptionStatus = $company?->subscription_status;
+        $isFreePlan = !$isInTrial && (float) ($plan?->monthly_price ?? 0) <= 0;
+        $aiLimit = $company?->ai_token_limit;
+        $aiUsed = $company?->ai_tokens_used ?? 0;
+        $aiNoLimit = $aiLimit === null || $aiLimit <= 0;
+        $aiRemaining = $aiNoLimit ? null : max(0, $aiLimit - $aiUsed);
+        $aiPercent = $aiNoLimit ? 0 : max(0, min(100, (int) round($aiUsed / max(1, $aiLimit) * 100)));
+        $aiLow = !$aiNoLimit && $aiRemaining > 0 && $aiRemaining <= max(1, (int) ceil($aiLimit * 0.1));
+
         $sidebarThemes = [
             ['key' => 'gray', 'label' => 'Dark Gray', 'swatch' => '#343a40', 'accent' => '#7CC4F0'],
             ['key' => 'light', 'label' => 'Light', 'swatch' => '#ffffff', 'accent' => '#5B4FE5'],
@@ -55,6 +72,7 @@
             profileMenuOpen: false,
             createOpen: false,
             themeOpen: false,
+            infoOpen: false,
             sidebarTheme: localStorage.getItem('flikma-sidebar-theme') || 'gray',
             setSidebarTheme(theme) {
                 this.sidebarTheme = theme;
@@ -63,8 +81,9 @@
                 this.themeOpen = false;
             }
          }"
-         @keydown.escape.window="profileMenuOpen = false; createOpen = false; themeOpen = false"
-         @open-profile-panel.window="profileMenuOpen = true; createOpen = false; themeOpen = false"
+         @keydown.escape.window="profileMenuOpen = false; createOpen = false; themeOpen = false; infoOpen = false"
+         @open-profile-panel.window="profileMenuOpen = true; createOpen = false; themeOpen = false; infoOpen = false"
+         @open-info-panel.window="infoOpen = true; profileMenuOpen = false; createOpen = false; themeOpen = false"
          class="profile-menu-fixed d-flex flex-column align-items-center gap-2">
 
         {{-- The rail is the header-off counterpart of the top header: it carries the
@@ -145,6 +164,118 @@
                 </div>
             </div>
 
+        @endunless
+
+        {{-- Info: plan, subscription dates and AI usage. The button is in the rail (header off); the top header opens the
+             same panel with an 'open-info-panel' window event. One wrapper holds both, so a click on the button is not an
+             "outside" click for the panel. --}}
+        <div class="position-relative" @click.outside="infoOpen = false">
+            @unless($headerOn)
+                <button @click="infoOpen = !infoOpen; profileMenuOpen = false; createOpen = false; themeOpen = false"
+                        class="profile-menu-btn profile-menu-btn-bell"
+                        title="{{ __('Info') }}" aria-label="{{ __('Info') }}">
+                    <i class="bi bi-info-circle"></i>
+                </button>
+            @endunless
+
+            <div x-cloak x-show="infoOpen"
+                 x-transition:enter="profile-slide-enter"
+                 x-transition:enter-start="profile-slide-enter-start"
+                 x-transition:enter-end="profile-slide-enter-end"
+                 x-transition:leave="profile-slide-leave"
+                 x-transition:leave-start="profile-slide-leave-start"
+                 x-transition:leave-end="profile-slide-leave-end"
+                 class="profile-menu-card profile-info-card">
+
+                <div class="activity-panel-header">
+                    <div class="fw-bold text-dark d-flex align-items-center gap-2">
+                        <i class="bi bi-info-circle-fill text-primary"></i>
+                        <span>{{ __('Info') }}</span>
+                    </div>
+                    <button type="button" @click="infoOpen = false" class="profile-menu-close" aria-label="{{ __('Close') }}">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+
+                <div class="profile-menu-scroll p-3">
+                    <div class="profile-info-section">
+                        <div class="profile-info-heading">{{ __('Plan') }}</div>
+
+                        <div class="profile-info-row">
+                            <span class="profile-info-row-label">{{ __('Current Plan') }}</span>
+                            <span class="profile-info-plan-badge">{{ $planLabel }}</span>
+                        </div>
+
+                        <div class="profile-info-row">
+                            <span class="profile-info-row-label">{{ __('Status') }}</span>
+                            <span class="profile-info-row-value">
+                                @if($isInTrial)
+                                    <span class="profile-info-status status-trial"><i class="bi bi-hourglass-split"></i> {{ __('Trial') }}</span>
+                                @elseif($isExpiredSub)
+                                    <span class="profile-info-status status-expired"><i class="bi bi-exclamation-circle"></i> {{ __('Expired — kindly subscribe') }}</span>
+                                @elseif($subscriptionStatus)
+                                    <span class="profile-info-status status-{{ $subscriptionStatus }}"><i class="bi bi-check2-circle"></i> {{ __(ucfirst($subscriptionStatus)) }}</span>
+                                @else
+                                    <span class="profile-info-status status-active"><i class="bi bi-check2-circle"></i> {{ __('Active') }}</span>
+                                @endif
+                            </span>
+                        </div>
+
+                        <div class="profile-info-row">
+                            <span class="profile-info-row-label">{{ $isInTrial ? __('Trial ends') : __('Subscription ends') }}</span>
+                            <span class="profile-info-row-value">
+                                @if($isInTrial && $trialEndsAt)
+                                    {{ $trialEndsAt->translatedFormat('d M Y') }}
+                                    <span class="profile-info-muted">({{ $trialEndsAt->diffForHumans() }})</span>
+                                @elseif($subscriptionExpiry)
+                                    {{ $subscriptionExpiry->translatedFormat('d M Y') }}
+                                @else
+                                    <span class="profile-info-muted">{{ __('—') }}</span>
+                                @endif
+                            </span>
+                        </div>
+
+                        @if($isFreePlan && isSuperUser())
+                            <a href="{{ route('billing.index') }}" class="profile-info-link">
+                                <i class="bi bi-rocket-takeoff"></i> {{ __('You are in Free plan — Upgrade') }}
+                            </a>
+                        @endif
+                    </div>
+
+                    <div class="profile-info-section">
+                        <div class="profile-info-heading">{{ __('AI Usage') }}</div>
+
+                        <div class="profile-info-row">
+                            <span class="profile-info-row-label">{{ __('Tokens used') }}</span>
+                            <span class="profile-info-row-value">{{ formatAiTokens($aiUsed) }} / {{ $aiNoLimit ? __('Not set') : formatAiTokens($aiLimit) }}</span>
+                        </div>
+
+                        @if(!$aiNoLimit)
+                            <div class="profile-info-bar-track">
+                                <div class="profile-info-bar-fill {{ $aiRemaining === 0 ? 'is-danger' : ($aiLow ? 'is-warning' : '') }}" style="width: {{ $aiPercent }}%;"></div>
+                            </div>
+                            <div class="profile-info-hint {{ $aiRemaining === 0 ? 'text-danger' : ($aiLow ? 'text-warning' : '') }}">
+                                @if($aiRemaining === 0)
+                                    {{ __('AI token limit reached.') }}
+                                @elseif($aiLow)
+                                    {{ __('Only :remaining left — close to the limit.', ['remaining' => formatAiTokens($aiRemaining)]) }}
+                                @else
+                                    {{ __(':remaining tokens remaining.', ['remaining' => formatAiTokens($aiRemaining)]) }}
+                                @endif
+                            </div>
+                        @else
+                            <div class="profile-info-hint">{{ __('No AI usage limit set.') }}</div>
+                        @endif
+
+                        <a href="{{ route('billing.ai-usage') }}" class="profile-info-link">
+                            <i class="bi bi-bar-chart"></i> {{ __('View AI usage') }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @unless($headerOn)
             <div class="profile-menu-rail-divider"></div>
         @endunless
 

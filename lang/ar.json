@@ -5281,5 +5281,17 @@
     "Company currency": "عملة الشركة",
     "Paid / Adjusted": "المدفوع / المسوّى",
     "all amounts in": "جميع المبالغ بـ",
-    "Received / Adjusted": "المستلم / المسوّى"
+    "Received / Adjusted": "المستلم / المسوّى",
+    "Info": "معلومات",
+    "Trial ends": "تنتهي الفترة التجريبية",
+    "Subscription ends": "ينتهي الاشتراك",
+    "Tokens used": "الرموز المستخدمة",
+    "AI token limit reached.": "تم الوصول إلى حد رموز الذكاء الاصطناعي.",
+    "No AI usage limit set.": "لم يتم تحديد حد لاستخدام الذكاء الاصطناعي.",
+    "View AI usage": "عرض استخدام الذكاء الاصطناعي",
+    "Expired — kindly subscribe": "منتهي — يرجى الاشتراك",
+    "You are in Free plan — Upgrade": "أنت على الباقة المجانية — قم بالترقية",
+    ":remaining tokens remaining.": "متبقي :remaining رمز.",
+    "Only :remaining left — close to the limit.": "متبقي :remaining فقط — قريب من الحد.",
+    "Suspended": "معلّق"
 }
