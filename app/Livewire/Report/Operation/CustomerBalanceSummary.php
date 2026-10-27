@@ -4,7 +4,7 @@ namespace App\Livewire\Report\Operation;
 
 use App\Exports\ReportTableExport;
 use App\Models\Customer\Customer;
-use App\Models\Finance\Collection\Collection;
+use App\Services\Finance\LedgerReports;
 use App\Models\Finance\CustomerInvoice\CustomerInvoice;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -53,17 +53,6 @@ class CustomerBalanceSummary extends Component
         $this->dispatch('cbs-filter-reset');
     }
 
-    /** Approved credit notes reduce what the customer owes, so they count with receipts (as in the customer statement). */
-    private function creditNotes(int $customerId, int $companyId, string $from = null, string $to = null, string $before = null): float
-    {
-        $q = DB::table('credit_notes')->where('customer_id', $customerId)->where('company_id', $companyId)
-            ->where('status', \App\Enums\CreditNoteEnum::APPROVED->value)->whereNull('deleted_at');
-        if ($before) { $q->where('posted_at', '<', $before); }
-        if ($from && $to) { $q->whereBetween('posted_at', [$from, $to]); }
-
-        return (float) $q->sum('grand_total');
-    }
-
     protected function getReportData(): array
     {
         $companyId = auth()->user()->company_id ?? 1;
@@ -85,52 +74,57 @@ class CustomerBalanceSummary extends Component
             'overdue' => 0.0,
         ];
 
+        // From the books, in the company currency: each customer's receivable (1130) lines. Debits (invoices, opening
+        // balances) raise what the customer owes, credits (receipts, credit notes) lower it. Drafts and cancelled
+        // documents are not in the ledger, and an invoice in another currency counts at its booked company-currency
+        // amount instead of being added up with the other currencies' own numbers.
+        $start = $this->startDate;
+        $end   = $this->endDate;
+        $sums = DB::table('finance_ledgers')
+            ->where('company_id', $companyId)
+            ->where('account_code', LedgerReports::RECEIVABLE)
+            ->where('is_provisional', 0)
+            ->whereNotNull('customer_id')
+            ->where('transaction_date', '<=', $end)
+            ->when(!empty($this->customerId), fn ($q) => $q->where('customer_id', $this->customerId))
+            ->groupBy('customer_id')
+            ->selectRaw('customer_id,
+                SUM(CASE WHEN transaction_date < ? THEN base_debit - base_credit ELSE 0 END) AS opening,
+                SUM(CASE WHEN transaction_date >= ? THEN base_debit ELSE 0 END) AS invoiced,
+                SUM(CASE WHEN transaction_date >= ? THEN base_credit ELSE 0 END) AS received', [$start, $start, $start])
+            ->get()
+            ->keyBy('customer_id');
+
+        // Overall overdue: what is still unpaid today on approved invoices past their due date (receipts and credit notes
+        // taken off, as the aging reports do), in the company currency. Not scoped to the period: it is today's exposure.
+        $settled = LedgerReports::settledAsOf('customer', now());
+        $overdueBy = [];
+        CustomerInvoice::where('company_id', $companyId)
+            ->where('status', \App\Enums\CustomerInvoiceEnum::APPROVED->value)
+            ->whereNotNull('due_at')
+            ->where('due_at', '<', now()->startOfDay())
+            ->when(!empty($this->customerId), fn ($q) => $q->where('customer_id', $this->customerId))
+            ->get(['id', 'customer_id', 'grand_total', 'base_grand_total'])
+            ->each(function ($inv) use ($settled, &$overdueBy) {
+                $open = (float) $inv->grand_total - ($settled[$inv->id] ?? 0.0);
+                if ($open > 0.01 && (float) $inv->grand_total > 0) {
+                    $overdueBy[$inv->customer_id] = ($overdueBy[$inv->customer_id] ?? 0.0) + $open * ((float) $inv->base_grand_total / (float) $inv->grand_total);
+                }
+            });
+
         foreach ($customers as $customer) {
-            // Opening balance: everything before startDate — same formula
-            // used by the Customer Statement report.
-            $openingInvoiced = (float) CustomerInvoice::where('customer_id', $customer->id)
-                ->where('company_id', $companyId)
-                ->where('invoice_date', '<', $this->startDate)
-                ->sum('grand_total');
+            $m = $sums->get($customer->id);
+            $opening  = round((float) ($m->opening ?? 0), 2);
+            $invoiced = round((float) ($m->invoiced ?? 0), 2);
+            $received = round((float) ($m->received ?? 0), 2);
+            $closing  = $opening + $invoiced - $received;
 
-            $openingReceived = (float) Collection::where('customer_id', $customer->id)
-                ->where('company_id', $companyId)
-                ->where('collection_date', '<', $this->startDate)
-                ->sum('grand_total');
-
-            $openingReceived += $this->creditNotes($customer->id, $companyId, null, null, $this->startDate);
-            $opening = $openingInvoiced - $openingReceived;
-
-            $invoiced = (float) CustomerInvoice::where('customer_id', $customer->id)
-                ->where('company_id', $companyId)
-                ->whereBetween('invoice_date', [$this->startDate, $this->endDate])
-                ->sum('grand_total');
-
-            $received = (float) Collection::where('customer_id', $customer->id)
-                ->where('company_id', $companyId)
-                ->whereBetween('collection_date', [$this->startDate, $this->endDate])
-                ->sum('grand_total');
-
-            $received += $this->creditNotes($customer->id, $companyId, $this->startDate, $this->endDate);
-            $closing = $opening + $invoiced - $received;
-
-            // Skip customers with no activity at all in this period and no
-            // carried-forward balance — keeps the report focused, matching
-            // the Customer Activity Report's convention.
+            // Skip customers with no activity in this period and no carried-forward balance.
             if ($opening == 0.0 && $invoiced == 0.0 && $received == 0.0) {
                 continue;
             }
 
-            // Overall overdue balance: current outstanding amount on every
-            // invoice past its due date, regardless of the period filter —
-            // this is a live exposure figure, not scoped to startDate/endDate.
-            $overdue = (float) CustomerInvoice::where('customer_id', $customer->id)
-                ->where('company_id', $companyId)
-                ->whereNotNull('due_date')
-                ->where('due_date', '<', now())
-                ->whereRaw('base_grand_total - base_paid_amount > 0.01')
-                ->selectRaw('SUM(base_grand_total - base_paid_amount) as total')
-                ->value('total') ?? 0.0;
+            $overdue = round($overdueBy[$customer->id] ?? 0.0, 2);
 
             $rows[] = [
                 'customer' => $customer,
@@ -151,11 +145,17 @@ class CustomerBalanceSummary extends Component
         return [$rows, $totals];
     }
 
+    /** The company's own currency: every figure on this report is in it. */
+    public function currency(): string
+    {
+        return strtoupper(optional(authUserCompany())->base_currency ?: 'SAR');
+    }
+
     public function exportExcel()
     {
         [$rows, $totals] = $this->getReportData();
 
-        $columns = ['Customer', 'Code', 'Opening Balance', 'Invoiced', 'Received', 'Closing Balance', 'Overall Overdue Balance'];
+        $columns = ['Customer', 'Code', 'Opening Balance', 'Invoiced', 'Received / Adjusted', 'Closing Balance', 'Overall Overdue Balance'];
 
         $exportRows = [];
         foreach ($rows as $row) {
@@ -176,6 +176,7 @@ class CustomerBalanceSummary extends Component
             'title' => 'CUSTOMER BALANCE SUMMARY',
             'lines' => [
                 'Period: ' . Carbon::parse($this->startDate)->format('d M Y') . ' — ' . Carbon::parse($this->endDate)->format('d M Y'),
+                'Currency: ' . $this->currency(),
                 'Total Customers: ' . count($rows),
                 'Generated on: ' . now()->format('d-m-Y H:i'),
             ],
@@ -194,6 +195,7 @@ class CustomerBalanceSummary extends Component
         return view('livewire.report.operation.customer-balance-summary', [
             'rows'   => $rows,
             'totals' => $totals,
+            'currency' => $this->currency(),
         ]);
     }
 }

@@ -16,6 +16,7 @@ class LedgerReports
     public const INPUT_VAT = '1150';
     public const OUTPUT_VAT = '2130';
     public const PAYABLE = '2110';
+    public const RECEIVABLE = '1130';
 
     public static function enabled(): bool
     {

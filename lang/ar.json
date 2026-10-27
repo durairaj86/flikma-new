@@ -5278,5 +5278,8 @@
     "OPERATING EXPENSES": "المصروفات التشغيلية",
     "SI": "ف.م",
     "CI": "ف.ع",
-    "Company currency": "عملة الشركة"
+    "Company currency": "عملة الشركة",
+    "Paid / Adjusted": "المدفوع / المسوّى",
+    "all amounts in": "جميع المبالغ بـ",
+    "Received / Adjusted": "المستلم / المسوّى"
 }

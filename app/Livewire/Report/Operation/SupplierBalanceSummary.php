@@ -4,8 +4,8 @@ namespace App\Livewire\Report\Operation;
 
 use App\Exports\ReportTableExport;
 use App\Models\Supplier\Supplier;
-use App\Models\Finance\Payment\Payment;
-use App\Models\Finance\SupplierInvoice\SupplierInvoice;
+use App\Services\Finance\LedgerReports;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Livewire\Component;
 use Maatwebsite\Excel\Facades\Excel;
@@ -72,36 +72,35 @@ class SupplierBalanceSummary extends Component
             'closing' => 0.0,
         ];
 
+        // From the books, in the company currency: each supplier's payable (2110) lines. Credits (bills, opening
+        // balances) raise what is owed, debits (payments, debit notes) lower it. Drafts and cancelled documents are
+        // not in the ledger, and a bill in another currency counts at its booked company-currency amount rather
+        // than being added up with the other currencies' own numbers.
+        $start = $this->startDate;
+        $end   = $this->endDate;
+        $sums = DB::table('finance_ledgers')
+            ->where('company_id', $companyId)
+            ->where('account_code', LedgerReports::PAYABLE)
+            ->where('is_provisional', 0)
+            ->whereNotNull('supplier_id')
+            ->where('transaction_date', '<=', $end)
+            ->when(!empty($this->supplierId), fn ($q) => $q->where('supplier_id', $this->supplierId))
+            ->groupBy('supplier_id')
+            ->selectRaw('supplier_id,
+                SUM(CASE WHEN transaction_date < ? THEN base_credit - base_debit ELSE 0 END) AS opening,
+                SUM(CASE WHEN transaction_date >= ? THEN base_credit ELSE 0 END) AS invoiced,
+                SUM(CASE WHEN transaction_date >= ? THEN base_debit ELSE 0 END) AS paid', [$start, $start, $start])
+            ->get()
+            ->keyBy('supplier_id');
+
         foreach ($suppliers as $supplier) {
-            // Opening balance: everything before startDate — same formula
-            // used by the Customer Balance Summary report.
-            $openingInvoiced = (float) SupplierInvoice::where('supplier_id', $supplier->id)
-                ->where('company_id', $companyId)
-                ->where('invoice_date', '<', $this->startDate)
-                ->sum('grand_total');
+            $m = $sums->get($supplier->id);
+            $opening  = round((float) ($m->opening ?? 0), 2);
+            $invoiced = round((float) ($m->invoiced ?? 0), 2);
+            $paid     = round((float) ($m->paid ?? 0), 2);
+            $closing  = $opening + $invoiced - $paid;
 
-            $openingPaid = (float) Payment::where('supplier_id', $supplier->id)
-                ->where('company_id', $companyId)
-                ->where('payment_date', '<', $this->startDate)
-                ->sum('grand_total');
-
-            $opening = $openingInvoiced - $openingPaid;
-
-            $invoiced = (float) SupplierInvoice::where('supplier_id', $supplier->id)
-                ->where('company_id', $companyId)
-                ->whereBetween('invoice_date', [$this->startDate, $this->endDate])
-                ->sum('grand_total');
-
-            $paid = (float) Payment::where('supplier_id', $supplier->id)
-                ->where('company_id', $companyId)
-                ->whereBetween('payment_date', [$this->startDate, $this->endDate])
-                ->sum('grand_total');
-
-            $closing = $opening + $invoiced - $paid;
-
-            // Skip suppliers with no activity at all in this period and no
-            // carried-forward balance — keeps the report focused, matching
-            // the Customer Balance Summary's convention.
+            // Skip suppliers with no activity in this period and no carried-forward balance.
             if ($opening == 0.0 && $invoiced == 0.0 && $paid == 0.0) {
                 continue;
             }
@@ -123,11 +122,17 @@ class SupplierBalanceSummary extends Component
         return [$rows, $totals];
     }
 
+    /** The company's own currency: every figure on this report is in it. */
+    public function currency(): string
+    {
+        return strtoupper(optional(authUserCompany())->base_currency ?: 'SAR');
+    }
+
     public function exportExcel()
     {
         [$rows, $totals] = $this->getReportData();
 
-        $columns = ['Supplier', 'Code', 'Opening Balance', 'Invoiced', 'Paid', 'Closing Balance'];
+        $columns = ['Supplier', 'Code', 'Opening Balance', 'Invoiced', 'Paid / Adjusted', 'Closing Balance'];
 
         $exportRows = [];
         foreach ($rows as $row) {
@@ -146,6 +151,7 @@ class SupplierBalanceSummary extends Component
             'title' => 'SUPPLIER BALANCE SUMMARY',
             'lines' => [
                 'Period: ' . Carbon::parse($this->startDate)->format('d M Y') . ' — ' . Carbon::parse($this->endDate)->format('d M Y'),
+                'Currency: ' . $this->currency(),
                 'Total Suppliers: ' . count($rows),
                 'Generated on: ' . now()->format('d-m-Y H:i'),
             ],
@@ -164,6 +170,7 @@ class SupplierBalanceSummary extends Component
         return view('livewire.report.operation.supplier-balance-summary', [
             'rows'   => $rows,
             'totals' => $totals,
+            'currency' => $this->currency(),
         ]);
     }
 }

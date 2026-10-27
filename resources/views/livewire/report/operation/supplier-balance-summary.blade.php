@@ -91,7 +91,7 @@
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-3 text-center">
                         <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">{{ __('Opening Balance') }}</div>
-                        <div class="h5 fw-bold text-secondary mb-0 tabular-nums">{{ number_format($totals['opening'], 2) }}</div>
+                        <div class="h5 fw-bold text-secondary mb-0 tabular-nums">{{ number_format($totals['opening'], 2) }}<small class="text-muted fw-normal" style="font-size:.6em"> {{ $currency }}</small></div>
                     </div>
                 </div>
             </div>
@@ -99,15 +99,15 @@
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-3 text-center">
                         <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">{{ __('Invoiced') }}</div>
-                        <div class="h5 fw-bold text-pr mb-0 tabular-nums">{{ number_format($totals['invoiced'], 2) }}</div>
+                        <div class="h5 fw-bold text-pr mb-0 tabular-nums">{{ number_format($totals['invoiced'], 2) }}<small class="text-muted fw-normal" style="font-size:.6em"> {{ $currency }}</small></div>
                     </div>
                 </div>
             </div>
             <div class="col-lg col-md-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-3 text-center">
-                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">{{ __('Paid') }}</div>
-                        <div class="h5 fw-bold text-success mb-0 tabular-nums">{{ number_format($totals['paid'], 2) }}</div>
+                        <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">{{ __('Paid / Adjusted') }}</div>
+                        <div class="h5 fw-bold text-success mb-0 tabular-nums">{{ number_format($totals['paid'], 2) }}<small class="text-muted fw-normal" style="font-size:.6em"> {{ $currency }}</small></div>
                     </div>
                 </div>
             </div>
@@ -116,7 +116,7 @@
                     <div class="card-body p-3 text-center">
                         <div class="small text-muted fw-bold text-uppercase mb-1 ls-1">{{ __('Closing Balance') }}</div>
                         <div class="h5 fw-bold mb-0 tabular-nums {{ $totals['closing'] >= 0 ? 'text-dark' : 'text-danger' }}">
-                            {{ number_format($totals['closing'], 2) }}
+                            {{ number_format($totals['closing'], 2) }} <small class="text-muted fw-normal" style="font-size:.6em">{{ $currency }}</small>
                         </div>
                     </div>
                 </div>
@@ -129,7 +129,7 @@
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <h6 class="mb-0 fw-bold flex-grow-1">
                     <i class="bi bi-wallet2 me-2 text-pr"></i>
-                    {{ __('Supplier Balance Breakdown') }}
+                    {{ __('Supplier Balance Breakdown') }} <small class="text-muted fw-normal ms-1">· {{ __('all amounts in') }} {{ $currency }}</small>
                 </h6>
                 <span class="badge bg-pr-subtle text-pr border border-pr-subtle px-3 py-2 ms-auto flex-shrink-0">
                     {{ count($rows) }} {{ __(Str::plural('Supplier', count($rows))) }}
@@ -140,10 +140,10 @@
                     <thead>
                     <tr class="bg-light text-muted small text-uppercase fw-bold ls-1">
                         <th class="ps-4 border-0">{{ __('Supplier') }}</th>
-                        <th class="text-end border-0">{{ __('Opening Balance') }}</th>
-                        <th class="text-end border-0">{{ __('Invoiced') }}</th>
-                        <th class="text-end border-0">{{ __('Paid') }}</th>
-                        <th class="text-end pe-4 border-0">{{ __('Closing Balance') }}</th>
+                        <th class="text-end border-0">{{ __('Opening Balance') }} <span class="fw-normal text-muted">({{ $currency }})</span></th>
+                        <th class="text-end border-0">{{ __('Invoiced') }} <span class="fw-normal text-muted">({{ $currency }})</span></th>
+                        <th class="text-end border-0">{{ __('Paid / Adjusted') }} <span class="fw-normal text-muted">({{ $currency }})</span></th>
+                        <th class="text-end pe-4 border-0">{{ __('Closing Balance') }} <span class="fw-normal text-muted">({{ $currency }})</span></th>
                     </tr>
                     </thead>
                     <tbody class="border-top-0">
@@ -206,7 +206,7 @@
                     <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
                 </div>
                 <div class="stmt-band-right">
-                    <div class="stmt-sub">{{ __('Currency:') }} {{ optional(authUserCompany())->base_currency ?? 'SAR' }}</div>
+                    <div class="stmt-sub">{{ __('Currency:') }} {{ $currency }}</div>
                     <div class="stmt-sub">{{ __('Generated:') }} {{ now()->format('d-m-Y H:i') }}</div>
                 </div>
             </div>
@@ -214,7 +214,7 @@
             <div class="stmt-cards">
                 <div class="stmt-card"><div class="stmt-card-label">{{ __('Opening Balance') }}</div><div class="stmt-card-value">{{ number_format($totals['opening'], 2) }}</div></div>
                 <div class="stmt-card"><div class="stmt-card-label">{{ __('Invoiced') }}</div><div class="stmt-card-value">{{ number_format($totals['invoiced'], 2) }}</div></div>
-                <div class="stmt-card"><div class="stmt-card-label">{{ __('Paid') }}</div><div class="stmt-card-value">{{ number_format($totals['paid'], 2) }}</div></div>
+                <div class="stmt-card"><div class="stmt-card-label">{{ __('Paid / Adjusted') }}</div><div class="stmt-card-value">{{ number_format($totals['paid'], 2) }}</div></div>
                 <div class="stmt-card"><div class="stmt-card-label">{{ __('Closing Balance') }}</div><div class="stmt-card-value">{{ number_format($totals['closing'], 2) }}</div></div>
             </div>
 
@@ -222,10 +222,10 @@
                 <thead>
                 <tr>
                     <th>{{ __('Supplier') }}</th>
-                    <th class="text-end">{{ __('Opening Balance') }}</th>
-                    <th class="text-end">{{ __('Invoiced') }}</th>
-                    <th class="text-end">{{ __('Paid') }}</th>
-                    <th class="text-end">{{ __('Closing Balance') }}</th>
+                    <th class="text-end">{{ __('Opening Balance') }} ({{ $currency }})</th>
+                    <th class="text-end">{{ __('Invoiced') }} ({{ $currency }})</th>
+                    <th class="text-end">{{ __('Paid / Adjusted') }} ({{ $currency }})</th>
+                    <th class="text-end">{{ __('Closing Balance') }} ({{ $currency }})</th>
                 </tr>
                 </thead>
                 <tbody>
