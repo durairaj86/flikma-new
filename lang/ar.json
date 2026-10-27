@@ -5300,6 +5300,5 @@
     "Debit and credit must be equal. Difference: :amount": "يجب أن يتساوى المدين والدائن. الفرق: :amount",
     "Journal Voucher Details": "تفاصيل قيد اليومية",
     "Failed to load voucher details.": "تعذّر تحميل تفاصيل القيد.",
-    "Display size": "حجم العرض",
-    "Pick how big everything looks on this screen.": "اختر حجم ظهور كل شيء على هذه الشاشة."
+    "An approved voucher cannot be edited. Move it to Draft first.": "لا يمكن تعديل قيد معتمد. انقله إلى مسودة أولاً."
 }

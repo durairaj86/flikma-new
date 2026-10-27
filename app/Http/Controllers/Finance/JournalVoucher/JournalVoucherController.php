@@ -114,6 +114,13 @@ class JournalVoucherController extends Controller
             // Create or update journal voucher
             if ($request->filled('journal_voucher_id')) {
                 $journalVoucher = JournalVoucher::findOrFail($request->input('journal_voucher_id'));
+                // An approved voucher is already in the books: changing its lines here would leave the books on the old
+                // numbers. It has to go back to Draft first (which takes its entries out), then be edited and approved again.
+                if ((int) $journalVoucher->status === JournalVoucherStatusEnum::APPROVED->value) {
+                    DB::rollBack();
+
+                    return $this->unbalanced(__('An approved voucher cannot be edited. Move it to Draft first.'));
+                }
                 $journalVoucher->updated_by = Auth::id();
             } else {
                 $journalVoucher = new JournalVoucher();
@@ -325,7 +332,8 @@ class JournalVoucherController extends Controller
         $finance->exchange_rate = $rate;
         $finance->total_debit = $jv->debit_total;
         $finance->total_credit = $jv->credit_total;
-        $finance->base_currency = 'SAR';
+        $baseCurrency = strtoupper(optional(authUserCompany())->base_currency ?: 'SAR');
+        $finance->base_currency = $baseCurrency;
         $finance->base_total_debit = $jv->base_debit_total;
         $finance->base_total_credit = $jv->base_credit_total;
         $finance->job_id = $jv->job_id;
@@ -341,7 +349,7 @@ class JournalVoucherController extends Controller
         $common = [
             'finance_id' => $finance->id, 'voucher_no' => $finance->voucher_no, 'voucher_type' => 'JV',
             'reference_no' => $finance->reference_no, 'reference_date' => $date,
-            'currency' => $finance->currency, 'exchange_rate' => $rate, 'base_currency' => 'SAR',
+            'currency' => $finance->currency, 'exchange_rate' => $rate, 'base_currency' => $baseCurrency,
             'job_id' => $jv->job_id, 'job_no' => $jv->job_no ?? '', 'company_id' => $jv->company_id, 'user_id' => Auth::id(),
             'is_tax_line' => 0, 'is_auto_generated' => 1, 'linked_id' => $jv->id, 'linked_type' => JournalVoucher::class,
             'created_at' => now(), 'updated_at' => now(),
@@ -358,7 +366,7 @@ class JournalVoucherController extends Controller
             $tax = min((float) $item->tax_amount, max($debit, $credit));
             $line = fn (float $d, float $c, int $account, string $desc, int $isTax) => array_merge($common, $party, [
                 'account_id' => $account, 'description' => $desc, 'debit' => $d, 'credit' => $c,
-                'base_debit' => $d * $rate, 'base_credit' => $c * $rate, 'is_tax_line' => $isTax,
+                'base_debit' => round($d * $rate, 2), 'base_credit' => round($c * $rate, 2), 'is_tax_line' => $isTax,
             ]);
             $desc = $item->description ?: 'Journal Voucher ' . $jv->row_no;
 
@@ -367,6 +375,16 @@ class JournalVoucherController extends Controller
                 $subs[] = $line($debit ? $tax : 0, $credit ? $tax : 0, (int) $item->tax_id, 'VAT - ' . $desc, 1);
             } else {
                 $subs[] = $line($debit, $credit, (int) $item->account_id, $desc, 0);
+            }
+        }
+        // Each line is rounded on its own, so the lines can drift a cent from the voucher's base total (3 lines of 10.01 at
+        // 3.755 are 37.59 each = 112.77, the total is 112.76). Put the difference on the largest line of that side, so the
+        // entry balances to the cent and agrees with the voucher.
+        foreach (['base_debit' => round((float) $jv->debit_total * $rate, 2), 'base_credit' => round((float) $jv->credit_total * $rate, 2)] as $col => $target) {
+            $diff = round($target - array_sum(array_column($subs, $col)), 2);
+            if ($diff != 0.0) {
+                $biggest = array_keys(array_column($subs, $col), max(array_column($subs, $col)))[0];
+                $subs[$biggest][$col] = round($subs[$biggest][$col] + $diff, 2);
             }
         }
         FinanceSub::insert($subs);

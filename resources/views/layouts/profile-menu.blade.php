@@ -73,15 +73,6 @@
             createOpen: false,
             themeOpen: false,
             infoOpen: false,
-            displayOpen: false,
-            uiZoom: (() => { try { return parseFloat(localStorage.getItem('flikma-ui-zoom')) || 1; } catch (e) { return 1; } })(),
-            setUiZoom(value) {
-                this.uiZoom = value;
-                document.documentElement.style.zoom = value === 1 ? '' : value;
-                document.documentElement.style.setProperty('--ui-zoom', value);
-                try { localStorage.setItem('flikma-ui-zoom', value); } catch (e) {}
-                this.displayOpen = false;
-            },
             sidebarTheme: localStorage.getItem('flikma-sidebar-theme') || 'gray',
             setSidebarTheme(theme) {
                 this.sidebarTheme = theme;
@@ -90,7 +81,7 @@
                 this.themeOpen = false;
             }
          }"
-         @keydown.escape.window="profileMenuOpen = false; createOpen = false; themeOpen = false; infoOpen = false; displayOpen = false"
+         @keydown.escape.window="profileMenuOpen = false; createOpen = false; themeOpen = false; infoOpen = false"
          @open-profile-panel.window="profileMenuOpen = true; createOpen = false; themeOpen = false; infoOpen = false"
          @open-info-panel.window="infoOpen = true; profileMenuOpen = false; createOpen = false; themeOpen = false"
          class="profile-menu-fixed d-flex flex-column align-items-center gap-2">
@@ -286,24 +277,6 @@
 
         @unless($headerOn)
 
-            {{-- Display size: how big the whole app looks on this screen (80%-125%), remembered per computer. --}}
-            <div class="position-relative" @click.outside="displayOpen = false">
-                <button @click="displayOpen = !displayOpen; themeOpen = false; createOpen = false; infoOpen = false"
-                        class="profile-menu-btn profile-menu-btn-bell" title="{{ __('Display size') }}" aria-label="{{ __('Display size') }}">
-                    <i class="bi bi-aspect-ratio"></i>
-                </button>
-                <div x-cloak x-show="displayOpen" x-transition class="profile-menu-side-dropdown">
-                    <div class="theme-picker-heading">{{ __('Display size') }}</div>
-                    <div class="text-muted px-2 pb-2" style="font-size:.72rem;">{{ __('Pick how big everything looks on this screen.') }}</div>
-                    @foreach([[0.8, '80%'], [0.9, '90%'], [1, '100%'], [1.1, '110%'], [1.25, '125%']] as [$zoomValue, $zoomLabel])
-                        <button type="button" class="profile-menu-side-dropdown-item" @click="setUiZoom({{ $zoomValue }})"
-                                :class="uiZoom === {{ $zoomValue }} ? 'fw-bold' : ''">
-                            <i class="bi" :class="uiZoom === {{ $zoomValue }} ? 'bi-check2-circle text-primary' : 'bi-circle'"></i>
-                            {{ $zoomLabel }}@if($zoomValue == 1) <span class="text-muted fw-normal">· {{ __('Default') }}</span>@endif
-                        </button>
-                    @endforeach
-                </div>
-            </div>
             <div class="profile-menu-rail-divider"></div>
         @endunless
 
@@ -424,7 +397,7 @@
             position: fixed;
             top: 0;
             right: 0;
-            height: calc(100vh / var(--ui-zoom, 1));
+            height: 100vh;
             width: 60px;
             padding-top: 16px;
             background: #fff;
@@ -678,7 +651,7 @@
             top: 14px;
             right: 68px;
             width: 320px;
-            height: calc(100vh / var(--ui-zoom, 1) - 28px);
+            height: calc(100vh - 28px);
             background: #fff;
             border-radius: 1rem;
             box-shadow: 0 16px 40px rgba(0,0,0,.22);
@@ -693,7 +666,7 @@
         body.has-top-header .profile-menu-card {
             top: 70px;
             right: 20px;
-            height: calc(100vh / var(--ui-zoom, 1) - 84px);
+            height: calc(100vh - 84px);
         }
 
         /* RTL mirrors — this whole rail sits on the physical right in LTR, so in RTL it
@@ -1052,14 +1025,14 @@
            profile/activity panels) that floats beside the rail like a notification. */
         .profile-info-card {
             height: auto;
-            max-height: calc(100vh / var(--ui-zoom, 1) - 28px);
+            max-height: calc(100vh - 28px);
             width: 300px;
             overflow-y: auto;
         }
 
         body.has-top-header .profile-info-card {
             height: auto;
-            max-height: calc(100vh / var(--ui-zoom, 1) - 28px);
+            max-height: calc(100vh - 28px);
         }
 
         .profile-info-card .profile-menu-scroll {
