@@ -98,7 +98,6 @@ class UserController extends Controller
 
             'login_permission' => 'required',
             'password' => 'nullable|string|min:8|max:50',
-            'confirm_password' => 'nullable|string|same:password',
 
             'role' => 'required|string|min:0',
             'status' => 'required|string|min:0',
@@ -130,6 +129,9 @@ class UserController extends Controller
             $user = new User();
             $user->company_id = companyId();
         }
+        // Could this person sign in before this save? (A new person, or one whose login was off, has no password anyone knows.)
+        $couldLogin = $user->exists && $user->login_permission === 'yes' && $user->login_enabled !== false;
+        $wantsLogin = $request->input('login_permission') === 'yes';
 
         $user->name = $request->input('name');
         $user->email = $request->input('email');
@@ -137,13 +139,15 @@ class UserController extends Controller
         $user->department_id = $request->input('department');
         $user->login_permission = $request->input('login_permission');
 
-        // Only update password if it's provided
-        if ($request->filled('password')) {
+        // Login switched on for someone who could not sign in before (a new employee, or login was off): a password is needed.
+        // For someone who can already sign in, leaving it empty keeps their password; a password is only taken when login is on.
+        $passwordChanged = false;
+        if ($wantsLogin && $request->filled('password')) {
             $user->password = bcrypt($request->input('password'));
+            $passwordChanged = $user->exists;
+        } elseif ($wantsLogin && !$couldLogin) {
+            return response()->json(['status' => 'error', 'message' => __('Enter a password for this employee, or turn Login Permission off.')], 422);
         } elseif (!$user->exists) {
-            if ($request->input('login_permission') === 'yes') {
-                return response()->json(['status' => 'error', 'message' => __('Enter a password for this employee, or turn Login Permission off.')], 422);
-            }
             // No login: a random password nobody knows, so the account can never be used to sign in.
             $user->password = bcrypt(\Illuminate\Support\Str::random(40));
         }
@@ -167,6 +171,11 @@ class UserController extends Controller
             $user->{$f} = $request->filled($f) ? $request->input($f) : null;
         }
         $user->terminated_at = $user->status === 'active' ? null : ($user->terminated_at ?? today());
+        if ($passwordChanged && (int) Auth::id() !== (int) $user->id) {
+            // the old password may be known to someone else: end every sign-in of this person (a new token no session holds, and a new remember-me token)
+            $user->login_token = \Illuminate\Support\Str::random(40);
+            $user->setRememberToken(\Illuminate\Support\Str::random(60));
+        }
         $user->save();
 
         return response()->json([

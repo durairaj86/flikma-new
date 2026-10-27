@@ -86,15 +86,22 @@
                                     </option>
                                     <option value="no" @selected($user->login_permission == 'no')>{{ __('No') }}</option>
                                 </select>
+                                {{-- someone who can already sign in keeps their password unless this is clicked --}}
+                                <div class="mt-1">
+                                    <a href="#" id="changePasswordLink" class="small d-none">
+                                        <i class="bi bi-key me-1"></i>{{ __('Change password') }}
+                                    </a>
+                                </div>
                             </div>
                             <div class="col-4 form-group passwordDiv">
-                                <label class="form-label">{{ __('Password') }}</label>
-                                <input type="password" name="password" id="password" class="form-control">
-                            </div>
-                            <div class="col-4 form-group confirmPasswordDiv">
-                                <label class="form-label">{{ __('Confirm Password') }}</label>
-                                <input type="password" name="confirm_password" id="confirmPassword"
-                                       class="form-control">
+                                <label class="form-label">{{ __('Password') }} <span class="text-danger" id="passwordRequiredMark">*</span></label>
+                                <input type="password" name="password" id="password" class="form-control"
+                                       autocomplete="new-password" minlength="8" maxlength="50" disabled>
+                                {{-- the one-line help under the box comes from the Masters hints; these links sit under it --}}
+                                <div class="d-flex justify-content-between small mt-1">
+                                    <a href="#" id="togglePassword"><i class="bi bi-eye me-1"></i><span>{{ __('Show password') }}</span></a>
+                                    <a href="#" id="cancelPasswordLink" class="d-none">{{ __('Cancel') }}</a>
+                                </div>
                             </div>
                             <div class="col-4 form-group">
                                 <label class="form-label">{{ __('Department') }}</label>
@@ -213,28 +220,58 @@
     </div>
 </div>
 
-<!-- JS for password field toggling -->
+<!-- Password: required when login is switched on for someone who could not sign in; "Change password" for someone who can -->
 <script>
     $(document).ready(function () {
-        function togglePasswordFields() {
-            if ($('#loginPermission').val() === 'yes') {
-                $('.passwordDiv, .confirmPasswordDiv').show();
-                //$('#password, #confirmPassword').attr('required', true);
-            } else {
-                $('.passwordDiv, .confirmPasswordDiv').hide();
-                //$('#password, #confirmPassword').removeAttr('required').val('');
+        // exists + could already sign in before this edit = the password stays unless "Change password" is used
+        const keepsPassword = @json($user->exists && $user->login_permission === 'yes' && $user->login_enabled !== false);
+        let changing = false;
+
+        function syncPassword() {
+            const loginOn = $('#loginPermission').val() === 'yes';
+            const mustSet = loginOn && !keepsPassword;            // a new employee, or login was off: a password is needed
+            const open = loginOn && (mustSet || changing);
+
+            $('#changePasswordLink').toggleClass('d-none', !(loginOn && keepsPassword && !changing));
+            $('.passwordDiv').toggle(open);
+            $('#cancelPasswordLink').toggleClass('d-none', !(open && keepsPassword));
+            $('#passwordRequiredMark').toggle(mustSet || changing);
+            // a hidden box must not be sent: it would also let a browser's saved password slip in and replace the real one
+            $('#password').prop('disabled', !open).prop('required', open);
+            if (!open) {
+                $('#password').val('').attr('type', 'password');
+                $('#togglePassword i').attr('class', 'bi bi-eye me-1');
+                $('#togglePassword span').text(@json(__('Show password')));
             }
         }
 
-        togglePasswordFields();
-        $('#loginPermission').change(togglePasswordFields);
+        $('#loginPermission').on('change', syncPassword);
+        $('#changePasswordLink').on('click', function (e) {
+            e.preventDefault();
+            changing = true;
+            syncPassword();
+            $('#password').trigger('focus');
+        });
+        $('#cancelPasswordLink').on('click', function (e) {
+            e.preventDefault();
+            changing = false;
+            syncPassword();
+        });
+        $('#togglePassword').on('click', function (e) {
+            e.preventDefault();
+            const input = $('#password');
+            const show = input.attr('type') === 'password';
+            input.attr('type', show ? 'text' : 'password');
+            $(this).find('i').toggleClass('bi-eye', !show).toggleClass('bi-eye-slash', show);
+            $(this).find('span').text(show ? @json(__('Hide password')) : @json(__('Show password')));
+        });
+
+        syncPassword();
     });
 </script>
 
-<!-- Optional: style password fields initially -->
 <style>
-    .passwordDiv,
-    .confirmPasswordDiv {
+    .passwordDiv {
         display: none;
     }
 </style>
