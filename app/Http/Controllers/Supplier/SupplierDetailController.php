@@ -73,7 +73,7 @@ class SupplierDetailController extends Controller
         $supplier = Supplier::findOrFail($id);
 
         return view('modules.supplier.tabs.' . $tab, array_merge(
-            ['supplier' => $supplier],
+            ['supplier' => $supplier, 'baseCurrency' => strtoupper(optional(authUserCompany())->base_currency ?: 'SAR')],
             $this->{'data' . ucfirst($tab)}($supplier)
         ));
     }
@@ -119,6 +119,9 @@ class SupplierDetailController extends Controller
                 'due' => $due,
                 'total' => (float) $inv->grand_total,
                 'balance' => $balance,
+                // the same open amount in the company currency (at the invoice's booked rate): what the ledger and the aging buckets are in
+                'currency' => strtoupper((string) $inv->currency),
+                'balance_base' => (float) $inv->grand_total > 0 ? round($balance * ((float) $inv->base_grand_total / (float) $inv->grand_total), 2) : $balance,
                 'days' => (int) $due->diffInDays($today, false),
             ];
         }
@@ -173,6 +176,9 @@ class SupplierDetailController extends Controller
                 'due' => Carbon::parse($inv->due_at ?? $inv->due_date ?? $inv->invoice_date),
                 'total' => (float) $inv->grand_total,
                 'balance' => (float) ($open[$inv->id]['balance'] ?? 0),
+                'currency' => strtoupper((string) $inv->currency),
+                'total_base' => (float) $inv->base_grand_total,
+                'balance_base' => (float) ($open[$inv->id]['balance_base'] ?? 0),
             ];
         }
 
@@ -213,7 +219,7 @@ class SupplierDetailController extends Controller
         foreach ($open as $inv) {
             $d = $inv['days'];
             $key = $d <= 0 ? 'current' : ($d <= 30 ? 'b1' : ($d <= 60 ? 'b2' : ($d <= 90 ? 'b3' : 'b4')));
-            $buckets[$key] += $inv['balance'];
+            $buckets[$key] += $inv['balance_base'];
         }
         $invoiceTotal = round(array_sum($buckets), 2);
 

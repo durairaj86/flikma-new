@@ -1,6 +1,6 @@
 <div class="cust-card">
     <table class="table cust-tbl align-middle mb-0">
-        <thead><tr><th>{{ __('Date') }}</th><th>{{ __('Type') }}</th><th>{{ __('Reference') }}</th><th>{{ __('Mode') }}</th><th class="text-end">{{ __('Amount') }}</th><th class="text-center">{{ __('Status') }}</th></tr></thead>
+        <thead><tr><th>{{ __('Date') }}</th><th>{{ __('Type') }}</th><th>{{ __('Reference') }}</th><th>{{ __('Mode') }}</th><th class="text-end">{{ __('Amount') }} ({{ $baseCurrency }})</th><th class="text-center">{{ __('Status') }}</th></tr></thead>
         <tbody>
         @forelse($rows as $r)
             <tr>

@@ -1,7 +1,7 @@
 <div class="cust-card">
     <div class="cust-card-h">{{ __('Receivable Aging') }}</div>
     <div class="cust-card-b">
-        <p class="text-muted small">{{ __('Aging breakdown of outstanding invoices.') }}</p>
+        <p class="text-muted small">{{ __('Aging breakdown of outstanding invoices.') }} · {{ __('all amounts in') }} {{ $baseCurrency }}</p>
         <div class="row g-3 text-center">
             @foreach(['current' => 'Current Days', 'b1' => '1-30 Days', 'b2' => '31-60 Days', 'b3' => '61-90 Days', 'b4' => '90+ Days'] as $k => $label)
                 <div class="col"><div class="border rounded p-3 bg-light">

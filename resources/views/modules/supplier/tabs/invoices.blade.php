@@ -8,8 +8,15 @@
                 <td class="fw-semibold text-primary">{{ $r['no'] }}</td>
                 <td>{{ $r['date']->format('d-m-Y') }}</td>
                 <td class="{{ $late ? 'text-danger' : '' }}">{{ $r['due']->format('d-m-Y') }}</td>
-                <td class="text-end">{{ number_format($r['total'], 2) }}</td>
-                <td class="text-end fw-bold {{ $r['balance'] > 0 ? 'text-danger' : 'text-success' }}">{{ number_format($r['balance'], 2) }}</td>
+                @php $foreign = $r['currency'] && $r['currency'] !== $baseCurrency; @endphp
+                <td class="text-end">
+                    <span class="text-muted" style="font-size:.8em">{{ $r['currency'] ?: $baseCurrency }}</span> {{ number_format($r['total'], 2) }}
+                    @if($foreign)<div class="text-muted" style="font-size:.75em">{{ $baseCurrency }} {{ number_format($r['total_base'], 2) }}</div>@endif
+                </td>
+                <td class="text-end fw-bold {{ $r['balance'] > 0 ? 'text-danger' : 'text-success' }}">
+                    <span class="text-muted fw-normal" style="font-size:.8em">{{ $r['currency'] ?: $baseCurrency }}</span> {{ number_format($r['balance'], 2) }}
+                    @if($foreign && $r['balance'] > 0)<div class="text-muted fw-normal" style="font-size:.75em">{{ $baseCurrency }} {{ number_format($r['balance_base'], 2) }}</div>@endif
+                </td>
                 <td class="text-center"><span class="badge rounded-pill {{ $r['balance'] > 0 ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary' }}">{{ $r['balance'] > 0 ? __('Approved') : __('Paid') }}</span></td>
             </tr>
         @empty

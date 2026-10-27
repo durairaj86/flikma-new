@@ -4,7 +4,7 @@
 </div>
 <div class="cust-card">
     <table class="table cust-tbl align-middle mb-0">
-        <thead><tr><th>{{ __('Date') }}</th><th>{{ __('Details') }}</th><th class="text-end">{{ __('Debit') }}</th><th class="text-end">{{ __('Credit') }}</th><th class="text-end">{{ __('Balance') }}</th></tr></thead>
+        <thead><tr><th>{{ __('Date') }}</th><th>{{ __('Details') }}</th><th class="text-end">{{ __('Debit') }} ({{ $baseCurrency }})</th><th class="text-end">{{ __('Credit') }} ({{ $baseCurrency }})</th><th class="text-end">{{ __('Balance') }} ({{ $baseCurrency }})</th></tr></thead>
         <tbody>
         @forelse($rows as $r)
             <tr>
