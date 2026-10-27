@@ -139,12 +139,12 @@ SUPPLIER_INVOICE = {
                     },
                     {
                         data: 'sub_total', class: 'text-end', render: function (data, type, row) {
-                            return '<div class="cell-primary">' + amountFormat(row.sub_total) + '</div><div class="cell-secondary">' + row.currency + '</div>';
+                            return '<div class="cell-primary">' + amountFormat(row.sub_total) + '</div><div class="cell-secondary">' + templates.currencyNote(row, row.base_sub_total) + '</div>';
                         }
                     },
                     {
                         data: 'tax_total', class: 'text-end', render: function (data, type, row) {
-                            return '<div class="cell-primary">' + amountFormat(row.tax_total) + '</div>';
+                            return '<div class="cell-primary">' + amountFormat(row.tax_total) + '</div>' + (templates.isForeign(row) ? '<div class="cell-secondary">' + templates.currencyNote(row, row.base_tax_total) + '</div>' : '');
                         }
                     },
                     {
@@ -260,14 +260,23 @@ SUPPLIER_INVOICE = {
             // computed here from the real totals (same as customer invoice).
             // The Paid/Unpaid tag only makes sense once an invoice is
             // Approved — a Draft/Cancelled invoice isn't payable yet.
+            // An invoice in a currency other than the company's: its own currency is named, with the company-currency amount (at the booking rate) beside it.
+            isForeign: (row) => !!row.currency && !!row.base_currency && row.currency !== row.base_currency,
+            currencyNote: (row, base) => {
+                if (!SUPPLIER_INVOICE.list.templates.isForeign(row)) return row.currency;
+                return `${row.currency} <span title="${trans('Company currency')}">(${row.base_currency} ${amountFormat(base)})</span>`;
+            },
+
             balance: (row) => {
                 const grand = parseFloat(String(row.grand_total).replace(/,/g, '')) || 0;
                 const paid = parseFloat(row.paid_amount) || 0;
+                // the balance stays in the invoice's currency (that is what is still owed); say which one when it isn't the company's
+                const cur = SUPPLIER_INVOICE.list.templates.isForeign(row) ? ` <small class="text-muted fw-normal">${row.currency}</small>` : '';
                 if (row.status !== 3) {
-                    return `<div class="cell-primary">${amountFormat(grand - paid)}</div>`;
+                    return `<div class="cell-primary">${amountFormat(grand - paid)}${cur}</div>`;
                 }
                 const isPaid = grand > 0 && paid >= grand;
-                return `<div class="cell-primary">${amountFormat(grand - paid)}</div><div class="cell-secondary ${isPaid ? 'text-success' : 'text-danger'}">${isPaid ? 'Paid' : 'Unpaid'}</div>`;
+                return `<div class="cell-primary">${amountFormat(grand - paid)}${cur}</div><div class="cell-secondary ${isPaid ? 'text-success' : 'text-danger'}">${isPaid ? 'Paid' : 'Unpaid'}</div>`;
             },
 
             invoice: (row) => `<div class="cell-primary">${row.invoice_date ?? ''}</div><div class="cell-secondary">${trans('Due')} ${row.due_at ?? ''}</div>`,

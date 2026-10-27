@@ -5277,5 +5277,6 @@
     "DIRECT EXPENSES": "المصروفات المباشرة",
     "OPERATING EXPENSES": "المصروفات التشغيلية",
     "SI": "ف.م",
-    "CI": "ف.ع"
+    "CI": "ف.ع",
+    "Company currency": "عملة الشركة"
 }

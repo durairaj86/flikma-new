@@ -183,6 +183,8 @@ class SupplierInvoiceController extends Controller
         // ✅ Return formatted DataTable
         return DataTables::eloquent($rows)
             ->addIndexColumn()
+            // company currency code: the list shows an invoice in a different currency with its company-currency amount beside it
+            ->addColumn('base_currency', fn() => strtoupper($baseCurrency))
             ->addColumn('job_activity', fn($model) => $model->job ? ($activity->where('id', $model->job->activity_id)->pluck('name')->first() ?? '-') : '-')
             // FCY Amount — only shown for invoices not already in the
             // company's own currency; SAR (or whatever the base is) rows

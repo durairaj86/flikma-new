@@ -32,7 +32,7 @@
         'Any carrier', 'days', 'from',
         'Due',
         'Done', 'Started', 'Cost', 'Margin', 'Days', 'Overdue', ':n days ago', ':n days left',
-        'Cus Inv.', 'CN', 'SI', 'CI',
+        'Cus Inv.', 'CN', 'SI', 'CI', 'Company currency',
         'Skip to main content', 'Skip to navigation', 'Show the unpaid invoices', 'Show the detail',
         'AWB',
         'AWB:',
