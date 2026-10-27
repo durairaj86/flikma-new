@@ -101,8 +101,8 @@
 
         .wrapper {
             display: flex;
-            height: 100vh; /* Full viewport height */
-            width: 100vw;
+            height: calc(100vh / var(--ui-zoom, 1)); /* Full viewport height */
+            width: calc(100vw / var(--ui-zoom, 1));
         }
 
         /* Keep sidebar fixed width and scrollable if menu is long */
@@ -199,6 +199,13 @@
         // layouts/sidebar.blade.php.
         document.documentElement.setAttribute('data-sidebar-theme',
             localStorage.getItem('flikma-sidebar-theme') || 'gray');
+    </script>
+    <script>
+        // Display size the user picked in the right bar (80%-125%), applied before the page paints so it never flashes at 100% first.
+        try {
+            var z = parseFloat(localStorage.getItem('flikma-ui-zoom'));
+            if (z >= 0.75 && z <= 1.3 && z !== 1) { document.documentElement.style.zoom = z; document.documentElement.style.setProperty('--ui-zoom', z); }
+        } catch (e) {}
     </script>
     @include('includes.js')
     @stack('styles')

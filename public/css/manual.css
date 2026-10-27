@@ -56,7 +56,7 @@
 body {
     font-size: 14px;
     line-height: 1.5em;
-    min-height: 100vh;
+    min-height: calc(100vh / var(--ui-zoom, 1));
     color: #1A1F36;
     font-weight: 400;
     /*background-color: #f5f5f5 !important;*/
@@ -578,7 +578,7 @@ div.dropdown ul li i, div.dropdown ul li svg {
 .sidebar {
     width: 70px;
     background: #1E293B;
-    min-height: 100vh;
+    min-height: calc(100vh / var(--ui-zoom, 1));
 }
 
 .sidebar .nav-link {
@@ -1372,7 +1372,7 @@ div.dataTables_filter {
 .flikma-content {
     flex-grow: 1;
     overflow-y: auto;
-    min-height: 100vh;
+    min-height: calc(100vh / var(--ui-zoom, 1));
 }
 
 /* Sidebar menu */
