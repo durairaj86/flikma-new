@@ -19,6 +19,12 @@ class CompanyOrGlobalScope implements Scope
 
         if ($companyId) {
             $table = $model->getTable();
+            // a company that was given its own copy of this table at onboarding sees only its own rows
+            if (\App\Support\CompanyDefaults::hidesShared($table, (int) $companyId)) {
+                $builder->where($table . '.company_id', $companyId);
+
+                return;
+            }
             $builder->where(function ($query) use ($table, $companyId) {
                 $query->where($table . '.company_id', $companyId)
                     ->orWhereNull($table . '.company_id');

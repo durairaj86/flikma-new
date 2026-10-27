@@ -27,6 +27,17 @@ class LoginRequest extends FormRequest
 
         $credentials = $this->only('email', 'password');
 
+        // A terminated employee (or one whose login is switched off) must not get in, even with the right password. The password
+        // is checked first, so the message cannot be used to find out who is terminated.
+        $person = \App\Models\User::withoutGlobalScopes()->where('email', $credentials['email'])->first();
+        if ($person && !$person->canLogin() && \Illuminate\Support\Facades\Hash::check($credentials['password'], $person->password)) {
+            RateLimiter::hit($this->throttleKey(), 180);
+
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'email' => [__('Your access has been withdrawn. Please contact your administrator.')],
+            ]);
+        }
+
         if (!auth()->attempt($credentials, $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey(), 180);
 

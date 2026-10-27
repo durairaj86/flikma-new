@@ -58,6 +58,20 @@ class UserController extends Controller
             ->toJson();
     }
 
+    /**
+     * The Super User (role 1) is the person who registered the company: the company always has one, so in the employee module
+     * they cannot be edited, terminated, reactivated or deleted, and nobody else can be given that role.
+     */
+    private function protectedUser(?User $user): bool
+    {
+        return $user && isSuperUser($user);
+    }
+
+    private function superUserRefused(): \Illuminate\Http\JsonResponse
+    {
+        return response()->json(['status' => 'error', 'message' => __('The Super User cannot be edited, terminated or deleted here.')], 403);
+    }
+
     public function modal(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
     {
         $user = new User();
@@ -68,6 +82,7 @@ class UserController extends Controller
     public function edit($id)
     {
         $user = User::find($id);
+        abort_if($this->protectedUser($user), 403, __('The Super User cannot be edited, terminated or deleted here.'));
         $departments = Department::all()->pluck('name', 'id');
         return view('modules.master.user.user-form', compact('user', 'departments'));
     }
@@ -100,9 +115,17 @@ class UserController extends Controller
         $validated = $request->validate($rules);
 
 
+        // The Super User role is the company owner's alone: it can't be given to anyone (the form does not offer it, this stops a posted value)
+        if ((int) $request->input('role') === 1) {
+            return response()->json(['status' => 'error', 'message' => __('The Super User role cannot be assigned.')], 422);
+        }
+
         // Save customer
         if (isset($request['data-id']) and filled($request['data-id'])) {
             $user = User::findOrFail($request->input('data-id'));
+            if ($this->protectedUser($user)) {
+                return $this->superUserRefused();
+            }
         } else {
             $user = new User();
             $user->company_id = companyId();
@@ -254,10 +277,25 @@ class UserController extends Controller
 
     public function actions($id)
     {
-        $user = User::select('id', 'status')->findOrFail($id);
+        $user = User::select('id', 'status', 'role')->findOrFail($id);
         $isActive = $user->status === 'active';
 
         $contextMenu = collect([]);
+
+        // The Super User can only be viewed here: no Edit, Terminate or Delete
+        if ($this->protectedUser($user)) {
+            $contextMenu->push([
+                'label' => __('View'),
+                'code' => '01CSVW',
+                'id' => 'row_view',
+                'class' => 'row_view',
+                'data-id' => $user->id,
+                'type' => 'item',
+                'icon' => 'view'
+            ]);
+
+            return response()->json($contextMenu->values());
+        }
 
         // Direct menu items
         $contextMenu->push([
@@ -302,6 +340,9 @@ class UserController extends Controller
     public function updateStatus($id, $status)
     {
         $user = User::findOrFail($id);
+        if ($this->protectedUser($user)) {
+            return $this->superUserRefused();
+        }
         $active = $status === 'active';
 
         if (!$active && (int) Auth::id() === (int) $user->id) {
@@ -324,6 +365,9 @@ class UserController extends Controller
     public function delete($id)
     {
         $user = User::findOrFail($id);
+        if ($this->protectedUser($user)) {
+            return $this->superUserRefused();
+        }
         $guard = app(\App\Services\DeletionGuard::class);
         $why = $guard->blockers('user', (int) $id);
         if ($why) {

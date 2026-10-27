@@ -151,6 +151,15 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->terminated_at !== null;
     }
 
+    /**
+     * May this person sign in? Not once terminated (a termination date, or status "terminated") and not while login is switched
+     * off for them. The status of an ordinary user is "active" (or "1" from registration), so only those two are refused.
+     */
+    public function canLogin(): bool
+    {
+        return !$this->isTerminated() && $this->status !== 'terminated' && $this->login_enabled !== false;
+    }
+
     /** Attendance, salary, loan or payroll history means the employee can only be terminated, never deleted. */
     public function hasEmployeeRecords(): bool
     {

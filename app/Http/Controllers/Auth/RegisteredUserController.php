@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Master\Company;
 use App\Models\User;
+use App\Services\Onboarding\CompanyDefaultsSeeder;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -62,6 +63,15 @@ class RegisteredUserController extends Controller
             $company->currency = self::COUNTRY_CURRENCIES[$request->country];
             $company->is_active = true;
             $company->save();
+
+            // The company's own copy of the default data (descriptions, units, departments... from the masters database).
+            // A problem here must not stop the registration: the company then simply keeps using the shared rows, as before.
+            // seed() is one transaction of its own (a savepoint inside this one), so a failure leaves no half copy behind.
+            try {
+                app(CompanyDefaultsSeeder::class)->seed($company->id);
+            } catch (\Throwable $e) {
+                Log::error('Onboarding defaults were not copied for company ' . $company->id . ': ' . $e->getMessage());
+            }
 
             $user = new User();
             $user->name = $request->name;

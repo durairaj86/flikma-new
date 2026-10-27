@@ -5300,5 +5300,9 @@
     "Debit and credit must be equal. Difference: :amount": "يجب أن يتساوى المدين والدائن. الفرق: :amount",
     "Journal Voucher Details": "تفاصيل قيد اليومية",
     "Failed to load voucher details.": "تعذّر تحميل تفاصيل القيد.",
-    "An approved voucher cannot be edited. Move it to Draft first.": "لا يمكن تعديل قيد معتمد. انقله إلى مسودة أولاً."
+    "An approved voucher cannot be edited. Move it to Draft first.": "لا يمكن تعديل قيد معتمد. انقله إلى مسودة أولاً.",
+    "Your access has been withdrawn. Please contact your administrator.": "تم سحب صلاحية الدخول الخاصة بك. يرجى التواصل مع المسؤول.",
+    "You were signed out because your account was signed in on another device.": "تم تسجيل خروجك لأن حسابك سُجّل الدخول به على جهاز آخر.",
+    "The Super User cannot be edited, terminated or deleted here.": "لا يمكن تعديل المستخدم الرئيسي أو إنهاء خدمته أو حذفه هنا.",
+    "The Super User role cannot be assigned.": "لا يمكن تعيين دور المستخدم الرئيسي."
 }
