@@ -5275,5 +5275,7 @@
     "GROSS PROFIT": "إجمالي الربح",
     "No direct expense activity recorded": "لا توجد حركة مصروفات مباشرة",
     "DIRECT EXPENSES": "المصروفات المباشرة",
-    "OPERATING EXPENSES": "المصروفات التشغيلية"
+    "OPERATING EXPENSES": "المصروفات التشغيلية",
+    "SI": "ف.م",
+    "CI": "ف.ع"
 }

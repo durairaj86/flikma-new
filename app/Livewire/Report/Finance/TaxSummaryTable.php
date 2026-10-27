@@ -12,17 +12,17 @@ class TaxSummaryTable extends Component
     public $endDate;
     public $search = '';
 
+    // On the class, not in mount(): mount() only runs on the first load, and a date change comes in as a later request
+    protected $listeners = [
+        'dateRangeChanged' => 'updateDateRange',
+        'searchChanged' => 'updateSearch',
+    ];
+
     public function mount()
     {
         // Default to current month
         $this->startDate = now()->startOfMonth()->format('Y-m-d');
         $this->endDate = now()->endOfMonth()->format('Y-m-d');
-
-        // Listen for date range and search changes from parent component
-        $this->listeners = [
-            'dateRangeChanged' => 'updateDateRange',
-            'searchChanged' => 'updateSearch'
-        ];
     }
 
     public function updateDateRange($dateRange)

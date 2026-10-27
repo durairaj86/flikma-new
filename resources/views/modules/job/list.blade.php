@@ -256,6 +256,12 @@
             .jc-line .jc-ico { position: absolute; left: 50%; top: -11px; transform: translateX(-50%); background: #fff; padding: 0 .35rem; color: #2563eb; }
             .jc-stat { display: flex; justify-content: space-between; font-size: .8rem; color: #6b7280; padding: .1rem 0; }
             .jc-stat b { color: #111827; }
+            .jd-line { display: flex; flex-wrap: nowrap; justify-content: space-between; gap: .3rem; font-size: .78rem; }
+            .jd-line .jd-grp { display: inline-flex; align-items: center; gap: .25rem; white-space: nowrap; cursor: default; }
+            .jd-line .jd-l { font-size: .72rem; color: #6b7280; }
+            .jd-line .jd-n { min-width: 20px; padding: 0 .35rem; text-align: center; line-height: 1.55; }
+            .jc-money { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .05rem .7rem; padding-top: .25rem; }
+            .jc-money .jc-stat { gap: .3rem; white-space: nowrap; }
             .jc-stats { border-left: 1px solid #e5e7eb; padding-left: 1.1rem; }
             .jc-act { text-align: right; }
 

@@ -722,21 +722,14 @@ JOB = {
                         pending: ['#2563eb', 'Open'], completed: ['#16a34a', 'Completed'], cancelled: ['#dc2626', 'Cancelled'], trashed: ['#6b7280', 'Trashed']}[st] || ['#6b7280', ''];
                     return `<span class="jc-dot"><i style="background:${m[0]}"></i><span style="color:${m[0]}">${trans(m[1])}</span></span>`;
                 };
-                // Supplier invoices, then Cus Inv./CN: customer invoices and credit notes added together. Hover a badge for the split.
-                const docCounts = (j) => {
+                // Supplier invoices, customer invoices and credit notes on one line, each with its Approved / Draft / Cancelled counts.
+                const docCounts = (j, m) => {
                     j = j || {};
                     const none = {created: 0, approved: 0, draft: 0, cancelled: 0};
-                    const si = j.si || none, ci = j.ci || none, cn = j.cn || none;
-                    const badge = (n, cls, tip, split) => n ? `<span class="jd-n ${cls}" data-tip="${n} ${trans(tip)}${split ? ' (' + split + ')' : ''}">${n}</span>` : '<span class="jd-z">·</span>';
-                    const split = (k) => (ci[k] || cn[k]) ? `${ci[k] || 0} ${trans('Cus Inv.')} + ${cn[k] || 0} ${trans('CN')}` : '';
-                    const sum = (k) => (ci[k] || 0) + (cn[k] || 0);
-                    const total = sum('created');
-                    return `<div class="jd">
-                        <div class="jd-row ${si.created ? '' : 'jd-empty'}"><span class="jd-l"><i class="bi bi-box-arrow-in-down"></i>${trans('Supplier Inv.')}</span><span class="jd-g">${si.created
-                            ? `<span class="jd-t">${si.created}</span>${badge(si.approved, 'ok', 'Approved')}${badge(si.draft, 'dr', 'Draft')}${badge(si.cancelled, 'cx', 'Cancelled')}` : '<span class="jd-z">—</span>'}</span></div>
-                        <div class="jd-row ${total ? '' : 'jd-empty'}"><span class="jd-l"><i class="bi bi-receipt"></i>${trans('Cus Inv./CN')}</span><span class="jd-g">${total
-                            ? `<span class="jd-t" title="${split('created')}">${total}</span>${badge(sum('approved'), 'ok', 'Approved', split('approved'))}${badge(sum('draft'), 'dr', 'Draft', split('draft'))}${badge(sum('cancelled'), 'cx', 'Cancelled', split('cancelled'))}` : '<span class="jd-z">—</span>'}</span></div>
-                    </div>`;
+                    const badge = (n, cls, tip) => n ? `<span class="jd-n ${cls}" data-tip="${n} ${trans(tip)}">${n}</span>` : '';
+                    const grp = (short, full, d, amount) => `<span class="jd-grp ${d.created ? '' : 'jd-empty'}" title="${trans(full)}${amount > 0 ? ': ' + Number(amount).toLocaleString(undefined, {maximumFractionDigits: 2}) : ''}"><span class="jd-l">${trans(short)}</span>${d.created
+                        ? `${badge(d.approved, 'ok', 'Approved')}${badge(d.draft, 'dr', 'Draft')}${badge(d.cancelled, 'cx', 'Cancelled')}` : '<span class="jd-z">—</span>'}</span>`;
+                    return `<div class="jd jd-line">${grp('SI', 'Supplier Inv.', j.si || none)}${grp('CI', 'Cus Inv.', j.ci || none)}${grp('CN', 'Credit Notes', j.cn || none, m && m.credits)}</div>`;
                 };
                 // B/L, AWB, reference and container numbers: what people quote on the phone.
                 const refs = (x) => {
@@ -754,10 +747,10 @@ JOB = {
                     if (!m || (!m.invoiced && !m.cost)) return '';
                     const fmt = (n) => Number(n).toLocaleString(undefined, {maximumFractionDigits: 0});
                     const pc = m.profit < 0 ? 'text-danger' : 'text-success';
-                    return `<div class="jc-stat"><span>${trans('Revenue')}</span><b>${fmt(m.invoiced || 0)}</b></div>
+                    return `<div class="jc-money"><div class="jc-stat"${m.credits > 0 ? ` title="${trans('Credit Notes')}: ${fmt(m.credits)}"` : ''}><span>${trans('Revenue')}</span><b>${fmt(m.invoiced || 0)}</b></div>
                             <div class="jc-stat"><span>${trans('Cost')}</span><b>${fmt(m.cost || 0)}</b></div>
                             <div class="jc-stat"><span>${trans('Profit')}</span><b class="${pc}">${m.profit < 0 ? '-' : ''}${fmt(Math.abs(m.profit))}</b></div>
-                            <div class="jc-stat"><span>${trans('Due')}</span><b class="${m.due > 0 ? 'text-warning-emphasis' : 'text-muted'}">${m.due > 0 ? fmt(m.due) : '✓'}</b></div>`;
+                            <div class="jc-stat"><span>${trans('Due')}</span><b class="${m.due > 0 ? 'text-warning-emphasis' : 'text-muted'}">${m.due > 0 ? fmt(m.due) : '✓'}</b></div></div>`;
                 };
                 // Free days / detention for containers that are still out.
                 const detention = (d) => {
@@ -812,10 +805,10 @@ JOB = {
                             </div>
                             <div class="jc-stats">
                                 ${stat('Carrier', S.esc(r.carrier))}
-                                ${docCounts(r.invoice_json)}
-                                ${money(r.money)}
                                 ${stat('Value', S.esc(r.value))}
                                 ${stat('Incoterm', S.esc(cargo.incoterm))}
+                                ${docCounts(r.invoice_json, r.money)}
+                                ${money(r.money)}
                                 <div class="mt-1 d-flex gap-1 flex-wrap"><span class="badge bg-${billing[0]}">${trans(billing[1])}</span>${customs}</div>
                             </div>
                             <div class="jc-act">
