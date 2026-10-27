@@ -108,8 +108,8 @@ JOURNAL_VOUCHER = {
             JOURNAL_VOUCHER.list.actions.delete(row);
             JOURNAL_VOUCHER.list.actions.statusChange(row);
             JOURNAL_VOUCHER.list.actions.view(row);
-            JOURNAL_VOUCHER.list.actions.print(row);
-            JOURNAL_VOUCHER.list.actions.download(row);
+            // Print and Download are wired by the menu items themselves (onclick from the actions endpoint): binding them
+            // here as well made one click run twice.
         },
 
         actions: {
@@ -148,20 +148,6 @@ JOURNAL_VOUCHER = {
                     // shared delete dialog; only drafts can be deleted, the server says so otherwise
                     deleteRecord(GLOBAL_FN.buildUrl(`${JOURNAL_VOUCHER.baseUrl}/${id}`), function () { GLOBAL_FN.refreshDataTable(); },
                         {name: name});
-                });
-            },
-
-            print(row) {
-                $('#row_print').off().on('click', function () {
-                    const id = row.attr('data-id');
-                    JOURNAL_VOUCHER.printPreview(id);
-                });
-            },
-
-            download(row) {
-                $('#row_download').off().on('click', function () {
-                    const id = row.attr('data-id');
-                    JOURNAL_VOUCHER.downloadPDF(id);
                 });
             }
         }
@@ -283,15 +269,30 @@ JOURNAL_VOUCHER = {
         iframe.src = GLOBAL_FN.buildUrl(`${JOURNAL_VOUCHER.baseUrl}/${id}/print`);
     },
 
-    // Download: the print page made into a PDF in the browser
+    // Download: the voucher made into a PDF in the browser, at the printable width of A4 with the same 14mm margins as Print,
+    // so the file looks like the print. The print page's fragment brings styles that only apply under .doc, so building the
+    // PDF cannot change the page you are looking at.
     downloadPDF: function (id) {
-        fetch(GLOBAL_FN.buildUrl(`${JOURNAL_VOUCHER.baseUrl}/${id}/print`))
+        fetch(GLOBAL_FN.buildUrl(`${JOURNAL_VOUCHER.baseUrl}/${id}/print`) + '?fragment=1')
             .then(res => res.text())
             .then(html => {
-                const doc = new DOMParser().parseFromString(html, 'text/html');
-                const container = document.createElement('div');
-                container.innerHTML = [...doc.querySelectorAll('style')].map(s => s.outerHTML).join('') + doc.body.innerHTML;
-                html2pdf().set({margin: 0.3, filename: `JournalVoucher-${id}.pdf`}).from(container).save();
+                // The off-screen holder only hides the voucher; the PDF is made from the inner element, which carries just
+                // the printable width (A4 210mm less 2 x 14mm), so the copy the PDF tool takes is not pushed off-screen.
+                const holder = document.createElement('div');
+                holder.style.cssText = 'position:fixed;left:-10000px;top:0;';
+                const root = document.createElement('div');
+                root.style.cssText = 'width:688px;background:#fff;';
+                root.innerHTML = html;
+                holder.appendChild(root);
+                document.body.appendChild(holder);
+                html2pdf().set({
+                    margin: 14,
+                    filename: `JournalVoucher-${id}.pdf`,
+                    image: {type: 'jpeg', quality: 0.98},
+                    html2canvas: {scale: 2, windowWidth: 688, scrollX: 0, scrollY: 0, x: 0, y: 0},
+                    jsPDF: {unit: 'mm', format: 'a4', orientation: 'portrait'},
+                    pagebreak: {mode: ['css', 'legacy'], avoid: ['tr', '.card-head', '.sign']}
+                }).from(root).save().finally(function () { holder.remove(); });
             });
     }
 };

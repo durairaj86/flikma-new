@@ -430,7 +430,8 @@ class JournalVoucherController extends Controller
         $journalVoucher = JournalVoucher::with(['job', 'journalVoucherItems.account', 'createdBy', 'approvedBy'])
             ->findOrFail($id);
 
-        return view('modules.finance.journal_voucher.print', compact('journalVoucher'));
+        // ?fragment=1: just the voucher with self-contained styles, for the PDF (no <html> / <body>)
+        return view('modules.finance.journal_voucher.print', ['journalVoucher' => $journalVoucher, 'fragment' => request()->boolean('fragment')]);
     }
 
     /**
