@@ -11,6 +11,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/create', [JournalVoucherController::class, 'modal'])->name('create');
         Route::post('/store', [JournalVoucherController::class, 'store'])->name('store');
 
+        // Details drawer on the list
+        Route::get('/{id}/overview-drawer', [JournalVoucherController::class, 'overviewDrawer'])->name('overview-drawer');
+
         // View journal voucher
         Route::get('/{id}', [JournalVoucherController::class, 'show'])->name('show');
 

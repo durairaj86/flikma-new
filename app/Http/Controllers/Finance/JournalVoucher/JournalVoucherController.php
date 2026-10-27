@@ -83,6 +83,32 @@ class JournalVoucherController extends Controller
 
         $this->assertPeriodOpen($validated['voucher_date'], 'voucher_date');
 
+        // A voucher is only saved when it balances: debits equal credits, there is something to post, and every amount
+        // sits on an account. (A line with no amount is just an empty row and is ignored.)
+        $debitTotal = 0.0;
+        $creditTotal = 0.0;
+        foreach ($request->input('account_ids') as $index => $accountId) {
+            $debit = (float) ($request->input('debit_amounts')[$index] ?? 0);
+            $credit = (float) ($request->input('credit_amounts')[$index] ?? 0);
+            if ($debit <= 0 && $credit <= 0) {
+                continue;
+            }
+            if (!$accountId) {
+                return $this->unbalanced(__('Choose an account for every line that has an amount.'));
+            }
+            if ($debit > 0 && $credit > 0) {
+                return $this->unbalanced(__('A line can have a debit or a credit, not both.'));
+            }
+            $debitTotal += $debit;
+            $creditTotal += $credit;
+        }
+        if ($debitTotal <= 0 || $creditTotal <= 0) {
+            return $this->unbalanced(__('Enter at least one debit and one credit amount.'));
+        }
+        if (abs($debitTotal - $creditTotal) > 0.005) {
+            return $this->unbalanced(__('Debit and credit must be equal. Difference: :amount', ['amount' => number_format(abs($debitTotal - $creditTotal), decimals())]));
+        }
+
         DB::beginTransaction();
         try {
             // Create or update journal voucher
@@ -198,6 +224,15 @@ class JournalVoucherController extends Controller
             ->findOrFail($id);
 
         return view('modules.finance.journal_voucher.show', compact('journalVoucher'));
+    }
+
+    /** The details drawer on the list (same content as the View page). */
+    public function overviewDrawer($id)
+    {
+        $journalVoucher = JournalVoucher::with(['job', 'journalVoucherItems.account', 'createdBy', 'approvedBy'])
+            ->findOrFail($id);
+
+        return view('modules.finance.journal_voucher.view-overview-drawer', compact('journalVoucher'));
     }
 
     /**
@@ -381,17 +416,15 @@ class JournalVoucherController extends Controller
     }
 
     /**
-     * Download the specified journal voucher as PDF.
+     * Download the specified journal voucher as PDF: the print page opens with the print dialog ready, where the
+     * browser's "Save as PDF" makes the file (this app has no server-side PDF library).
      */
     public function download($id)
     {
         $journalVoucher = JournalVoucher::with(['job', 'journalVoucherItems.account', 'createdBy', 'approvedBy'])
             ->findOrFail($id);
 
-        $html = view('modules.finance.journal_voucher.print', compact('journalVoucher'))->render();
-        $fileName = "JournalVoucher_{$journalVoucher->row_no}.pdf";
-
-        return createPDF($html, $fileName);
+        return view('modules.finance.journal_voucher.print', ['journalVoucher' => $journalVoucher, 'autoPrint' => true]);
     }
 
     /**
@@ -412,6 +445,7 @@ class JournalVoucherController extends Controller
                 'debit_total',
                 'credit_total',
                 'status',
+                'journal_vouchers.company_id',
                 'journal_vouchers.created_at',
             ])
             ->when($request->tab, function ($q) use ($request) {
@@ -587,6 +621,12 @@ class JournalVoucherController extends Controller
             'status' => 'success',
             'message' => __('Journal voucher deleted successfully'),
         ]);
+    }
+
+    /** A refused save: the form shows the message. */
+    private function unbalanced(string $message)
+    {
+        return response()->json(['status' => 'error', 'message' => $message], 422);
     }
 
     /**

@@ -25,6 +25,11 @@ class JournalVoucher extends Model
         'disapproval_reason', 'created_by', 'updated_by', 'approved_by', 'approved_at'
     ];
 
+    // the status column comes back from the database as a string; the controller compares it with the enum's int values
+    protected $casts = [
+        'status' => 'integer',
+    ];
+
     /**
      * Get the job associated with the journal voucher.
      */

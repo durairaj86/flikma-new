@@ -5293,5 +5293,11 @@
     "You are in Free plan — Upgrade": "أنت على الباقة المجانية — قم بالترقية",
     ":remaining tokens remaining.": "متبقي :remaining رمز.",
     "Only :remaining left — close to the limit.": "متبقي :remaining فقط — قريب من الحد.",
-    "Suspended": "معلّق"
+    "Suspended": "معلّق",
+    "Choose an account for every line that has an amount.": "اختر حساباً لكل سطر يحتوي على مبلغ.",
+    "A line can have a debit or a credit, not both.": "يمكن أن يكون للسطر مدين أو دائن، وليس كليهما.",
+    "Enter at least one debit and one credit amount.": "أدخل مبلغاً مديناً ودائناً واحداً على الأقل.",
+    "Debit and credit must be equal. Difference: :amount": "يجب أن يتساوى المدين والدائن. الفرق: :amount",
+    "Journal Voucher Details": "تفاصيل قيد اليومية",
+    "Failed to load voucher details.": "تعذّر تحميل تفاصيل القيد."
 }

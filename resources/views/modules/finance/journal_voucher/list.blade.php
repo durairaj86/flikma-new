@@ -58,7 +58,7 @@
 
         <div class="shadow bdr-r-10 py-3 flex-grow-1">
             <div class="">
-                <table class="table align-middle dataTable" id="dataTable" data-empty-noun="{{ __('journal vouchers') }}">
+                <table class="table align-middle dataTable" id="dataTable" data-empty-noun="{{ __('journal vouchers') }}" data-module-url="finance/journal-vouchers" data-title="{{ __('Journal Voucher') }}" data-model-size="xxl" data-min-height="min-height:75vh;">
                     <thead class="table-light bg-white">
                     <tr>
                         <th>#</th>
@@ -71,6 +71,7 @@
                         <th>{{ __('Debit Total') }}</th>
                         <th>{{ __('Credit Total') }}</th>
                         <th>{{ __('Status') }}</th>
+                        <th></th>
                     </tr>
                     </thead>
                 </table>
@@ -103,5 +104,6 @@
             </div>
         </div>
     </main>
+    @include('modules.finance.journal_voucher.journal-voucher-view')
     @include('modules.finance.journal_voucher._video')
 </x-app-layout>

@@ -49,7 +49,7 @@ JOURNAL_VOUCHER = {
                 ],
                 columns: [
                     {data: 'DT_RowIndex', class: 'hide-tooltip fav-index'},
-                    {data: 'row_no', name: 'row_no'},
+                    {data: 'row_no', name: 'row_no', render: (d) => '<span class="fw-bold text-primary jv-no-link" style="cursor:pointer;">' + (d ?? '') + '</span>'},
                     {data: 'voucher_type', name: 'voucher_type'},
                     {data: 'job_no', name: 'job_no'},
                     {data: 'voucher_date', name: 'voucher_date'},
@@ -77,6 +77,11 @@ JOURNAL_VOUCHER = {
                 }
             });
 
+            $('#dataTable').off('click.jvno').on('click.jvno', '.jv-no-link', function () {
+                const row = $(this).closest('tr');
+                JOURNAL_VOUCHER.list.openDrawer(row.attr('data-id'), row.attr('data-name'));
+            });
+
             $('#customSearch').off('keyup').on('keyup', function () {
                 table.search(this.value).draw();
             });
@@ -86,7 +91,21 @@ JOURNAL_VOUCHER = {
             webDataTable.search(table);
         },
 
+        // Details in a side drawer on the same page (as the customer invoice does)
+        openDrawer(id, name) {
+            $('#drawerSubtitle').text(name || '');
+            bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer')).show();
+            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> ' + trans('Loading...') + '</div>');
+            $.get(GLOBAL_FN.buildUrl(`${JOURNAL_VOUCHER.baseUrl}/${id}/overview-drawer`), function (data) {
+                $('#moduleOverview').html(data);
+            }).fail(function () {
+                $('#moduleOverview').html('<div class="alert alert-danger m-3">' + trans('Failed to load voucher details.') + '</div>');
+            });
+        },
+
         extraActions(row) {
+            JOURNAL_VOUCHER.list.actions.edit(row);
+            JOURNAL_VOUCHER.list.actions.delete(row);
             JOURNAL_VOUCHER.list.actions.statusChange(row);
             JOURNAL_VOUCHER.list.actions.view(row);
             JOURNAL_VOUCHER.list.actions.print(row);
@@ -110,8 +129,7 @@ JOURNAL_VOUCHER = {
 
             view(row) {
                 $('#row_view').off().on('click', function () {
-                    const id = row.attr('data-id');
-                    window.location.href = `/${JOURNAL_VOUCHER.baseUrl}/${id}`;
+                    JOURNAL_VOUCHER.list.openDrawer(row.attr('data-id'), row.attr('data-name'));
                 });
             },
 
@@ -127,22 +145,9 @@ JOURNAL_VOUCHER = {
                     const id = row.attr('data-id');
                     const name = row.attr('data-name');
 
-                    if (confirm(`Are you sure you want to delete ${name}?`)) {
-                        $.ajax({
-                            url: GLOBAL_FN.buildUrl(`${JOURNAL_VOUCHER.baseUrl}/${id}`),
-                            method: 'DELETE',
-                            headers: {
-                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                            },
-                            success: function (response) {
-                                toastr.success(response.message);
-                                GLOBAL_FN.refreshDataTable();
-                            },
-                            error: function (xhr) {
-                                toastr.error(xhr.responseJSON?.message || 'Error deleting journal voucher');
-                            }
-                        });
-                    }
+                    // shared delete dialog; only drafts can be deleted, the server says so otherwise
+                    deleteRecord(GLOBAL_FN.buildUrl(`${JOURNAL_VOUCHER.baseUrl}/${id}`), function () { GLOBAL_FN.refreshDataTable(); },
+                        {name: name});
                 });
             },
 
@@ -264,12 +269,30 @@ JOURNAL_VOUCHER = {
         }
     },
 
+    // Print: the print page loads in a hidden frame and the print dialog opens, no new tab
     printPreview: function (id) {
-        window.open(`/${JOURNAL_VOUCHER.baseUrl}/${id}/print`, '_blank');
+        const iframe = document.getElementById('print-frame');
+        iframe.onload = function () {
+            try {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+            } catch (e) {
+                console.error('Cannot print the voucher', e);
+            }
+        };
+        iframe.src = GLOBAL_FN.buildUrl(`${JOURNAL_VOUCHER.baseUrl}/${id}/print`);
     },
 
+    // Download: the print page made into a PDF in the browser
     downloadPDF: function (id) {
-        window.open(`/${JOURNAL_VOUCHER.baseUrl}/${id}/download`, '_blank');
+        fetch(GLOBAL_FN.buildUrl(`${JOURNAL_VOUCHER.baseUrl}/${id}/print`))
+            .then(res => res.text())
+            .then(html => {
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                const container = document.createElement('div');
+                container.innerHTML = [...doc.querySelectorAll('style')].map(s => s.outerHTML).join('') + doc.body.innerHTML;
+                html2pdf().set({margin: 0.3, filename: `JournalVoucher-${id}.pdf`}).from(container).save();
+            });
     }
 };
 

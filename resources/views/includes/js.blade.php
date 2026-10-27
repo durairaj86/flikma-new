@@ -136,6 +136,7 @@
         'Failed to load enquiry details.',
         'Failed to load expense details.',
         'Failed to load invoice details.',
+        'Failed to load voucher details.',
         'Failed to load job details.',
         'Failed to load master B/L details.',
         'Failed to load payment details.',
