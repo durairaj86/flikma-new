@@ -2173,3 +2173,28 @@ input.form-control[readonly], input.form-control[readonly]:focus {
 
 /* tom-select lists opened on <body> (data-dropdown-parent="body") must sit above an open modal */
 body > .ts-dropdown { z-index: 1065; }
+
+/* ---- Toasts (toastr): the pill shape of the "Signed in as ..." bar -----------------------------------------------------------
+   Same colours as ever (toastr's green / red / blue / orange); only the shape changes: fully rounded ends, as long as the message
+   needs, the same soft shadow and type size, centred at the bottom. The icon stays on the left, the close mark moves to the right. */
+body #toast-container.toast-bottom-center { bottom: 24px; }
+body #toast-container.toast-bottom-center > div {
+    width: fit-content; min-width: 200px; max-width: min(640px, calc(100vw - 24px));
+    margin: 0 auto 8px;
+    padding: 11px 40px 11px 48px;
+    border-radius: 999px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+    background-position: 16px center;
+    font-size: .85rem; line-height: 1.35;
+    opacity: .97;
+}
+body #toast-container.toast-bottom-center > div:hover { box-shadow: 0 10px 28px rgba(0, 0, 0, .24); opacity: 1; }
+#toast-container .toast-title { font-size: .85rem; }
+#toast-container .toast-message { word-wrap: break-word; }
+#toast-container .toast-close-button { position: absolute; float: none; right: 14px; top: 50%; transform: translateY(-50%); font-size: 20px; text-shadow: none; }
+#toast-container .toast-progress { height: 3px; }
+/* toastr's own rule for centred toasts is as specific as ours and loads later, hence the extra "body" above.
+   The bar that shows while an admin uses "Login as company" sits at the bottom too: toasts go above it */
+body:has(.imp-bar) #toast-container.toast-bottom-center { bottom: 76px; }
+[dir="rtl"] body #toast-container.toast-bottom-center > div { padding: 11px 48px 11px 40px; background-position: right 16px center; }
+[dir="rtl"] #toast-container .toast-close-button { right: auto; left: 14px; }
