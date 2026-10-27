@@ -263,7 +263,7 @@ SUPPLIER_INVOICE = {
             // An invoice in a currency other than the company's: its own currency is named, with the company-currency amount (at the booking rate) beside it.
             isForeign: (row) => !!row.currency && !!row.base_currency && row.currency !== row.base_currency,
             // foreign invoice: "EUR 1,581.25"; the company's own currency keeps the plain amount
-            money: (row, amount) => (SUPPLIER_INVOICE.list.templates.isForeign(row) ? row.currency + ' ' : '') + amountFormat(amount),
+            money: (row, amount) => (SUPPLIER_INVOICE.list.templates.isForeign(row) ? `<span class="text-muted fw-normal" style="font-size:.8em">${row.currency}</span> ` : '') + amountFormat(amount),
             // grey line under it: the company-currency amount for a foreign invoice, the currency name otherwise
             baseNote: (row, base) => SUPPLIER_INVOICE.list.templates.isForeign(row)
                 ? `<span title="${trans('Company currency')}">${row.base_currency} ${amountFormat(base)}</span>` : row.currency,
