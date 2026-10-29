@@ -7,6 +7,8 @@ use App\Models\Customer\Customer;
 use App\Models\Finance\CustomerInvoice\CustomerInvoice;
 use App\Models\Finance\SupplierInvoice\SupplierInvoice;
 use App\Models\Job\Job;
+use App\Enums\CustomerInvoiceEnum;
+use App\Enums\SupplierInvoiceEnum;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Maatwebsite\Excel\Facades\Excel;
@@ -96,10 +98,12 @@ class CustomerActivityReport extends Component
 
             $revenue = (float) CustomerInvoice::whereIn('job_id', $jobIds)
                 ->where('company_id', $companyId)
+                ->where('status', CustomerInvoiceEnum::APPROVED->value)
                 ->sum('grand_total');
 
             $cost = (float) SupplierInvoice::whereIn('job_id', $jobIds)
                 ->where('company_id', $companyId)
+                ->where('status', SupplierInvoiceEnum::APPROVED->value)
                 ->sum('grand_total');
 
             $profit = $revenue - $cost;
