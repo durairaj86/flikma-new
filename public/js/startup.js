@@ -1769,7 +1769,7 @@ webDataTable = {
                             }
                             menu += `<li>
             <a class="dropdown-item ${item.class ?? ''}"
-               id="${item.id}" ${item.onclick ? "onclick=" + item.onclick : ""}
+               id="${item.id}" ${item.onclick ? 'onclick="' + String(item.onclick).replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '"' : ""}
                data-id="${item['data-id']}" ${item['data-value'] ? "data-value=" + item['data-value'] : ""}><i class="${webDataTable.actions.icons(item.icon)}"></i>
                ${item.label}
             </a>

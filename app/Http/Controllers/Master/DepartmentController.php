@@ -110,23 +110,25 @@ class DepartmentController extends Controller
                 );
             }
         });
+        DepartmentModulePermission::forgetEffective();
     }
 
     private function rightsFor(Department $department): array
     {
-        $saved = $department->permissions()->get()->keyBy('module');
+        // what is really in force: the company's own rows, else the shared default rows (a module with no row at all is denied)
+        $saved = DepartmentModulePermission::effectiveFor((int) $department->id);
         $rights = [];
 
         foreach (appModules() as $moduleKey => $module) {
             $permission = $saved->get($moduleKey);
             $rights[$moduleKey] = [
                 'label' => $module['label'],
-                'view' => $permission?->can_view ?? true,
-                'create' => $permission?->can_create ?? true,
-                'edit' => $permission?->can_edit ?? true,
-                'delete' => $permission?->can_delete ?? true,
-                'approve' => $permission?->can_approve ?? true,
-                'confirm' => $permission?->can_confirm ?? true,
+                'view' => (bool) ($permission?->can_view ?? false),
+                'create' => (bool) ($permission?->can_create ?? false),
+                'edit' => (bool) ($permission?->can_edit ?? false),
+                'delete' => (bool) ($permission?->can_delete ?? false),
+                'approve' => (bool) ($permission?->can_approve ?? false),
+                'confirm' => (bool) ($permission?->can_confirm ?? false),
             ];
         }
 

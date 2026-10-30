@@ -463,7 +463,12 @@ function roles(): array
 
 function roleDisplay($role)
 {
-    return __(match ($role) {
+    // the column is text ("1", "2"): a strict match on numbers sent every real role to "Unknown"
+    if ($role === null || $role === '') {
+        return '—';
+    }
+
+    return __(match ((int) $role) {
         1 => 'Super User',
         2 => 'User',
         3 => 'Admin',
@@ -531,10 +536,8 @@ function userCan(string $module, string $action = 'view', $user = null): bool
     }
 
     $column = 'can_' . $action;
-    $permission = \App\Models\Master\DepartmentModulePermission::query()
-        ->where('department_id', $user->department_id)
-        ->where('module', $module)
-        ->first();
+    // the company's own row for this department and module, else the shared default row (see DepartmentModulePermission::effectiveFor)
+    $permission = \App\Models\Master\DepartmentModulePermission::effectiveFor((int) $user->department_id, $user->company_id ? (int) $user->company_id : null)->get($module);
 
     return $permission ? (bool) $permission->{$column} : false;
 }
