@@ -506,6 +506,7 @@ class JobController extends Controller
             'salesperson_id',
             'jobs.created_by as created_by',
             'jobs.company_id as company_id',
+            'jobs.updated_at as updated_at',
             'jobs.status as status',
             'invoice_json',
             // Correlated subquery (not a join) — jobs and quotations share many
@@ -586,6 +587,13 @@ class JobController extends Controller
                 'status' => $m->clearance?->clearance_status, 'bayan_no' => $m->bayan_no, 'do_no' => $m->do_no,
             ])
             ->addColumn('delivery', fn($m) => filled($m->delivery_date) ? Carbon::parse($m->delivery_date)->translatedFormat('d-M-Y') : '')
+            // delivery date passed while the job is still open: the card shows it in red
+            ->addColumn('delivery_late', fn($m) => filled($m->delivery_date) && (int) $m->status === 1 && Carbon::parse($m->delivery_date)->endOfDay()->isPast())
+            // when the job was last touched: whole days (the card says "Today" / "3d ago") and the exact time for the hover
+            ->addColumn('updated', fn($m) => $m->updated_at ? [
+                'days' => (int) abs(now()->startOfDay()->diffInDays(Carbon::parse($m->updated_at)->startOfDay())),
+                'at' => Carbon::parse($m->updated_at)->translatedFormat('d-M-Y H:i'),
+            ] : null)
             ->addColumn('value', fn($m) => (float)$m->grand_total ? number_format($m->grand_total, 2) . ' ' . $m->currency : '')
             ->addColumn('refs', fn($m) => [
                 'bl' => $m->hbl_number, 'awb' => $m->awb_number, 'ref' => $m->shipping_ref ?: $m->client_ref,

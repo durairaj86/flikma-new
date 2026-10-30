@@ -815,14 +815,17 @@ JOB = {
                                 ${(() => {
                                     const st = r.health?.state;
                                     const fmt = (v) => { const d = new Date(v); return isNaN(d) ? S.esc(v) : d.toLocaleDateString('en-GB', {day: '2-digit', month: 'short', year: 'numeric'}).replace(/ /g, '-'); };
-                                    if (st === 'arrived') return `<div class="fw-semibold small">${r.ata ? trans('Arrived') + ' ' + fmt(r.ata) : (r.eta ? 'ETA ' + S.esc(r.eta) : '')}</div>`;
-                                    if (st === 'noeta' || !r.eta) return '';
-                                    return `<div class="fw-semibold small">ETA ${S.esc(r.eta)}</div><div class="cell-secondary">${r.etd ? 'ETD ' + S.esc(r.etd) : ''}</div>`;
+                                    // planned hand-over to the customer, under the ETA / ETD; red once the date has passed and the job is still open
+                                    const delivery = r.delivery ? `<div class="cell-secondary ${r.delivery_late ? 'text-danger fw-semibold' : ''}">${trans('Delivery')} ${S.esc(r.delivery)}</div>` : '';
+                                    if (st === 'arrived') return `<div class="fw-semibold small">${r.ata ? trans('Arrived') + ' ' + fmt(r.ata) : (r.eta ? 'ETA ' + S.esc(r.eta) : '')}</div>` + delivery;
+                                    if (st === 'noeta' || !r.eta) return delivery;
+                                    return `<div class="fw-semibold small">ETA ${S.esc(r.eta)}</div><div class="cell-secondary">${r.etd ? 'ETD ' + S.esc(r.etd) : ''}</div>` + delivery;
                                 })()}
                                 <div class="mt-1">${S.health(r.health)}</div>
                                 ${detention(r.detention)}
                                 ${pg ? `<div class="job-prog ms-auto mt-2" style="max-width:190px"><div class="job-seg">${(pg.segments || []).map(x => `<span class="${x}"></span>`).join('')}</div>
                                     <div class="cell-secondary mt-1">${pg.done}/${pg.total}${pg.skipped ? ' · ' + pg.skipped + ' ' + trans('skipped') : ''}${pg.next ? ' · ' + trans('Next') + ': ' + trans(pg.next) : ''}</div></div>` : ''}
+                                ${r.updated ? `<div class="cell-secondary mt-1" title="${S.esc(r.updated.at)}">${trans('Updated')} ${r.updated.days === 0 ? trans('Today') : r.updated.days + 'd ' + trans('ago')}</div>` : ''}
                                 ${btns}
                             </div>
                         </div>`;

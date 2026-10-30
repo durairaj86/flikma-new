@@ -5311,5 +5311,7 @@
     "At least 8 characters.": "8 أحرف على الأقل.",
     "Description activated.": "تم تفعيل الوصف.",
     "Description made inactive. It is no longer offered in dropdowns; documents that already use it keep showing it.": "أصبح الوصف غير نشط. لم يعد يظهر في القوائم؛ والمستندات التي تستخدمه تبقى كما هي.",
-    "Settled with customer credit only: no cash is received, so no account is needed.": "مسوى برصيد العميل فقط: لا يتم استلام نقد، لذا لا حاجة لحساب."
+    "Settled with customer credit only: no cash is received, so no account is needed.": "مسوى برصيد العميل فقط: لا يتم استلام نقد، لذا لا حاجة لحساب.",
+    "Updated": "آخر تحديث",
+    "ago": "مضت"
 }

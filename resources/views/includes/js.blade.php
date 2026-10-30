@@ -364,6 +364,7 @@
         'Thinking...',
         'Arrived',
         'Today',
+        'Updated', 'Delivery', 'ago',
         'No ETA',
         'jobs are past their ETA',
         'arrive within a week',
