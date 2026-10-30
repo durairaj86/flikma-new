@@ -662,8 +662,12 @@ class PaymentController extends Controller
             DB::raw("SUM(CASE WHEN status = {$approved} THEN base_tax_total ELSE 0 END) as total_approved_tax"),
         ])->tap($applyFilters)->first();
 
+        // the payment stores the account's id: the list shows its name
+        $accountNames = \App\Models\Finance\Account\Account::withoutGlobalScopes()->pluck('name', 'id');
+
         return DataTables::eloquent($query)
             ->addIndexColumn()
+            ->editColumn('account', fn($model) => filled($model->account) && isset($accountNames[$model->account]) ? __($accountNames[$model->account]) : '—')
             ->setRowAttr([
                 'data-id' => fn($model) => $model->id,
                 'data-name' => fn($model) => 'Payment #' . htmlspecialchars($model->row_no, ENT_QUOTES, 'UTF-8'),
