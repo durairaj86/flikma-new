@@ -262,8 +262,12 @@
             .jd-line .jd-grp { display: inline-flex; align-items: center; gap: .25rem; white-space: nowrap; cursor: default; }
             .jd-line .jd-l { font-size: .72rem; color: #6b7280; }
             .jd-line .jd-n { min-width: 20px; padding: 0 .35rem; text-align: center; line-height: 1.55; }
-            .jc-money { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .05rem .7rem; padding-top: .25rem; }
-            .jc-money .jc-stat { gap: .3rem; white-space: nowrap; }
+            /* Revenue | Cost over Profit | Due: label, amount, label, amount. Each amount column is right-aligned, so units, tens
+               and hundreds stand straight above each other (10 over 100 over 2,879). */
+            .jc-money { display: grid; grid-template-columns: auto auto auto auto; justify-content: space-between; align-items: baseline; column-gap: .3rem; row-gap: .05rem; padding-top: .25rem; white-space: nowrap; }
+            .jc-money .jc-stat { display: contents; }
+            .jc-money .jc-stat > b { justify-self: end; text-align: right; }
+            .jc-money .jc-stat:nth-child(even) > span:first-child { margin-left: .9rem; }
             .jc-stats { border-left: 1px solid #e5e7eb; padding-left: 1.1rem; }
             .jc-act { text-align: right; }
 
