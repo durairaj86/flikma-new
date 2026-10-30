@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Finance\JournalVoucher;
 
+use App\Services\DocumentNumber;
 use App\Enums\JournalVoucherStatusEnum;
 use App\Enums\JournalVoucherTypeEnum;
 use App\Http\Controllers\Controller;
@@ -129,10 +130,9 @@ class JournalVoucherController extends Controller
                 $journalVoucher->created_by = Auth::id();
 
                 // Generate row_no
-                $year = Carbon::today()->format('Y');
-                $lastRowNo = JournalVoucher::whereYear('voucher_date', $year)->max('unique_row_no') ?? 0;
-                $journalVoucher->unique_row_no = $lastRowNo + 1;
-                $journalVoucher->row_no = 'JV/' . date('y') . '/' . sprintf('%04d', $journalVoucher->unique_row_no);
+                $prefix = 'JV/' . date('y') . '/';
+                $journalVoucher->unique_row_no = DocumentNumber::next(JournalVoucher::class, $prefix);
+                $journalVoucher->row_no = $prefix . sprintf('%04d', $journalVoucher->unique_row_no);
             }
 
             // Set job_no if job_id is provided

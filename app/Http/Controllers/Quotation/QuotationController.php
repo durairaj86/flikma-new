@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Quotation;
 
+use App\Services\DocumentNumber;
 use App\Enums\EnquiryEnum;
 use App\Enums\QuotationEnum;
 use App\Http\Controllers\Controller;
@@ -58,7 +59,7 @@ class QuotationController extends Controller
 
             $enquiryData = $quotation->enquiry_id;
         }
-        $chargeDescriptions = Description::descriptions();
+        $chargeDescriptions = Description::pickable();
         return view('modules.quotation.quotation-form', compact('polPod', 'quotation', 'enquiryData', 'chargeDescriptions'));
     }
 
@@ -73,7 +74,7 @@ class QuotationController extends Controller
     {
         $quotation = Quotation::with('containers', 'packages', 'charges')->find($id);
         $polPod = preloadPOLAndPOD($quotation->shipment_type);
-        $chargeDescriptions = Description::descriptions();
+        $chargeDescriptions = Description::pickable([], $quotation->charges->pluck('charge_description')->all());
         return view('modules.quotation.quotation-form', compact('polPod', 'quotation', 'chargeDescriptions'));
     }
 
@@ -152,8 +153,9 @@ class QuotationController extends Controller
         } else {
             $quotationYear = Carbon::parse($request->posted_at)->format('Y');
             $quotation = new Quotation();
-            $quotation->unique_row_no = sprintf("%03d", (Quotation::where('row_created_year', $quotationYear)->max('unique_row_no') ?? 0) + 1);
-            $quotation->row_no = 'QTN/' . date('Y') . '/' . $quotation->unique_row_no;
+            $prefix = 'QTN/' . date('Y') . '/';
+            $quotation->unique_row_no = sprintf("%03d", DocumentNumber::next(Quotation::class, $prefix));
+            $quotation->row_no = $prefix . $quotation->unique_row_no;
             $quotation->row_created_year = $quotationYear;
             $quotation->status = QuotationEnum::PENDING->value;
             $quotation->user_id = Auth::id();
@@ -489,10 +491,9 @@ class QuotationController extends Controller
         $job->posted_at = Carbon::today()->format('Y-m-d');
         $job->status = 1;
 
-        $jobYear = Carbon::parse($job->posted_at)->format('Y');
-        $lastJobNo = Job::whereYear('posted_at', $jobYear)->max('unique_row_no') ?? 0;
-        $job->unique_row_no = $lastJobNo + 1;
-        $job->row_no = 'JOB-' . date('y') . '-' . sprintf('%04d', $job->unique_row_no);
+        $prefix = 'JOB-' . date('y') . '-';
+        $job->unique_row_no = DocumentNumber::next(Job::class, $prefix);
+        $job->row_no = $prefix . sprintf('%04d', $job->unique_row_no);
         $this->setBaseColumns($job);
         $job->save();
         $quotation->job_id = $job->id;

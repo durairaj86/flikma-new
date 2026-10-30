@@ -330,7 +330,7 @@ PROMPT;
     private function matchDescription(string $text): ?object
     {
         $needle = strtolower($text);
-        $all = Description::descriptions();
+        $all = Description::pickable();   // only active ones are ever suggested
 
         return $all->first(fn ($d) => strtolower($d->description) === $needle)
             ?? $all->first(fn ($d) => $d->description !== '' && (str_contains($needle, strtolower($d->description)) || str_contains(strtolower($d->description), $needle)));

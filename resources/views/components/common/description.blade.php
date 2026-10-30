@@ -1,7 +1,7 @@
 <select name="description_id[]" class="tom-select" placeholder="{{ __('--Select Description--') }}" data-live-search="true" {{ $required ?? '' }} data-max-width="{{ $width ?? 'auto' }}"
         data-dropdown-width="{{ $dropdownWidth ?? 'auto' }}">
     <option value="">{{ __('Select Description') }}</option>
-    @foreach(\App\Models\Master\Description::descriptions() as $desc)
+    @foreach(\App\Models\Master\Description::pickable([$value ?? null]) as $desc)
         <option value="{{ $desc->id }}" @selected($desc->id == ($value ?? null))>
             {{ $desc->description }}
         </option>

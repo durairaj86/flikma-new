@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Finance\Invoice;
 
+use App\Services\DocumentNumber;
 use App\Enums\JobEnum;
 use App\Enums\ProformaInvoiceEnum;
 use App\Http\Controllers\Controller;
@@ -205,11 +206,9 @@ class ProformaInvoiceController extends Controller
         } else {
             $proforma = new ProformaInvoice();
 
-            $year = Carbon::parse($request->invoice_date)->format('Y');
-            $lastRowNo = ProformaInvoice::whereYear('posted_at', $year)->max('unique_row_no') ?? 0;
-
-            $proforma->unique_row_no = $lastRowNo + 1;
-            $proforma->row_no = 'PFI-DXB-' . date('y') . '-' . sprintf('%04d', $proforma->unique_row_no);
+            $prefix = 'PFI-DXB-' . date('y') . '-';
+            $proforma->unique_row_no = DocumentNumber::next(ProformaInvoice::class, $prefix);
+            $proforma->row_no = $prefix . sprintf('%04d', $proforma->unique_row_no);
 
             $job = Job::select('row_no', 'customer_id')->find($request->input('job_id'));
             if ($job) {

@@ -96,8 +96,8 @@
                                                       width="auto"></x-common.currencies-exchange>
                     </div>
                     <div class="col-md-4">
-                        <label for="reference_no" class="form-label required">{{ __('Reference No') }} <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="reference_no" name="reference_no" required
+                        <label for="reference_no" class="form-label">{{ __('Reference No') }}</label>
+                        <input type="text" class="form-control" id="reference_no" name="reference_no"
                                value="{{ $collection->reference_no }}"
                                placeholder="{{ __('Check/Transaction Reference') }}">
                     </div>

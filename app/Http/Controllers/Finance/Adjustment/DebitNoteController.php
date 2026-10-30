@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Finance\Adjustment;
 
+use App\Services\DocumentNumber;
 use App\Enums\DebitNoteEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Finance\Account\Account;
@@ -310,9 +311,10 @@ class DebitNoteController extends Controller
                 $this->assertPeriodOpen($dn->posted_at, 'debit_note_date');
 
                 $dn->status = DebitNoteEnum::APPROVED->value;
-                $dn->unique_row_no = (DebitNote::whereYear('posted_at', Carbon::parse($dn->posted_at)->year)->max('unique_row_no') ?? 0) + 1;
+                $prefix = 'DN-' . Carbon::parse($dn->posted_at)->format('y') . '-';
+                $dn->unique_row_no = DocumentNumber::next(DebitNote::class, $prefix);
                 $dn->draft_no = $dn->row_no;
-                $dn->row_no = 'DN-' . Carbon::parse($dn->posted_at)->format('y') . '-' . sprintf('%04d', $dn->unique_row_no);
+                $dn->row_no = $prefix . sprintf('%04d', $dn->unique_row_no);
                 $dn->save();
 
                 $this->postToLedger($dn);

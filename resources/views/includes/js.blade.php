@@ -38,6 +38,7 @@
         'AWB:',
         'Accounts',
         'Active',
+        'In-Active',
         'Activity',
         'Add Airport',
         'Add Bank',

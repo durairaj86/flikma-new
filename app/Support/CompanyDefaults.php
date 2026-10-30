@@ -32,9 +32,36 @@ class CompanyDefaults
         return isset(self::$owned[$companyId][$table]);
     }
 
+    /** @var array<int,array<string,int[]>> company id => [table => ids of shared rows it switched off], read once per request */
+    private static array $off = [];
+
+    /** Ids of the shared rows of $table (company_id empty) that this company has switched Off for itself. */
+    public static function switchedOff(string $table, int $companyId): array
+    {
+        if (!isset(self::$off[$companyId])) {
+            try {
+                self::$off[$companyId] = DB::table('company_inactive_defaults')->where('company_id', $companyId)->get(['target_table', 'row_id'])
+                    ->groupBy('target_table')->map(fn ($rows) => $rows->pluck('row_id')->map(fn ($id) => (int) $id)->all())->all();
+            } catch (\Throwable $e) {
+                self::$off[$companyId] = [];   // an older database without the table: nothing is switched off
+            }
+        }
+
+        return self::$off[$companyId][$table] ?? [];
+    }
+
+    /** Switch a shared row On / Off for one company only (the row itself is not touched). */
+    public static function setSharedActive(string $table, int $companyId, int $rowId, bool $active): void
+    {
+        $key = ['company_id' => $companyId, 'target_table' => $table, 'row_id' => $rowId];
+        $active ? DB::table('company_inactive_defaults')->where($key)->delete() : DB::table('company_inactive_defaults')->insertOrIgnore($key + ['created_at' => now()]);
+        unset(self::$off[$companyId]);
+    }
+
     /** Forget what was read (after a company has just been given its copies, and in tests). */
     public static function forget(): void
     {
         self::$owned = [];
+        self::$off = [];
     }
 }

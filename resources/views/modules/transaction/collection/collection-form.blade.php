@@ -86,9 +86,8 @@
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label for="reference_no" class="form-label required">{{ __('Reference No') }} <span
-                                    class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="reference_no" name="reference_no" required
+                            <label for="reference_no" class="form-label">{{ __('Reference No') }}</label>
+                            <input type="text" class="form-control" id="reference_no" name="reference_no"
                                    value="{{ $collection->reference_no }}"
                                    placeholder="{{ __('Check/Transaction Reference') }}">
                         </div>
@@ -223,7 +222,7 @@
                             </table>
                         </div>
                         <div class="alert alert-success small py-2 mb-2" id="credit-only-note" style="display: none;">
-                            {{ __('Settled with customer credit only: no cash is received, so no account or reference is needed.') }}
+                            {{ __('Settled with customer credit only: no cash is received, so no account is needed.') }}
                         </div>
                         <div class="d-flex justify-content-between align-items-center">
                             <button type="button" class="btn btn-sm btn-outline-primary" id="credit-use-all">{{ __('Use all credit on the ticked invoices') }}</button>

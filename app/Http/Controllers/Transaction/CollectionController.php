@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Transaction;
 
+use App\Services\DocumentNumber;
 use App\Enums\CollectionEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Finance\Account\Account;
@@ -375,10 +376,9 @@ class CollectionController extends Controller
                 $collection->created_by = Auth::id();
 
                 // Generate row_no
-                $year = Carbon::today()->format('Y');
-                $lastRowNo = Collection::whereYear('collection_date', $year)->max('unique_row_no') ?? 0;
-                $collection->unique_row_no = $lastRowNo + 1;
-                $collection->row_no = 'COL/' . date('y') . '/' . sprintf('%04d', $collection->unique_row_no);
+                $prefix = 'COL/' . date('y') . '/';
+                $collection->unique_row_no = DocumentNumber::next(Collection::class, $prefix);
+                $collection->row_no = $prefix . sprintf('%04d', $collection->unique_row_no);
             }
 
             // Set job_no if job_id is provided

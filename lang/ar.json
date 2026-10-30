@@ -3977,7 +3977,6 @@
     "This customer has credit left over from invoices that were settled for more than they were worth. Type the credit to use for each ticked invoice in the Credit Applied column: its Collection Amount is reduced by that credit, and several invoices can use credit in the same collection.": "لدى هذا العميل رصيد متبقٍ من فواتير سُددت بأكثر من قيمتها. اكتب الرصيد المراد استخدامه لكل فاتورة محددة في عمود الرصيد المطبق: يقل مبلغ التحصيل بمقدار ذلك الرصيد، ويمكن لعدة فواتير استخدام الرصيد في نفس التحصيل.",
     "Credit on invoice": "رصيد على الفاتورة",
     "Available": "متاح",
-    "Settled with customer credit only: no cash is received, so no account or reference is needed.": "مسوى برصيد العميل فقط: لا يتم استلام نقد، لذا لا حاجة لحساب أو مرجع.",
     "Use all credit on the ticked invoices": "استخدم كل الرصيد على الفواتير المحددة",
     "Left": "المتبقي",
     "Transit": "عبور",
@@ -5309,5 +5308,8 @@
     "Show password": "إظهار كلمة المرور",
     "Hide password": "إخفاء كلمة المرور",
     "At least 8 characters. For an employee who already has a password, use Change password to set a new one.": "8 أحرف على الأقل. للموظف الذي لديه كلمة مرور، استخدم تغيير كلمة المرور لتعيين كلمة جديدة.",
-    "At least 8 characters.": "8 أحرف على الأقل."
+    "At least 8 characters.": "8 أحرف على الأقل.",
+    "Description activated.": "تم تفعيل الوصف.",
+    "Description made inactive. It is no longer offered in dropdowns; documents that already use it keep showing it.": "أصبح الوصف غير نشط. لم يعد يظهر في القوائم؛ والمستندات التي تستخدمه تبقى كما هي.",
+    "Settled with customer credit only: no cash is received, so no account is needed.": "مسوى برصيد العميل فقط: لا يتم استلام نقد، لذا لا حاجة لحساب."
 }

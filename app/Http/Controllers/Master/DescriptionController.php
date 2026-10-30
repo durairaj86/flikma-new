@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Master;
 use App\Http\Controllers\Controller;
 use App\Models\Finance\Account\Account;
 use App\Models\Master\Description;
+use App\Support\CompanyDefaults;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Yajra\DataTables\Facades\DataTables;
@@ -14,7 +15,7 @@ class DescriptionController extends Controller
     public function fetchAllRows()
     {
         $accounts = Account::all()->pluck('name', 'id')->toArray();
-        $rows = Description::select('id', 'description', 'description_local', 'sale_account_id', 'purchase_account_id', 'created_at', 'company_id');
+        $rows = Description::select('id', 'description', 'description_local', 'sale_account_id', 'purchase_account_id', 'is_active', 'created_at', 'company_id');
         return DataTables::eloquent($rows)
             ->addIndexColumn()
             ->setRowAttr([
@@ -24,6 +25,8 @@ class DescriptionController extends Controller
                 'class' => 'row-item',
                 'id' => fn($model) => 'description-' . strtolower($model->row_no ?? $model->id),
             ])
+            // on / off as this company sees it: a shared row it has switched off for itself counts as off
+            ->editColumn('is_active', fn ($row) => $this->isOn($row) ? 1 : 0)
             ->editColumn('created_at', function ($row) {
                 return showDate($row->created_at);
             })
@@ -125,13 +128,46 @@ class DescriptionController extends Controller
         ]);
     }
 
+    /** Is this description on for the current company? Off when the row is off, or it is a shared row this company switched off. */
+    private function isOn(Description $row): bool
+    {
+        if (!$row->is_active) {
+            return false;
+        }
+
+        return !($row->company_id === null && in_array((int) $row->id, CompanyDefaults::switchedOff('descriptions', (int) companyId()), true));
+    }
+
+    /**
+     * Edit, and Active / In-Active. There is no Delete: a description may be on invoices, quotations and credit notes already, so it is
+     * switched off (no longer offered in new dropdowns) instead. A shared description (company_id empty) belongs to every company, so
+     * switching it off only records that for this company; the row itself, and every other company, are not touched.
+     */
     public function actions($id)
     {
-        $description = Description::select('id')->findOrFail($id);
+        $description = Description::select('id', 'is_active', 'company_id')->findOrFail($id);
 
         $contextMenu = collect([]);
 
-        // Direct menu items
+        $contextMenu->push($this->isOn($description) ? [
+            'label' => __('In-Active'),
+            'code' => '01CSED',
+            'id' => 'row_inactive',
+            'class' => 'row_inactive',
+            'data-id' => $description->id,
+            'data-value' => '0',
+            'type' => 'item',
+            'icon' => 'blocked'
+        ] : [
+            'label' => __('Active'),
+            'code' => '01CSED',
+            'id' => 'row_active',
+            'class' => 'row_active',
+            'data-id' => $description->id,
+            'data-value' => '1',
+            'type' => 'item',
+            'icon' => 'confirmed'
+        ]);
 
         $contextMenu->push([
             'label' => __('Edit'),
@@ -141,32 +177,29 @@ class DescriptionController extends Controller
             'data-id' => $description->id,
             'type' => 'item',
             'icon' => 'edit'
-        ], [
-            'label' => __('Delete'),
-            'code' => '01CSDL',
-            'id' => 'row_delete',
-            'class' => 'row_delete',
-            'data-id' => $description->id,
-            'type' => 'item',
-            'icon' => 'delete'
         ]);
-
 
         return response()->json($contextMenu->values());
     }
 
-    /** Delete — refused (HTTP 422 + the reasons) while anything still uses this record. */
-    public function delete($id)
+    public function updateStatus($id, $status): \Illuminate\Http\JsonResponse
     {
-        $model = Description::findOrFail($id);
-        $guard = app(\App\Services\DeletionGuard::class);
-        $why = $guard->blockers('description', (int) $id);
-        if ($why) {
-            return $guard->refusal(__('description'), $why);
+        abort_unless(in_array((string) $status, ['0', '1'], true), 404);
+        $description = Description::findOrFail($id);
+        $on = (string) $status === '1';
+
+        if ($description->company_id === null) {
+            // shared: only this company's own switch changes
+            CompanyDefaults::setSharedActive('descriptions', (int) companyId(), (int) $description->id, $on);
+        } else {
+            $description->is_active = $on ? 1 : 0;
+            $description->save();
         }
 
-        $model->delete();
-
-        return response()->json(['status' => 'success', 'message' => __('Description deleted successfully')]);
+        return response()->json([
+            'status' => 'success',
+            'message' => $on ? __('Description activated.') : __('Description made inactive. It is no longer offered in dropdowns; documents that already use it keep showing it.'),
+            'data' => ['id' => $description->id, 'status' => $on ? 1 : 0],
+        ]);
     }
 }

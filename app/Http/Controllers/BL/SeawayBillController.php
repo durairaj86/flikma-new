@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\BL;
 
+use App\Services\DocumentNumber;
 use App\Http\Controllers\Controller;
 use App\Models\BL\SeawayBill;
 use App\Models\BL\SeawayBillSub;
@@ -143,9 +144,9 @@ class SeawayBillController extends Controller
                 // Create new seaway bill
                 $waybill = new SeawayBill();
                 $billDate = Carbon::parse($request->input('seaway_bill_date'));
-                $lastNo = SeawayBill::whereYear('seaway_bill_date', $billDate->format('Y'))->max('unique_row_no') ?? 0;
-                $waybill->unique_row_no = $lastNo + 1;
-                $waybill->row_no = 'SWB' . $billDate->format('y') . sprintf('%04d', $waybill->unique_row_no);
+                $prefix = 'SWB' . $billDate->format('y');
+                $waybill->unique_row_no = DocumentNumber::next(SeawayBill::class, $prefix);
+                $waybill->row_no = $prefix . sprintf('%04d', $waybill->unique_row_no);
 
                 $this->setBaseColumns($waybill);
 

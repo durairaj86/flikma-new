@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\BL;
 
+use App\Services\DocumentNumber;
 use App\Http\Controllers\Controller;
 use App\Models\BL\Waybill;
 use App\Models\BL\WaybillSub;
@@ -122,9 +123,9 @@ class WaybillController extends Controller
                 // Create new waybill
                 $waybill = new Waybill();
                 $billDate = Carbon::parse($request->input('waybill_date'));
-                $lastNo = Waybill::whereYear('waybill_date', $billDate->format('Y'))->max('unique_row_no') ?? 0;
-                $waybill->unique_row_no = $lastNo + 1;
-                $waybill->row_no = 'WB' . $billDate->format('y') . sprintf('%04d', $waybill->unique_row_no);
+                $prefix = 'WB' . $billDate->format('y');
+                $waybill->unique_row_no = DocumentNumber::next(Waybill::class, $prefix);
+                $waybill->row_no = $prefix . sprintf('%04d', $waybill->unique_row_no);
 
                 $this->setBaseColumns($waybill);
                 $waybill->job_id = $request->input('job_id');

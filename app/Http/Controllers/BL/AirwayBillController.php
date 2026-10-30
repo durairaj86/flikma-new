@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\BL;
 
+use App\Services\DocumentNumber;
 use App\Http\Controllers\Controller;
 use App\Models\BL\AirwayBill;
 use App\Models\BL\AirwayBillSub;
@@ -143,9 +144,9 @@ class AirwayBillController extends Controller
                 // Create new airway bill
                 $waybill = new AirwayBill();
                 $billDate = Carbon::parse($request->input('airway_bill_date'));
-                $lastNo = AirwayBill::whereYear('airway_bill_date', $billDate->format('Y'))->max('unique_row_no') ?? 0;
-                $waybill->unique_row_no = $lastNo + 1;
-                $waybill->row_no = 'AWB' . $billDate->format('y') . sprintf('%04d', $waybill->unique_row_no);
+                $prefix = 'AWB' . $billDate->format('y');
+                $waybill->unique_row_no = DocumentNumber::next(AirwayBill::class, $prefix);
+                $waybill->row_no = $prefix . sprintf('%04d', $waybill->unique_row_no);
 
                 $this->setBaseColumns($waybill);
 

@@ -107,7 +107,7 @@ class OcrController extends Controller
         $client = OpenAI::client(env('OPENAI_API_KEY'));
 
         // We explicitly name the missing fields in the prompt
-        $descriptions = \App\Models\Master\Description::descriptions()->pluck('description', 'id');
+        $descriptions = \App\Models\Master\Description::pickable()->pluck('description', 'id');
 
         $suppliers = Supplier::suppliers()->mapWithKeys(function ($item) {
             // Encode the ID here using your custom function
@@ -333,7 +333,7 @@ Detect the currency (e.g., SAR, USD, INR, EUR). Use standard 3-letter ISO codes.
     {
 
 
-        $descriptions = \App\Models\Master\Description::descriptions()->pluck('description', 'id');
+        $descriptions = \App\Models\Master\Description::pickable()->pluck('description', 'id');
 
         $suppliers = Supplier::suppliers()->mapWithKeys(function ($item) {
             // Encode the ID here using your custom function

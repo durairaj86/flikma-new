@@ -67,8 +67,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label for="reference_no" class="form-label required">{{ __('Reference No') }} <span
-                                    class="text-danger">*</span></label>
+                            <label for="reference_no" class="form-label">{{ __('Reference No') }}</label>
                             <input type="text" class="form-control" id="reference_no" name="reference_no"
                                    value="{{ $payment->reference_no }}"
                                    placeholder="{{ __('Check/Transaction Reference') }}">

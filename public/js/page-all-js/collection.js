@@ -440,13 +440,13 @@ COLLECTION = {
             COLLECTION.form.refreshCreditTotal();
             COLLECTION.form.calculateTotal();
         },
-        // Paying only with customer credit (no cash): there is no account to collect through and no reference to give.
+        // Paying only with customer credit (no cash): there is no account to collect through. (The reference number is never required.)
         toggleCashFields(cash) {
             const charges = (parseFloat(String($('#bank_charges').val()).replace(/,/g, '')) || 0) + (parseFloat(String($('#other_charges').val()).replace(/,/g, '')) || 0);
             const creditOnly = (cash + charges) <= 0.004 && COLLECTION.form.creditTotal() > 0 && $('.invoice-checkbox:checked').length > 0;
-            const $acct = $('select[name="account[]"], select[name="account"]').first(), $ref = $('#reference_no');
-            const $labels = $acct.closest('.mb-3').find('label .text-danger').add($ref.closest('.mb-3').find('label .text-danger'));
-            [$acct, $ref].forEach(function ($f) {
+            const $acct = $('select[name="account[]"], select[name="account"]').first();
+            const $labels = $acct.closest('.mb-3').find('label .text-danger');
+            [$acct].forEach(function ($f) {
                 if (!$f.length) return;
                 $f.prop('required', !creditOnly);
                 if (creditOnly) {
@@ -617,13 +617,13 @@ COLLECTION = {
             $('#total-collection-amount').text(COLLECTION.form.formatNumber(total));
             COLLECTION.form.toggleCashFields(total);
         },
-        // Paying only with customer credit (no cash): there is no account to collect through and no reference to give.
+        // Paying only with customer credit (no cash): there is no account to collect through. (The reference number is never required.)
         toggleCashFields(cash) {
             const charges = (parseFloat(String($('#bank_charges').val()).replace(/,/g, '')) || 0) + (parseFloat(String($('#other_charges').val()).replace(/,/g, '')) || 0);
             const creditOnly = (cash + charges) <= 0.004 && COLLECTION.form.creditTotal() > 0 && $('.invoice-checkbox:checked').length > 0;
-            const $acct = $('select[name="account[]"], select[name="account"]').first(), $ref = $('#reference_no');
-            const $labels = $acct.closest('.mb-3').find('label .text-danger').add($ref.closest('.mb-3').find('label .text-danger'));
-            [$acct, $ref].forEach(function ($f) {
+            const $acct = $('select[name="account[]"], select[name="account"]').first();
+            const $labels = $acct.closest('.mb-3').find('label .text-danger');
+            [$acct].forEach(function ($f) {
                 if (!$f.length) return;
                 $f.prop('required', !creditOnly);
                 if (creditOnly) {

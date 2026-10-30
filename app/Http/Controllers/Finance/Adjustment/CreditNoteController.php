@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Finance\Adjustment;
 
+use App\Services\DocumentNumber;
 use App\Enums\CreditNoteEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Zatca\ZatcaController;
@@ -651,13 +652,12 @@ class CreditNoteController extends Controller
 
                 $creditNote->status = CreditNoteEnum::APPROVED;
 
-                $year = Carbon::today()->format('Y');
-                $lastRowNo = CreditNote::whereYear('posted_at', $year)->max('unique_row_no') ?? 0;
-                $creditNote->unique_row_no = $lastRowNo + 1;
+                $prefix = 'CR-' . date('y') . '-';
+                $creditNote->unique_row_no = DocumentNumber::next(CreditNote::class, $prefix);
                 $creditNote->draft_no = $creditNote->row_no;
                 $creditNote->old_invoice_date = formDate($creditNote->posted_at);
                 $creditNote->posted_at = $postingDate;
-                $creditNote->row_no = 'CR-' . date('y') . '-' . sprintf('%04d', $creditNote->unique_row_no);
+                $creditNote->row_no = $prefix . sprintf('%04d', $creditNote->unique_row_no);
                 $creditNote->save();
 
                 // Post the credit note to the general ledger

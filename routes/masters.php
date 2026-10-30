@@ -118,7 +118,7 @@ Route::post('/masters/description/create', [\App\Http\Controllers\Master\Descrip
 Route::get('/masters/description/{id}/create', [\App\Http\Controllers\Master\DescriptionController::class, 'edit']);
 Route::post('/masters/description/{id}/create', [\App\Http\Controllers\Master\DescriptionController::class, 'store']);
 Route::get('masters/description/{id}/actions', [\App\Http\Controllers\Master\DescriptionController::class, 'actions']);
-Route::delete('masters/description/{id}', [\App\Http\Controllers\Master\DescriptionController::class, 'delete'])->whereNumber('id');
+Route::post('masters/description/{id}/status/{status}', [\App\Http\Controllers\Master\DescriptionController::class, 'updateStatus'])->whereNumber('id');
 
 Route::view('/masters/salesperson', 'modules.master.salesperson.list')->name('salespersons');
 Route::post('/masters/salesperson/data', [\App\Http\Controllers\Master\Salesperson\SalespersonController::class, 'fetchAllRows'])->name('salesperson.data');
@@ -137,7 +137,6 @@ Route::post('/masters/unit/create', [\App\Http\Controllers\Master\Unit\UnitContr
 Route::get('/masters/unit/{id}/create', [\App\Http\Controllers\Master\Unit\UnitController::class, 'edit']);
 Route::post('/masters/unit/{id}/create', [\App\Http\Controllers\Master\Unit\UnitController::class, 'store']);
 Route::get('masters/unit/{id}/actions', [\App\Http\Controllers\Master\Unit\UnitController::class, 'actions']);
-Route::delete('masters/unit/{id}', [\App\Http\Controllers\Master\Unit\UnitController::class, 'delete'])->whereNumber('id');
 Route::post('/masters/unit/{id}/status/{status}', [\App\Http\Controllers\Master\Unit\UnitController::class, 'updateStatus']);
 
 // Fleet masters

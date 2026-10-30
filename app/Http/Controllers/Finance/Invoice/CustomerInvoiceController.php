@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Finance\Invoice;
 
+use App\Services\DocumentNumber;
 use App\Enums\CustomerInvoiceEnum;
 use App\Enums\JobEnum;
 use App\Http\Controllers\Controller;
@@ -355,10 +356,10 @@ class CustomerInvoiceController extends Controller
             // new invoice saved with row_no = NULL). unique_row_no anchors
             // both this draft number and the invoice number assigned on
             // approval below, so the two stay related to the same sequence.
-            $year = Carbon::parse($request->invoice_date)->format('Y');
-            $lastRowNo = CustomerInvoice::whereYear('invoice_date', $year)->max('unique_row_no') ?? 0;
-            $customer->unique_row_no = $lastRowNo + 1;
-            $customer->row_no = 'DR-' . date('y') . '-' . sprintf('%04d', $customer->unique_row_no);
+            // draft_no is read as well: an approved invoice keeps its old draft number there, and that number must not come back
+            $prefix = 'DR-' . date('y') . '-';
+            $customer->unique_row_no = DocumentNumber::next(CustomerInvoice::class, $prefix, ['draft_no']);
+            $customer->row_no = $prefix . sprintf('%04d', $customer->unique_row_no);
 
             $job = Job::select('row_no')->find($request->input('job_id'));
             if ($job) {
@@ -703,11 +704,10 @@ class CustomerInvoiceController extends Controller
 
                 $customerInvoice->status = CustomerInvoiceEnum::APPROVED;
 
-                $year = Carbon::today()->format('Y');
-                $lastRowNo = CustomerInvoice::whereYear('invoice_date', $year)->max('unique_row_no') ?? 0;
-                $customerInvoice->unique_row_no = $lastRowNo + 1;
+                $prefix = 'IN/' . date('y') . '/';
+                $customerInvoice->unique_row_no = DocumentNumber::next(CustomerInvoice::class, $prefix);
                 $customerInvoice->draft_no = $customerInvoice->row_no;
-                $customerInvoice->row_no = 'IN/' . date('y') . '/' . sprintf('%04d', $customerInvoice->unique_row_no);
+                $customerInvoice->row_no = $prefix . sprintf('%04d', $customerInvoice->unique_row_no);
                 $customerInvoice->save();
 
                 // Create finance entries when invoice is approved

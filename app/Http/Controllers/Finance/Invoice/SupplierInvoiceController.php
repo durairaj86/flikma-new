@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Finance\Invoice;
 
+use App\Services\DocumentNumber;
 use App\Enums\JobEnum;
 use App\Enums\SupplierInvoiceEnum;
 use App\Http\Controllers\Controller;
@@ -291,11 +292,9 @@ class SupplierInvoiceController extends Controller
         } else {
             $supplier = new SupplierInvoice();
 
-            $year = Carbon::parse($request->invoice_date)->format('Y');
-            $lastRowNo = SupplierInvoice::whereYear('invoice_date', $year)->max('unique_row_no') ?? 0;
-
-            $supplier->unique_row_no = $lastRowNo + 1;
-            $supplier->row_no = 'SI' . date('y') . '-' . sprintf('%04d', $supplier->unique_row_no);
+            $prefix = 'SI' . date('y') . '-';
+            $supplier->unique_row_no = DocumentNumber::next(SupplierInvoice::class, $prefix);
+            $supplier->row_no = $prefix . sprintf('%04d', $supplier->unique_row_no);
 
             $job = Job::select('row_no')->find($request->input('job_id'));
             if ($job) {

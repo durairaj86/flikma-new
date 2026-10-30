@@ -31,6 +31,7 @@
                             <th>{{ __('Description') }} <small>{{ __('(In Arabic)') }}</small></th>
                             <th>{{ __('Sale Account') }}</th>
                             <th>{{ __('Purchase Account') }}</th>
+                            <th>{{ __('Status') }}</th>
                             <th>{{ __('Created Date') }}</th>
                             <th class="text-center">{{ __('Actions') }}</th>
                         </tr>

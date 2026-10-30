@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Master\Unit;
 use App\Http\Controllers\Controller;
 use App\Models\Master\Unit;
 use Illuminate\Http\Request;
+use App\Support\CompanyDefaults;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -29,8 +30,9 @@ class UnitController extends Controller
             ->editColumn('created_at', function ($row) {
                 return showDate($row->created_at);
             })
+            // on / off as this company sees it: a shared row it has switched off for itself counts as off
             ->editColumn('status', function ($row) {
-                return $row->status == 1 ? 'Active' : 'Inactive';
+                return $this->isOn($row) ? __('Active') : __('In-Active');
             })
             ->toJson();
     }
@@ -130,37 +132,46 @@ class UnitController extends Controller
         ]);
     }
 
+    /** Is this unit on for the current company? Off when the row is off, or it is a shared row this company switched off. */
+    private function isOn(Unit $row): bool
+    {
+        if ($row->status != 1) {
+            return false;
+        }
+
+        return !($row->company_id === null && in_array((int) $row->id, CompanyDefaults::switchedOff('units', (int) companyId()), true));
+    }
+
+    /**
+     * Edit, and Active / In-Active. There is no Delete: a unit may be on invoices and quotations already, so it is switched off (no
+     * longer offered in new dropdowns) instead. A shared unit (company_id empty) belongs to every company, so switching it off only
+     * records that for this company; the row itself, and every other company, are not touched.
+     */
     public function actions($id)
     {
-        $unit = Unit::select('id', 'status')->findOrFail($id);
+        $unit = Unit::select('id', 'status', 'company_id')->findOrFail($id);
 
         $contextMenu = collect([]);
 
-        // Direct menu items
-
-        if ($unit->status == 1) {
-            $contextMenu->push([
-                'label' => __('In-Active'),
-                'code' => '01CSED',
-                'id' => 'row_inactive',
-                'class' => 'row_inactive',
-                'data-id' => $unit->id,
-                'data-value' => '0',
-                'type' => 'item',
-                'icon' => 'blocked'
-            ]);
-        } else {
-            $contextMenu->push([
-                'label' => __('Active'),
-                'code' => '01CSED',
-                'id' => 'row_active',
-                'class' => 'row_active',
-                'data-id' => $unit->id,
-                'data-value' => '1',
-                'type' => 'item',
-                'icon' => 'confirmed'
-            ]);
-        }
+        $contextMenu->push($this->isOn($unit) ? [
+            'label' => __('In-Active'),
+            'code' => '01CSED',
+            'id' => 'row_inactive',
+            'class' => 'row_inactive',
+            'data-id' => $unit->id,
+            'data-value' => '0',
+            'type' => 'item',
+            'icon' => 'blocked'
+        ] : [
+            'label' => __('Active'),
+            'code' => '01CSED',
+            'id' => 'row_active',
+            'class' => 'row_active',
+            'data-id' => $unit->id,
+            'data-value' => '1',
+            'type' => 'item',
+            'icon' => 'confirmed'
+        ]);
 
         $contextMenu->push([
             'label' => __('Edit'),
@@ -170,24 +181,22 @@ class UnitController extends Controller
             'data-id' => $unit->id,
             'type' => 'item',
             'icon' => 'edit'
-        ], [
-            'label' => __('Delete'),
-            'code' => '01CSDL',
-            'id' => 'row_delete',
-            'class' => 'row_delete',
-            'data-id' => $unit->id,
-            'type' => 'item',
-            'icon' => 'delete'
         ]);
-
 
         return response()->json($contextMenu->values());
     }
 
     public function updateStatus($id, $status): \Illuminate\Http\JsonResponse
     {
+        abort_unless(in_array((string) $status, ['0', '1'], true), 404);
         $unit = Unit::findOrFail($id);
-        $message = 'Unit status updated successfully!';
+        $message = __('Unit status updated successfully!');
+        if ($unit->company_id === null) {
+            // shared: only this company's own switch changes, the row and every other company are not touched
+            CompanyDefaults::setSharedActive('units', (int) companyId(), (int) $unit->id, (string) $status === '1');
+
+            return response()->json(['status' => 'success', 'message' => $message, 'data' => ['id' => $unit->id, 'status' => (int) $status]]);
+        }
         if (in_array($status, [0, 1])) {
             DB::beginTransaction();
             try {
@@ -208,21 +217,5 @@ class UnitController extends Controller
                 ],
             ]);
         }
-    }
-
-    /** Delete — refused (HTTP 422 + the reasons) while anything still uses this record. */
-    public function delete($id)
-    {
-        $model = Unit::findOrFail($id);
-        $guard = app(\App\Services\DeletionGuard::class);
-        $why = $guard->blockers('unit', (int) $id);
-        if ($why) {
-            return $guard->refusal(__('unit'), $why);
-        }
-
-        $model->delete();
-        Cache::forget(self::$cache . cacheName());
-
-        return response()->json(['status' => 'success', 'message' => __('Unit deleted successfully')]);
     }
 }

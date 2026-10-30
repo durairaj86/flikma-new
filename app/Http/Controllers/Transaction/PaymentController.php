@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Transaction;
 
+use App\Services\DocumentNumber;
 use App\Enums\PaymentEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Finance\Account\Account;
@@ -171,10 +172,9 @@ class PaymentController extends Controller
                 $payment->created_by = Auth::id();
 
                 // Generate row_no
-                $year = Carbon::today()->format('Y');
-                $lastRowNo = Payment::whereYear('payment_date', $year)->max('unique_row_no') ?? 0;
-                $payment->unique_row_no = $lastRowNo + 1;
-                $payment->row_no = 'PAY/' . date('y') . '/' . sprintf('%04d', $payment->unique_row_no);
+                $prefix = 'PAY/' . date('y') . '/';
+                $payment->unique_row_no = DocumentNumber::next(Payment::class, $prefix);
+                $payment->row_no = $prefix . sprintf('%04d', $payment->unique_row_no);
             }
 
             // Set job_no if job_id is provided

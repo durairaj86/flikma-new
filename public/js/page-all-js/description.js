@@ -59,6 +59,13 @@ DESCRIPTION = {
                             return row.purchase_account_id;
                         }
                     },
+                    {
+                        data: 'is_active', render: function (data, type, row) {
+                            return Number(row.is_active) === 1
+                                ? '<span class="badge bg-success-subtle text-success-emphasis">' + trans('Active') + '</span>'
+                                : '<span class="badge bg-secondary-subtle text-secondary-emphasis">' + trans('In-Active') + '</span>';
+                        }
+                    },
                     {data: 'created_at', name: 'created_at'},
                     // Actions column
                     GLOBAL_FN.dataTable.optionButton()
@@ -83,13 +90,17 @@ DESCRIPTION = {
             //webDataTable.actions.menu();
         },
         extraActions(row) {
-            DESCRIPTION.list.actions.delete(row);
+            DESCRIPTION.list.actions.statusChange(row);
         },
         actions: {
-            delete(row) {
-                $('#row_delete').off().on('click', function () {
-                    deleteRecord(GLOBAL_FN.buildUrl('masters/description/' + row.attr('data-id')), function () { DESCRIPTION.list.dataTable ? DESCRIPTION.list.dataTable() : loadJs('list.load'); },
-                        {name: $.trim(row.find('td').not(':first').first().text())});
+            // Active / In-Active instead of Delete: a description may be on documents already
+            statusChange(row) {
+                $('#row_active,#row_inactive').off().on('click', function () {
+                    changeCustomerStatus(GLOBAL_FN.buildUrl('masters/description/' + row.attr('data-id') + '/status/' + $(this).attr('data-value')), {
+                        method: 'POST',
+                        data: new FormData(),
+                        callBack: 'datatable'
+                    }, $(this).attr('data-value'));
                 });
             }
         }
