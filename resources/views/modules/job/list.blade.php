@@ -254,8 +254,10 @@
             .jc-line .jc-rail::before, .jc-line .jc-rail::after { content: ''; position: absolute; top: -5px; width: 8px; height: 8px; border-radius: 50%; background: #9ca3af; }
             .jc-line .jc-rail::before { left: 0; } .jc-line .jc-rail::after { right: 0; }
             .jc-line .jc-ico { position: absolute; left: 50%; top: -11px; transform: translateX(-50%); background: #fff; padding: 0 .35rem; color: #2563eb; }
-            .jc-stat { display: flex; justify-content: space-between; font-size: .8rem; color: #6b7280; padding: .1rem 0; }
-            .jc-stat b { color: #111827; }
+            /* label on the left, value on the right: a long value (a carrier name) wraps on its own lines, right-aligned, and never runs into the label */
+            .jc-stat { display: flex; justify-content: space-between; gap: .75rem; font-size: .8rem; color: #6b7280; padding: .1rem 0; }
+            .jc-stat > span:first-child { flex-shrink: 0; }
+            .jc-stat b { color: #111827; text-align: right; min-width: 0; overflow-wrap: anywhere; }
             .jd-line { display: flex; flex-wrap: nowrap; justify-content: space-between; gap: .3rem; font-size: .78rem; }
             .jd-line .jd-grp { display: inline-flex; align-items: center; gap: .25rem; white-space: nowrap; cursor: default; }
             .jd-line .jd-l { font-size: .72rem; color: #6b7280; }
