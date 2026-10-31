@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Supplier;
 
 use App\Http\Controllers\Controller;
 use App\Models\Supplier\Supplier;
+use App\Services\Finance\LedgerReports;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -38,54 +39,12 @@ class SupplierStatementController extends Controller
             ]);
         }
 
-        // --- Supplier Account IDs (Accounts Payable) ---
-        /*$supplierAccountIds = DB::table('accounts')
-            ->where('company_id', $companyId)
-            ->where('type', 'Accounts Payable')
-            ->pluck('code')
-            ->toArray();*/
-        $supplierAccountIds = [2100];
+        // --- Opening balance and period lines: payable control account of this supplier, read from the ledger view
+        // (same source as Reports > Supplier Statement) ---
+        $opening = LedgerReports::statementOpening('supplier', (int) $selectedSupplier->id, (int) $companyId, $fromDate);
+        $openingBalance = $opening->credit - $opening->debit; // Credit = liability
 
-        // --- Opening Balance before from_date ---
-        $openingDebit = DB::table('finance_subs')
-            ->where('supplier_id', $selectedSupplier->id)
-            ->where('company_id', $companyId)
-            ->whereIn('account_id', $supplierAccountIds)
-            ->where('reference_date', '<', $fromDate)
-            ->sum('base_debit');
-
-        $openingCredit = DB::table('finance_subs')
-            ->where('supplier_id', $selectedSupplier->id)
-            ->where('company_id', $companyId)
-            ->whereIn('account_id', $supplierAccountIds)
-            ->where('reference_date', '<', $fromDate)
-            ->sum('base_credit');
-
-        $openingBalance = $openingCredit - $openingDebit; // Credit = liability
-
-        // --- Transactions in date range ---
-        $transactions = DB::table('finance as f')
-            ->leftJoin('jobs as j', 'f.job_id', '=', 'j.id')
-            ->where('f.company_id', $companyId)
-            ->where('f.supplier_id', $selectedSupplier->id)
-            ->whereIn('f.account_id', $supplierAccountIds)
-            ->whereBetween('f.reference_date', [$fromDate, $toDate])
-            ->select(
-                'f.id',
-                'f.reference_date',
-                'f.voucher_no',
-                'f.voucher_type',
-                'f.reference_no',
-                'j.row_no as job_number',
-                'f.narration as description',
-                'f.currency',
-                'f.exchange_rate',
-                'f.base_debit',
-                'f.base_credit'
-            )
-            ->orderBy('f.reference_date')
-            ->orderBy('f.id')
-            ->get();
+        $transactions = LedgerReports::statementLines('supplier', (int) $selectedSupplier->id, (int) $companyId, $fromDate, $toDate);
 
         // --- Running Balance ---
         $runningBalance = $openingBalance;

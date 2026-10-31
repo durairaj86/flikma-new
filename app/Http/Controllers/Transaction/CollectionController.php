@@ -781,10 +781,8 @@ class CollectionController extends Controller
         $collection = Collection::with(['customer', 'job', 'collectionInvoices.customerInvoice', 'createdBy', 'approvedBy'])
             ->findOrFail($id);
 
-        $html = view('modules.transaction.collection.print', compact('collection'))->render();
-        $fileName = "Collection_{$collection->row_no}.pdf";
-
-        return createPDF($html, $fileName);
+        // opens the print view and the browser's "Save as PDF" (same as Journal Voucher download)
+        return view('modules.transaction.collection.print', ['collection' => $collection, 'autoPrint' => true]);
     }
 
     /**

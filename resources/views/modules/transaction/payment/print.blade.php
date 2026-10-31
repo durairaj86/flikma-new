@@ -2,6 +2,7 @@
     $cur = strtoupper($payment->currency ?: 'SAR');
     $base = strtoupper(optional(authUserCompany())->currency ?: 'SAR');
     $isDraft = (int) ($payment->status instanceof \BackedEnum ? $payment->status->value : $payment->status) === 1;
+    $isCancelled = (int) ($payment->status instanceof \BackedEnum ? $payment->status->value : $payment->status) === 3;
     $accountName = $payment->account ? \Illuminate\Support\Facades\DB::table('accounts')->where('id', $payment->account)->value('name') : null;
     $method = $payment->payment_method;
     $paid = (float) $payment->grand_total;
@@ -55,6 +56,8 @@
         .hero .lbl { color: var(--muted); }
         .hero .fig { font-size: 28px; font-weight: 800; margin-top: 3px; white-space: nowrap; }
         .hero .words { margin-top: 8px; padding-top: 8px; border-top: 1px solid #d9dee6; font-size: 11px; line-height: 1.55; }
+        .stamp.cancelled { border-color: #e0a3a3; color: #b42323; }
+        .wm.cancelled { color: rgba(180, 35, 35, .08); }
         .stamp { position: absolute; top: 12px; right: 14px; border: 2px solid #86c79a; color: #2f8f4e; border-radius: 5px; padding: 1px 9px; font-size: 11px; font-weight: 800; letter-spacing: .12em; transform: rotate(-6deg); }
 
         .lines { margin-top: 4px; }
@@ -75,7 +78,7 @@
 </head>
 <body>
 <div class="receipt">
-    @if($isDraft)<div class="wm">DRAFT</div>@endif
+    @if($isDraft)<div class="wm">DRAFT</div>@elseif($isCancelled)<div class="wm cancelled">{{ __('CANCELLED') }}</div>@endif
     <div class="pad">
 
         <table class="head">
@@ -91,7 +94,7 @@
                     </div>
                 </td>
                 <td class="doc">
-                    <div class="en">{{ $isDraft ? __('DRAFT PAYMENT VOUCHER') : __('PAYMENT VOUCHER') }}</div>
+                    <div class="en">{{ $isCancelled ? __('CANCELLED PAYMENT VOUCHER') : ($isDraft ? __('DRAFT PAYMENT VOUCHER') : __('PAYMENT VOUCHER')) }}</div>
                     <div class="ar">سند صرف</div>
                     <div class="no">{{ $payment->row_no }}</div>
                 </td>
@@ -124,7 +127,7 @@
                 </td>
                 <td>
                     <div class="hero">
-                        @unless($isDraft)<div class="stamp">{{ __('PAID') }}</div>@endunless
+                        @if($isCancelled)<div class="stamp cancelled">{{ __('CANCELLED') }}</div>@elseif(!$isDraft)<div class="stamp">{{ __('PAID') }}</div>@endif
                         <div class="lbl">{{ __('Amount paid') }} | المبلغ المدفوع</div>
                         <div class="fig">{{ $cur }} {{ number_format($paid, 2) }}</div>
                         <div class="words">
@@ -188,5 +191,8 @@
     </div>
     <div class="foot">{{ __('This is a computer generated payment voucher.') }}</div>
 </div>
+@if(!empty($autoPrint))
+    <script>window.addEventListener('load', function () { window.print(); });</script>
+@endif
 </body>
 </html>

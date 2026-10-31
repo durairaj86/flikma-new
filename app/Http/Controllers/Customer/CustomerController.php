@@ -716,7 +716,7 @@ class CustomerController extends Controller
 
     public function getAddress($id)
     {
-        $customer = Customer::select('address1_en', 'address2_en', 'city_en', 'country_en')
+        $customer = Customer::select('address1_en', 'address2_en', 'city_en', 'country')
             ->find(decodeId($id));
 
         if (!$customer) {
@@ -727,7 +727,7 @@ class CustomerController extends Controller
             $customer->address1_en,
             $customer->address2_en,
             $customer->city_en,
-            $customer->country_en,
+            $customer->country,
         ]));
 
         return response()->json(['address' => $address]);

@@ -300,8 +300,15 @@ CUSTOMER_INVOICE = {
             CUSTOMER_INVOICE.list.actions.email(row);
             CUSTOMER_INVOICE.list.actions.recordPayment(row);
             CUSTOMER_INVOICE.list.actions.paymentHistory(row);
+            CUSTOMER_INVOICE.list.actions.delete(row);
         },
         actions: {
+            // draft invoices only (the menu shows Delete for drafts); the server refuses anything that is linked and says why
+            delete(row) {
+                $('#row_delete').off().on('click', function () {
+                    CUSTOMER_INVOICE.drawerDelete(row.attr('data-id'), row.attr('data-name'));
+                });
+            },
             statusChange(row) {
                 $('#row_pending,#row_approved,#row_rejected').off().on('click', function () {
                     let fd = new FormData();

@@ -928,13 +928,15 @@ class CustomerInvoiceController extends Controller
         }
 
         $cumulative = 0.0;
+        $credit = $this->creditAppliedByCollection($inv->id);
         $cis = \App\Models\Finance\Collection\CollectionInvoice::where('customer_invoice_id', $inv->id)
             ->with('collection:id,row_no,collection_date,status,created_at')->orderBy('id')->get();
         foreach ($cis as $ci) {
             if (($ci->collection->status ?? 0) == 3) continue; // cancelled
-            $cumulative += (float) $ci->amount;
+            $settled = (float) $ci->amount + (float) ($credit[$ci->collection_id] ?? 0);   // cash + customer credit applied in the same collection
+            $cumulative += $settled;
             $kind = $grand > 0 && $cumulative >= $grand - 0.005 ? __('Full collection') : __('Partial collection');
-            $add($kind . ' · ' . ($ci->collection->row_no ?? ''), $ci->collection->created_at ?? $ci->created_at, 'bi-cash-coin', null, number_format((float) $ci->amount, $dec), 'collection', $ci->collection_id ? ['collection', $ci->collection_id, $ci->collection->row_no ?? ''] : null);
+            $add($kind . ' · ' . ($ci->collection->row_no ?? ''), $ci->collection->created_at ?? $ci->created_at, 'bi-cash-coin', null, number_format($settled, $dec), 'collection', $ci->collection_id ? ['collection', $ci->collection_id, $ci->collection->row_no ?? ''] : null);
         }
 
         usort($events, fn($a, $b) => [$a['rank'], $a['rank'] ? $a['key'] : $a['seq'], $a['seq']] <=> [$b['rank'], $b['rank'] ? $b['key'] : $b['seq'], $b['seq']]);
@@ -1067,6 +1069,13 @@ class CustomerInvoiceController extends Controller
      * pulled straight from the existing collection_invoices pivot rather than
      * duplicating any collection logic.
      */
+    /** Customer credit applied to this invoice inside each collection (not cash, so not in collection_invoices.amount): collection id => amount. */
+    private function creditAppliedByCollection(int $invoiceId): \Illuminate\Support\Collection
+    {
+        return DB::table('customer_credit_applications')->where('to_invoice_id', $invoiceId)->where('status', 1)
+            ->selectRaw('collection_id, SUM(amount) as amount')->groupBy('collection_id')->pluck('amount', 'collection_id');
+    }
+
     public function paymentHistory($id)
     {
         $customerInvoice = CustomerInvoice::findOrFail($id);
@@ -1081,9 +1090,7 @@ class CustomerInvoiceController extends Controller
             ->whereIn('id', $collectionInvoices->map(fn($ci) => $ci->collection?->created_by)->filter()->unique())
             ->pluck('name', 'id');
 
-        // credit from an earlier credit note / overpayment applied to this invoice inside a collection (not cash, so not in collection_invoices.amount)
-        $credit = DB::table('customer_credit_applications')->where('to_invoice_id', $id)->where('status', 1)
-            ->selectRaw('collection_id, SUM(amount) as amount')->groupBy('collection_id')->pluck('amount', 'collection_id');
+        $credit = $this->creditAppliedByCollection((int) $id);
 
         $balance = (float) $customerInvoice->grand_total - (float) ($customerInvoice->paid_amount ?? 0);
 

@@ -593,10 +593,8 @@ class PaymentController extends Controller
         $payment = Payment::with(['supplier', 'job', 'paymentInvoices.supplierInvoice', 'additionalTransactions.account', 'createdBy', 'approvedBy'])
             ->findOrFail($id);
 
-        $html = view('modules.transaction.payment.print', compact('payment'))->render();
-        $fileName = "Payment_{$payment->row_no}.pdf";
-
-        return createPDF($html, $fileName);
+        // opens the print view and the browser's "Save as PDF" (same as Journal Voucher download)
+        return view('modules.transaction.payment.print', ['payment' => $payment, 'autoPrint' => true]);
     }
 
     /**
