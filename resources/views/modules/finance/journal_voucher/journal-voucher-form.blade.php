@@ -38,15 +38,7 @@
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label for="job_id" class="form-label">{{ __('Job') }}</label>
-                            <select class="tom-select" id="job_id" name="job_id">
-                                <option value="">{{ __('Select Job') }}</option>
-                                @foreach($jobs as $job)
-                                    <option
-                                        value="{{ $job->id }}" @selected($journalVoucher->job_id == $job->id)>
-                                        {{ $job->row_no }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <x-common.jobs :jobs="$jobs" :value="$journalVoucher->job_id" id="job_id"/>
                         </div>
                     </div>
                     <div class="col-md-4">

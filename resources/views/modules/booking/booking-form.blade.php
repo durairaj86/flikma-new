@@ -29,18 +29,11 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label fw-semibold">{{ __('Job') }} <small class="text-muted fw-normal">({{ __('optional') }})</small></label>
-                    <select name="job_id" id="bk-job" class="tom-select" data-live-search="true">
-                        <option value="">{{ __('Select Job') }}</option>
-                        @foreach($jobs as $job)
-                            <option value="{{ $job->id }}" @selected($booking->job_id == $job->id)
-                                    data-customer-id="{{ $job->customer_id ? encodeId($job->customer_id) : '' }}"
-                                    data-mode="{{ strtolower($job->shipment_mode ?? '') }}" data-pol="{{ $job->pol }}" data-pod="{{ $job->pod }}"
-                                    data-etd="{{ $job->etd ? \Carbon\Carbon::parse($job->etd)->format('d-m-Y') : '' }}"
-                                    data-eta="{{ $job->eta ? \Carbon\Carbon::parse($job->eta)->format('d-m-Y') : '' }}">
-                                {{ $job->row_no }} - {{ $job->customer->name_en ?? '' }}
-                            </option>
-                        @endforeach
-                    </select>
+                    @php
+                        $jobExtra = fn ($job) => ['data-mode' => strtolower($job->shipment_mode ?? ''), 'data-pol' => $job->pol, 'data-pod' => $job->pod,
+                            'data-etd' => $job->etd ? \Carbon\Carbon::parse($job->etd)->format('d-m-Y') : '', 'data-eta' => $job->eta ? \Carbon\Carbon::parse($job->eta)->format('d-m-Y') : ''];
+                    @endphp
+                    <x-common.jobs :jobs="$jobs" :value="$booking->job_id" id="bk-job" :extra="$jobExtra"/>
                     <div class="form-text">{{ __('Choosing a job fills the customer, route and dates.') }}</div>
                 </div>
                 <div class="col-md-4">

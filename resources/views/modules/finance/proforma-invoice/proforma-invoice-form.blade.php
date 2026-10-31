@@ -25,14 +25,7 @@
                     <!-- Job Reference -->
                     <div class="col-md-3">
                         <label class="form-label">{{ __('Job') }}</label>
-                        <select name="job_id" class="tom-select" data-live-search="true" placeholder="{{ __('--Select Job--') }}" required  @disabled($job_id)>
-                            <option value="">{{ __('Select Job') }}</option>
-                            @foreach($jobs as $job)
-                                <option value="{{ $job->id }}" data-subtext="{{ $job->customer->name_en }}" @selected($proforma->job_id == $job->id || $job->id == $job_id)>
-                                    {{ $job->row_no }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <x-common.jobs :jobs="$jobs" :value="[$proforma->job_id, $job_id]" :required="true" :disabled="(bool) $job_id"/>
                     </div>
 
                     <!-- Invoice Date -->

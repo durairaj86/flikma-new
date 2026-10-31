@@ -22,7 +22,7 @@ class SeawayBillController extends Controller
     public function modal(Request $request)
     {
         // Get any data needed for the form
-        $jobs = \App\Models\Job\Job::orderBy('id', 'desc')->get();
+        $jobs = \App\Models\Job\Job::with('customer:id,name_en')->orderBy('id', 'desc')->get();
         $descriptions = \App\Models\Master\Description::all();
 
         // Create an empty seaway bill object for the form
@@ -58,7 +58,7 @@ class SeawayBillController extends Controller
             $seawayBill->arrival_time = Carbon::parse($seawayBill->arrival_time)->format('H:i');
         }
 
-        $jobs = \App\Models\Job\Job::orderBy('id', 'desc')->get();
+        $jobs = \App\Models\Job\Job::with('customer:id,name_en')->orderBy('id', 'desc')->get();
         $descriptions = \App\Models\Master\Description::all();
         $polPod = preloadPOLAndPOD('air');
 

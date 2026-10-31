@@ -50,14 +50,7 @@
                     <!-- JOB -->
                     <div class="col-md-4">
                         <label class="form-label fw-semibold">{{ __('Job / File No') }}</label>
-                        <select name="job_id" class="tom-select">
-                            <option value="">{{ __('Select Job') }}</option>
-                            @foreach($jobs as $job)
-                                <option value="{{ $job->id }}" @selected($debitNote->job_id == $job->id)>
-                                    {{ $job->row_no }} - {{ $job->customer->name_en ?? '' }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <x-common.jobs :jobs="$jobs" :value="$debitNote->job_id"/>
                     </div>
 
                     <!-- LOGISTICS REFERENCES -->

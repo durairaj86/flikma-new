@@ -55,12 +55,7 @@
                 <div class="col-12"><h6 class="border-bottom pb-2 mb-0 fw-semibold">{{ __('Linked To') }}</h6></div>
                 <div class="col-md-6">
                     <label class="form-label fw-semibold">{{ __('Job') }}</label>
-                    <select name="job_id" class="tom-select" data-live-search="true">
-                        <option value="">{{ __('Select') }}</option>
-                        @foreach($jobs as $r)
-                            <option value="{{ $r->id }}" @selected($item->job_id == $r->id)>{{ $r->row_no }}</option>
-                        @endforeach
-                    </select>
+                    <x-common.jobs :jobs="$jobs" :value="$item->job_id"/>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-semibold">{{ __('Delivery Order') }}</label>

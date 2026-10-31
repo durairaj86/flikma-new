@@ -19,18 +19,12 @@
                 <div class="col-12"><h6 class="border-bottom pb-2 mb-0 fw-semibold">{{ __('Order') }}</h6></div>
                 <div class="col-md-4">
                     <label class="form-label fw-semibold">{{ __('Job') }} <small class="text-muted fw-normal">({{ __('optional') }})</small></label>
-                    <select name="job_id" id="dlv-job" class="tom-select" data-live-search="true">
-                        <option value="">{{ __('Select Job') }}</option>
-                        @foreach($jobs as $job)
-                            <option value="{{ $job->id }}" @selected($order->job_id == $job->id)
-                                    data-customer-id="{{ $job->customer_id ? encodeId($job->customer_id) : '' }}"
-                                    data-consignee="{{ $job->consignee }}" data-address="{{ $job->delivery_address }}" data-pickup="{{ $job->pickup_address }}"
-                                    data-container="{{ $job->container_no }}" data-packages="{{ $job->no_of_pieces }}" data-weight="{{ $job->weight }}"
-                                    data-description="{{ \Illuminate\Support\Str::limit((string) $job->description, 200, '') }}">
-                                {{ $job->row_no }} - {{ $job->customer->name_en ?? '' }}
-                            </option>
-                        @endforeach
-                    </select>
+                    @php
+                        $jobExtra = fn ($job) => ['data-consignee' => $job->consignee, 'data-address' => $job->delivery_address, 'data-pickup' => $job->pickup_address,
+                            'data-container' => $job->container_no, 'data-packages' => $job->no_of_pieces, 'data-weight' => $job->weight,
+                            'data-description' => \Illuminate\Support\Str::limit((string) $job->description, 200, '')];
+                    @endphp
+                    <x-common.jobs :jobs="$jobs" :value="$order->job_id" id="dlv-job" :extra="$jobExtra"/>
                     <div class="form-text">{{ __('Choosing a job fills the consignee, address and cargo.') }}</div>
                 </div>
                 <div class="col-md-4">

@@ -18,23 +18,16 @@
                 <div class="col-12"><h6 class="border-bottom pb-2 mb-0 fw-semibold">{{ __('Notice') }}</h6></div>
                 <div class="col-md-4">
                     <label class="form-label fw-semibold">{{ __('Job') }} <small class="text-muted fw-normal">({{ __('optional') }})</small></label>
-                    <select name="job_id" id="an-job" class="tom-select" data-live-search="true">
-                        <option value="">{{ __('Select Job') }}</option>
-                        @foreach($jobs as $job)
-                            <option value="{{ $job->id }}" @selected($notice->job_id == $job->id)
-                                    data-customer-id="{{ $job->customer_id ? encodeId($job->customer_id) : '' }}"
-                                    data-phone="{{ $job->customer->phone ?? '' }}"
-                                    data-shipper="{{ $job->shipper }}" data-consignee="{{ $job->consignee ?: ($job->customer->name_en ?? '') }}"
-                                    data-address="{{ $job->consignee_address }}" data-pol="{{ $job->pol }}" data-pod="{{ $job->pod }}"
-                                    data-eta="{{ $job->eta ? \Carbon\Carbon::parse($job->eta)->format('d-m-Y') : '' }}"
-                                    data-carrier="{{ $job->carrier }}" data-voyage="{{ $job->voyage_flight_no }}" data-bl="{{ $job->hbl_number }}"
-                                    data-commodity="{{ \Illuminate\Support\Str::limit((string) ($job->commodity ?: $job->description), 300, '') }}"
-                                    data-packages="{{ $job->no_of_pieces }}" data-final="{{ $job->final_destination }}"
-                                    data-containers="{{ $job->c_nos }}" data-c20="{{ $job->c20 }}" data-c40="{{ $job->c40 }}">
-                                {{ $job->row_no }} - {{ $job->customer->name_en ?? '' }}
-                            </option>
-                        @endforeach
-                    </select>
+                    @php
+                        $jobExtra = fn ($job) => ['data-phone' => $job->customer->phone ?? '', 'data-shipper' => $job->shipper, 'data-consignee' => $job->consignee ?: ($job->customer->name_en ?? ''),
+                            'data-address' => $job->consignee_address, 'data-pol' => $job->pol, 'data-pod' => $job->pod,
+                            'data-eta' => $job->eta ? \Carbon\Carbon::parse($job->eta)->format('d-m-Y') : '',
+                            'data-carrier' => $job->carrier, 'data-voyage' => $job->voyage_flight_no, 'data-bl' => $job->hbl_number,
+                            'data-commodity' => \Illuminate\Support\Str::limit((string) ($job->commodity ?: $job->description), 300, ''),
+                            'data-packages' => $job->no_of_pieces, 'data-final' => $job->final_destination,
+                            'data-containers' => $job->c_nos, 'data-c20' => $job->c20, 'data-c40' => $job->c40];
+                    @endphp
+                    <x-common.jobs :jobs="$jobs" :value="$notice->job_id" id="an-job" :extra="$jobExtra"/>
                     <div class="form-text">{{ __('Choosing a job fills the parties, vessel, route and containers.') }}</div>
                 </div>
                 <div class="col-md-4">

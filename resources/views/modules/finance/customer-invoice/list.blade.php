@@ -38,6 +38,7 @@
                 @stack('page-title-action')
             </div>
             <div class="d-flex align-items-center gap-2 ms-auto">
+                <a href="{{ url('/invoice/customer/new') }}{{ !empty($job_id) ? '?jobId=' . encodeId($job_id) : '' }}" class="btn btn-outline-primary rounded-pill px-4">{{ __('Invoice with Cost (GP)') }}</a>
                 <button class="btn btn-primary rounded-pill px-4" id="new" data-loader-id="{{ $job_id ?? 'list' }}">{{ __('New Customer Invoice') }}</button>
             </div>
         </div>

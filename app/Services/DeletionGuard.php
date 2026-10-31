@@ -171,6 +171,9 @@ class DeletionGuard
                 break;
             case 'supplier_invoice':
                 $why = array_merge($this->linked('supplier_invoice_id', $id, self::OWNED), $this->ledger('supplier_invoice', $id), $this->debitNotesAgainstSupplierInvoice($id));
+                if ($billed = app(\App\Services\Finance\SupplierInvoiceLinks::class)->blockers($id)) {
+                    $why[] = __('it is billed in customer invoice :no', ['no' => implode(', ', $billed)]);
+                }
                 if (DB::table('supplier_invoices')->where('id', $id)->where('status', '!=', 1)->exists()) {
                     $why[] = __('only a draft invoice can be deleted');
                 }

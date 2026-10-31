@@ -21,16 +21,7 @@
                     <!-- Job Reference -->
                     <div class="col-md-4">
                         <label class="form-label required">{{ __('Job') }} <sup class="text-danger">*</sup></label>
-                        <select name="job_id" id="job_id" class="tom-select" data-live-search="true" required>
-                            <option value="">{{ __('Select Job') }}</option>
-                            @foreach($jobs as $job)
-                                <option value="{{ $job->id }}"
-                                        @selected($seawayBill->job_id == $job->id) data-subtext="{{ $job->customer?->name_en }}"
-                                        data-customer-id="{{ $job->customer ? encodeId($job->customer_id) : '' }}">
-                                    {{ $job->row_no }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <x-common.jobs :jobs="$jobs" :value="$seawayBill->job_id" id="job_id" :required="true"/>
                     </div>
 
                     <!-- Customer -->

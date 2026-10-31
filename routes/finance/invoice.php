@@ -43,6 +43,7 @@ Route::namespace('finance')->prefix('invoice')->group(function () {
         Route::get('/list/{job_id}', [CustomerInvoiceController::class, 'listBasedOnJob'])->name('invoices.customer-with-job');
         Route::get('/job/{job}/costs', [CustomerInvoiceController::class, 'jobCosts'])->whereNumber('job')->name('invoices.customer.job-costs');
         Route::post('/data/{job_id}', [CustomerInvoiceController::class, 'fetchAllRows'])->name('invoices.customer.data');
+        Route::get('/new', [CustomerInvoiceController::class, 'newPage'])->name('invoices.customer.new');
         Route::get('/create', [CustomerInvoiceController::class, 'modal']);
         Route::post('/create', [CustomerInvoiceController::class, 'store']);
         Route::get('/{id}/create', [CustomerInvoiceController::class, 'edit']);

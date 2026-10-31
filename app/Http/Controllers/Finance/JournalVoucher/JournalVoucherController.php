@@ -34,7 +34,7 @@ class JournalVoucherController extends Controller
     public function modal()
     {
         $journalVoucher = new JournalVoucher();
-        $jobs = Job::select('id', 'row_no')->orderBy('row_no', 'desc')->get();
+        $jobs = Job::select('id', 'row_no', 'customer_id')->with('customer:id,name_en')->orderBy('row_no', 'desc')->get();
         $accounts = $this->postableAccounts();
         $voucherTypes = JournalVoucherTypeEnum::cases();
 
@@ -248,7 +248,7 @@ class JournalVoucherController extends Controller
     public function edit($id)
     {
         $journalVoucher = JournalVoucher::with('journalVoucherItems.account')->findOrFail($id);
-        $jobs = Job::select('id', 'row_no')->orderBy('row_no', 'desc')->get();
+        $jobs = Job::select('id', 'row_no', 'customer_id')->with('customer:id,name_en')->orderBy('row_no', 'desc')->get();
         $accounts = $this->postableAccounts($journalVoucher->journalVoucherItems->pluck('account_id')->merge($journalVoucher->journalVoucherItems->pluck('tax_id'))->filter()->all());
         $voucherTypes = JournalVoucherTypeEnum::cases();
 

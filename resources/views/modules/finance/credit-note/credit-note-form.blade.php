@@ -67,14 +67,7 @@
                     <!-- JOB (filled in from the chosen invoice; hidden for credit notes against an invoice) -->
                     <div class="col-md-4 {{ ($creditNote->credit_note_type ?: 'invoice') === 'invoice' ? 'd-none' : '' }}" id="cn-job-col">
                         <label class="form-label fw-semibold">{{ __('Job / File No') }} *</label>
-                        <select name="job_id" class="tom-select" required>
-                            <option value="">{{ __('Select Job') }}</option>
-                            @foreach($jobs as $job)
-                                <option value="{{ $job->id }}" @selected($creditNote->job_id == $job->id)>
-                                    {{ $job->row_no }} - {{ $job->customer->name_en }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <x-common.jobs :jobs="$jobs" :value="$creditNote->job_id" :required="true"/>
                     </div>
 
                     <!-- LOGISTICS REFERENCES -->

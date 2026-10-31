@@ -49,6 +49,22 @@ class CustomerInvoiceController extends Controller
         return view('modules.finance.customer-invoice.customer-invoice-form', compact('customer', 'jobs', 'parents', 'subAccounts', 'job_customer_id', 'job_id'));
     }
 
+    /** Full-page invoice builder: a Sale | Cost | GP grid per line (cost feeds the margin only, it is not posted). */
+    public function newPage(Request $request)
+    {
+        $jobs = Job::select('id', 'row_no', 'customer_id')->with('customer:id,name_en,currency')
+            ->whereIn('status', [JobEnum::COMPLETED, JobEnum::PENDING])->orderByDesc('id')->get();
+        $descriptions = DB::table('descriptions')
+            ->where(fn ($q) => $q->where('company_id', companyId())->orWhereNull('company_id'))
+            ->orderBy('description')->get(['id', 'description', 'sale_account_id']);
+        $units = \App\Models\Master\Unit::units([]);
+        $taxes = collect(vat())->map(fn ($v) => ['code' => $v['code'], 'percent' => (float) $v['percent'], 'label' => number_format($v['percent'], 2) . '% - ' . __($v['label'])])->values();
+        $currencies = currencies();
+        $selectedJob = $request->filled('jobId') ? decodeId($request->get('jobId')) : null;
+
+        return view('modules.finance.customer-invoice.customer-invoice-new', compact('jobs', 'descriptions', 'units', 'taxes', 'currencies', 'selectedJob'));
+    }
+
     public function edit($id)
     {
         $customer = CustomerInvoice::with(['customerInvoiceSubs', 'documents'])->findOrFail($id);
@@ -474,12 +490,41 @@ class CustomerInvoiceController extends Controller
                 'source_id' => is_numeric($request->source_id[$i] ?? null) ? (int) $request->source_id[$i] : null,
                 'source_sub_id' => is_numeric($request->source_sub_id[$i] ?? null) ? (int) $request->source_sub_id[$i] : null,
                 'cost_base_amount' => is_numeric($request->cost_base_amount[$i] ?? null) ? (float) $request->cost_base_amount[$i] : null,
+                'source_no' => null,
             ];
         }
         // a source line without its source document makes no sense: drop the half-filled link
         foreach ($customerSub as &$cs) {
             if (!$cs['source_type'] || !$cs['source_id']) {
                 $cs['source_type'] = $cs['source_id'] = $cs['source_sub_id'] = $cs['cost_base_amount'] = null;
+            }
+        }
+        unset($cs);
+
+        // a picked supplier invoice must be an approved one of this job that no other customer invoice bills; keep its number on the line
+        $links = app(\App\Services\Finance\SupplierInvoiceLinks::class);
+        $bills = \App\Models\Finance\SupplierInvoice\SupplierInvoice::whereIn('id', collect($customerSub)->where('source_type', 'supplier_invoice')->pluck('source_id')->unique())
+            ->get(['id', 'row_no', 'job_id', 'status'])->keyBy('id');
+        $quotes = \App\Models\Quotation\Quotation::whereIn('id', collect($customerSub)->where('source_type', 'quotation')->pluck('source_id')->unique())
+            ->get(['id', 'row_no', 'quotation_no'])->keyBy('id');
+        foreach ($customerSub as &$cs) {
+            if ($cs['source_type'] === 'quotation') {
+                $q = $quotes[$cs['source_id']] ?? null;
+                $cs['source_no'] = $q ? ($q->row_no ?: $q->quotation_no) : null;
+            } elseif ($cs['source_type'] === 'supplier_invoice') {
+                $b = $bills[$cs['source_id']] ?? null;
+                $status = $b ? (int) ($b->status instanceof \BackedEnum ? $b->status->value : $b->status) : null;
+                $other = $b ? $links->blockers($b->id, $customer->id) : [];
+                if (!$b || (int) $b->job_id !== (int) $validated['job_id'] || $status !== \App\Enums\SupplierInvoiceEnum::APPROVED->value || $other) {
+                    DB::rollBack();
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => $other
+                            ? __('Supplier invoice :no is already billed in customer invoice :inv.', ['no' => $b->row_no, 'inv' => implode(', ', $other)])
+                            : __('Only an approved supplier invoice of this job can be billed.'),
+                    ], 422);
+                }
+                $cs['source_no'] = $b->row_no;
             }
         }
         unset($cs);
@@ -494,6 +539,8 @@ class CustomerInvoiceController extends Controller
         if (!empty($customerSub)) {
             DB::table('customer_invoice_subs')->insert($customerSub);
         }
+        // the supplier lines now point at this invoice's lines (they are locked until this invoice is deleted)
+        $links->sync($customer->id);
 
             DB::commit();
 
@@ -518,6 +565,7 @@ class CustomerInvoiceController extends Controller
     {
         $customer = CustomerInvoice::findOrFail($id);
         $this->deleteCustomerFinanceByRef($customer->invoice_number, 'SI');
+        app(\App\Services\Finance\SupplierInvoiceLinks::class)->release((int) $id);
         $customer->delete();
 
         return response()->json(['status' => 'success', 'message' => __('Deleted successfully')]);
@@ -712,6 +760,7 @@ class CustomerInvoiceController extends Controller
 
                 // Create finance entries when invoice is approved
                 $this->createCustomerInvoiceFinanceEntries($customerInvoice);
+                app(\App\Services\Finance\SupplierInvoiceLinks::class)->sync($customerInvoice->id);   // approval gave the invoice its real number
 
                 $data = [];
                 if ($zatca['zatcaRegister']) {
@@ -738,6 +787,9 @@ class CustomerInvoiceController extends Controller
             } else {
                 $customerInvoice->status = $status;
                 $customerInvoice->save();
+                // a cancelled invoice frees the supplier invoices it billed; any other status keeps them linked
+                $links = app(\App\Services\Finance\SupplierInvoiceLinks::class);
+                (int) $status === CustomerInvoiceEnum::CANCELLED->value ? $links->release($customerInvoice->id) : $links->sync($customerInvoice->id);
 
                 // Delete finance entries when invoice is moved from APPROVED to another status
                 if ($previousStatus == CustomerInvoiceEnum::APPROVED->value) {
@@ -1443,6 +1495,7 @@ class CustomerInvoiceController extends Controller
         }
 
         \Illuminate\Support\Facades\DB::transaction(function () use ($model, $id) {
+            app(\App\Services\Finance\SupplierInvoiceLinks::class)->release((int) $id);   // frees the supplier invoices it billed
             \Illuminate\Support\Facades\DB::table('customer_invoice_subs')->where('customer_invoice_id', $id)->delete();
             $model->delete();
         });

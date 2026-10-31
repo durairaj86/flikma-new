@@ -41,16 +41,7 @@
                     <!-- Job Reference -->
                     <div class="col-md-4">
                         <label class="form-label required">{{ __('Job') }} <sup class="text-danger">*</sup></label>
-                        <select name="job_id" class="tom-select" data-live-search="true" required
-                                placeholder="{{ __('Search Job') }}" @disabled($job_id)>
-                            <option value="">{{ __('Select Job') }}</option>
-                            @foreach($jobs as $job)
-                                <option
-                                    value="{{ $job->id }}" @selected($supplier->job_id == $job->id || $job->id == $job_id)>
-                                    {{ $job->row_no }} - {{ $job->customer->name_en }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <x-common.jobs :jobs="$jobs" :value="[$supplier->job_id, $job_id]" :required="true" :disabled="(bool) $job_id" :placeholder="__('Search Job')"/>
                     </div>
 
                     <!-- Supplier -->

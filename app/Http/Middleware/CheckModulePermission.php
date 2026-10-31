@@ -55,6 +55,11 @@ class CheckModulePermission
             return 'edit';
         }
 
+        // the full-page builder (e.g. invoice/customer/new) needs the same right as the create modal
+        if ($method === 'GET' && str_ends_with($path, '/new')) {
+            return 'create';
+        }
+
         if (str_ends_with($path, '/create')) {
             if ($method === 'GET') {
                 return 'view';

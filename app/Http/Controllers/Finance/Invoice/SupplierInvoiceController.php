@@ -289,6 +289,9 @@ class SupplierInvoiceController extends Controller
         // 🔹 Fetch or create new
         if ($request->filled('data-id')) {
             $supplier = SupplierInvoice::findOrFail($request->input('data-id'));
+            if ($linked = app(\App\Services\Finance\SupplierInvoiceLinks::class)->refusal($supplier->id)) {
+                return $linked;   // billed in a customer invoice: no edit until that invoice is deleted
+            }
         } else {
             $supplier = new SupplierInvoice();
 
@@ -435,6 +438,9 @@ class SupplierInvoiceController extends Controller
     public function destroy($id)
     {
         $supplier = SupplierInvoice::findOrFail($id);
+        if ($linked = app(\App\Services\Finance\SupplierInvoiceLinks::class)->refusal($supplier->id)) {
+            return $linked;
+        }
         $this->deleteSupplierFinanceByRef($supplier->invoice_number, 'SI');
         $supplier->delete();
 
@@ -450,7 +456,21 @@ class SupplierInvoiceController extends Controller
         )->findOrFail($id);
         $contextMenu = collect([]);
         $edit = $delete = [];
-        if ($supplier->status === SupplierInvoiceEnum::DRAFT->value) {
+        // billed in a customer invoice: no move / edit / delete until that invoice is deleted
+        $linkedTo = app(\App\Services\Finance\SupplierInvoiceLinks::class)->blockers($supplier->id);
+        if ($linkedTo) {
+            $contextMenu->push([
+                'label' => __('Billed in :no', ['no' => implode(', ', $linkedTo)]),
+                'code' => '01CSLK',
+                'id' => 'row_linked',
+                'type' => 'item',
+                'icon' => 'view',
+                'separator' => 'after',
+            ]);
+        }
+        if ($linkedTo) {
+            // no status change while linked
+        } elseif ($supplier->status === SupplierInvoiceEnum::DRAFT->value) {
             $contextMenu->push([
                 'label' => __('Move to'),
                 'type' => 'submenu',
@@ -504,7 +524,7 @@ class SupplierInvoiceController extends Controller
             ]);
         }
 
-        if ($supplier->status === SupplierInvoiceEnum::DRAFT->value) {
+        if (!$linkedTo && $supplier->status === SupplierInvoiceEnum::DRAFT->value) {
             $edit = [
                 'label' => __('Edit'),
                 'code' => '01CSED',
@@ -556,7 +576,7 @@ class SupplierInvoiceController extends Controller
             'icon' => 'view',
             //'separator' => 'before',
         ]);
-        if ($supplier->status === SupplierInvoiceEnum::DRAFT->value) {
+        if (!$linkedTo && $supplier->status === SupplierInvoiceEnum::DRAFT->value) {
             $contextMenu->push([
                 'label' => __('Actions'),
                 'type' => 'submenu',
@@ -570,6 +590,9 @@ class SupplierInvoiceController extends Controller
     public function updateStatus($id, $status): \Illuminate\Http\JsonResponse
     {
         $supplier = SupplierInvoice::findOrFail($id);
+        if ($linked = app(\App\Services\Finance\SupplierInvoiceLinks::class)->refusal($supplier->id)) {
+            return $linked;   // billed in a customer invoice: it cannot go back to draft or change status
+        }
         $previousStatus = $supplier->status;
         if ($locked = $this->refuseInClosedPeriod($supplier->getRawOriginal('invoice_date'), $previousStatus, $status, SupplierInvoiceEnum::APPROVED->value)) {
             return $locked;
@@ -831,6 +854,9 @@ class SupplierInvoiceController extends Controller
     public function delete($id)
     {
         $model = SupplierInvoice::findOrFail($id);
+        if ($linked = app(\App\Services\Finance\SupplierInvoiceLinks::class)->refusal($model->id)) {
+            return $linked;
+        }
         $guard = app(\App\Services\DeletionGuard::class);
         $why = $guard->blockers('supplier_invoice', (int) $id);
         if ($why) {

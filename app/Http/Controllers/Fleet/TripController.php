@@ -19,7 +19,7 @@ class TripController extends Controller
             'item' => $item,
             'vehicles' => \App\Models\Fleet\Vehicle::where('status', 1)->orderBy('plate_no')->get(['id', 'plate_no', 'driver_id']),
             'drivers' => \App\Models\Fleet\Driver::where('status', 1)->orderBy('name')->get(['id', 'name']),
-            'jobs' => \App\Models\Job\Job::select('id', 'row_no')->orderByDesc('id')->limit(300)->get(),
+            'jobs' => \App\Models\Job\Job::select('id', 'row_no', 'customer_id')->with('customer:id,name_en')->orderByDesc('id')->limit(300)->get(),
             'deliveryOrders' => \App\Models\Delivery\DeliveryOrder::select('id', 'row_no')->orderByDesc('id')->limit(300)->get(),
         ];
     }

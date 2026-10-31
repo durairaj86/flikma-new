@@ -22,7 +22,7 @@ class WaybillController extends Controller
     public function modal(Request $request)
     {
         // Get any data needed for the form
-        $jobs = \App\Models\Job\Job::orderBy('id', 'desc')->get();
+        $jobs = \App\Models\Job\Job::with('customer:id,name_en')->orderBy('id', 'desc')->get();
         $descriptions = \App\Models\Master\Description::all();
 
         // Create an empty waybill object for the form
@@ -50,7 +50,7 @@ class WaybillController extends Controller
         $waybill->waybill_date = Carbon::parse($waybill->waybill_date)->format('Y-m-d');
         $waybill->delivery_date = Carbon::parse($waybill->delivery_date)->format('Y-m-d');
 
-        $jobs = \App\Models\Job\Job::orderBy('id', 'desc')->get();
+        $jobs = \App\Models\Job\Job::with('customer:id,name_en')->orderBy('id', 'desc')->get();
         $descriptions = \App\Models\Master\Description::all();
 
         return view('modules.bl.waybill.waybill-form', compact('waybill', 'jobs', 'descriptions'));
