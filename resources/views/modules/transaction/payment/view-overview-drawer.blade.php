@@ -169,7 +169,7 @@
     @else
         <div class="text-center py-4 text-muted">{{ __('No invoices linked to this payment.') }}</div>
     @endif
-    <div class="mt-3 pt-3 border-top">
+    <div class="mt-3">
     <table class="total-table ms-auto" style="min-width:320px;">
         <tr>
             <td><strong>{{ __('Subtotal') }}</strong></td>
