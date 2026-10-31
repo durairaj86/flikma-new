@@ -169,40 +169,7 @@
     @else
         <div class="text-center py-4 text-muted">{{ __('No invoices linked to this payment.') }}</div>
     @endif
-</div>
-
-@if($payment->additionalTransactions && $payment->additionalTransactions->count())
-    <div class="section">
-        <h6>{{ __('Additional Transactions') }}</h6>
-        <div class="table-responsive">
-            <table class="table table-bordered table-sm align-middle">
-                <thead>
-                <tr>
-                    <th>#</th>
-                    <th>{{ __('Account') }}</th>
-                    <th>{{ __('Description') }}</th>
-                    <th>{{ __('Type') }}</th>
-                    <th class="text-end">{{ __('Amount') }}</th>
-                </tr>
-                </thead>
-                <tbody>
-                @foreach($payment->additionalTransactions as $txn)
-                    <tr>
-                        <td>{{ $loop->iteration }}</td>
-                        <td>{{ $txn->account->name ?? '-' }}</td>
-                        <td>{{ $txn->description ?? '-' }}</td>
-                        <td>{{ $txn->is_debit ? __('Debit') : __('Credit') }}</td>
-                        <td class="text-end">{{ number_format($txn->amount, decimals()) }}</td>
-                    </tr>
-                @endforeach
-                </tbody>
-            </table>
-        </div>
-    </div>
-@endif
-
-<div class="section">
-    <h6>{{ __('Totals') }}</h6>
+    <div class="mt-3 pt-3 border-top">
     <table class="total-table ms-auto" style="min-width:320px;">
         <tr>
             <td><strong>{{ __('Subtotal') }}</strong></td>
@@ -235,7 +202,38 @@
             </tr>
         @endif
     </table>
+    </div>
 </div>
+
+@if($payment->additionalTransactions && $payment->additionalTransactions->count())
+    <div class="section">
+        <h6>{{ __('Additional Transactions') }}</h6>
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm align-middle">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>{{ __('Account') }}</th>
+                    <th>{{ __('Description') }}</th>
+                    <th>{{ __('Type') }}</th>
+                    <th class="text-end">{{ __('Amount') }}</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach($payment->additionalTransactions as $txn)
+                    <tr>
+                        <td>{{ $loop->iteration }}</td>
+                        <td>{{ $txn->account->name ?? '-' }}</td>
+                        <td>{{ $txn->description ?? '-' }}</td>
+                        <td>{{ $txn->is_debit ? __('Debit') : __('Credit') }}</td>
+                        <td class="text-end">{{ number_format($txn->amount, decimals()) }}</td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+@endif
 
 @if($payment->notes)
     <div class="section">

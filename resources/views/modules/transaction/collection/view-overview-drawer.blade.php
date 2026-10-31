@@ -175,6 +175,50 @@
     @else
         <div class="text-center py-4 text-muted">{{ __('No invoices linked to this collection.') }}</div>
     @endif
+    <div class="mt-3 pt-3 border-top">
+    <table class="total-table ms-auto" style="min-width:320px;">
+        <tr>
+            <td><strong>{{ __('Subtotal') }}</strong></td>
+            <td class="text-end">{{ number_format($collection->sub_total, decimals()) }}</td>
+        </tr>
+        <tr>
+            <td><strong>{{ __('Tax') }}</strong></td>
+            <td class="text-end">{{ number_format($collection->tax_total, decimals()) }}</td>
+        </tr>
+        @if($collection->bank_charges > 0)
+            <tr>
+                <td><strong>{{ __('Bank Charges') }}</strong></td>
+                <td class="text-end">{{ number_format($collection->bank_charges, decimals()) }}</td>
+            </tr>
+        @endif
+        @if($collection->other_charges > 0)
+            <tr>
+                <td><strong>{{ __('Other Charges') }}</strong></td>
+                <td class="text-end">{{ number_format($collection->other_charges, decimals()) }}</td>
+            </tr>
+        @endif
+        <tr class="table-secondary">
+            <td><strong>{{ __('Grand Total') }}</strong></td>
+            <td class="text-end fw-bold">{{ number_format($collection->grand_total, decimals()) }} {{ strtoupper($collection->currency) }}</td>
+        </tr>
+        @if(($credits ?? collect())->isNotEmpty())
+            <tr>
+                <td><strong>{{ __('Customer Credit Applied') }}</strong></td>
+                <td class="text-end fw-bold" style="color:#0891b2;">{{ number_format($credits->sum('amount'), decimals()) }} {{ strtoupper($collection->currency) }}</td>
+            </tr>
+            <tr class="table-secondary">
+                <td><strong>{{ __('Total Settled on Invoices') }}</strong></td>
+                <td class="text-end fw-bold">{{ number_format($collection->sub_total + $collection->tax_total + $credits->sum('amount'), decimals()) }} {{ strtoupper($collection->currency) }}</td>
+            </tr>
+        @endif
+        @if(strtoupper($collection->currency) !== 'SAR')
+            <tr>
+                <td><strong>{{ __('Base Currency Total') }}</strong></td>
+                <td class="text-end">{{ number_format($collection->base_grand_total, decimals()) }} SAR</td>
+            </tr>
+        @endif
+    </table>
+    </div>
 </div>
 
 @if(($credits ?? collect())->isNotEmpty())
@@ -218,52 +262,6 @@
         </div>
     </div>
 @endif
-
-<div class="section">
-    <h6>{{ __('Totals') }}</h6>
-    <table class="total-table ms-auto" style="min-width:320px;">
-        <tr>
-            <td><strong>{{ __('Subtotal') }}</strong></td>
-            <td class="text-end">{{ number_format($collection->sub_total, decimals()) }}</td>
-        </tr>
-        <tr>
-            <td><strong>{{ __('Tax') }}</strong></td>
-            <td class="text-end">{{ number_format($collection->tax_total, decimals()) }}</td>
-        </tr>
-        @if($collection->bank_charges > 0)
-            <tr>
-                <td><strong>{{ __('Bank Charges') }}</strong></td>
-                <td class="text-end">{{ number_format($collection->bank_charges, decimals()) }}</td>
-            </tr>
-        @endif
-        @if($collection->other_charges > 0)
-            <tr>
-                <td><strong>{{ __('Other Charges') }}</strong></td>
-                <td class="text-end">{{ number_format($collection->other_charges, decimals()) }}</td>
-            </tr>
-        @endif
-        <tr class="table-secondary">
-            <td><strong>{{ __('Grand Total') }}</strong></td>
-            <td class="text-end fw-bold">{{ number_format($collection->grand_total, decimals()) }} {{ strtoupper($collection->currency) }}</td>
-        </tr>
-        @if(($credits ?? collect())->isNotEmpty())
-            <tr>
-                <td><strong>{{ __('Customer Credit Applied') }}</strong></td>
-                <td class="text-end fw-bold" style="color:#0891b2;">{{ number_format($credits->sum('amount'), decimals()) }} {{ strtoupper($collection->currency) }}</td>
-            </tr>
-            <tr class="table-secondary">
-                <td><strong>{{ __('Total Settled on Invoices') }}</strong></td>
-                <td class="text-end fw-bold">{{ number_format($collection->sub_total + $collection->tax_total + $credits->sum('amount'), decimals()) }} {{ strtoupper($collection->currency) }}</td>
-            </tr>
-        @endif
-        @if(strtoupper($collection->currency) !== 'SAR')
-            <tr>
-                <td><strong>{{ __('Base Currency Total') }}</strong></td>
-                <td class="text-end">{{ number_format($collection->base_grand_total, decimals()) }} SAR</td>
-            </tr>
-        @endif
-    </table>
-</div>
 
 @if($collection->notes)
     <div class="section">
