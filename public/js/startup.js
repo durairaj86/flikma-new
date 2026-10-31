@@ -2422,7 +2422,12 @@ function initTomSelectForm(form = null, destroy = false, individualId = null) {
                 }
                 // the list can be wider than the box (data-dropdown-width), e.g. long account names in a narrow table cell
                 const listWidth = !isNaN(maxDropdownWidth) ? maxDropdownWidth : maxWidth;
-                if (!isNaN(listWidth)) this.dropdown.style.width = listWidth + 'px';
+                if (!isNaN(listWidth)) {
+                    this.dropdown.style.width = listWidth + 'px';
+                    // a list opened on <body> (data-dropdown-parent="body") is re-sized to the box on every open: keep the wider width
+                    const place = this.positionDropdown.bind(this);
+                    this.positionDropdown = () => { place(); this.dropdown.style.width = listWidth + 'px'; };
+                }
 
                 /* ---------- toggle-on-click (your logic) ---------- */
                 if (isMultiple) {

@@ -178,10 +178,10 @@
                 </td>
                 <td class="cost"><div class="calc"><input class="form-control decimal c-qty" data-decimals="4" value="1"> x <input class="form-control decimal price c-price" data-decimals="4" placeholder="0.00"> x <span class="rate-txt">1</span></div></td>
                 <td class="cost c-amt">0.00</td>
-                <td class="cost"><select class="tom-select c-tax" data-live-search="true" data-dropdown-parent="body" data-dropdown-width="300">@foreach($taxes as $t)<option value="{{ $t['code'] }}" data-p="{{ $t['percent'] }}" @selected($t['code'] === 'STANDARD')>{{ $t['label'] }}</option>@endforeach</select><div class="tax-line"><span class="c-taxamt">0.00</span> <span class="drcr">Dr(+)</span></div></td>
+                <td class="cost"><select class="tom-select c-tax" data-live-search="true" data-dropdown-parent="body" data-dropdown-width="280">@foreach($taxes as $taxGroup => $taxRates)<optgroup label="{{ __($taxGroup) }}">@foreach($taxRates as $t)<option value="{{ $t['code'] }}" data-p="{{ $t['percent'] }}" data-subtext="{{ $t['description'] }}" @selected($t['code'] === 'STANDARD')>{{ $t['label'] }}</option>@endforeach</optgroup>@endforeach</select><div class="tax-line"><span class="c-taxamt">0.00</span> <span class="drcr">Dr(+)</span></div></td>
                 <td class="sale"><div class="calc"><input class="form-control decimal s-qty" data-decimals="4" value="1"> x <input class="form-control decimal price s-price" data-decimals="4" placeholder="0.00"> x <span class="rate-txt">1</span></div></td>
                 <td class="sale s-amt">0.00</td>
-                <td class="sale"><select class="tom-select s-tax" data-live-search="true" data-dropdown-parent="body" data-dropdown-width="300">@foreach($taxes as $t)<option value="{{ $t['code'] }}" data-p="{{ $t['percent'] }}">{{ $t['label'] }}</option>@endforeach</select><div class="tax-line"><span class="s-taxamt">0.00</span> <span class="drcr">Cr(+)</span></div></td>
+                <td class="sale"><select class="tom-select s-tax" data-live-search="true" data-dropdown-parent="body" data-dropdown-width="280">@foreach($taxes as $taxGroup => $taxRates)<optgroup label="{{ __($taxGroup) }}">@foreach($taxRates as $t)<option value="{{ $t['code'] }}" data-p="{{ $t['percent'] }}" data-subtext="{{ $t['description'] }}" @selected($t['code'] === 'STANDARD')>{{ $t['label'] }}</option>@endforeach</optgroup>@endforeach</select><div class="tax-line"><span class="s-taxamt">0.00</span> <span class="drcr">Cr(+)</span></div></td>
                 <td class="text-end gp">0.00</td>
             </tr>
         </template>
@@ -316,7 +316,11 @@
                             pick.refreshOptions(false);
                             // how many are still to bill (not yet on a customer invoice)
                             const open = list => list.filter(x => !x.billed_in.length).length;
-                            $('#cinPending').innerHTML = `<span class="text-primary">{{ __('Quotation') }}: ${open(j.quotations)}</span> <span class="text-muted mx-1">|</span> <span class="text-dark">{{ __('Supplier Invoice') }}: ${open(j.bills)}</span> <span class="text-warning-emphasis">{{ __('pending') }}</span>`;
+                            // only what is actually there: no "Supplier Invoice: 0" when the job has none
+                            const parts = [];
+                            if (open(j.quotations)) parts.push(`<span class="text-primary">{{ __('Quotation') }}: ${open(j.quotations)}</span>`);
+                            if (open(j.bills)) parts.push(`<span class="text-dark">{{ __('Supplier Invoice') }}: ${open(j.bills)}</span>`);
+                            $('#cinPending').innerHTML = parts.length ? parts.join(' <span class="text-muted mx-1">|</span> ') + ' <span class="text-warning-emphasis">{{ __('pending') }}</span>' : '';
                             if (j.quotations.length || j.bills.length) $('#cinQuoteWrap').classList.remove('d-none');
                         });
                 };

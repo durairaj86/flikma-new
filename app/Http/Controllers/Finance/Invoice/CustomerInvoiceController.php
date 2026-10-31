@@ -59,7 +59,11 @@ class CustomerInvoiceController extends Controller
             ->where(fn ($q) => $q->where('company_id', companyId())->orWhereNull('company_id'))
             ->orderBy('description')->get(['id', 'description', 'sale_account_id']);
         $units = \App\Models\Master\Unit::units([]);
-        $taxes = collect(vat())->map(fn ($v) => ['code' => $v['code'], 'percent' => (float) $v['percent'], 'label' => number_format($v['percent'], 2) . '% - ' . __($v['label'])])->values();
+        // the same grouped list the other invoice forms use (Standard Rated / Zero Rated / Exempt / Out of Scope ...)
+        $taxes = collect(vatSelectable())->map(fn ($v) => [
+            'code' => $v['code'], 'percent' => (float) $v['percent'], 'label' => $v['option'],
+            'group' => $v['group'] ?? 'Other', 'description' => $v['subtext'],
+        ])->groupBy('group');
         $currencies = currencies();
         $selectedJob = $request->filled('jobId') ? decodeId($request->get('jobId')) : null;
 
@@ -382,6 +386,12 @@ class CustomerInvoiceController extends Controller
 
         $this->assertPeriodOpen($validated['invoice_date'], 'invoice_date');
         $this->assertPartyCurrency(\App\Models\Customer\Customer::class, $validated['customer'], $validated['currency']);
+        // a zero rated / exempt / out of scope line must carry its VAT exemption reason code (VATEX-SA-...)
+        foreach ((array) $request->input('tax', []) as $n => $taxCode) {
+            if (vatNeedsExemption($taxCode)) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['tax' => __('Line :n: choose the VAT exemption reason for this zero rated / exempt / out of scope line.', ['n' => $n + 1])]);
+            }
+        }
 
         //$userId = Auth::id();
         $companyId = companyId();
@@ -506,6 +516,8 @@ class CustomerInvoiceController extends Controller
                 'unit_price' => $price,
                 'base_unit_price' => round($price * $customer->currency_rate, 4),
                 'tax_code' => $request->tax[$i] ?? null,
+                'exemption_code' => vatExemption($request->tax[$i] ?? null)['code'] ?? null,        // e.g. VATEX-SA-32 (zero rated / exempt / out of scope lines)
+                'exemption_code_text' => vatExemption($request->tax[$i] ?? null)['text_en'] ?? null,    // its reason text, e.g. Export of goods
                 'tax_percent' => $taxRate,
                 'tax_amount' => $lineTax,
                 'base_tax_amount' => round($lineTax * $customer->currency_rate, 4),

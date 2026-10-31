@@ -283,6 +283,12 @@ class SupplierInvoiceController extends Controller
 
         $this->assertPeriodOpen($validated['invoice_date'], 'invoice_date');
         $this->assertPartyCurrency(\App\Models\Supplier\Supplier::class, $validated['supplier'], $validated['currency']);
+        // a zero rated / exempt / out of scope line must carry its VAT exemption reason code (VATEX-SA-...)
+        foreach ((array) $request->input('tax', []) as $n => $taxCode) {
+            if (vatNeedsExemption($taxCode)) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['tax' => __('Line :n: choose the VAT exemption reason for this zero rated / exempt / out of scope line.', ['n' => $n + 1])]);
+            }
+        }
 
         //$userId = Auth::id();
         $companyId = companyId();
@@ -402,6 +408,8 @@ class SupplierInvoiceController extends Controller
                 'unit_price' => $price,
                 'base_unit_price' => round($supplier->currency_rate * $price, 4),
                 'tax_code' => $request->tax[$i] ?? null,
+                'exemption_code' => vatExemption($request->tax[$i] ?? null)['code'] ?? null,        // e.g. VATEX-SA-32 (zero rated / exempt / out of scope lines)
+                'exemption_code_text' => vatExemption($request->tax[$i] ?? null)['text_en'] ?? null,    // its reason text, e.g. Export of goods
                 'tax_percent' => $taxRate,
                 'tax_amount' => $lineTax,
                 'base_tax_amount' => round($supplier->currency_rate * $lineTax, 4),

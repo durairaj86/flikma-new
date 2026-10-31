@@ -39,8 +39,10 @@
             </div>
             <div class="d-flex align-items-center gap-2 ms-auto">
                 @if(userCan('finances', 'create'))
-                <button type="button" class="btn btn-outline-primary rounded-pill px-4" id="newGp" data-job-id="{{ !empty($job_id) ? encodeId($job_id) : '' }}" data-page-url="{{ url('/invoice/customer/new') }}">{{ __('Invoice with Cost (GP)') }}</button>
-                <button class="btn btn-primary rounded-pill px-4" id="new" data-loader-id="{{ $job_id ?? 'list' }}">{{ __('New Customer Invoice') }}</button>
+                {{-- The old "New Customer Invoice" modal is replaced by the cost / sale (GP) form: this one button (id="new", also used by the
+                     keyboard shortcut and the empty-list button) now opens it.
+                <button type="button" class="btn btn-outline-primary rounded-pill px-4" id="newGp" ...>Invoice with Cost (GP)</button> --}}
+                <button class="btn btn-primary rounded-pill px-4" id="new" data-loader-id="{{ $job_id ?? 'list' }}" data-job-id="{{ !empty($job_id) ? encodeId($job_id) : '' }}">{{ __('New Customer Invoice') }}</button>
                 @endif
             </div>
         </div>
@@ -168,7 +170,7 @@
                             <button
                                 class="nav-link py-2 d-flex align-items-center justify-content-between status-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-basic" type="button" id="creditnote">
-                                <span><i class="bi bi-receipt-cutoff text-warning me-1"></i> {{ __('Credit Note') }} -</span>
+                                <span><i class="bi bi-receipt-cutoff text-warning me-1"></i> {{ __('Credit Note Received') }} -</span>
                                 <span class="status-count ms-2" id="creditnoteCount">0</span>
                             </button>
                         </li>

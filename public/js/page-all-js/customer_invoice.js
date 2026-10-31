@@ -467,27 +467,26 @@ CUSTOMER_INVOICE = {
             CUSTOMER_INVOICE.form.open();
         },
         open() {
-            // Invoice with Cost (GP): the cost / sale grid, in a modal on the list (the full page stays at /invoice/customer/new)
-            $('#newGp').off().on('click', function () {
+            // New Customer Invoice = the cost / sale (GP) form, in a modal on the list (the full page stays at /invoice/customer/new).
+            // The old plain "New Customer Invoice" modal is switched off:
+            /*$('#new').off().on('click', function () {
                 webModal.openGlobalModal({
-                    title: trans('Invoice with Cost (GP)'),
+                    title: trans('New Customer Invoice'),
+                    url: GLOBAL_FN.buildUrl('invoice/customer/create'),
+                    content: {jobId: $(this).attr('data-loader-id')},
+                    size: 'xl',
+                    scroll: false,
+                });
+            })*/
+            $('#new').off().on('click', function () {
+                webModal.openGlobalModal({
+                    title: trans('New Customer Invoice'),
                     url: GLOBAL_FN.buildUrl('invoice/customer/gp-form'),
                     content: $(this).attr('data-job-id') ? {jobId: $(this).attr('data-job-id')} : null,
                     size: '3xl',
                     scroll: true,
                 });
             });
-            $('#new').off().on('click', function () {
-                webModal.openGlobalModal({
-                    title: trans('New Customer Invoice'),
-                    url: GLOBAL_FN.buildUrl('invoice/customer/create'),
-                    content: {
-                        jobId: $(this).attr('data-loader-id')
-                    },
-                    size: 'xl',
-                    scroll: false,
-                });
-            })
         },
         openCallback() {
             CUSTOMER_INVOICE.form.addRow();

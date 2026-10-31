@@ -542,7 +542,58 @@ function userCan(string $module, string $action = 'view', $user = null): bool
     return $permission ? (bool) $permission->{$column} : false;
 }
 
+/**
+ * The VAT entries, read from the saudi_vat_framework table (the same table and the same dropdown the fatoora invoice app uses):
+ * Standard Rated / Zero Rated / Exempt / Out of Scope, each zero rated / exempt / out of scope one with its VATEX reason code.
+ * A tax code is BASE or BASE:VATEX-CODE ('STANDARD', 'ZERO:VATEX-SA-32'). Codes saved before this table was used (the plain
+ * 'ZERO' / 'EXEMPT' / 'OUTOFSCOPE', VATEX-SA-34-3 ...) stay known as legacy entries, so old lines keep resolving but are not offered.
+ */
 function vat(): array
+{
+    static $cache = [];
+    $locale = app()->getLocale();
+    if (isset($cache[$locale])) return $cache[$locale];
+
+    $base = ['S' => 'STANDARD', 'Z' => 'ZERO', 'E' => 'EXEMPT', 'O' => 'OUTOFSCOPE'];
+    $groups = ['S' => 'Standard Rated', 'Z' => 'Zero Rated', 'E' => 'Exempt', 'O' => 'Out of Scope'];
+    $entries = [];
+    try {
+        $rows = \Illuminate\Support\Facades\DB::table('saudi_vat_framework')->orderBy('id')->get();
+    } catch (\Throwable $e) {
+        $rows = collect();
+    }
+    $order = ['S' => 0, 'Z' => 1, 'E' => 2, 'O' => 3];
+    foreach ($rows->sortBy(fn ($r) => [$order[$r->category_code] ?? 9, $r->id]) as $r) {
+        $title = ucwords(str_replace('_', ' ', $r->slug));
+        $reason = $r->exemption_reason_code ?: null;
+        $desc = ($locale === 'ar' && $r->description_ar) ? $r->description_ar : (string) $r->description;
+        $entries[] = [
+            'code' => ($base[$r->category_code] ?? 'ZERO') . ($reason ? ':' . $reason : ''),
+            'name' => (string) $r->description,                       // the reason text (English), saved on the line as exemption_code_text
+            'group' => $groups[$r->category_code] ?? 'Other',
+            'label' => $title,
+            'percent' => (float) $r->rate,
+            'description' => $desc,
+            'reason' => $reason,
+            'slug' => $r->slug,
+            // the dropdown, as in fatoora: "15.00% - Standard Rate" (Out of Scope has no rate), and "VATEX-SA-32 — description" under it
+            'option' => $r->slug === 'out_of_scope' ? $title : number_format((float) $r->rate, 2) . '% - ' . $title,
+            'subtext' => $reason ? $reason . ' — ' . $desc : $desc,
+        ];
+    }
+
+    // old codes the table does not carry: still known, never offered
+    $known = array_column($entries, 'code');
+    foreach (vatLegacy() as $v) {
+        if (in_array($v['code'], $known, true)) continue;
+        $entries[] = $v + ['legacy' => true, 'option' => number_format((float) $v['percent'], 2) . '% - ' . $v['label'], 'subtext' => $v['description'] ?? ''];
+    }
+
+    return $cache[$locale] = $entries;
+}
+
+/** The hard coded list flikma used before the saudi_vat_framework table: only for lines saved with one of these codes. */
+function vatLegacy(): array
 {
     return array_merge([
         [
@@ -649,6 +700,48 @@ function vatLabel($code): string
         if ($v['code'] === $code) return number_format($v['percent'], 2) . '% - ' . __($v['label']);
     }
     return (string)$code;
+}
+
+/**
+ * The VAT exemption of a tax code, for a line that is not standard rated: ['category' => 'Zero Rate' | 'Exempt' | 'Out of Scope',
+ * 'code' => 'VATEX-SA-32' (null when the line was saved with the plain category), 'text' => the reason, e.g. "Export of goods"].
+ * Null for a standard rated line.
+ */
+function vatExemption($code): ?array
+{
+    if ($code === null || $code === '') return null;
+    $entry = collect(vat())->firstWhere('code', $code);
+    if (!$entry || (float) $entry['percent'] > 0) return null;
+
+    // the category the code belongs to (ZERO:VATEX-SA-32 -> the "Zero Rate" entry), shown with the code
+    $category = collect(vat())->firstWhere('code', explode(':', $code)[0]) ?? $entry;
+    $hasCode = !empty($entry['reason']);
+
+    return [
+        'category' => __($category['label']),
+        'code' => $hasCode ? $entry['reason'] : null,
+        'text' => $hasCode ? (!empty($entry['legacy']) ? $entry['name'] : ($entry['description'] ?? $entry['name'])) : __($category['description'] ?? $category['label']),
+        'text_en' => $hasCode ? ($entry['name'] ?? $entry['label']) : null,   // untranslated reason text, as saved on the line
+        'group' => $entry['group'] ?? null,
+    ];
+}
+
+/**
+ * The VAT entries an invoice line can be given: the saudi_vat_framework ones (each zero rated / exempt / out of scope one with its
+ * VATEX reason code). An old code that is no longer offered (plain Zero Rate ...) is added back only for the line that holds it ($keep).
+ */
+function vatSelectable($keep = null): array
+{
+    return array_values(array_filter(vat(), fn ($v) => empty($v['legacy']) || ($keep !== null && $keep !== '' && $v['code'] === $keep)));
+}
+
+/** Whether a tax code is a zero rated / exempt / out of scope one that has no VAT exemption reason code (the plain category). */
+function vatNeedsExemption($code): bool
+{
+    if ($code === null || $code === '') return false;
+    $entry = collect(vat())->firstWhere('code', $code);
+
+    return $entry && (float) $entry['percent'] <= 0 && empty($entry['reason']);
 }
 
 function vatPercent($vat): int

@@ -111,4 +111,5 @@
     .doc-ui .entry-grand small { display: block; font-size: .66rem; text-transform: uppercase; letter-spacing: .06em; opacity: .75; font-weight: 600; }
     .doc-ui .entry-grand b { font-size: 1.05rem; }
     @media (max-width: 700px) { .doc-ui .entry-grand { grid-template-columns: 1fr 1fr; } .doc-ui .entry-grand .eg-label { grid-column: span 2; } }
+    .doc-ui .ci-vatex { display: inline-block; margin-top: 2px; padding: 0 7px; border-radius: 999px; background: #fef3c7; color: #92400e; font-size: .66rem; font-weight: 700; white-space: nowrap; cursor: help; }
 </style>

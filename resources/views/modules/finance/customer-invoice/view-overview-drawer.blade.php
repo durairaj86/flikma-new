@@ -250,6 +250,14 @@
                         <td class="text-end col-sale">
                             <div>{{ number_format($item->base_total, decimals()) }}</div>
                             <div class="ci-tax">{{ rtrim(rtrim(number_format((float) $item->tax_percent, 2), '0'), '.') }}% · {{ number_format($item->base_tax_amount, decimals()) }}</div>
+                            @php
+                                $ciEx = vatExemption($item->tax_code);
+                                // what was saved on the line wins over the current tax list
+                                if ($ciEx && $item->exemption_code) { $ciEx['code'] = $item->exemption_code; $ciEx['text'] = $item->exemption_code_text ?: $ciEx['text']; }
+                            @endphp
+                            @if($ciEx)
+                                <div><span class="ci-vatex" title="{{ $ciEx['text'] }}">{{ $ciEx['category'] }}@if($ciEx['code']) · {{ $ciEx['code'] }}@endif</span></div>
+                            @endif
                         </td>
                         <td class="text-end fw-bold {{ $lineGp === null ? 'text-muted' : ($lineGp < 0 ? 'text-danger' : 'text-success') }}">{{ $lineGp === null ? '-' : number_format($lineGp, decimals()) }}</td>
                         <td class="text-end fw-semibold">{{ number_format($item->base_total_with_tax, decimals()) }}</td>
