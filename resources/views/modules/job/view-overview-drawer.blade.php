@@ -1,22 +1,39 @@
 <style>
     .section {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.25rem;
+        background: #fff;
+        border: 1px solid #e8eaf3;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(45, 58, 79, .06);
+        overflow: hidden;
     }
     .section h6 {
+        display: flex;
+        align-items: center;
+        gap: 10px;
         font-size: 14px;
+        font-weight: 700;
+        color: #2d3a4f;
+        background: linear-gradient(90deg, #eef0ff, #f8f9ff 70%);
+        padding: 10px 14px;
+        margin: 0;
+        border-bottom: 1px solid #e8eaf3;
+        border-inline-start: 4px solid #6366f1;
+    }
+    .section h6 .sec-ico {
+        width: 26px; height: 26px; border-radius: 8px;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: #6366f1; color: #fff; font-size: 13px;
+        box-shadow: 0 3px 8px rgba(99, 102, 241, .35);
+    }
+    .tab-pane[id^="job"] table.table th {
+        background: var(--gc, #2d3a4f);
+        border-color: var(--gc, #2d3a4f);
+        color: #fff;
         font-weight: 600;
-        background: #f7f7f9;
-        padding: 8px 10px;
-        border-radius: 4px;
-        /*border-left: 4px solid #0d6efd;*/
-        margin-bottom: 1rem;
     }
     table.table {
         font-size: 13.5px;
-    }
-    table.table th {
-        background: #f8f9fa;
-        font-weight: 600;
     }
     .list-group-item {
         font-size: 14px;
@@ -25,30 +42,81 @@
     .info-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 0.6rem 1.5rem;
+        gap: 0 1.5rem;
         font-size: 13.5px;
         line-height: 1.6;
+        padding: 6px 14px 10px;
     }
     .info-grid div {
         display: flex;
         justify-content: space-between;
-        border-bottom: 1px dotted #eee;
-        padding-bottom: 3px;
+        border-bottom: 1px solid #f0f1f7;
+        padding: 7px 4px;
+        border-radius: 6px;
+        transition: background .15s;
     }
+    .info-grid div:hover { background: #f7f8ff; }
     .info-grid strong {
-        color: #333;
+        color: #7a8196;
         min-width: 140px;
         font-weight: 600;
+        font-size: 12.5px;
     }
     .info-grid span {
-        color: #555;
+        color: #1f2937;
+        font-weight: 600;
         flex: 1;
         text-align: left;
         margin-left: 8px;
     }
+    .info-grid span.is-empty { color: #c3c7d4; font-weight: 400; }
     .info-grid .col-span-2 {
         grid-column: span 2;
     }
+
+    .job-hero {
+        position: relative; overflow: hidden; margin-bottom: 1.25rem; padding: 18px 20px 16px;
+        border-radius: 14px; color: #fff;
+        background: linear-gradient(135deg, #2d3a4f 0%, #4f46e5 70%, #8b5cf6 100%);
+        box-shadow: 0 8px 22px rgba(79, 70, 229, .28);
+    }
+    .job-hero::after {
+        content: ''; position: absolute; right: -60px; top: -60px; width: 220px; height: 220px;
+        border-radius: 50%; background: rgba(255, 255, 255, .08);
+    }
+    .job-hero .jh-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; position: relative; z-index: 1; }
+    .job-hero .jh-no { font-size: 1.35rem; font-weight: 800; letter-spacing: .01em; }
+    .job-hero .jh-cust { opacity: .85; font-size: .9rem; }
+    .job-hero .jh-chip {
+        display: inline-flex; align-items: center; gap: 6px; padding: 3px 12px; border-radius: 999px;
+        font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; background: rgba(255, 255, 255, .18);
+    }
+    .job-hero .jh-chip i { font-size: .5rem; }
+    .job-hero .jh-chip.s-pending i { color: #fbbf24; }
+    .job-hero .jh-chip.s-completed i { color: #34d399; }
+    .job-hero .jh-chip.s-cancelled i, .job-hero .jh-chip.s-trashed i { color: #f87171; }
+    .job-hero .jh-route { display: flex; align-items: center; gap: 12px; margin: 16px 0 14px; position: relative; z-index: 1; }
+    .job-hero .jh-port { font-weight: 700; font-size: .95rem; }
+    .job-hero .jh-port small { display: block; font-weight: 500; opacity: .7; font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; }
+    .job-hero .jh-line { flex: 1; position: relative; border-top: 2px dashed rgba(255, 255, 255, .45); min-width: 40px; }
+    .job-hero .jh-line i {
+        position: absolute; left: 50%; top: -15px; transform: translateX(-50%); width: 28px; height: 28px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center; background: #fff; color: #4f46e5; font-size: .9rem;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, .25);
+    }
+    .job-hero .jh-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; position: relative; z-index: 1; }
+    .job-hero .jh-stat { background: rgba(255, 255, 255, .13); border-radius: 10px; padding: 8px 12px; backdrop-filter: blur(2px); }
+    .job-hero .jh-stat small { display: block; font-size: .66rem; text-transform: uppercase; letter-spacing: .06em; opacity: .75; font-weight: 600; }
+    .job-hero .jh-stat b { font-size: .98rem; font-weight: 700; }
+    .jf-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 1.25rem; }
+    .jf-tile { border-radius: 12px; padding: 10px 14px; border: 1px solid transparent; border-inline-start-width: 4px; }
+    .jf-tile small { display: block; font-size: .66rem; text-transform: uppercase; letter-spacing: .06em; font-weight: 700; }
+    .jf-tile b { font-size: 1.05rem; font-weight: 800; }
+    .jf-tile.t-blue { background: #eef2ff; border-color: #6366f1; color: #4338ca; }
+    .jf-tile.t-green { background: #ecfdf5; border-color: #10b981; color: #047857; }
+    .jf-tile.t-amber { background: #fffbeb; border-color: #f59e0b; color: #b45309; }
+    .jf-tile.t-red { background: #fef2f2; border-color: #ef4444; color: #b91c1c; }
+    @media (max-width: 700px) { .info-grid { grid-template-columns: 1fr; } .info-grid .col-span-2 { grid-column: span 1; } }
 </style>
 
 <!-- General Tab -->
@@ -61,8 +129,45 @@
         $jobStatus = ['1' => 'Pending', '2' => 'Completed', '3' => 'Cancelled', '4' => 'Trashed'][(string) (int) $job->status] ?? 'Pending';
     ?>
 
+    <?php
+        $mode = strtolower((string) $job->shipment_mode);
+        $modeIcon = ['sea' => 'bi-water', 'air' => 'bi-airplane-fill', 'land' => 'bi-truck', 'road' => 'bi-truck'][$mode] ?? 'bi-box-seam';
+        $sm0 = $fin['summary'] ?? [];
+        $kg = filled($job->weight) && (float) $job->weight ? number_format((float) $job->weight, 2).' kg' : '-';
+        $cbm = filled($job->volume) && (float) $job->volume ? number_format((float) $job->volume, 3).' CBM' : '-';
+    ?>
+    <div class="job-hero">
+        <div class="jh-top">
+            <div>
+                <div class="jh-no">{{ $job->row_no ?: '-' }}</div>
+                <div class="jh-cust">{{ $job->customer->name_en ?? '-' }}</div>
+            </div>
+            <span class="jh-chip s-{{ strtolower($jobStatus) }}"><i class="bi bi-circle-fill"></i>{{ __($jobStatus) }}</span>
+        </div>
+        <div class="jh-route">
+            <div class="jh-port"><small>{{ __('POL') }}</small>{{ $v($job->pol_name ?: $job->pol) }}</div>
+            <div class="jh-line"><i class="bi {{ $modeIcon }}"></i></div>
+            <div class="jh-port text-end"><small>{{ __('POD') }}</small>{{ $v($job->pod_name ?: $job->pod) }}</div>
+        </div>
+        <div class="jh-stats">
+            <div class="jh-stat"><small>{{ __('ETD') }}</small><b>{{ $d($job->etd) }}</b></div>
+            <div class="jh-stat"><small>{{ __('ETA') }}</small><b>{{ $d($job->eta) }}</b></div>
+            <div class="jh-stat"><small>{{ __('Weight') }}</small><b>{{ $kg }}</b></div>
+            <div class="jh-stat"><small>{{ __('Volume') }}</small><b>{{ $cbm }}</b></div>
+            <div class="jh-stat"><small>{{ __('No. of Pieces') }}</small><b>{{ $v($job->no_of_pieces) }}</b></div>
+        </div>
+    </div>
+    @if($sm0)
+        <div class="jf-strip">
+            <div class="jf-tile t-blue"><small>{{ __('Invoiced') }}</small><b>{{ number_format($sm0['invoiced'] ?? 0, 2) }}</b></div>
+            <div class="jf-tile t-green"><small>{{ __('Collected') }}</small><b>{{ number_format($sm0['collected'] ?? 0, 2) }}</b></div>
+            <div class="jf-tile {{ ($sm0['outstanding'] ?? 0) > 0 ? 't-amber' : 't-green' }}"><small>{{ __('Outstanding') }}</small><b>{{ number_format($sm0['outstanding'] ?? 0, 2) }}</b></div>
+            <div class="jf-tile {{ ($sm0['profit'] ?? 0) >= 0 ? 't-green' : 't-red' }}"><small>{{ __('Profit') }}</small><b>{{ number_format($sm0['profit'] ?? 0, 2) }}</b></div>
+        </div>
+    @endif
+
     <div class="section">
-        <h6>{{ __('Customer & Job Information') }}</h6>
+        <h6><span class="sec-ico"><i class="bi bi-person-vcard"></i></span>{{ __('Customer & Job Information') }}</h6>
         <div class="info-grid">
             <div><strong>{{ __('Customer:') }}</strong><span>{!! e($v($job->customer->name_en ?? null)) !!}</span></div>
             <div><strong>{{ __('Job No:') }}</strong><span>{!! e($job->row_no ? '#'.$job->row_no : '-') !!}</span></div>
@@ -84,7 +189,7 @@
     </div>
 
     <div class="section">
-        <h6>{{ __('Shipment Parties') }}</h6>
+        <h6><span class="sec-ico"><i class="bi bi-people"></i></span>{{ __('Shipment Parties') }}</h6>
         <div class="info-grid">
             <div><strong>{{ __('Shipper:') }}</strong><span>{!! e($v($job->shipper)) !!}</span></div>
             <div><strong>{{ __('Consignee:') }}</strong><span>{!! e($v($job->consignee)) !!}</span></div>
@@ -96,7 +201,7 @@
     </div>
 
     <div class="section">
-        <h6>{{ __('Cargo & Transport') }}</h6>
+        <h6><span class="sec-ico"><i class="bi bi-box-seam"></i></span>{{ __('Cargo & Transport') }}</h6>
         <div class="info-grid">
             <div><strong>{{ __('Commodity:') }}</strong><span>{!! e($v($job->commodity)) !!}</span></div>
             <div><strong>{{ __('Incoterm:') }}</strong><span>{!! e($v($job->incoterm ?: $job->incoterms)) !!}</span></div>
@@ -113,7 +218,7 @@
     </div>
 
     <div class="section">
-        <h6>{{ __('Routing & Schedule') }}</h6>
+        <h6><span class="sec-ico"><i class="bi bi-signpost-split"></i></span>{{ __('Routing & Schedule') }}</h6>
         <div class="info-grid">
             <div><strong>{{ __('Place of Receipt:') }}</strong><span>{!! e($v($job->place_of_receipt)) !!}</span></div>
             <div><strong>{{ __('POL:') }}</strong><span>{!! e($v($job->pol_name ?: $job->pol)) !!}</span></div>
@@ -131,7 +236,7 @@
     </div>
 
     <div class="section">
-        <h6>{{ __('Remarks') }}</h6>
+        <h6><span class="sec-ico"><i class="bi bi-chat-left-text"></i></span>{{ __('Remarks') }}</h6>
         <div class="info-grid">
             <div class="col-span-2"><strong>{{ __('Remarks:') }}</strong><span>{!! e($v($job->remarks)) !!}</span></div>
             <div class="col-span-2"><strong>{{ __('Terms:') }}</strong><span>{!! e($v($job->terms)) !!}</span></div>
@@ -149,7 +254,7 @@
         <a href="/operation/customs" class="ms-auto small">{{ __('Open Customs Clearance') }}</a>
     </div>
     <div class="section">
-        <h6>{{ __('Customs & Clearance') }}</h6>
+        <h6><span class="sec-ico"><i class="bi bi-shield-check"></i></span>{{ __('Customs & Clearance') }}</h6>
         <div class="info-grid">
             <div><strong>{{ __('Clearance Status:') }}</strong><span>{!! e(\Illuminate\Support\Str::headline((string) ($c->clearance_status ?? '')) ?: '-') !!}</span></div>
             <div><strong>{{ __('Clearance Date:') }}</strong><span>{!! e($d($c->clearance_date ?? null)) !!}</span></div>
@@ -278,13 +383,14 @@
         @endforeach
     </div>
     <div class="text-muted small mb-3">{{ __('Amounts are in the company currency. Cancelled documents and drafts are not counted.') }}</div>
-    @foreach($fin['groups'] as $g)
+    @php($gColors = ['customer_invoice' => '#16a34a', 'proforma' => '#65a30d', 'credit_note' => '#dc2626', 'collection' => '#059669', 'supplier_invoice' => '#d97706', 'payment' => '#ea580c', 'expense' => '#b45309', 'job' => '#2563eb', 'document' => '#6b7280'])
+    @foreach($fin['groups'] as $gk => $g)
         <div class="mb-3">
             <h6 class="fw-bold d-flex align-items-center gap-2">{{ __($g['label']) }} <span class="badge bg-light text-dark border">{{ count($g['rows']) }}</span></h6>
             @if(count($g['rows']))
                 <div class="table-responsive">
                     <table class="table table-sm align-middle mb-0">
-                        <thead class="table-light"><tr><th>{{ __('No') }}</th><th>{{ __('Date') }}</th><th>{{ __('Party') }}</th><th>{{ __('Status') }}</th><th class="text-end">{{ __('Amount') }}</th><th class="text-end">{{ __('Paid') }}</th><th></th></tr></thead>
+                        <thead style="--gc: {{ $gColors[$gk] ?? '#4f46e5' }}"><tr><th>#</th><th>{{ __('Date') }}</th><th>{{ __('Party') }}</th><th>{{ __('Status') }}</th><th class="text-end">{{ __('Amount') }}</th><th class="text-end">{{ __('Paid') }}</th><th></th></tr></thead>
                         <tbody>
                         @foreach($g['rows'] as $r)
                             <tr class="{{ $r['cancelled'] ? 'text-muted text-decoration-line-through' : '' }}">
@@ -365,3 +471,11 @@
         </div>
     @endif
 </div>
+
+<script>
+    (function () {
+        document.querySelectorAll('.info-grid span').forEach(function (el) {
+            if (el.textContent.trim() === '-') el.classList.add('is-empty');
+        });
+    })();
+</script>
