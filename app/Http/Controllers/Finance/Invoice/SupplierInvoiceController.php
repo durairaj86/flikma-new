@@ -185,6 +185,14 @@ class SupplierInvoiceController extends Controller
         return DataTables::eloquent($rows)
             ->addIndexColumn()
             // company currency code: the list shows an invoice in a different currency with its company-currency amount beside it
+            // amount already entered on draft payments (not approved yet): the Payment form takes it off what is still owed
+            ->addColumn('draft_paid', function ($model) use ($decimals) {
+                $draft = (float) DB::table('payment_invoices as pi')
+                    ->join('payments as p', 'p.id', '=', 'pi.payment_id')
+                    ->where('pi.supplier_invoice_id', $model->id)->whereNull('p.deleted_at')
+                    ->where('p.status', \App\Enums\PaymentEnum::DRAFT->value)->sum('pi.amount');
+                return $draft > 0 ? number_format($draft, $decimals) : null;
+            })
             ->addColumn('base_currency', fn() => strtoupper($baseCurrency))
             ->addColumn('job_activity', fn($model) => $model->job ? ($activity->where('id', $model->job->activity_id)->pluck('name')->first() ?? '-') : '-')
             // FCY Amount — only shown for invoices not already in the

@@ -5331,5 +5331,7 @@
     "Other currency: collect it in a separate collection": "عملة مختلفة: حصّلها في تحصيل منفصل",
     ":no is in :cur. Collect it in :cur (a collection must be in the same currency as its invoice).": ":no بعملة :cur. حصّلها بعملة :cur (يجب أن يكون التحصيل بنفس عملة الفاتورة).",
     "The currency is set on the :party (:cur). Change it there, not on the document.": "العملة محددة في :party (:cur). غيّرها هناك وليس في المستند.",
-    "Line :n: choose the VAT exemption reason for this zero rated / exempt / out of scope line.": "السطر :n: اختر سبب الإعفاء من ضريبة القيمة المضافة لهذا السطر (صفري / معفى / خارج النطاق)."
+    "Line :n: choose the VAT exemption reason for this zero rated / exempt / out of scope line.": "السطر :n: اختر سبب الإعفاء من ضريبة القيمة المضافة لهذا السطر (صفري / معفى / خارج النطاق).",
+    "in draft payment": "في دفعة مسودة",
+    "Draft payments are taken off in the Payment form": "الدفعات المسودة تُخصم في نموذج الدفع"
 }

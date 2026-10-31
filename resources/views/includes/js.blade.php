@@ -27,6 +27,7 @@
 @endif--}}
 @php
     $i18nKeys = [
+        'in draft payment', 'Draft payments are taken off in the Payment form', 'Part paid', 'Paid', 'Unpaid',
         'Other currency: collect it in a separate collection',
         'in draft collection', 'Draft collections are taken off in the Collection form',
         'Convert to invoice?', 'A draft customer invoice is created with these lines. Check it and approve it to post it.', 'Convert',

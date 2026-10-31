@@ -210,9 +210,7 @@
                         <th>{{ __('Invoice #') }}</th>
                         <th>{{ __('Job') }}</th>
                         <th>{{ __('Supplier') }}</th>
-                        <th>{{ __('FCY Amount') }}</th>
-                        <th class="text-end">{{ __('Excl. VAT') }}</th>
-                        <th class="text-end">{{ __('Tax') }}</th>
+                        <th class="text-end">{{ __('Amount') }}</th>
                         <th class="text-end">{{ __('Balance Due') }}</th>
                         <th>{{ __('Dates') }}</th>
                         <th class="text-end">{{ __('Aging') }}</th>

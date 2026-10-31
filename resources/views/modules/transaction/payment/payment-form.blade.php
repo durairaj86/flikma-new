@@ -134,7 +134,24 @@
                                                    data-id="{{ $invoice->id }}" value="{{ $invoice->id }}"
                                                    data-amount="{{ $invoice->grand_total }}" @checked($isSelected) {{--{{ $payment->status != 1 ? 'disabled' : '' }}--}}>
                                         </td>
-                                        <td>{{ $invoice->row_no }}</td>
+                                        @php
+                                            // other draft payments already hold part of what this invoice owes: the balance is after them
+                                            $draftHeld = \Illuminate\Support\Facades\DB::table('payment_invoices as pi')
+                                                ->join('payments as p', 'p.id', '=', 'pi.payment_id')
+                                                ->where('pi.supplier_invoice_id', $invoice->id)->whereNull('p.deleted_at')
+                                                ->where('p.status', \App\Enums\PaymentEnum::DRAFT->value)
+                                                ->when(!empty($payment->id), fn ($q) => $q->where('p.id', '!=', $payment->id))
+                                                ->get(['p.row_no', 'pi.amount']);
+                                        @endphp
+                                        <td>
+                                            {{ $invoice->row_no }}
+                                            @if($draftHeld->count())
+                                                <div class="small text-warning-emphasis" title="{{ __('Draft payments are taken off in the Payment form') }}">
+                                                    <i class="bi bi-hourglass-split"></i>
+                                                    {{ number_format($draftHeld->sum('amount'), 2) }} {{ __('in draft payment') }} ({{ $draftHeld->pluck('row_no')->implode(', ') }})
+                                                </div>
+                                            @endif
+                                        </td>
                                         <td>{{ $invoice->job_no }}</td>
                                         <td>{{ $invoice->invoice_date }}</td>
                                         <td>{{ $invoice->due_at }}</td>

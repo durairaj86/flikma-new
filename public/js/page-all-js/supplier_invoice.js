@@ -122,7 +122,7 @@ SUPPLIER_INVOICE = {
                 },
                 columnDefs: [
                     {targets: [0], searchable: false},
-                    {targets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], orderable: false},
+                    {targets: [0, 1, 2, 3, 4, 5, 6, 7], orderable: false},
                 ],
                 columns: [
                     {
@@ -135,17 +135,8 @@ SUPPLIER_INVOICE = {
                         data: 'supplier.name_en', render: (data, type, row) => templates.supplier(row)
                     },
                     {
-                        data: 'fcy_amount', render: (data) => data
-                    },
-                    {
-                        data: 'sub_total', class: 'text-end', render: function (data, type, row) {
-                            return '<div class="cell-primary">' + templates.money(row, row.sub_total) + '</div><div class="cell-secondary">' + templates.baseNote(row, row.base_sub_total) + '</div>';
-                        }
-                    },
-                    {
-                        data: 'tax_total', class: 'text-end', render: function (data, type, row) {
-                            return '<div class="cell-primary">' + templates.money(row, row.tax_total) + '</div>' + (templates.isForeign(row) ? '<div class="cell-secondary">' + templates.baseNote(row, row.base_tax_total) + '</div>' : '');
-                        }
+                        // the invoice total, with what it is made of (like the customer invoice list); a foreign invoice also shows the company-currency total
+                        data: 'grand_total', class: 'text-end', render: (data, type, row) => templates.amount(row)
                     },
                     {
                         data: 'balance', class: 'text-end', render: (data, type, row) => templates.balance(row)
@@ -268,6 +259,11 @@ SUPPLIER_INVOICE = {
             baseNote: (row, base) => SUPPLIER_INVOICE.list.templates.isForeign(row)
                 ? `<span title="${trans('Company currency')}">${row.base_currency} ${amountFormat(base)}</span>` : row.currency,
 
+            // Amount: total (any status, so a draft shows its amount too) and "Excl. VAT + VAT" under it
+            amount: (row) => `<div class="cell-primary">${row.grand_total} <span class="cell-secondary">${row.currency ?? ''}</span></div>
+                <div class="cell-secondary">${trans('Excl. VAT')} ${amountFormat(row.sub_total)} + ${trans('VAT')} ${amountFormat(row.tax_total)}</div>`
+                + (SUPPLIER_INVOICE.list.templates.isForeign(row) ? `<div class="cell-secondary" title="${trans('Company currency')}">${row.base_currency} ${row.base_total}</div>` : ''),
+
             balance: (row) => {
                 const grand = parseFloat(String(row.grand_total).replace(/,/g, '')) || 0;
                 const paid = parseFloat(row.paid_amount) || 0;
@@ -276,7 +272,13 @@ SUPPLIER_INVOICE = {
                     return `<div class="cell-primary">${SUPPLIER_INVOICE.list.templates.money(row, grand - paid)}</div>`;
                 }
                 const isPaid = grand > 0 && paid >= grand;
-                return `<div class="cell-primary">${SUPPLIER_INVOICE.list.templates.money(row, grand - paid)}</div><div class="cell-secondary ${isPaid ? 'text-success' : 'text-danger'}">${isPaid ? 'Paid' : 'Unpaid'}</div>`;
+                const isPart = paid > 0 && !isPaid;
+                const label = isPaid ? trans('Paid') : (isPart ? trans('Part paid') : trans('Unpaid'));
+                const color = isPaid ? 'text-success' : (isPart ? 'text-warning-emphasis' : 'text-danger');
+                const icon = isPart ? '<i class="bi bi-clock-history me-1"></i>' : '';
+                // payments still in draft: the Payment form already takes them off, so say why its amount is lower
+                const draft = row.draft_paid ? `<div class="cell-secondary text-warning-emphasis" title="${trans('Draft payments are taken off in the Payment form')}"><i class="bi bi-hourglass-split me-1"></i>${row.draft_paid} ${trans('in draft payment')}</div>` : '';
+                return `<div class="cell-primary">${SUPPLIER_INVOICE.list.templates.money(row, grand - paid)}</div><div class="cell-secondary ${color}">${icon}${label}</div>${draft}`;
             },
 
             invoice: (row) => `<div class="cell-primary">${row.invoice_date ?? ''}</div><div class="cell-secondary">${trans('Due')} ${row.due_at ?? ''}</div>`,
