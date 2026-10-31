@@ -328,6 +328,10 @@ class CustomerInvoiceController extends Controller
                 ];
             })
             // amount already entered on draft collections (not approved yet): the Collection form takes it off what is still owed
+            // credit notes raised against this invoice (cancelled ones left out): shown under the invoice number
+            ->addColumn('credit_notes', fn ($model) => \App\Models\Finance\Adjustment\CreditNote::where('invoice_id', $model->id)
+                ->where('status', '!=', \App\Enums\CreditNoteEnum::CANCELLED->value)->orderBy('id')->get(['id', 'row_no', 'grand_total', 'status'])
+                ->map(fn ($cn) => ['id' => $cn->id, 'no' => $cn->row_no, 'amount' => number_format((float) $cn->grand_total, $decimals), 'draft' => (int) ($cn->status instanceof \BackedEnum ? $cn->status->value : $cn->status) === 1])->values()->all())
             ->addColumn('draft_collected', function ($model) use ($decimals) {
                 $draft = (float) \Illuminate\Support\Facades\DB::table('collection_invoices as ci')
                     ->join('collections as c', 'c.id', '=', 'ci.collection_id')

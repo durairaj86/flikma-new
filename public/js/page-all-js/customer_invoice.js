@@ -181,6 +181,30 @@ CUSTOMER_INVOICE = {
                 CUSTOMER_INVOICE.list.openHistory($(this).closest('tr').attr('data-id'));
             });
 
+            // Print inside the credit note shown in this drawer: this page does not load the Credit Note script, so print through a hidden frame
+            $(document).off('click.ciCnPrint').on('click.ciCnPrint', '#moduleDrawer .linked-print', function () {
+                const url = this.dataset.printUrl;
+                if (!url) return;
+                let frame = document.getElementById('ciPrintFrame');
+                if (!frame) {
+                    frame = document.createElement('iframe');
+                    frame.id = 'ciPrintFrame';
+                    frame.style.cssText = 'position:fixed;width:0;height:0;border:0;visibility:hidden;';
+                    document.body.appendChild(frame);
+                }
+                frame.onload = function () {
+                    try { frame.contentWindow.focus(); frame.contentWindow.print(); } catch (err) { window.open(url, '_blank'); }
+                };
+                frame.src = url;
+            });
+
+            // a credit note number under the invoice number: opens that credit note in the same side drawer
+            $('#dataTable tbody').off('click', '.ci-cn-link').on('click', '.ci-cn-link', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                CUSTOMER_INVOICE.list.openCreditNote($(this).data('id'), $(this).data('no'));
+            });
+
             $('#dataTable tbody').off('click', '.customer-invoice-no-link').on('click', '.customer-invoice-no-link', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -196,8 +220,21 @@ CUSTOMER_INVOICE = {
                 $('#paymentHistoryBody').html(data);
             });
         },
+        /** The credit note's own details in the side drawer (the same view the Credit Note list opens). */
+        openCreditNote(id, no) {
+            $('#moduleDrawerLabel').text(trans('Credit Note Details'));
+            $('#drawerSubtitle').text(no || '');
+            bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer')).show();
+            $('#moduleOverview').html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> ' + trans('Loading...') + '</div>');
+            $.get('/adjustment/credit-note/' + id + '/overview', function (data) {
+                $('#moduleOverview').html(data);
+            }).fail(function () {
+                $('#moduleOverview').html('<div class="alert alert-danger m-3">' + trans('Failed to load credit note details.') + '</div>');
+            });
+        },
         openDrawer(customerId, invoiceNo) {
             $('#drawerSubtitle').text(invoiceNo || '');
+            $('#moduleDrawerLabel').text(trans('Customer Invoice Details'));
 
             let drawer = bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('moduleDrawer'));
             drawer.show();
@@ -239,7 +276,7 @@ CUSTOMER_INVOICE = {
             // One idea per column, each with a bold main line and a small grey line.
             // a draft has no real number yet: it just says "Draft" (no number, no second Draft badge)
             invoiceNumber: (row) => `<div class="cell-primary fw-bold text-primary customer-invoice-no-link" style="cursor:pointer;">${Number(row.status) === 1 ? trans('Draft') : (row.row_no ?? '')}</div>
-                <div class="d-flex align-items-center gap-2 mt-1">${Number(row.status) === 1 ? '' : (CUSTOMER_INVOICE.list.templates.statusBadge[row.status] ?? '')}<span class="cell-secondary">${row.invoice_date ?? ''}</span></div>`,
+                <div class="d-flex align-items-center gap-2 mt-1">${Number(row.status) === 1 ? '' : (CUSTOMER_INVOICE.list.templates.statusBadge[row.status] ?? '')}<span class="cell-secondary">${row.invoice_date ?? ''}</span></div>${(row.credit_notes || []).map(cn => `<div class="cell-secondary"><a href="#" class="ci-cn-link text-danger text-decoration-none" data-id="${cn.id}" data-no="${cn.no}" title="${trans('Credit Note')}"><i class="bi bi-receipt-cutoff me-1"></i>${cn.draft ? trans('Draft') : cn.no} · -${cn.amount}</a></div>`).join('')}`,
 
             job: (row) => row.job_no
                 ? `<div class="cell-primary">${row.job_no}</div><div class="cell-secondary">${row.job_activity && row.job_activity !== '-' ? row.job_activity : ''}</div>`
