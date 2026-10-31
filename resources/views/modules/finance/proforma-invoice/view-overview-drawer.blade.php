@@ -107,7 +107,7 @@
     @endif
 </div>
 
-<div class="section">
+<div class="section section-totals">
     <h6>{{ __('Totals') }}</h6>
     <table class="total-table ms-auto" style="min-width:320px;">
         <tr>

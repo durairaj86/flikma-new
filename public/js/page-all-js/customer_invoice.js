@@ -264,7 +264,9 @@ CUSTOMER_INVOICE = {
                 const caption = (settled || part)
                     ? `<a href="#" class="cell-secondary ${color} ci-history-link" title="${trans('Collection History')}"><i class="bi bi-clock-history me-1"></i>${label}</a>`
                     : `<span class="cell-secondary ${color}">${label}</span>`;
-                return `<div class="cell-primary ${settled ? 'text-success' : ''}">${settled ? '0.00' : row.balance}</div><div>${caption}</div>`;
+                // collections still in draft: the Collection form already takes them off, so say why its amount is lower
+                const draft = row.draft_collected ? `<div class="cell-secondary text-warning-emphasis" title="${trans('Draft collections are taken off in the Collection form')}"><i class="bi bi-hourglass-split me-1"></i>${row.draft_collected} ${trans('in draft collection')}</div>` : '';
+                return `<div class="cell-primary ${settled ? 'text-success' : ''}">${settled ? '0.00' : row.balance}</div><div>${caption}</div>${draft}`;
             },
 
             // Due date, and how late or how soon, in plain words. Only approved, unpaid invoices have a due status.
@@ -352,10 +354,44 @@ CUSTOMER_INVOICE = {
             afterSave: function () { CUSTOMER_INVOICE.refreshOpenDrawer(invoiceId); },
         });
     },
+    reloadList() {
+        try { $('#dataTable').DataTable().ajax.reload(null, false); } catch (e) { /* list not on this page */ }
+    },
+    // header buttons of a DRAFT invoice drawer: Mark as Approved / Edit / Delete (the same actions as the row menu)
+    drawerApprove(id) {
+        changeCustomerStatus(GLOBAL_FN.buildUrl('invoice/customer/' + id + '/status/3'), {
+            method: 'POST',
+            data: new FormData(),
+            callBack: function () {
+                CUSTOMER_INVOICE.reloadList();
+                CUSTOMER_INVOICE.refreshOpenDrawer(id);
+            }
+        }, '3');
+    },
+    drawerEdit(id) {
+        const dt = $('#dataTable');
+        CUSTOMER_INVOICE.closeDrawers();
+        webModal.openGlobalModal({
+            title: trans('Edit') + ' ' + dt.data('title'),
+            url: GLOBAL_FN.buildUrl('invoice/customer/' + id + '/create'),
+            content: null,
+            size: dt.data('model-size') || 'xl',
+            scroll: true,
+            callBack: null,
+            minHeight: dt.data('min-height')
+        });
+    },
+    drawerDelete(id, no) {
+        window.deleteRecord('/invoice/customer/' + id, function () {
+            CUSTOMER_INVOICE.closeDrawers();
+            CUSTOMER_INVOICE.reloadList();
+        }, {name: no});
+    },
     // after a collection / credit note is saved from the drawer: show the invoice again with its new balance
     refreshOpenDrawer(invoiceId) {
         const el = document.getElementById('moduleDrawer');
         if (el && el.classList.contains('show')) {
+            $('#moduleOverview').empty();   // lets the header drop the old record before the new one arrives
             $.get('/invoice/customer/' + invoiceId + '/overview-drawer', function (data) { $('#moduleOverview').html(data); });
         }
     },

@@ -315,6 +315,14 @@ class CustomerInvoiceController extends Controller
                     'class' => $class
                 ];
             })
+            // amount already entered on draft collections (not approved yet): the Collection form takes it off what is still owed
+            ->addColumn('draft_collected', function ($model) use ($decimals) {
+                $draft = (float) \Illuminate\Support\Facades\DB::table('collection_invoices as ci')
+                    ->join('collections as c', 'c.id', '=', 'ci.collection_id')
+                    ->where('ci.customer_invoice_id', $model->id)->whereNull('c.deleted_at')
+                    ->where('c.status', \App\Enums\CollectionEnum::DRAFT->value)->sum('ci.amount');
+                return $draft > 0 ? number_format($draft, $decimals) : null;
+            })
             ->addColumn('balance', function ($model) use ($decimals) {
                 $balance = $model->grand_total - ($model->paid_amount ?? 0);
                 return number_format($balance, $decimals);
@@ -352,11 +360,12 @@ class CustomerInvoiceController extends Controller
             'comment.*' => 'nullable|string|max:500',
             'unit_id.*' => 'required|numeric',
             'quantity.*' => 'required|numeric|min:1',
-            'unit_price.*' => 'required|min:0|regex:/^\d+(\.\d{1,2})?$/',
+            'unit_price.*' => 'required|min:0|regex:/^\d+(\.\d{1,4})?$/',
             'tax.*' => 'nullable|string',
         ]);
 
         $this->assertPeriodOpen($validated['invoice_date'], 'invoice_date');
+        $this->assertPartyCurrency(\App\Models\Customer\Customer::class, $validated['customer'], $validated['currency']);
 
         //$userId = Auth::id();
         $companyId = companyId();
@@ -393,14 +402,17 @@ class CustomerInvoiceController extends Controller
             $price = $request->unit_price[$i] ?? 0;
             $taxRate = vatPercent($request->tax[$i] ?? 0);
 
-            $lineTotal = $qty * $price;
-            $lineTax = round($lineTotal * ($taxRate / 100), 2);   // VAT is rounded per line, as on the ZATCA invoice
+            $lineTotal = round($qty * $price, 4);   // a line keeps up to 4 decimals; only the invoice summary is rounded to 2
+            $lineTax = round($lineTotal * ($taxRate / 100), 4);   // VAT per line to 4 decimals
 
             $subTotal += $lineTotal;
             $taxTotal += $lineTax;
         }
 
-        $grandTotal = $subTotal + $taxTotal;
+        // the invoice summary is always 2 decimals
+        $subTotal = round($subTotal, 2);
+        $taxTotal = round($taxTotal, 2);
+        $grandTotal = round($subTotal + $taxTotal, 2);
 
         // 🔹 Assign totals
         // row_no is generated once above (new invoice) and never touched
@@ -414,11 +426,11 @@ class CustomerInvoiceController extends Controller
         $customer->currency = $validated['currency'];
         $customer->currency_rate = $validated['currency_rate'];
         $customer->terms = $validated['terms'] ?? null;
-        $customer->base_sub_total = $customer->currency_rate * $subTotal;
-        $customer->base_tax_total = $customer->currency_rate * $taxTotal;
+        $customer->base_sub_total = round($customer->currency_rate * $subTotal, 2);
+        $customer->base_tax_total = round($customer->currency_rate * $taxTotal, 2);
         $customer->sub_total = $subTotal;
         $customer->tax_total = $taxTotal;
-        $customer->base_grand_total = $customer->base_sub_total + $customer->base_tax_total;
+        $customer->base_grand_total = round($customer->base_sub_total + $customer->base_tax_total, 2);
         $customer->grand_total = $grandTotal;
         $customer->status = 1;
 
@@ -462,8 +474,8 @@ class CustomerInvoiceController extends Controller
             $qty = $request->quantity[$i] ?? 0;
             $price = $request->unit_price[$i] ?? 0;
             $taxRate = vatPercent($request->tax[$i] ?? 0);
-            $lineTotal = $qty * $price;
-            $lineTax = round($lineTotal * ($taxRate / 100), 2);   // VAT is rounded per line, as on the ZATCA invoice
+            $lineTotal = round($qty * $price, 4);   // a line keeps up to 4 decimals; only the invoice summary is rounded to 2
+            $lineTax = round($lineTotal * ($taxRate / 100), 4);   // VAT per line to 4 decimals
             $netAmount = $lineTotal + $lineTax;
 
             $customerSub[] = [
@@ -476,15 +488,15 @@ class CustomerInvoiceController extends Controller
                 'unit_id' => $request->unit_id[$i],
                 'quantity' => $qty,
                 'unit_price' => $price,
-                'base_unit_price' => $price * $customer->currency_rate,
+                'base_unit_price' => round($price * $customer->currency_rate, 4),
                 'tax_code' => $request->tax[$i] ?? null,
                 'tax_percent' => $taxRate,
                 'tax_amount' => $lineTax,
-                'base_tax_amount' => $lineTax * $customer->currency_rate,
+                'base_tax_amount' => round($lineTax * $customer->currency_rate, 4),
                 'total' => $lineTotal,
-                'base_total' => $lineTotal * $customer->currency_rate,
+                'base_total' => round($lineTotal * $customer->currency_rate, 4),
                 'total_with_tax' => $netAmount,
-                'base_total_with_tax' => $netAmount * $customer->currency_rate,
+                'base_total_with_tax' => round($netAmount * $customer->currency_rate, 4),
                 // where the line was picked from (quotation / supplier invoice) and what it cost; null = typed by hand
                 'source_type' => in_array($request->source_type[$i] ?? null, ['quotation', 'supplier_invoice'], true) ? $request->source_type[$i] : null,
                 'source_id' => is_numeric($request->source_id[$i] ?? null) ? (int) $request->source_id[$i] : null,
@@ -1473,7 +1485,7 @@ class CustomerInvoiceController extends Controller
                         'comment' => $l->comment,
                         'unit_id' => $l->unit_id,
                         'quantity' => (float) $l->quantity,
-                        'unit_price' => round((float) $l->unit_price, 2),
+                        'unit_price' => round((float) $l->unit_price, 4),
                         // the cost behind the line in company currency, excl. VAT
                         'cost_base' => round((float) $l->base_total, 4),
                         'tax_code' => $l->tax_code,

@@ -69,6 +69,17 @@ class CollectionController extends Controller
      * no changes at all.
      */
     /**
+     * A collection is paid in the invoice's own currency: its amount is added straight to the invoice's paid amount, so
+     * an amount in another currency would be counted at face value (1000 SAR + 1000 USD = 2000).
+     */
+    private function assertSameCurrency(?string $currency, CustomerInvoice $invoice): void
+    {
+        if (strtoupper((string) $currency) !== strtoupper((string) $invoice->currency)) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['currency' => __(':no is in :cur. Collect it in :cur (a collection must be in the same currency as its invoice).', ['no' => $invoice->row_no, 'cur' => strtoupper((string) $invoice->currency)])]);
+        }
+    }
+
+    /**
      * What an invoice still owes: its amount, less everything already settled on it (approved collections and credit
      * notes, and credit applied from other invoices - all kept in paid_amount), less the amounts sitting on OTHER draft
      * collections. $exceptCollectionId is the collection being edited (its own lines never reduce the figure).
@@ -341,6 +352,7 @@ class CollectionController extends Controller
         ]);
 
         $this->assertPeriodOpen($validated['collection_date'], 'collection_date');
+        $this->assertPartyCurrency(\App\Models\Customer\Customer::class, $validated['customer'], $validated['currency']);
 
         DB::beginTransaction();
         try {
@@ -396,6 +408,7 @@ class CollectionController extends Controller
             foreach ($request->input('customer_invoice_ids') as $index => $invoiceId) {
                 $invoice = CustomerInvoice::find($invoiceId);
                 $amount = $request->input('invoice_amounts')[$invoiceId];
+                $this->assertSameCurrency($validated['currency'], $invoice);
 
                 // Validate that amount doesn't exceed the invoice grand_total
                 if ($amount > $invoice->grand_total) {
@@ -651,6 +664,7 @@ class CollectionController extends Controller
                     foreach ($collectionInvoices as $collectionInvoice) {
                         $customerInvoice = CustomerInvoice::find($collectionInvoice->customer_invoice_id);
                         if ($customerInvoice) {
+                            $this->assertSameCurrency($collection->currency, $customerInvoice);
                             $customerInvoice->paid_amount = ($customerInvoice->paid_amount ?? 0) + $collectionInvoice->amount;
                             $customerInvoice->save();
                         }

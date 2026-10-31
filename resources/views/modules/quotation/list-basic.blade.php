@@ -476,10 +476,10 @@
             // The next-step actions for this quotation's status (same ones the row menu offers):
             // pending → Accepted / Cancelled, accepted → Move to Pending / Convert To Job.
             const DRAWER_ACTIONS = {
-                row_accepted: {cls: 'btn-primary', icon: 'bi-check-circle', label: {{ Illuminate\Support\Js::from(__('Mark as Accepted')) }}},
-                row_convert_to_job: {cls: 'btn-primary', icon: 'bi-arrow-repeat'},
-                row_pending: {cls: 'btn-outline-secondary', icon: 'bi-arrow-counterclockwise'},
-                row_rejected: {cls: 'btn-outline-danger', icon: 'bi-x-circle', label: {{ Illuminate\Support\Js::from(__('Mark as Cancelled')) }}},
+                row_accepted: {cls: 'da-accept', icon: 'bi-check-circle', label: {{ Illuminate\Support\Js::from(__('Mark as Accepted')) }}},
+                row_convert_to_job: {cls: 'da-accept', icon: 'bi-arrow-repeat'},
+                row_pending: {cls: 'da-soft', icon: 'bi-arrow-counterclockwise'},
+                row_rejected: {cls: 'da-cancel', icon: 'bi-x-circle', label: {{ Illuminate\Support\Js::from(__('Mark as Cancelled')) }}},
             };
 
             function loadDrawerActions(id) {
@@ -493,10 +493,10 @@
                         const a = flat.find(x => x.id === key);
                         if (!a || !DRAWER_ACTIONS[key]) return;
                         const d = DRAWER_ACTIONS[key];
-                        $box.append(`<button type="button" class="btn btn-sm rounded-pill px-3 ${d.cls} drawer-action" data-id="${a['data-id']}" data-value="${a['data-value']}" data-action="${key}"><i class="bi ${d.icon} me-1"></i>${d.label || a.label}</button>`);
+                        $box.append(`<button type="button" class="da-btn ${d.cls} drawer-action" data-id="${a['data-id']}" data-value="${a['data-value']}" data-action="${key}"><i class="bi ${d.icon} me-1"></i>${d.label || a.label}</button>`);
                     });
                     // Print is available at every status.
-                    $box.append(`<button type="button" class="btn btn-sm rounded-pill px-3 btn-outline-secondary drawer-print" data-id="${id}"><i class="bi bi-printer me-1"></i>{{ __('Print') }}</button>`);
+                    $box.append(`<button type="button" class="da-icon drawer-print" data-id="${id}" title="{{ __('Print') }}" aria-label="{{ __('Print') }}"><i class="bi bi-printer"></i></button>`);
                 });
             }
 

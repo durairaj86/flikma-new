@@ -501,9 +501,9 @@ COLLECTION = {
                         html += `
                             <tr>
                                 <td>
-                                    <input type="checkbox" class="invoice-checkbox" data-id="${invoice.id}" name="customer_invoice_ids[]" value="${invoice.id}" data-amount="${invoice.grand_total}" data-paid="${invoice.paid_amount || 0}" ${isChecked ? 'checked' : ''}>
+                                    <input type="checkbox" class="invoice-checkbox" data-id="${invoice.id}" name="customer_invoice_ids[]" value="${invoice.id}" data-amount="${invoice.grand_total}" data-currency="${String(invoice.currency || '').toUpperCase()}" data-paid="${invoice.paid_amount || 0}" ${isChecked ? 'checked' : ''}>
                                 </td>
-                                <td>${invoice.row_no}</td>
+                                <td>${invoice.row_no} <span class="badge bg-light text-dark border">${String(invoice.currency || '').toUpperCase()}</span></td>
                                 <td>${invoice.job_no}</td>
                                 <td>${invoice.invoice_date}</td>
                                 <td>${invoice.due_at}</td>
@@ -607,7 +607,28 @@ COLLECTION = {
             COLLECTION.form.calculateTotal();
         },
 
+        /**
+         * A collection is in the invoice's own currency: once an invoice is ticked the currency is set to it and locked, and
+         * the invoices of other currencies cannot be ticked (collect those in a separate collection).
+         */
+        lockCurrency() {
+            const cur = $('.invoice-checkbox:checked').first().data('currency');
+            $('.invoice-checkbox').each(function () {
+                const other = !!cur && $(this).data('currency') && $(this).data('currency') !== cur && !$(this).is(':checked');
+                $(this).prop('disabled', other);
+                $(this).closest('tr').toggleClass('opacity-50', other).attr('title', other ? trans('Other currency: collect it in a separate collection') : null);
+            });
+            const sel = document.getElementById('currency-code');
+            const ts = sel && sel.tomselect;
+            if (!ts) return;
+            if (cur) {
+                if (ts.getValue() !== cur) ts.setValue(cur);
+                ts.lock();
+            }
+        },
+
         calculateTotal() {
+            COLLECTION.form.lockCurrency();
             let total = 0;
             $('.invoice-amount').each(function () {
                 if ($(this).closest('tr').find('.invoice-checkbox').is(':checked')) {

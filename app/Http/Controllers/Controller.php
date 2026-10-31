@@ -22,6 +22,19 @@ abstract class Controller
     }*/
 
     /**
+     * An invoice, collection or payment is in the currency set on its customer / supplier (Customer / Supplier module);
+     * it is never chosen per document, so a different one posted from a form is refused.
+     */
+    protected function assertPartyCurrency(string $partyClass, $partyId, ?string $currency): void
+    {
+        $party = $partyId ? $partyClass::find($partyId) : null;
+        $partyCurrency = strtoupper((string) ($party->currency ?? ''));
+        if ($partyCurrency !== '' && strtoupper((string) $currency) !== $partyCurrency) {
+            throw ValidationException::withMessages(['currency' => __('The currency is set on the :party (:cur). Change it there, not on the document.', ['party' => $party instanceof \App\Models\Supplier\Supplier ? __('supplier') : __('customer'), 'cur' => $partyCurrency])]);
+        }
+    }
+
+    /**
      * Set common base columns for any model.
      *
      * @param \Illuminate\Database\Eloquent\Model $model

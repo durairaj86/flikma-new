@@ -95,6 +95,11 @@
         </button>
     </li>
     @endif
+    <li class="nav-item">
+        <button class="nav-link fw-semibold" data-bs-toggle="tab" data-bs-target="#ciEntriesTab" type="button" role="tab">
+            <i class="bi bi-cash-stack me-1"></i> {{ __('Cash Flow') }}
+        </button>
+    </li>
     <li class="nav-item ms-auto">
         <button class="nav-link fw-semibold" data-bs-toggle="tab" data-bs-target="#ciTimeFrameTab" type="button" role="tab"
                 title="{{ __('Time Frame') }}" aria-label="{{ __('Time Frame') }}">
@@ -107,9 +112,17 @@
 @php
     $ciBalance = (float) $customerInvoice->grand_total - (float) ($customerInvoice->paid_amount ?? 0);
     $ciApproved = (int) $customerInvoice->status === 3;
+    $ciGrandTop = (float) $customerInvoice->grand_total;
+    $ciPaidTop = (float) ($customerInvoice->paid_amount ?? 0);
+    if ($ciApproved) {
+        $ciChip = ($ciGrandTop > 0 && $ciPaidTop >= $ciGrandTop) ? [__('Fully Paid'), 'bg-success-subtle text-success']
+            : ($ciPaidTop > 0 ? [__('Partially Paid'), 'bg-warning-subtle text-warning'] : [__('Unpaid'), 'bg-danger-subtle text-danger']);
+    } else {
+        $ciChip = [\App\Enums\CustomerInvoiceEnum::tryFrom((int) $customerInvoice->status)?->label() ?? '-', (int) $customerInvoice->status === 1 ? 'bg-warning-subtle text-warning' : 'bg-danger-subtle text-danger'];
+    }
 @endphp
 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-    <div class="invoice-no-heading">{{ docNumber($customerInvoice, '#') }}</div>
+    <div class="invoice-no-heading" data-no="{{ $customerInvoice->row_no }}">{{ docNumber($customerInvoice, '#') }}<span class="badge {{ $ciChip[1] }} rounded-pill px-3 py-1 fw-semibold fs-6 align-middle ms-2">{{ $ciChip[0] }}</span></div>
     {{-- Print (any status); Collection opens the Collection form for this invoice; Credit Note opens the New Credit Note form for it --}}
     <div class="d-flex gap-2">
         <button type="button" class="btn btn-sm btn-outline-secondary linked-print"
@@ -117,6 +130,17 @@
                 onclick="if (window.CUSTOMER_INVOICE && CUSTOMER_INVOICE.printPreview) { CUSTOMER_INVOICE.printPreview('{{ $customerInvoice->id }}'); }">
             <i class="bi bi-printer me-1"></i>{{ __('Print') }}
         </button>
+        @if((int) $customerInvoice->status === 1)
+            <button type="button" class="btn btn-sm btn-success" onclick="CUSTOMER_INVOICE.drawerApprove('{{ $customerInvoice->id }}')">
+                <i class="bi bi-check-circle me-1"></i>{{ __('Mark as Approved') }}
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="CUSTOMER_INVOICE.drawerEdit('{{ $customerInvoice->id }}')">
+                <i class="bi bi-pencil-square me-1"></i>{{ __('Edit') }}
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="CUSTOMER_INVOICE.drawerDelete('{{ $customerInvoice->id }}', @js($customerInvoice->row_no))">
+                <i class="bi bi-trash3 me-1"></i>{{ __('Delete') }}
+            </button>
+        @endif
         @if($ciApproved)
             @if($ciBalance > 0)
                 <button type="button" class="btn btn-sm btn-success" onclick="CUSTOMER_INVOICE.recordPayment('{{ $customerInvoice->id }}')">
@@ -129,6 +153,7 @@
         @endif
     </div>
 </div>
+
 
 <div class="section">
     <h6>{{ __('Customer & Invoice Information') }}</h6>
@@ -144,40 +169,84 @@
     </div>
 </div>
 
+@php
+    $ciCur = strtoupper((string) $customerInvoice->currency);
+    $ciBase = strtoupper((string) (authUserCompany()?->base_currency ?: authUserCompany()?->currency ?: 'SAR'));
+    $ciUnits = \Illuminate\Support\Facades\DB::table('units')->pluck('unit_symbol', 'id');
+    $ciUnitNames = \Illuminate\Support\Facades\DB::table('units')->pluck('unit_name', 'id');
+    $ciSubs = $customerInvoice->customerInvoiceSubs ?? collect();
+    // cost tax comes from the supplier invoice line the cost was taken from
+    $ciSrcSubs = \App\Models\Finance\SupplierInvoice\SupplierInvoiceSub::withoutGlobalScopes()
+        ->whereIn('id', $ciSubs->where('source_type', 'supplier_invoice')->pluck('source_sub_id')->filter()->all())->get()->keyBy('id');
+    $ciSale = (float) $ciSubs->sum('base_total');
+    $ciCostLines = $ciSubs->filter(fn ($i) => $i->cost_base_amount !== null);
+    $ciCost = (float) $ciCostLines->sum('cost_base_amount');
+    $ciGp = (float) $ciCostLines->sum(fn ($i) => (float) $i->base_total - (float) $i->cost_base_amount);
+    $ciGpSale = (float) $ciCostLines->sum('base_total');
+    $ciGpPct = $ciGpSale > 0 ? $ciGp / $ciGpSale * 100 : 0;
+    $ciMarkup = $ciCost > 0 ? $ciGp / $ciCost * 100 : 0;
+@endphp
+@if($ciCostLines->count())
+    <div class="doc-tiles">
+        <div class="doc-tile t-slate"><small>{{ __('Total Cost') }}</small><b>{{ amountFormat($ciCost) }}</b><em>{{ $ciBase }}</em></div>
+        <div class="doc-tile t-blue"><small>{{ __('Total Sale') }}</small><b>{{ amountFormat($ciSale) }}</b><em>{{ $ciBase }}</em></div>
+        <div class="doc-tile {{ $ciGp >= 0 ? 't-green' : 't-red' }}"><small>{{ __('Gross Profit') }}</small><b>{{ amountFormat($ciGp) }}</b><em>{{ $ciBase }}</em></div>
+        <div class="doc-tile {{ $ciGp >= 0 ? 't-green' : 't-red' }}"><small>{{ __('Sale GP%') }}</small><b>{{ number_format($ciGpPct, 2) }}%</b><em>{{ __('Cost GP%') }} {{ number_format($ciMarkup, 2) }}%</em></div>
+    </div>
+@endif
+
 <div class="section">
     <h6>{{ __('Line Items') }}</h6>
-    @if($customerInvoice->customerInvoiceSubs && $customerInvoice->customerInvoiceSubs->count())
+    @if($ciSubs->count())
         <div class="table-responsive">
-            <table class="table table-bordered table-sm align-middle">
+            <table class="table table-sm align-middle ci-lines">
                 <thead>
                 <tr>
                     <th>#</th>
                     <th>{{ __('Description') }}</th>
-                    <th>{{ __('Comment') }}</th>
-                    <th class="text-end">{{ __('Qty') }}</th>
                     <th>{{ __('Unit') }}</th>
-                    <th class="text-end">{{ __('Unit Price') }}</th>
-                    <th class="text-end">{{ __('Line Total') }}</th>
-                    <th>{{ __('Tax Code') }}</th>
-                    <th class="text-end">{{ __('Tax %') }}</th>
-                    <th class="text-end">{{ __('Tax Amount') }}</th>
-                    <th class="text-end">{{ __('Total (Incl. Tax)') }}</th>
+                    <th class="text-end">{{ __('Qty') }}</th>
+                    <th class="text-end">{{ __('Unit Price') }} ({{ $ciCur }})</th>
+                    <th class="text-end col-cost">{{ __('Cost') }} ({{ $ciBase }})</th>
+                    <th class="text-end col-sale">{{ __('Sale') }} ({{ $ciBase }})</th>
+                    <th class="text-end">{{ __('GP') }} ({{ $ciBase }})</th>
+                    <th class="text-end">{{ __('Total (Incl. Tax)') }} ({{ $ciBase }})</th>
                 </tr>
                 </thead>
                 <tbody>
-                @foreach($customerInvoice->customerInvoiceSubs as $item)
+                @foreach($ciSubs as $item)
+                    @php
+                        $hasCost = $item->cost_base_amount !== null;
+                        $lineGp = $hasCost ? (float) $item->base_total - (float) $item->cost_base_amount : null;
+                        $costTaxPct = $hasCost ? (float) ($ciSrcSubs[$item->source_sub_id]->tax_percent ?? 0) : null;
+                        $costTax = $hasCost ? round((float) $item->cost_base_amount * $costTaxPct / 100, 2) : null;
+                    @endphp
                     <tr>
                         <td>{{ $loop->iteration }}</td>
-                        <td>{{ $descriptions[$item->description_id] ?? $item->description }}</td>
-                        <td>{{ $item->comment ?? '-' }}</td>
-                        <td class="text-end">{{ $item->quantity }}</td>
-                        <td>{{ $item->unit ?? '-' }}</td>
+                        <td>
+                            <div class="fw-semibold">{{ $descriptions[$item->description_id] ?? $item->description }}</div>
+                            @if($item->comment)<div class="text-muted small">{{ $item->comment }}</div>@endif
+                            @if($item->source_type)
+                                <span class="ci-src {{ $item->source_type === 'quotation' ? 'src-q' : 'src-s' }}"><i class="bi {{ $item->source_type === 'quotation' ? 'bi-file-earmark-text' : 'bi-receipt' }}"></i>{{ $item->source_no ?: ($item->source_type === 'quotation' ? __('Quotation') : __('Supplier Invoice')) }}</span>
+                            @endif
+                        </td>
+                        <td>{{ $item->unit ?: ($ciUnits[$item->unit_id] ?? $ciUnitNames[$item->unit_id] ?? '-') }}</td>
+                        <td class="text-end">{{ rtrim(rtrim(number_format((float) $item->quantity, 2), '0'), '.') }}</td>
                         <td class="text-end">{{ number_format($item->unit_price, decimals()) }}</td>
-                        <td class="text-end">{{ number_format($item->line_total, decimals()) }}</td>
-                        <td>{{ vatLabel($item->tax_code ?? null) }}</td>
-                        <td class="text-end">{{ $item->tax_percent }}%</td>
-                        <td class="text-end">{{ number_format($item->tax_amount, decimals()) }}</td>
-                        <td class="text-end">{{ number_format($item->total_with_tax ?? $item->total, decimals()) }}</td>
+                        <td class="text-end col-cost">
+                            @if($hasCost)
+                                <div>{{ number_format($item->cost_base_amount, decimals()) }}</div>
+                                <div class="ci-tax">{{ rtrim(rtrim(number_format($costTaxPct, 2), '0'), '.') }}% · {{ number_format($costTax, decimals()) }}</div>
+                            @else
+                                -
+                            @endif
+                        </td>
+                        <td class="text-end col-sale">
+                            <div>{{ number_format($item->base_total, decimals()) }}</div>
+                            <div class="ci-tax">{{ rtrim(rtrim(number_format((float) $item->tax_percent, 2), '0'), '.') }}% · {{ number_format($item->base_tax_amount, decimals()) }}</div>
+                        </td>
+                        <td class="text-end fw-bold {{ $lineGp === null ? 'text-muted' : ($lineGp < 0 ? 'text-danger' : 'text-success') }}">{{ $lineGp === null ? '-' : number_format($lineGp, decimals()) }}</td>
+                        <td class="text-end fw-semibold">{{ number_format($item->base_total_with_tax, decimals()) }}</td>
                     </tr>
                 @endforeach
                 </tbody>
@@ -188,7 +257,7 @@
     @endif
 </div>
 
-<div class="section">
+<div class="section section-totals">
     <h6>{{ __('Totals') }}</h6>
     @php
         $grand = (float) $customerInvoice->grand_total;
@@ -342,6 +411,8 @@
     </div>
 </div>
 @endif
+
+@include('modules.common.doc-entries', ['entrySource' => 'customer_invoice', 'entrySourceId' => $customerInvoice->id, 'entryPrefix' => 'ci'])
 
 <div class="tab-pane fade" id="ciTimeFrameTab" role="tabpanel">
     <div class="section">

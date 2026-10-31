@@ -205,15 +205,15 @@
 
                                 <!-- Quantity -->
                                 <td class="col-md-1">
-                                    <input type="text" name="quantity[]" class="form-control text-end quantity float"
-                                           value="{{ $subItem->quantity }}" min="1" required>
+                                    <input type="text" name="quantity[]" class="form-control text-end quantity float" data-decimal="4"
+                                           value="{{ rtrim(rtrim(number_format((float) $subItem->quantity, 4, '.', ''), '0'), '.') }}" min="1" required>
                                 </td>
 
                                 <!-- Unit Price -->
                                 <td class="col-md-1">
                                     <input type="text" name="unit_price[]"
-                                           class="form-control text-end float unit_price"
-                                           value="{{ $subItem->unit_price }}" min="0" required>
+                                           class="form-control text-end float unit_price" data-decimal="4"
+                                           value="{{ rtrim(rtrim(number_format((float) $subItem->unit_price, 4, '.', ''), '0'), '.') }}" min="0" required>
                                 </td>
 
                                 <!-- Tax -->

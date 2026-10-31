@@ -1,8 +1,11 @@
 <div class="offcanvas offcanvas-end customer-drawer" tabindex="-1" id="moduleDrawer" style="width: 55%;">
-    <div class="offcanvas-header border-bottom bg-light px-4 py-3 d-flex justify-content-between align-items-center">
-        <div>
-            <h5 id="moduleDrawerLabel" class="mb-0 fw-bold">{{ __('Job Details') }}</h5>
-            <small class="text-muted" id="drawerSubtitle"></small>
+    <div class="offcanvas-header border-bottom px-4 py-3 d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-3">
+            <span class="dh-ico"><i class="bi bi-briefcase"></i></span>
+            <div>
+                <h5 id="moduleDrawerLabel" class="mb-0 fw-bold">{{ __('Job Details') }}</h5>
+                <small class="dh-sub" id="drawerSubtitle"></small>
+            </div>
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="{{ __('Close') }}"></button>
     </div>
@@ -67,7 +70,11 @@
 <style>
     .customer-drawer .offcanvas-header {
         border-bottom: 1px solid #e3e6f0;
+        background: linear-gradient(90deg, #eef0ff, #f8f9ff 60%, #fff);
     }
+    .customer-drawer .dh-ico { width: 40px; height: 40px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; background: #6366f1; color: #fff; font-size: 1.15rem; box-shadow: 0 4px 10px rgba(99, 102, 241, .35); }
+    .customer-drawer .dh-sub { display: inline-block; margin-top: 2px; padding: 0 10px; border-radius: 999px; background: #e0e3ff; color: #4338ca; font-weight: 700; font-size: .72rem; letter-spacing: .03em; }
+    .customer-drawer .dh-sub:empty { display: none; }
 
     .customer-drawer .nav-tabs .nav-link {
         border: none;
@@ -79,15 +86,15 @@
     }
 
     .customer-drawer .nav-tabs .nav-link.active {
-        color: #0b6aa0;
-        border-bottom: 2px solid #0b6aa0;
+        color: #4f46e5;
+        border-bottom: 2px solid #4f46e5;
         font-weight: 600;
         background: transparent;
     }
 
     .customer-drawer .nav-tabs .nav-link:hover:not(.active) {
-        color: #0b6aa0;
-        background: rgba(11, 106, 160, 0.05);
+        color: #4f46e5;
+        background: rgba(99, 102, 241, 0.06);
     }
 
     .customer-drawer .nav-tabs {

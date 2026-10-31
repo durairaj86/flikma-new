@@ -276,12 +276,13 @@ class SupplierInvoiceController extends Controller
             'description_id.*' => 'required|string|max:255',
             'comment.*' => 'nullable|string|max:500',
             'quantity.*' => 'required|numeric|min:1',
-            'unit_price.*' => 'required|min:0|regex:/^\d+(\.\d{1,2})?$/',
+            'unit_price.*' => 'required|min:0|regex:/^\d+(\.\d{1,4})?$/',
             'tax.*' => 'nullable|string',
             'unit_id.*' => 'required|numeric',
         ]);
 
         $this->assertPeriodOpen($validated['invoice_date'], 'invoice_date');
+        $this->assertPartyCurrency(\App\Models\Supplier\Supplier::class, $validated['supplier'], $validated['currency']);
 
         //$userId = Auth::id();
         $companyId = companyId();
@@ -315,14 +316,17 @@ class SupplierInvoiceController extends Controller
             $price = $request->unit_price[$i] ?? 0;
             $taxRate = vatPercent($request->tax[$i] ?? 0);
 
-            $lineTotal = $qty * $price;
-            $lineTax = round($lineTotal * ($taxRate / 100), 2);   // VAT is rounded per line, as on the ZATCA invoice
+            $lineTotal = round($qty * $price, 4);   // a line keeps up to 4 decimals; only the invoice summary is rounded to 2
+            $lineTax = round($lineTotal * ($taxRate / 100), 4);   // VAT per line to 4 decimals
 
             $subTotal += $lineTotal;
             $taxTotal += $lineTax;
         }
 
-        $grandTotal = $subTotal + $taxTotal;
+        // the invoice summary is always 2 decimals
+        $subTotal = round($subTotal, 2);
+        $taxTotal = round($taxTotal, 2);
+        $grandTotal = round($subTotal + $taxTotal, 2);
 
         // 🔹 Assign totals
         $supplier->job_id = $validated['job_id'] ?? null;
@@ -334,12 +338,12 @@ class SupplierInvoiceController extends Controller
         $supplier->currency = $validated['currency'];
         $supplier->currency_rate = $validated['currency_rate'];
         $supplier->terms = $validated['terms'] ?? null;
-        $supplier->base_sub_total = $supplier->currency_rate * $subTotal;
-        $supplier->base_tax_total = $supplier->currency_rate * $taxTotal;
+        $supplier->base_sub_total = round($supplier->currency_rate * $subTotal, 2);
+        $supplier->base_tax_total = round($supplier->currency_rate * $taxTotal, 2);
         $supplier->sub_total = $subTotal;
         $supplier->tax_total = $taxTotal;
         $supplier->grand_total = $grandTotal;
-        $supplier->base_grand_total = $supplier->currency_rate * $grandTotal;
+        $supplier->base_grand_total = round($supplier->currency_rate * $grandTotal, 2);
         $supplier->status = 1;
 
         DB::beginTransaction();
@@ -382,8 +386,8 @@ class SupplierInvoiceController extends Controller
             $qty = $request->quantity[$i] ?? 0;
             $price = $request->unit_price[$i] ?? 0;
             $taxRate = vatPercent($request->tax[$i] ?? 0);
-            $lineTotal = $qty * $price;
-            $lineTax = round($lineTotal * ($taxRate / 100), 2);   // VAT is rounded per line, as on the ZATCA invoice
+            $lineTotal = round($qty * $price, 4);   // a line keeps up to 4 decimals; only the invoice summary is rounded to 2
+            $lineTax = round($lineTotal * ($taxRate / 100), 4);   // VAT per line to 4 decimals
             $netAmount = $lineTotal + $lineTax;
 
             $supplierSub[] = [
@@ -396,15 +400,15 @@ class SupplierInvoiceController extends Controller
                 'unit_id' => $request->unit_id[$i],
                 'quantity' => $qty,
                 'unit_price' => $price,
-                'base_unit_price' => $supplier->currency_rate * $price,
+                'base_unit_price' => round($supplier->currency_rate * $price, 4),
                 'tax_code' => $request->tax[$i] ?? null,
                 'tax_percent' => $taxRate,
                 'tax_amount' => $lineTax,
-                'base_tax_amount' => $supplier->currency_rate * $lineTax,
+                'base_tax_amount' => round($supplier->currency_rate * $lineTax, 4),
                 'total' => $lineTotal,
-                'base_total' => $supplier->currency_rate * $lineTotal,
+                'base_total' => round($supplier->currency_rate * $lineTotal, 4),
                 'total_with_tax' => $netAmount,
-                'base_total_with_tax' => $supplier->currency_rate * $netAmount,
+                'base_total_with_tax' => round($supplier->currency_rate * $netAmount, 4),
             ];
         }
 

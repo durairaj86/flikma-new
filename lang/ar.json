@@ -5313,5 +5313,19 @@
     "Description made inactive. It is no longer offered in dropdowns; documents that already use it keep showing it.": "أصبح الوصف غير نشط. لم يعد يظهر في القوائم؛ والمستندات التي تستخدمه تبقى كما هي.",
     "Settled with customer credit only: no cash is received, so no account is needed.": "مسوى برصيد العميل فقط: لا يتم استلام نقد، لذا لا حاجة لحساب.",
     "Updated": "آخر تحديث",
-    "ago": "مضت"
+    "ago": "مضت",
+    "Cash Flow": "التدفق النقدي",
+    "Entry total": "إجمالي القيد",
+    "Not balanced": "غير متوازن",
+    "Reversal": "عكس قيد",
+    "Reversed": "معكوس",
+    "No cash flow entries yet. They are posted when this document is approved.": "لا توجد قيود تدفق نقدي بعد. تُرحَّل عند اعتماد هذا المستند.",
+    "Remaining Balance": "الرصيد المتبقي",
+    "not approved yet": "لم تعتمد بعد",
+    "Total Sale": "إجمالي البيع",
+    "in draft collection": "في تحصيل مسودة",
+    "Draft collections are taken off in the Collection form": "التحصيلات المسودة تُخصم في نموذج التحصيل",
+    "Other currency: collect it in a separate collection": "عملة مختلفة: حصّلها في تحصيل منفصل",
+    ":no is in :cur. Collect it in :cur (a collection must be in the same currency as its invoice).": ":no بعملة :cur. حصّلها بعملة :cur (يجب أن يكون التحصيل بنفس عملة الفاتورة).",
+    "The currency is set on the :party (:cur). Change it there, not on the document.": "العملة محددة في :party (:cur). غيّرها هناك وليس في المستند."
 }

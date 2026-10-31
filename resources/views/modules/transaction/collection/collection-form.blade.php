@@ -161,14 +161,29 @@
                                         $isSelected = isset($selectedInvoice) && array_key_exists($invoice->id, $selectedInvoice);
                                         $balanceAmount = isset($invoice->balance_amount) ? $invoice->balance_amount : ($invoice->grand_total - ($invoice->paid_amount ?? 0));
                                         $collectionAmount = $isSelected ? $selectedInvoice[$invoice->id] : $balanceAmount;
+                                        // other draft collections already hold part of what this invoice owes: the balance above is after them
+                                        $draftHeld = \Illuminate\Support\Facades\DB::table('collection_invoices as ci')
+                                            ->join('collections as c', 'c.id', '=', 'ci.collection_id')
+                                            ->where('ci.customer_invoice_id', $invoice->id)->whereNull('c.deleted_at')
+                                            ->where('c.status', \App\Enums\CollectionEnum::DRAFT->value)
+                                            ->when(!empty($collection->id), fn ($q) => $q->where('c.id', '!=', $collection->id))
+                                            ->get(['c.row_no', 'ci.amount']);
                                     @endphp
                                     <tr>
                                         <td>
                                             <input type="checkbox" class="invoice-checkbox" name="customer_invoice_ids[]"
                                                    data-id="{{ $invoice->id }}" value="{{ $invoice->id }}"
-                                                   data-amount="{{ $invoice->grand_total }}" data-paid="{{ $invoice->paid_amount ?? 0 }}" @checked($isSelected)>
+                                                   data-amount="{{ $invoice->grand_total }}" data-currency="{{ strtoupper($invoice->currency) }}" data-paid="{{ $invoice->paid_amount ?? 0 }}" @checked($isSelected)>
                                         </td>
-                                        <td>{{ $invoice->row_no }}</td>
+                                        <td>
+                                            {{ $invoice->row_no }} <span class="badge bg-light text-dark border">{{ strtoupper($invoice->currency) }}</span>
+                                            @if($draftHeld->count())
+                                                <div class="small text-warning-emphasis" title="{{ __('Draft collections are taken off in the Collection form') }}">
+                                                    <i class="bi bi-hourglass-split"></i>
+                                                    {{ number_format($draftHeld->sum('amount'), 2) }} {{ __('in draft collection') }} ({{ $draftHeld->pluck('row_no')->implode(', ') }})
+                                                </div>
+                                            @endif
+                                        </td>
                                         <td>{{ $invoice->job_no }}</td>
                                         <td>{{ $invoice->invoice_date }}</td>
                                         <td>{{ $invoice->due_at }}</td>

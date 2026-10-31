@@ -1,5 +1,5 @@
 <style>
-    .section {
+    .tab-pane[id^="job"] .section {
         margin-bottom: 1.25rem;
         background: #fff;
         border: 1px solid #e8eaf3;
@@ -7,7 +7,7 @@
         box-shadow: 0 1px 3px rgba(45, 58, 79, .06);
         overflow: hidden;
     }
-    .section h6 {
+    .tab-pane[id^="job"] .section h6 {
         display: flex;
         align-items: center;
         gap: 10px;
@@ -20,26 +20,58 @@
         border-bottom: 1px solid #e8eaf3;
         border-inline-start: 4px solid #6366f1;
     }
-    .section h6 .sec-ico {
+    .tab-pane[id^="job"] .section h6 .sec-ico {
         width: 26px; height: 26px; border-radius: 8px;
         display: inline-flex; align-items: center; justify-content: center;
         background: #6366f1; color: #fff; font-size: 13px;
         box-shadow: 0 3px 8px rgba(99, 102, 241, .35);
     }
     .tab-pane[id^="job"] table.table th {
-        background: var(--gc, #2d3a4f);
-        border-color: var(--gc, #2d3a4f);
+        background: #2d3a4f;
+        border-color: #2d3a4f;
         color: #fff;
         font-weight: 600;
     }
-    table.table {
+    .tab-pane#jobContainerTab table.table th,
+    .tab-pane#jobContainerTab table.table td,
+    .tab-pane#jobPackageTab table.table th,
+    .tab-pane#jobPackageTab table.table td {
+        white-space: nowrap;
+        padding: .45rem .75rem;
+    }
+    .tab-pane#jobContainerTab table.table th,
+    .tab-pane#jobPackageTab table.table th { font-size: .75rem; letter-spacing: .03em; }
+    .tab-pane[id^="job"] .fin-tbl {
+        border: 1px solid color-mix(in srgb, var(--gc) 25%, #fff);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(45, 58, 79, .06);
+    }
+    .tab-pane[id^="job"] .fin-tbl table { table-layout: fixed; border-collapse: separate; border-spacing: 0; }
+    .tab-pane[id^="job"] .fin-tbl table.table th {
+        background: color-mix(in srgb, var(--gc) 10%, #fff);
+        color: color-mix(in srgb, var(--gc) 80%, #000);
+        border: 0;
+        border-bottom: 2px solid var(--gc);
+        font-size: .72rem;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+    }
+    .tab-pane[id^="job"] .fin-tbl td { border-color: #f0f1f7; }
+    .tab-pane[id^="job"] .fin-tbl th:nth-child(1) { width: 17%; }
+    .tab-pane[id^="job"] .fin-tbl th:nth-child(2) { width: 14%; }
+    .tab-pane[id^="job"] .fin-tbl th:nth-child(4) { width: 12%; }
+    .tab-pane[id^="job"] .fin-tbl th:nth-child(5),
+    .tab-pane[id^="job"] .fin-tbl th:nth-child(6) { width: 13%; }
+    .tab-pane[id^="job"] .fin-tbl th:nth-child(7) { width: 8%; }
+    .tab-pane[id^="job"] table.table {
         font-size: 13.5px;
     }
-    .list-group-item {
+    .tab-pane[id^="job"] .list-group-item {
         font-size: 14px;
         padding: 10px 0;
     }
-    .info-grid {
+    .tab-pane[id^="job"] .info-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 0 1.5rem;
@@ -47,7 +79,7 @@
         line-height: 1.6;
         padding: 6px 14px 10px;
     }
-    .info-grid div {
+    .tab-pane[id^="job"] .info-grid div {
         display: flex;
         justify-content: space-between;
         border-bottom: 1px solid #f0f1f7;
@@ -55,68 +87,69 @@
         border-radius: 6px;
         transition: background .15s;
     }
-    .info-grid div:hover { background: #f7f8ff; }
-    .info-grid strong {
+    .tab-pane[id^="job"] .info-grid div:hover { background: #f7f8ff; }
+    .tab-pane[id^="job"] .info-grid strong {
         color: #7a8196;
         min-width: 140px;
         font-weight: 600;
         font-size: 12.5px;
     }
-    .info-grid span {
+    .tab-pane[id^="job"] .info-grid span {
         color: #1f2937;
         font-weight: 600;
         flex: 1;
         text-align: left;
         margin-left: 8px;
     }
-    .info-grid span.is-empty { color: #c3c7d4; font-weight: 400; }
-    .info-grid .col-span-2 {
+    .tab-pane[id^="job"] .info-grid span.is-empty { color: #c3c7d4; font-weight: 400; }
+    .tab-pane[id^="job"] .info-grid .col-span-2 {
         grid-column: span 2;
     }
-
-    .job-hero {
+    .tab-pane[id^="job"] .job-hero {
         position: relative; overflow: hidden; margin-bottom: 1.25rem; padding: 18px 20px 16px;
         border-radius: 14px; color: #fff;
         background: linear-gradient(135deg, #2d3a4f 0%, #4f46e5 70%, #8b5cf6 100%);
         box-shadow: 0 8px 22px rgba(79, 70, 229, .28);
     }
-    .job-hero::after {
+    .tab-pane[id^="job"] .job-hero::after {
         content: ''; position: absolute; right: -60px; top: -60px; width: 220px; height: 220px;
         border-radius: 50%; background: rgba(255, 255, 255, .08);
     }
-    .job-hero .jh-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; position: relative; z-index: 1; }
-    .job-hero .jh-no { font-size: 1.35rem; font-weight: 800; letter-spacing: .01em; }
-    .job-hero .jh-cust { opacity: .85; font-size: .9rem; }
-    .job-hero .jh-chip {
+    .tab-pane[id^="job"] .job-hero .jh-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; position: relative; z-index: 1; }
+    .tab-pane[id^="job"] .job-hero .jh-no { font-size: 1.35rem; font-weight: 800; letter-spacing: .01em; }
+    .tab-pane[id^="job"] .job-hero .jh-cust { opacity: .85; font-size: .9rem; }
+    .tab-pane[id^="job"] .job-hero .jh-chip {
         display: inline-flex; align-items: center; gap: 6px; padding: 3px 12px; border-radius: 999px;
         font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; background: rgba(255, 255, 255, .18);
     }
-    .job-hero .jh-chip i { font-size: .5rem; }
-    .job-hero .jh-chip.s-pending i { color: #fbbf24; }
-    .job-hero .jh-chip.s-completed i { color: #34d399; }
-    .job-hero .jh-chip.s-cancelled i, .job-hero .jh-chip.s-trashed i { color: #f87171; }
-    .job-hero .jh-route { display: flex; align-items: center; gap: 12px; margin: 16px 0 14px; position: relative; z-index: 1; }
-    .job-hero .jh-port { font-weight: 700; font-size: .95rem; }
-    .job-hero .jh-port small { display: block; font-weight: 500; opacity: .7; font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; }
-    .job-hero .jh-line { flex: 1; position: relative; border-top: 2px dashed rgba(255, 255, 255, .45); min-width: 40px; }
-    .job-hero .jh-line i {
+    .tab-pane[id^="job"] .job-hero .jh-chip i { font-size: .5rem; }
+    .tab-pane[id^="job"] .job-hero .jh-chip.s-pending i { color: #fbbf24; }
+    .tab-pane[id^="job"] .job-hero .jh-chip.s-completed i { color: #34d399; }
+    .tab-pane[id^="job"] .job-hero .jh-chip.s-cancelled i,
+    .tab-pane[id^="job"] .job-hero .jh-chip.s-trashed i { color: #f87171; }
+    .tab-pane[id^="job"] .job-hero .jh-route { display: flex; align-items: center; gap: 12px; margin: 16px 0 14px; position: relative; z-index: 1; }
+    .tab-pane[id^="job"] .job-hero .jh-port { font-weight: 700; font-size: .95rem; }
+    .tab-pane[id^="job"] .job-hero .jh-port small { display: block; font-weight: 500; opacity: .7; font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; }
+    .tab-pane[id^="job"] .job-hero .jh-line { flex: 1; position: relative; border-top: 2px dashed rgba(255, 255, 255, .45); min-width: 40px; }
+    .tab-pane[id^="job"] .job-hero .jh-line i {
         position: absolute; left: 50%; top: -15px; transform: translateX(-50%); width: 28px; height: 28px; border-radius: 50%;
         display: flex; align-items: center; justify-content: center; background: #fff; color: #4f46e5; font-size: .9rem;
         box-shadow: 0 3px 10px rgba(0, 0, 0, .25);
     }
-    .job-hero .jh-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; position: relative; z-index: 1; }
-    .job-hero .jh-stat { background: rgba(255, 255, 255, .13); border-radius: 10px; padding: 8px 12px; backdrop-filter: blur(2px); }
-    .job-hero .jh-stat small { display: block; font-size: .66rem; text-transform: uppercase; letter-spacing: .06em; opacity: .75; font-weight: 600; }
-    .job-hero .jh-stat b { font-size: .98rem; font-weight: 700; }
-    .jf-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 1.25rem; }
-    .jf-tile { border-radius: 12px; padding: 10px 14px; border: 1px solid transparent; border-inline-start-width: 4px; }
-    .jf-tile small { display: block; font-size: .66rem; text-transform: uppercase; letter-spacing: .06em; font-weight: 700; }
-    .jf-tile b { font-size: 1.05rem; font-weight: 800; }
-    .jf-tile.t-blue { background: #eef2ff; border-color: #6366f1; color: #4338ca; }
-    .jf-tile.t-green { background: #ecfdf5; border-color: #10b981; color: #047857; }
-    .jf-tile.t-amber { background: #fffbeb; border-color: #f59e0b; color: #b45309; }
-    .jf-tile.t-red { background: #fef2f2; border-color: #ef4444; color: #b91c1c; }
-    @media (max-width: 700px) { .info-grid { grid-template-columns: 1fr; } .info-grid .col-span-2 { grid-column: span 1; } }
+    .tab-pane[id^="job"] .job-hero .jh-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; position: relative; z-index: 1; }
+    .tab-pane[id^="job"] .job-hero .jh-stat { background: rgba(255, 255, 255, .13); border-radius: 10px; padding: 8px 12px; backdrop-filter: blur(2px); }
+    .tab-pane[id^="job"] .job-hero .jh-stat small { display: block; font-size: .66rem; text-transform: uppercase; letter-spacing: .06em; opacity: .75; font-weight: 600; }
+    .tab-pane[id^="job"] .job-hero .jh-stat b { font-size: .98rem; font-weight: 700; }
+    .tab-pane[id^="job"] .jf-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 1.25rem; }
+    .tab-pane[id^="job"] .jf-tile { border-radius: 12px; padding: 10px 14px; border: 1px solid transparent; border-inline-start-width: 4px; }
+    .tab-pane[id^="job"] .jf-tile small { display: block; font-size: .66rem; text-transform: uppercase; letter-spacing: .06em; font-weight: 700; }
+    .tab-pane[id^="job"] .jf-tile b { font-size: 1.05rem; font-weight: 800; }
+    .tab-pane[id^="job"] .jf-tile.t-blue { background: #eef2ff; border-color: #6366f1; color: #4338ca; }
+    .tab-pane[id^="job"] .jf-tile.t-green { background: #ecfdf5; border-color: #10b981; color: #047857; }
+    .tab-pane[id^="job"] .jf-tile.t-amber { background: #fffbeb; border-color: #f59e0b; color: #b45309; }
+    .tab-pane[id^="job"] .jf-tile.t-red { background: #fef2f2; border-color: #ef4444; color: #b91c1c; }
+    @media (max-width: 700px) {.tab-pane[id^="job"] .info-grid { grid-template-columns: 1fr; }
+    .tab-pane[id^="job"] .info-grid .col-span-2 { grid-column: span 1; } }
 </style>
 
 <!-- General Tab -->
@@ -140,7 +173,7 @@
         <div class="jh-top">
             <div>
                 <div class="jh-no">{{ $job->row_no ?: '-' }}</div>
-                <div class="jh-cust">{{ $job->customer->name_en ?? '-' }}</div>
+                <div class="jh-cust">@if($job->customer_id)<a href="#" class="open-linked text-white" data-type="customer" data-id="{{ $job->customer_id }}" data-title="{{ $job->customer->name_en ?? '' }}">{{ $job->customer->name_en ?? '-' }} <i class="bi bi-box-arrow-up-right small"></i></a>@else-@endif</div>
             </div>
             <span class="jh-chip s-{{ strtolower($jobStatus) }}"><i class="bi bi-circle-fill"></i>{{ __($jobStatus) }}</span>
         </div>
@@ -169,7 +202,7 @@
     <div class="section">
         <h6><span class="sec-ico"><i class="bi bi-person-vcard"></i></span>{{ __('Customer & Job Information') }}</h6>
         <div class="info-grid">
-            <div><strong>{{ __('Customer:') }}</strong><span>{!! e($v($job->customer->name_en ?? null)) !!}</span></div>
+            <div><strong>{{ __('Customer:') }}</strong><span>@if($job->customer_id)<a href="#" class="open-linked text-primary text-decoration-none" data-type="customer" data-id="{{ $job->customer_id }}" data-title="{{ $job->customer->name_en ?? '' }}">{{ $job->customer->name_en ?? '-' }}</a>@else-@endif</span></div>
             <div><strong>{{ __('Job No:') }}</strong><span>{!! e($job->row_no ? '#'.$job->row_no : '-') !!}</span></div>
             <div><strong>{{ __('Email:') }}</strong><span>{!! e($v($job->customer->email ?? null)) !!}</span></div>
             <div><strong>{{ __('Phone:') }}</strong><span>{!! e($v($job->customer->phone ?? null)) !!}</span></div>
@@ -183,7 +216,7 @@
             <div><strong>{{ __('Salesperson:') }}</strong><span>{!! e($v($people[$job->salesperson_id] ?? null)) !!}</span></div>
             <div><strong>{{ __('Prepared By:') }}</strong><span>{!! e($v($people[$job->prepared_by] ?? $people[$job->created_by] ?? null)) !!}</span></div>
             <div><strong>{{ __('Customer Reference:') }}</strong><span>{!! e($v($job->client_ref ?: $job->client_reference_no)) !!}</span></div>
-            <div><strong>{{ __('Quotation:') }}</strong><span>{!! e($v($job->quotation?->row_no ?? null)) !!}</span></div>
+            <div><strong>{{ __('Quotation:') }}</strong><span>@if($job->quotation)<a href="#" class="open-linked text-primary text-decoration-none" data-type="quotation" data-id="{{ $job->quotation->id }}" data-title="{{ $job->quotation->row_no }}">{{ $job->quotation->row_no }}</a>@else-@endif</span></div>
             <div><strong>{{ __('Tracking No:') }}</strong><span>{!! e($v($job->tracking_number)) !!}</span></div>
         </div>
     </div>
@@ -388,9 +421,9 @@
         <div class="mb-3">
             <h6 class="fw-bold d-flex align-items-center gap-2">{{ __($g['label']) }} <span class="badge bg-light text-dark border">{{ count($g['rows']) }}</span></h6>
             @if(count($g['rows']))
-                <div class="table-responsive">
+                <div class="table-responsive fin-tbl" style="--gc: {{ $gColors[$gk] ?? '#4f46e5' }}">
                     <table class="table table-sm align-middle mb-0">
-                        <thead style="--gc: {{ $gColors[$gk] ?? '#4f46e5' }}"><tr><th>#</th><th>{{ __('Date') }}</th><th>{{ __('Party') }}</th><th>{{ __('Status') }}</th><th class="text-end">{{ __('Amount') }}</th><th class="text-end">{{ __('Paid') }}</th><th></th></tr></thead>
+                        <thead><tr><th>#</th><th>{{ __('Date') }}</th><th>{{ __('Party') }}</th><th>{{ __('Status') }}</th><th class="text-end">{{ __('Amount') }}</th><th class="text-end">{{ __('Paid') }}</th><th></th></tr></thead>
                         <tbody>
                         @foreach($g['rows'] as $r)
                             <tr class="{{ $r['cancelled'] ? 'text-muted text-decoration-line-through' : '' }}">

@@ -402,13 +402,22 @@ CALCULATION = {
         $(document).off('input.calcCurrency', '#currency-rate')
             .on('input.calcCurrency', '#currency-rate', () => CALCULATION.finalTotals());
     },
+    lineDecimals($row) {
+        return parseInt($row.find('.unit_price').attr('data-decimal'), 10) === 4 ? 4 : 2;
+    },
+    round(v, d) {
+        const f = Math.pow(10, d);
+        return Math.round((v + Number.EPSILON) * f) / f;
+    },
     rowTotal($row) {
         let qty = parseFloat($row.find('.quantity').val()) || 0;
         let price = parseFloat($row.find('.unit_price').val()) || 0;
         let tax = parseFloat($row.find('.tax').val()) || 0;
 
-        let baseAmount = qty * price;
-        $row.find('.row-total').val(baseAmount.toFixed(2));
+        // an invoice line may hold up to 4 decimals (price box has data-decimal="4"); other forms keep 2
+        const lp = CALCULATION.lineDecimals($row);
+        let baseAmount = CALCULATION.round(qty * price, lp);
+        $row.find('.row-total').val(baseAmount.toFixed(lp));
     },
     finalTotals() {
         let subtotal = 0;
@@ -423,12 +432,18 @@ CALCULATION = {
             const selectedOption = $row.find('.tax').find('option:selected');
             const taxPercent = parseFloat(selectedOption.data('percent')) || 0;
 
+            const lp = CALCULATION.lineDecimals($row);
             let taxAmt = (amount * taxPercent) / 100;
+            if (lp === 4) taxAmt = CALCULATION.round(taxAmt, 4);   // line VAT to 4 decimals, only the summary below is rounded to 2
             subtotal += amount;
             totalTax += taxAmt;
             grandTotal += amount + taxAmt;
         });
 
+        // the summary is always 2 decimals, and the grand total is the sum of the two shown figures
+        subtotal = CALCULATION.round(subtotal, 2);
+        totalTax = CALCULATION.round(totalTax, 2);
+        grandTotal = CALCULATION.round(subtotal + totalTax, 2);
         $('#subTotal').text(subtotal.toFixed(2));
         $('#totalTax').text(totalTax.toFixed(2));
         $('#grandNet').text(grandTotal.toFixed(2));
@@ -3496,6 +3511,11 @@ $(document).on('click.ciEmptyGeneric', '.ci-empty-new', function () { $('#new').
 (function () {
     function restore(header) {
         if (!header || header.dataset.headMoved !== '1') return;
+        if (header.dataset.headPill === '1') {   // pill style header (title stays, record no. sits in the pill)
+            header.querySelectorAll('.drawer-head-actions, .dh-status').forEach(function (n) { n.remove(); });
+            delete header.dataset.headMoved; delete header.dataset.headPill;
+            return;
+        }
         const meta = header.firstElementChild;
         if (meta && header._headDefault !== undefined) meta.innerHTML = header._headDefault;
         if (meta) meta.classList.remove('flex-grow-1');
@@ -3513,6 +3533,45 @@ $(document).on('click.ciEmptyGeneric', '.ci-empty-new', function () { $('#new').
         if (header.dataset.headMoved === '1') return;   // this record is already in the header
 
         const row = heading.parentElement;
+        const pill = header.querySelector('.dh-sub');
+        if (pill) {
+            // title + record no. pill + status chip + restyled action buttons (same look as the quotation drawer)
+            const badges = Array.prototype.slice.call(heading.querySelectorAll('.badge'));
+            header.firstElementChild.classList.add('flex-grow-1');   // keeps the action buttons on the right
+            // the record number: the heading's own (data-no for documents whose heading reads e.g. Draft), never the list's generic row name
+            const clone = heading.cloneNode(true);
+            clone.querySelectorAll('.badge').forEach(function (b) { b.remove(); });
+            const no = (heading.dataset.no || clone.textContent).trim();
+            if (no) pill.textContent = no;
+            let anchor = pill;
+            badges.forEach(function (b) { b.classList.remove('ms-2'); b.classList.add('dh-status'); anchor.after(b); anchor = b; });
+            const holder = document.createElement('span');
+            holder.className = 'drawer-head-actions d-flex align-items-center gap-2 ms-auto me-3';
+            if (row && row !== ov && row.classList.contains('d-flex')) {
+                // the Print icon goes last, after the text buttons
+                Array.prototype.slice.call(row.querySelectorAll('button, a.btn')).sort(function (a, b) {
+                    return (a.classList.contains('linked-print') ? 1 : 0) - (b.classList.contains('linked-print') ? 1 : 0);
+                }).forEach(function (btn) {
+                    if (btn.classList.contains('linked-print')) {
+                        btn.title = btn.textContent.trim();
+                        btn.setAttribute('aria-label', btn.title);
+                        btn.className = 'da-icon linked-print';
+                        btn.innerHTML = '<i class="bi bi-printer"></i>';
+                    } else {
+                        btn.className = 'da-btn ' + (btn.classList.contains('btn-success') ? 'da-accept' : (/btn-(outline-)?danger/.test(btn.className) ? 'da-cancel' : 'da-soft'));
+                    }
+                    holder.appendChild(btn);
+                });
+                row.remove();
+            } else {
+                heading.remove();
+            }
+            const closeBtn = header.querySelector('.btn-close');
+            if (closeBtn) closeBtn.parentNode.insertBefore(holder, closeBtn); else header.appendChild(holder);
+            header.dataset.headMoved = '1'; header.dataset.headPill = '1';
+            if (ov._headObs) ov._headObs.takeRecords();
+            return;
+        }
         const meta = header.firstElementChild;
         header._headDefault = meta.innerHTML;
         meta.innerHTML = '';
@@ -3550,4 +3609,33 @@ $(document).on('click.ciEmptyGeneric', '.ci-empty-new', function () { $('#new').
     if (document.readyState !== 'loading') start(); else document.addEventListener('DOMContentLoaded', start);
     // pages that inject the drawer later
     new MutationObserver(start).observe(document.documentElement, {childList: true, subtree: true});
+})();
+
+
+/* The currency of an invoice / collection / payment is the one set on its customer / supplier (Customer / Supplier module).
+   Forms with a single customer or supplier box and a currency box (#currency-code): picking the party sets that currency and locks the box. */
+(function () {
+    function apply() {
+        const sel = document.getElementById('currency-code');
+        const party = document.getElementById('customer') || document.getElementById('supplier');
+        if (!sel || !party || party.multiple || !sel.tomselect) return;
+        const cur = party.selectedOptions[0] && party.selectedOptions[0].dataset.currency;
+        const ts = sel.tomselect;
+        if (cur) {
+            if (ts.getValue() !== cur) ts.setValue(cur);
+            ts.lock();
+        } else {
+            ts.unlock();
+        }
+    }
+    window.lockPartyCurrency = apply;
+    document.addEventListener('change', function (e) {
+        if (e.target && (e.target.id === 'customer' || e.target.id === 'supplier')) apply();
+    });
+    // forms that open already holding a party (edit, "Collection" from an invoice, AI scan...)
+    let timer = null;
+    new MutationObserver(function () {
+        clearTimeout(timer);
+        timer = setTimeout(apply, 250);
+    }).observe(document.documentElement, {childList: true, subtree: true});
 })();

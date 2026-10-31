@@ -159,10 +159,10 @@
                         @foreach($units as $u)<option value="{{ $u->id }}">{{ $u->unit_symbol ?: $u->unit_name }}</option>@endforeach
                     </select>
                 </td>
-                <td class="cost"><div class="calc"><input class="form-control c-qty" value="1"> x <input class="form-control price c-price" placeholder="0.00"> x <span class="rate-txt">1</span></div></td>
+                <td class="cost"><div class="calc"><input class="form-control decimal c-qty" data-decimals="4" value="1"> x <input class="form-control decimal price c-price" data-decimals="4" placeholder="0.00"> x <span class="rate-txt">1</span></div></td>
                 <td class="cost c-amt">0.00</td>
                 <td class="cost"><select class="tom-select c-tax" data-live-search="true" data-dropdown-parent="body" data-dropdown-width="300">@foreach($taxes as $t)<option value="{{ $t['code'] }}" data-p="{{ $t['percent'] }}" @selected($t['code'] === 'STANDARD')>{{ $t['label'] }}</option>@endforeach</select><div class="tax-line"><span class="c-taxamt">0.00</span> <span class="drcr">Dr(+)</span></div></td>
-                <td class="sale"><div class="calc"><input class="form-control s-qty" value="1"> x <input class="form-control price s-price" placeholder="0.00"> x <span class="rate-txt">1</span></div></td>
+                <td class="sale"><div class="calc"><input class="form-control decimal s-qty" data-decimals="4" value="1"> x <input class="form-control decimal price s-price" data-decimals="4" placeholder="0.00"> x <span class="rate-txt">1</span></div></td>
                 <td class="sale s-amt">0.00</td>
                 <td class="sale"><select class="tom-select s-tax" data-live-search="true" data-dropdown-parent="body" data-dropdown-width="300">@foreach($taxes as $t)<option value="{{ $t['code'] }}" data-p="{{ $t['percent'] }}">{{ $t['label'] }}</option>@endforeach</select><div class="tax-line"><span class="s-taxamt">0.00</span> <span class="drcr">Cr(+)</span></div></td>
                 <td class="text-end gp">0.00</td>
@@ -175,6 +175,10 @@
                 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
                 const num = v => parseFloat(String(v ?? '').replace(/,/g, '')) || 0;
                 const fmt = v => v.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                // line figures keep up to 4 decimals (at least 2 shown); the summary below is always 2
+                const r4 = v => Math.round((v + Number.EPSILON) * 1e4) / 1e4;
+                const r2 = v => Math.round((v + Number.EPSILON) * 1e2) / 1e2;
+                const fmtLine = v => v.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 4});
                 const body = $('#cinBody');
                 const taxes = @json($taxes);
                 const baseCur = (typeof baseCurrency !== 'undefined' && baseCurrency) ? baseCurrency : 'SAR';
@@ -218,17 +222,19 @@
                     $$('.cin-row', body).forEach((tr, i) => {
                         $('.line-no', tr).textContent = i + 1;
                         $$('.rate-txt', tr).forEach(e => e.textContent = r);
-                        const sAmt = num($('.s-qty', tr).value) * num($('.s-price', tr).value) * r;
-                        const cAmt = num($('.c-qty', tr).value) * num($('.c-price', tr).value) * r;
+                        const sAmt = r4(num($('.s-qty', tr).value) * num($('.s-price', tr).value) * r);
+                        const cAmt = r4(num($('.c-qty', tr).value) * num($('.c-price', tr).value) * r);
                         const sp = num($('.s-tax option:checked', tr)?.dataset.p), cp = num($('.c-tax option:checked', tr)?.dataset.p);
-                        const sTax = Math.round(sAmt * sp) / 100, cTax = Math.round(cAmt * cp) / 100;
-                        $('.s-amt', tr).textContent = fmt(sAmt); $('.s-taxamt', tr).textContent = fmt(sTax);
-                        $('.c-amt', tr).textContent = fmt(cAmt); $('.c-taxamt', tr).textContent = fmt(cTax);
-                        const gp = sAmt - cAmt, g = $('.gp', tr);
-                        g.textContent = fmt(gp); g.className = 'text-end gp ' + (gp < 0 ? 'cin-gp-neg' : 'cin-gp-pos');
+                        const sTax = r4(sAmt * sp / 100), cTax = r4(cAmt * cp / 100);
+                        $('.s-amt', tr).textContent = fmtLine(sAmt); $('.s-taxamt', tr).textContent = fmtLine(sTax);
+                        $('.c-amt', tr).textContent = fmtLine(cAmt); $('.c-taxamt', tr).textContent = fmtLine(cTax);
+                        const gp = r4(sAmt - cAmt), g = $('.gp', tr);
+                        g.textContent = fmtLine(gp); g.className = 'text-end gp ' + (gp < 0 ? 'cin-gp-neg' : 'cin-gp-pos');
                         t.sale += sAmt; t.cost += cAmt; t.sTax += sTax; t.cTax += cTax;
                     });
-                    const gp = t.sale - t.cost;
+                    // the summary is rounded to 2 decimals, and every figure in it comes from the rounded ones
+                    t.sale = r2(t.sale); t.cost = r2(t.cost); t.sTax = r2(t.sTax); t.cTax = r2(t.cTax);
+                    const gp = r2(t.sale - t.cost);
                     $('#tSale').textContent = fmt(t.sale); $('#tCost').textContent = fmt(t.cost); $('#tGp').textContent = fmt(gp);
                     $('#tSaleGp').textContent = (t.sale ? gp / t.sale * 100 : 0).toFixed(2) + '%';
                     $('#tCostGp').textContent = (t.cost ? gp / t.cost * 100 : 0).toFixed(2) + '%';
@@ -271,6 +277,11 @@
                     const o = this.selectedOptions[0];
                     $('#cinCustomer').value = o?.dataset.customerId || '';
                     $('#cinCustomerName').value = o?.dataset.customerName || '';
+                    // the invoice is in the customer's own currency (set in the Customer module): follow it and lock the box
+                    const curBox = $('#cinCurrency').tomselect;
+                    if (curBox) {
+                        if (o?.dataset.currency) { if (curBox.getValue() !== o.dataset.currency) curBox.setValue(o.dataset.currency); curBox.lock(); } else { curBox.unlock(); }
+                    }
                     quoteData = null;
                     const pick = $('#cinPick').tomselect;
                     pick.clear(true); pick.clearOptions(); pick.clearOptionGroups();
@@ -341,14 +352,14 @@
                         fd.append('comment[]', $('.comment', tr).value);
                         fd.append('unit_id[]', $('.unit', tr).value);
                         fd.append('quantity[]', num($('.s-qty', tr).value) || 1);
-                        fd.append('unit_price[]', num($('.s-price', tr).value).toFixed(2));
+                        fd.append('unit_price[]', String(r4(num($('.s-price', tr).value))));
                         fd.append('tax[]', $('.s-tax', tr).value);
                         fd.append('account[]', d.dataset.acc || 32);
                         fd.append('source_type[]', $('.src-type', tr).value);
                         fd.append('source_id[]', $('.src-id', tr).value);
                         fd.append('source_sub_id[]', $('.src-sub', tr).value);
                         // cost behind the line in company currency, excl. VAT
-                        const cost = num($('.c-qty', tr).value) * num($('.c-price', tr).value) * r;
+                        const cost = r4(num($('.c-qty', tr).value) * num($('.c-price', tr).value) * r);
                         fd.append('cost_base_amount[]', cost > 0 ? cost.toFixed(4) : '');
                     });
 

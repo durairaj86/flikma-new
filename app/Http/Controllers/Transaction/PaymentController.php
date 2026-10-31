@@ -138,6 +138,7 @@ class PaymentController extends Controller
         ]);
 
         $this->assertPeriodOpen($validated['payment_date'], 'payment_date');
+        $this->assertPartyCurrency(\App\Models\Supplier\Supplier::class, $validated['supplier'], $validated['currency']);
 
         DB::beginTransaction();
         try {

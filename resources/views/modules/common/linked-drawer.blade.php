@@ -119,6 +119,7 @@
                 subEl.style.width = sideBySide ? (def.narrow ? '' : (100 - {{ $mainWidth }}) + '%') : '';
             }
             document.getElementById('linkedDrawerActions').innerHTML = '';
+            subEl.classList.toggle('doc-ui', ['invoice', 'supplier_invoice', 'credit_note', 'debit_note', 'collection', 'payment'].includes(a.type));
             document.getElementById('linkedDrawerTitle').textContent = def.title;
             document.getElementById('linkedDrawerSubtitle').textContent = a.title || '';
             body.innerHTML = '<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div> ' + @json(__('Loading...')) + '</div>';
@@ -371,3 +372,5 @@
         });
     });
 </script>
+
+@include('modules.common.doc-ui')

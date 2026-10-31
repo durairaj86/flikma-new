@@ -88,6 +88,11 @@
             @endif
         </button>
     </li>
+    <li class="nav-item">
+        <button class="nav-link fw-semibold" data-bs-toggle="tab" data-bs-target="#colEntriesTab" type="button" role="tab">
+            <i class="bi bi-cash-stack me-1"></i> {{ __('Cash Flow') }}
+        </button>
+    </li>
     <li class="nav-item ms-auto">
         <button class="nav-link fw-semibold" data-bs-toggle="tab" data-bs-target="#colTimeFrameTab" type="button" role="tab"
                 title="{{ __('Time Frame') }}" aria-label="{{ __('Time Frame') }}">
@@ -302,6 +307,8 @@
 </div>
 
 </div>
+
+@include('modules.common.doc-entries', ['entrySource' => 'collection', 'entrySourceId' => $collection->id, 'entryPrefix' => 'col'])
 
 <div class="tab-pane fade" id="colTimeFrameTab" role="tabpanel">
     <div class="section">

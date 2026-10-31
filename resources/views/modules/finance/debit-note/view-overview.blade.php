@@ -95,6 +95,11 @@
             @endif
         </button>
     </li>
+    <li class="nav-item">
+        <button class="nav-link fw-semibold" data-bs-toggle="tab" data-bs-target="#dnEntriesTab" type="button" role="tab">
+            <i class="bi bi-cash-stack me-1"></i> {{ __('Cash Flow') }}
+        </button>
+    </li>
     <li class="nav-item ms-auto">
         <button class="nav-link fw-semibold" data-bs-toggle="tab" data-bs-target="#dnTimeFrameTab" type="button" role="tab"
                 title="{{ __('Time Frame') }}" aria-label="{{ __('Time Frame') }}">
@@ -174,7 +179,7 @@
     @endif
 </div>
 
-<div class="section">
+<div class="section section-totals">
     <h6>{{ __('Totals') }}</h6>
     <table class="table table-sm total-table w-auto ms-auto">
         <tr>
@@ -220,6 +225,8 @@
     @endif
 </div>
 </div>
+
+@include('modules.common.doc-entries', ['entrySource' => 'debit_note', 'entrySourceId' => $debitNote->id, 'entryPrefix' => 'dn'])
 
 <div class="tab-pane fade" id="dnTimeFrameTab" role="tabpanel">
     <div class="section">

@@ -9,6 +9,14 @@
     ];
     $siInfo = $siStatus[(int) ($supplierInvoice->status instanceof \BackedEnum ? $supplierInvoice->status->value : $supplierInvoice->status)] ?? ['label' => __('Unknown'), 'class' => 'bg-secondary-subtle text-secondary'];
 @endphp
+@php
+    $siGrandTop = (float) ($supplierInvoice->grand_total ?? 0);
+    $siPaidTop = (float) ($supplierInvoice->paid_amount ?? 0);
+    if ((int) ($supplierInvoice->status instanceof \BackedEnum ? $supplierInvoice->status->value : $supplierInvoice->status) === 3) {
+        $siInfo = ($siGrandTop > 0 && $siPaidTop >= $siGrandTop) ? ['label' => __('Fully Paid'), 'class' => 'bg-success-subtle text-success']
+            : ($siPaidTop > 0 ? ['label' => __('Partially Paid'), 'class' => 'bg-warning-subtle text-warning'] : ['label' => __('Unpaid'), 'class' => 'bg-danger-subtle text-danger']);
+    }
+@endphp
 <style>
     .invoice-no-heading { font-size: 1.5rem; font-weight: 700; color: #1a1a1a; margin-bottom: 1rem; }
     .section {
@@ -93,6 +101,11 @@
             <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis ms-1">{{ count($transactions) }}</span>
         </button>
     </li>
+    <li class="nav-item">
+        <button class="nav-link fw-semibold" data-bs-toggle="tab" data-bs-target="#siEntriesTab" type="button" role="tab">
+            <i class="bi bi-cash-stack me-1"></i> {{ __('Cash Flow') }}
+        </button>
+    </li>
     <li class="nav-item ms-auto">
         <button class="nav-link fw-semibold" data-bs-toggle="tab" data-bs-target="#siTimeFrameTab" type="button" role="tab"
                 title="{{ __('Time Frame') }}" aria-label="{{ __('Time Frame') }}">
@@ -111,6 +124,20 @@
             onclick="if (window.SUPPLIER_INVOICE && SUPPLIER_INVOICE.printPreview) { SUPPLIER_INVOICE.printPreview('{{ $supplierInvoice->id }}'); }">
         <i class="bi bi-printer me-1"></i>{{ __('Print') }}
     </button>
+</div>
+@php
+    $siTotal = (float) ($supplierInvoice->grand_total ?? 0);
+    $siPaid = (float) ($supplierInvoice->paid_amount ?? 0);
+    $siDraftPaid = (float) collect($transactions ?? [])->where('kind', 'payment')->where('status_label', 'Draft')->sum('amount');
+    $siRemaining = $siTotal - $siPaid;
+@endphp
+<div class="doc-tiles">
+    <div class="doc-tile t-blue"><small>{{ __('Total') }}</small><b>{{ amountFormat($siTotal) }}</b><em>{{ $supplierInvoice->currency }}</em></div>
+    <div class="doc-tile t-green"><small>{{ __('Total Paid') }}</small><b>{{ amountFormat($siPaid) }}</b><em>{{ $supplierInvoice->currency }}</em></div>
+    @if($siDraftPaid > 0)
+        <div class="doc-tile t-amber"><small>{{ __('Draft Payments') }}</small><b>{{ amountFormat($siDraftPaid) }}</b><em>{{ __('not approved yet') }}</em></div>
+    @endif
+    <div class="doc-tile {{ $siRemaining > 0 ? 't-red' : 't-green' }}"><small>{{ __('Remaining Balance') }}</small><b>{{ amountFormat($siRemaining) }}</b><em>{{ $supplierInvoice->currency }}</em></div>
 </div>
 <div class="section">
     <h6>{{ __('Supplier & Invoice Information') }}</h6>
@@ -171,7 +198,7 @@
     @endif
 </div>
 
-<div class="section">
+<div class="section section-totals">
     <h6>{{ __('Totals') }}</h6>
     <table class="total-table ms-auto" style="min-width:320px;">
         <tr>
@@ -201,6 +228,12 @@
             <td><strong>{{ __('Paid Amount') }}</strong></td>
             <td class="text-end">{{ amountFormat($supplierInvoice->paid_amount ?? 0) }} {{ $supplierInvoice->currency }}</td>
         </tr>
+        @if($siDraftPaid > 0)
+        <tr>
+            <td><strong>{{ __('Draft Payments') }}</strong><div style="font-size:12px;color:#666;">{{ __('not approved yet') }}</div></td>
+            <td class="text-end">{{ amountFormat($siDraftPaid) }} {{ $supplierInvoice->currency }}</td>
+        </tr>
+        @endif
         <tr class="table-secondary">
             <td><strong>{{ __('Balance') }}</strong></td>
             <td class="text-end fw-bold">
@@ -282,6 +315,8 @@
     </div>
 </div>
 </div>
+
+@include('modules.common.doc-entries', ['entrySource' => 'supplier_invoice', 'entrySourceId' => $supplierInvoice->id, 'entryPrefix' => 'si'])
 
 <div class="tab-pane fade" id="siTimeFrameTab" role="tabpanel">
     <div class="section">
