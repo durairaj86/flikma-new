@@ -3383,6 +3383,12 @@ window.appConfirm = function (opts) {
         if (opts.onConfirm) opts.onConfirm();
     };
     modal.show();
+    // asked from inside a drawer (Delete in its header): the dialog and its backdrop must sit above the drawer, or its buttons can't be reached
+    el.style.zIndex = 2100;
+    setTimeout(function () {
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        if (backdrops.length) backdrops[backdrops.length - 1].style.zIndex = 2090;
+    }, 0);
 };
 
 /* Confirm, then DELETE a record. When other records still point at it the server answers 422 with the reasons, shown in the same modal. */

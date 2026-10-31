@@ -371,15 +371,18 @@ CUSTOMER_INVOICE = {
     drawerEdit(id) {
         const dt = $('#dataTable');
         CUSTOMER_INVOICE.closeDrawers();
-        webModal.openGlobalModal({
-            title: trans('Edit') + ' ' + dt.data('title'),
-            url: GLOBAL_FN.buildUrl('invoice/customer/' + id + '/create'),
-            content: null,
-            size: dt.data('model-size') || 'xl',
-            scroll: true,
-            callBack: null,
-            minHeight: dt.data('min-height')
-        });
+        // the modal opens once the drawer has slid away (opening both at once makes the modal lose its focus and close)
+        setTimeout(function () {
+            webModal.openGlobalModal({
+                title: trans('Edit') + ' ' + dt.data('title'),
+                url: GLOBAL_FN.buildUrl('invoice/customer/' + id + '/create'),
+                content: null,
+                size: dt.data('model-size') || 'xl',
+                scroll: true,
+                callBack: null,
+                minHeight: dt.data('min-height')
+            });
+        }, 400);
     },
     drawerDelete(id, no) {
         window.deleteRecord('/invoice/customer/' + id, function () {
@@ -420,6 +423,16 @@ CUSTOMER_INVOICE = {
             CUSTOMER_INVOICE.form.open();
         },
         open() {
+            // Invoice with Cost (GP): the cost / sale grid, in a modal on the list (the full page stays at /invoice/customer/new)
+            $('#newGp').off().on('click', function () {
+                webModal.openGlobalModal({
+                    title: trans('Invoice with Cost (GP)'),
+                    url: GLOBAL_FN.buildUrl('invoice/customer/gp-form'),
+                    content: $(this).attr('data-job-id') ? {jobId: $(this).attr('data-job-id')} : null,
+                    size: '3xl',
+                    scroll: true,
+                });
+            });
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
                     title: trans('New Customer Invoice'),

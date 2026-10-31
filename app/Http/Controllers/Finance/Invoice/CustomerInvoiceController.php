@@ -50,7 +50,8 @@ class CustomerInvoiceController extends Controller
     }
 
     /** Full-page invoice builder: a Sale | Cost | GP grid per line (cost feeds the margin only, it is not posted). */
-    public function newPage(Request $request)
+    /** Everything the Invoice with Cost (GP) form needs, for the full page and for the modal on the list. */
+    private function gpFormData(Request $request): array
     {
         $jobs = Job::select('id', 'row_no', 'customer_id')->with('customer:id,name_en,currency')
             ->whereIn('status', [JobEnum::COMPLETED, JobEnum::PENDING])->orderByDesc('id')->get();
@@ -62,7 +63,18 @@ class CustomerInvoiceController extends Controller
         $currencies = currencies();
         $selectedJob = $request->filled('jobId') ? decodeId($request->get('jobId')) : null;
 
-        return view('modules.finance.customer-invoice.customer-invoice-new', compact('jobs', 'descriptions', 'units', 'taxes', 'currencies', 'selectedJob'));
+        return compact('jobs', 'descriptions', 'units', 'taxes', 'currencies', 'selectedJob');
+    }
+
+    public function newPage(Request $request)
+    {
+        return view('modules.finance.customer-invoice.customer-invoice-new', $this->gpFormData($request));
+    }
+
+    /** The same form as a modal (opened from the invoice list). */
+    public function gpForm(Request $request)
+    {
+        return view('modules.finance.customer-invoice._gp-form', $this->gpFormData($request) + ['inModal' => true]);
     }
 
     public function edit($id)
@@ -505,10 +517,10 @@ class CustomerInvoiceController extends Controller
                 'source_no' => null,
             ];
         }
-        // a source line without its source document makes no sense: drop the half-filled link
+        // a source line without its source document makes no sense: drop the half-filled link (the cost typed on the line stays)
         foreach ($customerSub as &$cs) {
             if (!$cs['source_type'] || !$cs['source_id']) {
-                $cs['source_type'] = $cs['source_id'] = $cs['source_sub_id'] = $cs['cost_base_amount'] = null;
+                $cs['source_type'] = $cs['source_id'] = $cs['source_sub_id'] = null;   // a typed cost (no source document) is kept
             }
         }
         unset($cs);
@@ -1069,9 +1081,13 @@ class CustomerInvoiceController extends Controller
             ->whereIn('id', $collectionInvoices->map(fn($ci) => $ci->collection?->created_by)->filter()->unique())
             ->pluck('name', 'id');
 
+        // credit from an earlier credit note / overpayment applied to this invoice inside a collection (not cash, so not in collection_invoices.amount)
+        $credit = DB::table('customer_credit_applications')->where('to_invoice_id', $id)->where('status', 1)
+            ->selectRaw('collection_id, SUM(amount) as amount')->groupBy('collection_id')->pluck('amount', 'collection_id');
+
         $balance = (float) $customerInvoice->grand_total - (float) ($customerInvoice->paid_amount ?? 0);
 
-        return view('modules.finance.customer-invoice.payment-history', compact('customerInvoice', 'collectionInvoices', 'balance', 'enteredBy'));
+        return view('modules.finance.customer-invoice.payment-history', compact('customerInvoice', 'collectionInvoices', 'balance', 'enteredBy', 'credit'));
     }
 
     public function print($id)
@@ -1442,7 +1458,8 @@ class CustomerInvoiceController extends Controller
         $taxMap = ['S' => 'STANDARD', 'Z' => 'ZERO', 'E' => 'EXEMPT', 'O' => 'OUTOFSCOPE'];
 
         return response()->json([
-            'quotations' => $quotes->map(function ($q) use ($charges, $descByName, $allDesc, $unitByName, $taxMap, $usedQuotes) {
+            // a quotation / supplier invoice already on a draft or approved customer invoice is not offered again (deleting or cancelling that invoice frees it)
+            'quotations' => $quotes->reject(fn ($q) => isset($usedQuotes[$q->id]))->map(function ($q) use ($charges, $descByName, $allDesc, $unitByName, $taxMap, $usedQuotes) {
                 return [
                     'id' => $q->id,
                     'row_no' => $q->row_no ?: $q->quotation_no,
@@ -1469,7 +1486,7 @@ class CustomerInvoiceController extends Controller
                     })->values(),
                 ];
             })->values(),
-            'bills' => $bills->map(function ($b) use ($descById, $usedBills) {
+            'bills' => $bills->reject(fn ($b) => isset($usedBills[$b->id]))->map(function ($b) use ($descById, $usedBills) {
                 return [
                     'id' => $b->id,
                     'row_no' => $b->row_no,

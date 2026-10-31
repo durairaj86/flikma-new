@@ -2,7 +2,12 @@
      Usage: @include('modules.common.doc-entries', ['entrySource' => 'customer_invoice', 'entrySourceId' => $id, 'entryPrefix' => 'ci']) --}}
 @php
     $deVouchers = \App\Models\Finance\Finance::with(['financeSubs' => fn ($q) => $q->orderBy('id'), 'financeSubs.account:id,code,name,name_en'])
-        ->where('source_type', $entrySource)->where('source_id', $entrySourceId)->orderBy('id')->get();
+        // entries get their source columns filled by an hourly sync; until then the document is found through its linked columns
+        ->where(function ($q) use ($entrySource, $entrySourceId) {
+            $q->where(fn ($x) => $x->where('source_type', $entrySource)->where('source_id', $entrySourceId))
+              ->orWhere(fn ($x) => $x->where('linked_id', $entrySourceId)->whereNull('source_id')
+                  ->whereRaw("REPLACE(LOWER(linked_type), '_', '') LIKE ?", ['%' . str_replace('_', '', $entrySource)]));
+        })->orderBy('id')->get();
     $deBase = strtoupper((string) (authUserCompany()?->base_currency ?: authUserCompany()?->currency ?: 'SAR'));
     $deDebit = 0.0;
     $deCredit = 0.0;

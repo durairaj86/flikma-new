@@ -54,7 +54,13 @@
                         </div>
                     </td>
                     <td>{{ $ci->collection->collection_date ?? '—' }}</td>
-                    <td class="text-end">{{ number_format($ci->amount, 2) }} {{ strtoupper($ci->collection->currency ?? '') }}</td>
+                    @php $cr = (float) ($credit[$ci->collection_id] ?? 0); $cur = strtoupper($ci->collection->currency ?? ''); @endphp
+                    <td class="text-end">
+                        {{ number_format($ci->amount + $cr, 2) }} {{ $cur }}
+                        @if($cr > 0)
+                            <div class="text-muted" style="font-size:.7rem;">{{ __('Cash') }} {{ number_format($ci->amount, 2) }} + {{ __('Credit applied') }} {{ number_format($cr, 2) }}</div>
+                        @endif
+                    </td>
                     <td>
                         @php $label = $statusLabels[$ci->collection->status ?? 0] ?? [__('Unknown'), 'secondary']; @endphp
                         <span class="badge bg-{{ $label[1] }}-subtle text-{{ $label[1] }}-emphasis">{{ $label[0] }}</span>

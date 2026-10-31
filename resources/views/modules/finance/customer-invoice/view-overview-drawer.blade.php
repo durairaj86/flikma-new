@@ -131,15 +131,19 @@
             <i class="bi bi-printer me-1"></i>{{ __('Print') }}
         </button>
         @if((int) $customerInvoice->status === 1)
+            @if(userCan('finances', 'edit'))
             <button type="button" class="btn btn-sm btn-success" onclick="CUSTOMER_INVOICE.drawerApprove('{{ $customerInvoice->id }}')">
                 <i class="bi bi-check-circle me-1"></i>{{ __('Mark as Approved') }}
             </button>
             <button type="button" class="btn btn-sm btn-outline-secondary" onclick="CUSTOMER_INVOICE.drawerEdit('{{ $customerInvoice->id }}')">
                 <i class="bi bi-pencil-square me-1"></i>{{ __('Edit') }}
             </button>
+            @endif
+            @if(userCan('finances', 'delete'))
             <button type="button" class="btn btn-sm btn-outline-danger" onclick="CUSTOMER_INVOICE.drawerDelete('{{ $customerInvoice->id }}', @js($customerInvoice->row_no))">
                 <i class="bi bi-trash3 me-1"></i>{{ __('Delete') }}
             </button>
+            @endif
         @endif
         @if($ciApproved)
             @if($ciBalance > 0)
@@ -236,7 +240,9 @@
                         <td class="text-end col-cost">
                             @if($hasCost)
                                 <div>{{ number_format($item->cost_base_amount, decimals()) }}</div>
-                                <div class="ci-tax">{{ rtrim(rtrim(number_format($costTaxPct, 2), '0'), '.') }}% · {{ number_format($costTax, decimals()) }}</div>
+                                @if(isset($ciSrcSubs[$item->source_sub_id]))   {{-- the cost tax is only known for a cost taken from a supplier invoice line --}}
+                                    <div class="ci-tax">{{ rtrim(rtrim(number_format($costTaxPct, 2), '0'), '.') }}% · {{ number_format($costTax, decimals()) }}</div>
+                                @endif
                             @else
                                 -
                             @endif

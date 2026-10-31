@@ -179,9 +179,9 @@
 
                             <!-- Quantity -->
                             <td class="col-md-1">
-                                <input type="text" name="quantity[]" class="form-control text-end float quantity"
+                                <input type="text" name="quantity[]" class="form-control text-end float quantity" data-decimal="4"
                                        autocomplete="off"
-                                       value="{{ $subItem->quantity }}" min="1" required>
+                                       value="{{ rtrim(rtrim(number_format((float) $subItem->quantity, 4, '.', ''), '0'), '.') }}" min="1" required>
                             </td>
 
                             <!-- Cost -->
@@ -192,9 +192,9 @@
 
                             <!-- Revenue Price -->
                             <td class="col-md-2">
-                                <input type="text" name="unit_price[]" class="form-control text-end float unit_price"
+                                <input type="text" name="unit_price[]" class="form-control text-end float unit_price" data-decimal="4"
                                        autocomplete="off"
-                                       value="{{ $subItem->unit_price }}" min="1" required>
+                                       value="{{ rtrim(rtrim(number_format((float) $subItem->unit_price, 4, '.', ''), '0'), '.') }}" min="1" required>
                                 {{-- where this line came from and what it cost (filled when picked from a quotation / supplier invoice) --}}
                                 <input type="hidden" name="source_type[]" value="{{ $subItem->source_type }}">
                                 <input type="hidden" name="source_id[]" value="{{ $subItem->source_id }}">

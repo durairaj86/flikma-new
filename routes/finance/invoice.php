@@ -44,6 +44,7 @@ Route::namespace('finance')->prefix('invoice')->group(function () {
         Route::get('/job/{job}/costs', [CustomerInvoiceController::class, 'jobCosts'])->whereNumber('job')->name('invoices.customer.job-costs');
         Route::post('/data/{job_id}', [CustomerInvoiceController::class, 'fetchAllRows'])->name('invoices.customer.data');
         Route::get('/new', [CustomerInvoiceController::class, 'newPage'])->name('invoices.customer.new');
+        Route::get('/gp-form', [CustomerInvoiceController::class, 'gpForm'])->name('invoices.customer.gp-form');
         Route::get('/create', [CustomerInvoiceController::class, 'modal']);
         Route::post('/create', [CustomerInvoiceController::class, 'store']);
         Route::get('/{id}/create', [CustomerInvoiceController::class, 'edit']);
