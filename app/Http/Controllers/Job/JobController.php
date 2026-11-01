@@ -866,14 +866,12 @@ class JobController extends Controller
     public function print($id)
     {
         $job = $this->allPrint($id);
-        $containers = $job->containers && $job->containers->count() > 0 ? $job->containers : [new JobContainer()];
-        $packages = $job->packages && $job->packages->count() > 0 ? $job->packages : [new JobPackage()];
 
-        return view('modules.job.view-overview', compact('job', 'containers', 'packages'));
+        return view('modules.job.job-print', compact('job'));
     }
 
     public function allPrint($id)
     {
-        return Job::with('containers', 'packages', 'customer')->withTrashed()->findOrFail($id);
+        return Job::with('containers', 'packages', 'customer', 'activity', 'clearance', 'documents')->withTrashed()->findOrFail($id);
     }
 }

@@ -5347,5 +5347,10 @@
     "in draft payment": "في دفعة مسودة",
     "Draft payments are taken off in the Payment form": "الدفعات المسودة تُخصم في نموذج الدفع",
     "Locked: finance entries already exist.": "مقفل: توجد قيود مالية.",
-    "Locked: this customer already has finance entries, so the currency cannot be changed.": "مقفل: لهذا العميل قيود مالية، لذا لا يمكن تغيير العملة."
+    "Locked: this customer already has finance entries, so the currency cannot be changed.": "مقفل: لهذا العميل قيود مالية، لذا لا يمكن تغيير العملة.",
+    "Port Clearance": "التخليص بالميناء",
+    "Duty Amount": "مبلغ الرسوم الجمركية",
+    "House B/L No": "رقم بوليصة الشحن الفرعية",
+    "Shipping Reference": "مرجع الشحن",
+    "Client Reference": "مرجع العميل"
 }
