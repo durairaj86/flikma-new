@@ -183,6 +183,8 @@ CUSTOMER_INVOICE = {
 
             // Print inside the credit note shown in this drawer: this page does not load the Credit Note script, so print through a hidden frame
             $(document).off('click.ciCnPrint').on('click.ciCnPrint', '#moduleDrawer .linked-print', function () {
+                // a Print button with its own onclick (the invoice's own, which calls CUSTOMER_INVOICE.printPreview) prints itself: do not print it twice
+                if (this.hasAttribute('onclick')) return;
                 const url = this.dataset.printUrl;
                 if (!url) return;
                 let frame = document.getElementById('ciPrintFrame');

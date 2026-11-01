@@ -193,7 +193,7 @@
                         <th class="sale" style="min-width:166px;width:166px">{{ __('Sale') }}</th>
                         <th class="sale" style="min-width:97px;width:97px">{{ __('Amount') }}<br>(<span class="cur">SAR</span>)</th>
                         <th class="sale" style="min-width:169px;width:169px">{{ __('Tax') }}<br><small class="fw-normal">{{ __('Amount') }} (<span class="cur">SAR</span>) · {{ __('Dr / Cr') }}</small></th>
-                        <th style="min-width:90px">{{ __('GP') }}</th>
+                        <th style="width:1%;min-width:100px">{{ __('GP') }}</th>   {{-- as narrow as its figure: the spare width goes to the description column, not to GP --}}
                     </tr>
                     </thead>
                     <tbody id="cinBody"></tbody>
