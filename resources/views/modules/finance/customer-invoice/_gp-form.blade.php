@@ -60,25 +60,25 @@
             .cin-card { border: 1px solid #e2e8f0; border-radius: .6rem; overflow: hidden; background: #fff; }
             .cin-sum-h, .cin-sum-r { display: grid; grid-template-columns: 1fr 1fr; }
             /* the Cost / Sale heading is plain text with a thin colour line (no filled bar: it made the summary look crowded) */
-            .cin-sum-h > div { padding: 6px 14px; font-size: .85rem; font-weight: 700; color: #1e293b; border-bottom: 2px solid #e5e7eb; }
+            .cin-sum-h > div { padding: 5px 14px; font-size: .78rem; font-weight: 700; color: #1e293b; border-bottom: 2px solid #e5e7eb; }
             .cin-sum-h > div small { font-weight: 500; color: #64748b; }
             .cin-sum-h .cost { border-bottom-color: #334155; }
             .cin-sum-h .sale { text-align: right; border-bottom-color: #6366F1; }
-            .cin-sum-r { border-bottom: 1px dotted #e5e7eb; font-size: .85rem; }   /* same size as the grid above */
-            .cin-sum-r .c { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 5px 14px; }
+            .cin-sum-r { border-bottom: 1px dotted #e5e7eb; font-size: .78rem; }
+            .cin-sum-r .c { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 4px 14px; }
             .cin-sum-r .c.sale { flex-direction: row-reverse; border-left: 1px solid #eef0f3; }   /* sale mirrors cost: text on the right, amount on the left */
             .cin-sum-r .c span { color: #64748b; }
             .cin-sum-r .c b { color: #1e293b; font-variant-numeric: tabular-nums; }
-            .cin-sum-r.tot { font-size: .85rem; }
+            .cin-sum-r.tot { font-size: .78rem; }
             .cin-sum-r.tot .c.cost { background: #f1f5f9; }
             .cin-sum-r.tot .c.sale { background: #eef2ff; }
             .cin-sum-r.tot .c.sale b { color: #4338ca; }
             /* Gross Profit is the number that matters: larger bold figures (green, red when negative), no coloured band behind it */
             .cin-sum-r.gp { border-bottom: 0; border-top: 2px solid #e5e7eb; background: transparent; }
             .cin-sum-r.gp.neg { border-top-color: #e5e7eb; background: transparent; }
-            .cin-sum-r.gp .c { padding-top: 8px; padding-bottom: 8px; }
-            .cin-sum-r.gp .c span { color: #1e293b; font-weight: 700; font-size: .9rem; }
-            .cin-sum-r.gp .c b { font-size: 1rem; }
+            .cin-sum-r.gp .c { padding-top: 6px; padding-bottom: 6px; }
+            .cin-sum-r.gp .c span { color: #1e293b; font-weight: 700; font-size: .82rem; }
+            .cin-sum-r.gp .c b { font-size: .88rem; }
             .cin-sum-r.gp .c.full { grid-column: 1 / -1; }
             .cin-sum-r .c b.cin-gp-pos { color: #008000; }
             .cin-sum-r .c b.cin-gp-neg { color: #e00000; }
