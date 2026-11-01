@@ -346,9 +346,17 @@
                                 @endif
                             </td>
                             <td class="ps-2">
-                                <a href="/jobs/{{ $job->id }}" class="fw-bold text-pr text-decoration-none">
-                                    {{ $job->row_no }}
-                                </a>
+                                {{-- the job number opens / closes its details (it used to link to /jobs/{id}, which is not a page and landed on the jobs list) --}}
+                                @if(count($row['details']) > 0)
+                                    <a href="#{{ $prCollapseId }}" role="button" class="fw-bold text-pr text-decoration-none"
+                                       data-bs-toggle="collapse" data-bs-target="#{{ $prCollapseId }}"
+                                       aria-expanded="false" aria-controls="{{ $prCollapseId }}" title="{{ __('Show details') }}"
+                                       onclick="event.preventDefault()">
+                                        {{ $job->row_no }}
+                                    </a>
+                                @else
+                                    <span class="fw-bold text-pr">{{ $job->row_no }}</span>
+                                @endif
                             </td>
                             <td class="small text-muted">
                                 {{ \Carbon\Carbon::parse($job->posted_at)->translatedFormat('d M Y') }}

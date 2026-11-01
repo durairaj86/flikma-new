@@ -424,6 +424,7 @@ CUSTOMER_INVOICE = {
                 size: dt.data('model-size') || 'xl',
                 scroll: true,
                 callBack: null,
+                heightPct: dt.data('modal-height') || null,
                 minHeight: dt.data('min-height')
             });
         }, 400);
@@ -485,6 +486,7 @@ CUSTOMER_INVOICE = {
                     content: $(this).attr('data-job-id') ? {jobId: $(this).attr('data-job-id')} : null,
                     size: '3xl',
                     scroll: true,
+                    heightPct: 90,
                 });
             });
         },

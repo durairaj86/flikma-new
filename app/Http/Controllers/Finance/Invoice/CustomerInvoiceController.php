@@ -57,7 +57,7 @@ class CustomerInvoiceController extends Controller
             ->whereIn('status', [JobEnum::COMPLETED, JobEnum::PENDING])->orderByDesc('id')->get();
         $descriptions = DB::table('descriptions')
             ->where(fn ($q) => $q->where('company_id', companyId())->orWhereNull('company_id'))
-            ->orderBy('description')->get(['id', 'description', 'sale_account_id']);
+            ->orderBy('description')->get(['id', 'description', 'description_local', 'category', 'sale_account_id']);
         $units = \App\Models\Master\Unit::units([]);
         // the same grouped list the other invoice forms use (Standard Rated / Zero Rated / Exempt / Out of Scope ...)
         $taxes = collect(vatSelectable())->map(fn ($v) => [
@@ -81,18 +81,49 @@ class CustomerInvoiceController extends Controller
         return view('modules.finance.customer-invoice._gp-form', $this->gpFormData($request) + ['inModal' => true]);
     }
 
+    /** Edit a draft invoice in the same cost / sale (GP) form the list uses for a new one, filled with the invoice's data. */
     public function edit($id)
     {
-        $customer = CustomerInvoice::with(['customerInvoiceSubs', 'documents'])->findOrFail($id);
-        $jobs = Job::select('id', 'row_no', 'customer_id')->with('customer:id,name_en')->get();
+        $invoice = CustomerInvoice::with('customerInvoiceSubs')->findOrFail($id);
+        // saving the form always files the invoice as a draft, so an approved one must not be opened for editing
+        abort_unless((int) ($invoice->status instanceof \BackedEnum ? $invoice->status->value : $invoice->status) === CustomerInvoiceEnum::DRAFT->value, 403, __('Only a draft invoice can be edited.'));
+        $data = $this->gpFormData(request());
 
-        $parents = Account::where('type', '!=', 'Equity')->where('is_active', 1)->orderBy('name')->get();//2=>Bank & Cash sub accounts
-        $subAccounts = Account::where('type', '!=', 'Equity')->where('is_grouped', 0)->orderBy('name')->get();
+        // the invoice's own job stays in the list even when it is no longer pending / completed
+        if ($invoice->job_id && !$data['jobs']->contains('id', $invoice->job_id)) {
+            $job = Job::select('id', 'row_no', 'customer_id')->with('customer:id,name_en,currency')->find($invoice->job_id);
+            if ($job) {
+                $data['jobs']->push($job);
+            }
+        }
+        $data['selectedJob'] = $invoice->job_id;
 
-        $job_customer_id = $customer->customer_id;
-        $job_id = $customer->job_id;
+        $rate = (float) $invoice->currency_rate ?: 1.0;
+        $bills = DB::table('supplier_invoice_subs')
+            ->whereIn('id', $invoice->customerInvoiceSubs->where('source_type', 'supplier_invoice')->pluck('source_sub_id')->filter())
+            ->get(['id', 'quantity', 'unit_price', 'tax_code'])->keyBy('id');
 
-        return view('modules.finance.customer-invoice.customer-invoice-form', compact('customer', 'jobs', 'parents', 'subAccounts', 'job_customer_id', 'job_id'));
+        // one entry per line, in the shape the form's addRow() reads; the cost side comes back from the supplier line it was picked from,
+        // or (typed cost) from the cost saved in company currency
+        $editLines = $invoice->customerInvoiceSubs->map(function ($l) use ($rate, $bills) {
+            $line = [
+                'description_id' => $l->description_id, 'unit_id' => $l->unit_id, 'comment' => $l->comment,
+                's_qty' => (float) $l->quantity, 's_price' => (float) $l->unit_price, 'tax' => $l->tax_code,
+                'source_type' => $l->source_type, 'source_id' => $l->source_id, 'source_sub_id' => $l->source_sub_id,
+            ];
+            $bill = $l->source_type === 'supplier_invoice' ? ($bills[$l->source_sub_id] ?? null) : null;
+            if ($l->source_no && in_array($l->source_type, ['supplier_invoice', 'quotation'], true)) {
+                $line['source_label'] = ($l->source_type === 'quotation' ? __('Quotation') : __('Supplier Invoice')) . ' ' . $l->source_no;
+            }
+            if ($bill) {
+                $line += ['c_qty' => (float) $bill->quantity, 'c_price' => (float) $bill->unit_price, 'c_tax' => $bill->tax_code];
+            } elseif ((float) $l->cost_base_amount > 0) {
+                $line += ['c_qty' => 1, 'c_price' => round((float) $l->cost_base_amount / $rate, 4)];
+            }
+            return $line;
+        })->values();
+
+        return view('modules.finance.customer-invoice._gp-form', $data + ['inModal' => true, 'invoice' => $invoice, 'editLines' => $editLines]);
     }
 
     public function listBasedOnJob($job_id)

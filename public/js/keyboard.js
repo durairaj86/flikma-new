@@ -269,6 +269,8 @@
         if (e.key === 'Enter' && !e.altKey && !e.metaKey && !e.shiftKey && t && t.closest) {
             var form = t.closest('#globalModal form');
             if (!form) return;
+            // a search box that handles Enter itself (e.g. the quick "add a line by description" box on the invoice builder)
+            if (t.closest('[data-kb-own-enter]')) return;
             if (t.matches('button, [type=submit], [type=button], a, [type=checkbox], [type=radio], ' + ADD_SEL + ', ' + REMOVE_SEL)) return;
             // a note box keeps its new lines, except a one-line cell of a line-item table (Shift+Enter for a new line there)
             if (t.matches('textarea') && !t.closest('td') && !e.ctrlKey) return;

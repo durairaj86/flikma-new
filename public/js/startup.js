@@ -646,6 +646,7 @@ let webModal = {
             callBack: null,
             maxHeight: 'max-height:75vh;',
             minHeight: 'min-height:75vh;',
+            heightPct: null,   // e.g. 90: the whole modal (header, form, footer) is 90% of the page height
         };
         let settings = $.extend({}, defaults, options); // merge options
 
@@ -768,6 +769,21 @@ let webModal = {
                     let minH = (settings.minHeight && typeof settings.minHeight === 'string') ? settings.minHeight : '';
                     let maxH = (settings.maxHeight && typeof settings.maxHeight === 'string') ? settings.maxHeight : '';
                     $('#moduleForm').attr('style', minH + maxH + 'overflow-y: auto; overflow-x: hidden');
+                    // a fixed share of the page height: what is left for the form after the header and footer of the modal.
+                    // It can only be measured once the modal is on screen.
+                    if (settings.heightPct) {
+                        const fitHeight = function () {
+                            const $form = $('#moduleForm');
+                            if (!$form.length) return;
+                            // collapse the form to read what the rest of the modal (header, footer, paddings) takes
+                            $form.attr('style', 'height:0;min-height:0;max-height:0;overflow:hidden;');
+                            const others = $('#globalModal .modal-content').outerHeight() - $form.outerHeight();   // the form's own padding stays inside its height
+                            const h = Math.max(320, Math.floor(window.innerHeight * settings.heightPct / 100 - others));
+                            $form.attr('style', 'min-height:' + h + 'px;max-height:' + h + 'px;overflow-y: auto; overflow-x: hidden');
+                        };
+                        if ($modalEl.hasClass('show') && $modalEl.css('display') !== 'none') fitHeight();
+                        else $modalEl.one('shown.bs.modal', fitHeight);
+                    }
 
                     // Run callback if provided
                     if (typeof settings.callBack === 'function') {
@@ -1884,8 +1900,10 @@ webDataTable = {
                     let title = dataTableData.data('title');
                     let modalSize = dataTableData.data('model-size');
                     let minHeight = dataTableData.data('min-height');
+                    let heightPct = dataTableData.data('modal-height') || null;
                     webModal.openGlobalModal({
                         title: trans('Edit') + ' ' + title,
+                        heightPct: heightPct,
                         url: GLOBAL_FN.buildUrl(window[MODULE].baseUrl + '/' + id + '/create'),
                         content: null,
                         size: modalSize || 'xl',
