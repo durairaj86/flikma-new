@@ -224,7 +224,7 @@
 
 {{-- Bank-statement style layout: used for Print and PDF export only --}}
 <div id="tb-print" class="stmt-print d-none d-print-block"
-     data-pdf-filename="TrialBalance-{{ $startDate ?? '' }}-{{ $endDate ?? '' }}.pdf">
+     data-pdf-filename="TrialBalance-{{ $endDate ?? '' }}.pdf">
 
     <table class="stmt-meta">
         <tr>
@@ -233,7 +233,7 @@
             </td>
             <td class="text-end">
                 <div class="stmt-title">{{ __('TRIAL BALANCE') }}</div>
-                <div class="stmt-sub">{{ __('Period:') }} {{ \Carbon\Carbon::parse($startDate)->translatedFormat('d M Y') }} — {{ \Carbon\Carbon::parse($endDate)->translatedFormat('d M Y') }}</div>
+                <div class="stmt-sub">{{ __('As of') }} {{ \Carbon\Carbon::parse($endDate)->translatedFormat('d M Y') }}</div>
                 <div class="stmt-sub">{{ __('Generated:') }} {{ now()->translatedFormat('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency:') }} SAR</div>
             </td>
         </tr>

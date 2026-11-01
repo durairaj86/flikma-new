@@ -35,15 +35,7 @@
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
 <div class="col-12 col-sm-6 col-lg">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('From Date') }}</label>
-                        <input type="hidden" id="tb-start-hidden" wire:model.live="startDate" value="{{ $startDate }}" />
-                        <input type="text" id="tb-start-date"
-                               class="form-control bg-light border-0 py-2"
-                               placeholder="dd-mm-yyyy"
-                               value="{{ $startDate }}" />
-                    </div>
-<div class="col-12 col-sm-6 col-lg">
-                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('To Date') }}</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('As of Date') }}</label>
                         <input type="hidden" id="tb-end-hidden" wire:model.live="endDate" value="{{ $endDate }}" />
                         <input type="text" id="tb-end-date"
                                class="form-control bg-light border-0 py-2"
@@ -60,7 +52,7 @@
 <div class="col-12 col-lg-auto">
     <div class="d-flex flex-wrap gap-2 justify-content-lg-end align-items-center">
         <button type="button" class="btn btn-tb fw-bold py-2 px-4 shadow-sm"
-                                            wire:click="updatedStartDate('{{ $startDate }}')"
+                                            wire:click="generate"
                                             wire:loading.attr="disabled">
                                         <i class="bi bi-filter-left me-2"></i>
                                         <span wire:loading.remove>{{ __('Generate') }}</span>
@@ -76,8 +68,7 @@
         <div class="d-flex align-items-center justify-content-between mb-3 px-1 d-print-none">
             <div class="small text-muted">
                 <i class="bi bi-calendar3 me-1"></i>
-                {{ __('Period:') }} <strong class="text-dark">{{ \Carbon\Carbon::parse($startDate)->translatedFormat('d M Y') }}</strong>
-                — <strong class="text-dark">{{ \Carbon\Carbon::parse($endDate)->translatedFormat('d M Y') }}</strong>
+                {{ __('As of') }} <strong class="text-dark">{{ \Carbon\Carbon::parse($endDate)->translatedFormat('d M Y') }}</strong>
             </div>
             <div class="small text-muted">
                 {{ __('Generated:') }} {{ now()->translatedFormat('d M Y, H:i') }}
@@ -113,22 +104,10 @@
             }
 
             function initFlatpickr() {
-                var startEl = document.getElementById('tb-start-date');
                 var endEl   = document.getElementById('tb-end-date');
 
-                if (startEl && startEl._flatpickr) { startEl._flatpickr.destroy(); }
                 if (endEl   && endEl._flatpickr)   { endEl._flatpickr.destroy(); }
 
-                if (startEl) {
-                    flatpickr(startEl, {
-                        dateFormat: 'Y-m-d', altInput: true, altFormat: 'd-m-Y',
-                        allowInput: true, disableMobile: true,
-                        defaultDate: startEl.value || null,
-                        onChange: function (selectedDates, dateStr) {
-                            syncHidden('tb-start-hidden', dateStr);
-                        },
-                    });
-                }
                 if (endEl) {
                     flatpickr(endEl, {
                         dateFormat: 'Y-m-d', altInput: true, altFormat: 'd-m-Y',

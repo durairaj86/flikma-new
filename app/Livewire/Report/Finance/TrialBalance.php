@@ -8,23 +8,23 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class TrialBalance extends Component
 {
-    public $startDate;
+    // A trial balance is "as of" one date: every entry up to $endDate. $startDate is not chosen by the user; it stays at the
+    // beginning so the old (non ledger) query adds the opening balance and all activity up to the date.
+    public $startDate = '2000-01-01';
     public $endDate;
     public $search = '';
 
     public function mount()
     {
-        // Default to current month
-        $this->startDate = now()->startOfMonth()->format('Y-m-d');
-        $this->endDate = now()->endOfMonth()->format('Y-m-d');
+        // Default to today
+        $this->startDate = '2000-01-01';
+        $this->endDate = now()->format('Y-m-d');
     }
 
-    public function updatedStartDate($value)
+    /** The Generate button: apply the date and the search to the table. */
+    public function generate()
     {
-        $this->dispatch('dateRangeChanged', [
-            'startDate' => $this->startDate,
-            'endDate' => $this->endDate
-        ]);
+        $this->dispatch('dateRangeChanged', ['startDate' => $this->startDate, 'endDate' => $this->endDate]);
     }
 
     public function updatedEndDate($value)
@@ -62,13 +62,13 @@ class TrialBalance extends Component
         $meta = [
             'title' => 'TRIAL BALANCE',
             'lines' => [
-                'Period: ' . \Carbon\Carbon::parse($this->startDate)->format('d M Y') . ' — ' . \Carbon\Carbon::parse($this->endDate)->format('d M Y'),
+                'As of: ' . \Carbon\Carbon::parse($this->endDate)->format('d M Y'),
                 'Generated on: ' . now()->format('d-m-Y H:i'),
             ],
             'numeric_from' => 4,
         ];
 
-        $filename = 'TrialBalance-' . $this->startDate . '-' . $this->endDate . '.xlsx';
+        $filename = 'TrialBalance-' . $this->endDate . '.xlsx';
 
         return Excel::download(new ReportTableExport($rows, $totalsRow, $columns, $meta), $filename);
     }

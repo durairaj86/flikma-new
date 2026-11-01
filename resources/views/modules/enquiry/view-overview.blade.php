@@ -53,15 +53,15 @@
         }
 
         /* ===== Tables ===== */
-        table.table {
+        :where(#moduleOverview, #linkedDrawerBody) table.table {
             font-size: 13.5px;
             margin-bottom: 0;
         }
-        table.table th {
+        :where(#moduleOverview, #linkedDrawerBody) table.table th {
             background: #f1f4f8;
             font-weight: 600;
         }
-        table.table td {
+        :where(#moduleOverview, #linkedDrawerBody) table.table td {
             vertical-align: middle;
         }
 

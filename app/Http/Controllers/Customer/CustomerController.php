@@ -388,8 +388,9 @@ class CustomerController extends Controller
             // locked — changing it after the fact would leave already-posted
             // invoices/collections in a currency that no longer matches the
             // customer record, silently corrupting statements and reports.
-            if ($customer->currency !== $validated['currency']
-                && FinanceSub::where('customer_id', $customer->id)->exists()) {
+            if (strtoupper((string) $customer->currency) !== strtoupper((string) $validated['currency'])
+                && (FinanceSub::where('customer_id', $customer->id)->exists()
+                    || \App\Models\Finance\Finance::where('customer_id', $customer->id)->exists())) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'This customer\'s currency cannot be changed because financial transactions already exist for them.',

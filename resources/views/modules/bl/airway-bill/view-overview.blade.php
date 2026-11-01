@@ -14,10 +14,10 @@
         /*border-left: 4px solid #0d6efd;*/
         margin-bottom: 1rem;
     }
-    table.table {
+    :where(#moduleOverview, #linkedDrawerBody) table.table {
         font-size: 13px;
     }
-    table.table th {
+    :where(#moduleOverview, #linkedDrawerBody) table.table th {
         background: #f8f9fa;
         font-weight: 600;
         white-space: nowrap;

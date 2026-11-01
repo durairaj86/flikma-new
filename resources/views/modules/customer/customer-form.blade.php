@@ -102,7 +102,13 @@
                                 </div>
                                 <div class="col-md-4 form-group">
                                     <label class="form-label">{{ __('Default Currency') }}</label>
-                                    <x-common.currencies :value="$customer->currency"></x-common.currencies>
+                                    @php
+                                        // a customer with finance entries keeps its currency: invoices and collections are already posted in it
+                                        $currencyLocked = $customer->id && (\App\Models\Finance\FinanceSub::where('customer_id', $customer->id)->exists()
+                                            || \App\Models\Finance\Finance::where('customer_id', $customer->id)->exists());
+                                    @endphp
+                                    <x-common.currencies :value="$customer->currency" :locked="$currencyLocked"
+                                                         :lockedText="__('Locked: this customer already has finance entries, so the currency cannot be changed.')"></x-common.currencies>
                                 </div>
                                 <div class="col-md-4 form-group">
                                     <label class="form-label required">{{ __('Email') }} <sup class="text-danger">*</sup></label>

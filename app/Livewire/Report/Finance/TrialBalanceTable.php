@@ -22,14 +22,14 @@ class TrialBalanceTable extends Component
 
     public function mount()
     {
-        // Default to current month
-        $this->startDate = now()->startOfMonth()->format('Y-m-d');
-        $this->endDate = now()->endOfMonth()->format('Y-m-d');
+        // "As of" today: everything up to the date (the start stays at the beginning)
+        $this->startDate = '2000-01-01';
+        $this->endDate = now()->format('Y-m-d');
     }
 
     public function updateDateRange($dateRange)
     {
-        $this->startDate = $dateRange['startDate'];
+        $this->startDate = '2000-01-01';
         $this->endDate = $dateRange['endDate'];
     }
 

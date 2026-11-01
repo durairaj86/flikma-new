@@ -23,10 +23,10 @@
             display: inline-block;
             color: #555;
         }
-        table.table {
+        :where(#moduleOverview, #linkedDrawerBody) table.table {
             font-size: 14px;
         }
-        table.table th {
+        :where(#moduleOverview, #linkedDrawerBody) table.table th {
             background: #f8f9fa;
             font-weight: 600;
         }

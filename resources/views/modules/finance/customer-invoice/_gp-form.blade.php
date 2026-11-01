@@ -386,7 +386,8 @@
                     // the invoice is in the customer's own currency (set in the Customer module): follow it and lock the box
                     const curBox = $('#cinCurrency').tomselect;
                     if (curBox) {
-                        if (o?.dataset.currency) { if (curBox.getValue() !== o.dataset.currency) curBox.setValue(o.dataset.currency); curBox.lock(); } else { curBox.unlock(); }
+                        if (o?.dataset.currency && curBox.getValue() !== o.dataset.currency) curBox.setValue(o.dataset.currency);
+                        curBox.lock();   // never chosen on the invoice: it is always the customer's currency
                     }
                     quoteData = null;
                     @if(!empty($invoice))
@@ -595,6 +596,8 @@
 
                 if (typeof datepicker === 'function') datepicker();
                 initTs($('#cinForm'));
+                $('#cinCurrency').tomselect?.lock();   // the currency comes from the customer of the job, it is not picked here
+                setTimeout(() => $('#cinCurrency').tomselect?.lock(), 600);   // opened as a modal, the page sets the dropdowns up again right after: lock once more
                 const editLines = @json($editLines ?? []);
                 if (editLines.length) {
                     editLines.forEach(l => addRow(l));

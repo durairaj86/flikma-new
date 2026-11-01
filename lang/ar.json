@@ -5345,5 +5345,7 @@
     "The currency is set on the :party (:cur). Change it there, not on the document.": "العملة محددة في :party (:cur). غيّرها هناك وليس في المستند.",
     "Line :n: choose the VAT exemption reason for this zero rated / exempt / out of scope line.": "السطر :n: اختر سبب الإعفاء من ضريبة القيمة المضافة لهذا السطر (صفري / معفى / خارج النطاق).",
     "in draft payment": "في دفعة مسودة",
-    "Draft payments are taken off in the Payment form": "الدفعات المسودة تُخصم في نموذج الدفع"
+    "Draft payments are taken off in the Payment form": "الدفعات المسودة تُخصم في نموذج الدفع",
+    "Locked: finance entries already exist.": "مقفل: توجد قيود مالية.",
+    "Locked: this customer already has finance entries, so the currency cannot be changed.": "مقفل: لهذا العميل قيود مالية، لذا لا يمكن تغيير العملة."
 }
