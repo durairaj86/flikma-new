@@ -59,10 +59,11 @@
             /* the summary: one card, cost on the left half and sale on the right half, row for row */
             .cin-card { border: 1px solid #e2e8f0; border-radius: .6rem; overflow: hidden; background: #fff; }
             .cin-sum-h, .cin-sum-r { display: grid; grid-template-columns: 1fr 1fr; }
-            .cin-sum-h > div { padding: 8px 14px; font-weight: 700; color: #fff; }
-            .cin-sum-h > div small { font-weight: 500; opacity: .85; }
-            .cin-sum-h .cost { background: #334155; }
-            .cin-sum-h .sale { background: #6366F1; text-align: right; }
+            /* the Cost / Sale heading is plain text with a thin colour line (no filled bar: it made the summary look crowded) */
+            .cin-sum-h > div { padding: 8px 14px; font-weight: 700; color: #1e293b; border-bottom: 2px solid #e5e7eb; }
+            .cin-sum-h > div small { font-weight: 500; color: #64748b; }
+            .cin-sum-h .cost { border-bottom-color: #334155; }
+            .cin-sum-h .sale { text-align: right; border-bottom-color: #6366F1; }
             .cin-sum-r { border-bottom: 1px dotted #e5e7eb; font-size: .9rem; }
             .cin-sum-r .c { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 7px 14px; }
             .cin-sum-r .c.sale { flex-direction: row-reverse; border-left: 1px solid #eef0f3; }   /* sale mirrors cost: text on the right, amount on the left */
