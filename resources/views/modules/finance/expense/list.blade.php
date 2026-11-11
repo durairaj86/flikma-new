@@ -20,11 +20,12 @@
             #listTabs .status-btn:not(.active) > span:first-child > i { color: var(--bs-warning) !important; }
             #listTabs .status-btn.active { background: rgb(13, 110, 253) !important; color: #fff !important; }
             #listTabs .status-btn.active > span:first-child > i { color: #fff !important; }
-            /* Expense = money going out: amber tones, like the Supplier Invoice summary cards. */
-            .bg-ex-approved { background-color: #fef3c7; }
-            .text-ex-approved { color: #92400e; }
-            .bg-ex-draft { background-color: #ffedd5; }
-            .text-ex-draft { color: #9a3412; }
+            /* Expense cards: teal (approved) and rose (draft), apart from the other lists' green / indigo / amber. The Summary bar and dots follow. */
+            #summary-cards { --ci-a: #0891b2; --ci-d: #e11d48; }
+            .bg-ex-approved { background-color: #cffafe; }
+            .text-ex-approved { color: #155e75; }
+            .bg-ex-draft { background-color: #ffe4e6; }
+            .text-ex-draft { color: #9f1239; }
         </style>
         <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap pt-2 pb-0">
             <div class="d-flex align-items-center gap-2 ex-title">
@@ -123,36 +124,47 @@
 
         <div class="container-fluid pb-3" id="summary-cards">
             <div class="row g-3">
+
                 <div class="col-12 col-lg-4">
-                    <div class="rounded-3 bg-body-tertiary px-4 py-3 h-100">
-                        <h6 class="text-uppercase text-muted fw-semibold small mb-3" style="letter-spacing:.03em;">{{ __('Summary') }}</h6>
-                        <div class="row g-2 text-center">
-                            <div class="col-4"><div id="cardAllCount" class="fs-4 fw-bold mb-0">0</div><small class="text-muted">{{ __('Total Expenses') }}</small></div>
-                            <div class="col-4"><div id="cardApprovedCount" class="fs-4 fw-bold mb-0">0</div><small class="text-muted">{{ __('Approved') }}</small></div>
-                            <div class="col-4"><div id="cardDraftCount" class="fs-4 fw-bold mb-0">0</div><small class="text-muted">{{ __('Draft') }}</small></div>
+                    <div class="ci-kpi bg-body-tertiary h-100">
+                        <div class="ci-kpi-main">
+                            <div class="ci-kpi-title text-muted"><i class="bi bi-wallet2"></i>{{ __('Summary') }}</div>
+                            <div class="ci-kpi-big"><span id="cardAllCount">0</span><small class="text-muted">{{ __('Total Expenses') }}</small></div>
+                        </div>
+                        <div class="ci-kpi-side">
+                            <div class="ci-bar"><span id="cardApprovedBar" class="a"></span><span id="cardDraftBar" class="d"></span></div>
+                            <div class="ci-kv"><span><i class="ci-dot a"></i>{{ __('Approved') }}</span><b id="cardApprovedCount">0</b></div>
+                            <div class="ci-kv"><span><i class="ci-dot d"></i>{{ __('Draft') }}</span><b id="cardDraftCount">0</b></div>
                         </div>
                     </div>
                 </div>
+
                 <div class="col-12 col-lg-4">
-                    <div class="rounded-3 bg-ex-approved px-4 py-3 h-100">
-                        <h6 class="text-uppercase text-ex-approved fw-semibold small mb-3" style="letter-spacing:.03em;">{{ __('Approved Expenses') }}</h6>
-                        <div class="row g-2 text-center">
-                            <div class="col-4"><div id="total_approved_sub" class="fs-4 fw-bold mb-0">0.00</div><small class="text-muted">{{ __('Total Amount') }}</small></div>
-                            <div class="col-4"><div id="total_approved_tax" class="fs-4 fw-bold mb-0">0.00</div><small class="text-muted">{{ __('Total Tax') }}</small></div>
-                            <div class="col-4"><div id="total_approved_grand" class="fs-4 fw-bold mb-0">0.00</div><small class="text-muted">{{ __('Net Total') }}</small></div>
+                    <div class="ci-kpi bg-ex-approved h-100">
+                        <div class="ci-kpi-main">
+                            <div class="ci-kpi-title text-ex-approved"><i class="bi bi-check-circle"></i>{{ __('Approved Expenses') }}</div>
+                            <div class="ci-kpi-big"><span id="total_approved_grand">0.00</span><small class="text-muted">{{ __('Net Total') }}</small></div>
+                        </div>
+                        <div class="ci-kpi-side">
+                            <div class="ci-kv"><span>{{ __('Total Amount') }}</span><b id="total_approved_sub">0.00</b></div>
+                            <div class="ci-kv"><span>{{ __('Total Tax') }}</span><b id="total_approved_tax">0.00</b></div>
                         </div>
                     </div>
                 </div>
+
                 <div class="col-12 col-lg-4">
-                    <div class="rounded-3 bg-ex-draft px-4 py-3 h-100">
-                        <h6 class="text-uppercase text-ex-draft fw-semibold small mb-3" style="letter-spacing:.03em;">{{ __('Draft Expenses') }}</h6>
-                        <div class="row g-2 text-center">
-                            <div class="col-4"><div id="total_draft_sub" class="fs-4 fw-bold mb-0">0.00</div><small class="text-muted">{{ __('Total Amount') }}</small></div>
-                            <div class="col-4"><div id="total_draft_tax" class="fs-4 fw-bold mb-0">0.00</div><small class="text-muted">{{ __('Total Tax') }}</small></div>
-                            <div class="col-4"><div id="total_draft_grand" class="fs-4 fw-bold mb-0">0.00</div><small class="text-muted">{{ __('Net Total') }}</small></div>
+                    <div class="ci-kpi bg-ex-draft h-100">
+                        <div class="ci-kpi-main">
+                            <div class="ci-kpi-title text-ex-draft"><i class="bi bi-pencil-square"></i>{{ __('Draft Expenses') }}</div>
+                            <div class="ci-kpi-big"><span id="total_draft_grand">0.00</span><small class="text-muted">{{ __('Net Total') }}</small></div>
+                        </div>
+                        <div class="ci-kpi-side">
+                            <div class="ci-kv"><span>{{ __('Total Amount') }}</span><b id="total_draft_sub">0.00</b></div>
+                            <div class="ci-kv"><span>{{ __('Total Tax') }}</span><b id="total_draft_tax">0.00</b></div>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
 
