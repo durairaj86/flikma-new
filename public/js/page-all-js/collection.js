@@ -558,7 +558,7 @@ COLLECTION = {
                 // Add to selected invoices
                 COLLECTION.form.selectedInvoices.push({
                     id: id,
-                    amount: parseFloat(amountInput.val())
+                    amount: parseNum(amountInput.val())
                 });
             } else {
                 // Remove from selected invoices
@@ -579,7 +579,7 @@ COLLECTION = {
 
         handleAmountChange($input) {
             const id = $input.data('id');
-            const amount = parseFloat($input.val() || 0);
+            const amount = parseNum($input.val() || 0);
             const balanceAmount = parseFloat($input.attr('max') || 0);
 
             // Ensure amount doesn't exceed the balance amount
@@ -632,7 +632,7 @@ COLLECTION = {
             let total = 0;
             $('.invoice-amount').each(function () {
                 if ($(this).closest('tr').find('.invoice-checkbox').is(':checked')) {
-                    total += parseFloat($(this).val() || 0);
+                    total += parseNum($(this).val() || 0);
                 }
             });
             $('#total-collection-amount').text(COLLECTION.form.formatNumber(total));

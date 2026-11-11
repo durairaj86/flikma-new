@@ -1012,7 +1012,7 @@ QUOTATION = {
             const addCharge = (r) => {
                 const $tbody = $('#chargesBody');
                 let $row = $tbody.find('.charge-row').filter(function () {
-                    return !parseFloat($(this).find('.chg-amt-qty').val()) && !$(this).find('.chg-description').val();
+                    return !parseNum($(this).find('.chg-amt-qty').val()) && !$(this).find('.chg-description').val();
                 }).first();
                 if (!$row.length) {
                     $tbody.find('.charge-row:first .chg-add-row').trigger('click');
@@ -1109,9 +1109,9 @@ QUOTATION = {
 
             /* ── helpers ── */
             function calcRow($row) {
-                const qty    = parseFloat($row.find('.chg-qty').val())     || 0;
-                const exRate = parseFloat($row.find('.chg-ex-rate').val()) || 1;
-                const amtQty = parseFloat($row.find('.chg-amt-qty').val()) || 0;
+                const qty    = parseNum($row.find('.chg-qty').val())     || 0;
+                const exRate = parseNum($row.find('.chg-ex-rate').val()) || 1;
+                const amtQty = parseNum($row.find('.chg-amt-qty').val()) || 0;
 
                 const fcy   = amtQty ? (qty * amtQty) : 0;
                 const local = fcy    ? (fcy * exRate) : 0;
@@ -1124,8 +1124,8 @@ QUOTATION = {
             function calcFooterTotals() {
                 let tf = 0, tl = 0;
                 $tbody.find('.charge-row').each(function () {
-                    tf += parseFloat($(this).find('.chg-fcy-amount').val())   || 0;
-                    tl += parseFloat($(this).find('.chg-local-amount').val()) || 0;
+                    tf += parseNum($(this).find('.chg-fcy-amount').val())   || 0;
+                    tl += parseNum($(this).find('.chg-local-amount').val()) || 0;
                 });
                 $('#chgGrandFcy').text(tf.toFixed(2));
                 $('#chgGrandLocal').text(tl.toFixed(2));

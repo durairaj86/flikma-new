@@ -410,9 +410,9 @@ CALCULATION = {
         return Math.round((v + Number.EPSILON) * f) / f;
     },
     rowTotal($row) {
-        let qty = parseFloat($row.find('.quantity').val()) || 0;
-        let price = parseFloat($row.find('.unit_price').val()) || 0;
-        let tax = parseFloat($row.find('.tax').val()) || 0;
+        let qty = parseNum($row.find('.quantity').val()) || 0;
+        let price = parseNum($row.find('.unit_price').val()) || 0;
+        let tax = parseNum($row.find('.tax').val()) || 0;
 
         // an invoice line may hold up to 4 decimals (price box has data-decimal="4"); other forms keep 2
         const lp = CALCULATION.lineDecimals($row);
@@ -457,7 +457,7 @@ CALCULATION = {
         if ($('#sarRate').length) {
             let selectedCurrency = $('#currency-code').val();
             let isForeign = selectedCurrency && selectedCurrency !== baseCurrency;
-            let rate = parseFloat($('#currency-rate').val()) || this.exchangeRate;
+            let rate = parseNum($('#currency-rate').val()) || this.exchangeRate;
 
             $('#sarRate, #sarEquivalent').closest('.grand-total-fx').toggleClass('d-none', !isForeign);
 
@@ -3188,6 +3188,11 @@ function amountFormat(number) {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     }).format(number);
+}
+
+// parseFloat that understands the thousands commas the number boxes show after blur ("2,000.00" -> 2000, not 2)
+function parseNum(v) {
+    return parseFloat(String(v ?? '').replace(/,/g, ''));
 }
 
 function noComma(inputString) {

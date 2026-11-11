@@ -168,7 +168,7 @@
         }
 
         function updateRemaining() {
-            var amount = parseFloat($amount.val()) || 0;
+            var amount = parseNum($amount.val()) || 0;
             var remaining = balance - amount;
             var $remaining = $('#rp_remaining');
             $remaining.text(formatNumber(remaining) + ' ' + currency);
@@ -176,7 +176,7 @@
         }
 
         $amount.off('input.rp').on('input.rp', function () {
-            var val = parseFloat($(this).val());
+            var val = parseNum($(this).val());
             if (!isNaN(val) && val > balance) {
                 $(this).val(balance);
             }

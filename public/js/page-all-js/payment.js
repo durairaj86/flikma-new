@@ -542,7 +542,7 @@ PAYMENT = {
                 // Add to selected invoices
                 PAYMENT.form.selectedInvoices.push({
                     id: id,
-                    amount: parseFloat(amountInput.val())
+                    amount: parseNum(amountInput.val())
                 });
             } else {
                 // Remove from selected invoices
@@ -554,7 +554,7 @@ PAYMENT = {
 
         handleAmountChange($input) {
             const id = $input.data('id');
-            const amount = parseFloat($input.val() || 0);
+            const amount = parseNum($input.val() || 0);
             const balanceAmount = parseFloat($input.attr('max') || 0);
 
             // Ensure amount doesn't exceed the balance amount
@@ -588,13 +588,13 @@ PAYMENT = {
             // Sum invoice amounts
             $('.invoice-amount').each(function () {
                 if ($(this).closest('tr').find('.invoice-checkbox').is(':checked')) {
-                    total += parseFloat($(this).val() || 0);
+                    total += parseNum($(this).val() || 0);
                 }
             });
 
             // Add additional transaction amounts
             $('.additional-transaction-amount').each(function() {
-                const amount = parseFloat($(this).val());
+                const amount = parseNum($(this).val());
                 if (!isNaN(amount)) {
                     total += amount;
                 }

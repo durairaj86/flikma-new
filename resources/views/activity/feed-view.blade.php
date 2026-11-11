@@ -150,13 +150,13 @@
                 let total = 0;
                 $('.invoice-amount').each(function () {
                     if ($(this).closest('tr').find('.invoice-checkbox').is(':checked')) {
-                        total += parseFloat($(this).val() || 0);
+                        total += parseNum($(this).val() || 0);
                     }
                 });
 
                 // Add bank charges and other charges
-                let bankCharges = parseFloat($('#bank_charges').val() || 0);
-                let otherCharges = parseFloat($('#other_charges').val() || 0);
+                let bankCharges = parseNum($('#bank_charges').val() || 0);
+                let otherCharges = parseNum($('#other_charges').val() || 0);
                 total += bankCharges + otherCharges;
 
                 $('#total-payment-amount').text(PAYMENT.edit.formatNumber(total));
@@ -243,7 +243,7 @@
                     // Add to selected invoices
                     PAYMENT.edit.selectedInvoices.push({
                         id: id,
-                        amount: parseFloat(amountInput.val())
+                        amount: parseNum(amountInput.val())
                     });
                 } else {
                     // Remove from selected invoices
@@ -258,7 +258,7 @@
                 if (!PAYMENT.edit.isDraft) return;
 
                 const id = $input.data('id');
-                const amount = parseFloat($input.val() || 0);
+                const amount = parseNum($input.val() || 0);
 
                 // Update in selected invoices
                 const index = PAYMENT.edit.selectedInvoices.findIndex(inv => inv.id === id);
@@ -285,7 +285,7 @@
                         if (!PAYMENT.edit.selectedInvoices.some(inv => inv.id === id)) {
                             PAYMENT.edit.selectedInvoices.push({
                                 id: id,
-                                amount: parseFloat(amountInput.val())
+                                amount: parseNum(amountInput.val())
                             });
                         }
                     } else {
@@ -300,7 +300,7 @@
                     if (!PAYMENT.edit.isDraft) return;
 
                     const id = $(this).data('id');
-                    const amount = parseFloat($(this).val() || 0);
+                    const amount = parseNum($(this).val() || 0);
 
                     // Update in selected invoices
                     const index = PAYMENT.edit.selectedInvoices.findIndex(inv => inv.id === id);
