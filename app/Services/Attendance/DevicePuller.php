@@ -125,35 +125,56 @@ class DevicePuller
 
         try {
             if ($ebio) {
-                // eBioserver New (webservice.asmx): logs are read per day and location; repeated punches are ignored by ingest().
+                $res = null;
+                // eBioserver New (webservice.asmx). Records: "LogId,DateTime,EmployeeCode,Device,Location,Direction;".
+                // The real import reads new logs by log number (kept in field_map.last_log_id); repeated punches are ignored by ingest().
+                $call = function (string $op, string $extra) use ($device, $cred, $x, $envelope) {
+                    $inner = '<UserName>' . $x($cred['UserName']) . '</UserName><Password>' . $x($cred['UserPassword']) . '</Password>' . $extra;
+                    $r = Http::timeout(30)->withHeaders(['SOAPAction' => '"http://tempuri.org/' . $op . '"'])
+                        ->withBody($envelope($op, $inner), 'text/xml; charset=utf-8')->post($device->pull_url);
+                    $b = (string) $r->body();
+
+                    return $r->successful() && preg_match('~<' . $op . 'Result[^>]*>(.*?)</' . $op . 'Result>~s', $b, $m)
+                        ? html_entity_decode($m[1]) : '(HTTP ' . $r->status() . ')';
+                };
+                $loc = '<Location>' . $x($device->pull_params) . '</Location>';
                 $text = '';
                 $status = '';
-                $days = $from->copy()->startOfDay()->diffInDays($to->copy()->startOfDay());
-                for ($i = 0; $i <= min($days, 7); $i++) {
-                    $inner = '<UserName>' . $x($cred['UserName']) . '</UserName><Password>' . $x($cred['UserPassword']) . '</Password>'
-                        . '<Location>' . $x($device->pull_params) . '</Location><LogDate>' . $from->copy()->addDays($i)->format('Y-m-d') . '</LogDate>';
-                    $res = Http::timeout(30)->withHeaders(['SOAPAction' => '"http://tempuri.org/GetDeviceLogs"'])
-                        ->withBody($envelope('GetDeviceLogs', $inner), 'text/xml; charset=utf-8')->post($device->pull_url);
-                    $body = (string) $res->body();
-                    if (!$res->successful()) {
-                        break;
+                $report = null;
+                $newLastId = null;
+
+                if ($save) {
+                    $last = (int) ($device->field_map['last_log_id'] ?? 0);
+                    for ($i = 0; $i < 10; $i++) {
+                        $chunk = $call('GetDeviceLogsByLogId', $loc . '<LogId>' . $last . '</LogId><LogCount>500</LogCount>');
+                        $rows = $this->parseSoapLog($chunk, $tz);
+                        if (!$rows) {
+                            $status = trim(strip_tags($chunk));
+                            break;
+                        }
+                        $text .= "\n" . $chunk;
+                        $ids = array_filter(array_map(fn ($r) => $r['raw']['log_id'] ?? null, $rows));
+                        $max = $ids ? max($ids) : $last;
+                        if ($max <= $last) {
+                            break;
+                        }
+                        $last = $newLastId = $max;
+                        if (count($rows) < 500) {
+                            break;
+                        }
                     }
-                    if (preg_match('~<GetDeviceLogsResult[^>]*>(.*?)</GetDeviceLogsResult>~s', $body, $m)) {
-                        $chunk = html_entity_decode($m[1]);
-                        $status = $status ?: trim(strip_tags($chunk));
+                } else {
+                    $days = $from->copy()->startOfDay()->diffInDays($to->copy()->startOfDay());
+                    for ($i = 0; $i <= min($days, 7); $i++) {
+                        $chunk = $call('GetDeviceLogs', $loc . '<LogDate>' . $from->copy()->addDays($i)->format('Y-m-d') . '</LogDate>');
                         $text .= "\n" . $chunk;
                     }
-                }
-                // Test only: a demo / quiet server may have nothing for today, so also look at the oldest logs by log id.
-                if (!$save && trim(strip_tags($text)) === '') {
-                    $inner = '<UserName>' . $x($cred['UserName']) . '</UserName><Password>' . $x($cred['UserPassword']) . '</Password>'
-                        . '<Location>' . $x($device->pull_params) . '</Location><LogId>0</LogId><LogCount>20</LogCount>';
-                    $res = Http::timeout(30)->withHeaders(['SOAPAction' => '"http://tempuri.org/GetDeviceLogsByLogId"'])
-                        ->withBody($envelope('GetDeviceLogsByLogId', $inner), 'text/xml; charset=utf-8')->post($device->pull_url);
-                    $body = (string) $res->body();
-                    if ($res->successful() && preg_match('~<GetDeviceLogsByLogIdResult[^>]*>(.*?)</GetDeviceLogsByLogIdResult>~s', $body, $m)) {
-                        $text = html_entity_decode($m[1]);
-                        $status = trim(strip_tags($text));
+                    $byId = $call('GetDeviceLogsByLogId', $loc . '<LogId>0</LogId><LogCount>20</LogCount>');
+                    $list = $call('GetDeviceList', $loc);
+                    $report = "GetDeviceLogs (days):\n" . (trim(strip_tags($text)) ?: '(empty)')
+                        . "\n\nGetDeviceLogsByLogId:\n" . ($byId ?: '(empty)') . "\n\nGetDeviceList:\n" . ($list ?: '(empty)');
+                    if (trim(strip_tags($text)) === '' && $this->parseSoapLog($byId, $tz)) {
+                        $text = $byId;
                     }
                 }
             } else {
@@ -169,7 +190,7 @@ class DevicePuller
             return $this->finish($device, $save, ['ok' => false, 'message' => __('Could not reach the endpoint: :m', ['m' => $e->getMessage()])]);
         }
 
-        if (!$res->successful()) {
+        if (!$ebio && !$res->successful()) {
             return $this->finish($device, $save, ['ok' => false, 'http_status' => $res->status(), 'body' => mb_substr($body, 0, 4000),
                 'message' => __('The endpoint answered HTTP :s.', ['s' => $res->status()])]);
         }
@@ -184,12 +205,22 @@ class DevicePuller
                 $text = html_entity_decode($m[1]);
             }
         }
-        if ($ebio && $text !== '') {
-            $body = $text;
+        if ($ebio) {
+            $body = $report ?? $text;
+            if (str_starts_with(ltrim($status), '(HTTP')) {
+                return $this->finish($device, $save, ['ok' => false, 'body' => $status, 'message' => __('The endpoint answered HTTP :s.', ['s' => trim($status, '() HTTP')])]);
+            }
         }
         $punches = $this->parseSoapLog($text, $tz);
+        if ($ebio && $save) {
+            // A first sync of a long-running server should not drag in years of history.
+            $punches = array_values(array_filter($punches, fn ($p) => $p['punched_at']->gte(now()->subDays(35))));
+            if ($newLastId !== null) {
+                $device->forceFill(['field_map' => array_merge($device->field_map ?? [], ['last_log_id' => $newLastId])])->save();
+            }
+        }
 
-        $out = ['ok' => true, 'http_status' => $res->status(), 'body' => mb_substr($body, 0, 4000), 'fields' => [],
+        $out = ['ok' => true, 'http_status' => $res?->status() ?? 200, 'body' => mb_substr($body, 0, 4000), 'fields' => [],
             'punches' => array_map(fn ($p) => [
                 'id' => $p['device_user_id'],
                 'time' => $p['punched_at']->format('d-m-Y H:i:s'),
@@ -249,6 +280,21 @@ class DevicePuller
         $out = [];
         foreach (preg_split('/\r\n|\r|\n|<br\s*\/?>|;(?=\s*\S)/i', $text) as $line) {
             $line = trim($line);
+            if (preg_match('~^(\d+),(\d{4}-\d{2}-\d{2} \d{2}:\d{2}(?::\d{2})?),([^,;]+)(?:,([^,;]*))?(?:,([^,;]*))?(?:,([^,;]*))?;?$~', $line, $r)) {
+                try {
+                    $at = \Illuminate\Support\Carbon::parse($r[2], $tz);
+                } catch (\Throwable) {
+                    continue;
+                }
+                $dir = match (strtoupper(trim($r[6] ?? ''))) {
+                    'IN', 'CHECKIN', 'I' => 'in',
+                    'OUT', 'CHECKOUT', 'O' => 'out',
+                    default => null,   // "INOUT" = the device does not say; the day's first / last punch decides
+                };
+                $out[] = ['device_user_id' => trim($r[3]), 'punched_at' => $at, 'direction' => $dir,
+                    'raw' => ['log_id' => (int) $r[1], 'device' => trim($r[4] ?? ''), 'location' => trim($r[5] ?? ''), 'line' => $line]];
+                continue;
+            }
             if ($line === '' || !preg_match('~(\d{4}-\d{2}-\d{2}|\d{2}[-/]\d{2}[-/]\d{4})[ T]+(\d{1,2}:\d{2}(?::\d{2})?)~', $line, $dt)) {
                 continue;
             }
