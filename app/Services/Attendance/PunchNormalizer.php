@@ -10,8 +10,8 @@ use Illuminate\Support\Carbon;
  */
 class PunchNormalizer
 {
-    private const ID_KEYS = ['device_user_id', 'user_id', 'userid', 'pin', 'emp_id', 'empcode', 'emp_code', 'employee_code', 'badge', 'badge_no', 'card_no', 'cardno', 'person_id', 'staff_id', 'enrollid', 'enroll_id', 'id_number'];
-    private const TIME_KEYS = ['timestamp', 'punched_at', 'punch_time', 'punchtime', 'datetime', 'date_time', 'time', 'check_time', 'checktime', 'log_time', 'logtime', 'event_time', 'recordtime'];
+    private const ID_KEYS = ['device_user_id', 'user_id', 'userid', 'pin', 'emp_id', 'empcode', 'emp_code', 'employee_code', 'badge', 'badge_no', 'card_no', 'cardno', 'person_id', 'staff_id', 'enrollid', 'enroll_id', 'id_number', 'employeecode', 'employee_id', 'employeeid', 'usercode', 'user_code'];
+    private const TIME_KEYS = ['timestamp', 'punched_at', 'punch_time', 'punchtime', 'datetime', 'date_time', 'time', 'check_time', 'checktime', 'log_time', 'logtime', 'event_time', 'recordtime', 'logdatetime', 'log_date_time', 'logdate', 'punchdatetime', 'punch_date_time'];
     private const DIR_KEYS = ['type', 'direction', 'punch_type', 'punchtype', 'state', 'status', 'in_out', 'inout', 'io', 'event', 'punch_state', 'attendance_state'];
     private const LIST_KEYS = ['punches', 'records', 'logs', 'data', 'events', 'items', 'attendancelogs', 'attendance', 'transactions'];
 

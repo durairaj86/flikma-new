@@ -111,6 +111,7 @@ class AttendanceDeviceController extends Controller
             'pull_url' => ['required', 'url', 'max:1000'],
             'ws_user' => ['required', 'string', 'max:100'],
             'ws_password' => ['nullable', 'string', 'max:200'],
+            'ws_location' => ['nullable', 'string', 'max:200'],
             'pull_interval' => ['nullable', 'integer', 'min:1', 'max:1440'],
         ]);
         $password = $data['ws_password'] ?: ($device->pull_headers['UserPassword'] ?? '');
@@ -122,6 +123,7 @@ class AttendanceDeviceController extends Controller
             'mode' => 'pull',
             'pull_url' => $data['pull_url'],
             'pull_headers' => ['UserName' => $data['ws_user'], 'UserPassword' => $password],
+            'pull_params' => $data['ws_location'] ?? null,
             'pull_interval' => $data['pull_interval'] ?? 15,
         ]);
 

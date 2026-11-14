@@ -70,6 +70,9 @@
                             <div class="form-text">{{ __('Stored encrypted. Leave empty to keep the saved password.') }}</div></div>
                         <div class="col-md-4"><label class="form-label fw-bold">{{ __('Fetch every (minutes)') }}</label>
                             <input type="text" name="pull_interval" class="integer form-control" value="{{ old('pull_interval', $device->pull_interval ?: 15) }}"></div>
+                        <div class="col-md-6"><label class="form-label fw-bold">{{ __('Location (eBioserver New, optional)') }}</label>
+                            <input type="text" name="ws_location" class="form-control" value="{{ old('ws_location', $device->pull_params) }}">
+                            <div class="form-text">{{ __('Used when the URL ends in webservice.asmx (eBioserver New). Empty = all locations.') }}</div></div>
                         <div class="col-12 text-muted">{{ __('Device serial number (optional) is set on the device: :sn', ['sn' => $device->serial_number ?: __('empty = all devices')]) }}</div>
                     </div>
                 </div>

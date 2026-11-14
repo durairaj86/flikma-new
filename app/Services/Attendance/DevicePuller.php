@@ -119,33 +119,73 @@ class DevicePuller
         }
 
         $x = fn (?string $v) => htmlspecialchars((string) $v, ENT_XML1 | ENT_QUOTES, 'UTF-8');
-        $xml = '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body>'
-            . '<GetTransactionsLog xmlns="http://tempuri.org/">'
-            . '<FromDateTime>' . $from->format('Y-m-d H:i') . '</FromDateTime><ToDateTime>' . $to->format('Y-m-d H:i') . '</ToDateTime>'
-            . '<SerialNumber>' . $x($device->serial_number) . '</SerialNumber>'
-            . '<UserName>' . $x($cred['UserName']) . '</UserName><UserPassword>' . $x($cred['UserPassword']) . '</UserPassword>'
-            . '<strDataList></strDataList></GetTransactionsLog></soap:Body></soap:Envelope>';
+        $ebio = $this->isEbioWebService($device->pull_url);
+        $envelope = fn (string $op, string $inner) => '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body>'
+            . '<' . $op . ' xmlns="http://tempuri.org/">' . $inner . '</' . $op . '></soap:Body></soap:Envelope>';
 
         try {
-            $res = Http::timeout(30)->withHeaders(['SOAPAction' => '"http://tempuri.org/GetTransactionsLog"'])
-                ->withBody($xml, 'text/xml; charset=utf-8')->post($device->pull_url);
+            if ($ebio) {
+                // eBioserver New (webservice.asmx): logs are read per day and location; repeated punches are ignored by ingest().
+                $text = '';
+                $status = '';
+                $days = $from->copy()->startOfDay()->diffInDays($to->copy()->startOfDay());
+                for ($i = 0; $i <= min($days, 7); $i++) {
+                    $inner = '<UserName>' . $x($cred['UserName']) . '</UserName><Password>' . $x($cred['UserPassword']) . '</Password>'
+                        . '<Location>' . $x($device->pull_params) . '</Location><LogDate>' . $from->copy()->addDays($i)->format('Y-m-d') . '</LogDate>';
+                    $res = Http::timeout(30)->withHeaders(['SOAPAction' => '"http://tempuri.org/GetDeviceLogs"'])
+                        ->withBody($envelope('GetDeviceLogs', $inner), 'text/xml; charset=utf-8')->post($device->pull_url);
+                    $body = (string) $res->body();
+                    if (!$res->successful()) {
+                        break;
+                    }
+                    if (preg_match('~<GetDeviceLogsResult[^>]*>(.*?)</GetDeviceLogsResult>~s', $body, $m)) {
+                        $chunk = html_entity_decode($m[1]);
+                        $status = $status ?: trim(strip_tags($chunk));
+                        $text .= "\n" . $chunk;
+                    }
+                }
+                // Test only: a demo / quiet server may have nothing for today, so also look at the oldest logs by log id.
+                if (!$save && trim(strip_tags($text)) === '') {
+                    $inner = '<UserName>' . $x($cred['UserName']) . '</UserName><Password>' . $x($cred['UserPassword']) . '</Password>'
+                        . '<Location>' . $x($device->pull_params) . '</Location><LogId>0</LogId><LogCount>20</LogCount>';
+                    $res = Http::timeout(30)->withHeaders(['SOAPAction' => '"http://tempuri.org/GetDeviceLogsByLogId"'])
+                        ->withBody($envelope('GetDeviceLogsByLogId', $inner), 'text/xml; charset=utf-8')->post($device->pull_url);
+                    $body = (string) $res->body();
+                    if ($res->successful() && preg_match('~<GetDeviceLogsByLogIdResult[^>]*>(.*?)</GetDeviceLogsByLogIdResult>~s', $body, $m)) {
+                        $text = html_entity_decode($m[1]);
+                        $status = trim(strip_tags($text));
+                    }
+                }
+            } else {
+                $xml = $envelope('GetTransactionsLog',
+                    '<FromDateTime>' . $from->format('Y-m-d H:i') . '</FromDateTime><ToDateTime>' . $to->format('Y-m-d H:i') . '</ToDateTime>'
+                    . '<SerialNumber>' . $x($device->serial_number) . '</SerialNumber>'
+                    . '<UserName>' . $x($cred['UserName']) . '</UserName><UserPassword>' . $x($cred['UserPassword']) . '</UserPassword><strDataList></strDataList>');
+                $res = Http::timeout(30)->withHeaders(['SOAPAction' => '"http://tempuri.org/GetTransactionsLog"'])
+                    ->withBody($xml, 'text/xml; charset=utf-8')->post($device->pull_url);
+                $body = (string) $res->body();
+            }
         } catch (\Throwable $e) {
             return $this->finish($device, $save, ['ok' => false, 'message' => __('Could not reach the endpoint: :m', ['m' => $e->getMessage()])]);
         }
 
-        $body = (string) $res->body();
         if (!$res->successful()) {
             return $this->finish($device, $save, ['ok' => false, 'http_status' => $res->status(), 'body' => mb_substr($body, 0, 4000),
                 'message' => __('The endpoint answered HTTP :s.', ['s' => $res->status()])]);
         }
 
-        $status = '';
-        $text = '';
-        if (preg_match('~<GetTransactionsLogResult[^>]*>(.*?)</GetTransactionsLogResult>~s', $body, $m)) {
-            $status = trim(html_entity_decode($m[1]));
+        if (!$ebio) {
+            $status = '';
+            $text = '';
+            if (preg_match('~<GetTransactionsLogResult[^>]*>(.*?)</GetTransactionsLogResult>~s', $body, $m)) {
+                $status = trim(html_entity_decode($m[1]));
+            }
+            if (preg_match('~<strDataList[^>]*>(.*?)</strDataList>~s', $body, $m)) {
+                $text = html_entity_decode($m[1]);
+            }
         }
-        if (preg_match('~<strDataList[^>]*>(.*?)</strDataList>~s', $body, $m)) {
-            $text = html_entity_decode($m[1]);
+        if ($ebio && $text !== '') {
+            $body = $text;
         }
         $punches = $this->parseSoapLog($text, $tz);
 
@@ -174,8 +214,38 @@ class DevicePuller
      * The service returns the log as text; the exact layout depends on the eBioserver version, so each record is read loosely:
      * the first token that is not a date/time is the employee code, the date/time token the time, and in / out words the direction.
      */
+    private function isEbioWebService(string $url): bool
+    {
+        return stripos($url, 'webservice.asmx') !== false && stripos($url, 'webapiservice.asmx') === false;
+    }
+
+    /** XML result (DataSet-like rows) → punches through the generic field detection; otherwise one record per text line. */
     private function parseSoapLog(string $text, string $tz): array
     {
+        if (str_contains($text, '<') && ($xml = @simplexml_load_string('<r>' . $text . '</r>'))) {
+            $rows = [];
+            $walk = function (\SimpleXMLElement $n) use (&$rows, &$walk) {
+                $kids = $n->children();
+                if (count($kids) === 0) {
+                    return;
+                }
+                $leaf = true;
+                foreach ($kids as $k) {
+                    $leaf = $leaf && count($k->children()) === 0;
+                }
+                if ($leaf && count($kids) >= 2) {
+                    $rows[] = array_map('strval', (array) $n);
+                    return;
+                }
+                foreach ($kids as $k) {
+                    $walk($k);
+                }
+            };
+            $walk($xml);
+            if ($rows) {
+                return $this->normalizer->fromPayload(['records' => $rows], $tz, null);
+            }
+        }
         $out = [];
         foreach (preg_split('/\r\n|\r|\n|<br\s*\/?>|;(?=\s*\S)/i', $text) as $line) {
             $line = trim($line);

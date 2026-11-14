@@ -5375,5 +5375,7 @@
     "Enter the web service password.": "أدخل كلمة مرور خدمة الويب.",
     "Enter the web service user name and password first.": "أدخل اسم المستخدم وكلمة مرور خدمة الويب أولاً.",
     "Connected, but no punches could be read.": "تم الاتصال، لكن تعذّرت قراءة أي بصمات.",
-    "Service said: :s": "ردّت الخدمة: :s"
+    "Service said: :s": "ردّت الخدمة: :s",
+    "Location (eBioserver New, optional)": "الموقع (eBioserver New، اختياري)",
+    "Used when the URL ends in webservice.asmx (eBioserver New). Empty = all locations.": "يُستخدم عندما ينتهي الرابط بـ webservice.asmx (eBioserver New). فارغ = كل المواقع."
 }
