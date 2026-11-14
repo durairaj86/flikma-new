@@ -70,6 +70,9 @@ class AttendanceDeviceController extends Controller
 
     public function saveConnection(Request $request, AttendanceDevice $device): RedirectResponse
     {
+        if ($device->isSoap()) {
+            return $this->saveSoapConnection($request, $device);
+        }
         $data = $request->validate([
             'mode' => ['required', 'in:push,pull'],
             'pull_url' => ['nullable', 'required_if:mode,pull', 'url', 'max:1000'],
@@ -95,6 +98,30 @@ class AttendanceDeviceController extends Controller
             'pull_method' => $data['pull_method'] ?? 'GET',
             'pull_headers' => $headers ?: null,
             'pull_params' => $data['pull_params'] ?? null,
+            'pull_interval' => $data['pull_interval'] ?? 15,
+        ]);
+
+        return redirect()->route('payroll.devices.configure', [$device, 'tab' => 'connection'])->with('success', __('Connection settings saved.'));
+    }
+
+    /** eBioserver web service: service URL, its login (kept encrypted in pull_headers) and the poll interval. */
+    private function saveSoapConnection(Request $request, AttendanceDevice $device): RedirectResponse
+    {
+        $data = $request->validate([
+            'pull_url' => ['required', 'url', 'max:1000'],
+            'ws_user' => ['required', 'string', 'max:100'],
+            'ws_password' => ['nullable', 'string', 'max:200'],
+            'pull_interval' => ['nullable', 'integer', 'min:1', 'max:1440'],
+        ]);
+        $password = $data['ws_password'] ?: ($device->pull_headers['UserPassword'] ?? '');
+        if ($password === '') {
+            return back()->withErrors(['ws_password' => __('Enter the web service password.')])->withInput();
+        }
+
+        $device->update([
+            'mode' => 'pull',
+            'pull_url' => $data['pull_url'],
+            'pull_headers' => ['UserName' => $data['ws_user'], 'UserPassword' => $password],
             'pull_interval' => $data['pull_interval'] ?? 15,
         ]);
 
@@ -227,7 +254,11 @@ class AttendanceDeviceController extends Controller
                 ? __('eSSL eBioserver devices need their serial number.')
                 : __('ZKTeco devices need their serial number.')]);
         }
-        $data['mode'] = $data['protocol'] === 'api' ? ($data['mode'] ?? 'push') : 'push';
+        $data['mode'] = match ($data['protocol']) {
+            'api' => $data['mode'] ?? 'push',
+            'essl_ws' => 'pull',
+            default => 'push',
+        };
         $data['is_active'] = (bool) ($data['is_active'] ?? false);
         if ($device === null) {
             $data['is_active'] = true;

@@ -72,7 +72,7 @@
                             <td class="px-4 py-2 fw-bold text-dark">{{ $d->name }}<div class="text-muted extra-small fw-normal">{{ $d->timezone }}</div></td>
                             <td class="px-4 py-2">{{ \App\Models\Payroll\AttendanceDevice::PROTOCOLS[$d->protocol] ?? $d->protocol }}</td>
                             <td class="px-4 py-2 font-monospace">
-                                @if($d->isAdms()) SN {{ $d->serial_number }}
+                                @if($d->isAdms() || $d->isSoap()) {{ $d->serial_number ? 'SN ' . $d->serial_number : __('All devices') }}
                                 @else {{ $d->token_hint ? '••••' . $d->token_hint : '—' }} @endif
                             </td>
                             <td class="px-4 py-2 text-muted">
@@ -155,9 +155,10 @@
 </div>
 <script>
     function deviceToggle() {
-        var zk = ['zkteco', 'essl'].indexOf(document.getElementById('dProtocol').value) !== -1;
+        var p = document.getElementById('dProtocol').value;
+        var zk = ['zkteco', 'essl', 'essl_ws'].indexOf(p) !== -1;
         document.getElementById('dSerialWrap').style.display = zk ? '' : 'none';
-        document.getElementById('dModeWrap').style.display = zk ? 'none' : '';
+        document.getElementById('dModeWrap').style.display = p === 'api' ? '' : 'none';
     }
     function deviceForm(d) {
         var f = document.getElementById('deviceForm');

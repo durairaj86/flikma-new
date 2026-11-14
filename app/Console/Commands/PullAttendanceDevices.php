@@ -13,7 +13,7 @@ class PullAttendanceDevices extends Command
 
     public function handle(DevicePuller $puller): int
     {
-        AttendanceDevice::withoutGlobalScopes()->where('is_active', true)->where('protocol', 'api')->where('mode', 'pull')->get()
+        AttendanceDevice::withoutGlobalScopes()->where('is_active', true)->where(fn ($q) => $q->where('protocol', 'essl_ws')->orWhere(fn ($q) => $q->where('protocol', 'api')->where('mode', 'pull')))->get()
             ->filter->isDue()->each(function (AttendanceDevice $d) use ($puller) {
                 $r = $puller->run($d, true);
                 $this->line("[{$d->company_id}] {$d->name}: " . $r['message']);

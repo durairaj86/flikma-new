@@ -8,6 +8,7 @@
     $root = request()->getSchemeAndHttpHost();
     $map = $device->field_map ?? [];
     $isApi = $device->protocol === 'api';
+    $isWs = $device->isSoap();
     $mode = old('mode', $device->mode);
     $m = fn ($k, $d = '') => old($k, $map[$k] ?? $d);
 @endphp
@@ -53,7 +54,28 @@
     <div class="tab-content">
     {{-- ───────────── CONNECTION ───────────── --}}
     <div class="tab-pane fade {{ $tab === 'connection' ? 'show active' : '' }}" id="tabConn">
-        @if(!$isApi)
+        @if($isWs)
+            <form method="POST" action="{{ route('payroll.devices.connection', $device) }}" class="card border-0 shadow-sm rounded-3 mb-3">
+                @csrf
+                <div class="card-body small">
+                    <h6 class="fw-bold">{{ __('eBioserver web service') }}</h6>
+                    <div class="text-muted mb-3">{{ __('Flikma calls GetTransactionsLog on your eBioserver New / eTimeTrackLite server every few minutes. The server must be reachable from the internet.') }}</div>
+                    <div class="row g-3">
+                        <div class="col-12"><label class="form-label fw-bold">{{ __('Web service URL') }}</label>
+                            <input type="text" name="pull_url" class="form-control font-monospace" value="{{ old('pull_url', $device->pull_url) }}" placeholder="http://your-server:81/WebAPIService.asmx" required></div>
+                        <div class="col-md-4"><label class="form-label fw-bold">{{ __('User name') }}</label>
+                            <input type="text" name="ws_user" class="form-control" autocomplete="off" value="{{ old('ws_user', $device->pull_headers['UserName'] ?? '') }}" required></div>
+                        <div class="col-md-4"><label class="form-label fw-bold">{{ __('Password') }}</label>
+                            <input type="password" name="ws_password" class="form-control" autocomplete="new-password" placeholder="{{ !empty($device->pull_headers['UserPassword']) ? '••••••••' : '' }}">
+                            <div class="form-text">{{ __('Stored encrypted. Leave empty to keep the saved password.') }}</div></div>
+                        <div class="col-md-4"><label class="form-label fw-bold">{{ __('Fetch every (minutes)') }}</label>
+                            <input type="text" name="pull_interval" class="integer form-control" value="{{ old('pull_interval', $device->pull_interval ?: 15) }}"></div>
+                        <div class="col-12 text-muted">{{ __('Device serial number (optional) is set on the device: :sn', ['sn' => $device->serial_number ?: __('empty = all devices')]) }}</div>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-0 pb-3"><button class="btn btn-primary btn-sm px-4">{{ __('Save connection') }}</button></div>
+            </form>
+        @elseif(!$isApi)
             <div class="card border-0 shadow-sm rounded-3 mb-3"><div class="card-body small">
                 <h6 class="fw-bold">{{ __('Enter these on the machine') }} <span class="text-muted fw-normal">(Comm. → Cloud Server Setting)</span></h6>
                 <table class="table table-sm w-auto mb-2">
@@ -127,7 +149,9 @@ Content-Type: application/json
 
     {{-- ───────────── MAPPING ───────────── --}}
     <div class="tab-pane fade {{ $tab === 'mapping' ? 'show active' : '' }}" id="tabMap">
-        @if(!$isApi)
+        @if($isWs)
+            <div class="alert alert-info border-0 shadow-sm small">{{ __('The eBioserver web service returns fixed fields, so there is nothing to map. Make sure each employee\'s Machine ID matches the code in eBioserver.') }}</div>
+        @elseif(!$isApi)
             <div class="alert alert-info border-0 shadow-sm small">{{ __('ZKTeco / ADMS machines always send the same format, so there is nothing to map.') }}</div>
         @else
         <div class="row g-3">

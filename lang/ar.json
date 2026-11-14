@@ -5362,5 +5362,18 @@
     "Point it to Flikma.": "وجّهه إلى فليكما.",
     "On the terminal (Comm. → Cloud Server Setting) or in eBioserver's server settings enter:": "على الجهاز (Comm. ← Cloud Server Setting) أو في إعدادات خادم eBioserver أدخل:",
     "The device shows a green dot and \"Last Seen\" within a minute; punches appear in Payroll → Punch Log. If your eBioserver can only forward through a web address, add an \"HTTP / JSON API\" device and use its Callback URL (method B).": "يظهر الجهاز بنقطة خضراء و\"آخر ظهور\" خلال دقيقة، وتظهر البصمات في الرواتب ← سجل البصمات. إذا كان eBioserver يرسل عبر عنوان ويب فقط، أضف جهاز \"HTTP / JSON API\" واستخدم رابط الاستدعاء (الطريقة B).",
-    "eSSL eBioserver: set the same Server Address / Port in eBioserver (Device → Communication → Server) or directly on each terminal, then add every terminal's serial number here.": "eSSL eBioserver: أدخل نفس عنوان الخادم / المنفذ في eBioserver (Device ← Communication ← Server) أو مباشرة على كل جهاز، ثم أضف الرقم التسلسلي لكل جهاز هنا."
+    "eSSL eBioserver: set the same Server Address / Port in eBioserver (Device → Communication → Server) or directly on each terminal, then add every terminal's serial number here.": "eSSL eBioserver: أدخل نفس عنوان الخادم / المنفذ في eBioserver (Device ← Communication ← Server) أو مباشرة على كل جهاز، ثم أضف الرقم التسلسلي لكل جهاز هنا.",
+    "eSSL eBioserver web service (we fetch)": "خدمة ويب eSSL eBioserver (نحن نجلب)",
+    "eBioserver web service": "خدمة ويب eBioserver",
+    "Flikma calls GetTransactionsLog on your eBioserver New / eTimeTrackLite server every few minutes. The server must be reachable from the internet.": "يستدعي فليكما GetTransactionsLog على خادم eBioserver New / eTimeTrackLite كل بضع دقائق. يجب أن يكون الخادم متاحاً من الإنترنت.",
+    "Web service URL": "رابط خدمة الويب",
+    "User name": "اسم المستخدم",
+    "Stored encrypted. Leave empty to keep the saved password.": "مخزّنة مشفّرة. اتركها فارغة للإبقاء على كلمة المرور المحفوظة.",
+    "Device serial number (optional) is set on the device: :sn": "الرقم التسلسلي للجهاز (اختياري) المحدد على الجهاز: :sn",
+    "empty = all devices": "فارغ = كل الأجهزة",
+    "The eBioserver web service returns fixed fields, so there is nothing to map. Make sure each employee's Machine ID matches the code in eBioserver.": "خدمة eBioserver ترجع حقولاً ثابتة، فلا حاجة للربط. تأكد أن رقم الجهاز لكل موظف يطابق الرمز في eBioserver.",
+    "Enter the web service password.": "أدخل كلمة مرور خدمة الويب.",
+    "Enter the web service user name and password first.": "أدخل اسم المستخدم وكلمة مرور خدمة الويب أولاً.",
+    "Connected, but no punches could be read.": "تم الاتصال، لكن تعذّرت قراءة أي بصمات.",
+    "Service said: :s": "ردّت الخدمة: :s"
 }

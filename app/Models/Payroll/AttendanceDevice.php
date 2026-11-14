@@ -43,7 +43,7 @@ class AttendanceDevice extends Model
 
     public function isPull(): bool
     {
-        return $this->protocol === 'api' && $this->mode === 'pull';
+        return ($this->protocol === 'api' && $this->mode === 'pull') || $this->isSoap();
     }
 
     /** Pull devices that are due for their next poll. */
@@ -57,10 +57,17 @@ class AttendanceDevice extends Model
         'api' => 'HTTP / JSON API',
         'zkteco' => 'ZKTeco / ADMS push',
         'essl' => 'eSSL eBioserver',
+        'essl_ws' => 'eSSL eBioserver web service (we fetch)',
     ];
 
     /** Types that talk the ADMS protocol (/iclock/cdata) and are identified by serial number. */
     public const ADMS = ['zkteco', 'essl'];
+
+    /** eBioserver New / eTimeTrackLite SOAP web service (WebAPIService.asmx) that Flikma polls. */
+    public function isSoap(): bool
+    {
+        return $this->protocol === 'essl_ws';
+    }
 
     public function isAdms(): bool
     {
