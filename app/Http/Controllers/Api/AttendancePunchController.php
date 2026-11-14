@@ -13,7 +13,7 @@ use Illuminate\Http\Response;
 /**
  * Machine-facing endpoints (no session / CSRF). Two entry points:
  *  - generic HTTP/JSON  : /api/attendance/punch   (Bearer token, any field naming — see PunchNormalizer)
- *  - ZKTeco ADMS "push" : /iclock/cdata           (device identified by its registered serial number)
+ *  - ZKTeco / eSSL ADMS "push" : /iclock/cdata    (device identified by its registered serial number)
  */
 class AttendancePunchController extends Controller
 {
@@ -122,7 +122,7 @@ class AttendancePunchController extends Controller
     {
         $sn = $request->query('SN') ?: $request->query('sn');
 
-        return $sn ? AttendanceDevice::withoutGlobalScopes()->where('serial_number', $sn)->where('protocol', 'zkteco')->where('is_active', true)->first() : null;
+        return $sn ? AttendanceDevice::withoutGlobalScopes()->where('serial_number', $sn)->whereIn('protocol', AttendanceDevice::ADMS)->where('is_active', true)->first() : null;
     }
 
     private function touch(AttendanceDevice $device, Request $request): void

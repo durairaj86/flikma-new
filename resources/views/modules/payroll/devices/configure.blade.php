@@ -63,6 +63,9 @@
                     <tr><td class="text-muted">{{ __('Serial Number registered here') }}</td><td class="font-monospace fw-bold">{{ $device->serial_number }}</td></tr>
                 </table>
                 <div class="text-muted">{{ __('The machine contacts Flikma itself (path /iclock/cdata). No field mapping is needed for this type.') }}</div>
+                @if($device->protocol === 'essl')
+                    <div class="text-muted mt-2">{{ __('eSSL eBioserver: set the same Server Address / Port in eBioserver (Device → Communication → Server) or directly on each terminal, then add every terminal\'s serial number here.') }}</div>
+                @endif
             </div></div>
         @else
             <form method="POST" action="{{ route('payroll.devices.connection', $device) }}" class="card border-0 shadow-sm rounded-3 mb-3">

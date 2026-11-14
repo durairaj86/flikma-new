@@ -18,6 +18,7 @@
         <thead class="table-light"><tr><th>{{ __('Your machine / system') }}</th><th>{{ __('Method') }}</th><th>{{ __('Who contacts whom') }}</th></tr></thead>
         <tbody>
             <tr><td>{{ __('ZKTeco, eSSL, Realand, Biomax and other terminals that have "Cloud Server / ADMS" settings') }}</td><td><a href="#guideZk" onclick="gotoGuide('guideZk')"><strong>A. {{ __('ZKTeco / ADMS push') }}</strong></a></td><td>{{ __('Machine → Flikma (automatic, real time)') }}</td></tr>
+            <tr><td>{{ __('eSSL eBioserver (server software with its terminals)') }}</td><td><a href="#guideEssl" onclick="gotoGuide('guideEssl')"><strong>A2. {{ __('eSSL eBioserver') }}</strong></a></td><td>{{ __('Terminal / eBioserver → Flikma (automatic)') }}</td></tr>
             <tr><td>{{ __('Any machine, software or middleware that can call a web address when someone punches (webhook / HTTP push)') }}</td><td><a href="#guideHook" onclick="gotoGuide('guideHook')"><strong>B. {{ __('Callback URL (webhook)') }}</strong></a></td><td>{{ __('Their system → Flikma') }}</td></tr>
             <tr><td>{{ __('Cloud attendance service with its own API (you get an API URL + key/token from the vendor)') }}</td><td><a href="#guidePull" onclick="gotoGuide('guidePull')"><strong>C. {{ __('Vendor API (we fetch)') }}</strong></a></td><td>{{ __('Flikma → their API, every few minutes') }}</td></tr>
             <tr><td>{{ __('Machine with only USB / Excel export, no network') }}</td><td><a href="{{ route('payroll.punch-import') }}"><strong>{{ __('Import CSV / Excel') }}</strong></a></td><td>{{ __('You upload the file') }}</td></tr>
@@ -45,6 +46,16 @@ Proxy           : Off</pre>
     {{ __('The machine must be connected to the internet (LAN cable or Wi-Fi) and its own network settings must have a valid IP, gateway and DNS.') }}</div></div>
     <div class="guide-step"><div class="n">4</div><div><strong>{{ __('Check it.') }}</strong> {{ __('Within a minute the device shows a green dot and "Last Seen" on the Devices tab. Ask someone to punch — the punch appears in Payroll → Punch Log and in Payroll → Attendance.') }}</div></div>
     <div class="text-muted">{{ __('No field mapping is needed: ZKTeco always sends the same format (ID, time, in/out status). In/out is read from the machine\'s status: 0/4 = in, 1/5 = out.') }}</div>
+</div></div>
+
+<div class="card border-0 shadow-sm rounded-3 mb-3 guide-card" id="guideEssl"><div class="card-body small">
+    <h6 class="fs-6">A2. {{ __('eSSL eBioserver') }}</h6>
+    <div class="guide-step"><div class="n">1</div><div><strong>{{ __('Add each terminal here.') }}</strong> {{ __('Devices tab → Add Device → Type "eSSL eBioserver" → enter the terminal\'s serial number and time zone → Save.') }}</div></div>
+    <div class="guide-step"><div class="n">2</div><div><strong>{{ __('Point it to Flikma.') }}</strong> {{ __('On the terminal (Comm. → Cloud Server Setting) or in eBioserver\'s server settings enter:') }}
+<pre>Server Address  : {{ $host }}
+Server Port     : {{ $port }}
+HTTPS           : {{ request()->isSecure() ? 'On' : 'Off' }}</pre></div></div>
+    <div class="guide-step"><div class="n">3</div><div><strong>{{ __('Check it.') }}</strong> {{ __('The device shows a green dot and "Last Seen" within a minute; punches appear in Payroll → Punch Log. If your eBioserver can only forward through a web address, add an "HTTP / JSON API" device and use its Callback URL (method B).') }}</div></div>
 </div></div>
 
 <div class="card border-0 shadow-sm rounded-3 mb-3 guide-card" id="guideHook"><div class="card-body small">

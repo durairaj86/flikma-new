@@ -56,7 +56,16 @@ class AttendanceDevice extends Model
     public const PROTOCOLS = [
         'api' => 'HTTP / JSON API',
         'zkteco' => 'ZKTeco / ADMS push',
+        'essl' => 'eSSL eBioserver',
     ];
+
+    /** Types that talk the ADMS protocol (/iclock/cdata) and are identified by serial number. */
+    public const ADMS = ['zkteco', 'essl'];
+
+    public function isAdms(): bool
+    {
+        return in_array($this->protocol, self::ADMS, true);
+    }
 
     /** The pseudo-device that Excel imports are recorded against. */
     public static function forImport(int $companyId, string $timezone): self

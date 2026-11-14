@@ -5352,5 +5352,15 @@
     "Duty Amount": "مبلغ الرسوم الجمركية",
     "House B/L No": "رقم بوليصة الشحن الفرعية",
     "Shipping Reference": "مرجع الشحن",
-    "Client Reference": "مرجع العميل"
+    "Client Reference": "مرجع العميل",
+    "eSSL eBioserver": "eSSL eBioserver",
+    "eSSL eBioserver devices need their serial number.": "أجهزة eSSL eBioserver تحتاج رقمها التسلسلي.",
+    "eSSL eBioserver (server software with its terminals)": "eSSL eBioserver (برنامج الخادم مع أجهزة البصمة)",
+    "Terminal / eBioserver → Flikma (automatic)": "الجهاز / eBioserver ← فليكما (تلقائي)",
+    "Add each terminal here.": "أضف كل جهاز هنا.",
+    "Devices tab → Add Device → Type \"eSSL eBioserver\" → enter the terminal's serial number and time zone → Save.": "تبويب الأجهزة ← إضافة جهاز ← النوع \"eSSL eBioserver\" ← أدخل الرقم التسلسلي للجهاز ومنطقته الزمنية ← حفظ.",
+    "Point it to Flikma.": "وجّهه إلى فليكما.",
+    "On the terminal (Comm. → Cloud Server Setting) or in eBioserver's server settings enter:": "على الجهاز (Comm. ← Cloud Server Setting) أو في إعدادات خادم eBioserver أدخل:",
+    "The device shows a green dot and \"Last Seen\" within a minute; punches appear in Payroll → Punch Log. If your eBioserver can only forward through a web address, add an \"HTTP / JSON API\" device and use its Callback URL (method B).": "يظهر الجهاز بنقطة خضراء و\"آخر ظهور\" خلال دقيقة، وتظهر البصمات في الرواتب ← سجل البصمات. إذا كان eBioserver يرسل عبر عنوان ويب فقط، أضف جهاز \"HTTP / JSON API\" واستخدم رابط الاستدعاء (الطريقة B).",
+    "eSSL eBioserver: set the same Server Address / Port in eBioserver (Device → Communication → Server) or directly on each terminal, then add every terminal's serial number here.": "eSSL eBioserver: أدخل نفس عنوان الخادم / المنفذ في eBioserver (Device ← Communication ← Server) أو مباشرة على كل جهاز، ثم أضف الرقم التسلسلي لكل جهاز هنا."
 }

@@ -222,8 +222,10 @@ class AttendanceDeviceController extends Controller
             'timezone' => ['required', 'timezone'],
             'is_active' => ['nullable', 'boolean'],
         ]);
-        if ($data['protocol'] === 'zkteco' && empty($data['serial_number'])) {
-            throw \Illuminate\Validation\ValidationException::withMessages(['serial_number' => __('ZKTeco devices need their serial number.')]);
+        if (in_array($data['protocol'], AttendanceDevice::ADMS, true) && empty($data['serial_number'])) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['serial_number' => $data['protocol'] === 'essl'
+                ? __('eSSL eBioserver devices need their serial number.')
+                : __('ZKTeco devices need their serial number.')]);
         }
         $data['mode'] = $data['protocol'] === 'api' ? ($data['mode'] ?? 'push') : 'push';
         $data['is_active'] = (bool) ($data['is_active'] ?? false);
