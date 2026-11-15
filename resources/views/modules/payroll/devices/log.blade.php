@@ -154,7 +154,7 @@
                 </tbody>
             </table>
         </div>
-        @if($recent->hasPages())<div class="px-4 py-2 border-top">{{ $recent->links() }}</div>@endif
+        @if($recent->hasPages())<div class="px-4 py-2 border-top">{{ $recent->links('pagination::bootstrap-5') }}</div>@endif
     </div>
 
 

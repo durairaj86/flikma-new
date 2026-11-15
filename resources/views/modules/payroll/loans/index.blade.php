@@ -105,7 +105,7 @@
         </div>
         @if($loans->hasPages())
             <div class="card-footer bg-white border-top-0 px-4 py-3">
-                {{ $loans->links() }}
+                {{ $loans->links('pagination::bootstrap-5') }}
             </div>
         @endif
     </div>
