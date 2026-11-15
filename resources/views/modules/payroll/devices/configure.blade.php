@@ -116,6 +116,13 @@
                             <button class="btn btn-dark" type="button" onclick="navigator.clipboard.writeText(document.getElementById('cbUrl').value); this.textContent='{{ __('Copied') }}'">{{ __('Copy') }}</button>
                         </div>
                         <div class="text-muted mb-3">{{ __('Accepts POST (JSON or form) and GET. The URL itself is the password — keep it private.') }}</div>
+                        <div class="border rounded p-2 mb-3">
+                            <div class="fw-bold mb-1">{{ __('eSSL eBioserver Web Hook') }}</div>
+                            <div class="text-muted mb-2">{{ __('In eBioserver New → Utilities → Web Hook, paste the Callback URL above. Flikma answers "Success" as eBioserver requires.') }}</div>
+                            <label class="form-label fw-bold">{{ __('Web Hook password (only if you set one in eBioserver)') }}</label>
+                            <input type="password" name="hook_password" maxlength="32" class="form-control" autocomplete="new-password" placeholder="{{ !empty($device->pull_headers['WebhookPassword']) ? '••••••••' : '' }}">
+                            <div class="form-text">{{ __('Up to 32 characters, the same as in eBioserver. Stored encrypted. Leave empty to keep the saved one or to receive unencrypted data.') }}</div>
+                        </div>
                         <div class="fw-bold mb-1">{{ __('Or send with an API key header') }}</div>
 <pre class="bg-light border rounded p-2 mb-2" style="white-space:pre-wrap">POST {{ $root }}/api/attendance/punch
 Authorization: Bearer flk_••••{{ $device->token_hint }}
@@ -138,7 +145,7 @@ Content-Type: application/json
                                 <div class="form-text">{{ __('Stored encrypted.') }}</div></div>
                             <div class="col-md-6"><label class="form-label fw-bold">{{ __('Parameters') }} <span class="text-muted fw-normal">({{ __('query string, or JSON for POST') }})</span></label>
                                 <textarea name="pull_params" rows="4" class="form-control font-monospace" placeholder="start={from_date}&end={to_date}&page_size=500">{{ old('pull_params', $device->pull_params) }}</textarea>
-                                <div class="form-text">{{ __('Placeholders:') }} <code>{from}</code> <code>{to}</code> <code>{from_date}</code> <code>{to_date}</code> <code>{from_epoch}</code> <code>{to_epoch}</code></div></div>
+                                <div class="form-text">{{ __('Placeholders:') }} <code>{from}</code> <code>{to}</code> <code>{from_date}</code> <code>{to_date}</code> <code>{from_epoch}</code> <code>{to_epoch}</code> <code>{from_iso}</code> <code>{to_iso}</code></div></div>
                             <div class="col-md-3"><label class="form-label fw-bold">{{ __('Fetch every (minutes)') }}</label>
                                 <input type="text" name="pull_interval" min="1" max="1440" class="integer form-control" value="{{ old('pull_interval', $device->pull_interval) }}"></div>
                         </div>
@@ -234,6 +241,18 @@ Content-Type: application/json
                     <button type="button" class="btn btn-outline-primary btn-sm" onclick="testPull(this)"><i class="bi bi-lightning me-1"></i>{{ __('Test fetch (nothing saved)') }}</button>
                     <form method="POST" action="{{ route('payroll.devices.pull-now', $device) }}">@csrf<button class="btn btn-primary btn-sm"><i class="bi bi-cloud-download me-1"></i>{{ __('Fetch & import now') }}</button></form>
                 </div>
+                @if($device->isSoap())
+                    <form method="POST" action="{{ route('payroll.devices.pull-range', $device) }}" class="border rounded p-2 mb-3">
+                        @csrf
+                        <div class="fw-bold mb-1">{{ __('Import a period now (one time)') }}</div>
+                        <div class="d-flex flex-wrap gap-2 align-items-end">
+                            <div><label class="form-label mb-0">{{ __('From') }}</label><input type="date" name="from" class="form-control form-control-sm" value="{{ now($device->timezone)->subDays(7)->format('Y-m-d') }}" required></div>
+                            <div><label class="form-label mb-0">{{ __('To') }}</label><input type="date" name="to" class="form-control form-control-sm" value="{{ now($device->timezone)->format('Y-m-d') }}" required></div>
+                            <button class="btn btn-outline-primary btn-sm"><i class="bi bi-calendar-check me-1"></i>{{ __('Import period') }}</button>
+                        </div>
+                        <div class="form-text">{{ __('Reads every day of the period from the server, up to 31 days. Punches already imported are skipped.') }}</div>
+                    </form>
+                @endif
                 <div id="pullOut"></div>
             </div></div></div>
             @else

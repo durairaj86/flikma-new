@@ -58,7 +58,7 @@ class AttendancePunchController extends Controller
     }
 
     /** Callback / webhook URL unique to a device — the URL itself is the credential (keep it private). */
-    public function hook(Request $request, string $publicId): JsonResponse
+    public function hook(Request $request, string $publicId): JsonResponse|Response
     {
         $device = AttendanceDevice::withoutGlobalScopes()->where('public_id', $publicId)->where('is_active', true)->first();
         if (!$device) {
@@ -67,14 +67,45 @@ class AttendancePunchController extends Controller
         $this->touch($device, $request);
 
         $payload = $request->json()->all() ?: $request->all();
+
+        // eSSL eBioserver New Web Hook: {"data": "<AES-256-CBC, base64>"} when a password is set in eBioserver.
+        $essl = isset($payload['data']) && is_string($payload['data']) && count($payload) === 1;
+        if ($essl) {
+            if (empty($device->pull_headers['WebhookPassword'])) {
+                return response()->json(['status' => 'error', 'message' => 'Encrypted data received, but no Web Hook password is saved on this device. Enter it on the device Connection tab and save.'], 422);
+            }
+            $plain = $this->decryptWebhook($payload['data'], $device->pull_headers['WebhookPassword']);
+            if ($plain === null) {
+                return response()->json(['status' => 'error', 'message' => 'Encrypted data could not be read. Check the Web Hook password of this device.'], 422);
+            }
+            $payload = $plain;
+        }
+        $essl = $essl || (is_array($payload) && array_key_exists('EmployeeCode', $payload) && array_key_exists('LogDate', $payload));
+
         $punches = $payload
             ? $this->normalizer->fromPayload($payload, $device->timezone, $device->field_map)
             : $this->normalizer->fromZkText((string) $request->getContent(), $device->timezone);
         if (!$punches) {
             return response()->json(['status' => 'error', 'message' => 'No valid punches found. Check the field mapping of this device.'], 422);
         }
+        $result = $this->service->ingest($device, $punches);
 
-        return response()->json(['status' => 'success'] + $this->service->ingest($device, $punches));
+        // eBioserver counts a push as delivered only when the reply is the plain text "Success".
+        return $essl ? response('Success')->header('Content-Type', 'text/plain') : response()->json(['status' => 'success'] + $result);
+    }
+
+    /** eBioserver New: AES-256-CBC, key = password padded with "1" to 32 characters, IV = 16 zero bytes, base64 text. */
+    private function decryptWebhook(string $data, ?string $password): ?array
+    {
+        if (!$password) {
+            return null;
+        }
+        $key = substr(str_pad($password, 32, '1'), 0, 32);
+        $raw = base64_decode($data, true);
+        $json = $raw === false ? false : openssl_decrypt($raw, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, str_repeat("\0", 16));
+        $decoded = $json === false ? null : json_decode($json, true);
+
+        return is_array($decoded) ? $decoded : null;
     }
 
     /** ZKTeco ADMS: handshake (GET) and attendance upload (POST ?table=ATTLOG). */

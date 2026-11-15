@@ -23,13 +23,16 @@ class DevicePuller
     /**
      * @return array{ok:bool, message:string, http_status?:int, body?:string, fields?:array, punches?:array, result?:array}
      */
-    public function run(AttendanceDevice $device, bool $save): array
+    public function run(AttendanceDevice $device, bool $save, ?array $range = null): array
     {
         if (!$device->pull_url) {
             return ['ok' => false, 'message' => __('Enter the API endpoint first.')];
         }
         if ($device->isSoap()) {
-            return $this->runSoap($device, $save);
+            return $this->runSoap($device, $save, $range);
+        }
+        if ($range) {
+            return ['ok' => false, 'message' => __('Importing a date range is available for the eBioserver web service only.')];
         }
 
         $tz = $device->timezone ?: 'Asia/Riyadh';
@@ -39,6 +42,7 @@ class DevicePuller
             '{from}' => $from->format('Y-m-d H:i:s'), '{to}' => $to->format('Y-m-d H:i:s'),
             '{from_date}' => $from->format('Y-m-d'), '{to_date}' => $to->format('Y-m-d'),
             '{from_epoch}' => (string) $from->timestamp, '{to_epoch}' => (string) $to->timestamp,
+            '{from_iso}' => $from->format('Y-m-d\TH:i:s'), '{to_iso}' => $to->format('Y-m-d\TH:i:s'),
         ];
         $sub = fn (?string $v) => strtr((string) $v, $t);
 
@@ -49,20 +53,27 @@ class DevicePuller
 
         $headers = [];
         foreach (($device->pull_headers ?? []) as $k => $v) {
+            if ($k === 'WebhookPassword') {
+                continue;   // our own setting, never sent to the vendor
+            }
             $headers[$k] = $sub((string) $v);
         }
         $params = trim($sub($device->pull_params));
 
-        try {
+        $send = function (string $params) use ($device, $headers, $url) {
             $req = Http::timeout(25)->withHeaders($headers)->acceptJson();
             if (strtoupper($device->pull_method ?: 'GET') === 'POST') {
-                $req = str_starts_with($params, '{') || str_starts_with($params, '[')
-                    ? $req->withBody($params, 'application/json')
-                    : $req->asForm();
-                $res = str_starts_with($params, '{') || str_starts_with($params, '[') ? $req->post($url) : $req->post($url, $this->parseQuery($params));
-            } else {
-                $res = $req->get($url . ($params !== '' ? (str_contains($url, '?') ? '&' : '?') . $params : ''));
+                $isJson = str_starts_with($params, '{') || str_starts_with($params, '[');
+                $req = $isJson ? $req->withBody($params, 'application/json') : $req->asForm();
+
+                return $isJson ? $req->post($url) : $req->post($url, $this->parseQuery($params));
             }
+
+            return $req->get($url . ($params !== '' ? (str_contains($url, '?') ? '&' : '?') . $params : ''));
+        };
+
+        try {
+            $res = $send($params);
         } catch (\Throwable $e) {
             return $this->finish($device, $save, ['ok' => false, 'message' => __('Could not reach the endpoint: :m', ['m' => $e->getMessage()])]);
         }
@@ -80,6 +91,30 @@ class DevicePuller
         } else {
             $punches = $this->normalizer->fromZkText($body, $tz);   // plain text / tab separated lines
             $fields = [];
+        }
+
+        // APIs paged with a "CurrentIndex" body field (eBioServer REST): keep asking for the next page until it is empty or repeats.
+        $paged = strtoupper($device->pull_method ?: 'GET') === 'POST' ? json_decode($params, true) : null;
+        if ($punches && is_array($paged) && array_key_exists('CurrentIndex', $paged)) {
+            $seen = md5($body);
+            for ($page = (int) $paged['CurrentIndex'] + 1, $n = 0; $n < 19; $page++, $n++) {
+                try {
+                    $next = $send(json_encode(array_merge($paged, ['CurrentIndex' => $page])));
+                } catch (\Throwable) {
+                    break;
+                }
+                $nextBody = (string) $next->body();
+                $nextJson = json_decode($nextBody, true);
+                if (!$next->successful() || !is_array($nextJson) || md5($nextBody) === $seen) {
+                    break;
+                }
+                $more = $this->normalizer->fromPayload($nextJson, $tz, $device->field_map);
+                if (!$more) {
+                    break;
+                }
+                $punches = array_merge($punches, $more);
+                $seen = md5($nextBody);
+            }
         }
 
         $out = ['ok' => true, 'http_status' => $res->status(), 'body' => mb_substr($body, 0, 4000), 'fields' => $fields,
@@ -105,11 +140,14 @@ class DevicePuller
     }
 
     /** eBioserver New web service: SOAP GetTransactionsLog(FromDateTime, ToDateTime, SerialNumber, UserName, UserPassword) → strDataList. */
-    private function runSoap(AttendanceDevice $device, bool $save): array
+    private function runSoap(AttendanceDevice $device, bool $save, ?array $range = null): array
     {
         $tz = $device->timezone ?: 'Asia/Riyadh';
         $to = now($tz);
         $from = $device->last_pulled_at ? $device->last_pulled_at->copy()->setTimezone($tz)->subMinutes(10) : $to->copy()->subDay();
+        if ($range) {
+            [$from, $to] = [$range[0]->copy()->startOfDay(), $range[1]->copy()->endOfDay()];
+        }
         if ($err = $this->unsafeUrl($device->pull_url)) {
             return $this->finish($device, $save, ['ok' => false, 'message' => $err]);
         }
@@ -143,7 +181,17 @@ class DevicePuller
                 $report = null;
                 $newLastId = null;
 
-                if ($save) {
+                if ($range) {
+                    // One-time import of a chosen period: every day of it, whatever was fetched before.
+                    for ($day = $from->copy()->startOfDay(); $day->lte($to) && $day->diffInDays($from) < 31; $day->addDay()) {
+                        $chunk = $call('GetDeviceLogs', $loc . '<LogDate>' . $day->format('Y-m-d') . '</LogDate>');
+                        if (str_starts_with($chunk, '(HTTP')) {
+                            $status = $chunk;
+                            break;
+                        }
+                        $text .= "\n" . $chunk;
+                    }
+                } elseif ($save) {
                     $last = (int) ($device->field_map['last_log_id'] ?? 0);
                     for ($i = 0; $i < 10; $i++) {
                         $chunk = $call('GetDeviceLogsByLogId', $loc . '<LogId>' . $last . '</LogId><LogCount>500</LogCount>');
@@ -212,7 +260,7 @@ class DevicePuller
             }
         }
         $punches = $this->parseSoapLog($text, $tz);
-        if ($ebio && $save) {
+        if ($ebio && $save && !$range) {
             // A first sync of a long-running server should not drag in years of history.
             $punches = array_values(array_filter($punches, fn ($p) => $p['punched_at']->gte(now()->subDays(35))));
             if ($newLastId !== null) {
@@ -279,7 +327,7 @@ class DevicePuller
         }
         $out = [];
         foreach (preg_split('/\r\n|\r|\n|<br\s*\/?>|;(?=\s*\S)/i', $text) as $line) {
-            $line = trim($line);
+            $line = trim($line, " \t\r\n;");
             if (preg_match('~^(\d+),(\d{4}-\d{2}-\d{2} \d{2}:\d{2}(?::\d{2})?),([^,;]+)(?:,([^,;]*))?(?:,([^,;]*))?(?:,([^,;]*))?;?$~', $line, $r)) {
                 try {
                     $at = \Illuminate\Support\Carbon::parse($r[2], $tz);

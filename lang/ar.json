@@ -5377,5 +5377,14 @@
     "Connected, but no punches could be read.": "تم الاتصال، لكن تعذّرت قراءة أي بصمات.",
     "Service said: :s": "ردّت الخدمة: :s",
     "Location (eBioserver New, optional)": "الموقع (eBioserver New، اختياري)",
-    "Used when the URL ends in webservice.asmx (eBioserver New). Empty = all locations.": "يُستخدم عندما ينتهي الرابط بـ webservice.asmx (eBioserver New). فارغ = كل المواقع."
+    "Used when the URL ends in webservice.asmx (eBioserver New). Empty = all locations.": "يُستخدم عندما ينتهي الرابط بـ webservice.asmx (eBioserver New). فارغ = كل المواقع.",
+    "eSSL eBioserver Web Hook": "خطّاف الويب eSSL eBioserver",
+    "In eBioserver New → Utilities → Web Hook, paste the Callback URL above. Flikma answers \"Success\" as eBioserver requires.": "في eBioserver New ← Utilities ← Web Hook الصق رابط الاستدعاء أعلاه. يرد فليكما بكلمة \"Success\" كما يتطلب eBioserver.",
+    "Web Hook password (only if you set one in eBioserver)": "كلمة مرور Web Hook (فقط إذا حددتها في eBioserver)",
+    "Up to 32 characters, the same as in eBioserver. Stored encrypted. Leave empty to keep the saved one or to receive unencrypted data.": "حتى 32 حرفاً، نفسها في eBioserver. مخزّنة مشفّرة. اتركها فارغة للإبقاء على المحفوظة أو لاستقبال بيانات غير مشفّرة.",
+    "Import a period now (one time)": "استيراد فترة الآن (مرة واحدة)",
+    "Import period": "استيراد الفترة",
+    "Reads every day of the period from the server, up to 31 days. Punches already imported are skipped.": "يقرأ كل يوم من الفترة من الخادم حتى 31 يوماً. تُتجاوز البصمات المستوردة سابقاً.",
+    "Choose a period of 31 days or less.": "اختر فترة لا تزيد عن 31 يوماً.",
+    "Importing a date range is available for the eBioserver web service only.": "استيراد فترة زمنية متاح لخدمة eBioserver فقط."
 }

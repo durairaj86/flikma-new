@@ -39,6 +39,7 @@ Route::prefix('payroll')->name('payroll.')->group(function () {
     Route::post('devices/{device}/preview', [AttendanceDeviceController::class, 'preview'])->name('devices.preview');
     Route::post('devices/{device}/test-pull', [AttendanceDeviceController::class, 'testPull'])->name('devices.test-pull');
     Route::post('devices/{device}/pull-now', [AttendanceDeviceController::class, 'pullNow'])->name('devices.pull-now');
+    Route::post('devices/{device}/pull-range', [AttendanceDeviceController::class, 'pullRange'])->name('devices.pull-range');
     Route::put('devices/{device}', [AttendanceDeviceController::class, 'update'])->name('devices.update');
     Route::post('devices/{device}/regenerate', [AttendanceDeviceController::class, 'regenerate'])->name('devices.regenerate');
     Route::delete('devices/{device}', [AttendanceDeviceController::class, 'destroy'])->name('devices.destroy');

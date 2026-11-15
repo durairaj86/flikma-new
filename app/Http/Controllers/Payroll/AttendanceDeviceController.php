@@ -62,7 +62,7 @@ class AttendanceDeviceController extends Controller
     public function configure(AttendanceDevice $device): View
     {
         $employees = User::where('is_employee', true)->whereNull('terminated_at')->orderBy('name')->get(['id', 'name', 'employee_code']);
-        $headersText = collect($device->pull_headers ?? [])->map(fn ($v, $k) => "$k: $v")->implode("\n");
+        $headersText = collect($device->pull_headers ?? [])->except('WebhookPassword')->map(fn ($v, $k) => "$k: $v")->implode("\n");
         $recent = $device->punches()->with('employee:id,name')->latest('punched_at')->limit(10)->get();
 
         return view('modules.payroll.devices.configure', compact('device', 'headersText', 'employees', 'recent'));
@@ -78,6 +78,7 @@ class AttendanceDeviceController extends Controller
             'pull_url' => ['nullable', 'required_if:mode,pull', 'url', 'max:1000'],
             'pull_method' => ['nullable', 'in:GET,POST'],
             'pull_headers' => ['nullable', 'string', 'max:3000'],
+            'hook_password' => ['nullable', 'string', 'max:32'],
             'pull_params' => ['nullable', 'string', 'max:3000'],
             'pull_interval' => ['nullable', 'integer', 'min:1', 'max:1440'],
         ]);
@@ -96,12 +97,23 @@ class AttendanceDeviceController extends Controller
             'mode' => $data['mode'],
             'pull_url' => $data['pull_url'] ?? null,
             'pull_method' => $data['pull_method'] ?? 'GET',
-            'pull_headers' => $headers ?: null,
+            'pull_headers' => $this->withHookPassword($headers, $device, $data['hook_password'] ?? null) ?: null,
             'pull_params' => $data['pull_params'] ?? null,
             'pull_interval' => $data['pull_interval'] ?? 15,
         ]);
 
         return redirect()->route('payroll.devices.configure', [$device, 'tab' => 'connection'])->with('success', __('Connection settings saved.'));
+    }
+
+    /** Keeps the eBioserver webhook encryption password (stored with the headers, encrypted) when the headers are re-saved. */
+    private function withHookPassword(array $headers, AttendanceDevice $device, ?string $new): array
+    {
+        $password = $new ?: ($device->pull_headers['WebhookPassword'] ?? null);
+        if ($password) {
+            $headers['WebhookPassword'] = $password;
+        }
+
+        return $headers;
     }
 
     /** eBioserver web service: service URL, its login (kept encrypted in pull_headers) and the poll interval. */
@@ -183,6 +195,23 @@ class AttendanceDeviceController extends Controller
     public function pullNow(AttendanceDevice $device, DevicePuller $puller): RedirectResponse
     {
         $r = $puller->run($device, true);
+
+        return redirect()->route('payroll.devices.configure', [$device, 'tab' => 'test'])->with($r['ok'] ? 'success' : 'pull_error', $r['message']);
+    }
+
+    /** One-time import of a chosen period (max 31 days) from the eBioserver web service. */
+    public function pullRange(Request $request, AttendanceDevice $device, DevicePuller $puller): RedirectResponse
+    {
+        $data = $request->validate([
+            'from' => ['required', 'date_format:Y-m-d'],
+            'to' => ['required', 'date_format:Y-m-d', 'after_or_equal:from'],
+        ]);
+        $from = \Illuminate\Support\Carbon::parse($data['from']);
+        $to = \Illuminate\Support\Carbon::parse($data['to']);
+        if ($from->diffInDays($to) > 30) {
+            return redirect()->route('payroll.devices.configure', [$device, 'tab' => 'test'])->with('pull_error', __('Choose a period of 31 days or less.'));
+        }
+        $r = $puller->run($device, true, [$from, $to]);
 
         return redirect()->route('payroll.devices.configure', [$device, 'tab' => 'test'])->with($r['ok'] ? 'success' : 'pull_error', $r['message']);
     }
