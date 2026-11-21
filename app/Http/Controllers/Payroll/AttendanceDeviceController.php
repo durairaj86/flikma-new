@@ -30,22 +30,63 @@ class AttendanceDeviceController extends Controller
         $unmapped = AttendancePunch::where('status', 'unmapped')
             ->selectRaw('device_user_id, count(*) as punches, max(punched_at) as last_at')
             ->groupBy('device_user_id')->orderByDesc('last_at')->get();
-        $from = formDate($request->query('from'));
-        $to = formDate($request->query('to'));
-        $recent = AttendancePunch::with(['device:id,name', 'employee:id,name,employee_code'])
+        // One row per machine ID per day: first punch, last punch and how many; the day's full list is in the Details modal.
+        $punchTotal = $this->filteredPunches($request)->count();
+        $groups = $this->filteredPunches($request)
+            ->selectRaw("device_user_id, DATE(punched_at) as day, MIN(punched_at) as first_at, MAX(punched_at) as last_at, COUNT(*) as punch_count, MAX(employee_id) as employee_id, SUM(status = 'unmapped') as unmapped_count, SUM(status = 'locked') as locked_count, GROUP_CONCAT(DISTINCT device_id) as device_ids")
+            ->groupBy('device_user_id', 'day')->orderByDesc('day')->orderBy('device_user_id')
+            ->paginate(50)->withQueryString();
+        $groups->getCollection()->load('employee:id,name,employee_code');
+        $devices = AttendanceDevice::orderBy('name')->get(['id', 'name']);
+
+        $dayPunches = collect();
+        if ($groups->count()) {
+            $days = $groups->pluck('day');
+            $dayPunches = AttendancePunch::with('device:id,name')
+                ->whereIn('device_user_id', $groups->pluck('device_user_id')->unique())
+                ->whereBetween('punched_at', [$days->min() . ' 00:00:00', $days->max() . ' 23:59:59'])
+                ->orderBy('punched_at')->get()
+                ->groupBy(fn ($p) => $p->device_user_id . '|' . $p->punched_at->toDateString());
+        }
+        // Names of the users who added / edited punches by hand (shown in the Remarks column of the details).
+        $userIds = $dayPunches->flatten(1)->flatMap(fn ($p) => [$p->raw['by'] ?? null, $p->raw['edited_by'] ?? null])->filter()->unique();
+        $users = \App\Models\User::withoutGlobalScopes()->whereIn('id', $userIds)->pluck('name', 'id');
+
+        $fromInput = formDate($request->query('from')) ? \Illuminate\Support\Carbon::parse(formDate($request->query('from')))->format('d-m-Y') : now()->startOfMonth()->format('d-m-Y');
+        $toInput = formDate($request->query('to')) ? \Illuminate\Support\Carbon::parse(formDate($request->query('to')))->format('d-m-Y') : now()->format('d-m-Y');
+
+        return view('modules.payroll.devices.log', compact('unmapped', 'groups', 'dayPunches', 'punchTotal', 'devices', 'users', 'fromInput', 'toInput'));
+    }
+
+    /** The punch log filters (status, employee, device, machine ID, dates), shared by the list and the CSV export. */
+    private function filteredPunches(Request $request)
+    {
+        // From / To are always applied: the current month up to today unless the user chose other dates.
+        $from = formDate($request->query('from')) ?: now()->startOfMonth()->format('Y-m-d');
+        $to = formDate($request->query('to')) ?: now()->format('Y-m-d');
+
+        return AttendancePunch::query()
             ->when($request->query('status'), fn ($q, $v) => $q->where('status', $v))
             ->when($request->query('employee_id'), fn ($q, $v) => $q->where('employee_id', $v))
             ->when($request->query('device_id'), fn ($q, $v) => $q->where('device_id', $v))
             ->when($request->query('q'), fn ($q, $v) => $q->where('device_user_id', 'like', '%' . trim($v) . '%'))
             ->when($from, fn ($q, $v) => $q->where('punched_at', '>=', $v . ' 00:00:00'))
-            ->when($to, fn ($q, $v) => $q->where('punched_at', '<=', $v . ' 23:59:59'))
-            ->latest('punched_at')->paginate(50)->withQueryString();
-        $devices = AttendanceDevice::orderBy('name')->get(['id', 'name']);
-        // Names of the users who added / edited punches by hand (shown in the Remarks column).
-        $userIds = $recent->getCollection()->flatMap(fn ($p) => [$p->raw['by'] ?? null, $p->raw['edited_by'] ?? null])->filter()->unique();
-        $users = \App\Models\User::withoutGlobalScopes()->whereIn('id', $userIds)->pluck('name', 'id');
+            ->when($to, fn ($q, $v) => $q->where('punched_at', '<=', $v . ' 23:59:59'));
+    }
 
-        return view('modules.payroll.devices.log', compact('unmapped', 'recent', 'devices', 'users'));
+    /** CSV of the filtered punches in the layout "Import from Excel" reads: Employee ID, Date Time, Direction. */
+    public function punchLogExport(Request $request)
+    {
+        $query = $this->filteredPunches($request)->with('device:id,name')->orderBy('punched_at');
+
+        return response()->streamDownload(function () use ($query) {
+            $f = fopen('php://output', 'w');
+            fputcsv($f, ['Employee ID', 'Date Time', 'Direction', 'Device', 'Status']);
+            foreach ($query->limit(50000)->cursor() as $p) {
+                fputcsv($f, [$p->device_user_id, $p->punched_at->format('Y-m-d H:i:s'), strtoupper((string) $p->direction), $p->device->name ?? '', $p->status]);
+            }
+            fclose($f);
+        }, 'punch_log_' . now()->format('Ymd_His') . '.csv', ['Content-Type' => 'text/csv']);
     }
 
     public function store(Request $request): RedirectResponse

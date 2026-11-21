@@ -5386,5 +5386,20 @@
     "Import period": "استيراد الفترة",
     "Reads every day of the period from the server, up to 31 days. Punches already imported are skipped.": "يقرأ كل يوم من الفترة من الخادم حتى 31 يوماً. تُتجاوز البصمات المستوردة سابقاً.",
     "Choose a period of 31 days or less.": "اختر فترة لا تزيد عن 31 يوماً.",
-    "Importing a date range is available for the eBioserver web service only.": "استيراد فترة زمنية متاح لخدمة eBioserver فقط."
+    "Importing a date range is available for the eBioserver web service only.": "استيراد فترة زمنية متاح لخدمة eBioserver فقط.",
+    "Export CSV": "تصدير CSV",
+    "First punch (In)": "أول بصمة (دخول)",
+    "Last punch (Out)": "آخر بصمة (خروج)",
+    "Click a day to see its attendance. Double-click a day to add attendance for it.": "انقر على يوم لعرض حضوره. انقر نقراً مزدوجاً على يوم لإضافة حضور له.",
+    "Days the employee checked in after shift start + grace time": "أيام الدخول بعد بداية الوردية + مهلة السماح",
+    "Late Days": "أيام التأخير",
+    "Total Late": "إجمالي التأخير",
+    "Total minutes late, measured from the shift start (hours:minutes)": "إجمالي مدة التأخير من بداية الوردية (ساعات:دقائق)",
+    "Time worked after the shift end (hours:minutes)": "الوقت المعمول بعد نهاية الوردية (ساعات:دقائق)",
+    "Short Time": "الوقت الناقص",
+    "Shift length minus time actually worked (hours:minutes)": "مدة الوردية ناقص الوقت الفعلي (ساعات:دقائق)",
+    "Assign a shift to this employee (Masters → Employees → Employment) to calculate late, overtime and short time.": "عيّن وردية لهذا الموظف (الرئيسية ← الموظفون ← التوظيف) لحساب التأخير والوقت الإضافي والناقص.",
+    "Late, Overtime and Short Time are calculated from check-in / check-out and the employee's shift (start, end, grace time), for days marked Present. Payroll pays the overtime hours saved on each day's record.": "يُحسب التأخير والوقت الإضافي والناقص من وقت الدخول/الخروج ووردية الموظف (البداية والنهاية ومهلة السماح) للأيام المسجلة حاضراً. تدفع الرواتب ساعات الوقت الإضافي المحفوظة في سجل كل يوم.",
+    "Late By": "التأخير",
+    "Time After Shift": "الوقت بعد الوردية"
 }

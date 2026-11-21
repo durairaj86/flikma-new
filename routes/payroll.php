@@ -28,6 +28,7 @@ Route::prefix('payroll')->name('payroll.')->group(function () {
     Route::post('punch-log/import', [PunchImportController::class, 'upload'])->name('punch-import.upload');
     Route::get('punch-log/import/{token}', [PunchImportController::class, 'preview'])->name('punch-import.preview');
     Route::post('punch-log/import/{token}', [PunchImportController::class, 'confirm'])->name('punch-import.confirm');
+    Route::get('punch-log/export', [AttendanceDeviceController::class, 'punchLogExport'])->name('punch-log.export');
     Route::get('punch-log', [AttendanceDeviceController::class, 'punchLog'])->name('punch-log');
     Route::get('devices', [AttendanceDeviceController::class, 'index'])->name('devices.index');
     Route::post('devices', [AttendanceDeviceController::class, 'store'])->name('devices.store');

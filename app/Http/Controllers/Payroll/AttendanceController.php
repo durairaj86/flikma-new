@@ -32,7 +32,7 @@ class AttendanceController extends Controller
 
         $records = $query->paginate(15);
 
-        $employees = User::where('is_employee', true)->orderBy('name')->get(['id', 'name', 'department']);
+        $employees = User::where('is_employee', true)->orderBy('name')->get(['id', 'name', 'department', 'shift_id']);
 
         $month = Carbon::parse($date)->startOfMonth();
         $monthSummary = Attendance::query()
@@ -73,13 +73,25 @@ class AttendanceController extends Controller
                 ->groupBy('employee_id')
                 ->map(fn ($rows) => $rows->pluck('total', 'status'));
 
+            // Late / short time / overtime come from the check-in and check-out times against each employee's shift.
+            $shifts = \App\Models\Payroll\Shift::whereIn('id', $employees->pluck('shift_id')->filter()->unique())->get()->keyBy('id');
+            $monthRows = Attendance::query()
+                ->whereBetween('date', [$month->toDateString(), $month->copy()->endOfMonth()->toDateString()])
+                ->whereNotNull('check_in')
+                ->when($employeeId, fn ($q) => $q->where('employee_id', $employeeId))
+                ->get(['employee_id', 'date', 'status', 'check_in', 'check_out'])
+                ->groupBy('employee_id');
+
             $employeeMonthRows = $employees
                 ->when($employeeId, fn ($col) => $col->where('id', $employeeId))
-                ->map(function ($emp) use ($monthCounts) {
+                ->map(function ($emp) use ($monthCounts, $shifts, $monthRows) {
                     $counts = $monthCounts->get($emp->id, collect());
+                    $shift = $shifts->get($emp->shift_id);
 
                     return [
                         'employee' => $emp,
+                        'has_shift' => (bool) $shift,
+                        'metrics' => \App\Services\Payroll\AttendanceMetrics::summarize($shift, $monthRows->get($emp->id, [])),
                         'present' => $counts->get('present', 0),
                         'absent' => $counts->get('absent', 0),
                         'leave' => $counts->get('leave', 0) + $counts->get('half_day', 0),
@@ -135,6 +147,7 @@ class AttendanceController extends Controller
             ->get()
             ->keyBy(fn (Attendance $a) => $a->date->toDateString());
 
+        $shift = $employee->shift_id ? \App\Models\Payroll\Shift::find($employee->shift_id) : null;
         $days = [];
         $cursor = $month->copy();
         while ($cursor->month === $month->month) {
@@ -148,12 +161,23 @@ class AttendanceController extends Controller
                 'check_out' => $record && $record->check_out ? substr($record->check_out, 0, 5) : null,
                 'overtime_hours' => $record ? (float) $record->overtime_hours : 0,
                 'remarks' => $record->remarks ?? null,
+                'metrics' => $record && $record->status === 'present'
+                    ? array_map([\App\Services\Payroll\AttendanceMetrics::class, 'format'], \App\Services\Payroll\AttendanceMetrics::day($shift, $record->check_in, $record->check_out))
+                    : null,
             ];
             $cursor->addDay();
         }
+        $totals = \App\Services\Payroll\AttendanceMetrics::summarize($shift, $records->values());
 
         return response()->json([
             'employee' => ['id' => $employee->id, 'name' => $employee->name],
+            'has_shift' => (bool) $shift,
+            'totals' => [
+                'late_days' => $totals['late_days'],
+                'late' => \App\Services\Payroll\AttendanceMetrics::format($totals['late']),
+                'short' => \App\Services\Payroll\AttendanceMetrics::format($totals['short']),
+                'overtime' => \App\Services\Payroll\AttendanceMetrics::format($totals['overtime']),
+            ],
             'days' => $days,
         ]);
     }

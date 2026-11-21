@@ -442,16 +442,6 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="/payroll/shifts" class="nav-link {{ $segment2 == 'shifts' ? 'active' : '' }}">
-                                <p>{{ __('Shifts') }}</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/payroll/salary-structures" class="nav-link {{ $segment2 == 'salary-structures' ? 'active' : '' }}">
-                                <p>{{ __('Salary Structures') }}</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
                             <a href="/payroll/runs" class="nav-link {{ $segment2 == 'runs' ? 'active' : '' }}">
                                 <p>{{ __('Payroll Runs') }}</p>
                             </a>
@@ -459,6 +449,16 @@
                         <li class="nav-item">
                             <a href="/employee-loans" class="nav-link {{ $segment1 == 'employee-loans' ? 'active' : '' }}">
                                 <p>{{ __('Loans') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/payroll/shifts" class="nav-link {{ $segment2 == 'shifts' ? 'active' : '' }}">
+                                <p>{{ __('Shifts') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/payroll/salary-structures" class="nav-link {{ $segment2 == 'salary-structures' ? 'active' : '' }}">
+                                <p>{{ __('Salary Structures') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">

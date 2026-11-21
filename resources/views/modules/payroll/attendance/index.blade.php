@@ -160,6 +160,9 @@
                             @endforeach
                         </div>
                     </div>
+                    <div class="card-footer bg-white border-top small text-muted py-2">
+                        <i class="bi bi-info-circle me-1"></i>{{ __('Click a day to see its attendance. Double-click a day to add attendance for it.') }}
+                    </div>
                 </div>
             </div>
         </div>
@@ -259,6 +262,12 @@
                         <a href="{{ route('payroll.attendance.index', array_filter(['date' => $date, 'employee_id' => request('employee_id'), 'view' => 'monthly'])) }}"
                            class="btn {{ $viewMode === 'monthly' ? 'btn-primary' : 'btn-outline-secondary' }}">{{ __('Monthly') }}</a>
                     </div>
+                    @if($viewMode === 'daily')
+                        <div class="d-flex align-items-center gap-1">
+                            <label for="attendanceDailyDate" class="small fw-bold text-muted mb-0">{{ __('Date') }}</label>
+                            <input type="text" id="attendanceDailyDate" class="form-control form-control-sm datepicker" style="width:130px" value="{{ $dateDisplay }}" autocomplete="off" placeholder="dd-mm-yyyy">
+                        </div>
+                    @endif
                     {{--<button type="button" class="btn btn-primary btn-sm shadow-sm d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#markAttendanceModal">
                         <i class="bi bi-plus-lg"></i> {{ __('New Attendance Record') }}
                     </button>--}}
@@ -410,6 +419,10 @@
                             <th class="px-4 py-3 text-center">{{ __('Absent') }}</th>
                             <th class="px-4 py-3 text-center">{{ __('Leave') }}</th>
                             <th class="px-4 py-3 text-center">{{ __('Holiday') }}</th>
+                            <th class="px-3 py-3 text-center" title="{{ __('Days the employee checked in after shift start + grace time') }}">{{ __('Late Days') }}</th>
+                            <th class="px-3 py-3 text-center" title="{{ __('Total minutes late, measured from the shift start (hours:minutes)') }}">{{ __('Total Late') }}</th>
+                            <th class="px-3 py-3 text-center" title="{{ __('Time worked after the shift end (hours:minutes)') }}">{{ __('Overtime') }}</th>
+                            <th class="px-3 py-3 text-center" title="{{ __('Shift length minus time actually worked (hours:minutes)') }}">{{ __('Short Time') }}</th>
                             <th class="px-4 py-3 text-end">{{ __('Details') }}</th>
                         </tr>
                     </thead>
@@ -435,12 +448,21 @@
                                 <td class="px-4 py-2 text-center">
                                     <span id="month-count-holiday-{{ $empId }}" class="badge rounded-pill bg-secondary-subtle text-secondary border border-secondary-subtle px-2">{{ $row['holiday'] }}</span>
                                 </td>
+                                @php($mt = $row['metrics'])
+                                @if($row['has_shift'])
+                                    <td class="px-3 py-2 text-center"><span id="month-late-days-{{ $empId }}" @class(['badge rounded-pill border px-2', 'bg-warning-subtle text-warning-emphasis border-warning-subtle' => $mt['late_days'] > 0, 'bg-light text-muted' => $mt['late_days'] == 0])>{{ $mt['late_days'] }}</span></td>
+                                    <td class="px-3 py-2 text-center tabular-nums" id="month-late-{{ $empId }}">{{ \App\Services\Payroll\AttendanceMetrics::format($mt['late']) }}</td>
+                                    <td class="px-3 py-2 text-center tabular-nums text-success" id="month-ot-{{ $empId }}">{{ \App\Services\Payroll\AttendanceMetrics::format($mt['overtime']) }}</td>
+                                    <td class="px-3 py-2 text-center tabular-nums text-danger" id="month-short-{{ $empId }}">{{ \App\Services\Payroll\AttendanceMetrics::format($mt['short']) }}</td>
+                                @else
+                                    <td colspan="4" class="px-3 py-2 text-center text-muted extra-small" title="{{ __('Assign a shift to this employee (Masters → Employees → Employment) to calculate late, overtime and short time.') }}">{{ __('No shift assigned') }}</td>
+                                @endif
                                 <td class="px-4 py-2 text-end">
                                     <i class="bi bi-arrows-expand text-muted"></i>
                                 </td>
                             </tr>
                             <tr x-show="expanded === {{ $empId }}" x-cloak>
-                                <td colspan="6" class="p-0 bg-light">
+                                <td colspan="10" class="p-0 bg-light">
                                     <div class="p-3 employee-month-detail" id="employee-month-detail-{{ $empId }}">
                                         <div class="text-center text-muted py-3">
                                             <span class="spinner-border spinner-border-sm"></span> {{ __('Loading...') }}
@@ -450,7 +472,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-4 py-5 text-center text-muted">
+                                <td colspan="10" class="px-4 py-5 text-center text-muted">
                                     <i class="bi bi-people display-6 d-block mb-2 opacity-25"></i>
                                     {{ __('No employees found.') }}
                                 </td>
@@ -458,6 +480,9 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+            <div class="px-4 py-2 border-top small text-muted">
+                <i class="bi bi-info-circle me-1"></i>{{ __('Late, Overtime and Short Time are calculated from check-in / check-out and the employee\'s shift (start, end, grace time), for days marked Present. Payroll pays the overtime hours saved on each day\'s record.') }}
             </div>
             @endif
         </div>
@@ -675,31 +700,58 @@
             attendanceNavigate(form.action + '?' + params.toString());
         }
 
-        // Clicking a calendar day opens the "New Attendance Record" modal directly, with
-        // that day pre-filled — no page navigation/reload first.
-        document.querySelectorAll('.calendar-day-btn').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                document.querySelectorAll('.calendar-day-btn.is-selected').forEach(function (el) {
-                    el.classList.remove('is-selected');
-                });
-                btn.classList.add('is-selected');
-
-                const form = document.getElementById('markAttendanceForm');
-                form.reset();
-                attSyncSelects(form);
-
-                const [y, m, d] = btn.dataset.date.split('-');
-                const displayDate = `${d}-${m}-${y}`;
-                const dateInput = document.getElementById('markAttendanceDate');
-                if (dateInput._flatpickr) {
-                    dateInput._flatpickr.setDate(displayDate, true);
-                } else {
-                    dateInput.value = displayDate;
-                }
-
-                new bootstrap.Modal(document.getElementById('markAttendanceModal')).show();
+        // Daily view: picking a date in the toolbar loads that day's roster (keeps the employee filter).
+        (function () {
+            const el = document.getElementById('attendanceDailyDate');
+            if (!el) return;
+            el.addEventListener('change', function () {
+                const m = el.value.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+                if (!m) return;
+                const params = new URLSearchParams({ date: m[3] + '-' + m[2] + '-' + m[1], view: 'daily' });
+                const emp = document.querySelector('#calendarFilterForm [name=employee_id]');
+                if (emp && emp.value) params.set('employee_id', emp.value);
+                attendanceNavigate(@json(route('payroll.attendance.index')) + '?' + params.toString());
             });
-        });
+        })();
+
+        // Calendar day: one click selects the date (loads that day), a double click opens "New Attendance Record"
+        // pre-filled with that day. The single click waits a moment so a double click is not mistaken for it.
+        (function () {
+            let clickTimer = null;
+            document.querySelectorAll('.calendar-day-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    clearTimeout(clickTimer);
+                    clickTimer = setTimeout(function () {
+                        document.querySelectorAll('.calendar-day-btn.is-selected').forEach(function (el) { el.classList.remove('is-selected'); });
+                        btn.classList.add('is-selected');
+                        const params = new URLSearchParams({ date: btn.dataset.date, view: 'daily' });
+                        const emp = document.querySelector('#calendarFilterForm [name=employee_id]');
+                        if (emp && emp.value) params.set('employee_id', emp.value);
+                        attendanceNavigate(@json(route('payroll.attendance.index')) + '?' + params.toString());
+                    }, 250);
+                });
+                btn.addEventListener('dblclick', function () {
+                    clearTimeout(clickTimer);
+                    document.querySelectorAll('.calendar-day-btn.is-selected').forEach(function (el) { el.classList.remove('is-selected'); });
+                    btn.classList.add('is-selected');
+
+                    const form = document.getElementById('markAttendanceForm');
+                    form.reset();
+                    attSyncSelects(form);
+
+                    const [y, m, d] = btn.dataset.date.split('-');
+                    const displayDate = `${d}-${m}-${y}`;
+                    const dateInput = document.getElementById('markAttendanceDate');
+                    if (dateInput._flatpickr) {
+                        dateInput._flatpickr.setDate(displayDate, true);
+                    } else {
+                        dateInput.value = displayDate;
+                    }
+
+                    new bootstrap.Modal(document.getElementById('markAttendanceModal')).show();
+                });
+            });
+        })();
 
         document.querySelectorAll('.edit-attendance-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
@@ -765,10 +817,34 @@
             });
         }
 
+        // Late / overtime / short time totals in the employee's summary row (recalculated by the server).
+        function applyMonthTotals(employeeId, data) {
+            if (!data || !data.has_shift || !data.totals) return;
+            const set = function (id, text) { const el = document.getElementById(id + employeeId); if (el) el.textContent = text; };
+            set('month-late-days-', data.totals.late_days);
+            set('month-late-', data.totals.late);
+            set('month-ot-', data.totals.overtime);
+            set('month-short-', data.totals.short);
+        }
+
+        // After a day is saved: reload that employee's month so the late / short / overtime figures follow the new times.
+        function refreshEmployeeMonth(employeeId) {
+            const container = document.getElementById('employee-month-detail-' + employeeId);
+            if (!container || !container.dataset.month) return;
+            const monthDate = container.dataset.month;
+            fetch(@json(url('/payroll/attendance/employee-month')) + '/' + employeeId + '?month=' + monthDate, { headers: { 'Accept': 'application/json' } })
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
+                    employeeMonthCache[employeeId + ':' + monthDate] = data.days;
+                    applyMonthTotals(employeeId, data);
+                    renderEmployeeMonthTable(container, employeeId, data.days);
+                });
+        }
+
         function renderEmployeeMonthTable(container, employeeId, days) {
             let html = '<div class="table-responsive"><table class="table table-sm table-bordered bg-white mb-0">' +
                 '<thead><tr><th>{{ __('Date') }}</th><th>{{ __('Status') }}</th><th>{{ __('Check In') }}</th>' +
-                '<th>{{ __('Check Out') }}</th><th>{{ __('Overtime') }}</th><th></th></tr></thead><tbody>';
+                '<th>{{ __('Check Out') }}</th><th>{{ __('Late By') }}</th><th>{{ __('Short Time') }}</th><th>{{ __('Time After Shift') }}</th><th>{{ __('Overtime Hours') }}</th><th></th></tr></thead><tbody>';
 
             days.forEach(function (day) {
                 html += '<tr data-date="' + day.date + '">' +
@@ -780,6 +856,9 @@
                     '</select></td>' +
                     '<td><input type="time" class="form-control form-control-sm day-check-in" value="' + (day.check_in || '') + '"></td>' +
                     '<td><input type="time" class="form-control form-control-sm day-check-out" value="' + (day.check_out || '') + '"></td>' +
+                    '<td class="align-middle text-warning-emphasis tabular-nums">' + (day.metrics && day.metrics.late !== '0:00' ? day.metrics.late : '—') + '</td>' +
+                    '<td class="align-middle text-danger tabular-nums">' + (day.metrics && day.metrics.short !== '0:00' ? day.metrics.short : '—') + '</td>' +
+                    '<td class="align-middle text-success tabular-nums">' + (day.metrics && day.metrics.overtime !== '0:00' ? day.metrics.overtime : '—') + '</td>' +
                     '<td><input type="text" step="0.5" min="0" max="24" class="decimal form-control form-control-sm day-overtime" value="' + (day.overtime_hours || 0) + '"></td>' +
                     '<td class="text-end"><button type="button" class="btn btn-primary btn-sm day-save-btn">{{ __('Save') }}</button></td>' +
                     '</tr>';
@@ -832,6 +911,7 @@
                                     dayEntry.overtime_hours = result.data.attendance.overtime_hours;
                                 }
                                 updateEmployeeMonthCounts(employeeId, days);
+                                refreshEmployeeMonth(employeeId);
                             } else {
                                 const firstError = result.data.errors ? Object.values(result.data.errors)[0][0] : null;
                                 toastr.error(firstError || '{{ __('Something went wrong.') }}');
@@ -848,6 +928,7 @@
         window.PAYROLL_ATTENDANCE.loadEmployeeMonth = function (employeeId, monthDate) {
             const container = document.getElementById('employee-month-detail-' + employeeId);
             if (!container) return;
+            container.dataset.month = monthDate;
 
             const cacheKey = employeeId + ':' + monthDate;
             if (employeeMonthCache[cacheKey]) {
@@ -861,6 +942,7 @@
                 .then(function (res) { return res.json(); })
                 .then(function (data) {
                     employeeMonthCache[cacheKey] = data.days;
+                    applyMonthTotals(employeeId, data);
                     renderEmployeeMonthTable(container, employeeId, data.days);
                 })
                 .catch(function () {

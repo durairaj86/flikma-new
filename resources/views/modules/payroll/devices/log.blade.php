@@ -19,6 +19,7 @@
         </div>
         <div class="d-flex gap-2">
             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#punchModal" onclick="punchForm()"><i class="bi bi-plus-lg me-1"></i>{{ __('Add Punch') }}</button>
+            <a href="{{ route('payroll.punch-log.export', request()->query()) }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-download me-1"></i>{{ __('Export CSV') }}</a>
             <a href="{{ route('payroll.punch-import') }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-file-earmark-excel me-1"></i>{{ __('Import from Excel') }}</a>
             <a href="{{ route('payroll.devices.index') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-hdd-network me-1"></i>{{ __('Punch Devices') }}</a>
         </div>
@@ -59,17 +60,17 @@
     {{-- Recent punches --}}
     <div style="overflow:visible" class="card border-0 shadow-sm rounded-3 mb-4">
         <div class="d-flex justify-content-between align-items-center px-4 py-3 border-bottom">
-            <h6 class="fw-bold mb-0">{{ __('Punches') }} <span class="text-muted fw-normal small">({{ number_format($recent->total()) }})</span></h6>
+            <h6 class="fw-bold mb-0">{{ __('Punches') }} <span class="text-muted fw-normal small">({{ number_format($groups->total()) }} {{ __('days') }} · {{ number_format($punchTotal) }} {{ __('punches') }})</span></h6>
         </div>
         <style>#plFilter .ts-wrapper .ts-control{min-height:31px;height:31px;display:flex;align-items:center;padding-top:0;padding-bottom:0;font-size:.875rem}#plFilter .ts-wrapper{margin:0}</style>
         <form id="plFilter" method="GET" action="{{ route('payroll.punch-log') }}" class="px-4 py-3 border-bottom bg-light row g-2 align-items-end flex-lg-nowrap">
             <div class="col-6 col-md-4 col-lg">
-                <label class="form-label small fw-bold text-muted mb-1">{{ __('From') }}</label>
-                <input type="text" name="from" class="form-control form-control-sm datepicker" value="{{ request('from') }}" autocomplete="off" placeholder="dd-mm-yyyy">
+                <label class="form-label small fw-bold text-muted mb-1">{{ __('From') }} *</label>
+                <input type="text" name="from" class="form-control form-control-sm datepicker" value="{{ $fromInput }}" autocomplete="off" placeholder="dd-mm-yyyy" required>
             </div>
             <div class="col-6 col-md-4 col-lg">
-                <label class="form-label small fw-bold text-muted mb-1">{{ __('To') }}</label>
-                <input type="text" name="to" class="form-control form-control-sm datepicker" value="{{ request('to') }}" autocomplete="off" placeholder="dd-mm-yyyy">
+                <label class="form-label small fw-bold text-muted mb-1">{{ __('To') }} *</label>
+                <input type="text" name="to" class="form-control form-control-sm datepicker" value="{{ $toInput }}" autocomplete="off" placeholder="dd-mm-yyyy" required>
             </div>
             <div class="col-12 col-md-4 col-lg-3">
                 <label class="form-label small fw-bold text-muted mb-1">{{ __('Employee') }}</label>
@@ -108,55 +109,114 @@
 </script>
         <div class="table-responsive">
             <table class="table table-sm align-middle mb-0 small">
-                <thead class="table-light"><tr><th class="ps-4">#</th><th>{{ __('Time') }}</th><th>{{ __('Employee') }}</th><th>{{ __('Machine ID') }}</th><th>{{ __('Device') }}</th><th>{{ __('Direction') }}</th><th>{{ __('Result') }}</th><th>{{ __('Remarks') }}</th><th class="text-end px-3">{{ __('Actions') }}</th></tr></thead>
+                <thead class="table-light"><tr><th class="ps-4">#</th><th>{{ __('Date') }}</th><th>{{ __('Employee') }}</th><th>{{ __('Machine ID') }}</th><th>{{ __('Device') }}</th><th>{{ __('First punch (In)') }}</th><th>{{ __('Last punch (Out)') }}</th><th class="text-center">{{ __('Punches') }}</th><th>{{ __('Result') }}</th><th class="text-end px-3">{{ __('Actions') }}</th></tr></thead>
                 <tbody>
-                    @forelse($recent as $p)
+                    @forelse($groups as $g)
+                        @php
+                            $first = \Illuminate\Support\Carbon::parse($g->first_at);
+                            $last = \Illuminate\Support\Carbon::parse($g->last_at);
+                            $result = $g->unmapped_count > 0 ? 'unmapped' : ($g->locked_count > 0 ? 'locked' : 'processed');
+                            $deviceNames = collect(explode(',', (string) $g->device_ids))->map(fn ($id) => $devices->firstWhere('id', (int) $id)?->name)->filter()->unique();
+                            $key = $g->device_user_id . '|' . $g->day;
+                        @endphp
                         <tr>
-                            <td class="ps-4 text-muted">{{ $recent->firstItem() + $loop->index }}</td>
-                            <td class="tabular-nums">{{ $p->punched_at->format('d-m-Y H:i:s') }}</td>
-                            <td>{{ $p->employee->name ?? '—' }}@if($p->employee?->employee_code)<div class="text-muted extra-small">{{ $p->employee->employee_code }}</div>@endif</td>
-                            <td class="font-monospace">{{ $p->device_user_id }}</td>
-                            <td>{{ $p->device?->name ? __($p->device->name) : '—' }}</td>
-                            <td>{{ $p->direction ? __(strtoupper($p->direction)) : '—' }}</td>
-                            <td><span @class(['badge border', 'bg-success-subtle text-success' => $p->status === 'processed', 'bg-danger-subtle text-danger' => $p->status === 'unmapped', 'bg-secondary-subtle text-secondary' => !in_array($p->status, ['processed', 'unmapped'])])>{{ __(ucfirst($p->status)) }}</span>
-                                @if($p->status === 'locked')<span class="text-muted extra-small">{{ __('payroll already generated') }}</span>@endif</td>
-                            <td style="min-width:200px;max-width:320px">
-                                @if($p->raw['manual'] ?? false)
-                                    <span class="badge bg-info-subtle text-info-emphasis border">{{ __('Manual') }}</span>
-                                    <span class="text-muted extra-small">{{ __('by') }} {{ $users[$p->raw['by'] ?? 0] ?? '—' }}</span>
-                                @endif
-                                @if(!empty($p->raw['note']))<div>{{ $p->raw['note'] }}</div>@endif
-                                @if(!empty($p->raw['edited_by']))
-                                    <div class="text-muted extra-small"><i class="bi bi-pencil-square me-1"></i>{{ __('Edited by :u on :d', ['u' => $users[$p->raw['edited_by']] ?? '—', 'd' => \Illuminate\Support\Carbon::parse($p->raw['edited_at'])->format('d-m-Y H:i')]) }}
-                                        @if(!empty($p->raw['original_time']))· {{ __('was') }} {{ \Illuminate\Support\Carbon::parse($p->raw['original_time'])->format('d-m-Y H:i') }}@endif</div>
-                                @endif
-                                @if(!empty($p->raw['import_line']))<span class="text-muted extra-small">{{ __('Excel import, row :n', ['n' => $p->raw['import_line']]) }}</span>@endif
-                            </td>
+                            <td class="ps-4 text-muted">{{ $groups->firstItem() + $loop->index }}</td>
+                            <td class="tabular-nums">{{ \Illuminate\Support\Carbon::parse($g->day)->format('d-m-Y') }}</td>
+                            <td>{{ $g->employee->name ?? '—' }}@if($g->employee?->employee_code)<div class="text-muted extra-small">{{ $g->employee->employee_code }}</div>@endif</td>
+                            <td class="font-monospace">{{ $g->device_user_id }}</td>
+                            <td>{{ $deviceNames->map(fn ($n) => __($n))->implode(', ') ?: '—' }}</td>
+                            <td class="tabular-nums fw-semibold text-success">{{ $first->format('H:i:s') }}</td>
+                            <td class="tabular-nums fw-semibold {{ $g->punch_count > 1 ? 'text-danger' : 'text-muted' }}">{{ $g->punch_count > 1 ? $last->format('H:i:s') : '—' }}</td>
+                            <td class="text-center">{{ $g->punch_count }}</td>
+                            <td><span @class(['badge border', 'bg-success-subtle text-success' => $result === 'processed', 'bg-danger-subtle text-danger' => $result === 'unmapped', 'bg-secondary-subtle text-secondary' => $result === 'locked'])>{{ __(ucfirst($result)) }}</span>
+                                @if($result === 'locked')<span class="text-muted extra-small">{{ __('payroll already generated') }}</span>@endif</td>
                             <td class="text-end px-3 text-nowrap">
-                                @php($isManual = (bool) ($p->raw['manual'] ?? false))
-                                @if($p->status !== 'locked')
-                                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-circle opacity-75" title="{{ __('Edit') }}"
-                                            data-bs-toggle="modal" data-bs-target="#punchModal"
-                                            data-punch="{{ json_encode(['id' => $p->id, 'manual' => $isManual, 'employee_id' => $p->employee_id, 'date' => $p->punched_at->format('d-m-Y'), 'time' => $p->punched_at->format('H:i'), 'direction' => $p->direction, 'note' => $p->raw['note'] ?? '', 'machine' => $p->device_user_id]) }}"
-                                            onclick="punchForm(JSON.parse(this.dataset.punch))"><i class="bi bi-pencil"></i></button>
-                                @endif
-                                @if($isManual && $p->status !== 'locked')
-                                    <form method="POST" action="{{ route('payroll.punch-entry.destroy', $p) }}" class="d-inline" data-confirm="{{ __('Delete this manual punch? Attendance for that day is recalculated.') }}">
-                                        @csrf @method('DELETE')
-                                        <button class="btn btn-outline-danger btn-sm rounded-circle opacity-75" title="{{ __('Delete') }}"><i class="bi bi-trash"></i></button>
-                                    </form>
-                                @endif
+                                <button type="button" class="btn btn-outline-primary btn-sm" title="{{ __('Details') }}" onclick="dayDetails({{ $loop->index }})"><i class="bi bi-list-ul me-1"></i>{{ __('Details') }}</button>
+                                <template id="dayTpl{{ $loop->index }}" data-title="{{ ($g->employee->name ?? __('Unmapped')) . ' — ' . \Illuminate\Support\Carbon::parse($g->day)->format('d-m-Y') }}">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm align-middle mb-0 small">
+                                            <thead class="table-light"><tr><th>{{ __('Time') }}</th><th>{{ __('Direction') }}</th><th>{{ __('Result') }}</th><th>{{ __('Remarks') }}</th><th class="pe-3"></th></tr></thead>
+                                            <tbody>
+                                            @foreach($dayPunches[$key] ?? [] as $p)
+                                                @php($isManual = (bool) ($p->raw['manual'] ?? false))
+                                                <tr>
+                                                    <td class="tabular-nums fw-semibold">{{ $p->punched_at->format('H:i:s') }}</td>
+                                                    <td>{{ $p->direction ? __(strtoupper($p->direction)) : '—' }}</td>
+                                                    <td><span @class(['badge border', 'bg-success-subtle text-success' => $p->status === 'processed', 'bg-danger-subtle text-danger' => $p->status === 'unmapped', 'bg-secondary-subtle text-secondary' => !in_array($p->status, ['processed', 'unmapped'])])>{{ __(ucfirst($p->status)) }}</span></td>
+                                                    <td style="max-width:150px">
+                                                        @if($isManual)
+                                                            <span class="badge bg-info-subtle text-info-emphasis border">{{ __('Manual') }}</span>
+                                                            <span class="text-muted extra-small">{{ __('by') }} {{ $users[$p->raw['by'] ?? 0] ?? '—' }}</span>
+                                                        @endif
+                                                        @if(!empty($p->raw['note']))<div>{{ $p->raw['note'] }}</div>@endif
+                                                        @if(!empty($p->raw['edited_by']))
+                                                            <div class="text-muted extra-small"><i class="bi bi-pencil-square me-1"></i>{{ __('Edited by :u on :d', ['u' => $users[$p->raw['edited_by']] ?? '—', 'd' => \Illuminate\Support\Carbon::parse($p->raw['edited_at'])->format('d-m-Y H:i')]) }}
+                                                                @if(!empty($p->raw['original_time']))· {{ __('was') }} {{ \Illuminate\Support\Carbon::parse($p->raw['original_time'])->format('d-m-Y H:i') }}@endif</div>
+                                                        @endif
+                                                        @if(!empty($p->raw['import_line']))<span class="text-muted extra-small">{{ __('Excel import, row :n', ['n' => $p->raw['import_line']]) }}</span>@endif
+                                                    </td>
+                                                    <td class="text-end text-nowrap ps-2 pe-3">
+                                                        @if($p->status !== 'locked')
+                                                            <button type="button" class="btn btn-outline-secondary btn-sm rounded-circle opacity-75" title="{{ __('Edit') }}"
+                                                                    data-punch="{{ json_encode(['id' => $p->id, 'manual' => $isManual, 'employee_id' => $p->employee_id, 'date' => $p->punched_at->format('d-m-Y'), 'time' => $p->punched_at->format('H:i'), 'direction' => $p->direction, 'note' => $p->raw['note'] ?? '', 'machine' => $p->device_user_id]) }}"
+                                                                    onclick="editFromDetails(this)"><i class="bi bi-pencil"></i></button>
+                                                        @endif
+                                                        @if($isManual && $p->status !== 'locked')
+                                                            <form method="POST" action="{{ route('payroll.punch-entry.destroy', $p) }}" class="d-inline" data-confirm="{{ __('Delete this manual punch? Attendance for that day is recalculated.') }}">
+                                                                @csrf @method('DELETE')
+                                                                <button class="btn btn-outline-danger btn-sm rounded-circle opacity-75" title="{{ __('Delete') }}"><i class="bi bi-trash"></i></button>
+                                                            </form>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </template>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="9" class="px-4 py-4 text-center text-muted">{{ __('No punches found.') }}</td></tr>
+                        <tr><td colspan="10" class="px-4 py-4 text-center text-muted">{{ __('No punches found.') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-        @if($recent->hasPages())<div class="px-4 py-2 border-top">{{ $recent->links('pagination::bootstrap-5') }}</div>@endif
+        @if($groups->hasPages())<div class="px-4 py-2 border-top">{{ $groups->links('pagination::bootstrap-5') }}</div>@endif
     </div>
 
+
+{{-- All punches of one day --}}
+<div class="modal fade" id="dayModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header py-2"><h6 class="modal-title fw-bold"><i class="bi bi-list-ul me-1"></i><span id="dayTitle"></span></h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body px-3 py-2" id="dayBody"></div>
+            <div class="modal-footer py-2"><button type="button" class="btn btn-light border btn-sm" data-bs-dismiss="modal">{{ __('Close') }}</button></div>
+        </div>
+    </div>
+</div>
+<script>
+    function dayDetails(i) {
+        var t = document.getElementById('dayTpl' + i);
+        if (!t) { return; }
+        document.getElementById('dayTitle').textContent = t.dataset.title || '';
+        var body = document.getElementById('dayBody');
+        body.innerHTML = '';
+        body.appendChild(t.content.cloneNode(true));
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('dayModal')).show();
+    }
+    // Edit one punch from the details: close the details first, then open the edit form.
+    function editFromDetails(btn) {
+        var data = JSON.parse(btn.dataset.punch);
+        var dayEl = document.getElementById('dayModal');
+        var open = function () { punchForm(data); bootstrap.Modal.getOrCreateInstance(document.getElementById('punchModal')).show(); };
+        if (dayEl.classList.contains('show')) {
+            dayEl.addEventListener('hidden.bs.modal', open, { once: true });
+            bootstrap.Modal.getInstance(dayEl).hide();
+        } else { open(); }
+    }
+</script>
 
 {{-- Add / edit punch --}}
 <div class="modal fade" id="punchModal" tabindex="-1" aria-hidden="true">
