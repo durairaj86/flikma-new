@@ -8,6 +8,7 @@ use App\Models\Enquiry\Enquiry;
 use App\Models\Prospect\Prospect;
 use App\Models\Quotation\Quotation;
 use App\Services\Crm\LostDeal;
+use App\Services\DocumentNumber;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -85,10 +86,12 @@ class ProspectController extends Controller
             'quick_prospect_email' => 'required|email|max:255',
             'quick_prospect_phone' => 'required|string|max:20',
             'quick_prospect_address' => 'nullable|string|max:500',
+            // the salesperson owns the lead: without one it shows on nobody's pipeline (only under "All Salesmen")
+            'salesperson_id' => 'required|integer',
         ];
 
         // Validate request
-        $validator = Validator::make($request->all(), $rules);
+        $validator = Validator::make($request->all(), $rules, [], ['salesperson_id' => __('Salesperson')]);
 
         if ($validator->fails()) {
             return response()->json([
@@ -103,7 +106,8 @@ class ProspectController extends Controller
         } else {
             // Create new customer
             $prospect = new Prospect();
-            $prospect->unique_row_no = sprintf("%03d", (Prospect::max('unique_row_no') ?? 0) + 1);
+            // read from the PS numbers themselves, deleted prospects included, so a number never comes back
+            $prospect->unique_row_no = sprintf("%03d", DocumentNumber::next(Prospect::class, 'PS'));
             $prospect->row_no = 'PS' . $prospect->unique_row_no;
 
             $this->setBaseColumns($prospect);

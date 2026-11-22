@@ -28,16 +28,16 @@
                 <div class="col-md-6 mb-3">
                     <label class="form-label">{{ __('Salesperson') }} <span class="text-danger">*</span></label>
                     <x-common.salesperson
-                        :value="$prospect->salesperson_id"></x-common.salesperson>
+                        :value="$prospect->salesperson_id" required></x-common.salesperson>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">{{ __('Email') }}</label>
+                    <label class="form-label">{{ __('Email') }} <span class="text-danger">*</span></label>
                     <input type="email" name="quick_prospect_email" class="form-control" value="{{ $prospect->email }}"
                            required>
                 </div>
 
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">{{ __('Phone') }}</label>
+                    <label class="form-label">{{ __('Phone') }} <span class="text-danger">*</span></label>
                     <input type="text" name="quick_prospect_phone" class="form-control" value="{{ $prospect->phone }}"
                            required>
                 </div>
