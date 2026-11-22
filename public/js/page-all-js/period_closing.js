@@ -60,6 +60,7 @@ PERIOD_CLOSING = {
             PERIOD_CLOSING.list.actions.delete(row);
             PERIOD_CLOSING.list.actions.close(row);
             PERIOD_CLOSING.list.actions.reopen(row);
+            PERIOD_CLOSING.list.actions.history(row);
         },
         actions: {
             delete(row) {
@@ -82,11 +83,12 @@ PERIOD_CLOSING = {
                                         headers: {
                                             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                                         },
-                                        success: function () {
+                                        success: function (res) {
+                                            toastr.success(res.message);
                                             $('#dataTable').DataTable().ajax.reload(null, false);
                                         },
                                         error: function (xhr) {
-                                            $.alert(xhr.responseJSON?.message || 'Failed to delete this period.');
+                                            $.alert(xhr.responseJSON?.message || trans('Failed to delete this period.'));
                                         }
                                     });
                                 }
@@ -120,7 +122,7 @@ PERIOD_CLOSING = {
                                             $('#dataTable').DataTable().ajax.reload(null, false);
                                         },
                                         error: function (xhr) {
-                                            $.alert(xhr.responseJSON?.message || 'Failed to close this period.');
+                                            $.alert(xhr.responseJSON?.message || trans('Failed to close this period.'));
                                         }
                                     });
                                 }
@@ -154,7 +156,7 @@ PERIOD_CLOSING = {
                                             $('#dataTable').DataTable().ajax.reload(null, false);
                                         },
                                         error: function (xhr) {
-                                            $.alert(xhr.responseJSON?.message || 'Failed to reopen this period.');
+                                            $.alert(xhr.responseJSON?.message || trans('Failed to reopen this period.'));
                                         }
                                     });
                                 }
@@ -162,8 +164,23 @@ PERIOD_CLOSING = {
                         }
                     });
                 });
+            },
+            history(row) {
+                $('#row_history').off().on('click', function () {
+                    PERIOD_CLOSING.history(row.attr('data-id'));
+                });
             }
         }
+    },
+    // created / edited / closed / reopened / deleted, with who and when: one period's, or every period's (deleted ones too)
+    history(id) {
+        webModal.openGlobalModal({
+            title: trans('History'),
+            url: GLOBAL_FN.buildUrl('masters/period-closing/' + (id ? id + '/' : '') + 'history'),
+            content: null,
+            size: 'l',
+            callBack: null
+        });
     },
     form: {
         open() {
@@ -176,6 +193,9 @@ PERIOD_CLOSING = {
                     callBack: null
                 });
             })
+            $('#period-history').off().on('click', function () {
+                PERIOD_CLOSING.history(null);
+            });
         },
     },
 }

@@ -1798,6 +1798,18 @@ webDataTable = {
                             if (item.separator === 'before') {
                                 menu += `<li class="separator"></li>`;
                             }
+                            // no right for it (CheckModulePermission marks it): shown muted, without its class / onclick so nothing runs it
+                            if (item.disabled) {
+                                menu += `<li title="${trans('You do not have access to this')}">
+            <a class="dropdown-item disabled no-access" aria-disabled="true" tabindex="-1"><i class="${webDataTable.actions.icons(item.icon)}"></i>
+               ${item.label}
+            </a>
+        </li>`;
+                                if (item.separator === 'after') {
+                                    menu += `<li class="separator"></li>`;
+                                }
+                                return;
+                            }
                             menu += `<li>
             <a class="dropdown-item ${item.class ?? ''}"
                id="${item.id}" ${item.onclick ? 'onclick="' + String(item.onclick).replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '"' : ""}
@@ -1811,10 +1823,18 @@ webDataTable = {
                         } else if (item.type === 'submenu') {
                             // submenu
                             menu += `<li class="dropdown-submenu">
-            <a class="dropdown-item dropdown-toggle J-N-JX BS"><i class="${webDataTable.actions.icons(item.icon)}"></i> ${item.label}</a>
+            <a class="dropdown-item dropdown-toggle J-N-JX BS ${item.disabled ? 'no-access' : ''}"><i class="${webDataTable.actions.icons(item.icon)}"></i> ${item.label}</a>
             <ul class="dropdown-menu">`;
 
                             item.items.forEach(sub => {
+                                if (sub.disabled) {
+                                    menu += `<li title="${trans('You do not have access to this')}">
+                <a class="dropdown-item disabled no-access" aria-disabled="true" tabindex="-1"><i class="${webDataTable.actions.icons(sub.icon)}"></i>
+                   ${sub.label}
+                </a>
+            </li>`;
+                                    return;
+                                }
                                 menu += `<li>
                 <a class="dropdown-item ${sub.class ?? ''}"
                    id="${sub.id}"

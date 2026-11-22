@@ -475,7 +475,8 @@ class SeawayBillController extends Controller
                 'label' => __('Actions'),
                 'type' => 'submenu',
                 'icon' => 'action',
-                'items' => [$edit, $delete]
+                // Delete only while the bill is pending (DeletionGuard refuses in transit / delivered)
+                'items' => $waybill->status === 'pending' ? [$edit, $delete] : [$edit]
             ]);
         }
         return response()->json($contextMenu->values());
@@ -514,5 +515,22 @@ class SeawayBillController extends Controller
     {
         $seawayBill = SeawayBill::with('seawayBillSubs', 'documents', 'job', 'customer')->findOrFail($id);
         return view('modules.bl.seaway.print', compact('seawayBill'));
+    }
+
+    public function delete($id)
+    {
+        $model = SeawayBill::findOrFail($id);
+        $guard = app(\App\Services\DeletionGuard::class);
+        $why = $guard->blockers('seaway_bill', (int) $id);
+        if ($why) {
+            return $guard->refusal(__('seaway bill'), $why);
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($model, $id) {
+            // the bill is soft deleted (restorable); its lines stay with it
+            $model->delete();
+        });
+
+        return response()->json(['status' => 'success', 'message' => __('Seaway bill deleted successfully')]);
     }
 }

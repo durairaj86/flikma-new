@@ -113,7 +113,7 @@ class AutocheckRunner
     private const AR = 5;       // 1130 Accounts Receivable
     private const VAT_OUT = 20; // 2130 Output VAT
     private const REVENUE = 32; // 4100 Freight Income
-    private const BANK = 4;     // 1120 Bank
+    private const BANK = 58;    // 1121 Visa/Mastercard Undeposited (a posting account; 1120 Bank Accounts is a group)
     private const AP = 18;      // 2110 Accounts Payable
     private const VAT_IN = 7;   // 1150 Input VAT
     private const COST = 42;    // 5110 Freight Purchase (cost of sales)

@@ -154,6 +154,7 @@ class DebitNoteController extends Controller
         ]);
 
         $this->assertPeriodOpen($validated['debit_note_date'], 'debit_note_date');
+        $this->assertLineAccounts($request->input('account', []));
 
         $companyId = companyId();
         $invoice = SupplierInvoice::findOrFail($validated['invoice_id']);
@@ -301,6 +302,11 @@ class DebitNoteController extends Controller
     {
         $dn = DebitNote::with('debitNoteSubs')->findOrFail($id);
         $previous = (int) $dn->status;
+        // taking an approved note back (cancel / draft) removes its entry: not in a closed period
+        if ((int) $status !== DebitNoteEnum::APPROVED->value
+            && ($locked = $this->refuseInClosedPeriod($dn->getRawOriginal('posted_at'), $previous, $status, DebitNoteEnum::APPROVED->value))) {
+            return $locked;
+        }
 
         DB::beginTransaction();
         try {

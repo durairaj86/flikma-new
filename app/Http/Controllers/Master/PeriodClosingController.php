@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Master;
 
 use App\Http\Controllers\Controller;
+use App\Models\Log\LogHistory;
 use App\Models\Master\PeriodClosing;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,7 +14,8 @@ class PeriodClosingController extends Controller
 {
     public function fetchAllRows()
     {
-        $rows = PeriodClosing::select('id', 'year', 'closing_date', 'notes', 'is_closed', 'closed_at', 'closed_by');
+        // company_id: the list's ⋮ menu (Edit / Close / Reopen / Delete / History) shows only on the company's own rows
+        $rows = PeriodClosing::select('id', 'company_id', 'year', 'closing_date', 'notes', 'is_closed', 'closed_at', 'closed_by');
 
         return DataTables::eloquent($rows)
             ->addIndexColumn()
@@ -84,7 +86,13 @@ class PeriodClosingController extends Controller
         $periodClosing->year = $validated['year'];
         $periodClosing->closing_date = formDate($validated['closing_date']);
         $periodClosing->notes = $validated['notes'] ?? null;
+        $isNew = !$periodClosing->exists;
+        $changes = $isNew ? null : $this->changedFields($periodClosing);
         $periodClosing->save();
+
+        if ($isNew || $changes) {
+            $this->logHistory($periodClosing, $isNew ? 'created' : 'updated', $changes);
+        }
 
         return response()->json([
             'status' => 'success',
@@ -137,34 +145,58 @@ class PeriodClosingController extends Controller
             ]);
         }
 
+        $contextMenu->push([
+            'label' => __('History'),
+            'code' => '01CSHI',
+            'id' => 'row_history',
+            'class' => 'row_history',
+            'data-id' => $periodClosing->id,
+            'type' => 'item',
+            'icon' => 'history',
+        ]);
+
         return response()->json($contextMenu->values());
     }
 
     public function close($id)
     {
         $periodClosing = PeriodClosing::findOrFail($id);
+
+        if ($periodClosing->is_closed) {
+            return response()->json(['status' => 'error', 'message' => __('This period is already closed.')], 422);
+        }
+
         $periodClosing->is_closed = true;
         $periodClosing->closed_by = Auth::id();
         $periodClosing->closed_at = now();
         $periodClosing->save();
+        $this->logHistory($periodClosing, 'closed');
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Period ' . $periodClosing->year . ' closed. All transactions on or before ' . $periodClosing->closing_date->format('d-m-Y') . ' are now locked.',
+            'message' => __('Period :year closed. All transactions on or before :date are now locked.', [
+                'year' => $periodClosing->year, 'date' => $periodClosing->closing_date->format('d-m-Y'),
+            ]),
         ]);
     }
 
     public function reopen($id)
     {
         $periodClosing = PeriodClosing::findOrFail($id);
+
+        if (!$periodClosing->is_closed) {
+            return response()->json(['status' => 'error', 'message' => __('This period is already open.')], 422);
+        }
+
         $periodClosing->is_closed = false;
         $periodClosing->closed_by = null;
         $periodClosing->closed_at = null;
         $periodClosing->save();
+        $this->logHistory($periodClosing, 'reopened');
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Period ' . $periodClosing->year . ' reopened.',
+            'message' => __('Period :year reopened.', ['year' => $periodClosing->year]),
         ]);
     }
 
@@ -180,10 +212,57 @@ class PeriodClosingController extends Controller
         }
 
         $periodClosing->delete();
+        $this->logHistory($periodClosing, 'deleted');
 
         return response()->json([
             'status' => 'success',
             'message' => __('Period deleted successfully'),
+        ]);
+    }
+
+    /** History of one period, or of every period when $id is null (deleted periods too: their history stays). */
+    public function history($id = null)
+    {
+        $logs = LogHistory::where('loggable_type', PeriodClosing::class)
+            ->when($id, fn ($query) => $query->where('loggable_id', $id))
+            ->orderByDesc('created_at')->orderByDesc('id')
+            ->limit(500)
+            ->get();
+
+        $title = $id ? ($logs->first()->loggable_number ?? PeriodClosing::find($id)?->year) : null;
+
+        return view('modules.master.period-closing.history', compact('logs', 'title'));
+    }
+
+    /** Fields the user changed, with old and new values, before the save. */
+    private function changedFields(PeriodClosing $periodClosing): ?array
+    {
+        $changes = [];
+        foreach ($periodClosing->getDirty() as $field => $new) {
+            if (!in_array($field, ['year', 'closing_date', 'notes'], true)) continue;
+            $old = $periodClosing->getOriginal($field);
+            $old = $old instanceof \DateTimeInterface ? $old->format('d-m-Y') : $old;
+            $new = $periodClosing->{$field} instanceof \DateTimeInterface ? $periodClosing->{$field}->format('d-m-Y') : $new;
+            if ((string) $old !== (string) $new) $changes[$field] = ['old' => $old, 'new' => $new];
+        }
+
+        return $changes ?: null;
+    }
+
+    /** One line of the period's history (created / updated / closed / reopened / deleted) with who did it and the period as it stood. */
+    private function logHistory(PeriodClosing $periodClosing, string $action, ?array $changes = null): void
+    {
+        $user = Auth::user();
+
+        LogHistory::create([
+            'company_id' => $periodClosing->company_id ?? companyId(),
+            'loggable_type' => PeriodClosing::class,
+            'loggable_id' => $periodClosing->id,
+            'loggable_number' => (string) $periodClosing->year,
+            'loggable_name' => $periodClosing->closing_date?->format('d-m-Y'),
+            'user_id' => ['id' => $user?->id, 'name' => $user?->name],
+            'action' => $action,
+            'changes' => $changes,
         ]);
     }
 }

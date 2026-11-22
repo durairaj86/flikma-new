@@ -72,6 +72,30 @@ abstract class Controller
     }
 
     /**
+     * The account chosen on each line of an invoice / note / expense. The poster adds the receivable / payable, VAT and
+     * cash-bank lines itself, so a line may not use those (an income line on the bank account was posted as cash), nor a
+     * group account. Empty lines are fine (the poster falls back to its default account).
+     * @throws ValidationException
+     */
+    protected function assertLineAccounts($accountIds, string $field = 'account'): void
+    {
+        $ids = collect((array) $accountIds)->filter(fn ($id) => filled($id))->map(fn ($id) => (int) $id);
+        if ($ids->isEmpty()) {
+            return;
+        }
+        $accounts = \App\Models\Finance\Account\Account::whereIn('id', $ids->unique())->get(['id', 'code', 'name', 'is_last'])->keyBy('id');
+        $cashBank = \App\Models\Finance\Account\Account::query()->cashOrBank()->whereIn('accounts.id', $ids->unique())->pluck('accounts.id')->all();
+        $control = \App\Models\Finance\Account\Account::whereIn('code', ['1130', '2110', '1150', '2130'])->pluck('id')->all();
+        foreach ($ids as $n => $id) {
+            $a = $accounts->get($id);
+            if (!$a || !(int) $a->is_last || in_array($id, $cashBank, true) || in_array($id, $control, true)) {
+                throw ValidationException::withMessages([$field => __('Line :n: the account :account cannot be used on a document line (cash / bank, receivable, payable, VAT or a group account).',
+                    ['n' => $n + 1, 'account' => $a ? trim($a->code . ' ' . $a->name) : '#' . $id])]);
+            }
+        }
+    }
+
+    /**
      * Approving a document, or taking an approved one back (draft / cancel), writes or removes ledger entries on its
      * date: refused (422) when that date is in a closed period. Returns null when the change may go ahead.
      */

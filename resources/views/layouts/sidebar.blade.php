@@ -537,9 +537,16 @@
                 </li>
 
 
-                <!-- Masters -->
+                <!-- Masters: opens the first master page this user may view (muted by user-rights.js when there is none) -->
+                @php
+                    $mastersHome = collect(['/masters/users', '/masters/departments', '/masters/quotation-terms', '/masters/hs-tariffs', '/masters/period-closing',
+                        '/masters/transport/directories/seaports', '/masters/transport/directories/airports', '/masters/services', '/masters/package/codes',
+                        '/masters/container/types', '/masters/incoterms', '/masters/currencies', '/masters/banks', '/masters/descriptions', '/masters/salesperson',
+                        '/masters/units', '/masters/drivers', '/masters/vehicles', '/masters/finance/opening-balance'])
+                        ->first(fn ($path) => userCanOpen($path)) ?? '/masters/users';
+                @endphp
                 <li class="nav-item">
-                    <a href="/masters/users" class="nav-link {{ $segment1 == 'masters' ? 'active' : '' }}">
+                    <a href="{{ $mastersHome }}" class="nav-link {{ $segment1 == 'masters' ? 'active' : '' }}">
                         <i class="nav-icon bi bi-database"></i>
                         <p>{{ __('Masters') }}</p>
                     </a>
@@ -573,7 +580,8 @@
 
                 <!-- Settings -->
                 <li class="nav-item">
-                    <a href="/settings/company" class="nav-link {{ $menu == 'settings' ? 'active' : '' }}">
+                    {{-- the company settings, or the user's own account when the department has no Settings right --}}
+                    <a href="{{ userCanOpen('/settings/company') ? '/settings/company' : '/settings/account' }}" class="nav-link {{ $menu == 'settings' ? 'active' : '' }}">
                         <i class="nav-icon bi bi-gear"></i>
                         <p>{{ __('Settings') }}</p>
                     </a>

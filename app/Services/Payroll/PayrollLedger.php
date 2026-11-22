@@ -75,7 +75,7 @@ class PayrollLedger
             $lines[] = [$this->loanReceivableAccount()->id, 0, $loan, __('Loan recovery: :no', ['no' => $pr->payroll_number])];
         }
 
-        return $this->voucher('PV', $pr->payroll_number ?: ('PR-' . $pr->id), $date, $description, PayrollRecord::class, $pr->id, $lines);
+        return $this->voucher('PV', $pr->payroll_number ?: ('PR-' . $pr->id), $date, $description, PayrollRecord::class, $pr->id, $lines, (int) $pr->employee_id);
     }
 
     public function removePayroll(PayrollRecord $pr): void
@@ -95,7 +95,7 @@ class PayrollLedger
         return $this->voucher('LV', 'LR-' . $inst->id, $inst->paid_date, $desc, LoanInstallment::class, $inst->id, [
             [$inst->bank_account_id, $amount, 0, $desc],
             [$this->loanReceivableAccount()->id, 0, $amount, $desc],
-        ]);
+        ], (int) ($inst->loan?->employee_id ?? 0));
     }
 
     public function removeLoanRepayment(LoanInstallment $inst): void
@@ -109,7 +109,8 @@ class PayrollLedger
         return FinanceSub::withoutGlobalScopes()->with('account:id,code,name')->where('linked_type', $type)->where('linked_id', $id)->orderBy('id')->get();
     }
 
-    private function voucher(string $voucherType, string $voucherNo, $date, string $narration, string $linkedType, int $linkedId, array $lines): Finance
+    /** $employeeId: the employee the lines belong to (partner_type 'employee'), so an employee's salary and loan lines can be listed. */
+    private function voucher(string $voucherType, string $voucherNo, $date, string $narration, string $linkedType, int $linkedId, array $lines, int $employeeId = 0): Finance
     {
         $total = round(collect($lines)->sum(fn($l) => $l[1]), 2);
         $day = \Illuminate\Support\Carbon::parse($date)->toDateString();
@@ -143,6 +144,9 @@ class PayrollLedger
             'reference_no' => $voucherNo,
             'account_id' => $l[0],
             'reference_date' => $day,
+            'entry_date' => $day,
+            'partner_type' => $employeeId ? 'employee' : null,
+            'partner_id' => $employeeId ?: null,
             'description' => $l[3],
             'debit' => $l[1],
             'credit' => $l[2],

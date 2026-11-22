@@ -169,6 +169,16 @@ class ExpenseController extends Controller
         $request->validate(['posted_at' => 'required|date']);
         // an expense posts on its date: never into a closed period (same rule as every other document)
         $this->assertPeriodOpen(formDate($request->input('posted_at')), 'posted_at');
+        // paid from: a cash or bank posting account (a group such as 1120 Bank Accounts cannot take entries)
+        if (!Account::query()->active()->posting()->cashOrBank()->whereKey($request->input('main_account'))->exists()) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['main_account' => __('Paid From must be a cash or bank account.')]);
+        }
+        $this->assertLineAccounts($request->input('account', []));
+        $previous = $id ? Expense::find($id) : null;
+        // saving puts the expense back to Pending: an approved one leaves the books, so its own date must be open too
+        if ($previous && (int) $previous->getRawOriginal('status') === ExpenseEnum::APPROVED->value) {
+            $this->assertPeriodOpen($previous->getRawOriginal('posted_at'), 'posted_at');
+        }
         $companyId = companyId();
         $branchId = 1;
 
@@ -221,6 +231,10 @@ class ExpenseController extends Controller
 
             if ($id) {
                 $expense = Expense::findOrFail($id);
+                // it goes back to Pending, so the entry of its approval is taken out (approving again posts the new figures)
+                if ((int) $expense->getRawOriginal('status') === ExpenseEnum::APPROVED->value) {
+                    $this->deleteExpenseFinanceEntries($expense->id);
+                }
                 $expense->update($expenseData);
                 $expense->expenseSubs()->delete(); // Remove old items
             } else {

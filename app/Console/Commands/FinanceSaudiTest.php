@@ -42,7 +42,7 @@ class FinanceSaudiTest extends Command
     protected $signature = 'finance:saudi-test {--keep : commit the test documents instead of rolling back} {--out= : report file}';
     protected $description = 'Post Saudi VAT test documents and check every finance report against hand-calculated figures';
 
-    private const AR = 5, VAT_OUT = 20, REVENUE = 32, BANK = 4, AP = 18, VAT_IN = 7, COST = 42, EXPENSE = 47;
+    private const AR = 5, VAT_OUT = 20, REVENUE = 32, BANK = 58, AP = 18, VAT_IN = 7, COST = 42, EXPENSE = 47;
     private const FROM = '2026-12-01', TO = '2026-12-31';
 
     private array $checks = [];
@@ -144,11 +144,15 @@ class FinanceSaudiTest extends Command
     private function post(): void
     {
         $ci1 = $this->invoice('CI1 standard 15%', '2026-12-02', 10000, 'STANDARD');
-        $this->invoice('CI2 zero rated export', '2026-12-03', 4000, 'ZERO');
-        $this->invoice('CI3 exempt', '2026-12-04', 1000, 'EXEMPT');
-        $this->invoice('CI4 out of scope', '2026-12-05', 500, 'OUTOFSCOPE');
+        $this->invoice('CI2 zero rated export', '2026-12-03', 4000, 'ZERO:VATEX-SA-32');
+        $this->invoice('CI3 exempt', '2026-12-04', 1000, 'EXEMPT:VATEX-SA-29');
+        $this->invoice('CI4 out of scope', '2026-12-05', 500, 'OUTOFSCOPE:VATEX-SA-OOS');
+        // a document's currency must be the customer's: the test customer is billed in USD for this one (rolled back with the rest)
+        $currency = DB::table('customers')->where('id', 1)->value('currency');
+        DB::table('customers')->where('id', 1)->update(['currency' => 'USD']);
         $this->invoice('CI5 USD 1000 @3.75', '2026-12-06', 1000, 'STANDARD', 'USD', 3.75);
-        $this->invoice('CI6 mixed lines std+zero+exempt', '2026-12-07', [1000, 500, 200], ['STANDARD', 'ZERO', 'EXEMPT']);
+        DB::table('customers')->where('id', 1)->update(['currency' => $currency]);
+        $this->invoice('CI6 mixed lines std+zero+exempt', '2026-12-07', [1000, 500, 200], ['STANDARD', 'ZERO:VATEX-SA-32', 'EXEMPT:VATEX-SA-29']);
         $this->round = $this->invoice('CI8 rounding 3 x 33.33', '2026-12-07', 33.33, 'STANDARD', 'SAR', 1, 3);
 
         // an invoice approved and then cancelled must leave no trace in the books or the VAT return
@@ -167,8 +171,8 @@ class FinanceSaudiTest extends Command
         $this->doc('CN1 credit note on CI1', $cn, $cn->row_no);
 
         $si1 = $this->bill('SI1 standard 15%', '2026-12-09', 3000, 'STANDARD');
-        $this->bill('SI2 zero rated', '2026-12-10', 600, 'ZERO');
-        $this->bill('SI3 exempt', '2026-12-11', 300, 'EXEMPT');
+        $this->bill('SI2 zero rated', '2026-12-10', 600, 'ZERO:VATEX-SA-32');
+        $this->bill('SI3 exempt', '2026-12-11', 300, 'EXEMPT:VATEX-SA-29');
 
         $this->send(app(DebitNoteController::class), 'store', [
             'invoice_id' => $si1->id, 'supplier' => encodeId(1), 'debit_note_date' => '2026-12-12', 'job_id' => 2,
@@ -295,7 +299,7 @@ class FinanceSaudiTest extends Command
             self::VAT_IN => ['Input VAT 1150', 525.00, 30.00],
             self::COST => ['Freight Purchase 5110', 3900.00, 200.00],
             self::EXPENSE => ['Documentation Expense 5160', 600.00, 0.00],
-            self::BANK => ['Bank 1120', 5000.00, 3675.00],
+            self::BANK => ['Bank 1121', 5000.00, 3675.00],
         ];
         foreach ($exp as $id => [$name, $dr, $cr]) {
             [$aDr, $aCr] = $d($id);

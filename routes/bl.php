@@ -57,4 +57,7 @@ Route::prefix('bl')->group(function () {
     Route::post('/master-bl/{id}/status/{status}', [\App\Http\Controllers\BL\MasterBlController::class, 'updateStatus'])->whereNumber('id');
     Route::get('/master-bl/{id}/overview', [\App\Http\Controllers\BL\MasterBlController::class, 'overview'])->whereNumber('id');
     Route::delete('/master-bl/{id}', [\App\Http\Controllers\BL\MasterBlController::class, 'delete'])->whereNumber('id');
+    Route::delete('/airway-bill/{id}', [AirwayBillController::class, 'delete'])->whereNumber('id');
+    Route::delete('/seaway/{id}', [SeawayBillController::class, 'delete'])->whereNumber('id');
+    Route::delete('/waybill/{id}', [WaybillController::class, 'delete'])->whereNumber('id');
 });

@@ -483,12 +483,10 @@ class PaymentController extends Controller
                         }
                     }
                 }
-            } elseif ($status == PaymentEnum::CANCELLED->value) {
-                $payment->status = PaymentEnum::CANCELLED->value;
             } else {
-                $payment->status = PaymentEnum::DRAFT->value;
+                $payment->status = $status == PaymentEnum::CANCELLED->value ? PaymentEnum::CANCELLED->value : PaymentEnum::DRAFT->value;
 
-                // Revert paid_amount in supplier invoices when payment is moved back to draft
+                // Revert paid_amount in supplier invoices when an approved payment is moved back to draft or cancelled
                 if ($previousStatus == PaymentEnum::APPROVED->value) {
                     $paymentInvoices = PaymentInvoice::where('payment_id', $payment->id)->get();
                     foreach ($paymentInvoices as $paymentInvoice) {
@@ -508,10 +506,11 @@ class PaymentController extends Controller
                 $this->createFinanceEntries($payment);
             }
 
-            // Delete finance entries when payment is moved back to draft
-            if ($previousStatus == PaymentEnum::APPROVED->value && $status == PaymentEnum::DRAFT->value) {
+            // Delete finance entries when an approved payment is moved back to draft or cancelled
+            if ($previousStatus == PaymentEnum::APPROVED->value && $status != PaymentEnum::APPROVED->value) {
                 $this->deleteFinanceEntries($payment->id);
             }
+            DB::commit();
 
             return response()->json([
                 'status' => 'success',
@@ -527,11 +526,7 @@ class PaymentController extends Controller
                 'status' => 'error',
                 'message' => __('Error updating payment status: ') . $e->getMessage(),
             ], 500);
-        } finally {
-            DB::commit();
         }
-
-
     }
 
     /**
@@ -545,6 +540,10 @@ class PaymentController extends Controller
 
         $payment = Payment::findOrFail($id);
         $previousStatus = $payment->status;
+        if ($locked = $this->refuseInClosedPeriod(formDate($payment->payment_date), $previousStatus, PaymentEnum::CANCELLED->value, PaymentEnum::APPROVED->value)) {
+            return $locked;
+        }
+        DB::beginTransaction();
         $payment->status = PaymentEnum::CANCELLED->value;
         $payment->disapproval_reason = $validated['reason'];
         $payment->save();
@@ -563,6 +562,7 @@ class PaymentController extends Controller
 
             $this->deleteFinanceEntries($payment->id);
         }
+        DB::commit();
 
         return response()->json([
             'status' => 'success',

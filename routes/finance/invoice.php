@@ -19,6 +19,7 @@ Route::namespace('finance')->prefix('invoice')->group(function () {
         Route::get('/{id}/overview', [ProformaInvoiceController::class, 'overview']);
         Route::get('/{id}/overview-drawer', [ProformaInvoiceController::class, 'overviewDrawer']);
         Route::get('/{id}/print', [ProformaInvoiceController::class, 'print']);
+        Route::delete('/{id}', [ProformaInvoiceController::class, 'delete'])->whereNumber('id');
     });
     Route::prefix('supplier')->group(function () {
         Route::view('/', 'modules.finance.supplier-invoice.list')->name('invoices.supplier');

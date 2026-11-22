@@ -416,6 +416,7 @@ class CustomerInvoiceController extends Controller
         ]);
 
         $this->assertPeriodOpen($validated['invoice_date'], 'invoice_date');
+        $this->assertLineAccounts($request->input('account', []));
         $this->assertPartyCurrency(\App\Models\Customer\Customer::class, $validated['customer'], $validated['currency']);
         // a zero rated / exempt / out of scope line must carry its VAT exemption reason code (VATEX-SA-...)
         foreach ((array) $request->input('tax', []) as $n => $taxCode) {
@@ -430,6 +431,10 @@ class CustomerInvoiceController extends Controller
         // 🔹 Fetch or create new
         if ($request->filled('data-id')) {
             $customer = CustomerInvoice::findOrFail($request->input('data-id'));
+            // an approved invoice is in the books: saving it here would turn it back into a draft and leave its entry behind
+            if ((int) $customer->getRawOriginal('status') !== CustomerInvoiceEnum::DRAFT->value) {
+                return response()->json(['status' => 'error', 'message' => __('Only a draft invoice can be edited.')], 422);
+            }
         } else {
             $customer = new CustomerInvoice();
 
@@ -801,6 +806,11 @@ class CustomerInvoiceController extends Controller
         if ($locked = $this->refuseInClosedPeriod($customerInvoice->getRawOriginal('invoice_date'), $previousStatus, $status, CustomerInvoiceEnum::APPROVED->value)) {
             return $locked;
         }
+        // leaving Approved removes the receivable: not while collections / credit notes / applied credit still settle it
+        if ((int) $previousStatus === CustomerInvoiceEnum::APPROVED->value && (int) $status !== CustomerInvoiceEnum::APPROVED->value
+            && ($docs = $this->settledBy($customerInvoice->id))) {
+            return response()->json(['status' => 'error', 'message' => __('This invoice is settled by :docs. Move those back to draft first.', ['docs' => implode(', ', $docs)])], 422);
+        }
 
         DB::beginTransaction();
         try {
@@ -885,6 +895,18 @@ class CustomerInvoiceController extends Controller
                 'message' => __('Error updating customer invoice status: ') . $e->getMessage(),
             ], 500);
         }
+    }
+
+    /** Approved documents that settle this invoice (collections, credit notes, customer credit applied to or from it). */
+    private function settledBy(int $id): array
+    {
+        $collections = DB::table('collection_invoices as ci')->join('collections as c', 'c.id', '=', 'ci.collection_id')
+            ->where('ci.customer_invoice_id', $id)->where('c.status', \App\Enums\CollectionEnum::APPROVED->value)->whereNull('c.deleted_at')->pluck('c.row_no');
+        $notes = \App\Models\Finance\Adjustment\CreditNote::where('invoice_id', $id)->where('status', \App\Enums\CreditNoteEnum::APPROVED->value)->pluck('row_no');
+        $credit = DB::table('customer_credit_applications as a')->join('collections as c', 'c.id', '=', 'a.collection_id')->where('a.status', 1)
+            ->where(fn ($q) => $q->where('a.from_invoice_id', $id)->orWhere('a.to_invoice_id', $id))->pluck('c.row_no');
+
+        return $collections->merge($notes)->merge($credit)->filter()->unique()->values()->all();
     }
 
     public function overview($id)

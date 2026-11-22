@@ -284,6 +284,7 @@ class CreditNoteController extends Controller
         ]);
 
         $this->assertPeriodOpen($validated['credit_note_date'], 'credit_note_date');
+        $this->assertLineAccounts($request->input('account', []));
 
         //$userId = Auth::id();
         $companyId = companyId();
@@ -291,6 +292,9 @@ class CreditNoteController extends Controller
         // 🔹 Fetch or create new
         if ($request->filled('data-id')) {
             $creditNote = CreditNote::findOrFail($request->input('data-id'));
+            if ((int) $creditNote->getRawOriginal('status') !== CreditNoteEnum::DRAFT->value) {
+                return response()->json(['status' => 'error', 'message' => __('Only a draft credit note can be edited.')], 422);
+            }
         } else {
             $creditNote = new CreditNote();
             /*$cNYear = Carbon::parse($request->credit_note_date)->format('Y');

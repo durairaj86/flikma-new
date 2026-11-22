@@ -238,6 +238,12 @@ AIRWAY_BILL = {
                     AIRWAY_BILL.list.openDrawer(row.attr('data-id'), row.attr('data-name'));
                 });
             },
+            delete(row) {
+                $('#row_delete').off().on('click', function () {
+                    deleteRecord(GLOBAL_FN.buildUrl(AIRWAY_BILL.baseUrl + '/' + row.attr('data-id')), function () { AIRWAY_BILL.list.dataTable(); },
+                        {name: row.attr('data-name') || ''});
+                });
+            },
             print(row) {
                 $('#row_print').off().on('click', function () {
                     let AIRWAY_BILLId = row.attr('data-id');

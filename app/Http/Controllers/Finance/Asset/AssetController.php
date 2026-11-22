@@ -105,6 +105,13 @@ class AssetController extends Controller
         $data['cost'] = (float)str_replace(',', '', $data['cost']);
         $data['residual_value'] = isset($data['residual_value']) ? (float)str_replace(',', '', $data['residual_value']) : 0.0;
 
+        if (!$id) {
+            // the list is company scoped: an asset saved without its company never shows again
+            $data['company_id'] = companyId();
+            $data['created_by'] = auth()->id();
+        } else {
+            $data['updated_by'] = auth()->id();
+        }
         $asset = Asset::updateOrCreate(['id' => $id], $data);
 
         return response()->json([

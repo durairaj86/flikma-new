@@ -116,6 +116,22 @@ class DeletionGuard
                     $why[] = __('only a draft or cancelled arrival notice can be deleted');
                 }
                 break;
+            case 'proforma_invoice':
+                // a proforma that was sent, approved or converted is part of what the customer received
+                $why = $this->linked('proforma_invoice_id', $id, ['proforma_invoice_subs']);  // its own lines go with it
+                if (DB::table('proforma_invoices')->where('id', $id)->where('status', '!=', 1)->exists()) {
+                    $why[] = __('only a draft proforma invoice can be deleted');
+                }
+                break;
+            case 'airway_bill':
+            case 'seaway_bill':
+            case 'waybill':
+                // a bill that is in transit or delivered documents a real shipment
+                $why = $this->linked($entity . '_id', $id, [$entity . '_subs']);  // its own lines stay with it
+                if (DB::table($entity . 's')->where('id', $id)->whereIn('status', ['in_transit', 'delivered'])->exists()) {
+                    $why[] = __('only a pending or cancelled bill can be deleted');
+                }
+                break;
             case 'master_bl':
                 $houses = DB::table('seaway_bills')->where('master_bl_id', $id)->whereNull('deleted_at')->count()
                     + DB::table('airway_bills')->where('master_bl_id', $id)->whereNull('deleted_at')->count();

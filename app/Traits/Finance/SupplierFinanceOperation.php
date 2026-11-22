@@ -18,8 +18,8 @@ trait SupplierFinanceOperation
         try {
             DB::beginTransaction();
 
-            // Remove existing entries if re-posting
-            $this->deleteSupplierFinanceByRef($supplier->invoice_number, 'SI');
+            // Remove existing entries if re-posting (by the invoice itself: the supplier's bill number is only unique per supplier)
+            $this->deleteSupplierInvoiceFinance($supplier->id);
 
             // Ensure base totals are correct
             $baseTotalDebit = ($supplier->base_sub_total ?? 0) + ($supplier->base_tax_total ?? 0);
@@ -147,6 +147,17 @@ trait SupplierFinanceOperation
         } catch (\Exception $ex) {
             DB::rollBack();
             Log::error('SupplierFinanceOperation (Invoice) error: ' . $ex->getMessage());
+            throw $ex;   // an approval without its ledger entry must not go through
+        }
+    }
+
+    /** Remove the ledger entry of one supplier invoice (approve again / leaving approved / delete). */
+    public function deleteSupplierInvoiceFinance(int $supplierInvoiceId): void
+    {
+        $ids = DB::table('finance')->where('linked_type', 'supplier_invoice')->where('linked_id', $supplierInvoiceId)->pluck('id');
+        if ($ids->isNotEmpty()) {
+            DB::table('finance_subs')->whereIn('finance_id', $ids)->delete();
+            DB::table('finance')->whereIn('id', $ids)->delete();
         }
     }
 

@@ -2198,3 +2198,17 @@ body #toast-container.toast-bottom-center > div:hover { box-shadow: 0 10px 28px 
 body:has(.imp-bar) #toast-container.toast-bottom-center { bottom: 76px; }
 [dir="rtl"] body #toast-container.toast-bottom-center > div { padding: 11px 48px 11px 40px; background-position: right 16px center; }
 [dir="rtl"] #toast-container .toast-close-button { right: auto; left: 14px; }
+
+/* User rights: a link or menu item the user's department may not use is shown muted, not hidden (public/js/user-rights.js,
+   context menus marked "disabled" by CheckModulePermission). */
+a.no-access, .nav-link.no-access, button.no-access, .dropdown-item.no-access {
+    opacity: .45;
+    cursor: not-allowed !important;
+    text-decoration: none;
+}
+a.no-access[data-denied-href], .dropdown-item.no-access {
+    pointer-events: none;
+}
+li:has(> a.no-access[data-denied-href]), li:has(> .dropdown-item.no-access) {
+    cursor: not-allowed;
+}

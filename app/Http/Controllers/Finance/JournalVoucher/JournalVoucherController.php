@@ -285,6 +285,9 @@ class JournalVoucherController extends Controller
                 $journalVoucher->save();
                 $this->postToLedger($journalVoucher);
             } else {
+                if ($previous === JournalVoucherStatusEnum::APPROVED->value) {
+                    $this->assertPeriodOpen($journalVoucher->getRawOriginal('voucher_date'), 'voucher_date');
+                }
                 $journalVoucher->status = $status == JournalVoucherStatusEnum::DISAPPROVED->value
                     ? JournalVoucherStatusEnum::DISAPPROVED->value
                     : JournalVoucherStatusEnum::DRAFT->value;
@@ -408,9 +411,19 @@ class JournalVoucherController extends Controller
         ]);
 
         $journalVoucher = JournalVoucher::findOrFail($id);
-        $journalVoucher->status = JournalVoucherStatusEnum::DISAPPROVED->value;
-        $journalVoucher->disapproval_reason = $validated['reason'];
-        $journalVoucher->save();
+        $previous = (int) ($journalVoucher->status instanceof \BackedEnum ? $journalVoucher->status->value : $journalVoucher->status);
+        // disapproving an approved voucher takes its entry out of the books (like moving it to draft), never in a closed period
+        if ($previous === JournalVoucherStatusEnum::APPROVED->value) {
+            $this->assertPeriodOpen($journalVoucher->getRawOriginal('voucher_date'), 'voucher_date');
+        }
+        DB::transaction(function () use ($journalVoucher, $validated, $previous) {
+            $journalVoucher->status = JournalVoucherStatusEnum::DISAPPROVED->value;
+            $journalVoucher->disapproval_reason = $validated['reason'];
+            $journalVoucher->save();
+            if ($previous === JournalVoucherStatusEnum::APPROVED->value) {
+                $this->removeFromLedger($journalVoucher->id);
+            }
+        });
 
         return response()->json([
             'status' => 'success',

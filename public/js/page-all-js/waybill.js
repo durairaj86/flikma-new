@@ -238,6 +238,12 @@ WAYBILL = {
                     WAYBILL.list.openDrawer(row.attr('data-id'), row.attr('data-name'));
                 });
             },
+            delete(row) {
+                $('#row_delete').off().on('click', function () {
+                    deleteRecord(GLOBAL_FN.buildUrl(WAYBILL.baseUrl + '/' + row.attr('data-id')), function () { WAYBILL.list.dataTable(); },
+                        {name: row.attr('data-name') || ''});
+                });
+            },
             print(row) {
                 $('#row_print').off().on('click', function () {
                     let waybillId = row.attr('data-id');

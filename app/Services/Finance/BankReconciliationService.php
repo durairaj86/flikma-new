@@ -145,7 +145,8 @@ class BankReconciliationService
         if ($counterAccountId === $rec->account_id) {
             throw new \RuntimeException(__('Choose a different account for the other side of the entry.'));
         }
-        if (!Account::where('is_active', 1)->whereKey($counterAccountId)->exists()) {
+        // a posting (last level) account: a group such as 1120 Bank Accounts cannot take entries
+        if (!Account::where('is_active', 1)->where('is_last', 1)->whereKey($counterAccountId)->exists()) {
             throw new \RuntimeException(__('The account for the other side was not found.'));
         }
         if (PeriodClosing::isLocked($date, companyId())) {

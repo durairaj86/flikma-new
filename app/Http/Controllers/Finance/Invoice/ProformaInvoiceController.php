@@ -568,4 +568,21 @@ class ProformaInvoiceController extends Controller
     {
         return ProformaInvoice::with('proformaInvoiceSubs', 'customer')->findOrFail($id);
     }
+
+    public function delete($id)
+    {
+        $model = ProformaInvoice::findOrFail($id);
+        $guard = app(\App\Services\DeletionGuard::class);
+        $why = $guard->blockers('proforma_invoice', (int) $id);
+        if ($why) {
+            return $guard->refusal(__('proforma invoice'), $why);
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($model, $id) {
+            \Illuminate\Support\Facades\DB::table('proforma_invoice_subs')->where('proforma_invoice_id', $id)->delete();
+            $model->delete();
+        });
+
+        return response()->json(['status' => 'success', 'message' => __('Proforma invoice deleted successfully')]);
+    }
 }

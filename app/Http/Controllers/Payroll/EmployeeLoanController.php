@@ -168,6 +168,7 @@ class EmployeeLoanController extends Controller
         if (!$paidDate || \Illuminate\Support\Carbon::parse($paidDate)->gt(now()->endOfDay())) {
             return back()->withInput()->withErrors(['paid_date' => __('Payment date is invalid or in the future.')]);
         }
+        $this->assertPeriodOpen($paidDate, 'paid_date');   // the repayment is posted on its date
 
         $error = null;
         DB::transaction(function () use ($request, $employeeLoan, $paidDate, &$error) {

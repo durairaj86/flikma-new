@@ -95,7 +95,8 @@ class VatReturn
         $categories = ['sales' => [], 'purchases' => []];
 
         foreach (self::lines($from, $to) as $l) {
-            $code = strtoupper((string) $l->tax_code) ?: (abs((float) $l->tax) > 0.001 ? 'STANDARD' : 'OUTOFSCOPE');
+            // a zero rated / exempt / out of scope line carries its exemption reason ("ZERO:VATEX-SA-32"): the category is the part before ':'
+            $code = strtoupper(vatBase($l->tax_code)) ?: (abs((float) $l->tax) > 0.001 ? 'STANDARD' : 'OUTOFSCOPE');
             $sign = $l->adj ? -1 : 1;
             $net = (float) $l->net * $sign;
             $tax = (float) $l->tax * $sign;
@@ -155,7 +156,7 @@ class VatReturn
     public static function details(string $side, string $code, string $from, string $to): array
     {
         $labels = ['invoice' => 'Invoice', 'credit_note' => 'Credit Note', 'supplier_invoice' => 'Supplier Invoice', 'debit_note' => 'Debit Note', 'expense' => 'Expense'];
-        $lines = self::lines($from, $to)->filter(fn ($l) => $l->side === $side && (strtoupper((string) $l->tax_code) ?: 'STANDARD') === $code);
+        $lines = self::lines($from, $to)->filter(fn ($l) => $l->side === $side && (strtoupper(vatBase($l->tax_code)) ?: 'STANDARD') === $code);
 
         $customers = DB::table('customers')->whereIn('id', $lines->where('side', 'sales')->pluck('party_id')->filter())->pluck('name_en', 'id');
         $suppliers = DB::table('suppliers')->whereIn('id', $lines->where('side', 'purchases')->pluck('party_id')->filter())->pluck('name_en', 'id');

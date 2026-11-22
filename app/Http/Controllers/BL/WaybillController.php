@@ -403,7 +403,8 @@ class WaybillController extends Controller
                 'label' => __('Actions'),
                 'type' => 'submenu',
                 'icon' => 'action',
-                'items' => [$edit, $delete]
+                // Delete only while the bill is pending (DeletionGuard refuses in transit / delivered)
+                'items' => $waybill->status === 'pending' ? [$edit, $delete] : [$edit]
             ]);
         }
         return response()->json($contextMenu->values());
@@ -448,5 +449,22 @@ class WaybillController extends Controller
         $qrImage = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(110)->generate($waybill->row_no ?? (string) $waybill->id);
 
         return view('modules.bl.waybill.print', compact('waybill', 'descriptions', 'company', 'qrImage'));
+    }
+
+    public function delete($id)
+    {
+        $model = Waybill::findOrFail($id);
+        $guard = app(\App\Services\DeletionGuard::class);
+        $why = $guard->blockers('waybill', (int) $id);
+        if ($why) {
+            return $guard->refusal(__('waybill'), $why);
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($model, $id) {
+            // the bill is soft deleted (restorable); its lines stay with it
+            $model->delete();
+        });
+
+        return response()->json(['status' => 'success', 'message' => __('Waybill deleted successfully')]);
     }
 }

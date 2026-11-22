@@ -30,7 +30,7 @@
             <li class="nav-item" data-url="/masters/departments">
                 <a href="{{ asset('/masters/departments') }}"
                    class="nav-link d-flex align-items-center py-2 {{ $page1 == 'departments' ? 'active' : 'text-dark' }}">
-                    <i class="bi bi-diagram-3 text-secondary me-2"></i> {{ __('Departments') }}
+                    <i class="bi bi-diagram-3 text-secondary me-2"></i> {{ __('Department & Rights') }}
                 </a>
             </li>
 

@@ -298,6 +298,7 @@ PROFORMA_INVOICE = {
             PROFORMA_INVOICE.list.actions.statusChange(row);
             PROFORMA_INVOICE.list.actions.view(row);
             PROFORMA_INVOICE.list.actions.email(row);
+            PROFORMA_INVOICE.list.actions.delete(row);
         },
         actions: {
             statusChange(row) {
@@ -330,6 +331,12 @@ PROFORMA_INVOICE = {
             view(row) {
                 $('#row_view').off().on('click', function () {
                     PROFORMA_INVOICE.list.openDrawer(row.attr('data-id'), row.attr('data-name'));
+                });
+            },
+            delete(row) {
+                $('#row_delete').off().on('click', function () {
+                    deleteRecord(GLOBAL_FN.buildUrl(PROFORMA_INVOICE.baseUrl + '/' + row.attr('data-id')), function () { PROFORMA_INVOICE.list.dataTable(); },
+                        {name: row.attr('data-name') || ''});
                 });
             },
             email(row) {

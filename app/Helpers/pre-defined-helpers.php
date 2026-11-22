@@ -494,23 +494,137 @@ function appModules(): array
 }
 
 /**
- * Resolve a request path (no leading slash, e.g. "masters/users") to a
- * module key from config/modules.php. Returns null when the path doesn't
- * belong to any registered module (e.g. dashboard, profile, settings account).
+ * Every right as one flat list: the modules ("masters") and their sub menus ("masters.departments"), each with its label, prefixes,
+ * parent key (null for a module) and status enum. This is the order the rights screen shows them in.
+ */
+function appRights(): array
+{
+    static $rights = null;
+    if ($rights !== null) return $rights;
+
+    $rights = [];
+    foreach (appModules() as $moduleKey => $module) {
+        $rights[$moduleKey] = ['label' => $module['label'], 'prefixes' => $module['prefixes'] ?? [], 'parent' => null, 'exact' => false, 'status_enum' => null];
+        foreach ($module['children'] ?? [] as $childKey => $child) {
+            $rights[$moduleKey . '.' . $childKey] = [
+                'label' => $child['label'],
+                'prefixes' => $child['prefixes'] ?? [],
+                'parent' => $moduleKey,
+                'exact' => (bool) ($child['exact'] ?? false),
+                'status_enum' => $child['status_enum'] ?? null,
+                'custom_actions' => $child['custom_actions'] ?? [],
+                'action_labels' => $child['action_labels'] ?? [],
+            ];
+        }
+    }
+
+    return $rights;
+}
+
+/**
+ * Resolve a request path (no leading slash, e.g. "masters/users") to a right key from config/modules.php: the entry with the longest
+ * matching prefix, so "masters/departments" is "masters.departments" and an unlisted "masters/x" is "masters". Returns null when the path
+ * doesn't belong to any registered module (dashboard, profile, the user's own account under settings/account).
  */
 function resolveModuleFromPath(string $path): ?string
 {
-    $path = ltrim($path, '/');
+    $path = trim($path, '/');
 
-    foreach (appModules() as $moduleKey => $module) {
-        foreach ($module['prefixes'] as $prefix) {
-            if ($path === $prefix || str_starts_with($path, $prefix . '/')) {
-                return $moduleKey;
+    // a user's own account page: everyone may change their own name, password and language
+    if ($path === 'settings/account' || str_starts_with($path, 'settings/account/')) {
+        return null;
+    }
+
+    $best = null;
+    $bestLength = -1;
+    foreach (appRights() as $key => $right) {
+        foreach ($right['prefixes'] as $prefix) {
+            $matches = $path === $prefix || (! $right['exact'] && str_starts_with($path, $prefix . '/'));
+            // >=: on a tie the sub menu (listed after its module) wins, e.g. "payroll" is the Payroll Dashboard
+            if ($matches && strlen($prefix) >= $bestLength) {
+                $best = $key;
+                $bestLength = strlen($prefix);
             }
         }
     }
 
-    return null;
+    return $best;
+}
+
+/**
+ * The actions each right really has, worked out from the routes under its prefixes with the same rules the server uses on every
+ * request (CheckModulePermission::actionFor): a report only views, Payroll Runs create / delete / approve (pay, disapprove) but never
+ * edit, a master without a delete route has no Delete ... A module has every action of its sub menus. A child may fix its list with
+ * 'actions' in config/modules.php. Returns [rightKey => ['view', 'create', ...]] in the order of RIGHT_ACTIONS.
+ */
+function rightActions(): array
+{
+    static $result = null;
+    if ($result !== null) return $result;
+
+    $order = ['view', 'create', 'edit', 'delete', 'approve', 'confirm'];
+    $found = array_fill_keys(array_keys(appRights()), ['view' => true]);
+
+    foreach (\Illuminate\Support\Facades\Route::getRoutes() as $route) {
+        if (! in_array('module.permission', $route->gatherMiddleware(), true)) continue;
+        $uri = trim($route->uri(), '/');
+        $module = resolveModuleFromPath($uri);
+        if (! $module) continue;
+
+        $hasParam = str_contains($uri, '{');
+        foreach (array_diff($route->methods(), ['HEAD']) as $method) {
+            $actions = preg_match('#/status/\{[^/]+\}$#', $uri)
+                ? \App\Http\Middleware\CheckModulePermission::statusActions($module)
+                : [\App\Http\Middleware\CheckModulePermission::actionFor($uri, $method, (string) $route->getName(), $hasParam, $module)];
+            foreach ($actions as $action) $found[$module][$action] = true;
+        }
+    }
+
+    // a child's own list in config/modules.php wins; a module offers everything its sub menus offer
+    foreach (appModules() as $moduleKey => $module) {
+        foreach ($module['children'] ?? [] as $childKey => $child) {
+            $key = $moduleKey . '.' . $childKey;
+            if (isset($child['actions'])) $found[$key] = array_fill_keys(array_merge(['view'], $child['actions']), true);
+            $found[$moduleKey] += $found[$key];
+        }
+    }
+
+    $result = [];
+    foreach ($found as $key => $actions) {
+        $result[$key] = array_values(array_filter($order, fn ($a) => isset($actions[$a])));
+    }
+
+    return $result;
+}
+
+/** Whether the user may open this path (a link's href): true for paths no right covers. Used to mute links. */
+function userCanOpen(string $path, $user = null): bool
+{
+    $path = (string) parse_url($path, PHP_URL_PATH);
+    $module = resolveModuleFromPath($path);
+
+    return $module === null || userCan($module, 'view', $user);
+}
+
+/**
+ * Every prefix with whether the current user may view it (a) and create in it (c), for the browser to mute links (public/js/user-rights.js). Empty for the
+ * Super User, who may open everything.
+ */
+function userLinkRights($user = null): array
+{
+    $user = $user ?? auth()->user();
+    if (! $user || isSuperUser($user)) return [];
+
+    $out = [];
+    foreach (appRights() as $key => $right) {
+        $allowed = userCan($key, 'view', $user);
+        $create = userCan($key, 'create', $user);
+        foreach ($right['prefixes'] as $prefix) {
+            $out[] = ['p' => $prefix, 'x' => $right['exact'], 'a' => $allowed, 'c' => $create];
+        }
+    }
+
+    return $out;
 }
 
 /**
@@ -537,9 +651,25 @@ function userCan(string $module, string $action = 'view', $user = null): bool
 
     $column = 'can_' . $action;
     // the company's own row for this department and module, else the shared default row (see DepartmentModulePermission::effectiveFor)
-    $permission = \App\Models\Master\DepartmentModulePermission::effectiveFor((int) $user->department_id, $user->company_id ? (int) $user->company_id : null)->get($module);
+    $saved = \App\Models\Master\DepartmentModulePermission::effectiveFor((int) $user->department_id, $user->company_id ? (int) $user->company_id : null);
+    // a sub menu ("masters.departments") without a row of its own takes its module's row ("masters")
+    $permission = $saved->get($module) ?? (str_contains($module, '.') ? $saved->get(strstr($module, '.', true)) : null);
 
-    return $permission ? (bool) $permission->{$column} : false;
+    if (! $permission) {
+        return false;
+    }
+    if ($permission->{$column}) {
+        return true;
+    }
+
+    // an action this section does not have (the rights screen shows no box for it) is held to the nearest one it has:
+    // approve / confirm / create / delete -> edit -> view, e.g. closing a period needs Edit on Period Closing
+    $offered = rightActions()[$module] ?? null;
+    if ($offered !== null && ! in_array($action, $offered, true) && $action !== 'view') {
+        return userCan($module, $action === 'edit' ? 'view' : 'edit', $user);
+    }
+
+    return false;
 }
 
 /**

@@ -290,6 +290,7 @@ class SupplierInvoiceController extends Controller
         ]);
 
         $this->assertPeriodOpen($validated['invoice_date'], 'invoice_date');
+        $this->assertLineAccounts($request->input('account', []));
         $this->assertPartyCurrency(\App\Models\Supplier\Supplier::class, $validated['supplier'], $validated['currency']);
         // a zero rated / exempt / out of scope line must carry its VAT exemption reason code (VATEX-SA-...)
         foreach ((array) $request->input('tax', []) as $n => $taxCode) {
@@ -304,6 +305,10 @@ class SupplierInvoiceController extends Controller
         // 🔹 Fetch or create new
         if ($request->filled('data-id')) {
             $supplier = SupplierInvoice::findOrFail($request->input('data-id'));
+            // an approved bill is in the books: saving it here would turn it back into a draft and leave its entry behind
+            if ((int) $supplier->getRawOriginal('status') !== SupplierInvoiceEnum::DRAFT->value) {
+                return response()->json(['status' => 'error', 'message' => __('Only a draft invoice can be edited.')], 422);
+            }
             if ($linked = app(\App\Services\Finance\SupplierInvoiceLinks::class)->refusal($supplier->id)) {
                 return $linked;   // billed in a customer invoice: no edit until that invoice is deleted
             }
@@ -461,7 +466,7 @@ class SupplierInvoiceController extends Controller
         if ($linked = app(\App\Services\Finance\SupplierInvoiceLinks::class)->refusal($supplier->id)) {
             return $linked;
         }
-        $this->deleteSupplierFinanceByRef($supplier->invoice_number, 'SI');
+        $this->deleteSupplierInvoiceFinance($supplier->id);
         $supplier->delete();
 
         return response()->json(['status' => 'success', 'message' => __('Deleted successfully')]);
@@ -617,6 +622,16 @@ class SupplierInvoiceController extends Controller
         if ($locked = $this->refuseInClosedPeriod($supplier->getRawOriginal('invoice_date'), $previousStatus, $status, SupplierInvoiceEnum::APPROVED->value)) {
             return $locked;
         }
+        // leaving Approved removes the payable: not while payments / debit notes still settle it
+        if ((int) $previousStatus === SupplierInvoiceEnum::APPROVED->value && (int) $status !== SupplierInvoiceEnum::APPROVED->value) {
+            $docs = DB::table('payment_invoices as pi')->join('payments as p', 'p.id', '=', 'pi.payment_id')->where('pi.supplier_invoice_id', $supplier->id)
+                ->where('p.status', \App\Enums\PaymentEnum::APPROVED->value)->whereNull('p.deleted_at')->pluck('p.row_no')
+                ->merge(\App\Models\Finance\Adjustment\DebitNote::where('invoice_id', $supplier->id)->where('status', \App\Enums\DebitNoteEnum::APPROVED->value)->pluck('row_no'))
+                ->filter()->unique()->values()->all();
+            if ($docs) {
+                return response()->json(['status' => 'error', 'message' => __('This invoice is settled by :docs. Move those back to draft first.', ['docs' => implode(', ', $docs)])], 422);
+            }
+        }
 
         DB::beginTransaction();
         try {
@@ -639,7 +654,7 @@ class SupplierInvoiceController extends Controller
 
             // Delete finance entries when invoice is moved from APPROVED to another status
             if ($previousStatus == SupplierInvoiceEnum::APPROVED->value && $status != SupplierInvoiceEnum::APPROVED->value) {
-                $this->deleteSupplierFinanceByRef($supplier->invoice_number, 'SI');
+                $this->deleteSupplierInvoiceFinance($supplier->id);
             }
 
             DB::commit();

@@ -94,23 +94,31 @@ class DepartmentController extends Controller
             // shared department's rights would collide on the same row.
             $companyId = companyId();
 
-            foreach (array_keys(appModules()) as $module) {
+            // every module and every sub menu gets its own row
+            $offered = rightActions();
+            foreach (array_keys(appRights()) as $module) {
                 $moduleRights = $rights[$module] ?? [];
 
                 DepartmentModulePermission::updateOrCreate(
                     ['department_id' => $department->id, 'module' => $module, 'company_id' => $companyId],
                     [
-                        'can_view' => !empty($moduleRights['view']),
-                        'can_create' => !empty($moduleRights['create']),
-                        'can_edit' => !empty($moduleRights['edit']),
-                        'can_delete' => !empty($moduleRights['delete']),
-                        'can_approve' => !empty($moduleRights['approve']),
-                        'can_confirm' => !empty($moduleRights['confirm']),
+                        // an action the section does not have is saved off (the screen shows no box for it)
+                        'can_view' => $this->ticked($moduleRights, 'view', $offered[$module]),
+                        'can_create' => $this->ticked($moduleRights, 'create', $offered[$module]),
+                        'can_edit' => $this->ticked($moduleRights, 'edit', $offered[$module]),
+                        'can_delete' => $this->ticked($moduleRights, 'delete', $offered[$module]),
+                        'can_approve' => $this->ticked($moduleRights, 'approve', $offered[$module]),
+                        'can_confirm' => $this->ticked($moduleRights, 'confirm', $offered[$module]),
                     ]
                 );
             }
         });
         DepartmentModulePermission::forgetEffective();
+    }
+
+    private function ticked(array $moduleRights, string $action, array $offered): bool
+    {
+        return in_array($action, $offered, true) && !empty($moduleRights[$action]);
     }
 
     private function rightsFor(Department $department): array
@@ -119,10 +127,14 @@ class DepartmentController extends Controller
         $saved = DepartmentModulePermission::effectiveFor((int) $department->id);
         $rights = [];
 
-        foreach (appModules() as $moduleKey => $module) {
-            $permission = $saved->get($moduleKey);
+        foreach (appRights() as $moduleKey => $module) {
+            // a sub menu without a row of its own shows (and is held to) its module's row
+            $permission = $saved->get($moduleKey) ?? ($module['parent'] ? $saved->get($module['parent']) : null);
             $rights[$moduleKey] = [
                 'label' => $module['label'],
+                'parent' => $module['parent'],
+                'actions' => rightActions()[$moduleKey] ?? [],
+                'action_labels' => $module['action_labels'] ?? [],
                 'view' => (bool) ($permission?->can_view ?? false),
                 'create' => (bool) ($permission?->can_create ?? false),
                 'edit' => (bool) ($permission?->can_edit ?? false),
@@ -139,9 +151,12 @@ class DepartmentController extends Controller
     {
         $rights = [];
 
-        foreach (appModules() as $moduleKey => $module) {
+        foreach (appRights() as $moduleKey => $module) {
             $rights[$moduleKey] = [
                 'label' => $module['label'],
+                'parent' => $module['parent'],
+                'actions' => rightActions()[$moduleKey] ?? [],
+                'action_labels' => $module['action_labels'] ?? [],
                 'view' => true,
                 'create' => true,
                 'edit' => true,

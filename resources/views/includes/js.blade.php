@@ -82,6 +82,10 @@
         'Client',
         'Close Period',
         'Closed',
+        'Failed to close this period.',
+        'Failed to delete this period.',
+        'Failed to reopen this period.',
+        'History',
         'Closing this period LOCKS every transaction dated on or before its closing date. This cannot be undone by regular users. Continue?',
         'Column',
         'Company',
@@ -474,6 +478,7 @@
         'Still creditable',
         'this invoice is fully credited.',
         'Customer',
+        'You do not have access to this', 'You do not have permission to do this. Contact your administrator.',
     ];
     $i18nMap = collect($i18nKeys)->mapWithKeys(fn($key) => [$key => __($key)]);
 @endphp
@@ -488,6 +493,11 @@
         return (window.i18n && window.i18n[key]) || key;
     };
 </script>
+<script>
+    /* which link paths this user may open (empty for the Super User): public/js/user-rights.js mutes the others */
+    window.FLIKMA_LINK_RIGHTS = @json(userLinkRights());
+</script>
+<script src="{{ asset('js/user-rights.js') }}?v={{ appVersion() }}"></script>
 <script type="text/javascript" src="{{ asset('js/startup.js?v='.appVersion()) }}" defer></script>
 <script src="{{ asset('js/number-input.js') }}?v={{ appVersion() }}"></script>
 <script src="{{ asset('js/keyboard.js') }}?v={{ appVersion() }}"></script>

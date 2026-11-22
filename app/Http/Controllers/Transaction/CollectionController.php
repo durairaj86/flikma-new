@@ -671,12 +671,10 @@ class CollectionController extends Controller
                     }
                     $this->applyCredits($collection);   // the customer credit chosen on this collection moves onto its invoices
                 }
-            } elseif ($status == CollectionEnum::CANCELLED->value) {
-                $collection->status = CollectionEnum::CANCELLED->value;
             } else {
-                $collection->status = CollectionEnum::DRAFT->value;
+                $collection->status = $status == CollectionEnum::CANCELLED->value ? CollectionEnum::CANCELLED->value : CollectionEnum::DRAFT->value;
 
-                // Revert paid_amount in customer invoices when collection is moved back to draft
+                // Revert paid_amount in customer invoices when an approved collection is moved back to draft or cancelled
                 if ($previousStatus == CollectionEnum::APPROVED->value) {
                     $this->revertCredits($collection);
                     $collectionInvoices = CollectionInvoice::where('collection_id', $collection->id)->get();
@@ -697,10 +695,11 @@ class CollectionController extends Controller
                 $this->createFinanceEntries($collection);
             }
 
-            // Delete finance entries when collection is moved back to draft
-            if ($previousStatus == CollectionEnum::APPROVED->value && $status == CollectionEnum::DRAFT->value) {
+            // Delete finance entries when an approved collection is moved back to draft or cancelled
+            if ($previousStatus == CollectionEnum::APPROVED->value && $status != CollectionEnum::APPROVED->value) {
                 $this->deleteFinanceEntries($collection->id);
             }
+            DB::commit();
 
             return response()->json([
                 'status' => 'success',
@@ -716,8 +715,6 @@ class CollectionController extends Controller
                 'status' => 'error',
                 'message' => __('Error updating collection status: ') . $e->getMessage(),
             ], 500);
-        } finally {
-            DB::commit();
         }
     }
 
@@ -732,6 +729,10 @@ class CollectionController extends Controller
 
         $collection = Collection::findOrFail($id);
         $previousStatus = $collection->status;
+        if ($locked = $this->refuseInClosedPeriod(formDate($collection->collection_date), $previousStatus, CollectionEnum::CANCELLED->value, CollectionEnum::APPROVED->value)) {
+            return $locked;
+        }
+        DB::beginTransaction();
         $collection->status = CollectionEnum::CANCELLED->value;
         $collection->disapproval_reason = $validated['reason'];
         $collection->save();
@@ -751,6 +752,7 @@ class CollectionController extends Controller
 
             $this->deleteFinanceEntries($collection->id);
         }
+        DB::commit();
 
         return response()->json([
             'status' => 'success',

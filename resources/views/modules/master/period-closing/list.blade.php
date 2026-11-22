@@ -11,7 +11,10 @@
                         {{ __('Closing a period locks every transaction dated on or before its closing date across the app.') }}
                     </p>
                 </div>
-                <div class="d-flex align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-outline-secondary rounded-pill px-3" id="period-history">
+                        <i class="bi bi-clock-history me-1"></i>{{ __('History') }}
+                    </button>
                     <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Period') }}</button>
                 </div>
             </div>

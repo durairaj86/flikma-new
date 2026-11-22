@@ -51,7 +51,9 @@ Route::get('/masters/period-closing/create', [\App\Http\Controllers\Master\Perio
 Route::post('/masters/period-closing/create', [\App\Http\Controllers\Master\PeriodClosingController::class, 'store']);
 Route::get('/masters/period-closing/{id}/create', [\App\Http\Controllers\Master\PeriodClosingController::class, 'edit']);
 Route::post('/masters/period-closing/{id}/create', [\App\Http\Controllers\Master\PeriodClosingController::class, 'store']);
-Route::get('/masters/period-closing/{id}/actions', [\App\Http\Controllers\Master\PeriodClosingController::class, 'actions']);
+Route::get('/masters/period-closing/history', [\App\Http\Controllers\Master\PeriodClosingController::class, 'history']);
+Route::get('/masters/period-closing/{id}/history', [\App\Http\Controllers\Master\PeriodClosingController::class, 'history']);
+Route::get('/masters/period-closing/{id}/actions',[\App\Http\Controllers\Master\PeriodClosingController::class, 'actions']);
 Route::post('/masters/period-closing/{id}/close', [\App\Http\Controllers\Master\PeriodClosingController::class, 'close']);
 Route::post('/masters/period-closing/{id}/reopen', [\App\Http\Controllers\Master\PeriodClosingController::class, 'reopen']);
 Route::delete('/masters/period-closing/{id}', [\App\Http\Controllers\Master\PeriodClosingController::class, 'destroy']);
