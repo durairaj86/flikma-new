@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Master\Salesperson;
 
+use App\Services\DocumentNumber;
 use App\Http\Controllers\Controller;
 use App\Models\Master\Salesperson\Salesperson;
 use Illuminate\Http\Request;
@@ -102,7 +103,8 @@ class SalespersonController extends Controller
         } else {
             $salesperson = new Salesperson();
             $salesperson->status = 1;//default active
-            $salesperson->unique_row_no = sprintf("%03d", (Salesperson::max('unique_row_no') ?? 0) + 1);
+            // read from the SLE numbers themselves, deleted salespersons included, so a number never comes back
+            $salesperson->unique_row_no = sprintf("%03d", DocumentNumber::next(Salesperson::class, 'SLE'));
             $salesperson->row_no = 'SLE' . $salesperson->unique_row_no;
             $this->setBaseColumns($salesperson);
         }
