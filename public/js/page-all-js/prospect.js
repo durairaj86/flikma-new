@@ -161,6 +161,9 @@ PROSPECT = {
         },
         extraActions(row) {
             PROSPECT.list.actions.delete(row);
+            $('#row_log_activity').off().on('click', function () {
+                CRM.logActivity('prospect', row.attr('data-id'));
+            });
         },
         actions: {
             delete(row) {

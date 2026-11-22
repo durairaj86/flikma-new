@@ -34,7 +34,14 @@ abstract class PackReport extends Component
     {
         return DB::table('jobs')->where('jobs.company_id', companyId())->whereNull('jobs.deleted_at')
             ->where('jobs.status', '!=', 3)
-            ->whereBetween('jobs.job_date', [$this->startDate, $this->endDate]);
+            // posted_at is the job's real date; job_date is a legacy column that is mostly empty
+            ->whereBetween(DB::raw('DATE(COALESCE(jobs.posted_at, jobs.job_date, jobs.created_at))'), [$this->startDate, $this->endDate]);
+    }
+
+    /** Text of the empty table. */
+    protected function emptyText(): string
+    {
+        return __('No jobs in this period.');
     }
 
     /** Add a total row (sums of every numeric column). */
@@ -57,7 +64,8 @@ abstract class PackReport extends Component
             'title' => $this->title(),
             'lines' => [$this->startDate . ' - ' . $this->endDate . ' | ' . ($this->groups()[$this->groupBy] ?? '')],
             'numeric_from' => 2,
-        ]), str_replace(' ', '_', strtolower($this->title())) . '.xlsx');
+        // "Win / Loss Analysis": characters a file name cannot hold become "-" (Arabic titles stay as they are)
+        ]), str_replace(' ', '_', mb_strtolower(trim(preg_replace('#[\\\\/:*?"<>|]+#', '-', $this->title())))) . '.xlsx');
     }
 
     public function render()
@@ -66,7 +74,7 @@ abstract class PackReport extends Component
 
         return view('livewire.report.pack.report', [
             'title' => $this->title(), 'subtitle' => $this->subtitle(), 'groups' => $this->groups(),
-            'cols' => $this->columns(), 'rows' => $rows, 'totals' => $this->totals($rows),
+            'cols' => $this->columns(), 'rows' => $rows, 'totals' => $this->totals($rows), 'emptyText' => $this->emptyText(),
         ])->layout('components.layouts.app');
     }
 }

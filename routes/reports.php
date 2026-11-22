@@ -3,7 +3,8 @@
 use Illuminate\Support\Facades\Route;
 
 // Finance Reports
-Route::view('/reports/finance', 'modules.reports.finance');
+// the Reports page (routes/web.php) lists every report; the old finance / sales hub links land there
+Route::redirect('/reports/finance', '/reports');
 Route::get('/reports/trial-balance', \App\Livewire\Report\Finance\TrialBalance::class);
 Route::get('/reports/account-postings', [\App\Http\Controllers\Finance\Report\AccountPostingsController::class, 'show']);
 Route::get('/reports/trial-balance/details', [\App\Http\Controllers\Finance\Report\TrialBalanceDetailController::class, 'show']);
@@ -44,11 +45,17 @@ Route::get('/reports/waybill-report', \App\Livewire\Report\Operation\WaybillRepo
 Route::get('/reports/supplier-balance-summary', \App\Livewire\Report\Operation\SupplierBalanceSummary::class);
 
 // Sale Reports
+Route::redirect('/reports/sales', '/reports');
 Route::get('/reports/sale-report', \App\Livewire\Report\Sale\SaleReport::class);
 
 // Report pack
 Route::get('/reports/shipment-volume', \App\Livewire\Report\Pack\ShipmentVolume::class);
 Route::get('/reports/sales-by-salesperson', \App\Livewire\Report\Pack\SalesBySalesperson::class);
+// CRM sales reports (Sales menu)
+Route::get('/reports/sales-funnel', \App\Livewire\Report\Crm\SalesFunnel::class);
+Route::get('/reports/win-loss', \App\Livewire\Report\Crm\WinLoss::class);
+Route::get('/reports/pipeline-value', \App\Livewire\Report\Crm\PipelineValue::class);
+Route::get('/reports/salesperson-performance', \App\Livewire\Report\Crm\SalespersonPerformance::class);
 Route::get('/reports/sales-commission', [\App\Http\Controllers\Finance\Report\SalesCommissionController::class, 'index']);
 Route::get('/reports/customer-wise-sales', [\App\Http\Controllers\Finance\Report\SalesCommissionController::class, 'customerWise']);
 Route::get('/reports/invoice-wise-sales', [\App\Http\Controllers\Finance\Report\SalesCommissionController::class, 'customerWise']);

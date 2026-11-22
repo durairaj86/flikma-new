@@ -38,7 +38,7 @@
                         </div>
                     </div>
                     <ul class="nav cust-tabs mt-3" id="custTabs">
-                        @foreach(['general' => 'General', 'transactions' => 'Transactions', 'invoices' => 'Invoices', 'statement' => 'Statement', 'aging' => 'Aging'] as $key => $label)
+                        @foreach(['general' => 'General', 'activity' => 'Activity', 'transactions' => 'Transactions', 'invoices' => 'Invoices', 'statement' => 'Statement', 'aging' => 'Aging'] as $key => $label)
                             <li class="nav-item"><button type="button" class="nav-link {{ $loop->first ? 'active' : '' }}" data-tab="{{ $key }}">{{ __($label) }}</button></li>
                         @endforeach
                     </ul>
@@ -81,6 +81,70 @@
                 try { history.replaceState(null, '', location.pathname + '#' + tab); } catch (e) {}
             }
             document.querySelectorAll('#custTabs .nav-link').forEach(b => b.addEventListener('click', () => load(b.dataset.tab)));
+
+            // Activity tab (customer 360): filter chips, Log Activity, Show older. Tab HTML is inserted, so its buttons are handled here.
+            let tlFilter = '';
+            function applyTlFilter() {
+                body.querySelectorAll('.cust-tl-item').forEach(el => el.classList.toggle('d-none', !!tlFilter && el.dataset.kind !== tlFilter));
+                body.querySelectorAll('[data-tl-filter]').forEach(b => {
+                    const on = b.dataset.tlFilter === tlFilter;
+                    b.classList.toggle('btn-primary', on);
+                    b.classList.toggle('btn-light', !on);
+                    b.classList.toggle('border', !on);
+                });
+            }
+            // General tab: customer portal logins (invite / send link again / disable / enable)
+            function portalPost(url, data) {
+                const fd = new FormData();
+                Object.entries(data || {}).forEach(([k, v]) => fd.append(k, v));
+                return fetch(url, {method: 'POST', body: fd, headers: {'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest'}})
+                    .then(r => r.json().then(j => ({ok: r.ok, j})))
+                    .then(({ok, j}) => {
+                        if (!ok) {
+                            const first = j.errors ? Object.values(j.errors)[0] : null;
+                            toastr.error((first && first[0]) || j.message || trans('Something went wrong.'));
+                            return false;
+                        }
+                        toastr.success(j.message);
+                        load('general');
+                        return true;
+                    });
+            }
+            body.addEventListener('submit', function (e) {
+                const form = e.target.closest('[data-portal-invite]');
+                if (!form) return;
+                e.preventDefault();
+                const btn = form.querySelector('button[type=submit]');
+                btn.disabled = true;
+                portalPost('/customer/' + form.dataset.portalInvite + '/portal-users/invite', {name: form.name.value.trim(), email: form.email.value.trim()})
+                    .finally(() => { btn.disabled = false; });
+            });
+
+            body.addEventListener('click', function (e) {
+                const f = e.target.closest('[data-tl-filter]');
+                const resend = e.target.closest('[data-portal-resend]');
+                if (resend) { resend.disabled = true; portalPost('/customer/portal-user/' + resend.dataset.portalResend + '/resend').finally(() => { resend.disabled = false; }); return; }
+                const st = e.target.closest('[data-portal-status]');
+                if (st) {
+                    const go = () => portalPost('/customer/portal-user/' + st.dataset.portalStatus + '/status/' + st.dataset.value);
+                    if (st.dataset.value === '0') {
+                        appConfirm({title: trans('Disable portal login?'), message: trans('They will be signed out and cannot sign in until you enable the login again.'),
+                            button: trans('Disable'), icon: 'bi-person-x', onConfirm: go});
+                    } else go();
+                    return;
+                }
+                if (f) { tlFilter = f.dataset.tlFilter; applyTlFilter(); return; }
+                const log = e.target.closest('[data-tl-log]');
+                if (log) { CRM.logActivity('customer', log.dataset.tlLog, () => { tlFilter = ''; load('activity'); }); return; }
+                const more = e.target.closest('[data-tl-more]');
+                if (more) {
+                    more.disabled = true;
+                    fetch('/customers/' + id + '/tab/activity?before=' + more.dataset.tlMore, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+                        .then(r => r.ok ? r.text() : Promise.reject())
+                        .then(h => { more.closest('.cust-tl-more').outerHTML = h; applyTlFilter(); })
+                        .catch(() => { more.disabled = false; });
+                }
+            });
             let st = null, ctl = null, page = 1;
             const itemsEl = document.getElementById('splitItems');
             const searchEl = document.getElementById('splitSearch');
@@ -104,7 +168,7 @@
                 if (b && !b.disabled) loadList(parseInt(b.dataset.splitPage, 10));
             });
             const start = location.hash.replace('#', '');
-            load(['general', 'transactions', 'invoices', 'statement', 'aging'].includes(start) ? start : 'general');
+            load(['general', 'activity', 'transactions', 'invoices', 'statement', 'aging'].includes(start) ? start : 'general');
             const active = document.querySelector('.cust-split-item.active');
             if (active) active.scrollIntoView({block: 'center'});
         })();

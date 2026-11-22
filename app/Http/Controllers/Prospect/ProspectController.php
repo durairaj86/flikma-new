@@ -7,6 +7,7 @@ use App\Models\Customer\Customer;
 use App\Models\Enquiry\Enquiry;
 use App\Models\Prospect\Prospect;
 use App\Models\Quotation\Quotation;
+use App\Services\Crm\LostDeal;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -132,6 +133,13 @@ class ProspectController extends Controller
         $contextMenu = collect([]);
         $edit = $delete = [];
         $contextMenu->push([
+            'label' => __('Log Activity'),
+            'code' => '01CSVW',
+            'id' => 'row_log_activity',
+            'data-id' => $prospect->id,
+            'type' => 'item',
+            'icon' => 'comments',
+        ], [
             'label' => __('Edit'),
             'code' => '01CSED',
             'id' => 'row_edit',
@@ -149,6 +157,27 @@ class ProspectController extends Controller
             'icon' => 'delete'
         ]);
         return response()->json($contextMenu->values());
+    }
+
+    /** Move a prospect along the pipeline: new → contacted → qualified, or lost (with a reason). "converted" is set only by the quotation. */
+    public function updateStatus(Request $request, $id, $status): \Illuminate\Http\JsonResponse
+    {
+        $prospect = Prospect::findOrFail($id);
+        if ($prospect->customer_id) {
+            return response()->json(['status' => 'error', 'message' => __('This prospect is already a customer.')], 422);
+        }
+        if ($status === 'lost') {
+            LostDeal::apply($prospect, $request);
+        } else {
+            LostDeal::clear($prospect);
+        }
+        $prospect->status = $status;
+        $prospect->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => __('Prospect status updated successfully!'),
+        ]);
     }
 
     public function delete($id)

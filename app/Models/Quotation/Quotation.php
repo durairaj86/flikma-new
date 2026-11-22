@@ -31,7 +31,49 @@ class Quotation extends Model
 
     protected $casts = [
         'services' => 'array',
+        'customer_response_at' => 'datetime',
+        'expiry_reminded_at' => 'datetime',
     ];
+
+    /** customer_status: the customer's own answer from the accept / reject link in the quotation email. */
+    public const CUSTOMER_NO_ANSWER = 0;
+    public const CUSTOMER_ACCEPTED = 1;
+    public const CUSTOMER_REJECTED = 2;
+
+    /** Days before valid_until when the salesperson gets an "expires soon" follow-up. */
+    public const EXPIRY_REMINDER_DAYS = 3;
+
+    /** The first quotation of a revision chain (revisions point at it with parent_quotation_id). */
+    public function rootId(): int
+    {
+        return (int) ($this->parent_quotation_id ?: $this->id);
+    }
+
+    /** Every version of this quotation, oldest first (the original and its -R1, -R2 ...). */
+    public function revisionChain()
+    {
+        $root = $this->rootId();
+
+        return static::where(fn($q) => $q->whereKey($root)->orWhere('parent_quotation_id', $root))
+            ->orderBy('revision_count')->orderBy('id')
+            ->get(['id', 'row_no', 'status', 'revision_count', 'revision_notes', 'posted_at', 'valid_until', 'created_at']);
+    }
+
+    /** Who follows this quotation up: the salesperson's user, else whoever created it. */
+    public function followUpOwnerId(): ?int
+    {
+        $userId = $this->salesperson_id
+            ? Salesperson::withoutGlobalScopes()->whereKey($this->salesperson_id)->value('user_id')
+            : null;
+
+        return (int) ($userId ?: $this->user_id) ?: null;
+    }
+
+    /** Quotation total in the company currency: the sum of its charge lines (grand_total is not kept up to date). */
+    public function chargesTotal(): float
+    {
+        return (float) ($this->relationLoaded('charges') ? $this->charges->sum('local_amount') : $this->charges()->sum('local_amount'));
+    }
 
     public function containers()
     {

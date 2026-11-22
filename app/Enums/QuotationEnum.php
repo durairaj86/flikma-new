@@ -10,6 +10,8 @@ enum QuotationEnum: int
     case EXPIRED = 4;
 
     case CONVERTED = 5;
+    // replaced by a newer revision (QTN/…-R1): history, never counted as won or lost
+    case REVISED = 6;
 
     public function label(): string
     {
@@ -19,6 +21,7 @@ enum QuotationEnum: int
             self::CANCELLED => 'Cancelled',
             self::EXPIRED => 'Expired',
             self::CONVERTED => 'Converted',
+            self::REVISED => 'Revised',
         });
     }
 
@@ -30,6 +33,7 @@ enum QuotationEnum: int
             'cancelled' => self::CANCELLED->value,
             'expired' => self::EXPIRED->value,
             'converted' => self::CONVERTED->value,
+            'revised' => self::REVISED->value,
             default => null,
         };
     }

@@ -77,6 +77,10 @@ Route::middleware(['auth', 'verified', 'module.permission'])->group(function () 
     Route::get('customer/{id}/due-detail', [\App\Http\Controllers\Customer\CustomerController::class, 'dueDetail'])->whereNumber('id');
     Route::get('customer/{id}/unused-detail', [\App\Http\Controllers\Customer\CustomerController::class, 'unusedDetail'])->whereNumber('id');
     Route::get('customer/{id}/address', [\App\Http\Controllers\Customer\CustomerController::class, 'getAddress']);
+    // customer portal logins (Customer page > General > Portal access)
+    Route::post('customer/{id}/portal-users/invite', [\App\Http\Controllers\Customer\PortalUserController::class, 'invite'])->whereNumber('id');
+    Route::post('customer/portal-user/{id}/resend', [\App\Http\Controllers\Customer\PortalUserController::class, 'resend'])->whereNumber('id');
+    Route::post('customer/portal-user/{id}/status/{status}', [\App\Http\Controllers\Customer\PortalUserController::class, 'updateStatus'])->whereNumber('id')->whereIn('status', ['0', '1']);
     Route::post('customer/document/{id}/delete', [\App\Http\Controllers\Customer\CustomerController::class, 'deleteDocument']);
     /*Route::get('customer/{id}/invoices', [\App\Http\Controllers\Customer\CustomerController::class, 'invoices']);
     Route::get('customer/{id}/transactions', [\App\Http\Controllers\Customer\CustomerController::class, 'transactions']);*/
@@ -89,6 +93,10 @@ Route::middleware(['auth', 'verified', 'module.permission'])->group(function () 
     Route::get('/prospect/{id}/create', [\App\Http\Controllers\Prospect\ProspectController::class, 'edit']);
     Route::post('/prospect/{id}/create', [\App\Http\Controllers\Prospect\ProspectController::class, 'quickStore']);
     Route::delete('/prospect/delete/{id}', [\App\Http\Controllers\Prospect\ProspectController::class, 'delete']);
+    // reasons for the "Mark as lost" dialog: asked from quotations, enquiries, prospects and the pipeline, so it is not tied to one section's rights
+    Route::get('/lookup/lost-reasons', [\App\Http\Controllers\Crm\PipelineController::class, 'lostReasons']);
+    Route::post('/prospect/{id}/status/{status}',[\App\Http\Controllers\Prospect\ProspectController::class, 'updateStatus'])
+        ->whereNumber('id')->whereIn('status', ['new', 'contacted', 'qualified', 'lost']);
 
     Route::get('/prospect/create/quick', [\App\Http\Controllers\Prospect\ProspectController::class, 'quickModal']);
     Route::post('/prospect/create/quick', [\App\Http\Controllers\Prospect\ProspectController::class, 'quickStore']);
@@ -186,3 +194,9 @@ Route::middleware(['auth'])->prefix('autocheck')->name('autocheck.')->group(func
 });
 
 Route::get('/track/{token}', [\App\Http\Controllers\Job\TrackingController::class, 'publicShow'])->where('token', '[A-Za-z0-9]{32}');
+
+// The customer's accept / reject page from the quotation email (no login: the random token is the key)
+Route::middleware('throttle:30,1')->group(function () {
+    Route::get('/q/{token}', [\App\Http\Controllers\Crm\QuotationResponseController::class, 'show'])->where('token', '[A-Za-z0-9]{40}');
+    Route::post('/q/{token}/respond', [\App\Http\Controllers\Crm\QuotationResponseController::class, 'respond'])->where('token', '[A-Za-z0-9]{40}');
+});

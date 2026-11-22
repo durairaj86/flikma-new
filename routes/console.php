@@ -21,3 +21,7 @@ Artisan::command('inspire', function () {
 \Illuminate\Support\Facades\Schedule::command('finance:sync-columns')->hourly()->withoutOverlapping();
 // Finance redesign phase 2: keep finance_allocations current until PostingService writes them
 \Illuminate\Support\Facades\Schedule::command('finance:sync-allocations')->hourly()->withoutOverlapping();
+// CRM: one email a day per user with the follow-ups due today or overdue, sent once the company's local time passes 07:00
+\Illuminate\Support\Facades\Schedule::command('crm:follow-up-reminders')->hourly()->withoutOverlapping();
+// CRM: pending quotations past their validity become Expired; "expires soon" follow-ups for the salesperson (company local date)
+\Illuminate\Support\Facades\Schedule::command('quotations:expiry')->hourly()->withoutOverlapping();

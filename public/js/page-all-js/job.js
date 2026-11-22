@@ -652,6 +652,12 @@ JOB = {
                     initComplete() {
                         JOB.form.open();
                         webDataTable.actions.menu();
+                        // a link from the customer's Activity tab (?open=<id>) opens that job's drawer once
+                        const openId = new URLSearchParams(window.location.search).get('open');
+                        if (openId && /^\d+$/.test(openId)) {
+                            history.replaceState(null, '', window.location.pathname);
+                            JOB.list.openDrawer(openId, '');
+                        }
                         const $wrap = $('#dataTable').closest('.dataTables_wrapper');
                         $('#dtFooter').append($wrap.find('.dataTables_info, .dataTables_paginate'));
                     }

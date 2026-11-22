@@ -166,6 +166,9 @@ class DeletionGuard
             case 'enquiry':
                 $why = $this->linked('enquiry_id', $id, self::OWNED);
                 break;
+            case 'lost_reason':
+                $why = $this->linked('lost_reason_id', $id);
+                break;
             case 'quotation':
                 $why = $this->linked('quotation_id', $id, self::OWNED);
                 if (DB::table('quotations')->where('id', $id)->whereNotNull('job_id')->exists()) {

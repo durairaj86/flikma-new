@@ -146,7 +146,7 @@
 
                 <!-- Sales -->
                 @php
-                    $salesOpen = $menu == 'sales' || ($menu == 'reports' && in_array($submenu, ['sale-report', 'shipment-volume', 'sales-by-salesperson', 'sales-commission', 'customer-wise-sales', 'invoice-wise-sales', 'customer-wise-commission']));
+                    $salesOpen = $menu == 'sales';
                 @endphp
                 <li class="nav-item {{ $salesOpen ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link">
@@ -157,6 +157,16 @@
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/sales/pipeline" class="nav-link {{ $submenu == 'pipeline' ? 'active' : '' }}">
+                                <p>{{ __('Pipeline') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/sales/follow-ups" class="nav-link {{ $submenu == 'follow-ups' ? 'active' : '' }}">
+                                <p>{{ __('Follow-ups') }}</p>
+                            </a>
+                        </li>
                         <li class="nav-item">
                             <a href="/sales/enquiries" class="nav-link {{ $submenu == 'enquiries' ? 'active' : '' }}">
                                 <p>{{ __('Enquiries') }}</p>
@@ -170,36 +180,6 @@
                         <li class="nav-item">
                             <a href="/sales/rate-sheets" class="nav-link {{ $submenu == 'rate-sheets' ? 'active' : '' }}">
                                 <p>{{ __('Rate Sheets') }}</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/reports/sale-report" class="nav-link {{ $submenu == 'sale-report' ? 'active' : '' }}">
-                                <p>{{ __('Sales Report') }}</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/reports/shipment-volume" class="nav-link {{ $submenu == 'shipment-volume' ? 'active' : '' }}">
-                                <p>{{ __('Shipment Volume') }}</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/reports/sales-by-salesperson" class="nav-link {{ $submenu == 'sales-by-salesperson' ? 'active' : '' }}">
-                                <p>{{ __('Sales by Salesperson') }}</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/reports/sales-commission" class="nav-link {{ $submenu == 'sales-commission' ? 'active' : '' }}">
-                                <p>{{ __('Sales Commission') }}</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/reports/customer-wise-sales" class="nav-link {{ $submenu == 'customer-wise-sales' ? 'active' : '' }}">
-                                <p>{{ __('Customer Wise Sales') }}</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/reports/invoice-wise-sales" class="nav-link {{ $submenu == 'invoice-wise-sales' ? 'active' : '' }}">
-                                <p>{{ __('Invoice Wise Sales') }}</p>
                             </a>
                         </li>
                     </ul>
@@ -474,72 +454,19 @@
                     </ul>
                 </li>
 
-                <!-- Reports -->
-                <li class="nav-item {{ $menu == 'reports' ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link">
+                <!-- Reports: one page lists every report (customer / supplier reports keep their own menu highlight) -->
+                <li class="nav-item">
+                    <a href="/reports"
+                       class="nav-link {{ $menu == 'reports' && !in_array($submenu, array_merge($customerReportSlugs, $supplierReportSlugs)) ? 'active' : '' }}">
                         <i class="nav-icon bi bi-bar-chart-line"></i>
-                        <p>
-                            {{ __('Reports') }}
-                            <i class="nav-arrow bi bi-chevron-right"></i>
-                        </p>
+                        <p>{{ __('Reports') }}</p>
                     </a>
-                    <ul class="nav nav-treeview">
-                        @php
-                            $jobReportSlugs = ['job-report', 'job-balance-report', 'job-income-report', 'provisional-report'];
-                        @endphp
-                        <li class="nav-item {{ in_array($submenu, $jobReportSlugs) ? 'menu-open' : '' }}">
-                            <a href="#" class="nav-link">
-                                <p>{{ __('Job Report') }} <i class="nav-arrow bi bi-chevron-right"></i></p>
-                            </a>
-                            <ul class="nav nav-treeview ms-3">
-                                <li class="nav-item">
-                                    <a href="/reports/job-report"
-                                       class="nav-link {{ $submenu == 'job-report' ? 'active' : '' }}">
-                                        <p>{{ __('Job Report') }}</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/reports/job-balance-report"
-                                       class="nav-link {{ $submenu == 'job-balance-report' ? 'active' : '' }}">
-                                        <p>{{ __('Job Balance Report') }}</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/reports/job-income-report"
-                                       class="nav-link {{ $submenu == 'job-income-report' ? 'active' : '' }}">
-                                        <p>{{ __('Job Income Report') }}</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/reports/provisional-report"
-                                       class="nav-link {{ $submenu == 'provisional-report' ? 'active' : '' }}">
-                                        <p>{{ __('Provisional Report') }}</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                        @php
-                            $financeReportSlugs = ['finance', 'trial-balance', 'balance-sheet', 'profit-and-loss', 'general-ledger', 'supplier-ledger', 'tax-summary', 'input-tax', 'output-tax', 'sales-commission', 'customer-wise-sales', 'invoice-wise-sales', 'customer-wise-commission'];
-                        @endphp
-                        <li class="nav-item">
-                            <a href="/reports/finance"
-                               class="nav-link {{ $menu == 'reports' && in_array($submenu, $financeReportSlugs) ? 'active' : '' }}">
-                                <p>{{ __('Finance Report') }}</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/reports/waybill-report"
-                               class="nav-link {{ $submenu == 'waybill-report' ? 'active' : '' }}">
-                                <p>{{ __('Waybill Report') }}</p>
-                            </a>
-                        </li>
-                    </ul>
                 </li>
 
 
                 <!-- Masters: opens the first master page this user may view (muted by user-rights.js when there is none) -->
                 @php
-                    $mastersHome = collect(['/masters/users', '/masters/departments', '/masters/quotation-terms', '/masters/hs-tariffs', '/masters/period-closing',
+                    $mastersHome = collect(['/masters/users', '/masters/departments', '/masters/quotation-terms', '/masters/lost-reasons', '/masters/hs-tariffs', '/masters/period-closing',
                         '/masters/transport/directories/seaports', '/masters/transport/directories/airports', '/masters/services', '/masters/package/codes',
                         '/masters/container/types', '/masters/incoterms', '/masters/currencies', '/masters/banks', '/masters/descriptions', '/masters/salesperson',
                         '/masters/units', '/masters/drivers', '/masters/vehicles', '/masters/finance/opening-balance'])

@@ -45,6 +45,15 @@
                           placeholder="{{ __('Write your message...') }}"></textarea>
             </div>
 
+            @if(!empty($customerLink))
+                {{-- quotations: a button in the email to the customer's accept / reject page --}}
+                <input type="hidden" name="quotation_id" id="emailQuotationId">
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" name="customer_link" value="1" id="emailCustomerLink" checked>
+                    <label class="form-check-label" for="emailCustomerLink">{{ __('Include a link for the customer to accept or reject online') }}</label>
+                </div>
+            @endif
+
             <!-- Attachments -->
             <div class="mb-3">
                 <label for="emailAttachment" class="form-label">{{ __('Attachment') }}</label>

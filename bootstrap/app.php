@@ -6,7 +6,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        web: [__DIR__.'/../routes/web.php', __DIR__.'/../routes/admin.php'],
+        web: [__DIR__.'/../routes/web.php', __DIR__.'/../routes/admin.php', __DIR__.'/../routes/portal.php'],
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
@@ -22,11 +22,14 @@ return Application::configure(basePath: dirname(__DIR__))
             'owner' => \App\Http\Middleware\OwnerOnly::class,
             'verified' => \App\Http\Middleware\EnsureEmailIsVerifiedForApp::class,
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'portal.customer' => \App\Http\Middleware\PortalCustomer::class,
         ]);
 
-        // /admin has its own login and home
-        $middleware->redirectGuestsTo(fn ($request) => $request->is('admin', 'admin/*') ? route('admin.login') : route('login'));
-        $middleware->redirectUsersTo(fn ($request) => $request->is('admin', 'admin/*') ? route('admin.dashboard') : route('dashboard'));
+        // /admin and the customer portal (/portal) have their own login and home
+        $middleware->redirectGuestsTo(fn ($request) => $request->is('portal', 'portal/*') ? url('/portal/login')
+            : ($request->is('admin', 'admin/*') ? route('admin.login') : route('login')));
+        $middleware->redirectUsersTo(fn ($request) => $request->is('portal', 'portal/*') ? url('/portal')
+            : ($request->is('admin', 'admin/*') ? route('admin.dashboard') : route('dashboard')));
 
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,

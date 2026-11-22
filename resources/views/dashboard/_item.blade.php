@@ -36,4 +36,5 @@
     @case('punching-medium') @include('dashboard.widgets.punching-medium') @break
     @case('punching') @include('dashboard.widgets.punching-tall') @break
     @case('cost-summary') @include('dashboard.widgets.cost-summary-medium') @break
+    @case('follow-ups-small') @include('dashboard.widgets.follow-ups-small') @break
 @endswitch

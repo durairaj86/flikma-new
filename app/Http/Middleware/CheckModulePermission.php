@@ -18,13 +18,14 @@ class CheckModulePermission
         'supplier_invoice' => ['finances.supplier-invoices', 'create'],
         'proforma_invoice' => ['finances.proforma', 'create'],
         'row_record_payment' => ['transactions.collections', 'create'],
+        'row_log_activity' => ['sales.activities', 'create'],
     ];
 
     /** Context menu items (by id) and the right they need in the row's own module; any other id only reads (view, print, email ...). */
     private const ITEM_ACTIONS = [
         'row_edit' => 'edit', 'row_generate_schedule' => 'edit', 'row_reopen' => 'edit', 'row_close' => 'edit',
         'row_delete' => 'delete',
-        'row_duplicate' => 'create', 'row_converted' => 'create',
+        'row_duplicate' => 'create', 'row_converted' => 'create', 'row_revise' => 'create',
         'row_approved' => 'approve', 'row_rejected' => 'approve', 'row_disapproved' => 'approve',
         'row_confirmed' => 'confirm',
     ];
@@ -152,7 +153,7 @@ class CheckModulePermission
         if ($method === 'PUT' || $method === 'PATCH' || str_ends_with($routeName, '.update')) return 'edit';
         // POSTs that only read or preview: answer them with the view right
         if (preg_match('#/(preview|check|ask|lookup|search|scan-receipt|scan-bill|suggest-category|template)$#', $path)) return 'view';
-        if (preg_match('#/import(/[^/]+)?$#', $path) || str_ends_with($path, '/entries') || str_ends_with($path, '/duplicate')) return 'create';
+        if (preg_match('#/import(/[^/]+)?$#', $path) || str_ends_with($path, '/entries') || str_ends_with($path, '/duplicate') || str_ends_with($path, '/revise')) return 'create';
 
         return 'edit';
     }

@@ -67,6 +67,16 @@ Route::post('/masters/incoterm/data', [\App\Http\Controllers\Master\IncotermsCon
 Route::view('/masters/currencies', 'modules.master.currency.list');
 Route::post('/masters/currency/data', [\App\Http\Controllers\Master\CurrencyController::class, 'fetchAllRows'])->name('currency.data');
 
+Route::view('/masters/lost-reasons', 'modules.master.lost-reason.list')->name('lost-reasons');
+Route::post('/masters/lost-reason/data', [\App\Http\Controllers\Master\LostReasonController::class, 'fetchAllRows'])->name('lost-reason.data');
+Route::get('/masters/lost-reason/create', [\App\Http\Controllers\Master\LostReasonController::class, 'modal']);
+Route::post('/masters/lost-reason/create', [\App\Http\Controllers\Master\LostReasonController::class, 'store']);
+Route::get('/masters/lost-reason/{id}/create', [\App\Http\Controllers\Master\LostReasonController::class, 'edit'])->whereNumber('id');
+Route::post('/masters/lost-reason/{id}/create', [\App\Http\Controllers\Master\LostReasonController::class, 'store'])->whereNumber('id');
+Route::get('/masters/lost-reason/{id}/actions', [\App\Http\Controllers\Master\LostReasonController::class, 'actions'])->whereNumber('id');
+Route::post('/masters/lost-reason/{id}/status/{status}', [\App\Http\Controllers\Master\LostReasonController::class, 'updateStatus'])->whereNumber('id')->whereIn('status', ['0', '1']);
+Route::delete('/masters/lost-reason/{id}', [\App\Http\Controllers\Master\LostReasonController::class, 'destroy'])->whereNumber('id');
+
 Route::view('/masters/departments', 'modules.master.department.list')->name('departments');
 Route::post('/masters/department/data', [\App\Http\Controllers\Master\DepartmentController::class, 'fetchAllRows'])->name('department.data');
 Route::get('/masters/department/create', [\App\Http\Controllers\Master\DepartmentController::class, 'modal']);

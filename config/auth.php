@@ -40,6 +40,12 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        // customers signing in to the customer portal (/portal): their own login, never a staff user
+        'portal' => [
+            'driver' => 'session',
+            'provider' => 'portal_users',
+        ],
     ],
 
     /*
@@ -63,6 +69,11 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
+        ],
+
+        'portal_users' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Portal\PortalUser::class,
         ],
 
         // 'users' => [

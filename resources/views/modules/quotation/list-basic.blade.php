@@ -210,7 +210,7 @@
 
     @include('modules.quotation.quotation-view')
     @include('modules.common.linked-drawer', ['mainWidth' => 55, 'subWidth' => 40])
-    @include('modules.email.send-email')
+    @include('modules.email.send-email', ['customerLink' => true])
     @include('modules.workflows.quotation')
 
     <script>
@@ -247,6 +247,14 @@
                 if (row.linked_job_no) {
                     html += `<small class="d-block text-muted lh-sm">{{ __('Job') }}: ${row.linked_job_no}</small>`;
                 }
+                // status chips the tab alone does not tell: expired / revised (Cancelled tab), and the customer's own answer from the email link
+                const chips = {
+                    4: ['bg-warning-subtle text-warning-emphasis', {{ Illuminate\Support\Js::from(__('Expired')) }}],
+                    6: ['bg-secondary-subtle text-secondary-emphasis', {{ Illuminate\Support\Js::from(__('Revised')) }}],
+                };
+                if (chips[row.status]) html += ` <span class="badge rounded-pill ${chips[row.status][0]}">${chips[row.status][1]}</span>`;
+                if (Number(row.customer_status) === 1) html += ` <span class="badge rounded-pill bg-success-subtle text-success-emphasis">{{ __('Customer accepted') }}</span>`;
+                if (Number(row.customer_status) === 2) html += ` <span class="badge rounded-pill bg-danger-subtle text-danger-emphasis">{{ __('Customer rejected') }}</span>`;
                 return html;
             }
 
@@ -480,6 +488,7 @@
                 row_convert_to_job: {cls: 'da-accept', icon: 'bi-arrow-repeat'},
                 row_pending: {cls: 'da-soft', icon: 'bi-arrow-counterclockwise'},
                 row_rejected: {cls: 'da-cancel', icon: 'bi-x-circle', label: {{ Illuminate\Support\Js::from(__('Mark as Cancelled')) }}},
+                row_revise: {cls: 'da-soft', icon: 'bi-arrow-clockwise', label: {{ Illuminate\Support\Js::from(__('Revise')) }}},
             };
 
             function loadDrawerActions(id) {
@@ -488,7 +497,7 @@
                     const flat = [];
                     items.forEach(i => { if (i.items) i.items.forEach(s => flat.push(s)); else flat.push(i); });
                     // Accepted / Move to Pending / Convert To Job first, Cancelled last.
-                    const order = ['row_accepted', 'row_pending', 'row_convert_to_job', 'row_rejected'];
+                    const order = ['row_accepted', 'row_pending', 'row_convert_to_job', 'row_revise', 'row_rejected'];
                     order.forEach(key => {
                         const a = flat.find(x => x.id === key);
                         if (!a || !DRAWER_ACTIONS[key]) return;
@@ -511,6 +520,20 @@
                     }
                 };
                 iframe.src = '/sales/quotation/' + id + '/print';
+            }
+
+            // cancelling a quotation is a lost deal: ask why (CRM lost reason)
+            function cancelQuotation(id, newStatus) {
+                CRM.lost({
+                    url: '/sales/quotation/' + id + '/status/' + newStatus,
+                    title: {{ Illuminate\Support\Js::from(__('Cancel quotation')) }},
+                    button: {{ Illuminate\Support\Js::from(__('Cancel quotation')) }},
+                    onDone: function () {
+                        table.ajax.reload(null, false);
+                        const dr = bootstrap.Offcanvas.getInstance(document.getElementById('moduleDrawer'));
+                        if (dr) dr.hide();
+                    },
+                });
             }
 
             function changeStatus(id, newStatus, confirmMessage) {
@@ -587,6 +610,9 @@
                     $('#emailTo').val(data.to);
                     $('#emailCc').val(data.cc);
                     $('#emailSubject').val('Quotation #' + data.id);
+                    $('#emailQuotationId').val(id);
+                    // the accept / reject link only makes sense while the quotation waits for an answer
+                    $('#emailCustomerLink').prop('checked', !!data.pending).prop('disabled', !data.pending);
                     bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('sendEmailDrawer')).show();
                     $('#sendEmailForm').off('submit').on('submit', function (e) {
                         e.preventDefault();
@@ -624,7 +650,9 @@
                 printQuotation($(this).closest('tr').data('id'));
             });
             $('#basicQuotationTable tbody').on('click', '#row_edit', function () {
-                const id = $(this).data('id');
+                openEdit($(this).data('id'));
+            });
+            function openEdit(id) {
                 webModal.openGlobalModal({
                     title: {{ Illuminate\Support\Js::from(__('Edit Quotation')) }},
                     url: '/sales/quotation/' + id + '/create',
@@ -636,6 +664,24 @@
                         setTimeout(bindQuotationFormHelpers);
                     },
                 });
+            }
+
+            // Revise: new version (-R1 ...) of this quotation, opened straight in the edit form for the new rates
+            function reviseQuotation(id) {
+                CRM.revise(id, function (res) {
+                    table.ajax.reload(null, false);
+                    const dr = bootstrap.Offcanvas.getInstance(document.getElementById('moduleDrawer'));
+                    if (dr) dr.hide();
+                    openEdit(res.id);
+                });
+            }
+            $('#basicQuotationTable tbody').on('click', '#row_revise', function () {
+                reviseQuotation($(this).data('id'));
+            });
+            // another version in the drawer's revision history
+            $('#moduleDrawer').on('click', '.open-revision', function (e) {
+                e.preventDefault();
+                openDrawer($(this).data('id'), $(this).data('no'));
             });
             function statusConfirmMessage(action) {
                 if (action === 'row_convert_to_job') return {{ Illuminate\Support\Js::from(__('Are you sure you want to convert this quotation to a job?')) }};
@@ -651,12 +697,18 @@
 
             // Buttons in the view drawer's header
             $('#moduleDrawer').on('click', '.drawer-action', function () {
+                if ($(this).data('action') === 'row_rejected') return cancelQuotation($(this).data('id'), $(this).data('value'));
+                if ($(this).data('action') === 'row_revise') return reviseQuotation($(this).data('id'));
                 changeStatus($(this).data('id'), $(this).data('value'), statusConfirmMessage($(this).data('action')));
             });
 
+            $('#basicQuotationTable tbody').on('click', '#row_log_activity', function () {
+                CRM.logActivity('quotation', $(this).closest('tr').data('id'));
+            });
             $('#basicQuotationTable tbody').on('click', '#row_accepted,#row_pending,#row_rejected,#row_convert_to_job', function () {
                 const id = $(this).data('id');
                 const value = $(this).data('value');
+                if (this.id === 'row_rejected') return cancelQuotation(id, value);
                 let confirmMessage = {{ Illuminate\Support\Js::from(__('Are you sure you want to change status?')) }};
                 if (this.id === 'row_convert_to_job') confirmMessage = {{ Illuminate\Support\Js::from(__('Are you sure you want to convert this quotation to a job?')) }};
                 else if (this.id === 'row_accepted') confirmMessage = {{ Illuminate\Support\Js::from(__('Are you sure you want to mark this quotation as Accepted?')) }};
@@ -668,6 +720,14 @@
             if (typeof datepicker === 'function') { datepicker(); }                     // calendar pickers for the date range
             if (window.FILTER && FILTER.filteredColumn) { FILTER.filteredColumn(); }   // default date range shows as a chip
             loadTab('pending');
+
+            // a link from the CRM pipeline / follow-ups (?open=<id>) opens that quotation's drawer once
+            const params = new URLSearchParams(window.location.search);
+            const openId = params.get('open'), editId = params.get('edit');
+            if ((openId && /^\d+$/.test(openId)) || (editId && /^\d+$/.test(editId))) {
+                history.replaceState(null, '', window.location.pathname);
+                if (editId) openEdit(editId); else openDrawer(openId, '');
+            }
         });
     </script>
 </x-app-layout>

@@ -481,6 +481,17 @@
         'this invoice is fully credited.',
         'Customer',
         'You do not have access to this', 'You do not have permission to do this. Contact your administrator.',
+        // CRM (crm-shared.js, crm_pipeline.js, crm_follow_up.js, lost_reason.js)
+        'Could not load the lost reasons.', 'Mark as lost', 'Why was it lost?', '-- Select --', 'Note', 'e.g. Competitor quoted 15% lower',
+        'Choose why this was lost.', 'Saved', 'Something went wrong.', 'Log Activity', 'Could not load the pipeline.', 'Nothing here',
+        ':n more — narrow the search', 'No follow-up', 'Expires in :n d', ':n d old', 'This record is no longer available.', 'Phone', 'Email',
+        'Valid Until', 'Salesperson', 'Next follow-up', 'Last activity', 'Lost reason', 'Mark as Contacted', 'Mark as Qualified', 'Reopen',
+        'The enquiry will be cancelled.', 'The quotation will be cancelled.', ':n days late', 'Follow-up done',
+        'Log what happened and set the next follow-up?', 'Log outcome', 'Delete activity?', 'Add Lost Reason', 'Cancel enquiry', 'Cancel quotation',
+        'Prospect', 'Enquiry', 'Quotation', 'Status', 'Route', 'Company', 'Amount', 'Open', 'Done', 'Expired', 'Activity', 'No',
+        'Revise quotation', 'A new version is made with the same lines; this one is kept as history.', 'Why revise?',
+        'e.g. Customer asked for a lower rate', 'Revise', 'Write why it is revised.', 'Customer accepted', 'Customer rejected',
+        'Disable portal login?', 'They will be signed out and cannot sign in until you enable the login again.', 'Disable',
     ];
     $i18nMap = collect($i18nKeys)->mapWithKeys(fn($key) => [$key => __($key)]);
 @endphp
@@ -503,6 +514,7 @@
 <script type="text/javascript" src="{{ asset('js/startup.js?v='.appVersion()) }}" defer></script>
 <script src="{{ asset('js/number-input.js') }}?v={{ appVersion() }}"></script>
 <script src="{{ asset('js/keyboard.js') }}?v={{ appVersion() }}"></script>
+<script src="{{ asset('js/crm-shared.js') }}?v={{ appVersion() }}"></script>
 <script src="{{ asset('js/input-lengths.js') }}?v={{ appVersion() }}"></script>
 <script src="{{ asset('js/input-maxlength.js') }}?v={{ appVersion() }}"></script>
 <script src="{{ asset('js/toastr.min.js') }}"></script>
@@ -510,51 +522,7 @@
 <script type="text/javascript" src="{{ asset('js/jquery-confirm.js') }}"></script>
 <script src="{{ asset('js/bootstrap-select.js') }}"></script>
 <script src="{{ asset('js/flatpickr/flatpickr.js') }}"></script>
-@if(app()->getLocale() === 'ar')
-    {{-- library defaults (DataTables, flatpickr, tom-select) speak Arabic too; pages only override a key or two --}}
-    <script>
-        (function () {
-            if (window.jQuery && jQuery.fn.dataTable) {
-                jQuery.extend(true, jQuery.fn.dataTable.defaults, {
-                    language: {
-                        emptyTable: @json(__('No data available')),
-                        info: @json(__('Showing _START_ to _END_ of _TOTAL_ entries')),
-                        infoEmpty: @json(__('Showing 0 to 0 of 0 entries')),
-                        infoFiltered: @json(__('(filtered from _MAX_ total entries)')),
-                        lengthMenu: @json(__('Show _MENU_ entries')),
-                        loadingRecords: @json(__('Loading...')),
-                        processing: @json(__('Processing...')),
-                        zeroRecords: @json(__('No matching records found')),
-                        paginate: {first: @json(__('First')), last: @json(__('Last')), next: @json(__('Next')), previous: @json(__('Previous'))},
-                    },
-                });
-            }
-            if (window.flatpickr) {
-                flatpickr.localize({
-                    weekdays: {
-                        shorthand: ['أحد', 'اثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'],
-                        longhand: ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'],
-                    },
-                    months: {
-                        shorthand: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'],
-                        longhand: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'],
-                    },
-                    firstDayOfWeek: 0, rangeSeparator: ' - ', weekAbbreviation: 'أسبوع', amPM: ['ص', 'م'], yearAriaLabel: 'سنة', time_24hr: false,
-                });
-            }
-            if (window.TomSelect) {
-                const Base = window.TomSelect;
-                const noResults = @json(__('No results found'));
-                window.TomSelect = class extends Base {
-                    constructor(el, opts = {}) {
-                        opts.render = Object.assign({no_results: () => '<div class="no-results">' + noResults + '</div>'}, opts.render || {});
-                        super(el, opts);
-                    }
-                };
-            }
-        })();
-    </script>
-@endif
+@include('includes.library-locale')
 <script src="{{ asset('js/quill/quill.js') }}"></script>
 
 <script src="{{ asset('js/html2pdf/html2pdf.js') }}"></script>

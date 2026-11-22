@@ -15,13 +15,14 @@
         </div>
         <div class="card border-0 shadow-sm mb-4 d-print-none"><div class="card-body p-4">
             <div class="row g-3 align-items-end">
-                <div class="col-md-3"><label class="form-label small fw-bold text-uppercase text-muted">{{ __('From Date') }}</label>
-                    <input type="date" class="form-control bg-light border-0 py-2" wire:model.live="startDate"></div>
-                <div class="col-md-3"><label class="form-label small fw-bold text-uppercase text-muted">{{ __('To Date') }}</label>
-                    <input type="date" class="form-control bg-light border-0 py-2" wire:model.live="endDate"></div>
-                <div class="col-md-3"><label class="form-label small fw-bold text-uppercase text-muted">{{ __('Group By') }}</label>
-                    <select class="form-select bg-light border-0 py-2" wire:model.live="groupBy">
-                        @foreach($groups as $k => $l)<option value="{{ $k }}">{{ $l }}</option>@endforeach
+                {{-- wire:ignore: flatpickr / Tom Select own these boxes; their changes are sent with $wire.set (script below) --}}
+                <div class="col-md-3" wire:ignore><label class="form-label small fw-bold text-uppercase text-muted">{{ __('From Date') }}</label>
+                    <input type="text" class="form-control bg-light border-0 py-2 datepicker" data-model="startDate" value="{{ $startDate }}"></div>
+                <div class="col-md-3" wire:ignore><label class="form-label small fw-bold text-uppercase text-muted">{{ __('To Date') }}</label>
+                    <input type="text" class="form-control bg-light border-0 py-2 datepicker" data-model="endDate" value="{{ $endDate }}"></div>
+                <div class="col-md-3" id="pk-group-wrap" wire:ignore><label class="form-label small fw-bold text-uppercase text-muted">{{ __('Group By') }}</label>
+                    <select class="tom-select" id="pk-group">
+                        @foreach($groups as $k => $l)<option value="{{ $k }}" @selected($k === $groupBy)>{{ $l }}</option>@endforeach
                     </select></div>
             </div>
         </div></div>
@@ -34,11 +35,11 @@
                     @forelse($rows as $r)
                         <tr><td class="fw-semibold">{{ $r[0] }}</td>@for($i = 1; $i < count($r); $i++)<td class="text-end">{{ number_format($r[$i], is_float($r[$i]) ? 2 : 0) }}</td>@endfor</tr>
                     @empty
-                        <tr><td colspan="{{ count($cols) + 1 }}" class="text-center text-muted py-5">{{ __('No jobs in this period.') }}</td></tr>
+                        <tr><td colspan="{{ count($cols) + 1 }}" class="text-center text-muted py-5">{{ $emptyText }}</td></tr>
                     @endforelse
                     </tbody>
                     @if(count($rows))
-                        <tfoot><tr class="fw-bold bg-light"><td>{{ __('Total') }}</td>@for($i = 1; $i < count($totals); $i++)<td class="text-end">{{ number_format($totals[$i], 2) }}</td>@endfor</tr></tfoot>
+                        <tfoot><tr class="fw-bold bg-light"><td>{{ __('Total') }}</td>@for($i = 1; $i < count($totals); $i++)<td class="text-end">{{ number_format($totals[$i], is_float($totals[$i]) ? 2 : 0) }}</td>@endfor</tr></tfoot>
                     @endif
                 </table>
             </div>
@@ -54,9 +55,27 @@
                 @foreach($rows as $r)
                     <tr><td>{{ $r[0] }}</td>@for($i = 1; $i < count($r); $i++)<td style="text-align:right">{{ number_format($r[$i], is_float($r[$i]) ? 2 : 0) }}</td>@endfor</tr>
                 @endforeach
-                @if(count($rows))<tr class="stmt-strong"><td>{{ __('Total') }}</td>@for($i = 1; $i < count($totals); $i++)<td style="text-align:right">{{ number_format($totals[$i], 2) }}</td>@endfor</tr>@endif
+                @if(count($rows))<tr class="stmt-strong"><td>{{ __('Total') }}</td>@for($i = 1; $i < count($totals); $i++)<td style="text-align:right">{{ number_format($totals[$i], is_float($totals[$i]) ? 2 : 0) }}</td>@endfor</tr>@endif
                 </tbody>
             </table>
         </div>
     </div>
+    @script
+    <script>
+        (function () {
+            // dates: shown d-m-Y, sent Y-m-d (the component's format)
+            $wire.$el.querySelectorAll('input.datepicker[data-model]').forEach(function (el) {
+                if (el._flatpickr) el._flatpickr.destroy();
+                flatpickr(el, {
+                    dateFormat: 'Y-m-d', altInput: true, altFormat: 'd-m-Y', allowInput: true, disableMobile: true,
+                    defaultDate: el.value || null,
+                    onChange: function (dates, dateStr) { if (dateStr) $wire.set(el.dataset.model, dateStr); }
+                });
+            });
+            const group = document.getElementById('pk-group');
+            if (group && !group.tomselect) initTomSelectForm($('#pk-group-wrap'));
+            $(group).on('change', function () { $wire.set('groupBy', this.value); });
+        })();
+    </script>
+    @endscript
 </div>

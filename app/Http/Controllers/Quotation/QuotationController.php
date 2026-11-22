@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Quotation;
 
+use App\Services\Crm\LostDeal;
 use App\Services\DocumentNumber;
 use App\Enums\EnquiryEnum;
 use App\Enums\QuotationEnum;
@@ -173,6 +174,10 @@ class QuotationController extends Controller
         $quotation->prospect_id = $request->prospect;
         $quotation->posted_at = $request->posted_at;
         $quotation->valid_until = $request->valid_until;
+        // a new validity date gets its own "expires soon" follow-up
+        if ($quotation->exists && $quotation->isDirty('valid_until')) {
+            $quotation->expiry_reminded_at = null;
+        }
         $quotation->services = $services;
         $quotation->activity_id = $request->activity_id;
         $quotation->shipment_mode = LogisticActivity::activities($request->activity_id)->pluck('mode')->first();
@@ -358,6 +363,7 @@ class QuotationController extends Controller
             'quotations.terms',
             'quotations.prepared_by',
             'quotations.revision_count',
+            'quotations.customer_status',
             DB::raw('COALESCE(customers.name_en, prospects.name) AS client_name'),
             DB::raw('logistic_activities.name AS activity_name'),
             DB::raw('sales_persons.name AS salesperson_name'),
@@ -370,7 +376,10 @@ class QuotationController extends Controller
             ->leftJoin('sales_persons', 'sales_persons.id', '=', 'quotations.salesperson_id')
             ->leftJoin('jobs', 'jobs.id', '=', 'quotations.job_id')
             ->leftJoin('enquiries as source_enquiries', 'source_enquiries.id', '=', 'quotations.enquiry_id')
-            ->where('quotations.status', QuotationEnum::fromName($request->tab))
+            // the "Cancelled / Expired" tab also holds expired quotations and versions replaced by a revision
+            ->whereIn('quotations.status', $request->tab === 'cancelled'
+                ? [QuotationEnum::CANCELLED->value, QuotationEnum::EXPIRED->value, QuotationEnum::REVISED->value]
+                : [QuotationEnum::fromName((string) $request->tab)])
             ->tap($applyFilters)
             ->orderByDesc('quotations.id');
 
@@ -386,6 +395,8 @@ class QuotationController extends Controller
         foreach (QuotationEnum::cases() as $status) {
             $allCounts[$status->name] = $statusCounts[$status->value] ?? 0;
         }
+        // the "Cancelled / Expired" tab counts what it lists
+        $allCounts[QuotationEnum::CANCELLED->name] += $allCounts[QuotationEnum::EXPIRED->name] + $allCounts[QuotationEnum::REVISED->name];
 
         return DataTables::eloquent($rows)
             ->addIndexColumn()
@@ -408,11 +419,17 @@ class QuotationController extends Controller
             ->toJson();
     }
 
-    public function updateStatus($id, $status)
+    public function updateStatus(Request $request, $id, $status)
     {
         $quotation = Quotation::findOrFail($id);
         DB::beginTransaction();
         try {
+            // a cancelled quotation is a lost deal: it must say why
+            if ($status == QuotationEnum::CANCELLED->value) {
+                LostDeal::apply($quotation, $request);
+            } else {
+                LostDeal::clear($quotation);
+            }
             $quotation->status = $status;
             $quotation->save();
             if ($status == QuotationEnum::CONVERTED->value) {
@@ -682,6 +699,24 @@ class QuotationController extends Controller
             'icon' => 'view',
             //'separator' => 'before',
         ]);
+        if (in_array((int) $quotation->status, \App\Services\Crm\QuotationRevision::REVISABLE, true)) {
+            $contextMenu->push([
+                'label' => __('Revise'),
+                'code' => '01CSED',
+                'id' => 'row_revise',
+                'data-id' => $quotation->id,
+                'type' => 'item',
+                'icon' => 'refresh',
+            ]);
+        }
+        $contextMenu->push([
+            'label' => __('Log Activity'),
+            'code' => '01CSVW',
+            'id' => 'row_log_activity',
+            'data-id' => $quotation->id,
+            'type' => 'item',
+            'icon' => 'comments',
+        ]);
         if ($quotation->status === QuotationEnum::PENDING->value) {
             $contextMenu->push([
                 'label' => __('Actions'),
@@ -716,6 +751,7 @@ class QuotationController extends Controller
             QuotationEnum::CANCELLED->value => __('Cancelled'),
             QuotationEnum::EXPIRED->value => __('Expired'),
             QuotationEnum::CONVERTED->value => __('Converted to Job'),
+            QuotationEnum::REVISED->value => __('Revised'),
         ];
         $timeline = [];
         $logs = \App\Models\Log\LogHistory::where('loggable_type', Quotation::class)
@@ -736,7 +772,13 @@ class QuotationController extends Controller
             $timeline[] = ['label' => __('Posted'), 'at' => $quotation->created_at, 'by' => null, 'icon' => 'bi-send'];
         }
 
-        return view('modules.quotation.view-overview-drawer', compact('quotation', 'enquiryNo', 'jobNo', 'timeline'));
+        // all versions of this quotation (shown when there is more than one), and the customer's answer from the email link
+        $revisions = $quotation->revisionChain();
+        if ($revisions->count() < 2) {
+            $revisions = collect();
+        }
+
+        return view('modules.quotation.view-overview-drawer', compact('quotation', 'enquiryNo', 'jobNo', 'timeline', 'revisions'));
     }
 
     public function print($id)
@@ -759,7 +801,8 @@ class QuotationController extends Controller
         $data = [
             'id' => $quotation->id,
             'to' => '',
-            'cc' => Auth::user()->email
+            'cc' => Auth::user()->email,
+            'pending' => (int) $quotation->status === QuotationEnum::PENDING->value,
         ];
 
         // Set recipient email based on customer or prospect
@@ -784,7 +827,19 @@ class QuotationController extends Controller
             'to' => 'required|email',
             'subject' => 'required|string',
             'body' => 'required|string',
+            'quotation_id' => 'nullable|integer',
         ]);
+
+        // "Include accept / reject link": a button to the customer's page for this quotation (only while it waits for an answer)
+        $data = ['body' => $request->body];
+        if ($request->boolean('customer_link') && $request->filled('quotation_id')) {
+            $quotation = Quotation::findOrFail((int) $request->quotation_id);
+            if ((int) $quotation->status !== QuotationEnum::PENDING->value) {
+                return response()->json(['success' => false, 'message' => __('Only a pending quotation can be sent with an accept / reject link.')], 422);
+            }
+            $data['action_url'] = \App\Http\Controllers\Crm\QuotationResponseController::urlFor($quotation);
+            $data['action_label'] = 'View and accept the quotation';
+        }
 
         // Attachments are kept on disk; the queue stores only where they are.
         $attachments = [];
@@ -797,13 +852,27 @@ class QuotationController extends Controller
 
         // Store the email; the worker sends it within a minute.
         app(\App\Services\Mail\EmailQueueService::class)->enqueue(
-            $request->to, $request->subject, 'emails.generic', ['body' => $request->body],
+            $request->to, $request->subject, 'emails.generic', $data,
             ['type' => 'quotation', 'cc' => $request->cc, 'attachments' => $attachments]
         );
 
         return response()->json([
             'success' => true,
             'message' => __('Email has been queued for sending.')
+        ]);
+    }
+
+    /** New version of a pending / expired quotation (QTN/…-R1); the old one becomes Revised. */
+    public function revise(Request $request, $id): \Illuminate\Http\JsonResponse
+    {
+        $request->validate(['revision_notes' => ['required', 'string', 'max:255']], [], ['revision_notes' => __('Why revise?')]);
+        $new = \App\Services\Crm\QuotationRevision::create(Quotation::findOrFail($id), trim($request->input('revision_notes')));
+
+        return response()->json([
+            'status' => 'success',
+            'message' => __('Revision :no created. Update the rates and save.', ['no' => $new->row_no]),
+            'id' => $new->id,
+            'row_no' => $new->row_no,
         ]);
     }
 
@@ -833,6 +902,8 @@ class QuotationController extends Controller
         $customer->save();
 
         $prospect->customer_id = $customer->id;
+        $prospect->status = 'converted';
+        LostDeal::clear($prospect);
         $prospect->save();
 
         return $customer;

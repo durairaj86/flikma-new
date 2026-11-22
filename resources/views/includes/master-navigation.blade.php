@@ -42,6 +42,14 @@
                 </a>
             </li>
 
+            <!-- Lost Reasons -->
+            <li class="nav-item" data-url="/masters/lost-reasons">
+                <a href="{{ asset('/masters/lost-reasons') }}"
+                   class="nav-link d-flex align-items-center py-2 {{ $page1 == 'lost-reasons' ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-x-octagon text-secondary me-2"></i> {{ __('Lost Reasons') }}
+                </a>
+            </li>
+
             <!-- HS Tariff -->
             <li class="nav-item" data-url="/masters/hs-tariffs">
                 <a href="{{ asset('/masters/hs-tariffs') }}"

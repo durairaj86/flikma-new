@@ -3430,6 +3430,11 @@ window.appConfirm = function (opts) {
         modal.hide();
         if (opts.onConfirm) opts.onConfirm();
     };
+    // a harmless next step (not a delete) can take Enter straight away: opts.focusConfirm puts focus on its button
+    // (a tick later: AdminLTE's document-level shown handler focuses the first button, Cancel, after ours)
+    if (opts.focusConfirm && !opts.infoOnly) {
+        el.addEventListener('shown.bs.modal', function () { setTimeout(function () { ok.focus(); }, 0); }, {once: true});
+    }
     modal.show();
     // asked from inside a drawer (Delete in its header): the dialog and its backdrop must sit above the drawer, or its buttons can't be reached
     el.style.zIndex = 2100;

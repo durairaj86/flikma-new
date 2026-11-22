@@ -736,6 +736,12 @@ QUOTATION = {
                     initComplete() {
                         QUOTATION.form.open();
                         webDataTable.actions.menu();
+                        // a link from the CRM pipeline / follow-ups (?open=<id>) opens that record's drawer once
+                        const openId = new URLSearchParams(window.location.search).get('open');
+                        if (openId && /^\d+$/.test(openId)) {
+                            history.replaceState(null, '', window.location.pathname);
+                            QUOTATION.list.openDrawer(openId, '');
+                        }
 
                         // Move info and pagination outside #tableWrapper so they
                         // don't scroll sideways with the table content.
@@ -768,7 +774,22 @@ QUOTATION = {
         },
         actions: {
             statusChange(row) {
-                $('#row_pending,#row_accepted,#row_rejected,#row_convert_to_job').off().on('click', function () {
+                $('#row_rejected').off().on('click', function () {
+                    // a cancelled quotation is a lost deal: ask why
+                    CRM.lost({
+                        url: GLOBAL_FN.buildUrl('sales/quotation/' + row.attr('data-id') + '/status/' + $(this).attr('data-value')),
+                        title: trans('Cancel quotation'),
+                        button: trans('Cancel quotation'),
+                        onDone: () => $('#dataTable').DataTable().ajax.reload(null, false)
+                    });
+                });
+                $('#row_log_activity').off().on('click', function () {
+                    CRM.logActivity('quotation', row.attr('data-id'));
+                });
+                $('#row_revise').off().on('click', function () {
+                    CRM.revise(row.attr('data-id'), () => $('#dataTable').DataTable().ajax.reload(null, false));
+                });
+                $('#row_pending,#row_accepted,#row_convert_to_job').off().on('click', function () {
                     let fd = new FormData();
                     // Quotation's CONVERTED status code happens to collide
                     // with Customer's REJECTED code in the shared confirm

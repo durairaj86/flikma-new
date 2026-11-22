@@ -8,6 +8,7 @@ use App\Models\Customer\Customer;
 use App\Models\Enquiry\Enquiry;
 use App\Models\Enquiry\EnquirySub;
 use App\Models\Master\LogisticActivity;
+use App\Services\Crm\LostDeal;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -298,12 +299,16 @@ class EnquiryController extends Controller
             ->toJson();
     }
 
-    public function updateStatus($id, $status): \Illuminate\Http\JsonResponse
+    public function updateStatus(Request $request, $id, $status): \Illuminate\Http\JsonResponse
     {
         $enquiry = Enquiry::findOrFail($id);
         $enquiry->status = $status; // e.g., confirmed = 2
         if ($status == EnquiryEnum::CANCELLED->value) {
+            // a cancelled enquiry is a lost deal: it must say why
+            LostDeal::apply($enquiry, $request);
             $enquiry->remark = 'Customer Cancelled';
+        } else {
+            LostDeal::clear($enquiry);
         }
         $enquiry->save();
 
@@ -425,6 +430,14 @@ class EnquiryController extends Controller
             'type' => 'item',
             'icon' => 'view',
             //'separator' => 'before',
+        ]);
+        $contextMenu->push([
+            'label' => __('Log Activity'),
+            'code' => '01CSVW',
+            'id' => 'row_log_activity',
+            'data-id' => $enquiry->id,
+            'type' => 'item',
+            'icon' => 'comments',
         ]);
         if ($enquiry->status === EnquiryEnum::PENDING->value) {
             $contextMenu->push([

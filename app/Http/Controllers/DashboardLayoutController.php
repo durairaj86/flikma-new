@@ -20,6 +20,7 @@ class DashboardLayoutController extends Controller
         'quotation' => ['size' => 'small', 'module' => 'sales', 'group' => 'quotation', 'title' => 'Quotation', 'icon' => 'bi-file-earmark-text'],
         'quotation-medium' => ['size' => 'medium', 'module' => 'sales', 'group' => 'quotation', 'title' => 'Quotation', 'icon' => 'bi-file-earmark-text', 'default' => false],
         'enquiry-small' => ['size' => 'small', 'module' => 'sales', 'group' => 'enquiry', 'title' => 'Enquiry', 'icon' => 'bi-envelope-paper', 'default' => false],
+        'follow-ups-small' => ['size' => 'small', 'module' => 'sales', 'group' => 'follow-ups', 'title' => 'My Follow-ups', 'icon' => 'bi-alarm'],
         'revenue-summary' => ['size' => 'medium', 'module' => 'sales', 'group' => 'revenue-summary', 'title' => 'Revenue Summary', 'icon' => 'bi-graph-up-arrow'],
         'revenue-expenses' => ['size' => 'medium', 'module' => 'sales', 'group' => 'revenue-expenses', 'title' => 'Revenue vs Expenses', 'icon' => 'bi-bar-chart'],
         'revenue-trend' => ['size' => 'medium', 'module' => 'sales', 'group' => 'revenue-trend', 'title' => 'Revenue Trend', 'icon' => 'bi-activity'],

@@ -145,8 +145,22 @@ ENQUIRY = {
                 .on('click.enqActions', '.drawer-action', function () {
                     const id = $(this).data('id'), action = $(this).data('action');
                     if (action === 'row_quotation') { ENQUIRY.convertToQuotation(id); return; }
+                    if (action === 'row_rejected') { ENQUIRY.list.cancel(id, $(this).data('value'), true); return; }
                     ENQUIRY.list.changeStatus(id, $(this).data('value'), defs[action].msg, true);
                 });
+        },
+        /** Cancelling an enquiry is a lost deal: ask why (CRM lost reason). */
+        cancel(id, value, fromDrawer = false) {
+            CRM.lost({
+                url: GLOBAL_FN.buildUrl('sales/enquiry/' + id + '/status/' + value),
+                title: trans('Cancel enquiry'),
+                button: trans('Cancel enquiry'),
+                onDone: function () {
+                    $('#dataTable').DataTable().ajax.reload(null, false);
+                    const dr = fromDrawer ? bootstrap.Offcanvas.getInstance(document.getElementById('moduleDrawer')) : null;
+                    if (dr) dr.hide();
+                }
+            });
         },
         changeStatus(id, value, message, fromDrawer = false) {
             changeCustomerStatus(GLOBAL_FN.buildUrl('sales/enquiry/' + id + '/status/' + value), {
@@ -267,6 +281,12 @@ ENQUIRY = {
                 initComplete: function () {
                     ENQUIRY.form.open();
                     webDataTable.actions.menu();
+                    // a link from the CRM pipeline / follow-ups (?open=<id>) opens that record's drawer once
+                    const openId = new URLSearchParams(window.location.search).get('open');
+                    if (openId && /^\d+$/.test(openId)) {
+                        history.replaceState(null, '', window.location.pathname);
+                        ENQUIRY.list.openDrawer(openId, '');
+                    }
                 }
             });
             $('#customSearch').on('keyup input', window.debounceSearch(function () {
@@ -293,7 +313,13 @@ ENQUIRY = {
         },
         actions: {
             statusChange(row) {
-                $('#row_pending,#row_confirmed,#row_rejected').off().on('click', function () {
+                $('#row_rejected').off().on('click', function () {
+                    ENQUIRY.list.cancel(row.attr('data-id'), $(this).attr('data-value'));
+                });
+                $('#row_log_activity').off().on('click', function () {
+                    CRM.logActivity('enquiry', row.attr('data-id'));
+                });
+                $('#row_pending,#row_confirmed').off().on('click', function () {
                     //GLOBAL_FN.ajaxData.sendData(GLOBAL_FN.buildUrl('ENQUIRY/' + row.attr('data-id') + '/status/' + $(this).attr('data-value')),'datatable',{})
                     const msgs = {
                         row_confirmed: 'Are you sure you want to mark this enquiry as Confirmed?',

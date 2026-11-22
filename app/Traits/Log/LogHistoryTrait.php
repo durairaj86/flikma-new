@@ -33,7 +33,8 @@ trait LogHistoryTrait
         if ($this instanceof LogHistory) return;
 
         $user = Auth::user();
-        $actionBy = ['id' => $user->id, 'name' => $user->name];
+        // scheduled jobs (quotation expiry ...) change records with nobody signed in
+        $actionBy = $user ? ['id' => $user->id, 'name' => $user->name] : ['id' => null, 'name' => 'System'];
         $changes = null;
 
         if ($action === 'updated') {

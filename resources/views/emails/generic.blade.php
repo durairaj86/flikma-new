@@ -7,6 +7,13 @@
         <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="width:100%;max-width:600px;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(16,24,40,.08);">
             <tr><td style="background:#0f766e;padding:20px 28px;"><span style="font-size:22px;font-weight:700;color:#ffffff;">Flikma</span></td></tr>
             <tr><td style="padding:28px;font-size:15px;line-height:1.7;color:#374151;">{!! nl2br(e($body ?? '')) !!}</td></tr>
+            @if(!empty($action_url))
+                {{-- optional button (e.g. the customer's "view and accept" link on a quotation email) --}}
+                <tr><td style="padding:0 28px 28px;">
+                    <a href="{{ $action_url }}" style="display:inline-block;background:#0f766e;color:#ffffff;text-decoration:none;padding:11px 22px;border-radius:8px;font-weight:700;">{{ $action_label ?? 'Open' }}</a>
+                    <div style="font-size:12px;color:#9ca3af;margin-top:8px;word-break:break-all;">{{ $action_url }}</div>
+                </td></tr>
+            @endif
             <tr><td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:14px 28px;font-size:12px;color:#9ca3af;">Sent with Flikma &middot; &copy; {{ date('Y') }}</td></tr>
         </table>
     </td></tr>

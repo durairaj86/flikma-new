@@ -101,6 +101,42 @@
         </div>
     </div>
 
+    @if((int) $quotation->customer_status !== \App\Models\Quotation\Quotation::CUSTOMER_NO_ANSWER)
+        @php($qAccepted = (int) $quotation->customer_status === \App\Models\Quotation\Quotation::CUSTOMER_ACCEPTED)
+        <div class="alert {{ $qAccepted ? 'alert-success' : 'alert-danger' }} d-flex gap-2 align-items-start py-2">
+            <i class="bi {{ $qAccepted ? 'bi-hand-thumbs-up' : 'bi-hand-thumbs-down' }} mt-1"></i>
+            <div class="small">
+                <div class="fw-semibold">{{ $qAccepted ? __('The customer accepted this quotation online') : __('The customer rejected this quotation online') }}
+                    @if($quotation->customer_response_at) · {{ $quotation->customer_response_at->translatedFormat('d-M-Y H:i') }}@endif</div>
+                @if($quotation->customer_response_note)<div>{{ $quotation->customer_response_note }}</div>@endif
+            </div>
+        </div>
+    @endif
+
+    @if($revisions->isNotEmpty())
+        <div class="section">
+            <h6><span class="sec-ico"><i class="bi bi-arrow-clockwise"></i></span>{{ __('Revisions') }}</h6>
+            <div class="px-3 py-2">
+                @foreach($revisions as $rev)
+                    <div class="d-flex justify-content-between align-items-start gap-2 py-1 border-bottom small">
+                        <div>
+                            @if($rev->id === $quotation->id)
+                                <b>{{ $rev->row_no }}</b> <span class="badge bg-primary-subtle text-primary">{{ __('This one') }}</span>
+                            @else
+                                <a href="#" class="open-revision text-primary text-decoration-none fw-semibold" data-id="{{ $rev->id }}" data-no="{{ $rev->row_no }}">{{ $rev->row_no }}</a>
+                            @endif
+                            @if($rev->revision_notes)<div class="text-muted">{{ $rev->revision_notes }}</div>@endif
+                        </div>
+                        <div class="text-end text-nowrap">
+                            <div>{{ \App\Enums\QuotationEnum::tryFrom((int) $rev->status)?->label() }}</div>
+                            <div class="text-muted">{{ showDate($rev->posted_at) }}</div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     <div class="section">
         <h6><span class="sec-ico"><i class="bi bi-person-vcard"></i></span>{{ __('Party & Quotation Information') }}</h6>
         <div class="info-grid">

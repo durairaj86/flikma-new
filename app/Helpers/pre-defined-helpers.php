@@ -534,6 +534,10 @@ function resolveModuleFromPath(string $path): ?string
     if ($path === 'settings/account' || str_starts_with($path, 'settings/account/')) {
         return null;
     }
+    // the Reports page lists only the reports the user may open, so anyone with one report right can reach it
+    if ($path === 'reports') {
+        return null;
+    }
 
     $best = null;
     $bestLength = -1;

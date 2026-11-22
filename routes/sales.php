@@ -1,10 +1,29 @@
 <?php
 
+use App\Http\Controllers\Crm\CrmActivityController;
+use App\Http\Controllers\Crm\PipelineController;
 use App\Http\Controllers\Enquiry\EnquiryController;
 use App\Http\Controllers\Quotation\QuotationController;
 use Illuminate\Support\Facades\Route;
 
 Route::namespace('sales')->prefix('sales')->group(function () {
+    // CRM: pipeline board, activities and follow-ups
+    Route::get('/pipeline', [PipelineController::class, 'index'])->name('pipeline');
+    Route::post('/pipeline/data', [PipelineController::class, 'data'])->name('pipeline.data');
+    Route::get('/pipeline/card/{type}/{id}', [PipelineController::class, 'card'])->whereIn('type', ['prospect', 'enquiry', 'quotation'])->whereNumber('id');
+
+    Route::view('/follow-ups', 'modules.crm.follow-ups')->name('follow-ups');
+    Route::post('/follow-up/data', [CrmActivityController::class, 'fetchAllRows'])->name('follow-ups.data');
+    Route::get('/activity/create', [CrmActivityController::class, 'modal']);
+    Route::post('/activity/create', [CrmActivityController::class, 'store']);
+    Route::get('/activity/{id}/create', [CrmActivityController::class, 'edit'])->whereNumber('id');
+    Route::post('/activity/{id}/create', [CrmActivityController::class, 'store'])->whereNumber('id');
+    Route::get('/activity/{id}/actions', [CrmActivityController::class, 'actions'])->whereNumber('id');
+    Route::post('/activity/{id}/done', [CrmActivityController::class, 'done'])->whereNumber('id');
+    Route::delete('/activity/{id}', [CrmActivityController::class, 'destroy'])->whereNumber('id');
+    Route::get('/activity/subjects', [CrmActivityController::class, 'subjects']);
+    Route::get('/activity/timeline/{type}/{id}', [CrmActivityController::class, 'timeline'])->whereIn('type', ['prospect', 'customer', 'enquiry', 'quotation'])->whereNumber('id');
+
     Route::view('/enquiries', 'modules.enquiry.list')->name('enquiries');
     Route::post('/enquiry/data', [\App\Http\Controllers\Enquiry\EnquiryController::class, 'fetchAllRows'])->name('enquiries.data');
     Route::get('/enquiry/create', [\App\Http\Controllers\Enquiry\EnquiryController::class, 'modal']);
@@ -32,6 +51,7 @@ Route::namespace('sales')->prefix('sales')->group(function () {
     Route::post('/quotation/{id}/create', [\App\Http\Controllers\Quotation\QuotationController::class, 'store']);
     Route::get('/quotation/{id}/actions', [\App\Http\Controllers\Quotation\QuotationController::class, 'actions']);
     Route::post('/quotation/{id}/status/{status}', [\App\Http\Controllers\Quotation\QuotationController::class, 'updateStatus']);
+    Route::post('/quotation/{id}/revise', [QuotationController::class, 'revise'])->whereNumber('id');
     Route::get('/quotation/{id}/overview', [\App\Http\Controllers\Quotation\QuotationController::class, 'overview']);
     Route::get('/quotation/{id}/overview-drawer', [\App\Http\Controllers\Quotation\QuotationController::class, 'overviewDrawer']);
     Route::get('/quotation/{id}/print', [QuotationController::class, 'print']);

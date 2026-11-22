@@ -7,14 +7,13 @@ use App\Enums\CustomerInvoiceEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
 use App\Models\Finance\CustomerInvoice\CustomerInvoice;
-use App\Traits\Finance\AgingAsOf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 /**
  * Split-view customer page: customer list on the left, details with
- * General / Transactions / Invoices / Statement / Aging tabs on the right.
+ * General / Activity / Transactions / Invoices / Statement / Aging tabs on the right.
  *
  * Money rules (so every tab agrees):
  *  - Balance Due  = Accounts Receivable ledger balance for the customer (same source as the Statement).
@@ -23,9 +22,7 @@ use Illuminate\Support\Facades\DB;
  */
 class CustomerDetailController extends Controller
 {
-    use AgingAsOf;
-
-    private const TABS = ['general', 'transactions', 'invoices', 'statement', 'aging'];
+    private const TABS = ['general', 'activity', 'transactions', 'invoices', 'statement', 'aging'];
 
     /** Customers per page in the left-hand list. */
     private const PER_PAGE = 30;
@@ -65,7 +62,7 @@ class CustomerDetailController extends Controller
             });
         }
         $items = $query->paginate(self::PER_PAGE, ['*'], 'page', $page);
-        $balances = $this->ledgerBalances();
+        $balances = $this->account()->ledgerBalances();
         foreach ($items as $c) {
             $c->balance = (float) ($balances[$c->id] ?? 0);
         }
@@ -84,60 +81,22 @@ class CustomerDetailController extends Controller
         ));
     }
 
-    /** @return array<int,float> customer id => AR ledger balance */
-    private function ledgerBalances(): array
+    /** Money figures shared with the customer portal (balance, open invoices, statement). */
+    private function account(): \App\Services\Customer\CustomerAccount
     {
-        return DB::table('finance_subs as fs')
-            ->join('finance as f', 'fs.finance_id', '=', 'f.id')
-            ->where('fs.company_id', companyId())
-            ->whereNotNull('fs.customer_id')
-            ->whereIn('fs.account_id', $this->arAccountIds())
-            ->where('f.is_approved', 1)
-            ->groupBy('fs.customer_id')
-            ->selectRaw('fs.customer_id, SUM(fs.base_debit - fs.base_credit) as bal')
-            ->pluck('bal', 'customer_id')
-            ->map(fn ($v) => round((float) $v, 2))
-            ->all();
+        return $this->account ??= new \App\Services\Customer\CustomerAccount();
     }
 
-    private function arAccountIds(): array
-    {
-        return DB::table('accounts')->where('code', '1130')->pluck('id')->all() ?: [5];
-    }
+    private ?\App\Services\Customer\CustomerAccount $account = null;
 
     private function openInvoices(Customer $customer): array
     {
-        $today = Carbon::today();
-        $settled = $this->settledAsOf('customer', $today);
-        $rows = [];
-        foreach (CustomerInvoice::where('customer_id', $customer->id)
-                     ->where('status', CustomerInvoiceEnum::APPROVED->value)
-                     ->orderBy('invoice_date')->get() as $inv) {
-            $balance = round((float) $inv->grand_total - ($settled[$inv->id] ?? 0.0), 2);
-            if ($balance <= 0) {
-                continue;
-            }
-            $due = Carbon::parse($inv->due_at ?? $inv->due_date ?? $inv->invoice_date);
-            $rows[] = [
-                'id' => $inv->id,
-                'no' => $inv->row_no,
-                'date' => Carbon::parse($inv->invoice_date),
-                'due' => $due,
-                'total' => (float) $inv->grand_total,
-                'balance' => $balance,
-                // the same open amount in the company currency (at the invoice's booked rate): what the ledger and the aging buckets are in
-                'currency' => strtoupper((string) $inv->currency),
-                'balance_base' => (float) $inv->grand_total > 0 ? round($balance * ((float) $inv->base_grand_total / (float) $inv->grand_total), 2) : $balance,
-                'days' => (int) $due->diffInDays($today, false),
-            ];
-        }
-
-        return $rows;
+        return $this->account()->openInvoices($customer);
     }
 
     private function balanceDue(Customer $customer): float
     {
-        return (float) ($this->ledgerBalances()[$customer->id] ?? 0);
+        return $this->account()->balanceDue($customer);
     }
 
     protected function dataGeneral(Customer $customer): array
@@ -147,6 +106,27 @@ class CustomerDetailController extends Controller
         return [
             'balanceDue' => $this->balanceDue($customer),
             'overdue' => round(collect($open)->where('days', '>', 0)->sum('balance'), 2),
+            'portalUsers' => \App\Models\Portal\PortalUser::where('company_id', companyId())->where('customer_id', $customer->id)->orderBy('name')->get(),
+            'canEditCustomer' => userCan('customers.list', 'edit'),
+        ];
+    }
+
+    /** Customer 360 (CRM): everything that happened with the customer, newest first; ?before= loads older items. */
+    protected function dataActivity(Customer $customer): array
+    {
+        $timeline = new \App\Services\Crm\CustomerTimeline($customer);
+        $before = request()->filled('before') ? Carbon::createFromTimestamp((int) request('before')) : null;
+        $limit = 40;
+        $items = $timeline->items($before, $limit + 1);
+
+        return [
+            'items' => $items->take($limit),
+            'hasMore' => $items->count() > $limit,
+            'olderThan' => $items->take($limit)->last()['at'] ?? null,
+            'summary' => $before ? null : $timeline->summary(),
+            'kinds' => \App\Services\Crm\CustomerTimeline::KINDS,
+            'onlyItems' => (bool) $before,
+            'balanceDue' => $before ? null : $this->balanceDue($customer),
         ];
     }
 
@@ -193,29 +173,7 @@ class CustomerDetailController extends Controller
 
     protected function dataStatement(Customer $customer): array
     {
-        $entries = DB::table('finance_subs as fs')
-            ->join('finance as f', 'fs.finance_id', '=', 'f.id')
-            ->where('fs.company_id', companyId())
-            ->where('fs.customer_id', $customer->id)
-            ->whereIn('fs.account_id', $this->arAccountIds())
-            ->where('f.is_approved', 1)
-            ->orderBy('fs.reference_date')->orderBy('fs.id')
-            ->get(['fs.reference_date', 'fs.reference_no', 'fs.voucher_no', 'f.narration', 'fs.base_debit', 'fs.base_credit']);
-
-        $running = 0.0;
-        $rows = [];
-        foreach ($entries as $e) {
-            $running += $e->base_debit - $e->base_credit;
-            $rows[] = [
-                'date' => Carbon::parse($e->reference_date),
-                'details' => $e->reference_no ?: ($e->voucher_no ?: $e->narration),
-                'debit' => (float) $e->base_debit,
-                'credit' => (float) $e->base_credit,
-                'balance' => round($running, 2),
-            ];
-        }
-
-        return ['rows' => array_slice($rows, -15)];
+        return ['rows' => array_slice($this->account()->statement($customer)['rows'], -15)];
     }
 
     protected function dataAging(Customer $customer): array
