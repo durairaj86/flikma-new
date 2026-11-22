@@ -82,6 +82,8 @@
         'Client',
         'Close Period',
         'Closed',
+        'Credit Note Details',
+        'Customer Invoice Details',
         'Failed to close this period.',
         'Failed to delete this period.',
         'Failed to reopen this period.',

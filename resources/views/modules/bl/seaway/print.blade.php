@@ -298,12 +298,12 @@
     <div class="section">
         <div class="row">
             <div class="col-6">
-                <div class="label">{{ __("Shipper\'s Signature") }}:</div>
+                <div class="label">{{ __("Shipper's Signature") }}:</div>
                 <div style="height: 60px; border-bottom: 1px solid #ddd; margin-top: 30px;"></div>
                 <div style="margin-top: 5px;">{{ __('Date') }}: ___________________</div>
             </div>
             <div class="col-6">
-                <div class="label">{{ __("Receiver\'s Signature") }}:</div>
+                <div class="label">{{ __("Receiver's Signature") }}:</div>
                 <div style="height: 60px; border-bottom: 1px solid #ddd; margin-top: 30px;"></div>
                 <div style="margin-top: 5px;">{{ __('Date') }}: ___________________</div>
             </div>
