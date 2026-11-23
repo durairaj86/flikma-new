@@ -12,26 +12,33 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\Cell\Cell;
 use PhpOffice\PhpSpreadsheet\Cell\StringValueBinder;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 /**
- * Customer and supplier import, same two steps as the chart-of-accounts import:
- *  1. preview(): the file is read (a recognised header row is mapped column by column, anything else by AI)
- *     and every row comes back checked — nothing is saved.
- *  2. import(): the reviewed rows are checked again server-side and saved in one transaction.
+ * Customer and supplier import, nothing is saved until the last step:
+ *  1. upload():  a spreadsheet is kept server-side under a token; its columns come back with a suggested match
+ *                to our fields. A PDF / photo is read by AI and goes straight to step 3.
+ *  2. preview(): the customer's column match is applied and every row comes back checked.
+ *  3. import():  the reviewed rows are checked again server-side and saved in one transaction.
  * The route passes $kind: customer | supplier.
  */
 class PartyImportController extends Controller
 {
-    private const CHUNK = 40;
+    private const MAX_ROWS = 5000;
+
+    /** Customers only: matched by name to the active salespersons. */
+    private const SALESPERSON_WORDS = ['salesperson', 'sales person', 'salesman', 'sales man', 'sales executive', 'account manager', 'مندوب المبيعات', 'المندوب'];
 
     /** Field => [max length, header words we recognise]. */
     public const FIELDS = [
         'name_en' => [255, ['name', 'name en', 'name english', 'english name', 'customer name', 'supplier name', 'vendor name', 'company name', 'company', 'party name', 'party', 'account name', 'customer', 'supplier', 'vendor', 'client', 'client name', 'business name', 'trade name', 'الاسم بالانجليزي', 'الاسم بالإنجليزي']],
-        'name_ar' => [255, ['name ar', 'name arabic', 'arabic name', 'الاسم', 'الاسم بالعربي', 'اسم العميل', 'اسم المورد', 'الاسم العربي']],
+        'name_ar' => [255, ['name ar', 'name arabic', 'arabic name', 'name in arabic', 'language name', 'local name', 'arabic', 'الاسم', 'الاسم بالعربي', 'اسم العميل', 'اسم المورد', 'الاسم العربي']],
         'email' => [255, ['email', 'e mail', 'email address', 'mail', 'البريد الالكتروني', 'البريد الإلكتروني']],
         'phone' => [16, ['phone', 'mobile', 'phone number', 'mobile number', 'telephone', 'tel', 'contact number', 'contact no', 'phone no', 'mobile no', 'الجوال', 'الهاتف', 'رقم الجوال']],
         'alt_phone' => [16, ['alt phone', 'alternate phone', 'alternative phone', 'phone 2', 'mobile 2', 'other phone', 'landline']],
@@ -40,7 +47,7 @@ class PartyImportController extends Controller
         'cr_number' => [50, ['cr', 'cr number', 'cr no', 'commercial registration', 'commercial registration number', 'registration number', 'السجل التجاري']],
         'address1_en' => [255, ['address', 'address 1', 'address line 1', 'address1', 'street', 'street name', 'address en', 'address english']],
         'address1_ar' => [255, ['address ar', 'address arabic', 'arabic address', 'العنوان']],
-        'address2_en' => [255, ['address 2', 'address line 2', 'address2', 'district', 'area']],
+        'address2_en' => [255, ['address 2', 'address line 2', 'address2', 'district', 'area', 'territory', 'territory area']],
         'city_en' => [100, ['city', 'city en', 'city english', 'town']],
         'city_ar' => [100, ['city ar', 'city arabic', 'المدينة']],
         'building_number' => [10, ['building', 'building no', 'building number']],
@@ -77,7 +84,7 @@ class PartyImportController extends Controller
         }, "{$kind}s-sample.csv", ['Content-Type' => 'text/csv']);
     }
 
-    public function preview(Request $request, GeminiService $gemini, string $kind): JsonResponse
+    public function upload(Request $request, GeminiService $gemini, string $kind): JsonResponse
     {
         $request->validate(['file' => 'required|file|mimes:xlsx,xls,csv,txt,pdf,jpg,jpeg,png,webp|max:10240']);
         @set_time_limit(300);
@@ -86,13 +93,19 @@ class PartyImportController extends Controller
         $ext = strtolower($file->getClientOriginalExtension());
 
         try {
-            if (in_array($ext, ['xlsx', 'xls', 'csv', 'txt'], true)) {
-                $book = $this->load($file->getRealPath(), $ext);
-                // A recognised header row is mapped column by column: instant and no AI tokens.
-                $raw = $this->mapColumns($book) ?? $this->mapSpreadsheet($book, $gemini, $kind);
-            } else {
+            if (!in_array($ext, ['xlsx', 'xls', 'csv', 'txt'], true)) {
+                // A PDF or photo has no columns to match: AI reads it into our fields.
                 $raw = $this->mapDocument($file, $gemini, $kind);
+                if ($raw === null) {
+                    return response()->json(['error' => __('AI could not analyse the file right now. Please try again in a moment.')], 500);
+                }
+                if (!$raw) {
+                    return response()->json(['error' => __('No rows were found in this file.')], 422);
+                }
+
+                return response()->json(['mode' => 'rows'] + $this->checked($this->normalise($raw, $kind)));
             }
+            $data = $this->cells($this->load($file->getRealPath(), $ext)->getActiveSheet());
         } catch (AiTokenLimitExceededException $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         } catch (\Throwable $e) {
@@ -100,16 +113,50 @@ class PartyImportController extends Controller
             return response()->json(['error' => __('Could not read this file. Please check it and try again.')], 422);
         }
 
-        if ($raw === null) {
-            return response()->json(['error' => __('AI could not analyse the file right now. Please try again in a moment.')], 500);
-        }
-        if (!$raw) {
+        $data = array_values(array_filter($data, fn ($r) => (bool) array_filter($r, fn ($c) => $c !== '')));
+        [$headerAt, $suggest] = $this->findHeader($data, $kind);
+        if ($headerAt === null || count($data) - $headerAt - 1 < 1) {
             return response()->json(['error' => __('No rows were found in this file.')], 422);
         }
+        $headers = $data[$headerAt];
+        $width = count($headers);
+        $rows = array_map(fn ($r) => array_pad(array_slice($r, 0, $width), $width, ''), array_slice($data, $headerAt + 1, self::MAX_ROWS));
 
-        $rows = $this->normalise($raw, $kind);
+        // uploads that were never imported are kept for a day
+        foreach (Storage::disk('local')->files('party-imports') as $old) {
+            if (Storage::disk('local')->lastModified($old) < now()->subDay()->getTimestamp()) Storage::disk('local')->delete($old);
+        }
+        $token = Str::random(40);
+        Storage::disk('local')->put("party-imports/$token.json", json_encode(['company_id' => companyId(), 'kind' => $kind, 'headers' => $headers, 'rows' => $rows]));
 
-        return response()->json([
+        // One example per column (first non-empty value), shown beside the match boxes.
+        $examples = [];
+        foreach (array_keys($headers) as $i) {
+            $examples[$i] = collect($rows)->pluck($i)->first(fn ($v) => $v !== '') ?? '';
+        }
+
+        return response()->json(['mode' => 'map', 'token' => $token, 'headers' => $headers, 'examples' => $examples, 'total' => count($rows), 'suggest' => $suggest]);
+    }
+
+    public function preview(Request $request, string $kind): JsonResponse
+    {
+        $stored = $this->stored($request->input('token'), $kind);
+        if (!$stored) {
+            return response()->json(['error' => __('This upload has expired. Please upload the file again.')], 422);
+        }
+        $map = $this->mapping($request, count($stored['headers']), $kind);
+        if (!isset($map['name_en']) && !isset($map['name_ar'])) {
+            return response()->json(['error' => __('Choose which column holds the name (English or Arabic).')], 422);
+        }
+
+        $raw = array_map(fn ($row) => array_map(fn ($i) => $row[$i] ?? '', $map), $stored['rows']);
+
+        return response()->json($this->checked($this->normalise($raw, $kind)));
+    }
+
+    private function checked(array $rows): array
+    {
+        return [
             'rows' => $rows,
             'summary' => [
                 'total' => count($rows),
@@ -117,13 +164,43 @@ class PartyImportController extends Controller
                 'skipped' => collect($rows)->where('status', 'exists')->count(),
                 'invalid' => collect($rows)->where('status', 'invalid')->count(),
             ],
-        ]);
+        ];
+    }
+
+    private function stored(?string $token, string $kind): ?array
+    {
+        if (!$token || !preg_match('/^[A-Za-z0-9]{40}$/', $token) || !Storage::disk('local')->exists("party-imports/$token.json")) {
+            return null;
+        }
+        $d = json_decode(Storage::disk('local')->get("party-imports/$token.json"), true);
+
+        // a token only works for the company (and list) that uploaded it
+        return ($d && (int) $d['company_id'] === (int) companyId() && $d['kind'] === $kind) ? $d : null;
+    }
+
+    /** field => column index, from the request; only our fields, only columns that exist. */
+    private function mapping(Request $request, int $width, string $kind): array
+    {
+        $allowed = $this->fieldNames($kind);
+        $map = [];
+        foreach ((array) $request->input('map', []) as $field => $col) {
+            if (in_array($field, $allowed, true) && is_numeric($col) && (int) $col >= 0 && (int) $col < $width) {
+                $map[$field] = (int) $col;
+            }
+        }
+
+        return $map;
+    }
+
+    private function fieldNames(string $kind): array
+    {
+        return [...array_keys(self::FIELDS), ...($kind === 'customer' ? ['salesperson'] : [])];
     }
 
     public function import(Request $request, string $kind): JsonResponse
     {
         $rules = ['rows' => 'required|array|min:1|max:5000'];
-        foreach (self::FIELDS as $field => [$max]) {
+        foreach ($this->fieldNames($kind) as $field) {
             $rules["rows.*.$field"] = 'nullable|string|max:1000';
         }
         $data = $request->validate($rules);
@@ -149,6 +226,9 @@ class PartyImportController extends Controller
                     $party->{$field} = $r[$field] === '' ? null : $r[$field];
                 }
                 $party->business_type = $r['vat_number'] !== '' ? 'registered' : 'unregistered';
+                if ($kind === 'customer') {
+                    $party->salesperson_id = $r['salesperson_id'];
+                }
                 $party->save();
             }
             DB::commit();
@@ -159,6 +239,9 @@ class PartyImportController extends Controller
         }
         if ($kind === 'customer') {
             Cache::forget('confirmCustomers:' . cacheName());
+        }
+        if ($this->stored($request->input('token'), $kind)) {
+            Storage::disk('local')->delete('party-imports/' . $request->input('token') . '.json');
         }
 
         $message = $kind === 'customer' ? __(':n customers imported.', ['n' => $rows->count()]) : __(':n suppliers imported.', ['n' => $rows->count()]);
@@ -187,7 +270,7 @@ class PartyImportController extends Controller
     }
 
     /** Every sheet row as trimmed strings. */
-    private function cells($sheet): array
+    private function cells(Worksheet $sheet): array
     {
         return array_map(fn ($row) => array_map(function ($c) {
             if (is_float($c) || is_int($c)) {
@@ -204,37 +287,37 @@ class PartyImportController extends Controller
         return trim(preg_replace('/[^\p{L}\p{N}]+/u', ' ', mb_strtolower($h)));
     }
 
-    /** Spreadsheet with a header row we recognise: map the columns directly. Null when no header is recognised. */
-    private function mapColumns(Spreadsheet $book): ?array
+    /**
+     * The header row (the first of the top 15 rows naming a name column, else the first row with two filled cells)
+     * and our suggested match: field => column index.
+     */
+    private function findHeader(array $data, string $kind): array
     {
-        $found = false;
-        $all = [];
-        foreach ($book->getAllSheets() as $sheet) {
-            $data = $this->cells($sheet);
-            foreach (array_slice($data, 0, 15, true) as $at => $cells) {
-                $heads = array_map(fn ($c) => $this->headerKey($c), $cells);
-                $cols = [];
-                foreach (self::FIELDS as $field => [, $words]) {
-                    foreach (array_map(fn ($w) => $this->headerKey($w), [$field, ...$words]) as $w) {
-                        $i = array_search($w, $heads, true);
-                        if ($i !== false && !in_array($i, $cols, true)) {
-                            $cols[$field] = $i;
-                            break;
-                        }
+        $words = array_map(fn ($f) => $f[1], self::FIELDS);
+        if ($kind === 'customer') $words['salesperson'] = self::SALESPERSON_WORDS;
+
+        $fallback = null;
+        foreach (array_slice($data, 0, 15, true) as $at => $cells) {
+            $heads = array_map(fn ($c) => $this->headerKey($c), $cells);
+            $cols = [];
+            foreach ($words as $field => $list) {
+                foreach (array_map(fn ($w) => $this->headerKey($w), [$field, ...$list]) as $w) {
+                    $i = array_search($w, $heads, true);
+                    if ($i !== false && !in_array($i, $cols, true)) {
+                        $cols[$field] = $i;
+                        break;
                     }
                 }
-                if (!isset($cols['name_en']) && !isset($cols['name_ar'])) continue;
-
-                $found = true;
-                foreach (array_slice($data, $at + 1) as $row) {
-                    if (!array_filter($row, fn ($v) => $v !== '')) continue;
-                    $all[] = array_map(fn ($i) => $row[$i] ?? '', $cols);
-                }
-                break;
+            }
+            if (isset($cols['name_en']) || isset($cols['name_ar'])) {
+                return [$at, $cols];
+            }
+            if ($fallback === null && count(array_filter($cells, fn ($c) => $c !== '')) >= 2) {
+                $fallback = [$at, $cols];
             }
         }
 
-        return $found ? $all : null;
+        return $fallback ?? [null, []];
     }
 
     private function prompt(string $kind, string $source): string
@@ -253,35 +336,6 @@ Return ONLY JSON: {"rows":[{...}]} in the same order as the source.
 
 SOURCE ({$source}):
 PROMPT;
-    }
-
-    /** Spreadsheet without a header we recognise: read as text lines and map in chunks. */
-    private function mapSpreadsheet(Spreadsheet $book, GeminiService $gemini, string $kind): ?array
-    {
-        $lines = [];
-        foreach ($book->getAllSheets() as $sheet) {
-            foreach ($this->cells($sheet) as $cells) {
-                if (!array_filter($cells, fn ($v) => $v !== '')) continue;
-                $lines[] = trim(preg_replace('/(\s*\|\s*)+$/', '', implode(' | ', $cells)));
-            }
-        }
-        if (!$lines) return [];
-        if (count($lines) > 1500) {
-            throw new \RuntimeException('File too large');
-        }
-
-        $all = [];
-        foreach (array_chunk($lines, self::CHUNK) as $n => $chunk) {
-            $body = implode("\n", $n === 0 ? $chunk : array_merge(["(first row of the file, for column meaning:) {$lines[0]}", '---'], $chunk));
-            $response = $gemini->generateResponse($this->prompt($kind, 'spreadsheet rows') . "\n" . $body, true, 0.1, 'Import ' . ucfirst($kind) . 's');
-            $decoded = $response ? json_decode($this->sanitize($response), true) : null;
-            if (!is_array($decoded)) return null;
-            foreach ($decoded['rows'] ?? [] as $r) {
-                if (is_array($r)) $all[] = $r;
-            }
-        }
-
-        return $all;
     }
 
     /** PDF / image: the model reads the document directly. */
@@ -325,8 +379,12 @@ PROMPT;
         $aliases = ['ksa' => 'sa', 'saudi' => 'sa', 'uae' => 'ae', 'emirates' => 'ae', 'uk' => 'gb', 'usa' => 'us'];
         $k = mb_strtolower(trim($v));
         $k = $aliases[$k] ?? $k;
+        // "GREAT BRITAIN (UNITED KINGDOM)": try the part in brackets too
+        if (!isset($byKey[$k]) && preg_match('/\(([^)]+)\)/', $k, $m)) {
+            $k = $aliases[trim($m[1])] ?? trim($m[1]);
+        }
 
-        return $byKey[$k] ?? null;
+        return $byKey[$k] ?? ['turkey' => $byKey['tr'] ?? null][$k] ?? null;
     }
 
     /**
@@ -356,6 +414,7 @@ PROMPT;
         $company = DB::table('companies')->where('id', companyId())->first(['country', 'currency']);
         $defaultCountry = $this->country((string) ($company->country ?? ''), $countries) ?? 'Saudi Arabia';
         $defaultCurrency = strtoupper((string) ($company->currency ?? '')) ?: 'SAR';
+        $salespersons = $kind === 'customer' ? \App\Models\Master\Salesperson\Salesperson::activeSalesperson()->keyBy(fn ($sp) => $this->nameKey($sp->name)) : collect();
 
         $seenName = [];
         $seenVat = [];
@@ -363,10 +422,20 @@ PROMPT;
         foreach (array_values($raw) as $i => $in) {
             $notes = [];
             $r = [];
-            foreach (self::FIELDS as $field => [$max]) {
-                $r[$field] = trim(preg_replace('/\s+/u', ' ', strip_tags((string) ($in[$field] ?? ''))));
+            foreach ([...array_keys(self::FIELDS), 'salesperson'] as $field) {
+                // a leading ' is Excel's "keep as text" mark, not part of the value
+                $v = ltrim(trim(preg_replace('/\s+/u', ' ', strip_tags((string) ($in[$field] ?? '')))), "'");
+                // exports fill empty cells with placeholders: "N/A", "-", " -  / ", "UNREGISTERED"
+                $r[$field] = preg_match('/^(n\/?a|nil|none|null|-|0|unregistered|not registered)$/i', $v) || !preg_match('/[\p{L}\p{N}]/u', $v) ? '' : $v;
             }
             $status = 'new';
+
+            // An export that lost its Arabic letters prints "¿¿¿¿ ¿¿¿" or "???": unusable, treat as empty.
+            $arRaw = str_replace(' ', '', (string) ($in['name_ar'] ?? ''));
+            if ($arRaw !== '' && preg_match_all('/[?¿\x{FFFD}]/u', $arRaw) >= mb_strlen($arRaw) / 2) {
+                $r['name_ar'] = '';
+                $notes[] = __('Arabic name in the file is unreadable (the export lost the Arabic letters)');
+            }
 
             // Names: the create form needs both, so a missing one is copied from the other.
             if ($r['name_en'] === '' && $r['name_ar'] === '') {
@@ -381,26 +450,15 @@ PROMPT;
             }
 
             if ($r['email'] !== '') {
-                $r['email'] = mb_strtolower($r['email']);
+                // "<a@b.com>", "E-mail:a@b.com", "a@b.com , c@d.com": keep the first address
+                $emails = preg_match_all('/[^\s<>,;:"]+@[^\s<>,;:"]+\.[a-z]{2,}/i', $r['email'], $m) ? $m[0] : [];
+                if (count($emails) > 1) $notes[] = __('More than one email, kept the first: :v', ['v' => $emails[0]]);
+                $r['email'] = mb_strtolower($emails[0] ?? $r['email']);
                 if (!filter_var($r['email'], FILTER_VALIDATE_EMAIL)) {
                     $notes[] = __('Email ":v" is not valid, left empty', ['v' => $r['email']]);
                     $r['email'] = '';
                 }
             }
-            foreach (['phone', 'alt_phone'] as $f) {
-                if ($r[$f] === '') continue;
-                $p = preg_replace('/[\s\-().]/', '', $r[$f]);
-                $p = preg_replace('/^00/', '+', $p);
-                if (!preg_match('/^\+?[0-9]{10,15}$/', $p)) {
-                    $notes[] = __('Phone ":v" is not 10 to 15 digits, left empty', ['v' => $r[$f]]);
-                    $p = '';
-                }
-                $r[$f] = $p;
-            }
-            $r['vat_number'] = preg_replace('/\s+/', '', $r['vat_number']);
-            $r['cr_number'] = preg_replace('/\s+/', '', $r['cr_number']);
-            $r['iban'] = strtoupper(preg_replace('/\s+/', '', $r['iban']));
-
             if ($r['country'] === '') {
                 $r['country'] = $defaultCountry;
             } elseif ($c = $this->country($r['country'], $countries)) {
@@ -409,8 +467,79 @@ PROMPT;
                 $notes[] = __('Country ":v" not recognised, set to :d', ['v' => $r['country'], 'd' => $defaultCountry]);
                 $r['country'] = $defaultCountry;
             }
+
+            // Extensions and remarks are not part of the number: "Ext:128", "[302]", "# 363", "(Office No.)".
+            foreach (['phone', 'alt_phone'] as $f) {
+                $r[$f] = trim(preg_replace(['/\s*(ext\.?|extn\.?|x|#)\s*:?\s*\d+\s*$/i', '/\[[^\]]*\]/', '/\((?![\s+\d]+\))[^)]*\)/', '/^[^\d+(]+/', '/[.\s]+$/'], '', $r[$f]));
+            }
+            // Two numbers in one phone cell ("0564730621 / 0574757350"): the second becomes the alternate phone,
+            // a short second part ("+966 13 8579922 / 1278") is an extension and is dropped.
+            $phones = preg_split('/\s*[\/,;|]\s*/', $r['phone'], -1, PREG_SPLIT_NO_EMPTY);
+            if (count($phones) > 1) {
+                $r['phone'] = $phones[0];
+                if ($r['alt_phone'] === '' && strlen(preg_replace('/\D/', '', $phones[1])) >= 7) $r['alt_phone'] = $phones[1];
+            }
+            foreach (['phone', 'alt_phone'] as $f) {
+                if ($r[$f] === '') continue;
+                $p = preg_replace('/[\s\-().]/', '', $r[$f]);
+                $p = preg_replace('/^\+\s*|^00/', '+', $p);
+                if (preg_match('/^\+?\d{1,4}$/', $p)) {                       // only a country code ("00966"): no number
+                    $r[$f] = '';
+                    continue;
+                }
+                if ($r['country'] === 'Saudi Arabia' && preg_match('/^5\d{8}$/', $p)) {
+                    $p = '0' . $p;                                            // mobile typed without its leading 0
+                } elseif (preg_match('/^[1-9]\d{10,14}$/', $p)) {
+                    $p = '+' . $p;                                            // international number typed without "+"
+                }
+                if (!preg_match('/^\+?[0-9]{10,15}$/', $p)) {
+                    $notes[] = __('Phone ":v" is not 10 to 15 digits, left empty', ['v' => $r[$f]]);
+                    $p = '';
+                }
+                $r[$f] = $p;
+            }
+
+            // VAT and CR often share one column ("312041894900003/ 1010287602"): the 15-digit number is the VAT,
+            // the other one the CR. Works whether the column is matched to VAT, to CR, or to both.
+            // Labels typed into the cell ("CR:", "CRNO:", "VAT No.") are dropped. Only two real numbers (7+ digits each)
+            // are split: "13.579.687/0001-03" is one foreign tax id.
+            $label = '/^(vat|trn|tax|c\.?\s*r\.?)\s*(no\.?|number|#)?\s*[:\-#.]?\s*/i';
+            $parts = collect([$r['vat_number'], $r['cr_number']])
+                ->flatMap(fn ($v) => preg_split('/\s*[\/,;|]\s*|\s{2,}/', $v, -1, PREG_SPLIT_NO_EMPTY))
+                ->map(fn ($v) => preg_replace('/\s+/', '', preg_replace($label, '', ltrim($v, "'"))))->filter()->unique()->values();
+            $split = $parts->count() > 1 && $parts->every(fn ($v) => strlen(preg_replace('/\D/', '', $v)) >= 7);
+            if ($split) {
+                $vat = $parts->first(fn ($v) => preg_match('/^3\d{13}3$/', $v)) ?? $parts->first(fn ($v) => preg_match('/^\d{15}$/', $v)) ?? $parts[0];
+                $cr = $parts->first(fn ($v) => $v !== $vat);
+                $notes[] = __('VAT and CR were in one column: split into VAT :v and CR :c', ['v' => $vat, 'c' => $cr]);
+                $r['vat_number'] = $vat;
+                $r['cr_number'] = $cr;
+            } else {
+                $r['vat_number'] = preg_replace('/\s+/', '', preg_replace($label, '', $r['vat_number']));
+                $r['cr_number'] = preg_replace('/\s+/', '', preg_replace($label, '', $r['cr_number']));
+                // a Saudi CR (10 digits) alone in the VAT column
+                if ($r['country'] === 'Saudi Arabia' && $r['cr_number'] === '' && preg_match('/^[1-9]\d{9}$/', $r['vat_number'])) {
+                    $notes[] = __(':v is a CR number, not a VAT number: moved to CR', ['v' => $r['vat_number']]);
+                    $r['cr_number'] = $r['vat_number'];
+                    $r['vat_number'] = '';
+                }
+            }
+            $r['iban'] = strtoupper(preg_replace('/\s+/', '', $r['iban']));
+
             if ($r['vat_number'] !== '' && $r['country'] === 'Saudi Arabia' && !preg_match('/^3\d{13}3$/', $r['vat_number'])) {
                 $notes[] = __('Saudi VAT numbers are 15 digits starting and ending with 3: please check');
+            }
+
+            $r['salesperson_id'] = null;
+            if ($kind === 'customer' && $r['salesperson'] !== '') {
+                $sp = $salespersons[$this->nameKey($r['salesperson'])] ?? null;
+                if ($sp) {
+                    $r['salesperson_id'] = $sp->id;
+                    $r['salesperson'] = $sp->name;
+                } else {
+                    $notes[] = __('Salesperson ":v" not found, left empty', ['v' => $r['salesperson']]);
+                    $r['salesperson'] = '';
+                }
             }
 
             $cur = strtoupper($r['currency']);
@@ -453,18 +582,21 @@ PROMPT;
             if ($status === 'new') {
                 $vat = $r['vat_number'];
                 $hit = $byName[$this->nameKey($r['name_en'])] ?? $byName[$this->nameKey($r['name_ar'])] ?? null;
-                $vatHit = $hit === null && $vat !== '' ? $byVat[$vat] ?? null : null;
-                if ($hit || $vatHit) {
+                if ($hit) {
                     $status = 'exists';
-                    $notes = [$hit ? __('Already exists as :no', ['no' => $hit]) : __('Same VAT number as :no', ['no' => $vatHit])];
+                    $notes = [__('Already exists as :no', ['no' => $hit])];
                 } else {
-                    $twin = $seenName[$this->nameKey($r['name_en'])] ?? ($vat !== '' ? $seenVat[$vat] ?? null : null);
+                    // Group companies often share one VAT number: a warning, not a block.
+                    if ($vat !== '' && ($other = $byVat[$vat] ?? (isset($seenVat[$vat]) ? __('row :n', ['n' => $seenVat[$vat] + 1]) : null))) {
+                        $notes[] = __('Same VAT number as :no: please check', ['no' => $other]);
+                    }
+                    $twin = $seenName[$this->nameKey($r['name_en'])] ?? null;
                     if ($twin !== null) {
                         $status = 'invalid';
                         $notes[] = __('Listed twice in this file (row :n)', ['n' => $twin + 1]);
                     } else {
                         $seenName[$this->nameKey($r['name_en'])] = $i;
-                        if ($vat !== '') $seenVat[$vat] = $i;
+                        if ($vat !== '' && !isset($seenVat[$vat])) $seenVat[$vat] = $i;
                     }
                 }
             }

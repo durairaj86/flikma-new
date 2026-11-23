@@ -62,6 +62,7 @@ Route::middleware(['auth', 'verified', 'module.permission'])->group(function () 
     Route::post('/customer/data', [\App\Http\Controllers\Customer\CustomerController::class, 'fetchAllRows'])->name('customers.data');
     Route::get('/customers/import', [\App\Http\Controllers\Import\PartyImportController::class, 'page'])->defaults('kind', 'customer');
     Route::get('/customer/import/sample', [\App\Http\Controllers\Import\PartyImportController::class, 'sample'])->defaults('kind', 'customer');
+    Route::post('/customer/import/upload', [\App\Http\Controllers\Import\PartyImportController::class, 'upload'])->defaults('kind', 'customer');
     Route::post('/customer/import/preview', [\App\Http\Controllers\Import\PartyImportController::class, 'preview'])->defaults('kind', 'customer');
     Route::post('/customer/import', [\App\Http\Controllers\Import\PartyImportController::class, 'import'])->defaults('kind', 'customer');
     Route::get('/customer/create', [\App\Http\Controllers\Customer\CustomerController::class, 'modal']);
@@ -110,6 +111,7 @@ Route::middleware(['auth', 'verified', 'module.permission'])->group(function () 
     Route::post('/supplier/data', [\App\Http\Controllers\Supplier\SupplierController::class, 'fetchAllRows'])->name('suppliers.data');
     Route::get('/suppliers/import', [\App\Http\Controllers\Import\PartyImportController::class, 'page'])->defaults('kind', 'supplier');
     Route::get('/supplier/import/sample', [\App\Http\Controllers\Import\PartyImportController::class, 'sample'])->defaults('kind', 'supplier');
+    Route::post('/supplier/import/upload', [\App\Http\Controllers\Import\PartyImportController::class, 'upload'])->defaults('kind', 'supplier');
     Route::post('/supplier/import/preview', [\App\Http\Controllers\Import\PartyImportController::class, 'preview'])->defaults('kind', 'supplier');
     Route::post('/supplier/import', [\App\Http\Controllers\Import\PartyImportController::class, 'import'])->defaults('kind', 'supplier');
     Route::get('/supplier/create', [\App\Http\Controllers\Supplier\SupplierController::class, 'modal']);

@@ -28,7 +28,15 @@
             .imp-table { font-size: .82rem; }
             .imp-table th { position: sticky; top: 0; background: #f8f9fa; z-index: 1; white-space: nowrap; }
             .imp-table td .sub { color: #667085; font-size: .78rem; }
+            .imp-table td.imp-name { min-width: 200px; }
+            .imp-table td.imp-note { min-width: 320px; }
             tr.row-skip { opacity: .55; }
+            .map-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); column-gap: 28px; }
+            .map-row { display: grid; grid-template-columns: 170px 1fr; gap: 10px; align-items: center; padding: 7px 0; border-bottom: 1px solid #eef0f3; }
+            .map-row label { font-weight: 600; font-size: .88rem; margin: 0; }
+            .map-row label small { display: block; color: #667085; font-weight: 400; }
+            .map-row .map-ex { grid-column: 2; color: #667085; font-size: .78rem; margin-top: -4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            @media (max-width: 575px) { .map-grid { grid-template-columns: 1fr; } .map-row { grid-template-columns: 1fr; } .map-row .map-ex { grid-column: 1; } }
         </style>
 
         <div class="imp-wrap">
@@ -73,7 +81,7 @@
                             <li><strong>{{ __('Name') }}</strong> {{ __('(English or Arabic) is the only thing that must be there. A missing English or Arabic name is copied from the other one.') }}</li>
                             <li><strong>{{ __('Columns we understand') }}</strong>: {{ __('email, phone, VAT number, CR number, address, city, building number, additional number, postal code, country, currency, credit limit, credit days, IBAN, contact person.') }}</li>
                             <li><strong>{{ __('Country / Currency') }}</strong> {{ __('when missing, your company\'s country and currency are used.') }}</li>
-                            <li>{{ __('A file with a header row is read column by column, instantly. Any other layout, PDF or photo is read by AI.') }}</li>
+                            <li>{{ __('Excel / CSV: after uploading you match your columns to our fields. A PDF or photo is read by AI.') }}</li>
                         </ul>
                         <h6 class="mt-3">{{ __('How it is checked') }}</h6>
                         <table class="imp-rules">
@@ -86,9 +94,21 @@
                 </div>
             </div>
 
-            {{-- Step 2: review --}}
+            {{-- Step 2: match the columns --}}
+            <div class="imp-card mt-3 d-none" id="impMapCard">
+                <h6><span class="imp-step">2</span>{{ __('Match your columns') }}</h6>
+                <div class="imp-help mb-2">{{ __('For each of our fields, choose the column of your file that holds it. We matched what we could from the column names: change anything that is wrong, and leave a field empty when your file does not have it. VAT and CR in one column are split automatically.') }}</div>
+                <div class="map-grid" id="imp-map"></div>
+                <div class="d-flex align-items-center gap-2 mt-3">
+                    <span class="text-muted small me-auto" id="imp-rowcount"></span>
+                    <button type="button" class="btn btn-outline-secondary px-3" id="imp-map-cancel">{{ __('Cancel') }}</button>
+                    <button type="button" class="btn btn-primary px-4" id="imp-preview"><i class="bi bi-eye me-1"></i>{{ __('Preview') }}</button>
+                </div>
+            </div>
+
+            {{-- Step 3: review --}}
             <div class="imp-card mt-3 d-none" id="impReviewCard">
-                <h6><span class="imp-step">2</span>{{ __('Review and confirm') }}</h6>
+                <h6><span class="imp-step">3</span>{{ __('Review and confirm') }}</h6>
                 <div class="d-flex flex-wrap align-items-center gap-2 mb-2" id="imp-summary"></div>
                 <div class="imp-scroll">
                     <table class="table table-sm table-hover align-middle mb-0 imp-table">
@@ -100,6 +120,7 @@
                             <th>{{ __('Contact') }}</th>
                             <th>{{ __('VAT / CR') }}</th>
                             <th>{{ __('City / Country') }}</th>
+                            @if($isCustomer)<th>{{ __('Salesperson') }}</th>@endif
                             <th>{{ __('Currency') }}</th>
                             <th>{{ __('Credit') }}</th>
                             <th>{{ __('Note') }}</th>
@@ -110,6 +131,7 @@
                 </div>
                 <div class="d-flex align-items-center gap-2 mt-3">
                     <span class="text-muted small me-auto">{{ __('Everything look right?') }}</span>
+                    <button type="button" class="btn btn-outline-secondary px-3" id="imp-back">{{ __('Change columns') }}</button>
                     <button type="button" class="btn btn-outline-secondary px-3" id="imp-cancel">{{ __('Cancel') }}</button>
                     <button type="button" class="btn btn-primary px-4" id="imp-confirm"><i class="bi bi-check-lg me-1"></i>{{ __('Yes, Import') }}</button>
                 </div>
@@ -121,13 +143,26 @@
     (function () {
         var $ = function (id) { return document.getElementById(id); };
         var kind = @json($kind), listUrl = @json($listUrl);
-        var fields = @json(array_keys(\App\Http\Controllers\Import\PartyImportController::FIELDS));
-        var rows = [];
+        var isCustomer = kind === 'customer';
+        // our fields, in the order the match boxes show them: [field, label, hint]
+        var FIELDS = [
+            ['name_en', @json(__('Name (English)')), @json(__('Name in English or Arabic is required'))], ['name_ar', @json(__('Name (Arabic)')), ''],
+            ['vat_number', @json(__('VAT Number')), @json(__('may also hold the CR: it is split'))], ['cr_number', @json(__('CR Number')), ''],
+            ['email', @json(__('Email')), ''], ['phone', @json(__('Phone')), ''], ['alt_phone', @json(__('Alternative Phone')), ''], ['contact_person', @json(__('Contact Person')), ''],
+            ['address1_en', @json(__('Address 1 (English)')), ''], ['address1_ar', @json(__('Address 1 (Arabic)')), ''], ['address2_en', @json(__('Address 2 / District')), ''],
+            ['building_number', @json(__('Building Number')), ''], ['plot_no', @json(__('Additional Number')), ''], ['postal_code', @json(__('Postal Code')), ''],
+            ['city_en', @json(__('City (English)')), ''], ['city_ar', @json(__('City (Arabic)')), ''], ['country', @json(__('Country')), @json(__('empty: your company\'s country'))],
+            ['currency', @json(__('Currency')), @json(__('empty: your company\'s currency'))], ['credit_limit', @json(__('Credit Limit')), ''], ['credit_days', @json(__('Credit Days')), ''], ['iban', @json(__('IBAN')), '']
+        ];
+        if (isCustomer) FIELDS.push(['salesperson', @json(__('Salesperson')), @json(__('matched by name'))]);
+        var fields = FIELDS.map(function (f) { return f[0]; });
+        var rows = [], token = null;
         var T = {
             statusNew: @json(__('New')), statusExists: @json(__('Already exists')), statusInvalid: @json(__('Needs attention')),
             total: @json(__('rows')), toImport: @json(__('to import')), skipped: @json(__('skipped')), invalid: @json(__('need attention')),
             importing: @json(__('Importing…')), yes: @json(__('Yes, Import')), failed: @json(__('Could not analyse the file.')), none: @json(__('Nothing selected to import.')),
-            days: @json(__('days'))
+            days: @json(__('days')), notInFile: @json(__('— not in my file —')), column: @json(__('Column')), example: @json(__('e.g.')),
+            needName: @json(__('Choose which column holds the name (English or Arabic).'))
         };
         function csrf() { return document.querySelector('meta[name="csrf-token"]').content; }
         function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -136,10 +171,49 @@
         function clearError() { $('imp-error').classList.add('d-none'); }
 
         $('imp-file').addEventListener('change', function () { $('imp-upload').disabled = !this.files.length; clearError(); });
-        $('imp-cancel').addEventListener('click', function () {
-            rows = []; $('impReviewCard').classList.add('d-none'); $('imp-file').value = ''; $('imp-upload').disabled = true; clearError();
+        function reset() {
+            rows = []; token = null; $('impMapCard').classList.add('d-none'); $('impReviewCard').classList.add('d-none'); $('imp-file').value = ''; $('imp-upload').disabled = true; clearError();
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        $('imp-cancel').addEventListener('click', reset);
+        $('imp-map-cancel').addEventListener('click', reset);
+        $('imp-back').addEventListener('click', function () {
+            $('impReviewCard').classList.add('d-none');
+            $('impMapCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
+        function post(url, body, json) {
+            var h = { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': csrf() };
+            if (json) h['Content-Type'] = 'application/json';
+            return fetch(url, { method: 'POST', body: json ? JSON.stringify(body) : body, headers: h })
+                .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); });
+        }
+        function failMsg(d) { return d.error || (d.errors && Object.values(d.errors).flat().join(' ')) || d.message || T.failed; }
+        function showReview(d) {
+            rows = d.rows.map(function (r) { r.checked = r.status === 'new'; return r; });
+            $('imp-check-all').checked = true;
+            $('imp-back').classList.toggle('d-none', !token);
+            $('impReviewCard').classList.remove('d-none');
+            render();
+            $('impReviewCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        function showMap(d) {
+            token = d.token;
+            $('imp-map').innerHTML = FIELDS.map(function (f) {
+                var opts = '<option value="">' + T.notInFile + '</option>' + d.headers.map(function (h, i) {
+                    return '<option value="' + i + '"' + (String(d.suggest[f[0]]) === String(i) ? ' selected' : '') + '>' + esc(h || (T.column + ' ' + (i + 1))) + '</option>';
+                }).join('');
+                return '<div class="map-row"><label for="map-' + f[0] + '">' + f[1] + (f[2] ? '<small>' + f[2] + '</small>' : '') + '</label>' +
+                    '<select class="tom-select" data-live-search="true" id="map-' + f[0] + '" data-field="' + f[0] + '">' + opts + '</select><div class="map-ex" id="ex-' + f[0] + '"></div></div>';
+            }).join('');
+            var examples = d.examples;
+            function example(sel) { var v = sel.value === '' ? '' : examples[sel.value]; $('ex-' + sel.dataset.field).textContent = v ? T.example + ' ' + v : ''; }
+            $('imp-map').querySelectorAll('select').forEach(function (sel) { example(sel); sel.addEventListener('change', function () { example(sel); }); });
+            if (window.initTomSelectForm && window.jQuery) initTomSelectForm(jQuery('#imp-map'));
+            $('imp-rowcount').textContent = d.total + ' ' + T.total;
+            $('impReviewCard').classList.add('d-none');
+            $('impMapCard').classList.remove('d-none');
+            $('impMapCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
 
         function selectedCount() { return rows.filter(function (r) { return r.status === 'new' && r.checked; }).length; }
         function refreshSummary() {
@@ -160,12 +234,12 @@
                 var credit = (r.credit_limit ? r.credit_limit : '') + (r.credit_days ? (r.credit_limit ? ' · ' : '') + r.credit_days + ' ' + T.days : '');
                 return '<tr class="' + (can ? '' : 'row-skip') + '"><td><input type="checkbox" class="form-check-input imp-check" data-i="' + i + '"' + (can ? (r.checked ? ' checked' : '') : ' disabled') + '></td>' +
                     '<td>' + badge + '</td>' +
-                    '<td class="fw-semibold">' + two(r.name_en, r.name_ar !== r.name_en ? r.name_ar : '') + '</td>' +
-                    '<td>' + two(r.phone, r.email) + '</td>' +
+                    '<td class="fw-semibold imp-name">' + two(r.name_en, r.name_ar !== r.name_en ? r.name_ar : '') + '</td>' +
+                    '<td>' + two(r.phone + (r.alt_phone ? ' / ' + r.alt_phone : ''), r.email) + '</td>' +
                     '<td>' + two(r.vat_number, r.cr_number) + '</td>' +
-                    '<td>' + two(r.city_en, r.country) + '</td>' +
+                    '<td>' + two(r.city_en, r.country) + '</td>' + (isCustomer ? '<td>' + esc(r.salesperson || '—') + '</td>' : '') +
                     '<td>' + esc(r.currency) + '</td><td>' + esc(credit || '—') + '</td>' +
-                    '<td class="text-muted">' + esc(r.note) + '</td></tr>';
+                    '<td class="text-muted imp-note">' + esc(r.note) + '</td></tr>';
             }).join('');
             refreshSummary();
         }
@@ -184,19 +258,30 @@
             if (!file) return;
             clearError();
             var btn = this; btn.disabled = true; $('imp-loading').classList.remove('d-none');
-            var fd = new FormData(); fd.append('file', file); fd.append('_token', csrf());
-            fetch('/' + kind + '/import/preview', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
-                .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+            var fd = new FormData(); fd.append('file', file);
+            post('/' + kind + '/import/upload', fd)
                 .then(function (res) {
                     $('imp-loading').classList.add('d-none'); btn.disabled = false;
-                    if (!res.ok) { showError(res.d.error || (res.d.errors && Object.values(res.d.errors).flat().join(' ')) || res.d.message || T.failed); return; }
-                    rows = res.d.rows.map(function (r) { r.checked = r.status === 'new'; return r; });
-                    $('imp-check-all').checked = true;
-                    $('impReviewCard').classList.remove('d-none');
-                    render();
-                    $('impReviewCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    if (!res.ok) { showError(failMsg(res.d)); return; }
+                    token = null;
+                    if (res.d.mode === 'map') showMap(res.d); else { $('impMapCard').classList.add('d-none'); showReview(res.d); }
                 })
                 .catch(function () { $('imp-loading').classList.add('d-none'); btn.disabled = false; showError(T.failed); });
+        });
+
+        $('imp-preview').addEventListener('click', function () {
+            var map = {};
+            $('imp-map').querySelectorAll('select').forEach(function (sel) { if (sel.value !== '') map[sel.dataset.field] = +sel.value; });
+            if (map.name_en === undefined && map.name_ar === undefined) { showError(T.needName); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+            clearError();
+            var btn = this; btn.disabled = true;
+            post('/' + kind + '/import/preview', { token: token, map: map }, true)
+                .then(function (res) {
+                    btn.disabled = false;
+                    if (!res.ok) { showError(failMsg(res.d)); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+                    showReview(res.d);
+                })
+                .catch(function () { btn.disabled = false; showError(T.failed); });
         });
 
         $('imp-confirm').addEventListener('click', function () {
@@ -205,12 +290,7 @@
             var btn = this; btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> ' + T.importing;
             clearError();
-            fetch('/' + kind + '/import', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf(), 'X-Requested-With': 'XMLHttpRequest' },
-                body: JSON.stringify({ rows: chosen.map(function (r) { var o = {}; fields.forEach(function (f) { o[f] = r[f] == null ? '' : String(r[f]); }); return o; }) })
-            })
-                .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+            post('/' + kind + '/import', { token: token, rows: chosen.map(function (r) { var o = {}; fields.forEach(function (f) { o[f] = r[f] == null ? '' : String(r[f]); }); return o; }) }, true)
                 .then(function (res) {
                     if (!res.ok || res.d.status !== 'success') { btn.disabled = false; btn.innerHTML = '<i class="bi bi-check-lg me-1"></i> ' + T.yes; showError(res.d.message || T.failed); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
                     if (window.toastr) toastr.success(res.d.message);
