@@ -3574,6 +3574,7 @@
     "Not found in your accounts, customers or suppliers": "غير موجود في الحسابات أو العملاء أو الموردين",
     "Already has an opening balance": "لديه رصيد افتتاحي بالفعل",
     "Empty row": "صف فارغ",
+    "Total row": "صف إجمالي",
     "No amount": "بدون مبلغ",
     "Amount is not a number": "المبلغ ليس رقماً",
     "The customer or supplier cannot be changed. Delete this entry and add it again to use a different one.": "لا يمكن تغيير العميل أو المورد. احذف هذا الإدخال وأضفه من جديد لاستخدام آخر",

@@ -28,7 +28,7 @@ class OpeningBalanceImportController extends Controller
 
     /** Field => header words we recognise when suggesting the mapping. */
     private const SYNONYMS = [
-        'name'   => ['name', 'account name', 'account', 'ledger', 'ledger name', 'party', 'particulars', 'customer', 'supplier', 'customer name', 'supplier name', 'description'],
+        'name'   => ['name', 'account name', 'coa name', 'gl name', 'account title', 'account', 'ledger', 'ledger name', 'party', 'particulars', 'customer', 'supplier', 'customer name', 'supplier name', 'description'],
         'code'   => ['code', 'account code', 'acc code', 'a/c code', 'account no', 'account number', 'customer code', 'supplier code'],
         'kind'   => ['type', 'kind', 'category', 'group', 'party type', 'account type'],
         'debit'  => ['debit', 'dr', 'debit amount', 'debits', 'opening debit'],
@@ -121,7 +121,18 @@ class OpeningBalanceImportController extends Controller
     {
         $map = [];
         $used = [];
+        // A trial balance report (Opening | Debit | Credit | Closing): Debit/Credit are the period's movements,
+        // the balance to carry over is the closing one.
+        $closing = array_search('closing balance', array_map(fn($h) => mb_strtolower(trim($h)), $headers), true);
+        if ($closing !== false) {
+            $map['amount'] = $closing;
+            $used[$closing] = true;
+            foreach ($headers as $i => $h) {
+                if (in_array(mb_strtolower(trim($h)), [...self::SYNONYMS['debit'], ...self::SYNONYMS['credit'], ...self::SYNONYMS['amount']], true)) $used[$i] = true;
+            }
+        }
         foreach (self::SYNONYMS as $field => $words) {
+            if (isset($map[$field])) continue;
             foreach ($headers as $i => $h) {
                 if (isset($used[$i])) continue;
                 if (in_array(mb_strtolower(trim($h)), $words, true)) { $map[$field] = $i; $used[$i] = true; break; }
@@ -233,15 +244,17 @@ class OpeningBalanceImportController extends Controller
         $date = \Carbon\Carbon::parse($date)->format('Y-m-d');
 
         // Lookups, once.
+        // Names compare case- and spacing-insensitively: reports often carry "STAFF  IQAMA" with a double space.
+        $norm = fn($s) => mb_strtolower(trim(preg_replace('/\s+/u', ' ', (string) $s)));
         $accounts = Account::where('is_last', 1)->get(['id', 'code', 'name']);
         $byCode = $accounts->keyBy(fn($a) => mb_strtolower(trim((string) $a->code)));
-        $byName = $accounts->keyBy(fn($a) => mb_strtolower(trim((string) $a->name)));
+        $byName = $accounts->keyBy(fn($a) => $norm($a->name));
         $parties = ['customer' => Customer::get(['id', 'name_en', 'name_ar', 'row_no']), 'supplier' => Supplier::get(['id', 'name_en', 'name_ar', 'row_no'])];
         $partyIdx = [];
         foreach ($parties as $kind => $list) {
             foreach ($list as $p) {
                 foreach ([$p->name_en, $p->name_ar, $p->row_no] as $key) {
-                    if (filled($key)) $partyIdx[$kind][mb_strtolower(trim((string) $key))] = $p;
+                    if (filled($key)) $partyIdx[$kind][$norm($key)] = $p;
                 }
             }
         }
@@ -262,6 +275,7 @@ class OpeningBalanceImportController extends Controller
                 'account_id' => null, 'customer_id' => null, 'supplier_id' => null, 'status' => 'new', 'note' => ''];
 
             if ($name === '' && $code === '') { $r['status'] = 'skip'; $r['note'] = __('Empty row'); $out[] = $r; continue; }
+            if (preg_match('/^(grand\s+|sub\s*)?total\b/i', $name ?: $code) || preg_match('/\btotal$/i', trim((string) $cell($row, 'kind')))) { $r['status'] = 'skip'; $r['note'] = __('Total row'); $out[] = $r; continue; }
 
             // Amounts
             $dr = isset($map['debit']) ? $this->amount($cell($row, 'debit')) : 0.0;
@@ -291,7 +305,7 @@ class OpeningBalanceImportController extends Controller
                 $kindCell !== '' && in_array($kindCell, ['account', 'ledger', 'gl'], true) => 'account',
                 default => $default,
             };
-            $key = mb_strtolower($name);
+            $key = $norm($name);
             $hits = [];
             $tryAccount = function () use ($code, $key, $byCode, $byName) {
                 $a = ($code !== '' ? ($byCode[mb_strtolower($code)] ?? null) : null) ?? ($key !== '' ? ($byName[$key] ?? null) : null) ?? ($key !== '' ? ($byCode[$key] ?? null) : null);

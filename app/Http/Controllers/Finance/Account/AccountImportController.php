@@ -235,7 +235,10 @@ PROMPT;
                             $parentName = '';
                             continue;
                         }
-                        if (!isset($groups[$key]) && !isset($fileNames[strtolower($groupName)])) {
+                        // A posting account of the file used as a group label ("OFFICE EXPENSES") must stay a
+                        // posting account, it carries its own balance: its accounts go under the level above.
+                        if (isset($fileNames[strtolower($groupName)])) continue;
+                        if (!isset($groups[$key])) {
                             $groups[$key] = ['code' => '', 'name' => $groupName, 'type' => $type, 'parent_code' => $parentCode, 'parent_name' => $parentName, 'description' => '', 'account_number' => ''];
                         }
                         $parentCode = '';
