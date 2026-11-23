@@ -89,7 +89,7 @@ SUPPLIER = {
                 },
                 columnDefs: [
                     {targets: [0], searchable: false},
-                    {targets: [7], searchable: false, orderable: false},
+                    {targets: [8], searchable: false, orderable: false},
                     {targets: [0], orderable: false},
                     /*{targets: [1], class: 'hide', visible: false},*/
                 ],
@@ -99,6 +99,11 @@ SUPPLIER = {
                         data: 'name_en', render: function (data, type, row) {
                             return '<a href="' + GLOBAL_FN.buildUrl('suppliers/' + row.id) + '" class="fw-bold text-primary text-decoration-none d-block">' + $('<span>').text(row.name_en).html() + '</a>' +
                                    '<div class="text-muted x-small fw-semibold">' + row.row_no + '</div>';
+                        }
+                    },
+                    {
+                        data: 'contact_person', render: function (data) {
+                            return data ? '<span class="small">' + $('<span>').text(data).html() + '</span>' : '<span class="text-muted">—</span>';
                         }
                     },
                     {

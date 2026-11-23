@@ -17,6 +17,7 @@ use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\Cell\Cell;
 use PhpOffice\PhpSpreadsheet\Cell\StringValueBinder;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Reader\Csv as CsvReader;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
@@ -263,7 +264,13 @@ class PartyImportController extends Controller
         $binder = Cell::getValueBinder();
         Cell::setValueBinder(new StringValueBinder());
         try {
-            return IOFactory::load($path);
+            $reader = new CsvReader();
+            // CSVs saved by Excel on Windows are Windows-1252, not UTF-8: read as UTF-8, "LOGÍSTICA" lost its "Í"
+            if (!mb_check_encoding((string) file_get_contents($path), 'UTF-8')) {
+                $reader->setInputEncoding('CP1252');
+            }
+
+            return $reader->load($path);
         } finally {
             Cell::setValueBinder($binder);
         }
@@ -361,6 +368,11 @@ PROMPT;
 
     // ---------------------------------------------------------------- checking the rows
 
+    private function fieldLabel(string $field): string
+    {
+        return ['phone' => __('Phone'), 'alt_phone' => __('Alternate Phone'), 'vat_number' => __('VAT Number'), 'cr_number' => __('CR Number')][$field] ?? $field;
+    }
+
     private function nameKey(?string $s): string
     {
         return mb_strtolower(trim(preg_replace('/\s+/u', ' ', (string) $s)));
@@ -376,15 +388,20 @@ PROMPT;
     /** "SA", "KSA", "saudi arabia" => "Saudi Arabia" (the create form stores the country name). */
     private function country(string $v, array $byKey): ?string
     {
-        $aliases = ['ksa' => 'sa', 'saudi' => 'sa', 'uae' => 'ae', 'emirates' => 'ae', 'uk' => 'gb', 'usa' => 'us'];
-        $k = mb_strtolower(trim($v));
+        $aliases = [
+            'ksa' => 'sa', 'saudi' => 'sa', 'uae' => 'ae', 'emirates' => 'ae', 'uk' => 'gb', 'great britain' => 'gb', 'england' => 'gb',
+            'usa' => 'us', 'united states of america' => 'us', 'america' => 'us', 'turkey' => 'tr', 'vietnam' => 'vn',
+            'czech republic' => 'cz', 'netherland' => 'nl', 'holland' => 'nl', 'korea' => 'kr', 'south korea' => 'kr',
+            'russia' => 'ru', 'iran' => 'ir', 'syria' => 'sy', 'hong kong sar' => 'hk', 'macau' => 'mo',
+        ];
+        $k = trim(preg_replace('/\s+/', ' ', mb_strtolower(trim($v))));
         $k = $aliases[$k] ?? $k;
         // "GREAT BRITAIN (UNITED KINGDOM)": try the part in brackets too
         if (!isset($byKey[$k]) && preg_match('/\(([^)]+)\)/', $k, $m)) {
             $k = $aliases[trim($m[1])] ?? trim($m[1]);
         }
 
-        return $byKey[$k] ?? ['turkey' => $byKey['tr'] ?? null][$k] ?? null;
+        return $byKey[$k] ?? null;
     }
 
     /**
@@ -468,6 +485,14 @@ PROMPT;
                 $r['country'] = $defaultCountry;
             }
 
+            // A long number that Excel turned into "3.01E+14" has lost its digits for good: it cannot be imported.
+            foreach (['phone', 'alt_phone', 'vat_number', 'cr_number'] as $f) {
+                if (preg_match('/^\d+([.,]\d+)?e\+?\d+$/i', str_replace(' ', '', $r[$f]))) {
+                    $notes[] = __(':f ":v" was shortened by Excel and the real number is lost: enter it by hand', ['f' => $this->fieldLabel($f), 'v' => $r[$f]]);
+                    $r[$f] = '';
+                }
+            }
+
             // Extensions and remarks are not part of the number: "Ext:128", "[302]", "# 363", "(Office No.)".
             foreach (['phone', 'alt_phone'] as $f) {
                 $r[$f] = trim(preg_replace(['/\s*(ext\.?|extn\.?|x|#)\s*:?\s*\d+\s*$/i', '/\[[^\]]*\]/', '/\((?![\s+\d]+\))[^)]*\)/', '/^[^\d+(]+/', '/[.\s]+$/'], '', $r[$f]));
@@ -481,14 +506,17 @@ PROMPT;
             }
             foreach (['phone', 'alt_phone'] as $f) {
                 if ($r[$f] === '') continue;
-                $p = preg_replace('/[\s\-().]/', '', $r[$f]);
-                $p = preg_replace('/^\+\s*|^00/', '+', $p);
+                // "+86 (755) 26890821-607": a short part after a dash, when the number is too long without it, is an extension
+                $v = strlen(preg_replace('/\D/', '', $r[$f])) > 15 ? preg_replace('/[-\s]\d{1,4}$/', '', $r[$f]) : $r[$f];
+                // keep the digits and a leading "+" only ("++86", stray characters from the export)
+                $p = (preg_match('/^\s*\++/', $v) ? '+' : '') . preg_replace('/\D/', '', $v);
+                $p = preg_replace('/^00/', '+', $p);
                 if (preg_match('/^\+?\d{1,4}$/', $p)) {                       // only a country code ("00966"): no number
                     $r[$f] = '';
                     continue;
                 }
-                if ($r['country'] === 'Saudi Arabia' && preg_match('/^5\d{8}$/', $p)) {
-                    $p = '0' . $p;                                            // mobile typed without its leading 0
+                if ($r['country'] === 'Saudi Arabia' && preg_match('/^5\d{8}$|^1[1-7]\d{7}$/', $p)) {
+                    $p = '0' . $p;                                            // mobile / landline typed without its leading 0
                 } elseif (preg_match('/^[1-9]\d{10,14}$/', $p)) {
                     $p = '+' . $p;                                            // international number typed without "+"
                 }
@@ -515,8 +543,12 @@ PROMPT;
                 $r['vat_number'] = $vat;
                 $r['cr_number'] = $cr;
             } else {
-                $r['vat_number'] = preg_replace('/\s+/', '', preg_replace($label, '', $r['vat_number']));
-                $r['cr_number'] = preg_replace('/\s+/', '', preg_replace($label, '', $r['cr_number']));
+                foreach (['vat_number', 'cr_number'] as $f) {
+                    $own = preg_split('/\s*[\/,;|]\s*|\s{2,}/', $r[$f], -1, PREG_SPLIT_NO_EMPTY);
+                    $own = array_values(array_filter(array_map(fn ($v) => preg_replace('/\s+/', '', preg_replace($label, '', ltrim($v, "'"))), $own)));
+                    // one real value left after the labels are dropped ("300514024300003/CRNO:"): that value
+                    $r[$f] = count($own) === 1 ? $own[0] : preg_replace('/\s+/', '', preg_replace($label, '', $r[$f]));
+                }
                 // a Saudi CR (10 digits) alone in the VAT column
                 if ($r['country'] === 'Saudi Arabia' && $r['cr_number'] === '' && preg_match('/^[1-9]\d{9}$/', $r['vat_number'])) {
                     $notes[] = __(':v is a CR number, not a VAT number: moved to CR', ['v' => $r['vat_number']]);

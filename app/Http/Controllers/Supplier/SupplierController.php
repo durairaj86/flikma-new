@@ -35,6 +35,7 @@ class SupplierController extends Controller
             'name_en',
             'row_no',
             'email',
+            'contact_person',
             'currency',
             'business_type',
             'city_en',
@@ -160,7 +161,9 @@ class SupplierController extends Controller
             'country' => 'required|string|max:100',
 
             // Contact
-            //'email' => 'required|email|max:255',
+            'contact_person' => 'nullable|string|max:100',
+            // optional for suppliers, but without a rule the typed email was dropped on save
+            'email' => 'nullable|email|max:255',
             'phone' => 'required|string|min:10|max:16|regex:/^\+?[0-9]{10,15}$/',
             'alt_phone' => 'nullable|min:10|max:16',
         ];
@@ -212,6 +215,7 @@ class SupplierController extends Controller
         $supplier->plot_no = $validated['plot_no'] ?? null;
         $supplier->postal_code = $validated['postal_code'] ?? null;
         $supplier->country = $validated['country'];
+        $supplier->contact_person = $validated['contact_person'] ?? null;
         $supplier->email = $validated['email'] ?? null;
         $supplier->phone = $validated['phone'] ?? null;
         $supplier->alt_phone = $validated['alt_phone'] ?? null;

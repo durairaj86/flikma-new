@@ -115,6 +115,7 @@
                     <tr>
                         <th style="width: 10px">#</th>
                         <th>{{ __('Supplier') }}</th>
+                        <th>{{ __('Contact Person') }}</th>
                         <th>{{ __('Contact') }}</th>
                         <th>{{ __('Location') }}</th>
                         <th>{{ __('Currency') }}</th>

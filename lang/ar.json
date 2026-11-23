@@ -5778,5 +5778,6 @@
     "e.g.": "مثال:",
     "Forgot Password?": "نسيت كلمة المرور؟",
     "Back to Login": "العودة إلى تسجيل الدخول",
-    "Choose a new password for your account.": "اختر كلمة مرور جديدة لحسابك."
+    "Choose a new password for your account.": "اختر كلمة مرور جديدة لحسابك.",
+    ":f \":v\" was shortened by Excel and the real number is lost: enter it by hand": ":f \":v\" تم اختصاره بواسطة Excel وفُقد الرقم الحقيقي: أدخله يدوياً"
 }

@@ -70,6 +70,11 @@
                                     <x-common.currencies :value="$supplier->currency"></x-common.currencies>
                                 </div>
                                 <div class="col-md-4 form-group">
+                                    <label class="form-label" for="contact_person">{{ __('Contact Person') }}</label>
+                                    <input type="text" name="contact_person" id="contact_person" class="form-control"
+                                           value="{{ $supplier->contact_person }}">
+                                </div>
+                                <div class="col-md-4 form-group">
                                     <label class="form-label">{{ __('Email') }}</label>
                                     <input type="email" name="email" class="form-control"
                                            value="{{ $supplier->email }}">
