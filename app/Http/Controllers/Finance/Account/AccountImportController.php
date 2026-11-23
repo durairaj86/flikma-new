@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Finance\Account;
 
+use App\Exceptions\AiTokenLimitExceededException;
 use App\Http\Controllers\Controller;
 use App\Models\Finance\Account\Account;
 use App\Services\GeminiService;
@@ -9,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
 /**
  * Chart-of-accounts import. Two steps so the customer stays in control:
@@ -63,10 +65,14 @@ class AccountImportController extends Controller
 
         try {
             if (in_array($ext, ['xlsx', 'xls', 'csv', 'txt'], true)) {
-                $raw = $this->mapSpreadsheet($file->getRealPath(), $gemini);
+                $book = IOFactory::load($file->getRealPath());
+                // A file with a recognisable header row is mapped column by column: instant and no AI tokens.
+                $raw = $this->mapColumns($book) ?? $this->mapSpreadsheet($book, $gemini);
             } else {
                 $raw = $this->mapDocument($file, $gemini);
             }
+        } catch (AiTokenLimitExceededException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
         } catch (\Throwable $e) {
             report($e);
             return response()->json(['error' => 'Could not read this file. Please check it and try again.'], 422);
@@ -180,15 +186,135 @@ SOURCE ({$source}):
 PROMPT;
     }
 
-    /** Spreadsheet / CSV: read as text lines (keeping column + indentation clues) and map in chunks. */
-    private function mapSpreadsheet(string $path, GeminiService $gemini): ?array
+    /**
+     * Spreadsheet with a header row we recognise (exports from other systems, our sample file):
+     * map the columns directly. Group / Sub Group columns become group accounts — matched to an
+     * existing group of the same type when the name agrees (CURRENT ASSET ↔ Current Assets),
+     * otherwise created under our main account of that type. Null when no header is recognised.
+     */
+    private function mapColumns(Spreadsheet $book): ?array
     {
-        $book = IOFactory::load($path);
+        $db = Account::where(function ($q) {
+            $q->where('company_id', companyId())->orWhereNull('company_id');
+        })->get(['code', 'name', 'type']);
+        $roots = $db->whereIn('code', array_map('strval', self::TYPE_BASE))->keyBy('type');
+
+        $found = false;
+        $groups = [];   // "type|path" => group row
+        $buckets = [];  // "type|path" => accounts under that group ('' = no group)
+        foreach ($book->getAllSheets() as $sheet) {
+            $data = array_map(fn ($cells) => array_map(fn ($c) => is_scalar($c) ? trim(strip_tags((string) $c)) : '', $cells), $sheet->toArray(null, true, true, false));
+            [$headerAt, $cols] = $this->findHeader($data);
+            if ($headerAt === null) continue;
+            $found = true;
+            $fileNames = [];
+            foreach (array_slice($data, $headerAt + 1) as $cells) {
+                $name = $cells[$cols['name']] ?? '';
+                if ($name !== '') $fileNames[strtolower($name)] = true;
+            }
+
+            foreach (array_slice($data, $headerAt + 1) as $cells) {
+                $get = fn ($f) => isset($cols[$f]) ? ($cells[$cols[$f]] ?? '') : '';
+                $name = $get('name');
+                if ($name === '' || preg_match('/^total\b/i', $name)) continue;
+
+                $path = array_values(array_filter(array_map(fn ($c) => $cells[$c] ?? '', $cols['groups'] ?? []), fn ($v) => $v !== ''));
+                $type = $this->normaliseType($get('type')) ?? ($path ? $this->normaliseType($path[0]) : null);
+                $row = ['code' => $get('code'), 'name' => $name, 'type' => $type ?? '', 'parent_code' => $get('parent_code'), 'parent_name' => '', 'description' => $get('description'), 'account_number' => $get('account_number')];
+
+                $key = '';
+                if ($row['parent_code'] === '' && $path && $type) {
+                    // Create each missing level of the group path, top-down.
+                    $parentCode = $roots[$type]->code ?? '';
+                    $parentName = '';
+                    foreach ($path as $depth => $groupName) {
+                        $key = $type . '|' . implode('|', array_slice($path, 0, $depth + 1));
+                        $existing = $depth === 0 ? $db->first(fn ($a) => $a->type === $type && $this->nameKey($a->name) === $this->nameKey($groupName)) : null;
+                        if ($existing) {
+                            $parentCode = $existing->code;
+                            $parentName = '';
+                            continue;
+                        }
+                        if (!isset($groups[$key]) && !isset($fileNames[strtolower($groupName)])) {
+                            $groups[$key] = ['code' => '', 'name' => $groupName, 'type' => $type, 'parent_code' => $parentCode, 'parent_name' => $parentName, 'description' => '', 'account_number' => ''];
+                        }
+                        $parentCode = '';
+                        $parentName = $groupName;
+                    }
+                    $row['parent_code'] = $parentCode;
+                    $row['parent_name'] = $parentName;
+                }
+                $buckets[$key][] = $row;
+            }
+        }
+        if (!$found) return null;
+
+        // Each new group right before its accounts, so the preview reads like the chart.
+        $all = $buckets[''] ?? [];
+        unset($buckets['']);
+        foreach ($groups as $key => $g) {
+            $all[] = $g;
+            array_push($all, ...($buckets[$key] ?? []));
+            unset($buckets[$key]);
+        }
+        foreach ($buckets as $rows) {
+            array_push($all, ...$rows);
+        }
+
+        return $all;
+    }
+
+    /** First row (within the top 15) that names an account-name column plus a code/type/parent column. */
+    private function findHeader(array $data): array
+    {
+        $synonyms = [
+            'name' => ['name', 'account name', 'account title', 'ledger name', 'gl name', 'account', 'اسم الحساب', 'الاسم', 'الحساب'],
+            'code' => ['code', 'account code', 'gl code', 'ledger code', 'acc code', 'account no', 'رمز الحساب', 'رقم الحساب', 'الرمز'],
+            'type' => ['type', 'account type', 'nature', 'class', 'main group', 'نوع الحساب', 'النوع'],
+            'parent_code' => ['parent code', 'parent account code', 'group code'],
+            'description' => ['description', 'الوصف'],
+            'account_number' => ['account number', 'bank account', 'bank account no', 'bank account number', 'iban'],
+        ];
+        $groupHeaders = ['group', 'group name', 'parent', 'parent name', 'parent account', 'sub group', 'subgroup', 'المجموعة', 'الحساب الرئيسي'];
+
+        foreach (array_slice($data, 0, 15, true) as $i => $cells) {
+            $heads = array_map(fn ($c) => trim(preg_replace('/[\s_\-.?]+/u', ' ', mb_strtolower($c))), $cells);
+            $cols = [];
+            foreach ($synonyms as $field => $words) {
+                foreach ($words as $w) {
+                    $at = array_search($w, $heads, true);
+                    if ($at !== false && !in_array($at, $cols, true)) {
+                        $cols[$field] = $at;
+                        break;
+                    }
+                }
+            }
+            // Group, then Sub Group: kept in column order so they nest.
+            $cols['groups'] = array_keys(array_filter($heads, fn ($h, $at) => in_array($h, $groupHeaders, true) && !in_array($at, $cols, true), ARRAY_FILTER_USE_BOTH));
+            if (isset($cols['name']) && (isset($cols['code']) || isset($cols['type']) || isset($cols['parent_code']) || $cols['groups'])) {
+                return [$i, $cols];
+            }
+        }
+
+        return [null, []];
+    }
+
+    /** "CURRENT ASSET" and "Current Assets" are the same group. */
+    private function nameKey(string $name): string
+    {
+        $words = preg_split('/\s+/', trim(preg_replace('/[^a-z0-9\s]+/', ' ', strtolower($name))));
+
+        return implode(' ', array_map(fn ($w) => preg_replace(['/ies$/', '/(?<!s)s$/'], ['y', ''], $w), $words));
+    }
+
+    /** Spreadsheet / CSV: read as text lines (keeping column + indentation clues) and map in chunks. */
+    private function mapSpreadsheet(Spreadsheet $book, GeminiService $gemini): ?array
+    {
         $lines = [];
         foreach ($book->getAllSheets() as $sheet) {
             $title = $sheet->getTitle();
             foreach ($sheet->toArray(null, true, true, false) as $i => $cells) {
-                $cells = array_map(fn ($c) => is_scalar($c) ? (string) $c : '', $cells);
+                $cells = array_map(fn ($c) => is_scalar($c) ? strip_tags((string) $c) : '', $cells);
                 $first = null;
                 foreach ($cells as $col => $v) {
                     if (trim($v) !== '') { $first = $col; break; }
