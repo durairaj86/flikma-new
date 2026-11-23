@@ -27,7 +27,7 @@
             <h4 class="fw-bold text-dark mb-0 sup-title">@yield('page-title')</h4>
             <div class="d-flex align-items-center gap-2 ms-auto">
                 <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Supplier') }}</button>
-                <button class="btn btn-icon-search rounded-circle" id="import" title="{{ __('Import') }}" aria-label="{{ __('Import') }}"><i class="bi bi-upload"></i></button>
+                <a class="btn btn-icon-search rounded-circle" href="/suppliers/import" title="{{ __('Import') }}" aria-label="{{ __('Import') }}"><i class="bi bi-upload"></i></a>
             </div>
         </div>
         <!-- Tabs -->
@@ -134,5 +134,4 @@
         </div>
     </main>
     @include('modules.supplier.supplier-view')
-    @include('modules.supplier.supplier-import')
 </x-app-layout>

@@ -30,7 +30,7 @@
             <h4 class="fw-bold text-dark mb-0 cust-title">@yield('page-title')</h4>
             <div class="d-flex align-items-center gap-2 ms-auto">
                 <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Customer') }}</button>
-                <button class="btn btn-icon-search rounded-circle" id="import" title="{{ __('Import') }}" aria-label="{{ __('Import') }}"><i class="bi bi-upload"></i></button>
+                <a class="btn btn-icon-search rounded-circle" href="/customers/import" title="{{ __('Import') }}" aria-label="{{ __('Import') }}"><i class="bi bi-upload"></i></a>
             </div>
         </div>
         <!-- Tabs -->
@@ -181,7 +181,6 @@
 
     @include('modules.customer.customer-view')
     @include('modules.email.send-email')
-    @include('modules.customer.customer-import')
 
 
 </x-app-layout>

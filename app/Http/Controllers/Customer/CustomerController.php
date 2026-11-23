@@ -18,96 +18,9 @@ use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use Yajra\DataTables\Facades\DataTables;
-use App\Import\CustomerImport;
 
 class CustomerController extends Controller
 {
-    /**
-     * Import customers from Excel file - Step 1: Upload file and get columns
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function importUpload(Request $request)
-    {
-        // Validate the uploaded file
-        $request->validate([
-            'excelFile' => 'required|file|mimes:xlsx,xls|max:10240', // 10MB max
-        ]);
-
-        // Store the file temporarily
-        $file = $request->file('excelFile');
-
-        // Ensure the temp directory exists
-        if (!Storage::exists('temp')) {
-            Storage::makeDirectory('temp');
-        }
-
-        $path = $file->storeAs('temp', $file->getClientOriginalName());
-
-        // Store the file path in the session for later use
-        session(['import_file_path' => $path]);
-
-        // Use CustomerImport to get column headers and available fields
-        $customerImport = new CustomerImport();
-        $headers = $customerImport->getColumnHeaders($path);
-        $fields = $customerImport->getAvailableFields();
-
-        return response()->json([
-            'columns' => $headers,
-            'fields' => $fields,
-        ]);
-    }
-
-    /**
-     * Import customers from Excel file - Step 2: Process the import
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function importProcess(Request $request)
-    {
-        // Get the file path from the session
-        $path = session('import_file_path');
-        if (!$path) {
-            return response()->json(['message' => __('No file uploaded. Please upload a file first.')], 400);
-        }
-
-        // No need to validate specific mapping fields as we'll check for non-empty values later
-
-        // Get the mapping from the request (field => columnIndex)
-        $requestMapping = $request->except(['_token']);
-
-        // Transform the mapping to columnIndex => field format
-        $mapping = [];
-        foreach ($requestMapping as $field => $columnIndex) {
-            if (filled($columnIndex)) {
-                $mapping[$field] = $columnIndex;
-            }
-        }
-
-        // Use CustomerImport to process the import
-        $customerImport = new CustomerImport();
-        $result = $customerImport->process($path, $mapping);
-
-        // Delete the temporary file
-        Storage::delete($path);
-        session()->forget('import_file_path');
-
-        // Return the result
-        if (!$result['success']) {
-            return response()->json([
-                'message' => $result['message'],
-                'imported' => $result['imported'] ?? 0,
-                'errors' => $result['errors'] ?? [],
-            ], isset($result['errors']) ? 422 : 400);
-        }
-
-        return response()->json([
-            'message' => $result['message'],
-            'imported' => $result['imported'],
-        ]);
-    }
     private static $cache = 'confirmCustomers:';
 
     public function fetchAllRows(Request $request): \Illuminate\Http\JsonResponse

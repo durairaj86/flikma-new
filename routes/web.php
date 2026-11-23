@@ -60,8 +60,10 @@ Route::middleware(['auth', 'verified', 'module.permission'])->group(function () 
     Route::get('/customers/{id}', [\App\Http\Controllers\Customer\CustomerDetailController::class, 'show'])->whereNumber('id')->name('customers.show');
     Route::get('/customers/{id}/tab/{tab}', [\App\Http\Controllers\Customer\CustomerDetailController::class, 'tab'])->whereNumber('id')->name('customers.tab');
     Route::post('/customer/data', [\App\Http\Controllers\Customer\CustomerController::class, 'fetchAllRows'])->name('customers.data');
-    Route::post('/customer/import/upload', [\App\Http\Controllers\Customer\CustomerController::class, 'importUpload']);
-    Route::post('/customer/import/process', [\App\Http\Controllers\Customer\CustomerController::class, 'importProcess']);
+    Route::get('/customers/import', [\App\Http\Controllers\Import\PartyImportController::class, 'page'])->defaults('kind', 'customer');
+    Route::get('/customer/import/sample', [\App\Http\Controllers\Import\PartyImportController::class, 'sample'])->defaults('kind', 'customer');
+    Route::post('/customer/import/preview', [\App\Http\Controllers\Import\PartyImportController::class, 'preview'])->defaults('kind', 'customer');
+    Route::post('/customer/import', [\App\Http\Controllers\Import\PartyImportController::class, 'import'])->defaults('kind', 'customer');
     Route::get('/customer/create', [\App\Http\Controllers\Customer\CustomerController::class, 'modal']);
     Route::post('/customer/create', [\App\Http\Controllers\Customer\CustomerController::class, 'store']);
     Route::get('/customer/{id}/create', [\App\Http\Controllers\Customer\CustomerController::class, 'edit']);
@@ -106,8 +108,10 @@ Route::middleware(['auth', 'verified', 'module.permission'])->group(function () 
     Route::get('/suppliers/{id}', [\App\Http\Controllers\Supplier\SupplierDetailController::class, 'show'])->whereNumber('id')->name('suppliers.show');
     Route::get('/suppliers/{id}/tab/{tab}', [\App\Http\Controllers\Supplier\SupplierDetailController::class, 'tab'])->whereNumber('id')->name('suppliers.tab');
     Route::post('/supplier/data', [\App\Http\Controllers\Supplier\SupplierController::class, 'fetchAllRows'])->name('suppliers.data');
-    Route::post('/supplier/import/upload', [\App\Http\Controllers\Supplier\SupplierController::class, 'importUpload']);
-    Route::post('/supplier/import/process', [\App\Http\Controllers\Supplier\SupplierController::class, 'importProcess']);
+    Route::get('/suppliers/import', [\App\Http\Controllers\Import\PartyImportController::class, 'page'])->defaults('kind', 'supplier');
+    Route::get('/supplier/import/sample', [\App\Http\Controllers\Import\PartyImportController::class, 'sample'])->defaults('kind', 'supplier');
+    Route::post('/supplier/import/preview', [\App\Http\Controllers\Import\PartyImportController::class, 'preview'])->defaults('kind', 'supplier');
+    Route::post('/supplier/import', [\App\Http\Controllers\Import\PartyImportController::class, 'import'])->defaults('kind', 'supplier');
     Route::get('/supplier/create', [\App\Http\Controllers\Supplier\SupplierController::class, 'modal']);
     Route::post('/supplier/create', [\App\Http\Controllers\Supplier\SupplierController::class, 'store']);
     Route::get('/supplier/{id}/create', [\App\Http\Controllers\Supplier\SupplierController::class, 'edit']);
