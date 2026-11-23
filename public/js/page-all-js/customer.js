@@ -105,7 +105,7 @@ CUSTOMER = {
                     },
                     columnDefs: [
                         {targets: [0], searchable: false},
-                        {targets: [7, 8], searchable: false, orderable: false},
+                        {targets: [8, 9], searchable: false, orderable: false},
                         {targets: [0], orderable: false},
                         /*{targets: [1], class: 'hide', visible: false},*/
                     ],
@@ -117,8 +117,13 @@ CUSTOMER = {
                             }
                         },
                         {
+                            data: 'contact_person', render: function (data) {
+                                return data ? '<span class="small">' + $('<span>').text(data).html() + '</span>' : '<span class="text-muted">—</span>';
+                            }
+                        },
+                        {
                             data: 'email', render: function (data, type, row) {
-                                return '<div class="d-flex flex-column"><span class="small">' + row.email + '</span><span class="small text-muted">' + row.phone + '</span></div>';
+                                return '<div class="d-flex flex-column"><span class="small">' + (row.email ?? '') + '</span><span class="small text-muted">' + (row.phone ?? '') + '</span></div>';
                             }
                         },
                         {

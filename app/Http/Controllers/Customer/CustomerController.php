@@ -45,6 +45,7 @@ class CustomerController extends Controller
             'name_en',
             'name_ar',
             'email',
+            'contact_person',
             'currency',
             'business_type',
             'city_en',

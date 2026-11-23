@@ -158,6 +158,7 @@
                         <tr>
                             <th class="ps-4">#</th>
                             <th>{{ __('Customer') }}</th>
+                            <th>{{ __('Contact Person') }}</th>
                             <th>{{ __('Contact Info') }}</th>
                             <th>{{ __('Location') }}</th>
                             <th>{{ __('Currency') }}</th>
