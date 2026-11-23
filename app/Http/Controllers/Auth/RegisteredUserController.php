@@ -55,6 +55,7 @@ class RegisteredUserController extends Controller
             'country' => ['required', 'string', Rule::in(array_keys(self::COUNTRY_CURRENCIES))],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
+        exit;
 
         $user = DB::transaction(function () use ($request) {
             $company = new Company();
