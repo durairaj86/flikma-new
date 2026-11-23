@@ -42,7 +42,7 @@ class PartyImportController extends Controller
         'email' => [255, ['email', 'e mail', 'email address', 'mail', 'البريد الالكتروني', 'البريد الإلكتروني']],
         'phone' => [16, ['phone', 'mobile', 'phone number', 'mobile number', 'telephone', 'tel', 'contact number', 'contact no', 'phone no', 'mobile no', 'الجوال', 'الهاتف', 'رقم الجوال']],
         'alt_phone' => [16, ['alt phone', 'alternate phone', 'alternative phone', 'phone 2', 'mobile 2', 'other phone', 'landline']],
-        'contact_person' => [255, ['contact person', 'contact', 'contact name', 'attention', 'attn']],
+        'contact_person' => [100, ['contact person', 'contact', 'contact name', 'attention', 'attn']],
         'vat_number' => [50, ['vat', 'vat number', 'vat no', 'tax number', 'tax no', 'trn', 'tax id', 'vat registration number', 'vat reg no', 'الرقم الضريبي']],
         'cr_number' => [50, ['cr', 'cr number', 'cr no', 'commercial registration', 'commercial registration number', 'registration number', 'السجل التجاري']],
         'address1_en' => [255, ['address', 'address 1', 'address line 1', 'address1', 'street', 'street name', 'address en', 'address english']],

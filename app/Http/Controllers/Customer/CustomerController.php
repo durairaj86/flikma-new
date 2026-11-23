@@ -256,6 +256,7 @@ class CustomerController extends Controller
             'salesperson_id' => 'nullable',
 
             // Contact
+            'contact_person' => 'nullable|string|max:100',
             'email' => 'required|email|max:255',
             'phone' => 'required|string|min:10|max:16|regex:/^\+?[0-9]{10,15}$/',
             'alt_phone' => 'nullable|min:10|max:16',
@@ -335,6 +336,7 @@ class CustomerController extends Controller
         $customer->plot_no = $validated['plot_no'] ?? null;
         $customer->postal_code = $validated['postal_code'] ?? null;
         $customer->country = $validated['country'];
+        $customer->contact_person = $validated['contact_person'] ?? null;
         $customer->email = $validated['email'];
         $customer->phone = $validated['phone'];
         $customer->alt_phone = $validated['alt_phone'] ?? null;

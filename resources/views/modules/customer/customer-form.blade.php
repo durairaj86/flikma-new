@@ -111,6 +111,11 @@
                                                          :lockedText="__('Locked: this customer already has finance entries, so the currency cannot be changed.')"></x-common.currencies>
                                 </div>
                                 <div class="col-md-4 form-group">
+                                    <label class="form-label" for="contact_person">{{ __('Contact Person') }}</label>
+                                    <input type="text" name="contact_person" id="contact_person" class="form-control"
+                                           value="{{ $customer->contact_person }}">
+                                </div>
+                                <div class="col-md-4 form-group">
                                     <label class="form-label required">{{ __('Email') }} <sup class="text-danger">*</sup></label>
                                     <input type="email" name="email" class="form-control" required
                                            value="{{ $customer->email }}">
