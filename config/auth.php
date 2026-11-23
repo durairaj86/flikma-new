@@ -67,7 +67,7 @@ return [
 
     'providers' => [
         'users' => [
-            'driver' => 'eloquent',
+            'driver' => 'eloquent-unscoped',
             'model' => env('AUTH_MODEL', App\Models\User::class),
         ],
 

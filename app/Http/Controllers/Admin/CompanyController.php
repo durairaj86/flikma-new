@@ -159,7 +159,7 @@ class CompanyController extends Controller
         $admin = ($id = session('impersonator_id')) ? User::withoutGlobalScopes()->find($id) : null;
         if (!$admin || !$admin->is_admin) {
             Auth::logout();
-            session()->forget(['impersonator_id', 'impersonating']);
+            session()->forget(['impersonator_id', 'impersonating', 'company_id']);
 
             return redirect()->route('admin.login');
         }

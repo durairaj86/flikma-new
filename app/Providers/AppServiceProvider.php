@@ -21,6 +21,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // sign-in, "forgot password" and reset look a user up across all companies (see UnscopedEloquentUserProvider)
+        Auth::provider('eloquent-unscoped', fn ($app, array $config) => new \App\Auth\UnscopedEloquentUserProvider($app['hash'], $config['model']));
+
         // users.last_login: shown in the users list and counted on the admin dashboard
         \Illuminate\Support\Facades\Event::listen(\Illuminate\Auth\Events\Login::class, function ($event) {
             if (session('impersonating')) return;   // an admin using "Login as" is not the user signing in
