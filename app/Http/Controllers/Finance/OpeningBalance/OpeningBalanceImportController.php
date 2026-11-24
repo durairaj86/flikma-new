@@ -19,7 +19,8 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
  * Opening balance import, in three steps (nothing is saved until the last one):
  *  1. upload():  read the file, keep its rows server-side under a token, suggest which column is which.
  *  2. check():   apply the customer's column mapping and return every row checked (matched account / customer /
- *                supplier, amounts, problems) with the debit / credit totals.
+ *                supplier, amounts, problems) with the debit / credit totals. Several uploaded files can be checked
+ *                and imported together (a trial balance plus its customer / supplier breakdown), each with its own mapping.
  *  3. import():  re-run the same check on the server and post ONE balanced "OB" voucher in a transaction.
  */
 class OpeningBalanceImportController extends Controller
@@ -28,9 +29,10 @@ class OpeningBalanceImportController extends Controller
 
     /** Field => header words we recognise when suggesting the mapping. */
     private const SYNONYMS = [
-        'name'   => ['name', 'account name', 'coa name', 'gl name', 'account title', 'account', 'ledger', 'ledger name', 'party', 'particulars', 'customer', 'supplier', 'customer name', 'supplier name', 'description'],
+        'name'   => ['name', 'account name', 'coa name', 'gl name', 'account title', 'subledger', 'sub ledger', 'subledger name', 'party name', 'account', 'ledger', 'ledger name', 'party', 'particulars', 'customer', 'supplier', 'customer name', 'supplier name', 'description'],
         'code'   => ['code', 'account code', 'acc code', 'a/c code', 'account no', 'account number', 'customer code', 'supplier code'],
-        'kind'   => ['type', 'kind', 'category', 'group', 'party type', 'account type'],
+        // a breakdown list names the control account of each party ("COA: SUNDRY DEBTORS"): it tells customer from supplier
+        'kind'   => ['type', 'kind', 'category', 'group', 'party type', 'account type', 'coa', 'gl account', 'control account'],
         'debit'  => ['debit', 'dr', 'debit amount', 'debits', 'opening debit'],
         'credit' => ['credit', 'cr', 'credit amount', 'credits', 'opening credit'],
         'amount' => ['amount', 'balance', 'opening balance', 'closing balance', 'opening'],
@@ -84,6 +86,10 @@ class OpeningBalanceImportController extends Controller
                 $delim = collect([',', ';', "\t", '|'])->sortByDesc(fn($d) => collect($sample)->sum(fn($l) => substr_count($l, $d)))->first();
                 $reader = new \PhpOffice\PhpSpreadsheet\Reader\Csv();
                 $reader->setDelimiter($delim);
+                // CSVs saved by Excel on Windows are Windows-1252, not UTF-8 ("LOGÍSTICA" would lose its "Í" and not match)
+                if (!mb_check_encoding((string) file_get_contents($path), 'UTF-8')) {
+                    $reader->setInputEncoding('CP1252');
+                }
                 $sheet = $reader->load($path)->getActiveSheet()->toArray(null, true, true, false);
             } else {
                 $sheet = IOFactory::load($path)->getActiveSheet()->toArray(null, true, true, false);
@@ -177,6 +183,13 @@ class OpeningBalanceImportController extends Controller
         DB::beginTransaction();
         try {
             $svc = app(\App\Services\Finance\OpeningBalanceService::class);
+            $rows = $rows->map(function ($r) {
+                if (!empty($r['create'])) {
+                    $r[$r['create'] . '_id'] = $this->createParty($r['create'], $r['name']);
+                }
+
+                return $r;
+            });
             $lines = $rows->map(fn($r) => ['account_id' => $r['account_id'], 'customer_id' => $r['customer_id'], 'supplier_id' => $r['supplier_id'], 'debit' => $r['debit'], 'credit' => $r['credit'], 'description' => $r['notes'] ?: null])->all();
             if ($diff !== 0.0) {
                 // The difference is carried by the automatic balancing line, the same one edits and deletes keep in step.
@@ -189,9 +202,34 @@ class OpeningBalanceImportController extends Controller
             report($e);
             return response()->json(['status' => 'error', 'message' => __('Import failed, nothing was saved: ') . $e->getMessage()], 500);
         }
-        Storage::disk('local')->delete('ob-imports/' . $request->input('token') . '.json');
+        foreach ($this->files($request) as $f) {
+            if ($this->load($f['token'])) Storage::disk('local')->delete('ob-imports/' . $f['token'] . '.json');
+        }
 
         return response()->json(['status' => 'success', 'message' => count($lines) . ' ' . __('opening balance lines imported.'), 'created' => count($lines), 'url' => route('finance.opening-balance')]);
+    }
+
+    /** A customer / supplier that the opening balance names but the lists do not have yet: same numbering as the create form. */
+    private function createParty(string $kind, string $name): int
+    {
+        $model = $kind === 'customer' ? Customer::class : Supplier::class;
+        $company = DB::table('companies')->where('id', companyId())->first(['country', 'currency']);
+        $country = collect(countries())->first(fn($n, $code) => strcasecmp($code, (string) $company?->country) === 0 || strcasecmp($n, (string) $company?->country) === 0) ?? 'Saudi Arabia';
+        $next = (int) ($model::lockForUpdate()->max('unique_row_no') ?? ($kind === 'customer' ? 0 : 26000)) + 1;
+
+        $party = new $model();
+        $this->setBaseColumns($party);
+        $party->unique_row_no = sprintf('%03d', $next);
+        $party->row_no = ($kind === 'customer' ? 'CS' : 'SP') . $party->unique_row_no;
+        $party->status = $kind === 'customer' ? \App\Enums\CustomerStatusEnum::CONFIRMED->value : 1;
+        $party->name_en = $name;
+        $party->name_ar = $name;
+        $party->country = $country;
+        $party->currency = strtoupper((string) ($company?->currency ?: 'SAR'));
+        $party->business_type = 'unregistered';
+        $party->save();
+
+        return $party->id;
     }
 
     // ----------------------------------------------------------------- the check itself
@@ -220,18 +258,39 @@ class OpeningBalanceImportController extends Controller
         return $neg ? -(float) $s : (float) $s;
     }
 
+    /** The uploaded files of this import, each [token, map]: several files, or the single token + map of a one-file import. */
+    private function files(Request $request): array
+    {
+        $files = $request->input('files');
+        if (!is_array($files) || !$files) {
+            $files = [['token' => $request->input('token'), 'map' => $request->input('map', [])]];
+        }
+
+        return array_values(array_map(fn($f) => [
+            'token' => is_array($f) ? ($f['token'] ?? null) : null,
+            'map' => array_filter(array_map(fn($v) => ($v === null || $v === '') ? null : (int) $v, (array) (is_array($f) ? ($f['map'] ?? []) : [])), fn($v) => $v !== null),
+        ], $files));
+    }
+
     private function evaluate(Request $request): array
     {
-        $data = $this->load($request->input('token'));
-        if (!$data) {
-            return ['error' => __('This upload has expired. Please upload the file again.')];
-        }
-        $map = array_map(fn($v) => ($v === null || $v === '') ? null : (int) $v, (array) $request->input('map', []));
-        if (!isset($map['name']) && !isset($map['code'])) {
-            return ['error' => __('Choose which column holds the account, customer or supplier name (or code).')];
-        }
-        if (!isset($map['debit']) && !isset($map['credit']) && !isset($map['amount'])) {
-            return ['error' => __('Choose the Debit and Credit columns, or one Amount column.')];
+        $sources = [];
+        foreach ($this->files($request) as $n => $f) {
+            $data = $this->load($f['token']);
+            if (!$data) {
+                return ['error' => __('This upload has expired. Please upload the file again.')];
+            }
+            $map = $f['map'];
+            $which = count($this->files($request)) > 1 ? ' (' . __('file :n', ['n' => $n + 1]) . ')' : '';
+            if (!isset($map['name']) && !isset($map['code'])) {
+                return ['error' => __('Choose which column holds the account, customer or supplier name (or code).') . $which];
+            }
+            if (!isset($map['debit']) && !isset($map['credit']) && !isset($map['amount'])) {
+                return ['error' => __('Choose the Debit and Credit columns, or one Amount column.') . $which];
+            }
+            foreach ($data['rows'] as $i => $row) {
+                $sources[] = ['id' => "$n:$i", 'file' => $n, 'line' => $i, 'row' => $row, 'map' => $map];
+            }
         }
         $default = in_array($request->input('kind'), ['auto', 'account', 'customer', 'supplier'], true) ? $request->input('kind') : 'auto';
 
@@ -265,13 +324,19 @@ class OpeningBalanceImportController extends Controller
         $haveSupp = $existingOb->whereNotNull('supplier_id')->pluck('supplier_id')->flip();
         $haveAcct = $existingOb->whereNull('customer_id')->whereNull('supplier_id')->where('is_auto_generated', 0)->pluck('account_id')->flip();
 
-        $cell = fn($row, $f) => isset($map[$f]) ? ($row[$map[$f]] ?? '') : '';
+        // The receivable / payable control account of a trial balance ("SUNDRY DEBTORS"): its balance belongs on the
+        // customers / suppliers, which a breakdown file lists one by one. Importing both would count it twice.
+        $controlOf = fn($s) => preg_match('/\b(sundry|trade)\s+debtors?\b|^debtors?$|\baccounts?\s+receivables?\b|\btrade\s+receivables?\b/i', $s) ? 'customer'
+            : (preg_match('/\b(sundry|trade)\s+creditors?\b|^creditors?$|\baccounts?\s+payables?\b|\btrade\s+payables?\b/i', $s) ? 'supplier' : null);
+
         $seen = [];
         $out = [];
-        foreach ($data['rows'] as $i => $row) {
+        foreach ($sources as $src) {
+            ['row' => $row, 'map' => $map, 'line' => $i] = $src;
+            $cell = fn($row, $f) => isset($map[$f]) ? ($row[$map[$f]] ?? '') : '';
             $name = trim((string) $cell($row, 'name'));
             $code = trim((string) $cell($row, 'code'));
-            $r = ['row' => $i, 'name' => $name ?: $code, 'matched' => null, 'kind' => null, 'debit' => 0.0, 'credit' => 0.0, 'notes' => trim((string) $cell($row, 'notes')),
+            $r = ['row' => $src['id'], 'file' => $src['file'], 'line' => $i, 'name' => $name ?: $code, 'matched' => null, 'kind' => null, 'debit' => 0.0, 'credit' => 0.0, 'notes' => trim((string) $cell($row, 'notes')),
                 'account_id' => null, 'customer_id' => null, 'supplier_id' => null, 'status' => 'new', 'note' => ''];
 
             if ($name === '' && $code === '') { $r['status'] = 'skip'; $r['note'] = __('Empty row'); $out[] = $r; continue; }
@@ -300,11 +365,15 @@ class OpeningBalanceImportController extends Controller
             // What is it?
             $kindCell = mb_strtolower(trim((string) $cell($row, 'kind')));
             $kind = match (true) {
-                str_contains($kindCell, 'customer') || $kindCell === 'ar' || str_contains($kindCell, 'receiv') => 'customer',
-                str_contains($kindCell, 'supplier') || str_contains($kindCell, 'vendor') || $kindCell === 'ap' || str_contains($kindCell, 'payab') => 'supplier',
+                str_contains($kindCell, 'customer') || $kindCell === 'ar' || str_contains($kindCell, 'receiv') || str_contains($kindCell, 'debtor') => 'customer',
+                str_contains($kindCell, 'supplier') || str_contains($kindCell, 'vendor') || $kindCell === 'ap' || str_contains($kindCell, 'payab') || str_contains($kindCell, 'creditor') => 'supplier',
                 $kindCell !== '' && in_array($kindCell, ['account', 'ledger', 'gl'], true) => 'account',
                 default => $default,
             };
+            if (in_array($kind, ['auto', 'account'], true) && ($control = $controlOf($name))) {
+                $r['kind'] = 'account'; $r['control'] = $control; $out[] = $r;   // decided below, once the whole batch is known
+                continue;
+            }
             $key = $norm($name);
             $hits = [];
             $tryAccount = function () use ($code, $key, $byCode, $byName) {
@@ -318,7 +387,28 @@ class OpeningBalanceImportController extends Controller
                     if ($p) $hits[] = [$k, $p];
                 }
             }
-            if (!$hits) { $r['status'] = 'invalid'; $r['note'] = __('Not found in your accounts, customers or suppliers'); $out[] = $r; continue; }
+            if (!$hits && $request->boolean('create_missing') && in_array($kind, ['customer', 'supplier'], true) && $key !== '') {
+                // "Create customers / suppliers that are not found": a new one is made with this name on import
+                $r['kind'] = $kind; $r['create'] = $kind; $r['matched'] = $name;
+                $r['account_id'] = $kind === 'customer' ? $arId : $apId;
+                $r['note'] = $kind === 'customer' ? __('New customer: created on import') : __('New supplier: created on import');
+                $dupe = "n{$kind}:{$key}";
+                if (isset($seen[$dupe])) { $r['status'] = 'invalid'; $r['note'] = __('Listed twice in this file (row :n)', ['n' => $seen[$dupe] + 2]); }
+                else $seen[$dupe] = $i;
+                $out[] = $r;
+                continue;
+            }
+            if (!$hits) {
+                $r['status'] = 'invalid';
+                $r['missing'] = in_array($kind, ['customer', 'supplier'], true);   // the page then offers to create them
+                $r['note'] = match ($kind) {
+                    'customer' => __('No customer with this name: import it on the Customers import page first'),
+                    'supplier' => __('No supplier with this name: import it on the Suppliers import page first'),
+                    default => __('Not found in your accounts, customers or suppliers'),
+                };
+                $out[] = $r;
+                continue;
+            }
             if (count($hits) > 1) { $r['status'] = 'invalid'; $r['note'] = __('Matches more than one of account / customer / supplier: add a Type column'); $out[] = $r; continue; }
 
             [$k, $m] = $hits[0];
@@ -343,6 +433,24 @@ class OpeningBalanceImportController extends Controller
             }
             $out[] = $r;
         }
+
+        // Control account lines: covered when the batch lists that side's customers / suppliers, otherwise they need them.
+        $sides = collect($out)->where('status', 'new')->pluck('kind')->flip();
+        foreach ($out as &$r) {
+            if (empty($r['control'])) continue;
+            if (isset($sides[$r['control']])) {
+                $r['status'] = 'skip';
+                $r['note'] = $r['control'] === 'customer'
+                    ? __('Control account: its balance comes from the customer lines of this import')
+                    : __('Control account: its balance comes from the supplier lines of this import');
+            } else {
+                $r['status'] = 'invalid';
+                $r['note'] = $r['control'] === 'customer'
+                    ? __('Receivables are entered per customer: add the customer balance list (subledger) to this import')
+                    : __('Payables are entered per supplier: add the supplier balance list (subledger) to this import');
+            }
+        }
+        unset($r);
 
         $good = collect($out)->where('status', 'new');
         $debit = round($good->sum('debit'), 2);

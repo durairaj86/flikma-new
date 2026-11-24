@@ -5779,5 +5779,19 @@
     "Forgot Password?": "نسيت كلمة المرور؟",
     "Back to Login": "العودة إلى تسجيل الدخول",
     "Choose a new password for your account.": "اختر كلمة مرور جديدة لحسابك.",
-    ":f \":v\" was shortened by Excel and the real number is lost: enter it by hand": ":f \":v\" تم اختصاره بواسطة Excel وفُقد الرقم الحقيقي: أدخله يدوياً"
+    ":f \":v\" was shortened by Excel and the real number is lost: enter it by hand": ":f \":v\" تم اختصاره بواسطة Excel وفُقد الرقم الحقيقي: أدخله يدوياً",
+    "file :n": "الملف :n",
+    "New customer: created on import": "عميل جديد: يُنشأ عند الاستيراد",
+    "New supplier: created on import": "مورد جديد: يُنشأ عند الاستيراد",
+    "No customer with this name: import it on the Customers import page first": "لا يوجد عميل بهذا الاسم: استورده أولاً من صفحة استيراد العملاء",
+    "No supplier with this name: import it on the Suppliers import page first": "لا يوجد مورد بهذا الاسم: استورده أولاً من صفحة استيراد الموردين",
+    "Control account: its balance comes from the customer lines of this import": "حساب رقابي: رصيده يأتي من أسطر العملاء في هذا الاستيراد",
+    "Control account: its balance comes from the supplier lines of this import": "حساب رقابي: رصيده يأتي من أسطر الموردين في هذا الاستيراد",
+    "Receivables are entered per customer: add the customer balance list (subledger) to this import": "الذمم المدينة تُدخل لكل عميل: أضف قائمة أرصدة العملاء (الأستاذ المساعد) إلى هذا الاستيراد",
+    "Payables are entered per supplier: add the supplier balance list (subledger) to this import": "الذمم الدائنة تُدخل لكل مورد: أضف قائمة أرصدة الموردين (الأستاذ المساعد) إلى هذا الاستيراد",
+    "Upload the file(s)": "ارفع الملف (أو الملفات)",
+    "Trial balance with a separate customer / supplier balance list? Choose both files together: they are imported as one balanced entry.": "ميزان مراجعة مع قائمة منفصلة لأرصدة العملاء / الموردين؟ اختر الملفين معاً: يُستوردان كقيد واحد متوازن.",
+    "Trial balance + customer / supplier list: upload both. The Sundry Debtors / Sundry Creditors lines of the trial balance are then skipped, because the list gives the same amount per customer and supplier.": "ميزان المراجعة + قائمة العملاء / الموردين: ارفع الاثنين. يتم حينها تخطي سطري المدينين / الدائنين المتنوعين في ميزان المراجعة، لأن القائمة تعطي نفس المبلغ لكل عميل ومورد.",
+    "Create the customers / suppliers that are not found (with just their name; complete them later)": "إنشاء العملاء / الموردين غير الموجودين (بالاسم فقط؛ أكملهم لاحقاً)",
+    "files": "ملفات"
 }

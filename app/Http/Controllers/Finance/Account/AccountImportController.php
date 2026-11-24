@@ -196,8 +196,12 @@ PROMPT;
     {
         $db = Account::where(function ($q) {
             $q->where('company_id', companyId())->orWhereNull('company_id');
-        })->get(['code', 'name', 'type']);
+        })->get(['code', 'name', 'type', 'is_grouped', 'company_id']);
         $roots = $db->whereIn('code', array_map('strval', self::TYPE_BASE))->keyBy('type');
+        // An existing account can take the file's accounts only if it is a group already, or is this company's own:
+        // turning a shared default posting account (company_id NULL, e.g. "5300 Indirect Expenses") into a group
+        // would change it for every company.
+        $canParent = fn ($a) => (int) $a->is_grouped === 1 || (int) $a->company_id === (int) companyId();
 
         $found = false;
         $groups = [];   // "type|path" => group row
@@ -229,7 +233,7 @@ PROMPT;
                     $parentName = '';
                     foreach ($path as $depth => $groupName) {
                         $key = $type . '|' . implode('|', array_slice($path, 0, $depth + 1));
-                        $existing = $depth === 0 ? $db->first(fn ($a) => $a->type === $type && $this->nameKey($a->name) === $this->nameKey($groupName)) : null;
+                        $existing = $depth === 0 ? $db->first(fn ($a) => $a->type === $type && $canParent($a) && $this->nameKey($a->name) === $this->nameKey($groupName)) : null;
                         if ($existing) {
                             $parentCode = $existing->code;
                             $parentName = '';

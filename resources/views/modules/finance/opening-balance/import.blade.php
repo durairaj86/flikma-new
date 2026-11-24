@@ -32,6 +32,8 @@
             .ob-totals { display: flex; gap: 22px; flex-wrap: wrap; align-items: center; background: #f8f9fa; border-radius: 10px; padding: 10px 16px; margin: 10px 0; }
             .ob-totals b { font-size: 1.05rem; }
             .num { text-align: right; font-variant-numeric: tabular-nums; }
+            .ob-file-block + .ob-file-block { margin-top: 18px; padding-top: 16px; border-top: 2px dashed #e4e7ec; }
+            .ob-file-title { font-weight: 700; font-size: .92rem; color: #1d2939; margin-bottom: 8px; }
         </style>
 
         <div class="imp-wrap">
@@ -48,9 +50,10 @@
                 {{-- Step 1 --}}
                 <div class="col-lg-6">
                     <div class="imp-card d-flex flex-column">
-                        <h6><span class="imp-step">1</span>{{ __('Upload the file') }}</h6>
-                        <input type="file" id="ob-file" class="form-control" accept=".xlsx,.xls,.csv,.txt">
+                        <h6><span class="imp-step">1</span>{{ __('Upload the file(s)') }}</h6>
+                        <input type="file" id="ob-file" class="form-control" accept=".xlsx,.xls,.csv,.txt" multiple>
                         <div class="imp-help mt-2">{{ __('.xlsx, .xls or .csv. The first row with column names is used as the heading. Up to 5,000 rows.') }}</div>
+                        <div class="imp-help mt-1">{{ __('Trial balance with a separate customer / supplier balance list? Choose both files together: they are imported as one balanced entry.') }}</div>
 
                         <div class="row g-2 mt-2">
                             <div class="col-md-6">
@@ -83,6 +86,7 @@
                             <li><strong>{{ __('Debit and Credit') }}</strong> {{ __('columns, or one Amount column with a Dr/Cr column (or "1,200 Dr").') }}</li>
                             <li>{{ __('An optional Type column (Account, Customer, Supplier) helps when names could match more than one.') }}</li>
                             <li>{{ __('Customer balances post to Accounts Receivable and supplier balances to Accounts Payable automatically.') }}</li>
+                            <li>{{ __('Trial balance + customer / supplier list: upload both. The Sundry Debtors / Sundry Creditors lines of the trial balance are then skipped, because the list gives the same amount per customer and supplier.') }}</li>
                         </ul>
                         <h6 class="mt-3">{{ __('How it is checked') }}</h6>
                         <table class="imp-rules">
@@ -99,13 +103,7 @@
             <div class="imp-card mt-3 d-none" id="obMapCard">
                 <h6><span class="imp-step">2</span>{{ __('Match your columns') }}</h6>
                 <div class="imp-help mb-2">{{ __('We matched what we could from the column names. Change anything that is wrong.') }}</div>
-                <div class="row g-4">
-                    <div class="col-lg-5" id="ob-map"></div>
-                    <div class="col-lg-7">
-                        <div class="fw-semibold small mb-1">{{ __('First rows of your file') }}</div>
-                        <div class="imp-scroll" style="max-height:260px"><table class="table table-sm imp-table mb-0" id="ob-sample"></table></div>
-                    </div>
-                </div>
+                <div id="ob-files"></div>
                 <div class="d-flex align-items-center gap-2 mt-3">
                     <span class="text-muted small me-auto" id="ob-rowcount"></span>
                     <button type="button" class="btn btn-primary px-4" id="ob-check"><i class="bi bi-eye me-1"></i>{{ __('Preview') }}</button>
@@ -116,6 +114,10 @@
             <div class="imp-card mt-3 d-none" id="obReviewCard">
                 <h6><span class="imp-step">3</span>{{ __('Review and confirm') }}</h6>
                 <div class="d-flex flex-wrap align-items-center gap-2 mb-1" id="ob-summary"></div>
+                <div class="form-check mt-2 d-none" id="ob-create-wrap">
+                    <input class="form-check-input" type="checkbox" id="ob-create">
+                    <label class="form-check-label small" for="ob-create">{{ __('Create the customers / suppliers that are not found (with just their name; complete them later)') }}</label>
+                </div>
                 <div class="ob-totals">
                     <div>{{ __('Debit') }}: <b id="ob-tdr">0.00</b></div>
                     <div>{{ __('Credit') }}: <b id="ob-tcr">0.00</b></div>
@@ -156,7 +158,7 @@
             ['debit', @json(__('Debit')), ''], ['credit', @json(__('Credit')), ''], ['amount', @json(__('Amount')), @json(__('use instead of Debit / Credit'))],
             ['drcr', @json(__('Dr / Cr')), @json(__('with Amount'))], ['notes', @json(__('Notes')), @json(__('optional'))]
         ];
-        var state = {token: null, headers: [], rows: []};
+        var state = {files: [], rows: []};
         var T = {new: @json(__('New')), exists: @json(__('Already has one')), invalid: @json(__('Needs attention')), skip: @json(__('Skipped')), rows: @json(__('rows')), toImport: @json(__('to import')), importing: @json(__('Importing…')), import: @json(__('Import'))};
         function csrf() { return document.querySelector('meta[name="csrf-token"]').content; }
         function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]; }); }
@@ -167,39 +169,50 @@
             return fetch(url, {method: 'POST', body: body, headers: {'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json'}})
                 .then(function (r) { return r.json().then(function (d) { return {ok: r.ok, d: d}; }); });
         }
-        function currentMap() {
-            var m = {};
-            FIELDS.forEach(function (f) { var v = $('map-' + f[0]).value; if (v !== '') m[f[0]] = v; });
-            return m;
-        }
         function payload() {
             var fd = new FormData();
-            fd.append('_token', csrf()); fd.append('token', state.token); fd.append('kind', $('ob-kind').value); fd.append('date', $('ob-date').value);
-            var m = currentMap(); Object.keys(m).forEach(function (k) { fd.append('map[' + k + ']', m[k]); });
+            fd.append('_token', csrf()); fd.append('kind', $('ob-kind').value); fd.append('date', $('ob-date').value);
+            if ($('ob-create').checked) fd.append('create_missing', '1');
+            state.files.forEach(function (file, n) {
+                fd.append('files[' + n + '][token]', file.token);
+                FIELDS.forEach(function (f) { var v = $('map-' + n + '-' + f[0]).value; if (v !== '') fd.append('files[' + n + '][map][' + f[0] + ']', v); });
+            });
             return fd;
         }
 
         $('ob-file').addEventListener('change', function () { $('ob-upload').disabled = !this.files.length; clearErr(); });
 
-        $('ob-upload').addEventListener('click', function () {
-            var f = $('ob-file').files[0]; if (!f) return;
-            clearErr(); var b = this; b.disabled = true;
+        function uploadOne(f) {
             var fd = new FormData(); fd.append('file', f); fd.append('_token', csrf());
-            post(URL_.upload, fd).then(function (res) {
-                b.disabled = false;
-                if (!res.ok) { err(res.d.error || (res.d.errors ? Object.values(res.d.errors)[0][0] : @json(__('Could not read this file.')))); return; }
-                state.token = res.d.token; state.headers = res.d.headers;
-                // mapping selects
-                $('ob-map').innerHTML = FIELDS.map(function (f) {
-                    var opts = '<option value="">' + @json(__('— not in my file —')) + '</option>' + res.d.headers.map(function (h, i) { return '<option value="' + i + '"' + (String(res.d.suggest[f[0]]) === String(i) ? ' selected' : '') + '>' + esc(h || (@json(__('Column')) + ' ' + (i + 1))) + '</option>'; }).join('');
-                    return '<div class="map-row"><label>' + f[1] + (f[2] ? '<br><small>' + f[2] + '</small>' : '') + '</label><select class="form-select form-select-sm" id="map-' + f[0] + '">' + opts + '</select></div>';
-                }).join('');
-                $('ob-sample').innerHTML = '<thead><tr>' + res.d.headers.map(function (h) { return '<th>' + esc(h) + '</th>'; }).join('') + '</tr></thead><tbody>' +
-                    res.d.sample.map(function (r) { return '<tr>' + r.map(function (c) { return '<td>' + esc(c) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody>';
-                $('ob-rowcount').textContent = res.d.total + ' ' + T.rows;
-                $('obMapCard').classList.remove('d-none'); $('obReviewCard').classList.add('d-none');
-                $('obMapCard').scrollIntoView({behavior: 'smooth'});
+            return post(URL_.upload, fd).then(function (res) {
+                if (!res.ok) throw new Error(f.name + ': ' + (res.d.error || (res.d.errors ? Object.values(res.d.errors)[0][0] : @json(__('Could not read this file.')))));
+                return Object.assign({name: f.name}, res.d);
             });
+        }
+        $('ob-upload').addEventListener('click', function () {
+            var list = Array.prototype.slice.call($('ob-file').files); if (!list.length) return;
+            clearErr(); var b = this; b.disabled = true;
+            list.reduce(function (p, f) { return p.then(function (acc) { return uploadOne(f).then(function (d) { acc.push(d); return acc; }); }); }, Promise.resolve([]))
+                .then(function (files) {
+                    b.disabled = false;
+                    state.files = files;
+                    // one block per file: its own column match and its first rows
+                    $('ob-files').innerHTML = files.map(function (file, n) {
+                        var map = FIELDS.map(function (f) {
+                            var opts = '<option value="">' + @json(__('— not in my file —')) + '</option>' + file.headers.map(function (h, i) { return '<option value="' + i + '"' + (String(file.suggest[f[0]]) === String(i) ? ' selected' : '') + '>' + esc(h || (@json(__('Column')) + ' ' + (i + 1))) + '</option>'; }).join('');
+                            return '<div class="map-row"><label for="map-' + n + '-' + f[0] + '">' + f[1] + (f[2] ? '<br><small>' + f[2] + '</small>' : '') + '</label><select class="form-select form-select-sm" id="map-' + n + '-' + f[0] + '">' + opts + '</select></div>';
+                        }).join('');
+                        var sample = '<thead><tr>' + file.headers.map(function (h) { return '<th>' + esc(h) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+                            file.sample.map(function (r) { return '<tr>' + r.map(function (c) { return '<td>' + esc(c) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody>';
+                        return '<div class="ob-file-block">' + (files.length > 1 ? '<div class="ob-file-title"><i class="bi bi-file-earmark-spreadsheet me-1"></i>' + esc(file.name) + ' · ' + file.total + ' ' + T.rows + '</div>' : '') +
+                            '<div class="row g-4"><div class="col-lg-5">' + map + '</div><div class="col-lg-7"><div class="fw-semibold small mb-1">' + @json(__('First rows of your file')) + '</div>' +
+                            '<div class="imp-scroll" style="max-height:260px"><table class="table table-sm imp-table mb-0">' + sample + '</table></div></div></div></div>';
+                    }).join('');
+                    $('ob-rowcount').textContent = files.reduce(function (t, f) { return t + f.total; }, 0) + ' ' + T.rows + (files.length > 1 ? ' · ' + files.length + ' ' + @json(__('files')) : '');
+                    $('obMapCard').classList.remove('d-none'); $('obReviewCard').classList.add('d-none');
+                    $('obMapCard').scrollIntoView({behavior: 'smooth'});
+                })
+                .catch(function (e) { b.disabled = false; err(e.message); });
         });
 
         function render() {
@@ -231,11 +244,15 @@
             post(URL_.check, payload()).then(function (res) {
                 b.disabled = false;
                 if (!res.ok) { err(res.d.error || (res.d.errors ? Object.values(res.d.errors)[0][0] : @json(__('Could not check the file.')))); return; }
-                state.rows = res.d.rows.filter(function (r) { return r.status !== 'skip'; }).map(function (r) { r.checked = true; return r; });
+                // skipped control-account lines stay visible: the user sees why Sundry Debtors / Creditors are not imported
+                state.rows = res.d.rows.filter(function (r) { return r.status !== 'skip' || r.control; }).map(function (r) { r.checked = true; return r; });
+                var missing = res.d.rows.some(function (r) { return r.create || r.missing; });
+                $('ob-create-wrap').classList.toggle('d-none', !missing && !$('ob-create').checked);
                 render();
                 $('obReviewCard').classList.remove('d-none'); $('obReviewCard').scrollIntoView({behavior: 'smooth'});
             });
         });
+        $('ob-create').addEventListener('change', function () { $('ob-check').click(); });
         $('ob-back').addEventListener('click', function () { $('obReviewCard').classList.add('d-none'); $('obMapCard').scrollIntoView({behavior: 'smooth'}); });
 
         $('ob-confirm').addEventListener('click', function () {
