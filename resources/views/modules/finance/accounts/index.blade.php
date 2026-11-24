@@ -145,7 +145,7 @@
             </div>
             <div class="flex-grow-1">
                 <div>
-                    <table class="table align-middle dataTable" id="dataTable" data-module-url="account">
+                    <table class="table align-middle dataTable" id="dataTable" data-module-url="account" data-model-size="smd" data-min-height="min-height:400px;">
                         <thead class="table-light sticky-top bg-white">
                         <tr>
                             <th>{{ __('Account Name') }}</th>

@@ -12,7 +12,7 @@
 
         <div class="row gy-3">
             <!-- Account Type -->
-            <div class="col-md-8 d-flex align-items-center">
+            <div class="col-12 d-flex align-items-center">
                 <label class="col-4 col-form-label fw-semibold text-secondary">{{ __('Account Type') }} <span
                         class="text-danger">*</span></label>
                 <div class="col-8">
@@ -34,7 +34,7 @@
             </div>
 
             <!-- Account Name -->
-            <div class="col-md-8 d-flex align-items-center">
+            <div class="col-12 d-flex align-items-center">
                 <label class="col-4 col-form-label fw-semibold text-secondary">{{ __('Account Name') }} <span
                         class="text-danger">*</span></label>
                 <div class="col-8">
@@ -44,7 +44,7 @@
             </div>
 
             <!-- Account Code -->
-            <div class="col-md-8 d-flex align-items-center">
+            <div class="col-12 d-flex align-items-center">
                 <label class="col-4 col-form-label fw-semibold text-secondary">{{ __('Account Code') }}</label>
                 <div class="col-8">
                     <input type="text" class="form-control" name="account_code" autocomplete="off" value="{{ $account->code }}"
@@ -53,7 +53,7 @@
             </div>
 
             <!-- Description -->
-            <div class="col-md-8 d-flex align-items-start">
+            <div class="col-12 d-flex align-items-start">
                 <label class="col-4 col-form-label fw-semibold text-secondary pt-2">{{ __('Description') }}</label>
                 <div class="col-8">
                     <textarea class="form-control h-100" name="description" rows="2"
@@ -62,7 +62,7 @@
             </div>
 
             <!-- Active Status -->
-            <div class="col-md-8 d-flex align-items-center">
+            <div class="col-12 d-flex align-items-center">
                 <label class="col-4 col-form-label fw-semibold text-secondary">{{ __('Status') }}</label>
                 <div class="col-8">
                     <div class="form-check form-switch">
@@ -74,7 +74,7 @@
             </div>
 
             <!-- ================= Bank Details ================= -->
-            <div class="col-md-8 d-none" id="bankDetailsCard">
+            <div class="col-12 d-none" id="bankDetailsCard">
                 <hr class="my-2">
                 <h6 class="fw-semibold text-secondary small mb-3">{{ __('Bank Details') }}</h6>
 

@@ -151,7 +151,9 @@ ACCOUNT = {
                     title: trans('New Account'),
                     url: GLOBAL_FN.buildUrl('finance/account/create'),
                     content: null,
-                    size: 'md',
+                    // a five-field form: 600px wide, tall enough for the open Account Type list (not the default 75% of the page)
+                    size: 'smd',
+                    minHeight: 'min-height:400px;',
                 });
             })
         },
