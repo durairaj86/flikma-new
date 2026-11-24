@@ -44,9 +44,8 @@ class SalespersonController extends Controller
             ->addColumn('late_limit', fn ($row) => ($row->late_days ?: 120) . ' ' . __('days'))
             ->addColumn('target', fn ($row) => (float) $row->monthly_target > 0 ? number_format((float) $row->monthly_target, 2) : '<span class="text-muted">—</span>')
             ->rawColumns(['commission', 'target'])
-            ->editColumn('user_id', function ($row) {
-                return $row->user->name;
-            })
+            // the linked login: none chosen, or deleted since, shows a dash instead of breaking the whole list
+            ->editColumn('user_id', fn ($row) => $row->user?->name ?? '—')
             ->editColumn('created_at', function ($row) {
                 return showDate($row->created_at);
             })
