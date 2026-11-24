@@ -74,8 +74,8 @@
                                 <label class="form-label required">{{ __('Status') }} <sup class="text-danger">*</sup></label>
                                 <select name="status" class="tom-select" required>
                                     <option value="">{{ __('Select') }}</option>
-                                    <option value="active" @selected($user->status == 'active' || !$user->exists)>{{ __('Active') }}</option>
-                                    <option value="inactive" @selected($user->exists && $user->status != 'active')>{{ __('Inactive') }}</option>
+                                    <option value="active" @selected(!$user->exists || $user->hasActiveStatus())>{{ __('Active') }}</option>
+                                    <option value="inactive" @selected($user->exists && !$user->hasActiveStatus())>{{ __('Inactive') }}</option>
                                 </select>
                             </div>
                             <div class="col-4 form-group">

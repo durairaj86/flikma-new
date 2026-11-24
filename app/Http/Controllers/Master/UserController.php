@@ -21,22 +21,22 @@ class UserController extends Controller
         $companyId = companyId();
 
         $statusCounts = [
-            'user' => User::where('company_id', $companyId)->where('status', 'active')->count(),
+            'user' => User::where('company_id', $companyId)->activeStatus()->count(),
             'employee' => User::where('company_id', $companyId)->where('role', 4)->count(),
-            'terminated' => User::where('company_id', $companyId)->where('status', '!=', 'active')->count(),
+            'terminated' => User::where('company_id', $companyId)->terminatedStatus()->count(),
             'allusers' => User::where('company_id', $companyId)->count(),
         ];
 
         $rows = User::with('department')
             ->select('id', 'name', 'email', 'phone', 'role', 'last_login', 'department_id', 'company_id', 'created_at')
             ->when($request->tab === 'user', function ($q) {
-                $q->where('status', 'active');
+                $q->activeStatus();
             })
             ->when($request->tab === 'employee', function ($q) {
                 $q->where('role', 4);
             })
             ->when($request->tab === 'terminated', function ($q) {
-                $q->where('status', '!=', 'active');
+                $q->terminatedStatus();
             });
 
         return DataTables::eloquent($rows)
@@ -287,7 +287,7 @@ class UserController extends Controller
     public function actions($id)
     {
         $user = User::select('id', 'status', 'role')->findOrFail($id);
-        $isActive = $user->status === 'active';
+        $isActive = $user->hasActiveStatus();
 
         $contextMenu = collect([]);
 

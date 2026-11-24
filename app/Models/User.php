@@ -146,18 +146,40 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(\App\Models\User::class, 'reporting_manager_id');
     }
 
+    /**
+     * Statuses that mean "in use". "1" is what registration used to save for the company owner; any other value
+     * ("inactive", "terminated") means the person was taken out of use, and the Employees list shows them as Terminated.
+     */
+    public const ACTIVE_STATUSES = ['active', '1'];
+
     public function isTerminated(): bool
     {
         return $this->terminated_at !== null;
     }
 
+    public function hasActiveStatus(): bool
+    {
+        return in_array((string) $this->status, self::ACTIVE_STATUSES, true) || $this->status === null || $this->status === '';
+    }
+
+    /** Users the Employees list shows as active (the Terminated tab is everyone else). */
+    public function scopeActiveStatus($query)
+    {
+        return $query->where(fn ($q) => $q->whereIn('status', self::ACTIVE_STATUSES)->orWhereNull('status')->orWhere('status', ''));
+    }
+
+    public function scopeTerminatedStatus($query)
+    {
+        return $query->whereNotIn('status', self::ACTIVE_STATUSES)->whereNotNull('status')->where('status', '!=', '');
+    }
+
     /**
-     * May this person sign in? Not once terminated (a termination date, or status "terminated") and not while login is switched
-     * off for them. The status of an ordinary user is "active" (or "1" from registration), so only those two are refused.
+     * May this person sign in? Not once terminated: a termination date, or any status the Employees list counts as
+     * terminated (so an older "inactive" row without a date is refused too), and not while login is switched off for them.
      */
     public function canLogin(): bool
     {
-        return !$this->isTerminated() && $this->status !== 'terminated' && $this->login_enabled !== false;
+        return !$this->isTerminated() && $this->hasActiveStatus() && $this->login_enabled !== false;
     }
 
     /** Attendance, salary, loan or payroll history means the employee can only be terminated, never deleted. */
