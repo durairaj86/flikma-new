@@ -99,21 +99,39 @@
                                             <div class="row g-4">
                                                 <div class="col-md-6">
                                                     <label class="form-label fw-medium">{{ __('Current Password') }}</label>
-                                                    <input type="password" class="form-control" name="current_password"
-                                                           placeholder="{{ __('Enter current password') }}">
+                                                    <div class="input-group">
+                                                        <input type="password" class="form-control" name="current_password"
+                                                               placeholder="{{ __('Enter current password') }}">
+                                                        <button type="button" class="btn btn-outline-secondary toggle-password"
+                                                                tabindex="-1" aria-label="{{ __('Show password') }}">
+                                                            <i class="bi bi-eye"></i>
+                                                        </button>
+                                                    </div>
                                                 </div>
 
                                                 <div class="col-md-6">
                                                     <label class="form-label fw-medium">{{ __('New Password') }}</label>
-                                                    <input type="password" class="form-control" name="new_password"
-                                                           placeholder="{{ __('Enter new password') }}">
+                                                    <div class="input-group">
+                                                        <input type="password" class="form-control" name="new_password"
+                                                               placeholder="{{ __('Enter new password') }}">
+                                                        <button type="button" class="btn btn-outline-secondary toggle-password"
+                                                                tabindex="-1" aria-label="{{ __('Show password') }}">
+                                                            <i class="bi bi-eye"></i>
+                                                        </button>
+                                                    </div>
                                                 </div>
 
                                                 <div class="col-md-6">
                                                     <label class="form-label fw-medium">{{ __('Confirm New Password') }}</label>
-                                                    <input type="password" class="form-control"
-                                                           name="confirm_new_password"
-                                                           placeholder="{{ __('Confirm new password') }}">
+                                                    <div class="input-group">
+                                                        <input type="password" class="form-control"
+                                                               name="new_password_confirmation"
+                                                               placeholder="{{ __('Confirm new password') }}">
+                                                        <button type="button" class="btn btn-outline-secondary toggle-password"
+                                                                tabindex="-1" aria-label="{{ __('Show password') }}">
+                                                            <i class="bi bi-eye"></i>
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -162,6 +180,15 @@
                     object-fit: cover;
                     box-shadow: 0 4px 12px rgba(0, 0, 0, .1);
                 }
+                /* the show / hide eye is one piece with its password field: same height, border and shadow */
+                .input-group > .toggle-password {
+                    display: flex; align-items: center; justify-content: center;
+                    width: 42px; padding: 0; margin-left: -1px;
+                    background: transparent; border-color: #e5e7eb; color: #64748b;
+                    box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+                }
+                .input-group > .toggle-password:hover { background: #f1f5f9; color: #1e293b; }
+                .input-group > .toggle-password:focus-visible { outline: 0; box-shadow: 0 0 0 3px rgba(99, 102, 241, .25); position: relative; z-index: 3; }
             </style>
 
 
@@ -187,6 +214,16 @@
 
                     reader.readAsDataURL(e.target.files[0]);
                 }
+            });
+
+            // Show/hide password toggles
+            document.querySelectorAll('.toggle-password').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    const input = btn.closest('.input-group').querySelector('input');
+                    const show = input.type === 'password';
+                    input.type = show ? 'text' : 'password';
+                    btn.querySelector('i').className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
+                });
             });
         });
     </script>

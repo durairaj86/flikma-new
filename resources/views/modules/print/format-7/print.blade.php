@@ -297,6 +297,8 @@
             </tr>
         </table>
 
+        @include('modules.print.partials.container-details')
+
         {{-- Notes Section (Full Width Left to Right) --}}
         <div style="margin-top: 10px; background: #fdfdfd; border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px 14px;">
             <div style="font-weight: bold; font-size: 8.5pt;">NOTES | <span class="ar" style="font-size: 7.5pt;"> ملاحظات</span></div>

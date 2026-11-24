@@ -277,6 +277,8 @@
                 </tr>
             </table>
 
+        @include('modules.print.partials.container-details')
+
         {{-- Amount in words --}}
         <div class="keep-together" style="margin-top: 15px; border-top: 1px dashed #e5e7eb; border-bottom: 1px dashed #e5e7eb; padding: 10px 0;">
             <div style="font-size: 7.5pt; font-weight: bold; text-transform: uppercase; color: #6b7280; letter-spacing: 0.5px;">Amount in Words <span class="ar" style="direction: ltr; unicode-bidi: isolate; display: inline-block;">| المبلغ كتابة</span></div>

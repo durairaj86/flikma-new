@@ -211,9 +211,9 @@ class UserController extends Controller
                 'nullable',
                 'string',
                 'min:8',
-                'confirmed', // Requires 'confirm_new_password' field to match
+                'confirmed', // Requires 'new_password_confirmation' field to match
             ],
-            // 'confirm_new_password' is automatically handled by the 'confirmed' rule on new_password
+            // 'new_password_confirmation' is automatically handled by the 'confirmed' rule on new_password
         ];
 
         $validatedData = $request->validate($rules);

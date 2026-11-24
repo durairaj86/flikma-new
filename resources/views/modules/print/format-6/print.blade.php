@@ -407,6 +407,8 @@
             </tr>
         </table>
 
+        @include('modules.print.partials.container-details')
+
         {{-- Amount in words block --}}
         <table class="keep-together" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 8px;">
             <tr>
