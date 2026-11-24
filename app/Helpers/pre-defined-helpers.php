@@ -454,10 +454,11 @@ function accountTypes(): array
 function roles(): array
 {
     return [
-        1 => ['Super User' => 'normal goods, non-special handling'],
-        2 => ['User' => 'dangerous goods, requires DG declaration'],
-        3 => ['Admin' => 'food, flowers, pharma – sensitive to time/temp'],
-        4 => ['Employee' => 'temperature controlled containers']
+        // name => what the role can do (shown under it in the Role dropdown)
+        1 => ['Super User' => 'Company owner: full access to everything'],
+        2 => ['User' => 'Access follows the rights of their department'],
+        3 => ['Admin' => 'Department rights, and sees every salesperson\'s deals in CRM'],
+        4 => ['Employee' => 'Staff member: access follows the rights of their department']
     ];
 }
 

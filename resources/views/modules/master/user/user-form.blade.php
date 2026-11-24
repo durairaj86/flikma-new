@@ -62,16 +62,16 @@
                         </div>
                         <div class="row">
                             <div class="col-4 form-group">
-                                <label class="form-label">{{ __('Full Name') }}</label>
+                                <label class="form-label required">{{ __('Full Name') }} <sup class="text-danger">*</sup></label>
                                 <input type="text" name="name" class="form-control" required value="{{ $user->name }}">
                             </div>
                             <div class="col-4 form-group">
-                                <label class="form-label">{{ __('Email') }}</label>
+                                <label class="form-label required">{{ __('Email') }} <sup class="text-danger">*</sup></label>
                                 <input type="email" name="email" class="form-control" required
                                        value="{{ $user->email }}">
                             </div>
                             <div class="col-4 form-group">
-                                <label class="form-label">{{ __('Status') }}</label>
+                                <label class="form-label required">{{ __('Status') }} <sup class="text-danger">*</sup></label>
                                 <select name="status" class="tom-select" required>
                                     <option value="">{{ __('Select') }}</option>
                                     <option value="active" @selected($user->status == 'active' || !$user->exists)>{{ __('Active') }}</option>
@@ -79,7 +79,7 @@
                                 </select>
                             </div>
                             <div class="col-4 form-group">
-                                <label class="form-label">{{ __('Login Permission') }}</label>
+                                <label class="form-label required">{{ __('Login Permission') }} <sup class="text-danger">*</sup></label>
                                 <select name="login_permission" id="loginPermission" class="tom-select" required>
                                     <option value="">{{ __('Select') }}</option>
                                     <option value="yes" @selected($user->login_permission == 'yes')>{{ __('Yes') }}
@@ -104,7 +104,7 @@
                                 </div>
                             </div>
                             <div class="col-4 form-group">
-                                <label class="form-label">{{ __('Department') }}</label>
+                                <label class="form-label required">{{ __('Department') }} <sup class="text-danger">*</sup></label>
                                 <select name="department" class="tom-select" required>
                                     @foreach($departments as $departmentId => $departmentName)
                                         <option
@@ -113,7 +113,7 @@
                                 </select>
                             </div>
                             <div class="col-4 form-group">
-                                <label class="form-label">{{ __('Role') }}</label>
+                                <label class="form-label required">{{ __('Role') }} <sup class="text-danger">*</sup></label>
                                 <x-common.roles :value="$user->role"></x-common.roles>
                             </div>
                         </div>
@@ -122,7 +122,7 @@
                         </div>
                         <div class="row">
                             <div class="col-4 form-group">
-                                <label class="form-label">{{ __('Phone') }}</label>
+                                <label class="form-label required">{{ __('Phone') }} <sup class="text-danger">*</sup></label>
                                 <input type="text" name="phone" class="form-control" value="{{ $user->phone }}" required>
                             </div>
                             <div class="col-4 form-group">
@@ -167,7 +167,7 @@
                                        value="{{ $user->postal_code }}">
                             </div>
                             <div class="col-4 form-group">
-                                <label class="form-label">{{ __('Country') }}</label>
+                                <label class="form-label required">{{ __('Country') }} <sup class="text-danger">*</sup></label>
                                 <x-common.country :value="$user->country"></x-common.country>
                             </div>
                         </div>

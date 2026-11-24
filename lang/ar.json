@@ -5793,5 +5793,9 @@
     "Trial balance with a separate customer / supplier balance list? Choose both files together: they are imported as one balanced entry.": "ميزان مراجعة مع قائمة منفصلة لأرصدة العملاء / الموردين؟ اختر الملفين معاً: يُستوردان كقيد واحد متوازن.",
     "Trial balance + customer / supplier list: upload both. The Sundry Debtors / Sundry Creditors lines of the trial balance are then skipped, because the list gives the same amount per customer and supplier.": "ميزان المراجعة + قائمة العملاء / الموردين: ارفع الاثنين. يتم حينها تخطي سطري المدينين / الدائنين المتنوعين في ميزان المراجعة، لأن القائمة تعطي نفس المبلغ لكل عميل ومورد.",
     "Create the customers / suppliers that are not found (with just their name; complete them later)": "إنشاء العملاء / الموردين غير الموجودين (بالاسم فقط؛ أكملهم لاحقاً)",
-    "files": "ملفات"
+    "files": "ملفات",
+    "Company owner: full access to everything": "مالك الشركة: صلاحية كاملة على كل شيء",
+    "Access follows the rights of their department": "الصلاحيات حسب صلاحيات القسم",
+    "Department rights, and sees every salesperson's deals in CRM": "صلاحيات القسم، ويرى صفقات جميع المندوبين في إدارة العملاء",
+    "Staff member: access follows the rights of their department": "موظف: الصلاحيات حسب صلاحيات القسم"
 }

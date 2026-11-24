@@ -5,13 +5,13 @@
     @foreach(roles() as $roleId => $roleType)
         @continue($roleId === 1)
         @php
-            $roleValue = array_key_first($roleType);   // "General"
-            $roleSubText = $roleType[$roleValue];     // "normal goods, non-special handling"
+            $roleValue = array_key_first($roleType);   // "Admin"
+            $roleSubText = $roleType[$roleValue];     // what the role can do
         @endphp
         <option value="{{ $roleId }}"
                 @selected($roleId == ($value ?? null))
-                data-subtext="{{ $roleSubText }}">
-            {{ $roleValue }}
+                data-subtext="{{ __($roleSubText) }}">
+            {{ __($roleValue) }}
         </option>
     @endforeach
 </select>

@@ -56,17 +56,17 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-4 form-group">
-                                    <label class="form-label">{{ __('Supplier Name (English)') }}</label>
+                                    <label class="form-label required">{{ __('Supplier Name (English)') }} <sup class="text-danger">*</sup></label>
                                     <input type="text" name="name_en" class="form-control" required
                                            value="{{ $supplier->name_en }}">
                                 </div>
                                 <div class="col-md-4 form-group">
-                                    <label class="form-label">{{ __('Supplier Name (Arabic)') }}</label>
-                                    <input type="text" name="name_ar" class="form-control" dir="rtl"
+                                    <label class="form-label required">{{ __('Supplier Name (Arabic)') }} <sup class="text-danger">*</sup></label>
+                                    <input type="text" name="name_ar" class="form-control" dir="rtl" required
                                            value="{{ $supplier->name_ar }}">
                                 </div>
                                 <div class="col-md-4 form-group">
-                                    <label class="form-label">{{ __('Default Currency') }}</label>
+                                    <label class="form-label required">{{ __('Default Currency') }} <sup class="text-danger">*</sup></label>
                                     <x-common.currencies :value="$supplier->currency"></x-common.currencies>
                                 </div>
                                 <div class="col-md-4 form-group">
@@ -80,8 +80,8 @@
                                            value="{{ $supplier->email }}">
                                 </div>
                                 <div class="col-md-4 form-group">
-                                    <label class="form-label">{{ __('Phone') }}</label>
-                                    <input type="text" name="phone" class="form-control"
+                                    <label class="form-label required">{{ __('Phone') }} <sup class="text-danger">*</sup></label>
+                                    <input type="text" name="phone" class="form-control" required
                                            pattern="^\+?[0-9]{10,15}$" maxlength="16"
                                            value="{{ $supplier->phone }}"
                                            placeholder="{{ __('+966 1234567890 or 966 1234567890') }}">
@@ -97,7 +97,7 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-4 form-group">
-                                    <label class="form-label d-block mb-2">{{ __('Business Type') }}</label>
+                                    <label class="form-label d-block mb-2 required">{{ __('Business Type') }} <sup class="text-danger">*</sup></label>
 
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" type="radio" name="business_type"
@@ -118,12 +118,12 @@
 
 
                                 <div class="col-md-4 form-group">
-                                    <label class="form-label">{{ __('CR Number') }}</label>
+                                    <label class="form-label">{{ __('CR Number') }} <sup class="text-danger reg-required-mark d-none">*</sup></label>
                                     <input type="text" name="cr_number" class="form-control"
                                            value="{{ $supplier->cr_number }}">
                                 </div>
                                 <div class="col-md-4 form-group">
-                                    <label class="form-label">{{ __('VAT Number') }}</label>
+                                    <label class="form-label">{{ __('VAT Number') }} <sup class="text-danger reg-required-mark d-none">*</sup></label>
                                     <input type="text" name="vat_number" class="form-control"
                                            value="{{ $supplier->vat_number }}">
                                 </div>
@@ -200,7 +200,7 @@
                                            value="{{ $supplier->postal_code }}">
                                 </div>
                                 <div class="col-md-4 form-group">
-                                    <label class="form-label">{{ __('Country') }}</label>
+                                    <label class="form-label required">{{ __('Country') }} <sup class="text-danger">*</sup></label>
                                     <x-common.country :value="$supplier->country"></x-common.country>
                                 </div>
                             </div>
@@ -217,7 +217,9 @@
         var type = $("input[name='business_type']:checked").val();
         if (type === "registered") {
             $("input[name='cr_number'], input[name='vat_number']").attr("required", true);
+            $(".reg-required-mark").removeClass("d-none");
         } else {
+            $(".reg-required-mark").addClass("d-none");
             $("input[name='cr_number'], input[name='vat_number']").removeAttr("required");
             $("input[name='cr_number'], input[name='vat_number']").removeClass("is-invalid").next(".invalid-feedback").remove();
         }
