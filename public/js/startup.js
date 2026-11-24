@@ -1215,6 +1215,14 @@ let webModal = {
     },*/
     modelHandler(modalEl, modalSelector, message = null) {
         message = message || trans("Are you sure you want to close the modal?");
+        // This runs on every opening of the shared modal: drop the listeners of the previous opening first, or they pile up
+        // and one Esc opens one "are you sure?" box per form opened since the page loaded.
+        (modalEl.__modelHandlerListeners || []).forEach(([type, fn, capture]) => modalEl.removeEventListener(type, fn, capture));
+        modalEl.__modelHandlerListeners = [];
+        const on = (type, fn, capture) => {
+            modalEl.addEventListener(type, fn, capture);
+            modalEl.__modelHandlerListeners.push([type, fn, !!capture]);
+        };
         /*$('#globalModal a.btn-close').off().on('click', function () {
             $('.modal-backdrop').remove();
         });*/
@@ -1226,14 +1234,14 @@ let webModal = {
         let lastEl = null;
 
         // Track last focused input
-        modalEl.addEventListener('focusin', function (e) {
+        on('focusin', function (e) {
             if (e.target.matches(focusableSelector)) {
                 lastFocusedInput = e.target;
             }
         });
 
         // Focus first or last focused input when modal opens
-        modalEl.addEventListener('shown.bs.modal', function () {
+        on('shown.bs.modal', function () {
             const focusable = modalEl.querySelectorAll(focusableSelector);
             const focusableArr = Array.from(focusable).filter(el => !el.disabled && el.offsetParent !== null);
 
@@ -1262,13 +1270,13 @@ let webModal = {
         const trustedChange = function (e) {
             if (e.isTrusted && e.target && e.target.closest && e.target.closest('form')) formDirty = true;
         };
-        modalEl.addEventListener('input', trustedChange, true);
-        modalEl.addEventListener('change', trustedChange, true);
-        modalEl.addEventListener('click', function (e) {
+        on('input', trustedChange, true);
+        on('change', trustedChange, true);
+        on('click', function (e) {
             // picking an option in a Tom-Select list or a calendar day is a user change too
             if (e.isTrusted && e.target && e.target.closest && e.target.closest('.ts-dropdown .option, .flatpickr-day')) formDirty = true;
         }, true);
-        modalEl.addEventListener('shown.bs.modal', function () {
+        on('shown.bs.modal', function () {
             formDirty = false;
             baseFieldCount = null;
             setTimeout(function () { baseFieldCount = fieldCount(); }, 1500);
@@ -1289,7 +1297,13 @@ let webModal = {
         }, 800)
 
         function confirmDialog() {
+            if (document.querySelector('.jconfirm')) return;   // one "are you sure?" box at a time
             const parentModal = bootstrap.Modal.getInstance(modalEl);
+            // The form modal keeps keyboard focus inside itself: it pulled focus back from the box to its Cancel button,
+            // so Enter pressed Cancel and opened another box. The box is outside the modal: let focus go while it is open.
+            const trap = parentModal && parentModal._focustrap;
+            if (trap) trap.deactivate();
+            const restoreTrap = () => { if (trap && modalEl.classList.contains('show')) trap.activate(); };
 
             $.confirm({
                 title: trans('Are you sure you want to exit?'),
@@ -1320,24 +1334,32 @@ let webModal = {
                     }
                 },
                 onDestroy: function () {
+                    restoreTrap();
                     setTimeout(function () {
-                        lastFocusedInput.focus();
+                        if (lastFocusedInput) lastFocusedInput.focus();
                     }, 450);
                 },
                 onClose: function () {
-                    lastFocusedInput.focus();
+                    if (lastFocusedInput) lastFocusedInput.focus();
                 },
 
                 onOpen: function () { // regular function, NOT arrow
                     // Use jQuery to get the buttons directly from the modal element
                     const $modal = $(this.$el); // $el is the modal container in jQuery Confirm
                     const buttons = $modal.find('.jconfirm-buttons button');
-                    // Disable Bootstrap modal ESC
-                    $modal.on('keydown.preventESC,keydown.preventTAB', function (e) {
-                        if (e.key === 'Escape' || e.key === 'Tab') {
+                    // Esc does not close the box; Tab and the arrow keys move between Exit and Confirm (keyboard-only staff)
+                    $modal.on('keydown.preventESC', function (e) {
+                        if (e.key === 'Escape') {
                             e.preventDefault();
                             e.stopPropagation();
-                            console.log('ESC pressed — modal will not close');
+                            return;
+                        }
+                        if (['Tab', 'ArrowRight', 'ArrowLeft'].includes(e.key) && buttons.length >= 2) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const back = e.key === 'ArrowLeft' || (e.key === 'Tab' && e.shiftKey);
+                            const i = buttons.index(document.activeElement);
+                            buttons.eq(back ? Math.max(0, i - 1) : Math.min(buttons.length - 1, i + 1)).focus();
                         }
                     });
 
@@ -1423,6 +1445,13 @@ let webModal = {
             } else if (e.key === 'Escape') {
                 e.preventDefault();
                 e.stopPropagation();
+                if (document.querySelector('.jconfirm')) return;
+                // nothing changed: close straight away, the same as the close button
+                if (!hasUnsavedChanges()) {
+                    const pm = bootstrap.Modal.getInstance(modalEl);
+                    if (pm) pm.hide();
+                    return;
+                }
                 confirmDialog();
 
             } else if (e.key === 'Enter') {
@@ -1461,10 +1490,10 @@ let webModal = {
 
         // Attach keydown (make sure no duplicates)
 
-        modalEl.addEventListener('keydown', handler);
+        on('keydown', handler);
 
         // Cleanup when modal closes
-        /*modalEl.addEventListener('hidden.bs.modal', function () {
+        /*on('hidden.bs.modal', function () {
             modalEl.removeEventListener('keydown', handler);
         });*/
     },
