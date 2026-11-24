@@ -5801,5 +5801,6 @@
     "Search menu": "ابحث في القائمة",
     "Search the menu": "البحث في القائمة",
     "Search the menu (Ctrl+K searches every page)": "البحث في القائمة (Ctrl+K يبحث في كل الصفحات)",
-    "No menu matches": "لا توجد قائمة مطابقة"
+    "No menu matches": "لا توجد قائمة مطابقة",
+    "Super User only": "للمستخدم الرئيسي فقط"
 }

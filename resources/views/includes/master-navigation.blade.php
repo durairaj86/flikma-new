@@ -19,24 +19,38 @@
 
         <ul class="nav flex-column fw-medium" id="master-navigation">
             <!-- Users -->
-            @if(isSuperUser())
+            {{-- Super User only: an Admin sees it disabled (greyed, not clickable) --}}
             <li class="nav-item" data-url="/masters/users">
+                @if(isSuperUser())
                 <a href="{{ asset('/masters/users') }}"
                    class="nav-link d-flex align-items-center py-2 {{ $page1 == 'users' ? 'active' : 'text-dark' }}">
                     <i class="bi bi-person-badge text-secondary me-2"></i> {{ __('Employees') }}
                 </a>
+                @else
+                <a class="nav-link d-flex align-items-center py-2 no-access" aria-disabled="true" tabindex="-1"
+                   title="{{ __('Super User only') }}">
+                    <i class="bi bi-person-badge text-secondary me-2"></i> {{ __('Employees') }}
+                    <i class="bi bi-lock-fill ms-auto small" aria-hidden="true"></i>
+                </a>
+                @endif
             </li>
-            @endif
 
             <!-- Departments -->
-            @if(isSuperUser())
+            {{-- Super User only: an Admin sees it disabled (greyed, not clickable) --}}
             <li class="nav-item" data-url="/masters/departments">
+                @if(isSuperUser())
                 <a href="{{ asset('/masters/departments') }}"
                    class="nav-link d-flex align-items-center py-2 {{ $page1 == 'departments' ? 'active' : 'text-dark' }}">
                     <i class="bi bi-diagram-3 text-secondary me-2"></i> {{ __('Department & Rights') }}
                 </a>
+                @else
+                <a class="nav-link d-flex align-items-center py-2 no-access" aria-disabled="true" tabindex="-1"
+                   title="{{ __('Super User only') }}">
+                    <i class="bi bi-diagram-3 text-secondary me-2"></i> {{ __('Department & Rights') }}
+                    <i class="bi bi-lock-fill ms-auto small" aria-hidden="true"></i>
+                </a>
+                @endif
             </li>
-            @endif
 
             <!-- Quotation Terms -->
             <li class="nav-item" data-url="/masters/quotation-terms">
@@ -63,14 +77,21 @@
             </li>
 
             <!-- Period Closing -->
-            @if(isSuperUser())
+            {{-- Super User only: an Admin sees it disabled (greyed, not clickable) --}}
             <li class="nav-item" data-url="/masters/period-closing">
+                @if(isSuperUser())
                 <a href="{{ asset('/masters/period-closing') }}"
                    class="nav-link d-flex align-items-center py-2 {{ $page1 == 'period-closing' ? 'active' : 'text-dark' }}">
                     <i class="bi bi-lock text-secondary me-2"></i> {{ __('Period Closing') }}
                 </a>
+                @else
+                <a class="nav-link d-flex align-items-center py-2 no-access" aria-disabled="true" tabindex="-1"
+                   title="{{ __('Super User only') }}">
+                    <i class="bi bi-lock text-secondary me-2"></i> {{ __('Period Closing') }}
+                    <i class="bi bi-lock-fill ms-auto small" aria-hidden="true"></i>
+                </a>
+                @endif
             </li>
-            @endif
 
             <!-- Transport Directory -->
             <li class="nav-item">
@@ -171,14 +192,21 @@
                     <i class="bi bi-person-vcard text-secondary me-2"></i> {{ __('Drivers') }}
                 </a>
             </li>
-            @if(isSuperUser())
+            {{-- Super User only: an Admin sees it disabled (greyed, not clickable) --}}
             <li class="nav-item" data-url="/masters/finance/opening-balance">
+                @if(isSuperUser())
                 <a href="{{ asset('/masters/finance/opening-balance') }}"
                    class="nav-link d-flex align-items-center py-2 {{ $page2 == 'opening-balance' ? 'active' : 'text-dark' }}">
                     <i class="bi bi-person-badge text-secondary me-2"></i> {{ __('Opening Balance') }}
                 </a>
+                @else
+                <a class="nav-link d-flex align-items-center py-2 no-access" aria-disabled="true" tabindex="-1"
+                   title="{{ __('Super User only') }}">
+                    <i class="bi bi-person-badge text-secondary me-2"></i> {{ __('Opening Balance') }}
+                    <i class="bi bi-lock-fill ms-auto small" aria-hidden="true"></i>
+                </a>
+                @endif
             </li>
-            @endif
         </ul>
 
         <!-- Reports -->
