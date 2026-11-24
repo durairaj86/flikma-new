@@ -482,9 +482,9 @@
                         '/masters/transport/directories/seaports', '/masters/transport/directories/airports', '/masters/services', '/masters/package/codes',
                         '/masters/container/types', '/masters/incoterms', '/masters/currencies', '/masters/banks', '/masters/descriptions', '/masters/salesperson',
                         '/masters/units', '/masters/drivers', '/masters/vehicles', '/masters/finance/opening-balance'])
-                        ->first(fn ($path) => userCanOpen($path)) ?? '/masters/users';
+                        ->first(fn ($path) => userCanOpen($path));   // null: no master page this user may open
                 @endphp
-                @if(isSuperUser() || isAdminUser())
+                @if($mastersHome && (isSuperUser() || isAdminUser()))
                 <li class="nav-item">
                     <a href="{{ $mastersHome }}" class="nav-link {{ $segment1 == 'masters' ? 'active' : '' }}">
                         <i class="nav-icon bi bi-database"></i>
