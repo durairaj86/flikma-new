@@ -1,6 +1,7 @@
 /*
- * User rights in the browser: links to pages the user's department may not view are shown muted (grey, not clickable, not a Tab
- * stop, left out of the Ctrl+K menu search) instead of hidden. window.FLIKMA_LINK_RIGHTS comes from userLinkRights() in
+ * User rights in the browser: in the menus (left sidebar, Master Data menu) a page the user's department may not view is hidden, and
+ * a group with nothing left in it disappears (no Customers right at all: no Customers menu). Links elsewhere on a page are shown
+ * muted (grey, not clickable, not a Tab stop) instead. Neither is in the Ctrl+K / sidebar menu search. window.FLIKMA_LINK_RIGHTS comes from userLinkRights() in
  * app/Helpers/pre-defined-helpers.php: every right's path prefixes with whether the user may view it; it is empty for the Super User.
  * The longest matching prefix decides, the same way the server's CheckModulePermission middleware does, and the server still refuses
  * the page (403) when a muted link is opened another way.
@@ -50,6 +51,15 @@
         a.setAttribute('title', message());
     }
 
+    // menu entries are hidden rather than muted
+    var MENUS = '.app-sidebar, #master-navigation';
+    (function () {
+        var st = document.createElement('style');
+        st.textContent = '.rights-hidden{display:none!important}';
+        document.head.appendChild(st);
+    })();
+    function hideItem(li) { if (li) li.classList.add('rights-hidden'); }
+
     function muteButton(el) {
         if (el.classList.contains('no-access')) return;
         el.classList.add('no-access');
@@ -61,7 +71,10 @@
     function muteLinks(root) {
         (root || document).querySelectorAll('a[href]').forEach(function (a) {
             var href = a.getAttribute('href'), path = linkPath(href);
-            if (path !== null && path !== '' && !allowed(path)) mute(a, href);
+            if (path !== null && path !== '' && !allowed(path)) {
+                mute(a, href);
+                if (a.closest(MENUS)) hideItem(a.closest('li'));
+            }
         });
 
         // "New ..." buttons: the list page's own #new button, and the header's quick create menu (data-create-url)
@@ -73,21 +86,17 @@
             if (path && !allowed(path, 'create')) muteButton(el);
         });
 
-        // a sidebar group whose every link is muted is muted too (Payroll, Reports ...)
-        document.querySelectorAll('.app-sidebar ul.nav-treeview').forEach(function (ul) {
+        // a sidebar group with nothing left to open disappears (Customers, Payroll, Reports ...); deepest groups first,
+        // so "Reports > Customers" going away can empty "Reports"
+        Array.prototype.slice.call(document.querySelectorAll('.app-sidebar ul.nav-treeview')).reverse().forEach(function (ul) {
             var links = ul.querySelectorAll('a.nav-link[data-denied-href], a.nav-link[href]:not([href="#"])');
-            var muted = ul.querySelectorAll('a.nav-link[data-denied-href]');
-            var toggle = ul.parentNode && ul.parentNode.querySelector(':scope > a.nav-link');
-            if (toggle && links.length && links.length === muted.length) {
-                toggle.classList.add('no-access');
-                toggle.setAttribute('title', message());
-            }
+            var visible = Array.prototype.filter.call(links, function (a) { return !a.closest('.rights-hidden'); });
+            if (links.length && !visible.length) hideItem(ul.parentNode && ul.parentNode.closest('li'));
         });
-        // Master Data / Settings secondary menus: a collapsible group with every link muted
+        // Master Data secondary menu: a collapsible group with every link hidden
         document.querySelectorAll('#master-navigation ul.collapse').forEach(function (ul) {
-            var links = ul.querySelectorAll('a'), muted = ul.querySelectorAll('a[data-denied-href]');
-            var toggle = ul.parentNode && ul.parentNode.querySelector(':scope > button');
-            if (toggle && links.length && links.length === muted.length) toggle.classList.add('no-access');
+            var links = ul.querySelectorAll('a'), hidden = ul.querySelectorAll('.rights-hidden a');
+            if (links.length && links.length === hidden.length) hideItem(ul.parentNode && ul.parentNode.closest('li'));
         });
     }
 

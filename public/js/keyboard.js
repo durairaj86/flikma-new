@@ -571,6 +571,7 @@
         render(); q.focus();
     }
     window.ffKeyHelp = function () { help(); };
+    window.ffGoTo = function () { goTo(); };
     document.addEventListener('click', function (e) {
         var b = e.target.closest && e.target.closest('[data-kb-help]');
         if (b) { e.preventDefault(); help(); }

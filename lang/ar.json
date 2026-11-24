@@ -5797,5 +5797,9 @@
     "Company owner: full access to everything": "مالك الشركة: صلاحية كاملة على كل شيء",
     "Access follows the rights of their department": "الصلاحيات حسب صلاحيات القسم",
     "Department rights, and sees every salesperson's deals in CRM": "صلاحيات القسم، ويرى صفقات جميع المندوبين في إدارة العملاء",
-    "Staff member: access follows the rights of their department": "موظف: الصلاحيات حسب صلاحيات القسم"
+    "Staff member: access follows the rights of their department": "موظف: الصلاحيات حسب صلاحيات القسم",
+    "Search menu": "ابحث في القائمة",
+    "Search the menu": "البحث في القائمة",
+    "Search the menu (Ctrl+K searches every page)": "البحث في القائمة (Ctrl+K يبحث في كل الصفحات)",
+    "No menu matches": "لا توجد قائمة مطابقة"
 }

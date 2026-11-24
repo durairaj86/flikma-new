@@ -514,6 +514,7 @@
 <script type="text/javascript" src="{{ asset('js/startup.js?v='.appVersion()) }}" defer></script>
 <script src="{{ asset('js/number-input.js') }}?v={{ appVersion() }}"></script>
 <script src="{{ asset('js/keyboard.js') }}?v={{ appVersion() }}"></script>
+<script src="{{ asset('js/sidebar-search.js') }}?v={{ appVersion() }}"></script>
 <script src="{{ asset('js/crm-shared.js') }}?v={{ appVersion() }}"></script>
 <script src="{{ asset('js/input-lengths.js') }}?v={{ appVersion() }}"></script>
 <script src="{{ asset('js/input-maxlength.js') }}?v={{ appVersion() }}"></script>
