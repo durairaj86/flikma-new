@@ -140,7 +140,7 @@
 
             @if($openingBalances->hasPages())
                 <div class="px-4 pt-3 d-flex justify-content-end">
-                    {{ $openingBalances->links() }}
+                    {{ $openingBalances->links('pagination::bootstrap-5') }}
                 </div>
             @endif
         </div>
