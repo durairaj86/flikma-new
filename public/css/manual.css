@@ -2041,6 +2041,18 @@ body:not(.has-top-header) #sendEmailDrawer.offcanvas.offcanvas-end {
 .jconfirm .jconfirm-box .jconfirm-buttons button:focus { transform: none; box-shadow: 0 0 0 3px rgba(99, 102, 241, .25); }
 .jconfirm .jconfirm-box .jconfirm-buttons button:focus::after { display: none; }
 .jconfirm .cf-danger .jconfirm-box .jconfirm-buttons button.btn-danger:focus { box-shadow: 0 0 0 3px rgba(220, 38, 38, .3); }
+/* Which button Enter will press must be obvious (keyboard-only staff): only the focused button gets a solid ring;
+   the coloured button no longer carries a glow of its own that looked "selected" while the other one had focus. */
+.jconfirm .jconfirm-box .jconfirm-buttons button.btn-primary,
+.jconfirm .jconfirm-box .jconfirm-buttons button.btn-danger { box-shadow: none; }
+.jconfirm .jconfirm-box .jconfirm-buttons button:focus,
+.jconfirm .jconfirm-box .jconfirm-buttons button:focus-visible {
+    outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 5px #4f46e5 !important;
+}
+.jconfirm .jconfirm-box .jconfirm-buttons button:not(.btn-primary):not(.btn-danger):focus {
+    background: #e2e8f0 !important; color: #0f172a !important;
+}
+.jconfirm .cf-danger .jconfirm-box .jconfirm-buttons button:focus { box-shadow: 0 0 0 2px #fff, 0 0 0 5px #dc2626 !important; }
 
 /* App confirm / info modal (appConfirm): drops in from the top like FastFatoora's delete dialogs. */
 .modal-dialog.modal-delete-top { margin-top: 72px; max-width: 440px; }
