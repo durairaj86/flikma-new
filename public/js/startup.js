@@ -1276,25 +1276,39 @@ let webModal = {
             // picking an option in a Tom-Select list or a calendar day is a user change too
             if (e.isTrusted && e.target && e.target.closest && e.target.closest('.ts-dropdown .option, .flatpickr-day')) formDirty = true;
         }, true);
+        let settleTimer = null;
         on('shown.bs.modal', function () {
             formDirty = false;
             baseFieldCount = null;
-            setTimeout(function () { baseFieldCount = fieldCount(); }, 1500);
+            // the form comes from the server and may arrive seconds after the modal shows: count its fields once it is
+            // there and settled, not a fixed time after opening (a slow server made an untouched form look changed)
+            clearTimeout(settleTimer);
+            const started = Date.now();
+            const waitForForm = function () {
+                if (modalEl.querySelector('form') || Date.now() - started > 30000) {
+                    settleTimer = setTimeout(function () { baseFieldCount = fieldCount(); }, 1500);
+                } else {
+                    settleTimer = setTimeout(waitForForm, 200);
+                }
+            };
+            waitForForm();
         });
         const hasUnsavedChanges = () => formDirty || (baseFieldCount !== null && fieldCount() !== baseFieldCount);
 
-        setTimeout(function () {
-            $('#globalModal .btn-close, #globalModal #btn-cancel').off('click').on('click', function (e) {
-                e.preventDefault(); // stop main modal from closing
-                if (!hasUnsavedChanges()) {
-                    const pm = bootstrap.Modal.getInstance(modalEl);
-                    if (pm) pm.hide();
-                    modalEl.removeEventListener('keydown', handler);
-                    return;
-                }
-                confirmDialog();
-            });
-        }, 800)
+        // Cancel and X arrive with the form, after the server answers: a timer bound them only when the form came back
+        // within 800 ms, so on a slow server Cancel did nothing. Listening on the modal itself catches them whenever they appear.
+        on('click', function (e) {
+            const btn = e.target && e.target.closest && e.target.closest('.btn-close, #btn-cancel');
+            if (!btn || !modalEl.contains(btn)) return;
+            e.preventDefault(); // stop main modal from closing
+            if (!hasUnsavedChanges()) {
+                const pm = bootstrap.Modal.getInstance(modalEl);
+                if (pm) pm.hide();
+                modalEl.removeEventListener('keydown', handler);
+                return;
+            }
+            confirmDialog();
+        });
 
         function confirmDialog() {
             if (document.querySelector('.jconfirm')) return;   // one "are you sure?" box at a time
