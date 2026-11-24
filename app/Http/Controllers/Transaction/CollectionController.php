@@ -855,7 +855,8 @@ class CollectionController extends Controller
         ])->tap($applyFilters)->first();
 
         // the collection stores the account's id: the list shows its name (a credit-only collection has no account)
-        $accountNames = \App\Models\Finance\Account\Account::withoutGlobalScopes()->pluck('name', 'id');
+        $accountNames = \App\Models\Finance\Account\Account::withoutGlobalScopes()
+            ->where(fn ($q) => $q->where('company_id', companyId())->orWhereNull('company_id'))->pluck('name', 'id');
 
         return DataTables::eloquent($query)
             ->addIndexColumn()

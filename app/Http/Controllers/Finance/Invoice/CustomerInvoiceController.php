@@ -406,6 +406,7 @@ class CustomerInvoiceController extends Controller
             'currency_rate' => 'required',
             'currency' => 'required|exists:currencies,code',
             'terms' => 'nullable|string|max:1000',
+            'other_invoice_no' => 'nullable|string|max:50',
 
             'description_id.*' => 'required|string|max:255',
             'comment.*' => 'nullable|string|max:500',
@@ -488,6 +489,7 @@ class CustomerInvoiceController extends Controller
         $customer->currency = $validated['currency'];
         $customer->currency_rate = $validated['currency_rate'];
         $customer->terms = $validated['terms'] ?? null;
+        $customer->other_invoice_no = $validated['other_invoice_no'] ?? null;
         $customer->base_sub_total = round($customer->currency_rate * $subTotal, 2);
         $customer->base_tax_total = round($customer->currency_rate * $taxTotal, 2);
         $customer->sub_total = $subTotal;
@@ -1521,10 +1523,11 @@ class CustomerInvoiceController extends Controller
         $usedBills = $used('supplier_invoice', $bills->pluck('id'));
         $usedQuotes = $used('quotation', $quotes->pluck('id'));
 
-        $allDesc = DB::table('descriptions')->get(['id', 'description', 'sale_account_id']);
+        // through the models: this company's rows + the shared ones (a raw DB::table read every company's)
+        $allDesc = \App\Models\Master\Description::query()->get(['id', 'description', 'sale_account_id']);
         $descById = $allDesc->keyBy('id');
         $descByName = $allDesc->keyBy(fn ($d) => mb_strtolower(trim($d->description)));
-        $units = DB::table('units')->get(['id', 'unit_name', 'unit_symbol']);
+        $units = \App\Models\Master\Unit::query()->get(['id', 'unit_name', 'unit_symbol']);
         $unitByName = [];
         foreach ($units as $u) {
             $unitByName[mb_strtolower(trim($u->unit_name))] = $u->id;

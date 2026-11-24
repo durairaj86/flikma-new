@@ -159,7 +159,7 @@ function amountToFloat($value): float
 
 function amountFormat($amount, $decimals = 2): string
 {
-    return number_format($amount, $decimals, '.', ',');
+    return number_format((float) $amount, $decimals, '.', ',');
 }
 
 function amountInWords($number)
@@ -222,7 +222,7 @@ function convert($amount, $currency = 'ريال سعودي')
 
 function appVersion(): string
 {
-    return "1.0.643";
+    return "1.0.645";
 }
 
 function toArabicNumber($number)

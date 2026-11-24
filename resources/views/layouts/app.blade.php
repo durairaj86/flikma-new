@@ -19,6 +19,7 @@
         $tabApp = config('app.name') && config('app.name') !== 'Laravel' ? config('app.name') : 'Flikma';
         $tabPage = trim(html_entity_decode(strip_tags($__env->yieldContent('page-title')), ENT_QUOTES));
     @endphp
+    <link rel="icon" type="image/svg+xml" href="{{ asset('img/logos/Flikma_logo.svg') }}">
     <title>{{ $tabPage !== '' ? $tabPage . ' | ' . $tabApp : $tabApp }}</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">

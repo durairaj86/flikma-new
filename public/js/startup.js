@@ -2164,6 +2164,12 @@ function datepicker() {
     $("input.datepicker").each(function () {
         let defaultDateAttr = $(this).data("default-date"); // read attribute
         let inputValue = $(this).val();
+        // a value rendered as Y-m-d would be misread by the d-m-Y format (2026-11-24 became 20-06-2026)
+        let iso = /^(\d{4})-(\d{2})-(\d{2})/.exec(inputValue || '');
+        if (iso) {
+            inputValue = iso[3] + '-' + iso[2] + '-' + iso[1];
+            $(this).val(inputValue);
+        }
         //let _this = this;
         let defaultDate = inputValue ?? null; // default: no date
         $(this).attr("placeholder", "dd-mm-yyyy");

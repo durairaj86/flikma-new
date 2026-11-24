@@ -662,7 +662,8 @@ class PaymentController extends Controller
         ])->tap($applyFilters)->first();
 
         // the payment stores the account's id: the list shows its name
-        $accountNames = \App\Models\Finance\Account\Account::withoutGlobalScopes()->pluck('name', 'id');
+        $accountNames = \App\Models\Finance\Account\Account::withoutGlobalScopes()
+            ->where(fn ($q) => $q->where('company_id', companyId())->orWhereNull('company_id'))->pluck('name', 'id');
 
         return DataTables::eloquent($query)
             ->addIndexColumn()

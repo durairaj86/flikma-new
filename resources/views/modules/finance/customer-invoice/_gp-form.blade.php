@@ -152,6 +152,11 @@
                         <input type="text" name="currency_rate" id="cinRate" class="form-control text-end" value="{{ isset($invoice) ? (float) $invoice->currency_rate : 1 }}">
                     </div>
                 </div>
+                <div class="col-md-2">
+                    {{-- optional: the invoice's number in another system (the client's, or the old software's) --}}
+                    <label class="form-label" for="cinOtherNo">{{ __('Other Invoice No.') }}</label>
+                    <input type="text" name="other_invoice_no" id="cinOtherNo" class="form-control" maxlength="50" autocomplete="off" value="{{ $invoice->other_invoice_no ?? '' }}">
+                </div>
                 <div class="col-md-3">
                     {{-- quick add (POS style): search a description, Enter adds its line to the grid at once --}}
                     <div class="cin-quick" data-kb-own-enter>

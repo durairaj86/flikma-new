@@ -35,7 +35,12 @@ class SupplierInvoiceLinks
     /** Drop this customer invoice from every supplier line (invoice deleted or cancelled). */
     public function release(int $customerInvoiceId): void
     {
-        $rows = DB::table('supplier_invoice_subs')->whereNotNull('invoice_json')->get(['id', 'invoice_json']);
+        // only the supplier lines of the invoice's own company
+        $companyId = DB::table('customer_invoices')->where('id', $customerInvoiceId)->value('company_id');
+        $rows = DB::table('supplier_invoice_subs as s')
+            ->join('supplier_invoices as si', 'si.id', '=', 's.supplier_invoice_id')
+            ->where('si.company_id', $companyId)
+            ->whereNotNull('s.invoice_json')->get(['s.id', 's.invoice_json']);
         foreach ($rows as $row) {
             $entries = json_decode($row->invoice_json, true) ?: [];
             $kept = array_values(array_filter($entries, fn ($e) => (int) ($e['customer_invoice_id'] ?? 0) !== $customerInvoiceId));

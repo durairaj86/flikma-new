@@ -84,6 +84,18 @@ class JournalVoucherController extends Controller
 
         $this->assertPeriodOpen($validated['voucher_date'], 'voucher_date');
 
+        // the exists rules above do not look at the company: accounts (and tax accounts) must be this company's
+        // (or shared) posting accounts, and the job must be this company's
+        $accountIds = collect($validated['account_ids'])->merge($validated['tax_ids'] ?? [])->filter()->map(fn ($id) => (int) $id)->unique();
+        $postable = Account::whereIn('id', $accountIds)
+            ->whereNotExists(fn ($c) => $c->from('accounts as child')->whereColumn('child.parent_id', 'accounts.id'))->count();
+        if ($postable !== $accountIds->count()) {
+            return $this->unbalanced(__('Use only posting (last level) accounts of this company.'));
+        }
+        if (!empty($validated['job_id']) && !Job::whereKey($validated['job_id'])->exists()) {
+            return $this->unbalanced(__('The selected job was not found.'));
+        }
+
         // A voucher is only saved when it balances: debits equal credits, there is something to post, and every amount
         // sits on an account. (A line with no amount is just an empty row and is ignored.)
         $debitTotal = 0.0;

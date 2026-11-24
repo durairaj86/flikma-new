@@ -31,10 +31,10 @@ class JobController extends Controller
 
     public function edit($id)
     {
-        $job = Job::with('containers', 'packages', 'clearance')->find($id);
+        $job = Job::with('containers', 'packages', 'clearance')->findOrFail($id);
         $containers = $job->containers && $job->containers->count() > 0 ? $job->containers : [new JobContainer()];
         $packages = $job->packages && $job->packages->count() > 0 ? $job->packages : [new JobPackage()];
-        $job->clearance = $job->clearance && $job->clearance->count() > 0 ? $job->clearance : new JobClearance();
+        $job->clearance = $job->clearance ?: new JobClearance();
         $polPod = preloadPOLAndPOD($job->shipment_mode);
         $carriers = defaultCarriers($job->shipment_mode);
         return view('modules.job.job-form', compact('job', 'containers', 'packages', 'polPod', 'carriers'));
@@ -87,6 +87,7 @@ class JobController extends Controller
             'awb_number' => 'nullable|string|max:255',
             'hbl_number' => 'nullable|string|max:255',
             'client_ref' => 'nullable|string|max:255',
+            'other_job_no' => 'nullable|string|max:50',
             'volume' => 'nullable|string|max:255',
             'weight' => 'nullable|string|max:255',
             'commodity' => 'nullable|string|max:255',
@@ -216,6 +217,7 @@ class JobController extends Controller
         $job->awb_number = $validated['awb_number'] ?? null;
         $job->hbl_number = $validated['hbl_number'] ?? null;
         $job->client_ref = $validated['client_ref'] ?? null;
+        $job->other_job_no = $validated['other_job_no'] ?? null;
         // volume/weight are NOT NULL decimal columns (default 0); an empty
         // form field must fall back to 0, not null.
         $job->volume = $validated['volume'] ?? 0;

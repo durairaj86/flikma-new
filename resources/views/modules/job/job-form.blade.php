@@ -131,6 +131,12 @@
                                 <label class="form-label">{{ __('Suppliers') }}</label>
                                 <x-common.suppliers :value="$job->supplier_json" multiple="true"></x-common.suppliers>
                             </div>
+                            {{-- optional: the job's number in another system (the client's, or the old software's) --}}
+                            <div class="col-md-4 mt-3">
+                                <label class="form-label">{{ __('Other Job No.') }}</label>
+                                <input type="text" name="other_job_no" class="form-control" maxlength="50" autocomplete="off"
+                                       value="{{ $job->other_job_no }}">
+                            </div>
                         </div>
                     </div>
 
