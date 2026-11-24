@@ -77,6 +77,12 @@
         // the Tom Select behind any element that lives inside its wrapper (control, search input, dropdown)
         var w = el && el.closest && el.closest('.ts-wrapper, .ts-dropdown');
         if (!w) return null;
+        if (w.classList.contains('ts-dropdown') && !w.closest('.ts-wrapper')) {
+            // a list opened outside its box (dropdownParent: body, so a table cell does not clip it): find its owner
+            var owners = document.querySelectorAll('select.tomselected, input.tomselected');
+            for (var o = 0; o < owners.length; o++) if (owners[o].tomselect && owners[o].tomselect.dropdown === w) return owners[o].tomselect;
+            return null;
+        }
         if (w.classList.contains('ts-dropdown')) w = w.closest('.ts-wrapper') || w;
         var host = w.parentNode;
         var sel = host && host.querySelector('select.tomselected, select.ts-hidden-accessible');
@@ -231,8 +237,11 @@
         }
 
         // Tab / Shift+Tab inside a form: dropdowns take the highlighted match and use one stop; the end of a tab opens the next tab
-        if (e.key === 'Tab' && !e.ctrlKey && !e.altKey && !e.metaKey && t && t.closest && t.closest('#globalModal form')) {
-            var tts = tsOf(t);
+        // (a dropdown's own search box counts as inside the form even when its list is attached to the page body)
+        var tabTs = e.key === 'Tab' ? tsOf(t) : null;
+        if (e.key === 'Tab' && !e.ctrlKey && !e.altKey && !e.metaKey && t && t.closest
+            && (t.closest('#globalModal form') || (tabTs && tabTs.wrapper.closest('#globalModal form')))) {
+            var tts = tabTs;
             var curF = tts ? tts.input : t;
             if (tts && tts.settings.maxItems === 1 && tts.isOpen && tts.activeOption && tts.__kbNav && !e.shiftKey) {
                 var v = tts.activeOption.dataset.value;
