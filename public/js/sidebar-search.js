@@ -16,6 +16,10 @@
     if (!input) return;
     var menu = input.closest('.sidebar-menu');
     var none = document.getElementById('sidebarMenuSearchNone');
+    var clear = document.getElementById('sidebarMenuSearchClear');
+    if (clear) {
+        clear.addEventListener('click', function () { input.value = ''; restore(); input.focus(); });
+    }
     var saved = null;   // the groups' open / closed state before searching, put back when the search is cleared
 
     function norm(t) { return String(t || '').toLowerCase().replace(/\s+/g, ' ').trim(); }
@@ -58,6 +62,7 @@
         });
         saved = null;
         none.classList.add('d-none');
+        if (clear) clear.classList.add('d-none');
     }
 
     function visibleLinks() {
@@ -65,6 +70,7 @@
     }
 
     function filter() {
+        if (clear) clear.classList.toggle('d-none', !input.value);
         var q = norm(input.value);
         if (!q) { restore(); return; }
         remember();
@@ -94,7 +100,7 @@
     input.addEventListener('search', filter);   // the box's own clear (x) button
     input.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
-            if (input.value) { e.preventDefault(); e.stopPropagation(); input.value = ''; restore(); }
+            if (input.value) { e.preventDefault(); e.stopPropagation(); input.value = ''; restore(); if (clear) clear.classList.add('d-none'); }
             else input.blur();
         } else if (e.key === 'Enter') {
             var first = visibleLinks()[0];

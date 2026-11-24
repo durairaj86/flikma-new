@@ -32,6 +32,8 @@
                                placeholder="{{ __('Search menu') }}" aria-label="{{ __('Search the menu') }}"
                                title="{{ __('Search the menu (Ctrl+K searches every page)') }}">
                         <kbd class="sidebar-search-kbd">Ctrl K</kbd>
+                        <button type="button" class="sidebar-search-clear d-none" id="sidebarMenuSearchClear" tabindex="-1"
+                                title="{{ __('Clear') }}" aria-label="{{ __('Clear') }}"><i class="bi bi-x-lg"></i></button>
                     </div>
                     <div class="sidebar-search-none d-none" id="sidebarMenuSearchNone">{{ __('No menu matches') }}</div>
                 </li>
@@ -845,26 +847,33 @@
 
     /* Collapsed rail: shrink the container AND the inner aside (which otherwise
        keeps AdminLTE's fixed 250px min/max-width and just gets clipped). */
-    /* menu search box (above Dashboard); neutral greys so it reads on every sidebar theme */
+    /* menu search box (above Dashboard): the sidebar theme's own colours (--sb-*), so it matches every theme */
     #sidebar-container .sidebar-search-item { padding: 2px 8px 8px; }
     #sidebar-container .sidebar-search { position: relative; display: flex; align-items: center; }
     #sidebar-container .sidebar-search > .bi-search { position: absolute; left: 10px; font-size: .85rem; opacity: .7; pointer-events: none; }
     #sidebar-container .sidebar-search input {
         width: 100%; height: 34px; padding: 4px 54px 4px 30px; font-size: .86rem; color: inherit;
-        background: rgba(127, 127, 127, .14); border: 1px solid rgba(127, 127, 127, .28); border-radius: 8px; outline: none;
+        background: var(--sb-hover); border: 1px solid var(--sb-border); border-radius: 8px; outline: none;
+        transition: border-color .15s ease, background-color .15s ease;
     }
     #sidebar-container .sidebar-search input::placeholder { color: inherit; opacity: .6; }
-    #sidebar-container .sidebar-search input:focus { border-color: rgba(127, 127, 127, .6); background: rgba(127, 127, 127, .2); }
-    #sidebar-container .sidebar-search input::-webkit-search-cancel-button { cursor: pointer; }
+    #sidebar-container .sidebar-search input:focus { border-color: var(--sb-accent); background: var(--sb-bg); }
+    /* the browser's own clear button keeps the browser's colour (blue on dark themes): ours follows the theme */
+    #sidebar-container .sidebar-search input::-webkit-search-cancel-button { -webkit-appearance: none; display: none; }
+    #sidebar-container .sidebar-search-clear {
+        position: absolute; right: 6px; border: 0; background: transparent; color: var(--sb-text-muted);
+        padding: 2px 5px; line-height: 1; font-size: .72rem; border-radius: 4px; cursor: pointer;
+    }
+    #sidebar-container .sidebar-search-clear:hover { color: var(--sb-accent); background: var(--sb-hover); }
+    #sidebar-container.sidebar-collapsed:not(:hover) .sidebar-search-clear { display: none; }
     #sidebar-container .sidebar-search-kbd {
         position: absolute; right: 8px; font-size: .62rem; padding: 1px 5px; border-radius: 4px; color: inherit; opacity: .6;
-        background: rgba(127, 127, 127, .18); pointer-events: none;
+        background: var(--sb-bg); border: 1px solid var(--sb-border); pointer-events: none;
     }
     #sidebar-container .sidebar-search input:focus ~ .sidebar-search-kbd,
     #sidebar-container .sidebar-search input:not(:placeholder-shown) ~ .sidebar-search-kbd { display: none; }
     #sidebar-container .sidebar-search-none { font-size: .8rem; opacity: .7; padding: 8px 6px 0; }
     #sidebar-container .menu-search-hidden { display: none !important; }
-    #sidebar-container .sidebar-menu .nav-link.menu-search-hit { background: rgba(127, 127, 127, .18); }
     /* collapsed sidebar: just the icon, the box comes back when the sidebar opens on hover */
     #sidebar-container.sidebar-collapsed:not(:hover) .sidebar-search input { width: 34px; padding: 0; color: transparent; }
     #sidebar-container.sidebar-collapsed:not(:hover) .sidebar-search input::placeholder { color: transparent; }
