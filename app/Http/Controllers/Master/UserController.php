@@ -62,6 +62,65 @@ class UserController extends Controller
      * The Super User (role 1) is the person who registered the company: the company always has one, so in the employee module
      * they cannot be edited, terminated, reactivated or deleted, and nobody else can be given that role.
      */
+    /**
+     * User Rights: a user has their department's rights (rights_mode 'department') or rights of their own ('manual'). The manual
+     * boxes start from the user's saved rights, or from their department's when none were saved yet.
+     */
+    public function rights($id)
+    {
+        $user = User::findOrFail($id);
+        if ($this->protectedUser($user)) return $this->superUserRefused();
+        // users also has a plain-text "department" column, which hides the relation: read the department itself
+        $department = $user->department_id ? Department::find($user->department_id) : null;
+
+        $departmentRights = rightsMatrix($user->department_id
+            ? \App\Models\Master\DepartmentModulePermission::effectiveFor((int) $user->department_id)
+            : collect());
+        $own = \App\Models\Master\UserModulePermission::effectiveFor((int) $user->id);
+        $rights = $own->isNotEmpty() ? rightsMatrix($own) : $departmentRights;
+
+        // the department's ticks per box, shown (locked) while "Apply department rights" is chosen
+        $departmentBoxes = array_map(fn ($r) => array_intersect_key($r, array_flip(['view', 'create', 'edit', 'delete', 'approve', 'confirm'])), $departmentRights);
+
+        return view('modules.master.user.user-rights', compact('user', 'department', 'rights', 'departmentBoxes'));
+    }
+
+    public function saveRights(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        if ($this->protectedUser($user)) return $this->superUserRefused();
+        $request->validate(['rights_mode' => ['required', Rule::in(['department', 'manual'])]]);
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($request, $user) {
+            $user->rights_mode = $request->input('rights_mode');
+            $user->save();
+            // department rights keep the user's own rows, so switching back to manual brings them back
+            if ($user->rights_mode !== 'manual') return;
+
+            $rights = (array) $request->input('rights', []);
+            $offered = rightActions();
+            foreach (appRights() as $module => $right) {
+                if ($right['owner_only']) continue;   // the Super User's alone
+                $values = [];
+                foreach (['view', 'create', 'edit', 'delete', 'approve', 'confirm'] as $action) {
+                    // an action the section does not have is saved off (the screen shows no box for it)
+                    $values['can_' . $action] = in_array($action, $offered[$module], true) && !empty($rights[$module][$action]);
+                }
+                \App\Models\Master\UserModulePermission::updateOrCreate(
+                    ['user_id' => $user->id, 'module' => $module],
+                    $values + ['company_id' => companyId()]
+                );
+            }
+        });
+        \App\Models\Master\UserModulePermission::forgetEffective();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => $user->rights_mode === 'manual' ? __('Manual rights saved for this user') : __('This user now has the rights of their department'),
+            'module_id' => $user->id,
+        ]);
+    }
+
     private function protectedUser(?User $user): bool
     {
         return $user && isSuperUser($user);
@@ -323,6 +382,15 @@ class UserController extends Controller
             'data-id' => $user->id,
             'type' => 'item',
             'icon' => 'edit'
+        ], [
+            // the user's department rights, or rights of their own
+            'label' => __('User Rights'),
+            'code' => '01CSED',
+            'id' => 'row_rights',
+            'class' => 'row_rights',
+            'data-id' => $user->id,
+            'type' => 'item',
+            'icon' => 'verified'
         ], [
             // A user that has any history can't be deleted — terminating (or re-activating) is the way to take them out of use.
             'label' => $isActive ? __('Terminate') : __('Reactivate'),

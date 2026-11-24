@@ -96,6 +96,8 @@ Route::get('masters/user/{id}/actions', [\App\Http\Controllers\Master\UserContro
 Route::post('masters/user/{id}/status/{status}', [\App\Http\Controllers\Master\UserController::class, 'updateStatus']);
 Route::delete('masters/user/{id}', [\App\Http\Controllers\Master\UserController::class, 'delete'])->whereNumber('id');
 Route::get('masters/user/{id}/overview', [\App\Http\Controllers\Master\UserController::class, 'overview']);
+Route::get('masters/user/{id}/rights', [\App\Http\Controllers\Master\UserController::class, 'rights'])->whereNumber('id');
+Route::post('masters/user/{id}/rights', [\App\Http\Controllers\Master\UserController::class, 'saveRights'])->whereNumber('id');
 
 Route::view('/masters/transport/directories/seaports', 'modules.master.transport-directory.seaport.list')->name('ports');
 Route::post('/masters/transport/directories/seaport/data', [\App\Http\Controllers\Master\TransportDirectory\SeaPortController::class, 'fetchAllRows'])->name('port.data');

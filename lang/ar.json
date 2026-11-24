@@ -5802,5 +5802,13 @@
     "Search the menu": "البحث في القائمة",
     "Search the menu (Ctrl+K searches every page)": "البحث في القائمة (Ctrl+K يبحث في كل الصفحات)",
     "No menu matches": "لا توجد قائمة مطابقة",
-    "Super User only": "للمستخدم الرئيسي فقط"
+    "Super User only": "للمستخدم الرئيسي فقط",
+    "Save Rights": "حفظ الصلاحيات",
+    "Apply department rights": "تطبيق صلاحيات القسم",
+    "Apply manual rights": "تطبيق صلاحيات يدوية",
+    "This user has the rights of the :department department. A change to the department's rights applies to this user too.": "لهذا المستخدم صلاحيات قسم :department. أي تغيير في صلاحيات القسم يُطبَّق على هذا المستخدم أيضًا.",
+    "This user has no department, so department rights give no access. Choose a department in Edit, or apply manual rights.": "هذا المستخدم ليس له قسم، لذا لا تمنحه صلاحيات القسم أي وصول. اختر قسمًا من التعديل، أو طبّق صلاحيات يدوية.",
+    "This user has their own rights, whatever their department has. They start from the department's rights; tick or untick what this user may do.": "لهذا المستخدم صلاحياته الخاصة بغض النظر عن صلاحيات قسمه. تبدأ من صلاحيات القسم؛ حدّد أو ألغِ ما يمكن لهذا المستخدم فعله.",
+    "Manual rights saved for this user": "تم حفظ الصلاحيات اليدوية لهذا المستخدم",
+    "This user now has the rights of their department": "أصبح لهذا المستخدم الآن صلاحيات قسمه"
 }

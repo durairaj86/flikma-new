@@ -149,7 +149,6 @@ return [
     'masters' => [
         'label' => 'Master Data',
         'prefixes' => ['masters'],
-        'admin_only' => true,
         'children' => [
             // owner_only: the Super User alone, never given through department rights (not on the rights screen)
             'users' => ['label' => 'Employees', 'prefixes' => ['masters/users', 'masters/user'], 'owner_only' => true],

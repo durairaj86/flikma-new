@@ -486,7 +486,8 @@
                         '/masters/units', '/masters/drivers', '/masters/vehicles', '/masters/finance/opening-balance'])
                         ->first(fn ($path) => userCanOpen($path));   // null: no master page this user may open
                 @endphp
-                @if($mastersHome && (isSuperUser() || isAdminUser()))
+                {{-- Masters: everyone who may open at least one master page (Super-User-only pages show locked inside) --}}
+                @if($mastersHome)
                 <li class="nav-item">
                     <a href="{{ $mastersHome }}" class="nav-link {{ $segment1 == 'masters' ? 'active' : '' }}">
                         <i class="nav-icon bi bi-database"></i>

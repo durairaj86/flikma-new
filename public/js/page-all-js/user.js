@@ -91,10 +91,23 @@ USER = {
         },
         extraActions(row) {
             USER.list.actions.statusChange(row);
+            USER.list.actions.rights(row);
             USER.list.actions.view(row);
             USER.list.actions.delete(row);
         },
         actions: {
+            // the user's department rights, or rights of their own (same table as Department & Rights)
+            rights(row) {
+                $('#row_rights').off().on('click', function () {
+                    webModal.openGlobalModal({
+                        title: trans('User Rights'),
+                        url: GLOBAL_FN.buildUrl('masters/user/' + row.attr('data-id') + '/rights'),
+                        content: null,
+                        size: 'md',   // the size of Department & Rights, which shows the same table
+                        scroll: true,
+                    });
+                });
+            },
             statusChange(row) {
                 // Terminate / reactivate: the safe alternative to deleting a user who has history.
                 $('#row_terminate,#row_reactivate').off().on('click', function () {

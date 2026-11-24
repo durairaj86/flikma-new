@@ -617,6 +617,31 @@ function rightActions(): array
     return $result;
 }
 
+/**
+ * The rows of the rights screen (Department & Rights, Employees > User Rights), from saved permission rows keyed by module.
+ * null ticks everything (a new department). A sub menu without a row of its own shows its module's row. Super-User-only sections are left out.
+ */
+function rightsMatrix(?\Illuminate\Support\Collection $saved): array
+{
+    $rights = [];
+    foreach (appRights() as $moduleKey => $module) {
+        if ($module['owner_only']) continue;
+        $permission = $saved ? ($saved->get($moduleKey) ?? ($module['parent'] ? $saved->get($module['parent']) : null)) : null;
+        $row = [
+            'label' => $module['label'],
+            'parent' => $module['parent'],
+            'actions' => rightActions()[$moduleKey] ?? [],
+            'action_labels' => $module['action_labels'] ?? [],
+        ];
+        foreach (['view', 'create', 'edit', 'delete', 'approve', 'confirm'] as $action) {
+            $row[$action] = $saved === null ? true : (bool) ($permission?->{'can_' . $action} ?? false);
+        }
+        $rights[$moduleKey] = $row;
+    }
+
+    return $rights;
+}
+
 /** Whether the user may open this path (a link's href): true for paths no right covers. Used to mute links. */
 function userCanOpen(string $path, $user = null): bool
 {
@@ -669,18 +694,22 @@ function userCan(string $module, string $action = 'view', $user = null): bool
     if (appRights()[$module]['owner_only'] ?? false) {
         return false;
     }
-    // Masters: Admins only (still held to their department's rights below)
+    // a section kept for Admins (none since Masters opened to everyone by rights, 2026-11-24)
     if ((appRights()[$module]['admin_only'] ?? false) && !isAdminUser($user)) {
         return false;
     }
 
-    if (!$user->department_id) {
-        return false;
-    }
-
     $column = 'can_' . $action;
-    // the company's own row for this department and module, else the shared default row (see DepartmentModulePermission::effectiveFor)
-    $saved = \App\Models\Master\DepartmentModulePermission::effectiveFor((int) $user->department_id, $user->company_id ? (int) $user->company_id : null);
+    if (($user->rights_mode ?? 'department') === 'manual') {
+        // the user's own rights, given on Employees > User Rights, instead of their department's
+        $saved = \App\Models\Master\UserModulePermission::effectiveFor((int) $user->id);
+    } else {
+        if (!$user->department_id) {
+            return false;
+        }
+        // the company's own row for this department and module, else the shared default row (see DepartmentModulePermission::effectiveFor)
+        $saved = \App\Models\Master\DepartmentModulePermission::effectiveFor((int) $user->department_id, $user->company_id ? (int) $user->company_id : null);
+    }
     // a sub menu ("masters.departments") without a row of its own takes its module's row ("masters")
     $permission = $saved->get($module) ?? (str_contains($module, '.') ? $saved->get(strstr($module, '.', true)) : null);
 

@@ -125,51 +125,12 @@ class DepartmentController extends Controller
     private function rightsFor(Department $department): array
     {
         // what is really in force: the company's own rows, else the shared default rows (a module with no row at all is denied)
-        $saved = DepartmentModulePermission::effectiveFor((int) $department->id);
-        $rights = [];
-
-        foreach (appRights() as $moduleKey => $module) {
-            if ($module['owner_only']) continue;
-            // a sub menu without a row of its own shows (and is held to) its module's row
-            $permission = $saved->get($moduleKey) ?? ($module['parent'] ? $saved->get($module['parent']) : null);
-            $rights[$moduleKey] = [
-                'label' => $module['label'],
-                'parent' => $module['parent'],
-                'actions' => rightActions()[$moduleKey] ?? [],
-                'action_labels' => $module['action_labels'] ?? [],
-                'view' => (bool) ($permission?->can_view ?? false),
-                'create' => (bool) ($permission?->can_create ?? false),
-                'edit' => (bool) ($permission?->can_edit ?? false),
-                'delete' => (bool) ($permission?->can_delete ?? false),
-                'approve' => (bool) ($permission?->can_approve ?? false),
-                'confirm' => (bool) ($permission?->can_confirm ?? false),
-            ];
-        }
-
-        return $rights;
+        return rightsMatrix(DepartmentModulePermission::effectiveFor((int) $department->id));
     }
 
     private function defaultRights(): array
     {
-        $rights = [];
-
-        foreach (appRights() as $moduleKey => $module) {
-            if ($module['owner_only']) continue;
-            $rights[$moduleKey] = [
-                'label' => $module['label'],
-                'parent' => $module['parent'],
-                'actions' => rightActions()[$moduleKey] ?? [],
-                'action_labels' => $module['action_labels'] ?? [],
-                'view' => true,
-                'create' => true,
-                'edit' => true,
-                'delete' => true,
-                'approve' => true,
-                'confirm' => true,
-            ];
-        }
-
-        return $rights;
+        return rightsMatrix(null);
     }
 
     public function actions($id)
