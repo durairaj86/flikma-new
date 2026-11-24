@@ -472,12 +472,14 @@
                         '/masters/units', '/masters/drivers', '/masters/vehicles', '/masters/finance/opening-balance'])
                         ->first(fn ($path) => userCanOpen($path)) ?? '/masters/users';
                 @endphp
+                @if(isSuperUser() || isAdminUser())
                 <li class="nav-item">
                     <a href="{{ $mastersHome }}" class="nav-link {{ $segment1 == 'masters' ? 'active' : '' }}">
                         <i class="nav-icon bi bi-database"></i>
                         <p>{{ __('Masters') }}</p>
                     </a>
                 </li>
+                @endif
 
 
                 <!-- Billing (account owner only) -->
@@ -505,14 +507,15 @@
                 </li>
                 @endif
 
-                <!-- Settings -->
+                <!-- Settings (account owner only; everyone reaches their own account from the profile menu) -->
+                @if(isSuperUser())
                 <li class="nav-item">
-                    {{-- the company settings, or the user's own account when the department has no Settings right --}}
-                    <a href="{{ userCanOpen('/settings/company') ? '/settings/company' : '/settings/account' }}" class="nav-link {{ $menu == 'settings' ? 'active' : '' }}">
+                    <a href="/settings/company" class="nav-link {{ $menu == 'settings' ? 'active' : '' }}">
                         <i class="nav-icon bi bi-gear"></i>
                         <p>{{ __('Settings') }}</p>
                     </a>
                 </li>
+                @endif
             </ul>
         </nav>
     </div>

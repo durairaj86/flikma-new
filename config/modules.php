@@ -145,18 +145,21 @@ return [
             'waybill' => ['label' => 'Waybill Report', 'prefixes' => ['reports/waybill-report']],
         ],
     ],
+    // Masters is for Admins (within their department rights) and the Super User; a User or Employee never gets it
     'masters' => [
         'label' => 'Master Data',
         'prefixes' => ['masters'],
+        'admin_only' => true,
         'children' => [
-            'users' => ['label' => 'Employees', 'prefixes' => ['masters/users', 'masters/user']],
-            'departments' => ['label' => 'Departments', 'prefixes' => ['masters/departments', 'masters/department']],
+            // owner_only: the Super User alone, never given through department rights (not on the rights screen)
+            'users' => ['label' => 'Employees', 'prefixes' => ['masters/users', 'masters/user'], 'owner_only' => true],
+            'departments' => ['label' => 'Departments', 'prefixes' => ['masters/departments', 'masters/department'], 'owner_only' => true],
             'quotation-terms' => ['label' => 'Quotation Terms', 'prefixes' => ['masters/quotation-terms', 'masters/quotation-term']],
             'lost-reasons' => ['label' => 'Lost Reasons', 'prefixes' => ['masters/lost-reasons', 'masters/lost-reason']],
             'hs-tariffs' => ['label' => 'HS Tariff', 'prefixes' => ['masters/hs-tariffs', 'masters/hs-tariff']],
             // closing locks every transaction up to the closing date and reopening unlocks them, so each has its own box:
             // POST ".../close" and the menu's row_close need Approve (shown as "Close"), ".../reopen" / row_reopen need Confirm ("Reopen")
-            'period-closing' => ['label' => 'Period Closing', 'prefixes' => ['masters/period-closing'],
+            'period-closing' => ['label' => 'Period Closing', 'prefixes' => ['masters/period-closing'], 'owner_only' => true,
                 'custom_actions' => ['close' => 'approve', 'reopen' => 'confirm'],
                 'action_labels' => ['approve' => 'Close', 'confirm' => 'Reopen']],
             'seaports' => ['label' => 'Seaports', 'prefixes' => ['masters/transport/directories/seaports', 'masters/transport/directories/seaport']],
@@ -172,12 +175,14 @@ return [
             'units' => ['label' => 'Units', 'prefixes' => ['masters/units', 'masters/unit']],
             'drivers' => ['label' => 'Drivers', 'prefixes' => ['masters/drivers', 'masters/driver']],
             'vehicles' => ['label' => 'Vehicles', 'prefixes' => ['masters/vehicles', 'masters/vehicle']],
-            'opening-balance' => ['label' => 'Opening Balance', 'prefixes' => ['masters/finance/opening-balance']],
+            'opening-balance' => ['label' => 'Opening Balance', 'prefixes' => ['masters/finance/opening-balance'], 'owner_only' => true],
         ],
     ],
+    // the whole Settings menu is the Super User's; a user's own account (settings/account) is outside the rights
     'settings' => [
         'label' => 'Settings',
         'prefixes' => ['settings'],
+        'owner_only' => true,
         'children' => [
             // saving these pages updates the one settings record (the route is named "store"): Edit, not Create
             'company' => ['label' => 'Company', 'prefixes' => ['settings/company'], 'actions' => ['edit']],

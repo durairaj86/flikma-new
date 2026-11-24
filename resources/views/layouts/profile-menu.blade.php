@@ -24,9 +24,9 @@
             ['label' => 'Invoices', 'icon' => 'bi-receipt', 'url' => route('invoices.customer'), 'bg' => '#f0e9f7', 'fg' => '#6b3fa0'],
             ['label' => 'Billing', 'icon' => 'bi-credit-card', 'url' => route('billing.index'), 'bg' => '#fff7e6', 'fg' => '#b7791f'],
         ];
-        // Billing is for the account owner only.
+        // Billing and Settings are for the account owner only.
         if (!isSuperUser()) {
-            $gridLinks = array_values(array_filter($gridLinks, fn($l) => $l['label'] !== 'Billing'));
+            $gridLinks = array_values(array_filter($gridLinks, fn($l) => !in_array($l['label'], ['Billing', 'Settings'], true)));
         }
 
         $moreLinks = [
@@ -358,6 +358,7 @@
                         @endforeach
                     </div>
 
+                    @if(isSuperUser())
                     <div class="profile-menu-pill-wrap">
                         <a href="{{ route('settings.company.edit') }}" class="profile-menu-pill">
                             <span class="profile-menu-pill-icon"><i class="bi bi-bell"></i></span>
@@ -365,6 +366,7 @@
                             <i class="bi bi-chevron-right small text-muted"></i>
                         </a>
                     </div>
+                    @endif
 
                     <div class="profile-menu-divider"></div>
 

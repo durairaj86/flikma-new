@@ -489,6 +489,13 @@ function isSuperUser($user = null): bool
     return $user && (int) $user->role === 1;
 }
 
+/** Role 3 (Admin); the Super User is not counted here, check isSuperUser() for that. */
+function isAdminUser($user = null): bool
+{
+    $user = $user ?? auth()->user();
+    return $user && (int) $user->role === 3;
+}
+
 function appModules(): array
 {
     return config('modules', []);
@@ -505,7 +512,8 @@ function appRights(): array
 
     $rights = [];
     foreach (appModules() as $moduleKey => $module) {
-        $rights[$moduleKey] = ['label' => $module['label'], 'prefixes' => $module['prefixes'] ?? [], 'parent' => null, 'exact' => false, 'status_enum' => null];
+        $rights[$moduleKey] = ['label' => $module['label'], 'prefixes' => $module['prefixes'] ?? [], 'parent' => null, 'exact' => false, 'status_enum' => null,
+            'owner_only' => (bool) ($module['owner_only'] ?? false), 'admin_only' => (bool) ($module['admin_only'] ?? false)];
         foreach ($module['children'] ?? [] as $childKey => $child) {
             $rights[$moduleKey . '.' . $childKey] = [
                 'label' => $child['label'],
@@ -515,6 +523,8 @@ function appRights(): array
                 'status_enum' => $child['status_enum'] ?? null,
                 'custom_actions' => $child['custom_actions'] ?? [],
                 'action_labels' => $child['action_labels'] ?? [],
+                'owner_only' => (bool) (($child['owner_only'] ?? false) || ($module['owner_only'] ?? false)),
+                'admin_only' => (bool) ($module['admin_only'] ?? false),
             ];
         }
     }
@@ -533,6 +543,11 @@ function resolveModuleFromPath(string $path): ?string
 
     // a user's own account page: everyone may change their own name, password and language
     if ($path === 'settings/account' || str_starts_with($path, 'settings/account/')) {
+        return null;
+    }
+    // the quotation form loads the terms of the chosen activity: a read-only lookup for whoever writes quotations,
+    // although the Quotation Terms master itself is for Admins
+    if (str_starts_with($path, 'masters/quotation-term/for-activity/')) {
         return null;
     }
     // the Reports page lists only the reports the user may open, so anyone with one report right can reach it
@@ -648,6 +663,15 @@ function userCan(string $module, string $action = 'view', $user = null): bool
 
     if (isSuperUser($user)) {
         return true;
+    }
+
+    // Employees, Department & Rights, Opening Balance and Settings: the Super User only, whatever a department was given
+    if (appRights()[$module]['owner_only'] ?? false) {
+        return false;
+    }
+    // Masters: Admins only (still held to their department's rights below)
+    if ((appRights()[$module]['admin_only'] ?? false) && !isAdminUser($user)) {
+        return false;
     }
 
     if (!$user->department_id) {

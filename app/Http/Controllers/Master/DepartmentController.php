@@ -96,7 +96,8 @@ class DepartmentController extends Controller
 
             // every module and every sub menu gets its own row
             $offered = rightActions();
-            foreach (array_keys(appRights()) as $module) {
+            foreach (appRights() as $module => $right) {
+                if ($right['owner_only']) continue;   // the Super User's alone: never given to a department
                 $moduleRights = $rights[$module] ?? [];
 
                 DepartmentModulePermission::updateOrCreate(
@@ -128,6 +129,7 @@ class DepartmentController extends Controller
         $rights = [];
 
         foreach (appRights() as $moduleKey => $module) {
+            if ($module['owner_only']) continue;
             // a sub menu without a row of its own shows (and is held to) its module's row
             $permission = $saved->get($moduleKey) ?? ($module['parent'] ? $saved->get($module['parent']) : null);
             $rights[$moduleKey] = [
@@ -152,6 +154,7 @@ class DepartmentController extends Controller
         $rights = [];
 
         foreach (appRights() as $moduleKey => $module) {
+            if ($module['owner_only']) continue;
             $rights[$moduleKey] = [
                 'label' => $module['label'],
                 'parent' => $module['parent'],
