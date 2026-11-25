@@ -15,8 +15,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 
 /**
- * A call, meeting, email, note ... logged on a prospect, customer, enquiry or quotation, with an optional follow-up
- * (date + who has to act). One table for every kind of subject, the same idea as job_links.
+ * One CRM action on one date, on a prospect, customer, enquiry or quotation ("Call Done", "RFQ Received" ...; see CrmAction).
+ * An activity with a planned action ("Call Back Due", "Quote Due" ...) is a follow-up: follow_up_at is its due date, assigned_to
+ * who has to act, follow_up_done_at when it was ticked off. One table for every kind of subject, the same idea as job_links.
  */
 class CrmActivity extends Model
 {
@@ -37,14 +38,6 @@ class CrmActivity extends Model
         'quotation' => Quotation::class,
     ];
 
-    public const TYPES = [
-        'call' => ['label' => 'Call', 'icon' => 'bi-telephone'],
-        'meeting' => ['label' => 'Meeting', 'icon' => 'bi-people'],
-        'visit' => ['label' => 'Visit', 'icon' => 'bi-geo-alt'],
-        'email' => ['label' => 'Email', 'icon' => 'bi-envelope'],
-        'whatsapp' => ['label' => 'WhatsApp', 'icon' => 'bi-whatsapp'],
-        'note' => ['label' => 'Note', 'icon' => 'bi-sticky'],
-    ];
 
     /**
      * "Now" on the company's clock. The app runs in UTC, but a salesperson types and reads activity / follow-up times in local time,
@@ -68,6 +61,61 @@ class CrmActivity extends Model
         return Carbon::parse(self::localNow($companyId)->format('Y-m-d H:i:s'));
     }
 
+    public function action(): BelongsTo
+    {
+        return $this->belongsTo(CrmAction::class, 'action_id');
+    }
+
+    public function isPlanned(): bool
+    {
+        return $this->follow_up_at !== null;
+    }
+
+    /**
+     * Put a planned action (a follow-up) on someone's list, e.g. from a command or the customer's online answer.
+     * $code is a default action code (CrmAction::DEFAULTS); "Follow-up Due" when the company switched that one off.
+     */
+    public static function plan(int $companyId, string $subjectType, int $subjectId, string $code, Carbon $dueAt, ?string $note, ?int $assignee): ?self
+    {
+        $action = CrmAction::byCode($code, $companyId) ?? CrmAction::byCode('follow_up_due', $companyId);
+        if (!$action) {
+            return null;
+        }
+        $a = new self();
+        $a->company_id = $companyId;
+        $a->subject_type = $subjectType;
+        $a->subject_id = $subjectId;
+        $a->action_id = $action->id;
+        $a->notes = $note;
+        $a->activity_at = self::localNowNaive($companyId);
+        $a->follow_up_at = $dueAt;
+        $a->assigned_to = $assignee;
+        $a->user_id = auth()->id();
+        $a->save();
+
+        return $a;
+    }
+
+    /** Log a done action now (no follow-up), e.g. the customer's online answer. */
+    public static function record(int $companyId, string $subjectType, int $subjectId, string $code, ?string $note): ?self
+    {
+        $action = CrmAction::byCode($code, $companyId);
+        if (!$action) {
+            return null;
+        }
+        $a = new self();
+        $a->company_id = $companyId;
+        $a->subject_type = $subjectType;
+        $a->subject_id = $subjectId;
+        $a->action_id = $action->id;
+        $a->notes = $note;
+        $a->activity_at = self::localNowNaive($companyId);
+        $a->user_id = auth()->id();
+        $a->save();
+
+        return $a;
+    }
+
     public function assignee(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_to');
@@ -84,9 +132,10 @@ class CrmActivity extends Model
         return $query->whereNotNull('follow_up_at')->whereNull('follow_up_done_at');
     }
 
-    public static function typeLabel(?string $type): string
+    /** Name of the activity's action, as the user reads it. */
+    public function actionLabel(): string
     {
-        return __(self::TYPES[$type]['label'] ?? ucfirst((string) $type));
+        return $this->action ? $this->action->label() : __('Activity');
     }
 
     public static function subjectLabel(string $type): string

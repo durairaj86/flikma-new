@@ -172,6 +172,11 @@
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
+                            <a href="/sales/crm-dashboard" class="nav-link {{ $submenu == 'crm-dashboard' ? 'active' : '' }}">
+                                <p>{{ __('CRM Dashboard') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a href="/sales/pipeline" class="nav-link {{ $submenu == 'pipeline' ? 'active' : '' }}">
                                 <p>{{ __('Pipeline') }}</p>
                             </a>
@@ -179,6 +184,11 @@
                         <li class="nav-item">
                             <a href="/sales/follow-ups" class="nav-link {{ $submenu == 'follow-ups' ? 'active' : '' }}">
                                 <p>{{ __('Follow-ups') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/sales/tracker" class="nav-link {{ $submenu == 'tracker' ? 'active' : '' }}">
+                                <p>{{ __('Customer Tracker') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -480,7 +490,7 @@
 
                 <!-- Masters: opens the first master page this user may view (muted by user-rights.js when there is none) -->
                 @php
-                    $mastersHome = collect(['/masters/users', '/masters/departments', '/masters/quotation-terms', '/masters/lost-reasons', '/masters/hs-tariffs', '/masters/period-closing',
+                    $mastersHome = collect(['/masters/users', '/masters/departments', '/masters/quotation-terms', '/masters/lost-reasons', '/masters/crm-actions', '/masters/hs-tariffs', '/masters/period-closing',
                         '/masters/transport/directories/seaports', '/masters/transport/directories/airports', '/masters/services', '/masters/package/codes',
                         '/masters/container/types', '/masters/incoterms', '/masters/currencies', '/masters/banks', '/masters/descriptions', '/masters/salesperson',
                         '/masters/units', '/masters/drivers', '/masters/vehicles', '/masters/finance/opening-balance'])

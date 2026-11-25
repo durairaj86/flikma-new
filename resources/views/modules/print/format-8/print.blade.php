@@ -171,7 +171,7 @@
                         <tr>
                             <td class="muted" style="white-space: nowrap;">INVOICE DATE <span>|</span> <span class="ar" style="font-size: 7pt;">تاريخ الفاتورة</span></td>
                             <td style="width: 10px; padding: 5px 4px; text-align: center;">:</td>
-                            <td style="font-weight: bold; text-align: right; white-space: nowrap;">{{ $customerInvoice->invoice_date ? \Carbon\Carbon::parse($customerInvoice->invoice_date)->format('d/m/Y') : '-' }}<span data-toggle="show_time" style="{{ ($settings->show_time ?? false) ? '' : 'display:none' }}"> {{ \Carbon\Carbon::parse($customerInvoice->created_at)->format('H:i') }}</span></td>
+                            <td style="font-weight: bold; text-align: right; white-space: nowrap;">{{ $customerInvoice->invoice_date ? \Carbon\Carbon::parse($customerInvoice->invoice_date)->format('d/m/Y') : '-' }}<span data-toggle="show_time" style="{{ ($settings->show_time ?? false) ? '' : 'display:none' }}"> {{ \Carbon\Carbon::parse($customerInvoice->created_at)->setTimezone($company->timezone ?: config('app.timezone'))->format('H:i') }}</span></td>
                         </tr>
                         <tr>
                             <td class="muted" style="white-space: nowrap;">DUE DATE <span>|</span> <span class="ar" style="font-size: 7pt;">تاريخ الاستحقاق</span></td>

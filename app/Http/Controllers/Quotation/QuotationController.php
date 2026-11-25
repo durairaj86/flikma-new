@@ -893,6 +893,8 @@ class QuotationController extends Controller
         $customer->city_en = $prospect->city;
         $customer->country = $prospect->country ?: 'SA';
         $customer->salesperson_id = $prospect->salesperson_id;
+        $customer->rank = $prospect->rank;
+        $customer->contact_person = $prospect->contact_person;
         $customer->currency = 'SAR';
         $customer->business_type = 'unregistered';
         $customer->status = \App\Enums\CustomerStatusEnum::CONFIRMED->value;

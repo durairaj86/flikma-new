@@ -3296,16 +3296,73 @@ function reportExportPdf(e, printElementId, opts) {
     clone.style.padding = opts.padding ?? '10px';
     clone.style.background = '#ffffff';
 
+    // a report wider than the page (e.g. Activity Summary with every action) is scaled down to the page width, never cut off
+    var margin = opts.margin ?? 0.4;
+    var pageWidth = Math.floor((((opts.orientation || 'portrait') === 'landscape' ? 11.69 : 8.27) - 2 * margin) * 96);
+    var source = reportFitToWidth(clone, pageWidth);
+
     var opt = {
-        margin: opts.margin ?? 0.4,
+        margin: margin,
         filename: opts.filename || area.dataset.pdfFilename || 'Report.pdf',
         html2canvas: {scale: 2, useCORS: true, backgroundColor: '#ffffff'},
         jsPDF: {unit: 'in', format: 'a4', orientation: opts.orientation || 'portrait'},
         pagebreak: {mode: ['avoid-all', 'css']}
     };
 
-    html2pdf().set(opt).from(clone).save();
+    html2pdf().set(opt).from(source).save();
 }
+
+/**
+ * Width and height of a report block laid out at a given width (headers wrap first), measured off screen. A table that cannot
+ * get that narrow overflows: scrollWidth is then the narrowest it can be.
+ */
+function reportNaturalSize(el, width) {
+    var probe = el.cloneNode(true);
+    probe.classList.remove('d-none');
+    probe.style.position = 'absolute';
+    probe.style.left = '-99999px';
+    probe.style.top = '0';
+    probe.style.display = 'block';
+    probe.style.width = width ? width + 'px' : 'max-content';
+    document.body.appendChild(probe);
+    var size = {width: probe.scrollWidth, height: probe.scrollHeight};
+    probe.remove();
+    return size;
+}
+
+/**
+ * The element as it should go to the PDF: as it is when it fits the page width, else scaled down inside a page-wide box.
+ */
+function reportFitToWidth(el, pageWidth) {
+    var natural = reportNaturalSize(el, pageWidth).width;
+    if (natural <= pageWidth) return el;
+    var scale = pageWidth / natural;
+    var height = reportNaturalSize(el, natural).height;
+    el.style.width = natural + 'px';
+    el.style.transform = 'scale(' + scale + ')';
+    el.style.transformOrigin = 'top left';
+    var box = document.createElement('div');
+    box.style.width = pageWidth + 'px';
+    box.style.height = Math.ceil(height * scale) + 'px';
+    box.style.overflow = 'hidden';
+    box.style.background = '#ffffff';
+    box.appendChild(el);
+    return box;
+}
+
+// Print: the same for window.print(). A print block wider than the page is zoomed out to the page width while printing.
+// Page width = A4 minus the 12 mm margins of includes/report-print-css (data-orientation on the block, landscape by default).
+window.addEventListener('beforeprint', function () {
+    document.querySelectorAll('.stmt-print').forEach(function (el) {
+        var mm = (el.dataset.orientation || 'landscape') === 'portrait' ? 186 : 273;
+        var page = Math.floor(mm * 96 / 25.4);
+        var natural = reportNaturalSize(el, page).width;
+        el.style.zoom = natural > page ? (page / natural).toFixed(3) : '';
+    });
+});
+window.addEventListener('afterprint', function () {
+    document.querySelectorAll('.stmt-print').forEach(function (el) { el.style.zoom = ''; });
+});
 
 
 /* Empty tables: hide the "Showing 0 to 0 of 0 entries" line and the pagination when there is nothing to show.

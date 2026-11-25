@@ -40,10 +40,10 @@
                     <option value="mine">{{ __('My follow-ups') }}</option>
                     <option value="all">{{ __('Everyone') }}</option>
                 </select></div>
-                <div style="width:170px"><select id="fuType" class="tom-select" aria-label="{{ __('Activity') }}">
-                    <option value="">{{ __('All activities') }}</option>
-                    @foreach(\App\Models\Crm\CrmActivity::TYPES as $key => $t)
-                        <option value="{{ $key }}">{{ __($t['label']) }}</option>
+                <div style="width:190px"><select id="fuAction" class="tom-select" aria-label="{{ __('Action') }}">
+                    <option value="">{{ __('All actions') }}</option>
+                    @foreach(\App\Models\Crm\CrmAction::options()->where('category', \App\Models\Crm\CrmAction::PLANNED) as $a)
+                        <option value="{{ $a->id }}">{{ $a->label() }}</option>
                     @endforeach
                 </select></div>
                 </div>
@@ -60,10 +60,10 @@
                 <thead class="table-light sticky-top bg-white">
                 <tr>
                     <th>#</th>
-                    <th>{{ __('Follow-up') }}</th>
+                    <th>{{ __('Due') }}</th>
                     <th>{{ __('With') }}</th>
-                    <th>{{ __('To do') }}</th>
-                    <th>{{ __('Last activity') }}</th>
+                    <th>{{ __('Action') }}</th>
+                    <th>{{ __('Note') }}</th>
                     <th>{{ __('Assigned to') }}</th>
                     <th class="text-center">{{ __('Actions') }}</th>
                 </tr>

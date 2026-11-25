@@ -555,7 +555,8 @@
                             </div>
                         </div>
 
-                        <div class="col-md-6">
+                        {{-- hidden: invoice lines have no free quantity / second unit, so no layout can print it (kept for later) --}}
+                        <div class="col-md-6 d-none">
                             <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
                                 <div>
                                     <label class="fw-medium mb-0">{{ __('Enable free item quantity') }}</label>
@@ -577,7 +578,8 @@
                             </div>
                         </div>
 
-                        <div class="col-md-6">
+                        {{-- hidden: invoice lines have no free quantity / second unit, so no layout can print it (kept for later) --}}
+                        <div class="col-md-6 d-none">
                             <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
                                 <div>
                                     <label class="fw-medium mb-0">{{ __('Show Alternate Unit in Invoice') }}</label>

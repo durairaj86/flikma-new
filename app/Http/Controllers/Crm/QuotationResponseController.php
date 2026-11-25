@@ -72,20 +72,17 @@ class QuotationResponseController extends Controller
             }
             $quotation->save();
 
+            // an acceptance is logged as "Confirmed" by the status change (CrmAutoLog); a rejection is logged here
+            $quoted = "\"{$note}\"";
+            if (!$accepted) {
+                CrmActivity::record((int) $quotation->company_id, 'quotation', $quotation->id, 'negotiating',
+                    'The customer rejected the quotation online.' . ($note ? "\n" . $quoted : ''));
+            }
             // the salesperson's next step lands in their Follow-ups (and morning email)
             if ($owner = $quotation->followUpOwnerId()) {
-                $a = new CrmActivity();
-                $a->company_id = $quotation->company_id;
-                $a->subject_type = 'quotation';
-                $a->subject_id = $quotation->id;
-                $a->type = 'email';
-                $a->notes = ($accepted ? 'The customer accepted the quotation online.' : 'The customer rejected the quotation online.')
-                    . ($note ? "\n\"{$note}\"" : '');
-                $a->activity_at = $now;
-                $a->follow_up_at = $now;
-                $a->follow_up_note = $accepted ? 'Convert the quotation to a job' : 'Call the customer: revise the quotation or close it';
-                $a->assigned_to = $owner;
-                $a->save();
+                CrmActivity::plan((int) $quotation->company_id, 'quotation', $quotation->id, $accepted ? 'follow_up_due' : 'call_back_due', $now,
+                    ($accepted ? 'The customer accepted online: convert the quotation to a job' : 'The customer rejected online: call them, revise the quotation or close it')
+                    . ($note ? "\n" . $quoted : ''), $owner);
             }
         });
 

@@ -234,7 +234,7 @@
                             style="font-size: 7pt;">تاريخ الفاتورة</span></div>
 
                     <div style="font-size: 8pt; font-weight: bold; margin-top: 2px;">
-                        {{ $customerInvoice->invoice_date ? \Carbon\Carbon::parse($customerInvoice->invoice_date)->format('d F Y') : '-' }}<span data-toggle="show_time" style="{{ ($settings->show_time ?? false) ? '' : 'display:none' }}"> {{ \Carbon\Carbon::parse($customerInvoice->created_at)->format('H:i') }}</span>
+                        {{ $customerInvoice->invoice_date ? \Carbon\Carbon::parse($customerInvoice->invoice_date)->format('d F Y') : '-' }}<span data-toggle="show_time" style="{{ ($settings->show_time ?? false) ? '' : 'display:none' }}"> {{ \Carbon\Carbon::parse($customerInvoice->created_at)->setTimezone($company->timezone ?: config('app.timezone'))->format('H:i') }}</span>
                     </div>
                 </td>
                 <td width="25%" valign="top" align="right" style="padding: 8px 0 8px 10px;">
@@ -284,6 +284,11 @@
                         {{ $customerInvoice->customer?->name_en }}<br>
                         {{ $customerInvoice->customer?->address1_en }}@if($customerInvoice->customer?->city_en)
                             , {{ $customerInvoice->customer->city_en }}
+                        @endif
+                        @if($customerInvoice->customer?->phone)
+                            <div data-toggle="show_phone" style="font-size: 8pt; margin-top: 4px; {{ ($settings->show_phone ?? true) ? '' : 'display:none' }}">
+                                <span>Phone / الهاتف : </span><span dir="ltr" style="unicode-bidi: isolate;">{{ $customerInvoice->customer->phone }}</span>
+                            </div>
                         @endif
                         @if($customerInvoice->customer?->vat_number)
                             <br>

@@ -55,6 +55,9 @@ class EnquiryController extends Controller
             'pol' => 'required|string|max:100',
             'pod' => 'required|string|max:100',
             'remark' => 'nullable|string',
+            'handled_by' => 'nullable|integer',
+            'approx_cost' => 'nullable|numeric|min:0|max:9999999999',
+            'approx_selling' => 'nullable|numeric|min:0|max:9999999999',
             'activity_id' => 'required|string',
 
             /*'container_number.*' => 'required_if:shipment_category,container|string|max:50',
@@ -94,6 +97,11 @@ class EnquiryController extends Controller
             'shipper' => $request->shipper,
             'place_of_receipt' => $request->place_of_receipt,
             'incoterm' => $request->incoterm,
+            // the pricing executive (a user of this company) and the approximate cost / selling of the RFQ
+            'handled_by' => $request->filled('handled_by') && \App\Models\User::where('company_id', companyId())->whereKey((int) $request->handled_by)->exists()
+                ? (int) $request->handled_by : null,
+            'approx_cost' => $request->filled('approx_cost') ? (float) $request->approx_cost : null,
+            'approx_selling' => $request->filled('approx_selling') ? (float) $request->approx_selling : null,
         ];
 
         /*$customerData = [];

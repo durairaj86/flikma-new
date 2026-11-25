@@ -14,6 +14,13 @@ Route::namespace('sales')->prefix('sales')->group(function () {
 
     Route::view('/follow-ups', 'modules.crm.follow-ups')->name('follow-ups');
     Route::post('/follow-up/data', [CrmActivityController::class, 'fetchAllRows'])->name('follow-ups.data');
+    // Customer Tracker: one line per customer / prospect with score, last and next action
+    // CRM Dashboard: the sales workbook's Dashboard sheet
+    Route::get('/crm-dashboard', [\App\Http\Controllers\Crm\CrmDashboardController::class, 'index'])->name('crm-dashboard');
+    Route::get('/crm-dashboard/export', [\App\Http\Controllers\Crm\CrmDashboardController::class, 'export'])->name('crm-dashboard.export');
+    Route::get('/tracker', [\App\Http\Controllers\Crm\TrackerController::class, 'index'])->name('tracker');
+    Route::post('/tracker/data', [\App\Http\Controllers\Crm\TrackerController::class, 'data'])->name('tracker.data');
+    Route::get('/tracker/export', [\App\Http\Controllers\Crm\TrackerController::class, 'export'])->name('tracker.export');
     Route::get('/activity/create', [CrmActivityController::class, 'modal']);
     Route::post('/activity/create', [CrmActivityController::class, 'store']);
     Route::get('/activity/{id}/create', [CrmActivityController::class, 'edit'])->whereNumber('id');

@@ -27,30 +27,16 @@ class PipelineController extends Controller
 
     public function index()
     {
-        $own = $this->ownSalespersonIds();
+        $own = \App\Services\Crm\SalesScope::ownSalespersonIds();
         $salespersons = Salesperson::orderBy('name')->when($own, fn($q) => $q->whereIn('id', $own))->get(['id', 'name']);
 
         return view('modules.crm.pipeline', compact('salespersons', 'own'));
     }
 
-    /**
-     * A salesman (a user linked to a salesperson, not the Super User or an Admin) only sees his own deals.
-     * Null = sees everyone. One login may be linked to several salesperson records.
-     */
-    private function ownSalespersonIds(): ?array
-    {
-        if (isSuperUser() || (int) auth()->user()->role === 3) {
-            return null;
-        }
-        $ids = Salesperson::where('user_id', auth()->id())->pluck('id')->all();
-
-        return $ids ?: null;
-    }
-
     public function data(Request $request): \Illuminate\Http\JsonResponse
     {
         $picked = $request->filled('salesperson_id') ? (int) $request->input('salesperson_id') : null;
-        $own = $this->ownSalespersonIds();
+        $own = \App\Services\Crm\SalesScope::ownSalespersonIds();
         // a salesman can narrow to one of his own records, never widen past them
         $salesperson = $own ? ($picked && in_array($picked, $own, true) ? [$picked] : $own) : ($picked ? [$picked] : null);
         $days = in_array((int) $request->input('days'), [30, 90, 180, 365], true) ? (int) $request->input('days') : 90;
@@ -89,7 +75,7 @@ class PipelineController extends Controller
     /** Quick view of one card in the drawer: the document's key facts; the activity timeline is loaded beside it. */
     public function card($type, $id)
     {
-        $own = $this->ownSalespersonIds();
+        $own = \App\Services\Crm\SalesScope::ownSalespersonIds();
         $card = match ($type) {
             'prospect' => $this->leads($own, '', null, null, (int) $id)->first(),
             'enquiry' => $this->enquiries($own, '', null, null, (int) $id)->first(),
@@ -263,7 +249,7 @@ class PipelineController extends Controller
         $next = $last = [];
         foreach ($ids as $type => $list) {
             $rows = CrmActivity::where('subject_type', $type)->whereIn('subject_id', array_unique($list))
-                ->select('subject_id', DB::raw('MAX(activity_at) AS last_at'),
+                ->select('subject_id', DB::raw('MAX(CASE WHEN follow_up_at IS NULL THEN activity_at END) AS last_at'),
                     DB::raw('MIN(CASE WHEN follow_up_at IS NOT NULL AND follow_up_done_at IS NULL THEN follow_up_at END) AS next_at'))
                 ->groupBy('subject_id')->get();
             foreach ($rows as $r) {

@@ -68,6 +68,14 @@
                 </a>
             </li>
 
+            <!-- CRM Actions -->
+            <li class="nav-item" data-url="/masters/crm-actions">
+                <a href="{{ asset('/masters/crm-actions') }}"
+                   class="nav-link d-flex align-items-center py-2 {{ $page1 == 'crm-actions' ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-list-check text-secondary me-2"></i> {{ __('CRM Actions') }}
+                </a>
+            </li>
+
             <!-- HS Tariff -->
             <li class="nav-item" data-url="/masters/hs-tariffs">
                 <a href="{{ asset('/masters/hs-tariffs') }}"

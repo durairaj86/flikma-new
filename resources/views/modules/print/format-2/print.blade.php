@@ -734,9 +734,7 @@
                             <div class="label-english">Invoice Date:</div>
                             <div
                                 class="data-value text-uppercase">{{ \Carbon\Carbon::parse($customerInvoice->invoice_date)->format('d-M-y') }}
-                                @if(\Carbon\Carbon::parse($customerInvoice->invoice_date)->isToday())
-                                    <span data-toggle="show_time" style="{{ ($settings->show_time ?? false) ? '' : 'display:none' }}">{{ \Carbon\Carbon::parse($customerInvoice->created_at)->format('h:i A') }}</span>
-                                @endif
+                                <span data-toggle="show_time" style="{{ ($settings->show_time ?? false) ? '' : 'display:none' }}">{{ \Carbon\Carbon::parse($customerInvoice->created_at)->setTimezone($company->timezone ?: config('app.timezone'))->format('h:i A') }}</span>
                             </div>
                             <div class="label-arabic">تاريخ:</div>
                         </div>
@@ -829,7 +827,8 @@
                             <td class="data-col">{{ $job?->remarks }}</td>
                             <td class="text-end text-muted small" lang="ar" dir="rtl">ملاحظات</td>
                         </tr>
-                        @foreach($extraJobFields ?? [] as $field)
+                        {{-- the shipment rows (AWB/HBL, origin / destination, carrier, voyage, incoterm, mode) are fixed rows of this layout: not twice --}}
+                        @foreach(collect($extraJobFields ?? [])->whereNotIn('key', ['awb_hbl', 'pol_pod', 'carrier', 'voyage_flight', 'incoterm', 'shipment_mode']) as $field)
                         <tr data-toggle="{{ $field['key'] }}" style="{{ $field['visible'] ? '' : 'display:none' }}">
                             <td class="label-col">{{ $field['label_en'] }}</td>
                             <td class="separator-col">:</td>

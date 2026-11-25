@@ -183,7 +183,7 @@
                     <table cellpadding="5" cellspacing="0" border="0" width="100%" style="font-size: 9pt; margin-top: 8px;">
                         <tr>
                             <td class="muted" style="width: 45%;padding-bottom:5px">Invoice Date | <span class="ar" style="font-size: 7.5pt;"> التاريخ</span></td>
-                            <td style="font-weight: bold;" align="right" class="dark-text">{{ $customerInvoice->invoice_date ? \Carbon\Carbon::parse($customerInvoice->invoice_date)->format('d/m/Y') : '-' }}<span data-toggle="show_time" style="{{ ($settings->show_time ?? false) ? '' : 'display:none' }}"> {{ \Carbon\Carbon::parse($customerInvoice->created_at)->format('H:i') }}</span></td>
+                            <td style="font-weight: bold;" align="right" class="dark-text">{{ $customerInvoice->invoice_date ? \Carbon\Carbon::parse($customerInvoice->invoice_date)->format('d/m/Y') : '-' }}<span data-toggle="show_time" style="{{ ($settings->show_time ?? false) ? '' : 'display:none' }}"> {{ \Carbon\Carbon::parse($customerInvoice->created_at)->setTimezone($company->timezone ?: config('app.timezone'))->format('H:i') }}</span></td>
                         </tr>
                         <tr>
                             <td class="muted" style="padding-bottom:5px">Due Date | <span class="ar" style="font-size: 7.5pt;"> رقم الطلب</span></td>

@@ -20,6 +20,7 @@ class DeletionGuard
 
     /** Friendly names for the "linked with …" message. */
     private const LABELS = [
+        'crm_activities' => 'activities',
         'enquiries' => 'enquiries', 'quotations' => 'quotations', 'jobs' => 'jobs', 'customer_invoices' => 'customer invoices',
         'supplier_invoices' => 'supplier invoices', 'proforma_invoices' => 'proforma invoices', 'credit_notes' => 'credit notes',
         'debit_notes' => 'debit notes', 'collections' => 'collections', 'payments' => 'payments', 'expenses' => 'expenses',
@@ -168,6 +169,9 @@ class DeletionGuard
                 break;
             case 'lost_reason':
                 $why = $this->linked('lost_reason_id', $id);
+                break;
+            case 'crm_action':
+                $why = $this->linked('action_id', $id);
                 break;
             case 'quotation':
                 $why = $this->linked('quotation_id', $id, self::OWNED);

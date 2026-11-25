@@ -49,17 +49,8 @@ class QuotationExpiry extends Command
                 $this->line("remind  {$q->row_no} (valid until {$q->valid_until}) → user " . ($owner ?? 'none'));
                 if (!$this->option('dry-run')) {
                     if ($owner) {
-                        $a = new CrmActivity();
-                        $a->company_id = $q->company_id;
-                        $a->subject_type = 'quotation';
-                        $a->subject_id = $q->id;
-                        $a->type = 'note';
-                        $a->notes = "Quotation {$q->row_no} expires on {$q->valid_until}. Ask the customer for a decision, or revise it.";
-                        $a->activity_at = CrmActivity::localNowNaive((int) $q->company_id);
-                        $a->follow_up_at = $today->copy()->setTime(9, 0);
-                        $a->follow_up_note = "Expires {$q->valid_until}: get a decision";
-                        $a->assigned_to = $owner;
-                        $a->save();
+                        CrmActivity::plan((int) $q->company_id, 'quotation', $q->id, 'follow_up_due', $today->copy()->setTime(9, 0),
+                            "Quotation {$q->row_no} expires on {$q->valid_until}: ask the customer for a decision, or revise it.", $owner);
                     }
                     // stamped without touching updated_at (the pipeline's won / lost period reads it)
                     Quotation::withoutGlobalScopes()->whereKey($q->id)->update(['expiry_reminded_at' => now()]);

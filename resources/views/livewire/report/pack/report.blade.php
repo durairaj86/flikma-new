@@ -24,6 +24,13 @@
                     <select class="tom-select" id="pk-group">
                         @foreach($groups as $k => $l)<option value="{{ $k }}" @selected($k === $groupBy)>{{ $l }}</option>@endforeach
                     </select></div>
+                {{-- a report with more columns on request (Activity Summary: one column per action) --}}
+                @if(property_exists($this, 'detail'))
+                    <div class="col-md-3 pb-2"><div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="pk-detail" wire:model.live="detail">
+                        <label class="form-check-label small" for="pk-detail">{{ __('Show each action') }}</label>
+                    </div></div>
+                @endif
             </div>
         </div></div>
         <div class="card border-0 shadow-sm overflow-hidden d-print-none">
@@ -45,11 +52,11 @@
             </div>
         </div>
 
-        <div id="pk-print" class="stmt-print d-none d-print-block" data-pdf-filename="{{ \Illuminate\Support\Str::slug($title) }}">
+        <div id="pk-print" class="stmt-print d-none d-print-block" data-orientation="landscape" data-pdf-filename="{{ \Illuminate\Support\Str::slug($title) }}">
             <div class="stmt-company">{{ auth()->user()->company->name_en ?? '' }}</div>
             <div class="stmt-title">{{ $title }}</div>
-            <div class="stmt-sub">{{ $startDate }} - {{ $endDate }} · {{ $groups[$groupBy] ?? '' }}</div>
-            <table class="stmt-table">
+            <div class="stmt-sub">{{ \Carbon\Carbon::parse($startDate)->format('d-m-Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d-m-Y') }} · {{ $groups[$groupBy] ?? '' }}</div>
+            <table class="stmt-table {{ count($cols) > 14 ? 'stmt-wide' : '' }}">
                 <thead><tr><th>{{ $groups[$groupBy] ?? '' }}</th>@foreach($cols as $c)<th style="text-align:right">{{ $c }}</th>@endforeach</tr></thead>
                 <tbody>
                 @foreach($rows as $r)

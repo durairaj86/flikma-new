@@ -55,13 +55,15 @@ return [
         'children' => [
             'pipeline' => ['label' => 'Pipeline', 'prefixes' => ['sales/pipeline']],
             'activities' => ['label' => 'Activities & Follow-ups', 'prefixes' => ['sales/follow-ups', 'sales/follow-up', 'sales/activity']],
+            'tracker' => ['label' => 'Customer Tracker', 'prefixes' => ['sales/tracker']],
+            'crm-dashboard' => ['label' => 'CRM Dashboard', 'prefixes' => ['sales/crm-dashboard']],
             'enquiries' => ['label' => 'Enquiries', 'prefixes' => ['sales/enquiries', 'sales/enquiry'], 'status_enum' => EnquiryEnum::class],
             'quotations' => ['label' => 'Quotations', 'prefixes' => ['sales/quotations', 'sales/quotation']],
             'rate-sheets' => ['label' => 'Rate Sheets', 'prefixes' => ['sales/rate-sheets', 'sales/rate-sheet']],
             'reports' => ['label' => 'Sales Reports', 'prefixes' => [
                 'reports/sale-report', 'reports/shipment-volume', 'reports/sales-by-salesperson', 'reports/sales-commission',
-                'reports/sales-funnel', 'reports/win-loss', 'reports/pipeline-value', 'reports/salesperson-performance',
-                'reports/customer-wise-sales', 'reports/invoice-wise-sales', 'reports/customer-wise-commission',
+                'reports/sales-funnel', 'reports/win-loss', 'reports/crm-activity-summary', 'reports/pipeline-value', 'reports/salesperson-performance',
+                'reports/customer-wise-sales', 'reports/description-wise', 'reports/invoice-wise-sales', 'reports/customer-wise-commission',
             ]],
         ],
     ],
@@ -155,6 +157,7 @@ return [
             'departments' => ['label' => 'Departments', 'prefixes' => ['masters/departments', 'masters/department'], 'owner_only' => true],
             'quotation-terms' => ['label' => 'Quotation Terms', 'prefixes' => ['masters/quotation-terms', 'masters/quotation-term']],
             'lost-reasons' => ['label' => 'Lost Reasons', 'prefixes' => ['masters/lost-reasons', 'masters/lost-reason']],
+            'crm-actions' => ['label' => 'CRM Actions', 'prefixes' => ['masters/crm-actions', 'masters/crm-action']],
             'hs-tariffs' => ['label' => 'HS Tariff', 'prefixes' => ['masters/hs-tariffs', 'masters/hs-tariff']],
             // closing locks every transaction up to the closing date and reopening unlocks them, so each has its own box:
             // POST ".../close" and the menu's row_close need Approve (shown as "Close"), ".../reopen" / row_reopen need Confirm ("Reopen")
@@ -187,6 +190,7 @@ return [
             'company' => ['label' => 'Company', 'prefixes' => ['settings/company'], 'actions' => ['edit']],
             'invoice' => ['label' => 'Invoice Settings', 'prefixes' => ['settings/invoice'], 'actions' => ['edit']],
             'tax' => ['label' => 'Tax', 'prefixes' => ['settings/tax']],
+            'crm' => ['label' => 'CRM Settings', 'prefixes' => ['settings/crm'], 'actions' => ['edit']],
             'zatca' => ['label' => 'ZATCA', 'prefixes' => ['settings/zatca']],
         ],
     ],

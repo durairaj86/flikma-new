@@ -78,10 +78,10 @@ class CustomerTimeline
                 ->whereNull('deleted_at')->where('created_at', '>=', $since)->count();
         }
         if ($out['canActivities']) {
-            $next = $this->activityQuery()->openFollowUps()->orderBy('follow_up_at')->first(['follow_up_at', 'follow_up_note', 'assigned_to']);
+            $next = $this->activityQuery()->openFollowUps()->with('action:id,name,category')->orderBy('follow_up_at')->first(['follow_up_at', 'action_id', 'notes', 'assigned_to']);
             $out['nextFollowUp'] = $next?->follow_up_at;
-            $out['nextFollowUpNote'] = $next?->follow_up_note;
-            $out['lastActivity'] = $this->activityQuery()->max('activity_at');
+            $out['nextFollowUpNote'] = $next ? trim($next->actionLabel() . ($next->notes ? ': ' . \Illuminate\Support\Str::limit($next->notes, 80) : '')) : null;
+            $out['lastActivity'] = $this->activityQuery()->whereNull('follow_up_at')->max('activity_at');
         }
 
         return $out;
@@ -110,7 +110,7 @@ class CustomerTimeline
 
     private function activities(?Carbon $before, int $limit): array
     {
-        $rows = $this->activityQuery()->with(['assignee:id,name', 'creator:id,name'])
+        $rows = $this->activityQuery()->with(['assignee:id,name', 'creator:id,name', 'action:id,name,category'])
             ->when($before, fn($q) => $q->where('activity_at', '<', $before))
             ->orderByDesc('activity_at')->limit($limit)->get();
         $names = CrmActivity::subjectNames($rows);
@@ -120,10 +120,10 @@ class CustomerTimeline
             $about = $a->subject_type !== 'customer' ? ($names[$a->subject_type][$a->subject_id]['no'] ?? null) : null;
 
             return $this->item('activity', $a->activity_at, $a->id,
-                CrmActivity::typeLabel($a->type) . ($about ? ' · ' . $about : ''),
+                $a->actionLabel() . ($about ? ' · ' . $about : ''),
                 $a->notes,
-                ['icon' => CrmActivity::TYPES[$a->type]['icon'] ?? 'bi-dot', 'by' => $a->creator->name ?? __('System'),
-                    'chip' => $open ? __('Follow-up') . ' ' . $a->follow_up_at->format('d-m-Y') : null,
+                ['icon' => \App\Models\Crm\CrmAction::icon($a->action->category ?? null), 'by' => $a->creator->name ?? __('System'),
+                    'chip' => $open ? __('Due') . ' ' . $a->follow_up_at->format('d-m-Y') : null,
                     'chipTone' => $open && $a->follow_up_at->lt(CrmActivity::localNowNaive()->startOfDay()) ? 'danger' : 'primary',
                     'url' => $a->subject_type === 'customer' ? null : $this->openUrl($a->subject_type, $a->subject_id)]);
         })->all();

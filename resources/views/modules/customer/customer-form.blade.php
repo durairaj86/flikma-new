@@ -295,6 +295,15 @@
                                     <x-common.salesperson
                                         :value="$customer->salesperson_id"></x-common.salesperson>
                                 </div>
+                                <div class="col-md-4 form-group">
+                                    <label class="form-label">{{ __('Rank') }}</label>
+                                    <select name="rank" class="tom-select" data-placeholder="{{ __('--Select--') }}">
+                                        <option value="">{{ __('--Select--') }}</option>
+                                        @foreach(\App\Services\Crm\CrmSettings::RANKS as $r => $meaning)
+                                            <option value="{{ $r }}" @selected($customer->rank === $r)>{{ $r }} — {{ __($meaning) }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                                 {{--<div class="col-md-4 form-group">
                                     <label class="form-label">Assigned Since</label>
                                     <input type="text" class="form-control"

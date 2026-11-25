@@ -54,9 +54,11 @@ Route::get('/reports/sales-by-salesperson', \App\Livewire\Report\Pack\SalesBySal
 // CRM sales reports (Sales menu)
 Route::get('/reports/sales-funnel', \App\Livewire\Report\Crm\SalesFunnel::class);
 Route::get('/reports/win-loss', \App\Livewire\Report\Crm\WinLoss::class);
+Route::get('/reports/crm-activity-summary', \App\Livewire\Report\Crm\ActivitySummary::class);
 Route::get('/reports/pipeline-value', \App\Livewire\Report\Crm\PipelineValue::class);
 Route::get('/reports/salesperson-performance', \App\Livewire\Report\Crm\SalespersonPerformance::class);
 Route::get('/reports/sales-commission', [\App\Http\Controllers\Finance\Report\SalesCommissionController::class, 'index']);
+Route::get('/reports/description-wise', \App\Livewire\Report\Finance\DescriptionWise::class);
 Route::get('/reports/customer-wise-sales', [\App\Http\Controllers\Finance\Report\SalesCommissionController::class, 'customerWise']);
 Route::get('/reports/invoice-wise-sales', [\App\Http\Controllers\Finance\Report\SalesCommissionController::class, 'customerWise']);
 Route::get('/reports/customer-wise-commission', [\App\Http\Controllers\Finance\Report\SalesCommissionController::class, 'customerWise']);

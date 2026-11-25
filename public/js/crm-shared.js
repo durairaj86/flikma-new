@@ -184,14 +184,28 @@ window.CRM = {
         });
     },
 
-    /** The "With" picker of the activity form: changing the kind reloads the record list. */
+    /**
+     * Activity form: a planned action (Call Back Due ...) shows "Due date" and "Assigned to"; an action that was done shows
+     * the optional "Plan the next step" row. The "With" picker: changing the kind reloads the record list.
+     */
     bindActivityForm() {
+        const modal = document.getElementById('globalModal');
+        const actionEl = modal && modal.querySelector('#crm_action_id');
+        if (actionEl) {
+            const toggle = function () {
+                const opt = actionEl.options[actionEl.selectedIndex];
+                const planned = !!(opt && opt.dataset.planned === '1');
+                modal.querySelectorAll('.crm-when-planned, .crm-date-planned').forEach(el => el.classList.toggle('d-none', !planned));
+                modal.querySelectorAll('.crm-when-done, .crm-date-done').forEach(el => el.classList.toggle('d-none', planned));
+            };
+            $(actionEl).off('change.crmAction').on('change.crmAction', toggle);
+            toggle();
+        }
         const typeEl = document.getElementById('crm_subject_type');
         const idEl = document.getElementById('crm_subject_id');
         if (!idEl) {
-            // the record is fixed: start in "What happened" (the first fields are a dropdown and a date, which never take focus by themselves)
-            const notes = document.querySelector('#globalModal textarea[name=notes]');
-            const focus = () => setTimeout(() => notes && notes.focus(), 0);
+            // the record is fixed: start in "Action" (a dropdown never takes focus by itself)
+            const focus = () => setTimeout(() => actionEl && actionEl.tomselect ? actionEl.tomselect.focus() : null, 0);
             $('#globalModal').hasClass('show') ? focus() : $('#globalModal').one('shown.bs.modal', focus);
             return;
         }

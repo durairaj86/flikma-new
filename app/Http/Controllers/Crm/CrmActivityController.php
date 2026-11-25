@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Crm;
 
 use App\Http\Controllers\Controller;
+use App\Models\Crm\CrmAction;
 use App\Models\Crm\CrmActivity;
 use App\Models\User;
 use Carbon\Carbon;
@@ -11,7 +12,10 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Yajra\DataTables\Facades\DataTables;
 
-/** Activities (calls, meetings, notes ...) on a prospect / customer / enquiry / quotation, and the follow-ups list built from them. */
+/**
+ * Activities (one CRM action on one date: "Call Done", "Quote Due" ...) on a prospect / customer / enquiry / quotation, and the
+ * follow-ups list built from the planned ones.
+ */
 class CrmActivityController extends Controller
 {
     /** Follow-ups list: Overdue / Today / Upcoming / Done tabs, mine or everyone's. */
@@ -21,7 +25,7 @@ class CrmActivityController extends Controller
         $today = CrmActivity::localNowNaive()->startOfDay();
         $base = CrmActivity::query()->whereNotNull('follow_up_at')
             ->when($request->input('owner', 'mine') === 'mine', fn($q) => $q->where('assigned_to', auth()->id()))
-            ->when($request->filled('type'), fn($q) => $q->where('type', $request->input('type')));
+            ->when($request->filled('action'), fn($q) => $q->where('action_id', (int) $request->input('action')));
 
         $counts = [
             'overdue' => (clone $base)->whereNull('follow_up_done_at')->where('follow_up_at', '<', $today)->count(),
@@ -30,8 +34,8 @@ class CrmActivityController extends Controller
             'done' => (clone $base)->whereNotNull('follow_up_done_at')->count(),
         ];
 
-        $rows = (clone $base)->with('assignee:id,name')
-            ->select('id', 'subject_type', 'subject_id', 'type', 'notes', 'activity_at', 'follow_up_at', 'follow_up_note', 'assigned_to', 'follow_up_done_at', 'company_id');
+        $rows = (clone $base)->with(['assignee:id,name', 'action:id,name,category'])
+            ->select('id', 'subject_type', 'subject_id', 'action_id', 'notes', 'activity_at', 'follow_up_at', 'assigned_to', 'follow_up_done_at', 'company_id');
         match ($tab) {
             'today' => $rows->whereNull('follow_up_done_at')->whereDate('follow_up_at', $today),
             'upcoming' => $rows->whereNull('follow_up_done_at')->where('follow_up_at', '>=', $today->copy()->addDay()),
@@ -52,7 +56,7 @@ class CrmActivityController extends Controller
             ->filter(function ($query) use ($request) {
                 $term = trim((string) $request->input('search.value'));
                 if ($term !== '') {
-                    $query->where(fn($q) => $q->where('notes', 'like', "%{$term}%")->orWhere('follow_up_note', 'like', "%{$term}%"));
+                    $query->where('notes', 'like', "%{$term}%");
                 }
             })
             ->addColumn('subject', function ($row) use (&$names) {
@@ -68,8 +72,8 @@ class CrmActivityController extends Controller
                     'name' => $s['name'] ?? __('(deleted)'),
                 ];
             })
-            ->editColumn('type', fn($row) => CrmActivity::typeLabel($row->type))
-            ->addColumn('type_icon', fn($row) => CrmActivity::TYPES[$row->type]['icon'] ?? 'bi-dot')
+            ->addColumn('action_name', fn($row) => $row->actionLabel())
+            ->addColumn('action_style', fn($row) => CrmAction::badgeStyle($row->action->category ?? null))
             ->editColumn('follow_up_at', fn($row) => $row->follow_up_at?->format('d-m-Y H:i'))
             ->addColumn('overdue_days', fn($row) => !$row->follow_up_done_at && $row->follow_up_at < $today ? (int) $row->follow_up_at->copy()->startOfDay()->diffInDays($today) : 0)
             ->editColumn('follow_up_done_at', fn($row) => $row->follow_up_done_at?->format('d-m-Y H:i'))
@@ -82,7 +86,6 @@ class CrmActivityController extends Controller
     public function modal(Request $request)
     {
         $activity = new CrmActivity();
-        $activity->type = 'call';
         $activity->activity_at = CrmActivity::localNowNaive();
         $activity->assigned_to = auth()->id();
         $activity->subject_type = $request->input('subject_type');
@@ -102,76 +105,113 @@ class CrmActivityController extends Controller
     public function store(Request $request)
     {
         $id = $request->input('data-id') ?: null;
+        $activity = $id ? CrmActivity::findOrFail($id) : null;
         $request->validate([
             'subject_type' => ['required', Rule::in(array_keys(CrmActivity::SUBJECTS))],
             'subject_id' => ['required', 'integer'],
-            'type' => ['required', Rule::in(array_keys(CrmActivity::TYPES))],
-            'notes' => ['required', 'string', 'max:5000'],
+            'action_id' => ['required', 'integer'],
+            'notes' => ['nullable', 'string', 'max:5000'],
             'activity_date' => ['required', 'date_format:d-m-Y'],
             'activity_time' => ['nullable', 'date_format:H:i'],
-            'follow_up_date' => ['nullable', 'date_format:d-m-Y'],
-            'follow_up_time' => ['nullable', 'date_format:H:i'],
-            'follow_up_note' => ['nullable', 'string', 'max:255'],
             'assigned_to' => ['nullable', 'integer'],
+            'next_action_id' => ['nullable', 'integer'],
+            'next_date' => ['nullable', 'required_with:next_action_id', 'date_format:d-m-Y'],
+            'next_time' => ['nullable', 'date_format:H:i'],
+            'next_assigned_to' => ['nullable', 'integer'],
         ], [], [
-            'notes' => __('What happened'),
+            'action_id' => __('Action'),
             'activity_date' => __('Date'),
-            'follow_up_date' => __('Follow-up date'),
+            'next_action_id' => __('Next action'),
+            'next_date' => __('Due date'),
         ]);
 
         $subjectClass = CrmActivity::SUBJECTS[$request->input('subject_type')];
         if (!$subjectClass::whereKey((int) $request->input('subject_id'))->exists()) {
             throw ValidationException::withMessages(['subject_id' => __('Choose who this activity is with.')]);
         }
-
-        $activityAt = Carbon::createFromFormat('d-m-Y H:i', $request->input('activity_date') . ' ' . ($request->input('activity_time') ?: '00:00'));
-        if ($activityAt->isAfter(CrmActivity::localNowNaive()->endOfDay())) {
-            throw ValidationException::withMessages(['activity_date' => __('An activity is something that already happened; use the follow-up for a future date.')]);
+        // an active action of this company (an edited activity may keep the action it has, even when that was switched off since)
+        $action = CrmAction::whereKey((int) $request->input('action_id'))
+            ->where(fn($q) => $q->where('is_active', true)->when($activity, fn($w) => $w->orWhere('id', $activity->action_id)))->first();
+        if (!$action) {
+            throw ValidationException::withMessages(['action_id' => __('Choose an action.')]);
         }
 
-        $followUpAt = null;
-        $assignee = null;
-        if ($request->filled('follow_up_date')) {
-            $followUpAt = Carbon::createFromFormat('d-m-Y H:i', $request->input('follow_up_date') . ' ' . ($request->input('follow_up_time') ?: '09:00'));
-            if ($followUpAt->lt($activityAt->copy()->startOfDay())) {
-                throw ValidationException::withMessages(['follow_up_date' => __('The follow-up cannot be before the activity.')]);
+        $at = Carbon::createFromFormat('d-m-Y H:i', $request->input('activity_date') . ' ' . ($request->input('activity_time') ?: ($action->isPlanned() ? '09:00' : '00:00')));
+        if (!$action->isPlanned() && $at->isAfter(CrmActivity::localNowNaive()->endOfDay())) {
+            throw ValidationException::withMessages(['activity_date' => __('This action already happened, so its date cannot be in the future. For a future date choose a planned action (e.g. Call Back Due).')]);
+        }
+        $assignee = $action->isPlanned() ? $this->companyUser($request->input('assigned_to'), 'assigned_to') : null;
+
+        $next = null;
+        if (!$action->isPlanned() && $request->filled('next_action_id')) {
+            $next = CrmAction::whereKey((int) $request->input('next_action_id'))->where('is_active', true)->where('category', CrmAction::PLANNED)->first();
+            if (!$next) {
+                throw ValidationException::withMessages(['next_action_id' => __('Choose a planned action.')]);
             }
-            $assignee = (int) ($request->input('assigned_to') ?: auth()->id());
-            if (!User::where('company_id', companyId())->whereKey($assignee)->exists()) {
-                throw ValidationException::withMessages(['assigned_to' => __('Choose a user of this company.')]);
+            $nextAt = Carbon::createFromFormat('d-m-Y H:i', $request->input('next_date') . ' ' . ($request->input('next_time') ?: '09:00'));
+            if ($nextAt->lt($at->copy()->startOfDay())) {
+                throw ValidationException::withMessages(['next_date' => __('The next step cannot be before this action.')]);
             }
+            $nextAssignee = $this->companyUser($request->input('next_assigned_to'), 'next_assigned_to');
         }
 
-        if ($id) {
-            $activity = CrmActivity::findOrFail($id);
-        } else {
+        if (!$activity) {
             $activity = new CrmActivity();
             $this->setBaseColumns($activity);
         }
         $activity->subject_type = $request->input('subject_type');
         $activity->subject_id = (int) $request->input('subject_id');
-        $activity->type = $request->input('type');
-        $activity->notes = trim($request->input('notes'));
-        $activity->activity_at = $activityAt;
-        // a changed follow-up date is a new reminder
-        if (!$followUpAt || !$activity->follow_up_at || !$activity->follow_up_at->equalTo($followUpAt)) {
+        $activity->action_id = $action->id;
+        $activity->notes = trim((string) $request->input('notes')) ?: null;
+        if ($action->isPlanned()) {
+            // a changed due date is a new reminder
+            if (!$activity->follow_up_at || !$activity->follow_up_at->equalTo($at)) {
+                $activity->reminder_sent_at = null;
+            }
+            $activity->activity_at ??= CrmActivity::localNowNaive();
+            $activity->follow_up_at = $at;
+            $activity->assigned_to = $assignee;
+        } else {
+            $activity->activity_at = $at;
+            $activity->follow_up_at = null;
+            $activity->assigned_to = null;
+            $activity->follow_up_done_at = null;
             $activity->reminder_sent_at = null;
         }
-        $activity->follow_up_at = $followUpAt;
-        $activity->follow_up_note = $followUpAt ? ($request->input('follow_up_note') ?: null) : null;
-        $activity->assigned_to = $assignee;
-        if (!$followUpAt) {
-            $activity->follow_up_done_at = null;
-        }
-        $activity->save();
+
+        \DB::transaction(function () use ($activity, $next, &$nextAt, &$nextAssignee) {
+            $activity->save();
+            if ($next) {
+                $plan = new CrmActivity();
+                $this->setBaseColumns($plan);
+                $plan->subject_type = $activity->subject_type;
+                $plan->subject_id = $activity->subject_id;
+                $plan->action_id = $next->id;
+                $plan->activity_at = CrmActivity::localNowNaive();
+                $plan->follow_up_at = $nextAt;
+                $plan->assigned_to = $nextAssignee;
+                $plan->save();
+            }
+        });
 
         return response()->json([
             'status' => 'success',
-            'message' => __('Activity saved successfully'),
+            'message' => $next ? __('Activity saved and the next step planned') : __('Activity saved successfully'),
             'module_id' => $activity->id,
             'subject_type' => $activity->subject_type,
             'subject_id' => $activity->subject_id,
         ]);
+    }
+
+    /** A user of this company (the one posted, or the signed-in user). */
+    private function companyUser($posted, string $field): int
+    {
+        $id = (int) ($posted ?: auth()->id());
+        if (!User::where('company_id', companyId())->whereKey($id)->exists()) {
+            throw ValidationException::withMessages([$field => __('Choose a user of this company.')]);
+        }
+
+        return $id;
     }
 
     public function actions($id)
@@ -245,7 +285,7 @@ class CrmActivityController extends Controller
             $ids = $chain->pluck('id')->all();
             $numbers = $chain->count() > 1 ? $chain->pluck('row_no', 'id')->all() : [];
         }
-        $activities = CrmActivity::with(['assignee:id,name', 'creator:id,name'])
+        $activities = CrmActivity::with(['assignee:id,name', 'creator:id,name', 'action:id,name,category'])
             ->where('subject_type', $type)->whereIn('subject_id', $ids)
             ->orderByDesc('activity_at')->orderByDesc('id')->limit(100)->get();
 
@@ -257,6 +297,9 @@ class CrmActivityController extends Controller
         return [
             'activity' => $activity,
             'lockedSubject' => $lockedSubject,
+            // active actions, plus the one an edited activity already has (even if switched off since)
+            'actions' => CrmAction::options()->when($activity->action_id && !CrmAction::options()->contains('id', $activity->action_id),
+                fn($list) => $list->push(CrmAction::find($activity->action_id))->filter()),
             'users' => User::where('company_id', companyId())->whereNull('terminated_at')
                 ->where(fn($q) => $q->whereNull('status')->orWhere('status', 'active'))
                 ->orderBy('name')->get(['id', 'name']),

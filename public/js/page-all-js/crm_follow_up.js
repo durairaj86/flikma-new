@@ -5,7 +5,7 @@ CRM_FOLLOW_UP = {
     load() {
         $('#new').off().on('click', () => CRM.logActivity(null, null));
         initTomSelectForm($('#fuFilters'));
-        $('#fuOwner, #fuType').off().on('change', () => CRM_FOLLOW_UP.list.dataTable());
+        $('#fuOwner, #fuAction').off().on('change', () => CRM_FOLLOW_UP.list.dataTable());
     },
     list: {
         load(activeTab) {
@@ -29,7 +29,7 @@ CRM_FOLLOW_UP = {
                     data: function (d) {
                         d.tab = activeTab;
                         d.owner = $('#fuOwner').val();
-                        d.type = $('#fuType').val();
+                        d.action = $('#fuAction').val();
                     },
                     dataSrc: function (json) {
                         $('#dataTable tbody').find('.loading-row').remove();
@@ -45,8 +45,8 @@ CRM_FOLLOW_UP = {
                     }
                 },
                 columnDefs: [
-                    {targets: [0, 2, 5, 6], orderable: false},
-                    {targets: [0, 2, 4, 5, 6], searchable: false},
+                    {targets: [0, 2, 3, 5, 6], orderable: false},
+                    {targets: [0, 1, 2, 3, 5, 6], searchable: false},
                 ],
                 columns: [
                     {data: 'DT_RowIndex', class: 'hide-tooltip fav-index'},
@@ -63,15 +63,14 @@ CRM_FOLLOW_UP = {
                         }
                     },
                     {
-                        data: 'follow_up_note', render: function (data) {
-                            return data ? e(data) : '<span class="text-muted">—</span>';
+                        data: 'action_name', render: function (data, type, row) {
+                            return '<span class="badge rounded-pill" style="' + row.action_style + '">' + e(data) + '</span>';
                         }
                     },
                     {
-                        data: 'notes', render: function (data, type, row) {
+                        data: 'notes', render: function (data) {
                             const text = String(data || '');
-                            return '<div class="small text-muted"><i class="bi ' + row.type_icon + ' me-1"></i>' + e(row.type) + ' · ' + e(row.activity_at) + '</div>' +
-                                '<div class="small text-truncate" style="max-width:360px" title="' + e(text) + '">' + e(text) + '</div>';
+                            return text ? '<div class="small text-truncate" style="max-width:380px" title="' + e(text) + '">' + e(text) + '</div>' : '<span class="text-muted">—</span>';
                         }
                     },
                     {data: 'assignee_name'},

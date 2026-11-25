@@ -120,7 +120,7 @@
     <table class="grid tg-meta-table">
         <tr>
             <td><b>Invoice No.</b>{{ invoiceNumberLabel($customerInvoice) }}</td>
-            <td><b>Invoice Date</b>{{ \Carbon\Carbon::parse($customerInvoice->invoice_date)->format('d-M-Y') }}@if(\Carbon\Carbon::parse($customerInvoice->invoice_date)->isToday())<span data-toggle="show_time" style="{{ ($settings->show_time ?? false) ? '' : 'display:none' }}"> {{ \Carbon\Carbon::parse($customerInvoice->created_at)->format('H:i') }}</span>@endif</td>
+            <td><b>Invoice Date</b>{{ \Carbon\Carbon::parse($customerInvoice->invoice_date)->format('d-M-Y') }}<span data-toggle="show_time" style="{{ ($settings->show_time ?? false) ? '' : 'display:none' }}"> {{ \Carbon\Carbon::parse($customerInvoice->created_at)->setTimezone($company->timezone ?: config('app.timezone'))->format('H:i') }}</span></td>
             <td><b>Due Date</b>{{ \Carbon\Carbon::parse($customerInvoice->due_date)->format('d-M-Y') }}</td>
             <td><b>Job No.</b>{{ $customerInvoice->job?->row_no }} / {{ \Carbon\Carbon::parse($customerInvoice->job?->posted_at)->format('d-M-Y') }}</td>
         </tr>
@@ -149,7 +149,8 @@
                 <div data-toggle="voyage_flight" style="{{ ($settings->voyage_flight ?? false) ? '' : 'display:none' }}">Voy/Flight: {{ $customerInvoice->job?->voyage_flight_no }}</div>
                 <div data-toggle="incoterm" style="{{ ($settings->incoterm ?? false) ? '' : 'display:none' }}">Incoterm: {{ $customerInvoice->job?->incoterm }}</div>
                 <div data-toggle="shipment_mode" style="{{ ($settings->shipment_mode ?? false) ? '' : 'display:none' }}">Mode: {{ $customerInvoice->job?->shipment_mode }}</div>
-                @foreach($extraJobFields ?? [] as $field)
+                {{-- the shipment rows (AWB/HBL, origin / destination, carrier, voyage, incoterm, mode) are fixed rows of this layout: not twice --}}
+                        @foreach(collect($extraJobFields ?? [])->whereNotIn('key', ['awb_hbl', 'pol_pod', 'carrier', 'voyage_flight', 'incoterm', 'shipment_mode']) as $field)
                     <div data-toggle="{{ $field['key'] }}" style="{{ $field['visible'] ? '' : 'display:none' }}">{{ $field['label_en'] }}: {{ $field['value'] }}</div>
                 @endforeach
             </td>

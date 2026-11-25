@@ -148,7 +148,7 @@
                     <table cellpadding="3" cellspacing="0" border="0" style="font-size: 8pt;" align="right">
                         <tr>
                             <td class="muted" style="text-align: right;">INVOICE DATE | <span class="ar"> تاريخ الفاتورة</span>&nbsp;:</td>
-                            <td style="font-weight: bold; padding-left: 6px;">{{ $customerInvoice->invoice_date ? \Carbon\Carbon::parse($customerInvoice->invoice_date)->format('d/m/Y') : '-' }}<span data-toggle="show_time" style="{{ ($settings->show_time ?? false) ? '' : 'display:none' }}"> {{ \Carbon\Carbon::parse($customerInvoice->created_at)->format('H:i') }}</span></td>
+                            <td style="font-weight: bold; padding-left: 6px;">{{ $customerInvoice->invoice_date ? \Carbon\Carbon::parse($customerInvoice->invoice_date)->format('d/m/Y') : '-' }}<span data-toggle="show_time" style="{{ ($settings->show_time ?? false) ? '' : 'display:none' }}"> {{ \Carbon\Carbon::parse($customerInvoice->created_at)->setTimezone($company->timezone ?: config('app.timezone'))->format('H:i') }}</span></td>
                         </tr>
                         <tr>
                             <td class="muted" style="text-align: right;padding-top:5px">DUE DATE | <span class="ar"> تاريخ الاستحقاق</span>&nbsp;:</td>
@@ -209,15 +209,14 @@
                         <div data-toggle="show_phone" style="{{ ($settings->show_phone ?? true) ? '' : 'display:none' }}">
                             @if($customerInvoice->customer?->phone)<div class="muted" style="font-size: 8pt; margin-top: 6px;">Tel: {{ $customerInvoice->customer->phone }}</div>@endif
                         </div>
-                        @if($customerInvoice->customer?->email)<div class="muted" style="font-size: 8pt; margin-top: 2px;">Email: {{ $customerInvoice->customer->email }}</div>@endif
                         @if($customerInvoice->customer?->vat_number)
                             <div style="font-size: 8pt; margin-top: 4px;"><span class="ar">الرقم الضريبي</span> / VAT NO: <strong>{{ $customerInvoice->customer->vat_number }}</strong></div>
                         @endif
                         @if($customerInvoice->customer?->cr_number)
                             <div style="font-size: 8pt; margin-top: 4px;"><span class="ar">رقم السجل التجاري</span> / CR NO: <strong>{{ $customerInvoice->customer->cr_number }}</strong></div>
                         @endif
-                        {{-- the ticked contact / address rows (alt. phone, postal code, region); email and country are printed above --}}
-                        <div style="margin-top: 4px;">@include('modules.print.partials.address-fields', ['skipAddressKeys' => ['email', 'country']])</div>
+                        {{-- the ticked contact / address rows (email, alt. phone, postal code, region); country is part of the address above --}}
+                        <div style="margin-top: 4px;">@include('modules.print.partials.address-fields', ['skipAddressKeys' => ['country']])</div>
                     </div>
                 </td>
             </tr>

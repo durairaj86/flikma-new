@@ -76,6 +76,16 @@ Route::post('/masters/lost-reason/{id}/create', [\App\Http\Controllers\Master\Lo
 Route::get('/masters/lost-reason/{id}/actions', [\App\Http\Controllers\Master\LostReasonController::class, 'actions'])->whereNumber('id');
 Route::post('/masters/lost-reason/{id}/status/{status}', [\App\Http\Controllers\Master\LostReasonController::class, 'updateStatus'])->whereNumber('id')->whereIn('status', ['0', '1']);
 Route::delete('/masters/lost-reason/{id}', [\App\Http\Controllers\Master\LostReasonController::class, 'destroy'])->whereNumber('id');
+// CRM actions (Call Done, RFQ Received, Quote Due ...)
+Route::view('/masters/crm-actions', 'modules.master.crm-action.list')->name('crm-actions');
+Route::post('/masters/crm-action/data', [\App\Http\Controllers\Master\CrmActionController::class, 'fetchAllRows'])->name('crm-action.data');
+Route::get('/masters/crm-action/create', [\App\Http\Controllers\Master\CrmActionController::class, 'modal']);
+Route::post('/masters/crm-action/create', [\App\Http\Controllers\Master\CrmActionController::class, 'store']);
+Route::get('/masters/crm-action/{id}/create', [\App\Http\Controllers\Master\CrmActionController::class, 'edit'])->whereNumber('id');
+Route::post('/masters/crm-action/{id}/create', [\App\Http\Controllers\Master\CrmActionController::class, 'store'])->whereNumber('id');
+Route::get('/masters/crm-action/{id}/actions', [\App\Http\Controllers\Master\CrmActionController::class, 'actions'])->whereNumber('id');
+Route::post('/masters/crm-action/{id}/status/{status}', [\App\Http\Controllers\Master\CrmActionController::class, 'updateStatus'])->whereNumber('id')->whereIn('status', ['0', '1']);
+Route::delete('/masters/crm-action/{id}', [\App\Http\Controllers\Master\CrmActionController::class, 'destroy'])->whereNumber('id');
 
 Route::view('/masters/departments', 'modules.master.department.list')->name('departments');
 Route::post('/masters/department/data', [\App\Http\Controllers\Master\DepartmentController::class, 'fetchAllRows'])->name('department.data');

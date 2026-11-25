@@ -30,7 +30,7 @@ class Customer extends Model
 
     protected static string $cache = 'confirmCustomers:';
     protected static array $cacheColumns = [
-        'id', 'name_en', 'name_ar', 'salesperson_id', 'row_no', 'email', 'credit_days', 'currency'
+        'id', 'name_en', 'name_ar', 'salesperson_id', 'rank', 'row_no', 'email', 'credit_days', 'currency'
     ];
 
     /*protected $casts = [

@@ -88,10 +88,20 @@ class ProspectController extends Controller
             'quick_prospect_address' => 'nullable|string|max:500',
             // the salesperson owns the lead: without one it shows on nobody's pipeline (only under "All Salesmen")
             'salesperson_id' => 'required|integer',
+            'contact_person' => 'nullable|string|max:100',
+            'rank' => 'nullable|in:' . implode(',', array_keys(\App\Services\Crm\CrmSettings::RANKS)),
+            'city' => 'nullable|string|max:255',
+            'route' => 'nullable|string|max:150',
+            'service_id' => 'nullable|in:' . implode(',', array_keys(services())),
+            'approx_volume' => 'nullable|string|max:100',
+            'incoterm' => 'nullable|string|max:10',
+            'approx_cost' => 'nullable|numeric|min:0|max:9999999999',
+            'approx_selling' => 'nullable|numeric|min:0|max:9999999999',
         ];
 
         // Validate request
-        $validator = Validator::make($request->all(), $rules, [], ['salesperson_id' => __('Salesperson')]);
+        $validator = Validator::make($request->all(), $rules, [], ['salesperson_id' => __('Salesperson'), 'rank' => __('Rank'), 'service_id' => __('Service Type'),
+            'approx_cost' => __('Approx Cost'), 'approx_selling' => __('Approx Selling'), 'approx_volume' => __('Approx Volume'), 'route' => __('Sector / Route')]);
 
         if ($validator->fails()) {
             return response()->json([
@@ -119,12 +129,25 @@ class ProspectController extends Controller
         $prospect->phone = $request->input('quick_prospect_phone');
         $prospect->address = $request->input('quick_prospect_address');
         $prospect->salesperson_id = $request->input('salesperson_id');
+        // lead details come from the full prospect form only (the quick form from an enquiry / quotation has none)
+        if ($request->boolean('lead_details')) {
+            $num = fn($v) => ($v === null || $v === '') ? null : (float) str_replace(',', '', $v);
+            $prospect->contact_person = $request->input('contact_person') ?: null;
+            $prospect->rank = $request->input('rank') ?: null;
+            $prospect->city = $request->input('city') ?: null;
+            $prospect->route = $request->input('route') ?: null;
+            $prospect->service_id = $request->input('service_id') ?: null;
+            $prospect->approx_volume = $request->input('approx_volume') ?: null;
+            $prospect->incoterm = $request->input('incoterm') ?: null;
+            $prospect->approx_cost = $num($request->input('approx_cost'));
+            $prospect->approx_selling = $num($request->input('approx_selling'));
+        }
 
         $prospect->save();
 
         return response()->json([
             'status' => 'success',
-            'message' => __('Prospect created successfully'),
+            'message' => $prospect->wasRecentlyCreated ? __('Prospect created successfully') : __('Prospect saved successfully'),
             'id' => encodeId($prospect->id),
             'name' => $prospect->name,
             'code' => $prospect->row_no,

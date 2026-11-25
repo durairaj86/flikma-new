@@ -27,6 +27,7 @@
 @endif--}}
 @php
     $i18nKeys = [
+        'Auto', 'Also logged by the system', 'New Action', ':n days ago', 'Jobs', 'Log', 'No contact yet', 'RFQs', 'Suggested', 'Suggested from the score', 'Touches', 'today',
         'User Rights', 'in draft payment', 'Draft payments are taken off in the Payment form', 'Part paid', 'Paid', 'Unpaid',
         'Other currency: collect it in a separate collection',
         'in draft collection', 'Draft collections are taken off in the Collection form',

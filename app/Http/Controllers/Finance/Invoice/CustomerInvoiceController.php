@@ -1222,6 +1222,14 @@ class CustomerInvoiceController extends Controller
      */
     private function buildPrintViewData(CustomerInvoice $customerInvoice, \App\Models\Settings\InvoiceSettings $settings): array
     {
+        // the line's unit is kept as unit_id; the old "unit" text is empty, so every layout's Unit column printed blank
+        $unitNames = \Illuminate\Support\Facades\DB::table('units')
+            ->whereIn('id', $customerInvoice->customerInvoiceSubs->pluck('unit_id')->filter()->unique())->pluck('unit_name', 'id');
+        foreach ($customerInvoice->customerInvoiceSubs as $sub) {
+            if (blank($sub->unit) && $sub->unit_id && isset($unitNames[$sub->unit_id])) {
+                $sub->setAttribute('unit', __($unitNames[$sub->unit_id]));
+            }
+        }
         $descriptions = Description::descriptions()->pluck('description', 'id')->toArray();
         $bank = Bank::orderBy('sort')->first();
         $company = authUserCompany();

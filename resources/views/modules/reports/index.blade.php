@@ -19,6 +19,7 @@
             ['/reports/sales-funnel', 'Sales Funnel', 'Enquiries, quotations, won deals and jobs, with conversion rates', 'bi-funnel'],
             ['/reports/win-loss', 'Win / Loss Analysis', 'Why deals are lost, and won vs lost by salesperson or customer', 'bi-trophy'],
             ['/reports/pipeline-value', 'Pipeline Value', 'Open quotations waiting for the customer', 'bi-hourglass-split'],
+            ['/reports/crm-activity-summary', 'Activity Summary', 'How many of every action, day by day, week by week, month by month', 'bi-calendar3'],
             ['/reports/salesperson-performance', 'Salesperson Performance', 'Sales activity, deals won and revenue against target', 'bi-speedometer2'],
         ]],
         ['title' => 'Customers & Suppliers', 'icon' => 'bi-people', 'color' => '#0891b2', 'bg' => '#cffafe', 'reports' => [
@@ -50,6 +51,7 @@
             ['/reports/sales-commission', 'Sales Commission', 'Incentive on gross profit, paid by when the customer paid.', 'bi-calculator'],
             ['/reports/customer-wise-sales', 'Customer Wise Sales', 'Invoiced, cost and gross profit per customer.', 'bi-people'],
             ['/reports/invoice-wise-sales', 'Invoice Wise Sales', 'Invoiced, cost and gross profit per invoice.', 'bi-file-earmark-text'],
+            ['/reports/description-wise', 'Description Wise Report', 'Sales, cost and profit per charge description, from customer and supplier invoice lines.', 'bi-tags'],
         ]],
         ['title' => 'Operations', 'icon' => 'bi-truck', 'color' => '#0f766e', 'bg' => '#ccfbf1', 'reports' => [
             ['/reports/waybill-report', 'Waybill Report', 'Waybills issued, with delivery and status detail', 'bi-file-earmark-ruled'],

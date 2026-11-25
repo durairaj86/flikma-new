@@ -53,7 +53,8 @@ class SalespersonPerformance extends CrmReport
     {
         $owner = self::OWNER;
         [$col, $range] = $this->between('a.activity_at');
-        $activities = $this->grouped($this->activities()->whereBetween($col, $range), $owner, 'COUNT(*)');
+        // what people did: done actions they logged themselves (not planned ones, not the ones the system logged from documents)
+        $activities = $this->grouped($this->activities()->whereNull('a.follow_up_at')->whereNull('a.auto_key')->whereBetween($col, $range), $owner, 'COUNT(*)');
         [$col, $range] = $this->between('a.follow_up_done_at');
         $done = $this->grouped($this->activities()->whereNotNull('a.follow_up_done_at')->whereBetween($col, $range), $owner, 'COUNT(*)');
         $overdue = $this->grouped($this->activities()->whereNotNull('a.follow_up_at')->whereNull('a.follow_up_done_at')

@@ -62,8 +62,11 @@ abstract class PackReport extends Component
 
         return Excel::download(new ReportTableExport($rows, $this->totals($rows), $cols, [
             'title' => $this->title(),
-            'lines' => [$this->startDate . ' - ' . $this->endDate . ' | ' . ($this->groups()[$this->groupBy] ?? '')],
+            'lines' => [\Carbon\Carbon::parse($this->startDate)->format('d-m-Y') . ' - ' . \Carbon\Carbon::parse($this->endDate)->format('d-m-Y') . ' | ' . ($this->groups()[$this->groupBy] ?? '')],
             'numeric_from' => 2,
+            // a column of whole numbers only (jobs, counts) stays without decimals, as on screen
+            'integer_columns' => collect(range(1, count($this->columns())))
+                ->filter(fn($i) => $rows && collect($rows)->every(fn($r) => !is_float($r[$i] ?? 0)))->map(fn($i) => $i + 1)->values()->all(),
         // "Win / Loss Analysis": characters a file name cannot hold become "-" (Arabic titles stay as they are)
         ]), str_replace(' ', '_', mb_strtolower(trim(preg_replace('#[\\\\/:*?"<>|]+#', '-', $this->title())))) . '.xlsx');
     }

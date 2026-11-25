@@ -254,6 +254,7 @@ class CustomerController extends Controller
             'postal_code' => 'nullable|string|max:20',
             'country' => 'required|string|max:25',
             'salesperson_id' => 'nullable',
+            'rank' => 'nullable|in:' . implode(',', array_keys(\App\Services\Crm\CrmSettings::RANKS)),
 
             // Contact
             'contact_person' => 'nullable|string|max:100',
@@ -344,6 +345,7 @@ class CustomerController extends Controller
         $customer->preferred_shipping = $validated['preferred_shipping'] ?? null;
         $customer->payment_terms = $validated['payment_terms'] ?? null;
         $customer->salesperson_id = $validated['salesperson_id'] ?? null;
+        $customer->rank = $validated['rank'] ?? null;
         $customer->save();
 
         $this->saveDocuments($customer, $request);

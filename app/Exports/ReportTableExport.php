@@ -91,12 +91,36 @@ class ReportTableExport implements FromCollection, WithHeadings, WithStyles, Wit
                 $sheet->getStyle($footerRange)->getFill()
                     ->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('E9ECEF');
 
-                $numericFrom = $this->meta['numeric_from'] ?? 1;
-                $firstNumericCol = Coordinate::stringFromColumnIndex($numericFrom);
                 $firstDataRow = $this->headerRowIndex + 1;
-                $sheet->getStyle("$firstNumericCol$firstDataRow:$lastCol$highestRow")
-                    ->getNumberFormat()
-                    ->setFormatCode('#,##0.00');
+                // money format: the listed columns (meta money_columns), else every column from numeric_from on
+                if (isset($this->meta['money_columns'])) {
+                    foreach ($this->meta['money_columns'] as $i) {
+                        $c = Coordinate::stringFromColumnIndex($i);
+                        $sheet->getStyle("$c$firstDataRow:$c$highestRow")->getNumberFormat()->setFormatCode('#,##0.00');
+                    }
+                } else {
+                    $numericFrom = $this->meta['numeric_from'] ?? 1;
+                    $firstNumericCol = Coordinate::stringFromColumnIndex($numericFrom);
+                    $sheet->getStyle("$firstNumericCol$firstDataRow:$lastCol$highestRow")
+                        ->getNumberFormat()
+                        ->setFormatCode('#,##0.00');
+                }
+                // counts: whole numbers (meta integer_columns)
+                foreach ($this->meta['integer_columns'] ?? [] as $i) {
+                    $c = Coordinate::stringFromColumnIndex($i);
+                    $sheet->getStyle("$c$firstDataRow:$c$highestRow")->getNumberFormat()->setFormatCode('#,##0');
+                }
+                // text that looks like a number (phone, reference): kept exactly as typed (meta text_columns)
+                foreach ($this->meta['text_columns'] ?? [] as $i) {
+                    $c = Coordinate::stringFromColumnIndex($i);
+                    for ($row = $firstDataRow; $row <= $highestRow; $row++) {
+                        $raw = $this->rows[$row - $firstDataRow][$i - 1] ?? null;
+                        if ($raw !== null && $raw !== '') {
+                            $sheet->getCell("$c$row")->setValueExplicit((string) $raw, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+                        }
+                    }
+                    $sheet->getStyle("$c$firstDataRow:$c$highestRow")->getNumberFormat()->setFormatCode('@');
+                }
             },
         ];
     }

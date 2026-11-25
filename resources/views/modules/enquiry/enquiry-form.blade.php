@@ -125,6 +125,23 @@
                                     <label for="salesperson" class="form-label">{{ __('Select Salesperson') }}</label>
                                     <x-common.salesperson :value="$enquiry->salesperson_id"></x-common.salesperson>
                                 </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">{{ __('Handled By') }}</label>
+                                    <select name="handled_by" class="tom-select" data-live-search="true" data-placeholder="{{ __('Pricing executive') }}">
+                                        <option value="">{{ __('--Select--') }}</option>
+                                        @foreach(\App\Models\User::where('company_id', companyId())->whereNull('terminated_at')->orderBy('name')->get(['id', 'name']) as $u)
+                                            <option value="{{ $u->id }}" @selected((int) $enquiry->handled_by === (int) $u->id)>{{ $u->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">{{ __('Approx Cost') }}</label>
+                                    <input type="text" name="approx_cost" class="form-control decimal" value="{{ $enquiry->approx_cost }}">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">{{ __('Approx Selling') }}</label>
+                                    <input type="text" name="approx_selling" class="form-control decimal" value="{{ $enquiry->approx_selling }}">
+                                </div>
 
                                 <div class="col-md-4">
                                     <label for="expiry_date" class="form-label">{{ __('Expiry Date') }}</label>

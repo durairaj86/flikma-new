@@ -21,6 +21,7 @@ class CrmFollowUpReminders extends Command
     {
         // times are the company's local clock: a company gets its email once its day has reached 07:00 (the command runs hourly)
         $due = CrmActivity::withoutGlobalScopes()
+            ->with(['action' => fn($q) => $q->withoutGlobalScopes()->select('id', 'name', 'category')])
             ->whereNull('deleted_at')
             ->whereNotNull('follow_up_at')->whereNull('follow_up_done_at')
             ->whereNotNull('assigned_to')
@@ -60,7 +61,7 @@ class CrmFollowUpReminders extends Command
                 'kind' => CrmActivity::subjectLabel($a->subject_type),
                 'no' => $names[$a->subject_type][$a->subject_id]['no'] ?? '',
                 'name' => $names[$a->subject_type][$a->subject_id]['name'] ?? '',
-                'todo' => $a->follow_up_note ?: \Illuminate\Support\Str::limit($a->notes, 120),
+                'todo' => trim(($a->action ? $a->action->name : '') . ($a->notes ? ': ' . \Illuminate\Support\Str::limit($a->notes, 120) : ''), ': '),
             ])->values()->all();
             $overdue = collect($rows)->where('overdue', true)->count();
 

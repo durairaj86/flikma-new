@@ -21,6 +21,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // CRM actions that happen in the system (enquiry, quotation, job, invoice, collection) are logged by the system
+        \App\Services\Crm\CrmAutoLog::listen();
+
         // sign-in, "forgot password" and reset look a user up across all companies (see UnscopedEloquentUserProvider)
         Auth::provider('eloquent-unscoped', fn ($app, array $config) => new \App\Auth\UnscopedEloquentUserProvider($app['hash'], $config['model']));
 

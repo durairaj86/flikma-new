@@ -32,6 +32,9 @@
     .stmt-print .stmt-table th.text-end { text-align: right; }
     .stmt-print .stmt-table td { border: 1px solid #999; padding: 5px 8px; }
     .stmt-print .stmt-table tfoot td { background: #efefef; border: 1px solid #000; }
+    /* many columns (e.g. Activity Summary with every action): tight cells; the page fit (startup.js) scales the rest */
+    .stmt-print .stmt-table.stmt-wide th, .stmt-print .stmt-table.stmt-wide td { padding: 2px 3px; font-size: 9px; }
+    .stmt-print .stmt-table.stmt-wide th { letter-spacing: 0; }
     .stmt-print .stmt-footnote { margin-top: 10px; font-size: 9px; color: #444; font-style: italic; }
     .stmt-print .stmt-signatures { margin-top: 36px; font-size: 10px; }
 

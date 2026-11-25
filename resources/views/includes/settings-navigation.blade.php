@@ -42,6 +42,14 @@
                 </a>
             </li>
 
+            <!-- CRM Settings -->
+            <li class="nav-item" data-url="/settings/crm">
+                <a href="{{ url('/settings/crm') }}"
+                   class="nav-link d-flex align-items-center py-2 {{ request()->is('settings/crm*') ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-people text-secondary me-2"></i> {{ __('CRM Settings') }}
+                </a>
+            </li>
+
             {{--<li class="nav-item" data-url="/settings/tax">
                 <a href="{{ url('/settings/tax') }}"
                    class="nav-link d-flex align-items-center py-2 {{ request()->is('settings/tax*') ? 'active' : 'text-dark' }}">
