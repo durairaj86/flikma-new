@@ -349,9 +349,10 @@ PAYMENT = {
                 </tr>
             `;
             $('#additional-transactions-body').append(newRow);
+            $('#additional-transactions-wrap').show();
 
             // Initialize any plugins for the new row
-            $('.float').inputmask({
+            if ($.fn.inputmask) $('.float').inputmask({
                 alias: 'numeric',
                 groupSeparator: ',',
                 autoGroup: true,
@@ -481,6 +482,8 @@ PAYMENT = {
             // Handle removing additional transactions
             $(document).off('click', '.remove-transaction').on('click', '.remove-transaction', function() {
                 $(this).closest('tr').remove();
+                // no rows left: hide the table, only the Add Transaction button stays
+                if (!$('#additional-transactions-body tr').length) $('#additional-transactions-wrap').hide();
                 PAYMENT.form.calculateTotal();
             });
 

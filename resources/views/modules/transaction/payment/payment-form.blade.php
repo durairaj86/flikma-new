@@ -189,9 +189,15 @@
 
                 <div class="row mt-3">
                     <div class="col-12">
-                        <h6 class="fw-semibold mb-2">{{ __('Additional Transactions') }} <span class="small fw-normal text-muted">&middot; {{ __('Add additional transactions apart from supplier invoice payments.') }}</span></h6>
+                        @php($hasTransactions = isset($payment->additionalTransactions) && $payment->additionalTransactions->count() > 0)
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <h6 class="fw-semibold mb-0">{{ __('Additional Transactions') }} <span class="small fw-normal text-muted">&middot; {{ __('Add additional transactions apart from supplier invoice payments.') }}</span></h6>
+                            <button type="button" class="btn btn-outline-primary btn-sm ms-auto" id="add-transaction">
+                                <i class="fas fa-plus"></i> {{ __('Add Transaction') }}
+                            </button>
+                        </div>
 
-                        <div class="table-responsive">
+                        <div class="table-responsive" id="additional-transactions-wrap" style="{{ $hasTransactions ? '' : 'display: none;' }}">
                             <table class="table table-sm table-bordered align-middle mb-0" id="additional-transactions-table">
                                 <thead>
                                 <tr>
@@ -203,7 +209,7 @@
                                 </tr>
                                 </thead>
                                 <tbody id="additional-transactions-body">
-                                @if(isset($payment->additionalTransactions) && $payment->additionalTransactions->count() > 0)
+                                @if($hasTransactions)
                                     @foreach($payment->additionalTransactions as $index => $transaction)
                                         <tr class="additional-transaction-row">
                                             <td>
@@ -233,15 +239,6 @@
                                     @endforeach
                                 @endif
                                 </tbody>
-                                <tfoot>
-                                <tr>
-                                    <td colspan="5">
-                                        <button type="button" class="btn btn-primary btn-sm" id="add-transaction">
-                                            <i class="fas fa-plus"></i> {{ __('Add Transaction') }}
-                                        </button>
-                                    </td>
-                                </tr>
-                                </tfoot>
                             </table>
                         </div>
                     </div>
@@ -257,7 +254,10 @@
                     </div>
                     <div class="col-md-6 col-lg-3">
                         <div>
-                            <label for="total_paid" class="form-label">{{ ($advanceMode ?? false) ? __('Advance Amount') : __('Total Paid Amount') }}</label>
+                            <div class="d-flex justify-content-between align-items-baseline gap-2">
+                                <label for="total_paid" class="form-label">{{ ($advanceMode ?? false) ? __('Advance Amount') : __('Total Paid Amount') }}</label>
+                                <span class="small text-muted text-nowrap">{{ __('Advance available') }}: <b id="advance-available" data-available="{{ (float) ($advanceAvailable ?? 0) }}">{{ number_format((float) ($advanceAvailable ?? 0), 2) }}</b></span>
+                            </div>
                             <input type="text" step="0.01" data-decimal="2" class="form-control float text-end fw-bold" id="total_paid" name="total_paid"
                                    value="{{ $payment->id && $payment->total_amount !== null ? number_format((float) $payment->total_amount, 2, '.', '') : '' }}"
                                    data-touched="{{ ($advanceMode ?? false) || ($payment->id && $payment->total_amount !== null && (float) $payment->advance_amount + (float) $payment->advance_used > 0) ? 1 : 0 }}" placeholder="0.00" autocomplete="off">
@@ -266,8 +266,7 @@
                     </div>
                     <div class="col-md-6 col-lg-3">
                         <div class="pt-lg-4">
-                            <div class="small text-muted">{{ __('Advance available') }}: <b id="advance-available" data-available="{{ (float) ($advanceAvailable ?? 0) }}">{{ number_format((float) ($advanceAvailable ?? 0), 2) }}</b></div>
-                            <div id="advance-note" class="small mt-1" style="display:none;"></div>
+                            <div id="advance-note" class="small" style="display:none;"></div>
                             <button type="button" class="btn btn-sm btn-outline-primary mt-1" id="use-advance" style="display:none;">{{ __('Use advance') }}</button>
                         </div>
                     </div>
