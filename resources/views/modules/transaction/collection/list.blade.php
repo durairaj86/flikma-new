@@ -141,11 +141,11 @@
                     <div class="ci-kpi bg-col-approved h-100">
                         <div class="ci-kpi-main">
                             <div class="ci-kpi-title text-col-approved"><i class="bi bi-check-circle"></i>{{ __('Approved Collections') }}</div>
-                            <div class="ci-kpi-big"><span id="total_approved_grand">0.00</span><small class="text-muted">{{ __('Net Total') }}</small></div>
+                            <div class="ci-kpi-big"><span id="total_approved_grand">0.00</span><small class="text-muted">{{ __('Total Amount') }}</small></div>
                         </div>
                         <div class="ci-kpi-side">
-                            <div class="ci-kv"><span>{{ __('Total Amount') }}</span><b id="total_approved_sub">0.00</b></div>
-                            <div class="ci-kv"><span>{{ __('Total Tax') }}</span><b id="total_approved_tax">0.00</b></div>
+                            <div class="ci-kv"><span>{{ __('Collections') }}</span><b id="total_approved_count">0</b></div>
+                            <div class="ci-kv"><span>{{ __('Advance Kept') }}</span><b id="total_approved_advance">0.00</b></div>
                         </div>
                     </div>
                 </div>
@@ -154,11 +154,11 @@
                     <div class="ci-kpi bg-col-draft h-100">
                         <div class="ci-kpi-main">
                             <div class="ci-kpi-title text-col-draft"><i class="bi bi-pencil-square"></i>{{ __('Draft Collections') }}</div>
-                            <div class="ci-kpi-big"><span id="total_draft_grand">0.00</span><small class="text-muted">{{ __('Net Total') }}</small></div>
+                            <div class="ci-kpi-big"><span id="total_draft_grand">0.00</span><small class="text-muted">{{ __('Total Amount') }}</small></div>
                         </div>
                         <div class="ci-kpi-side">
-                            <div class="ci-kv"><span>{{ __('Total Amount') }}</span><b id="total_draft_sub">0.00</b></div>
-                            <div class="ci-kv"><span>{{ __('Total Tax') }}</span><b id="total_draft_tax">0.00</b></div>
+                            <div class="ci-kv"><span>{{ __('Collections') }}</span><b id="total_draft_count">0</b></div>
+                            <div class="ci-kv"><span>{{ __('Advance Kept') }}</span><b id="total_draft_advance">0.00</b></div>
                         </div>
                     </div>
                 </div>

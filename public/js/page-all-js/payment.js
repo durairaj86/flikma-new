@@ -156,13 +156,15 @@ PAYMENT = {
         cardSummary(data, counts) {
             if (data) {
                 ['draft', 'approved'].forEach(k => {
-                    ['grand', 'sub', 'tax'].forEach(t => $('#total_' + k + '_' + t).text(amountFormat(data['total_' + k + '_' + t] || 0)));
+                    ['grand', 'advance'].forEach(t => $('#total_' + k + '_' + t).text(amountFormat(data['total_' + k + '_' + t] || 0)));
                 });
             }
             if (counts) {
                 $('#cardAllCount').text(counts.all ?? 0);
                 $('#cardApprovedCount').text(counts.APPROVED ?? 0);
                 $('#cardDraftCount').text(counts.DRAFT ?? 0);
+                $('#total_approved_count').text(counts.APPROVED ?? 0);
+                $('#total_draft_count').text(counts.DRAFT ?? 0);
                 // the split bar of the Summary card: approved vs draft share of the documents that are one or the other
                 const ap = Number(counts.APPROVED ?? 0), dr = Number(counts.DRAFT ?? 0), sum = ap + dr;
                 $('#cardApprovedBar').css('width', sum ? (ap / sum * 100) + '%' : '0');

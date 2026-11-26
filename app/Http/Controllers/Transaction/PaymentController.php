@@ -860,11 +860,9 @@ class PaymentController extends Controller
         $approved = PaymentEnum::APPROVED->value;
         $salesSummary = Payment::select([
             DB::raw("SUM(CASE WHEN status = {$draft} THEN base_grand_total ELSE 0 END) as total_draft_grand"),
-            DB::raw("SUM(CASE WHEN status = {$draft} THEN base_sub_total ELSE 0 END) as total_draft_sub"),
-            DB::raw("SUM(CASE WHEN status = {$draft} THEN base_tax_total ELSE 0 END) as total_draft_tax"),
+            DB::raw("SUM(CASE WHEN status = {$draft} THEN advance_amount ELSE 0 END) as total_draft_advance"),
             DB::raw("SUM(CASE WHEN status = {$approved} THEN base_grand_total ELSE 0 END) as total_approved_grand"),
-            DB::raw("SUM(CASE WHEN status = {$approved} THEN base_sub_total ELSE 0 END) as total_approved_sub"),
-            DB::raw("SUM(CASE WHEN status = {$approved} THEN base_tax_total ELSE 0 END) as total_approved_tax"),
+            DB::raw("SUM(CASE WHEN status = {$approved} THEN advance_amount ELSE 0 END) as total_approved_advance"),
         ])->tap($applyFilters)->first();
 
         // the payment stores the account's id: the list shows its name
