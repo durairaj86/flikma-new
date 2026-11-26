@@ -1,11 +1,10 @@
-{{-- header colour = which way the money goes: out = warning, in = success, settling invoices = info --}}
 @php [$flowTone, $flowLabel] = ['warning', __('Money out · refund to customer')]; @endphp
-<div class="row g-3 align-items-center border-bottom border-3 border-{{ $flowTone }} py-3 px-4 mb-1 small bg-{{ $flowTone }}-subtle">
+@include('modules.transaction._flow-header')
+<div class="row g-3 align-items-center border-bottom py-3 px-4 mb-1 small flow-head flow-{{ $flowTone }}" style="background:#eee;">
     <div class="d-flex justify-content-between align-items-center flex-wrap">
         <div class="module-info">
             <span class="fw-semibold fs-5">{{ $collection->row_no ?? __('New Refund') }}</span>
             <span class="badge bg-warning text-dark ms-2">{{ __('Refund') }}</span>
-            <span class="small text-{{ $flowTone }}-emphasis ms-2"><i class="bi {{ $flowTone === 'warning' ? 'bi-box-arrow-up-right' : ($flowTone === 'success' ? 'bi-box-arrow-in-down-left' : 'bi-receipt') }} me-1"></i>{{ $flowLabel }}</span>
         </div>
         <div id="show-buttons"></div>
     </div>

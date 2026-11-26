@@ -1,12 +1,11 @@
-{{-- header colour = which way the money goes: out = warning, in = success, settling invoices = info --}}
 @php [$flowTone, $flowLabel] = ($advanceMode ?? false) ? ['warning', __('Money out · advance to supplier')] : ['info', __('Settles invoices')]; @endphp
-<div class="row g-3 align-items-center border-bottom border-3 border-{{ $flowTone }} py-3 px-4 mb-1 small bg-{{ $flowTone }}-subtle">
+@include('modules.transaction._flow-header')
+<div class="row g-3 align-items-center border-bottom py-3 px-4 mb-1 small flow-head flow-{{ $flowTone }}" style="background:#eee;">
     <div class="d-flex justify-content-between align-items-center flex-wrap">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-4">
             <div class="module-info">
                 <span class="fw-semibold fs-5">{{ $payment->row_no ?? (($advanceMode ?? false) ? __('New Advance') : __('New Payment')) }}</span>
                 @if(($advanceMode ?? false) && $payment->id)<span class="badge bg-warning text-dark ms-2">{{ __('Advance') }}</span>@endif
-                <span class="small text-{{ $flowTone }}-emphasis ms-2"><i class="bi {{ $flowTone === 'warning' ? 'bi-box-arrow-up-right' : ($flowTone === 'success' ? 'bi-box-arrow-in-down-left' : 'bi-receipt') }} me-1"></i>{{ $flowLabel }}</span>
             </div>
 
         </div>
