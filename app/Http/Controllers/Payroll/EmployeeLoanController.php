@@ -4,11 +4,14 @@ namespace App\Http\Controllers\Payroll;
 
 use App\Http\Controllers\Controller;
 
+use App\Models\Finance\Account\Account;
 use App\Models\Payroll\EmployeeLoan;
 use App\Models\Payroll\LoanInstallment;
 use App\Models\User;
+use App\Services\Payroll\PayrollLedger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
@@ -34,26 +37,30 @@ class EmployeeLoanController extends Controller
     public function create(): View
     {
         $employees = User::where('is_employee', true)->orderBy('name')->get(['id', 'name']);
-        return view('modules.payroll.loans.create', compact('employees'));
+        $paymentAccounts = $this->paymentAccounts();
+        return view('modules.payroll.loans.create', compact('employees', 'paymentAccounts'));
     }
 
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'employee_id' => ['required', 'exists:users,id'],
+            'employee_id' => ['required', Rule::exists('users', 'id')->where('company_id', companyId())->where('is_employee', true)],
             'loan_amount' => ['required', 'numeric', 'min:1'],
             'total_installments' => ['required', 'integer', 'min:1'],
             'installment_amount' => ['required', 'numeric', 'min:1'],
             'start_date' => ['required', 'date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
+            'paid_from_account_id' => ['required', 'integer'],
             'description' => ['nullable', 'string', 'max:1000'],
-        ]);
+        ], ['paid_from_account_id.required' => __('Select the cash / bank account the loan was paid from.')]);
 
         $this->assertInstallmentsMatch($data);
+        $this->assertPaymentAccount($data['paid_from_account_id']);
         $data['start_date'] = formDate($data['start_date']);
         $data['end_date'] = formDate($data['end_date'] ?? null);
+        $this->assertPeriodOpen($data['start_date'], 'start_date');   // the loan is posted on its start date
 
-        EmployeeLoan::create([
+        DB::transaction(fn () => app(PayrollLedger::class)->postLoanDisbursement(EmployeeLoan::create([
             'company_id' => companyId(),
             'employee_id' => $data['employee_id'],
             'loan_amount' => $data['loan_amount'],
@@ -61,33 +68,36 @@ class EmployeeLoanController extends Controller
             'installment_amount' => $data['installment_amount'],
             'paid_amount' => 0,
             'remaining_amount' => $data['loan_amount'],
+            'paid_from_account_id' => $data['paid_from_account_id'],
             'start_date' => $data['start_date'],
             'end_date' => $data['end_date'],
             'description' => $data['description'] ?? null,
             'status' => 'active',
-        ]);
+        ])));
 
-        return redirect()->route('employee-loans.index')->with('success', 'Loan created.');
+        return redirect()->route('employee-loans.index')->with('success', __('Loan created and posted to the ledger.'));
     }
 
     public function show(EmployeeLoan $employeeLoan): View
     {
-        $employeeLoan->load(['employee', 'installments.bankAccount']);
+        $employeeLoan->load(['employee', 'installments.bankAccount', 'paidFromAccount:id,code,name']);
         // Repayments are received into cash or a bank account only.
-        $paymentAccounts = \App\Models\Finance\Account\Account::query()->active()->posting()->cashOrBank()->orderBy('code')->get(['id', 'code', 'name', 'type']);
-        return view('modules.payroll.loans.show', compact('employeeLoan', 'paymentAccounts'));
+        $paymentAccounts = $this->paymentAccounts();
+        $entries = app(PayrollLedger::class)->entriesFor(EmployeeLoan::class, $employeeLoan->id);
+        return view('modules.payroll.loans.show', compact('employeeLoan', 'paymentAccounts', 'entries'));
     }
 
     public function edit(EmployeeLoan $employeeLoan): View
     {
         $employees = User::where('is_employee', true)->orderBy('name')->get(['id', 'name']);
-        return view('modules.payroll.loans.edit', compact('employeeLoan', 'employees'));
+        $paymentAccounts = $this->paymentAccounts();
+        return view('modules.payroll.loans.edit', compact('employeeLoan', 'employees', 'paymentAccounts'));
     }
 
     public function update(Request $request, EmployeeLoan $employeeLoan): RedirectResponse
     {
         $data = $request->validate([
-            'employee_id' => ['required', 'exists:users,id'],
+            'employee_id' => ['required', Rule::exists('users', 'id')->where('company_id', companyId())->where('is_employee', true)],
             'loan_amount' => ['required', 'numeric', 'min:1'],
             'total_installments' => ['required', 'integer', 'min:1'],
             'installment_amount' => ['required', 'numeric', 'min:1'],
@@ -95,10 +105,17 @@ class EmployeeLoanController extends Controller
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
             'description' => ['nullable', 'string', 'max:1000'],
             'status' => ['required', 'in:active,closed,cancelled'],
+            'paid_from_account_id' => ['nullable', 'integer'],
             'update_reason' => ['required', 'string', 'min:3', 'max:500'],
         ], ['update_reason.required' => __('Please tell us why you are updating this loan.')]);
         $reason = trim($data['update_reason']);
         unset($data['update_reason']);
+        if ($data['paid_from_account_id'] ?? null) {
+            $this->assertPaymentAccount($data['paid_from_account_id']);
+        } else {
+            unset($data['paid_from_account_id']);   // older loans have none; leaving it empty keeps what is there
+        }
+        $posted = app(PayrollLedger::class)->entriesFor(EmployeeLoan::class, $employeeLoan->id)->isNotEmpty();
 
         // Once any instalment has been deducted from salary, the loan amount is fixed — changing it would
         // contradict what has already been recovered and posted to the ledger.
@@ -108,6 +125,9 @@ class EmployeeLoanController extends Controller
             }
             if (abs((float) $data['loan_amount'] - (float) $employeeLoan->loan_amount) > 0.001) {
                 return back()->withInput()->withErrors(['loan_amount' => __('The loan amount cannot be changed because instalments have already been deducted.')]);
+            }
+            if ($posted && isset($data['paid_from_account_id']) && (int) $data['paid_from_account_id'] !== (int) $employeeLoan->paid_from_account_id) {
+                return back()->withInput()->withErrors(['paid_from_account_id' => __('The paid-from account cannot be changed because instalments have already been deducted.')]);
             }
         } else {
             // Nothing recovered yet: the balance still owed follows the (possibly new) loan amount.
@@ -122,7 +142,18 @@ class EmployeeLoanController extends Controller
         foreach ($employeeLoan->getDirty() as $field => $new) {
             $changes[$field] = ['old' => $employeeLoan->getOriginal($field), 'new' => $new];
         }
-        $employeeLoan->save();
+        // The posting follows the loan while nothing is recovered yet (amount, date, account, cancelled = never given).
+        // Once recovered it stays as posted; an older loan without a posting gets one when its account is filled in.
+        $repost = $employeeLoan->paid_from_account_id && (!$employeeLoan->hasDeductions() || !$posted);
+        if ($repost || ($posted && $employeeLoan->isDirty('status') && $employeeLoan->status === 'cancelled' && !$employeeLoan->hasDeductions())) {
+            $this->assertPeriodOpen($employeeLoan->start_date, 'start_date');
+        }
+        DB::transaction(function () use ($employeeLoan, $repost) {
+            $employeeLoan->save();
+            if ($repost) {
+                app(PayrollLedger::class)->postLoanDisbursement($employeeLoan->fresh('employee'));
+            }
+        });
 
         // Every update is traceable together with the reason the user gave (mandatory).
         \App\Models\Log\LogHistory::create([
@@ -146,8 +177,14 @@ class EmployeeLoanController extends Controller
         if ($employeeLoan->hasDeductions()) {
             return back()->withErrors(['loan' => __('This loan cannot be deleted because instalments have already been deducted from salary (:amount recovered). Cancel or close it instead.', ['amount' => number_format((float) $employeeLoan->paid_amount, 2)])]);
         }
-        $employeeLoan->delete();
-        return back()->with('success', 'Loan deleted.');
+        if (app(PayrollLedger::class)->entriesFor(EmployeeLoan::class, $employeeLoan->id)->isNotEmpty()) {
+            $this->assertPeriodOpen($employeeLoan->start_date, 'loan');
+        }
+        DB::transaction(function () use ($employeeLoan) {
+            app(PayrollLedger::class)->removeLoanDisbursement($employeeLoan);
+            $employeeLoan->delete();
+        });
+        return back()->with('success', __('Loan deleted.'));
     }
 
     public function payInstallment(Request $request, EmployeeLoan $employeeLoan): RedirectResponse
@@ -205,6 +242,19 @@ class EmployeeLoanController extends Controller
         }
 
         return redirect()->route('employee-loans.show', $employeeLoan)->with('success', __('Payment recorded and posted to the ledger.'));
+    }
+
+    /** Loans are paid out of, and repaid into, cash or a bank account only. */
+    protected function paymentAccounts()
+    {
+        return Account::query()->active()->posting()->cashOrBank()->orderBy('code')->get(['id', 'code', 'name', 'type']);
+    }
+
+    protected function assertPaymentAccount($id): void
+    {
+        if (!Account::query()->active()->posting()->cashOrBank()->whereKey((int) $id)->exists()) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['paid_from_account_id' => __('Paid From must be a cash or bank account.')]);
+        }
     }
 
     /** Installment amount × number of installments must equal the loan amount (0.01 tolerance for rounding). */

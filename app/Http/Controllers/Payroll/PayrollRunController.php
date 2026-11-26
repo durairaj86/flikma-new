@@ -13,6 +13,7 @@ use App\Services\Payroll\PayrollCalculationService;
 use App\Services\Payroll\PayrollLedger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -118,7 +119,7 @@ class PayrollRunController extends Controller
             'month' => ['required', 'integer', 'min:1', 'max:12'],
             'year' => ['required', 'integer', 'min:2020', 'max:2100'],
             'employee_ids' => ['required', 'array', 'min:1'],
-            'employee_ids.*' => ['exists:users,id'],
+            'employee_ids.*' => [Rule::exists('users', 'id')->where('company_id', companyId())->where('is_employee', true)],
         ]);
 
         $existingEmployeeIds = PayrollRecord::where('month', $data['month'])->where('year', $data['year'])->pluck('employee_id');

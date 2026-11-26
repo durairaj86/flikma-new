@@ -6,9 +6,11 @@
 @php
     $selectId = $attributes->get('id') ?: 'emp-' . \Illuminate\Support\Str::random(8);
     $selected = is_array($value) ? $value : [$value];
-    $employees = \App\Models\User::where('is_employee', true)
+    // loaded once per request: the punch log shows one dropdown per unmapped machine ID
+    $cacheKey = 'employees-dropdown-' . (int) $activeOnly;
+    $employees = request()->attributes->get($cacheKey) ?? tap(\App\Models\User::where('is_employee', true)
         ->when($activeOnly, fn ($q) => $q->whereNull('terminated_at'))
-        ->orderBy('name')->get(['id', 'name', 'employee_code', 'terminated_at']);
+        ->orderBy('name')->get(['id', 'name', 'employee_code', 'terminated_at']), fn ($list) => request()->attributes->set($cacheKey, $list));
 @endphp
 <select name="{{ $name }}" id="{{ $selectId }}"
         {{ $attributes->except('id')->merge(['class' => 'form-select'])->class('tom-select') }}

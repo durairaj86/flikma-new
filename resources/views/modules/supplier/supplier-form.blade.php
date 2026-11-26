@@ -67,7 +67,9 @@
                                 </div>
                                 <div class="col-md-4 form-group">
                                     <label class="form-label required">{{ __('Default Currency') }} <sup class="text-danger">*</sup></label>
-                                    <x-common.currencies :value="$supplier->currency"></x-common.currencies>
+                                    {{-- a supplier with finance documents keeps its currency: bills and payments are already in it --}}
+                                    <x-common.currencies :value="$supplier->currency" :locked="$supplier->id && $supplier->hasFinanceTransactions()"
+                                                         :lockedText="__('Locked: this supplier already has finance entries, so the currency cannot be changed.')"></x-common.currencies>
                                 </div>
                                 <div class="col-md-4 form-group">
                                     <label class="form-label" for="contact_person">{{ __('Contact Person') }}</label>

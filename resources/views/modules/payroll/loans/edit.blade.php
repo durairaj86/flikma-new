@@ -61,6 +61,17 @@
                             <option value="cancelled" {{ $employeeLoan->status == 'cancelled' ? 'selected' : '' }}>{{ __('Cancelled') }}</option>
                         </select>
                     </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">{{ __('Paid From') }}</label>
+                        <select name="paid_from_account_id" class="form-select tom-select @error('paid_from_account_id') is-invalid @enderror" data-placeholder="{{ __('Select cash / bank account') }}" {{ $employeeLoan->hasDeductions() && $employeeLoan->paid_from_account_id ? 'disabled' : '' }}>
+                            <option value="">{{ __('Select cash / bank account') }}</option>
+                            @foreach($paymentAccounts as $acc)
+                                <option value="{{ $acc->id }}" {{ (string) old('paid_from_account_id', $employeeLoan->paid_from_account_id) === (string) $acc->id ? 'selected' : '' }}>{{ $acc->code }} — {{ $acc->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('paid_from_account_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <div class="form-text">{{ $employeeLoan->paid_from_account_id ? __('Posted on the start date: Employee Loan Receivable is debited, this account credited.') : __('This loan was created before loans were posted. Choose the account it was paid from to post it now.') }}</div>
+                    </div>
                     <div class="col-md-12">
                         <label class="form-label small fw-bold">{{ __('Description') }}</label>
                         <textarea name="description" class="form-control" rows="3">{{ $employeeLoan->description }}</textarea>

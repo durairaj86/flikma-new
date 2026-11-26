@@ -773,10 +773,13 @@ class AutocheckRunner
     {
         $this->call(app(\App\Http\Controllers\Payroll\EmployeeLoanController::class), 'store', [
             'employee_id' => $ctx['employee_id'], 'loan_amount' => 1200, 'total_installments' => 4, 'installment_amount' => 300, 'start_date' => now()->format('Y-m-d'),
+            'paid_from_account_id' => 58,
         ]);
         $loan = \App\Models\Payroll\EmployeeLoan::withoutGlobalScopes()->where('employee_id', $ctx['employee_id'])->latest('id')->first();
         $this->check($checks, 'Loan saved and Active', $loan && $loan->status === 'active', $loan?->status);
         $this->check($checks, 'Remaining equals the loan amount', $loan && (float) $loan->remaining_amount === 1200.0, $loan?->remaining_amount);
+        $posted = $loan ? DB::table('finance_subs')->where('linked_type', \App\Models\Payroll\EmployeeLoan::class)->where('linked_id', $loan->id)->selectRaw('round(sum(base_debit),2) d, round(sum(base_credit),2) c')->first() : null;
+        $this->check($checks, 'Loan posted: Dr Employee Loan Receivable / Cr bank 1,200', $posted && (float) $posted->d === 1200.0 && (float) $posted->c === 1200.0, $posted ? "{$posted->d} / {$posted->c}" : null);
         $ctx['loan_id'] = $loan?->id;
         return '/employee-loans';
     }
@@ -1419,7 +1422,12 @@ class AutocheckRunner
                     if (\Schema::hasTable($t) && \Schema::hasColumn($t, $col)) DB::table($t)->where($col, $ctx['employee_id'])->delete();
                 }
                 if (\Schema::hasTable('loan_installments') && !empty($ctx['loan_id'])) DB::table('loan_installments')->where('loan_id', $ctx['loan_id'])->delete();
-                if (!empty($ctx['loan_id'])) DB::table('employee_loans')->where('id', $ctx['loan_id'])->delete();
+                if (!empty($ctx['loan_id'])) {
+                    $fids = DB::table('finance')->where('linked_type', \App\Models\Payroll\EmployeeLoan::class)->where('linked_id', $ctx['loan_id'])->pluck('id');
+                    DB::table('finance_subs')->whereIn('finance_id', $fids)->delete();
+                    DB::table('finance')->whereIn('id', $fids)->delete();
+                    DB::table('employee_loans')->where('id', $ctx['loan_id'])->delete();
+                }
                 DB::table('users')->where('id', $ctx['employee_id'])->delete();
                 $removed[] = 'employee';
             }

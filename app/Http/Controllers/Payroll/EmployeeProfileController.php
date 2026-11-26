@@ -7,6 +7,7 @@ use App\Models\Payroll\Shift;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class EmployeeProfileController extends Controller
@@ -55,7 +56,7 @@ class EmployeeProfileController extends Controller
         $data = $request->validate([
             'employment_type' => ['required', 'in:full_time,part_time,contract,hourly'],
             'shift_id' => ['nullable', 'exists:shifts,id'],
-            'reporting_manager_id' => ['nullable', 'exists:users,id', 'different:id'],
+            'reporting_manager_id' => ['nullable', Rule::exists('users', 'id')->where('company_id', companyId()), 'different:id'],
             'national_id' => ['nullable', 'string', 'max:50'],
             'bank_name' => ['nullable', 'string', 'max:150'],
             'iban' => ['nullable', 'string', 'max:50'],

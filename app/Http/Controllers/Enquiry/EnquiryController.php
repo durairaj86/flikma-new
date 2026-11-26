@@ -235,7 +235,7 @@ class EnquiryController extends Controller
             // those ambiguous.
             DB::raw('(SELECT quotations.row_no FROM quotations WHERE quotations.enquiry_id = enquiries.id ORDER BY quotations.id DESC LIMIT 1) AS linked_quotation_no'),
         )->with(['customer:id,name_en,name_ar,email,phone,row_no', 'prospect:id,name,email,phone,row_no', 'activity:id,name'])
-            ->where('status', EnquiryEnum::fromName($request->tab))
+            ->where('status', EnquiryEnum::fromName($request->input('tab') ?: 'pending'))
             ->tap($applyFilters)
             ->orderbyDesc('unique_row_no');
 

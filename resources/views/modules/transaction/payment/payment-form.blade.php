@@ -29,19 +29,19 @@
         @csrf
         <input type="hidden" name="payment_id" id="payment_id" value="{{ $payment->id }}">
         @if($advanceMode ?? false)<span id="advance-mode" class="d-none"></span>@endif
-        <div class="mb-4 mt-3 border-0 px-4 <!--error-border-off-->">
+        <div class="mb-2 mt-2 border-0 px-4 <!--error-border-off-->">
             <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <div class="mb-3">
+                <div class="row g-2">
+                    <div class="col-md-6 col-lg-3">
+                        <div>
                             <label for="supplier" class="form-label required">{{ __('Supplier') }} <span
                                     class="text-danger">*</span></label>
                             <x-common.suppliers :value="$payment->supplier_id" :required="true"></x-common.suppliers>
                         </div>
                     </div>
 
-                    <div class="col-md-4">
-                        <div class="mb-3">
+                    <div class="col-md-6 col-lg-2">
+                        <div>
                             <label for="payment_date" class="form-label required">{{ __('Payment Date') }} <span
                                     class="text-danger">*</span></label>
                             <input type="text" class="form-control datepicker" id="payment_date" name="payment_date"
@@ -49,8 +49,8 @@
                                    required>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
+                    <div class="col-md-6 col-lg-3">
+                        <div>
                             <label for="payment_method" class="form-label required">{{ __('Paid Through') }} <span
                                     class="text-danger">*</span></label>
                             <x-common.account-groups :parentAccount="$parents"
@@ -58,8 +58,8 @@
                                                      :value="$payment->account"></x-common.account-groups>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
+                    <div class="col-md-6 col-lg-2">
+                        <div>
                             <label for="currency" class="form-label required">{{ __('Currency') }} <span
                                     class="text-danger">*</span></label>
                             <x-common.currencies-exchange :value="$payment->currency"
@@ -67,19 +67,12 @@
                                                           width="auto"></x-common.currencies-exchange>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
+                    <div class="col-md-6 col-lg-2">
+                        <div>
                             <label for="reference_no" class="form-label">{{ __('Reference No') }}</label>
                             <input type="text" class="form-control" id="reference_no" name="reference_no"
                                    value="{{ $payment->reference_no }}"
                                    placeholder="{{ __('Check/Transaction Reference') }}">
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="notes" class="form-label">{{ __('Notes') }}</label>
-                            <textarea class="form-control" id="notes" name="notes"
-                                      rows="1">{{ $payment->notes }}</textarea>
                         </div>
                     </div>
                 </div>
@@ -95,19 +88,19 @@
                 @endif
             </div>
         </div>
-        <div class="border-0 mb-4 px-4">
+        <div class="border-0 mb-2 px-4">
             <div class="card-body p-0">
                 @unless($advanceMode ?? false)
-                <div class="row mt-4">
+                <div class="row mt-2">
                     <div class="col-12">
-                        <h4>{{ __('Supplier Invoices') }}</h4>
-                        <div class="alert alert-info" id="no-invoices-message"
+                        <h6 class="fw-semibold mb-2">{{ __('Supplier Invoices') }}</h6>
+                        <div class="alert alert-info small py-2 mb-0" id="no-invoices-message"
                              style="{{ count($supplierInvoices) > 0 || ($opening['balance'] ?? 0) > 0 || ($opening['chosen'] ?? 0) > 0 ? 'display: none;' : '' }}">
                             {{ __('No invoices available for this supplier.') }}
                         </div>
                         <div class="table-responsive" id="invoices-table-container"
                              style="{{ count($supplierInvoices) > 0 || ($opening['balance'] ?? 0) > 0 || ($opening['chosen'] ?? 0) > 0 ? '' : 'display: none;' }}">
-                            <table class="table table-bordered table-striped" id="invoices-table">
+                            <table class="table table-sm table-bordered table-striped align-middle mb-0" id="invoices-table">
                                 <thead>
                                 <tr>
                                     <th width="5%"><input type="checkbox"
@@ -194,13 +187,12 @@
                     </div>
                 </div>
 
-                <div class="row mt-4">
+                <div class="row mt-3">
                     <div class="col-12">
-                        <h4>{{ __('Additional Transactions') }}</h4>
-                        <p class="text-muted">{{ __('Add additional transactions apart from supplier invoice payments.') }}</p>
+                        <h6 class="fw-semibold mb-2">{{ __('Additional Transactions') }} <span class="small fw-normal text-muted">&middot; {{ __('Add additional transactions apart from supplier invoice payments.') }}</span></h6>
 
                         <div class="table-responsive">
-                            <table class="table table-bordered" id="additional-transactions-table">
+                            <table class="table table-sm table-bordered align-middle mb-0" id="additional-transactions-table">
                                 <thead>
                                 <tr>
                                     <th>{{ __('Account') }}</th>
@@ -256,15 +248,15 @@
                 </div>
 
                 @endunless
-                <div class="row mt-4 align-items-start">
-                    <div class="col-md-4">
-                        <div class="mb-3">
+                <div class="row g-2 mt-2 align-items-start border-top pt-2">
+                    <div class="col-md-6 col-lg-2">
+                        <div>
                             <label class="form-label">{{ __('Total Payment Amount') }}</label>
-                            <h3 id="total-payment-amount">{{ number_format($payment->grand_total, 2) }}</h3>
+                            <div class="fs-4 fw-semibold" id="total-payment-amount">{{ number_format($payment->grand_total, 2) }}</div>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
+                    <div class="col-md-6 col-lg-3">
+                        <div>
                             <label for="total_paid" class="form-label">{{ ($advanceMode ?? false) ? __('Advance Amount') : __('Total Paid Amount') }}</label>
                             <input type="text" step="0.01" data-decimal="2" class="form-control float text-end fw-bold" id="total_paid" name="total_paid"
                                    value="{{ $payment->id && $payment->total_amount !== null ? number_format((float) $payment->total_amount, 2, '.', '') : '' }}"
@@ -272,11 +264,18 @@
                             <div class="form-text">{{ __('Must match the chosen invoices. Anything more is kept as the supplier\'s advance.') }}</div>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
+                    <div class="col-md-6 col-lg-3">
+                        <div class="pt-lg-4">
                             <div class="small text-muted">{{ __('Advance available') }}: <b id="advance-available" data-available="{{ (float) ($advanceAvailable ?? 0) }}">{{ number_format((float) ($advanceAvailable ?? 0), 2) }}</b></div>
                             <div id="advance-note" class="small mt-1" style="display:none;"></div>
                             <button type="button" class="btn btn-sm btn-outline-primary mt-1" id="use-advance" style="display:none;">{{ __('Use advance') }}</button>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div>
+                            <label for="notes" class="form-label">{{ __('Notes') }}</label>
+                            <textarea class="form-control" id="notes" name="notes"
+                                      rows="1">{{ $payment->notes }}</textarea>
                         </div>
                     </div>
                     {{--<div class="col-md-6 text-end">

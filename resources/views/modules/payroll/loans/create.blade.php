@@ -43,6 +43,17 @@
                         <label class="form-label small fw-bold">{{ __('End Date') }}</label>
                         <input type="text" name="end_date" class="form-control datepicker">
                     </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">{{ __('Paid From') }}</label>
+                        <select name="paid_from_account_id" class="form-select tom-select @error('paid_from_account_id') is-invalid @enderror" data-placeholder="{{ __('Select cash / bank account') }}" required>
+                            <option value="">{{ __('Select cash / bank account') }}</option>
+                            @foreach($paymentAccounts as $acc)
+                                <option value="{{ $acc->id }}" {{ (string) old('paid_from_account_id', null) === (string) $acc->id ? 'selected' : '' }}>{{ $acc->code }} — {{ $acc->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('paid_from_account_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <div class="form-text">{{ __('Posted on the start date: Employee Loan Receivable is debited, this account credited.') }}</div>
+                    </div>
                     <div class="col-md-12">
                         <label class="form-label small fw-bold">{{ __('Description') }}</label>
                         <textarea name="description" class="form-control" rows="3"></textarea>

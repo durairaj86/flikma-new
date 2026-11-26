@@ -19,6 +19,7 @@ class EmployeeLoan extends Model
         'installment_amount',
         'paid_amount',
         'remaining_amount',
+        'paid_from_account_id',
         'start_date',
         'end_date',
         'description',
@@ -37,6 +38,12 @@ class EmployeeLoan extends Model
     public function employee(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'employee_id');
+    }
+
+    /** The cash / bank account the loan was paid out of. */
+    public function paidFromAccount(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Finance\Account\Account::class, 'paid_from_account_id');
     }
 
     public function installments(): HasMany

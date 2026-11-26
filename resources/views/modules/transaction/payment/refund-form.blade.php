@@ -38,7 +38,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label class="form-label required">{{ __('Received In') }} <span class="text-danger">*</span></label>
+                            <label class="form-label required">{{ __('Refund Through') }} <span class="text-danger">*</span></label>
                             <x-common.account-groups :parentAccount="$parents" :subAccounts="$paidThroughAccounts" :value="$payment->account"></x-common.account-groups>
                         </div>
                     </div>

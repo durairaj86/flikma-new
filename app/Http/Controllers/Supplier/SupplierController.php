@@ -192,11 +192,11 @@ class SupplierController extends Controller
             // locked — changing it after the fact would leave already-posted
             // invoices/payments in a currency that no longer matches the
             // supplier record, silently corrupting statements and reports.
-            if ($supplier->currency !== $validated['currency']
-                && FinanceSub::where('supplier_id', $supplier->id)->exists()) {
+            if (strtoupper((string) $supplier->currency) !== strtoupper((string) $validated['currency'])
+                && $supplier->hasFinanceTransactions()) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'This supplier\'s currency cannot be changed because financial transactions already exist for them.',
+                    'message' => __('This supplier\'s currency cannot be changed because financial transactions already exist for them.'),
                 ], 422);
             }
         } else {

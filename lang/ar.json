@@ -4968,6 +4968,7 @@
     "Proforma, customer and supplier invoices are raised from the job.": "الفواتير المبدئية وفواتير العملاء والموردين تُصدر من المهمة.",
     "Reason for update": "سبب التحديث",
     "Received In": "مستلم في",
+    "Refund Through": "الاسترداد عبر",
     "Received in": "مستلم في",
     "SAR - Saudi Riyal": "SAR - ريال سعودي",
     "Search Account": "ابحث عن حساب",
@@ -6119,5 +6120,18 @@
     "No open lines yet.": "لا توجد سطور مفتوحة بعد.",
     "CRM at a glance": "نظرة سريعة على إدارة العملاء",
     "CRM activity": "نشاط إدارة العملاء",
-    "Every customer was contacted recently.": "تم التواصل مع جميع العملاء مؤخرًا."
+    "Every customer was contacted recently.": "تم التواصل مع جميع العملاء مؤخرًا.",
+    "Locked: this supplier already has finance entries, so the currency cannot be changed.": "مقفل: لهذا المورد قيود مالية، لذا لا يمكن تغيير العملة.",
+    "This supplier's currency cannot be changed because financial transactions already exist for them.": "لا يمكن تغيير عملة هذا المورد لوجود معاملات مالية له.",
+    "This customer's currency cannot be changed because financial transactions already exist for them.": "لا يمكن تغيير عملة هذا العميل لوجود معاملات مالية له.",
+    "Select the cash / bank account the loan was paid from.": "اختر حساب النقد / البنك الذي دُفع منه القرض.",
+    "The paid-from account cannot be changed because instalments have already been deducted.": "لا يمكن تغيير حساب الدفع لأنه تم خصم أقساط بالفعل.",
+    "Loan given: Loan #:id": "قرض ممنوح: قرض رقم :id",
+    "Loan created and posted to the ledger.": "تم إنشاء القرض وترحيله إلى دفتر الأستاذ.",
+    "Loan deleted.": "تم حذف القرض.",
+    "Not posted (no account chosen)": "غير مرحّل (لم يتم اختيار حساب)",
+    "Posted on the start date: Employee Loan Receivable is debited, this account credited.": "يُرحّل في تاريخ البدء: يُجعل حساب قروض الموظفين مديناً وهذا الحساب دائناً.",
+    "This loan was created before loans were posted. Choose the account it was paid from to post it now.": "أُنشئ هذا القرض قبل ترحيل القروض. اختر الحساب الذي دُفع منه لترحيله الآن.",
+    "Dr": "مدين",
+    "Cr": "دائن"
 }

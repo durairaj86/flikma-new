@@ -313,11 +313,10 @@ class CustomerController extends Controller
             // invoices/collections in a currency that no longer matches the
             // customer record, silently corrupting statements and reports.
             if (strtoupper((string) $customer->currency) !== strtoupper((string) $validated['currency'])
-                && (FinanceSub::where('customer_id', $customer->id)->exists()
-                    || \App\Models\Finance\Finance::where('customer_id', $customer->id)->exists())) {
+                && $customer->hasFinanceTransactions()) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'This customer\'s currency cannot be changed because financial transactions already exist for them.',
+                    'message' => __('This customer\'s currency cannot be changed because financial transactions already exist for them.'),
                 ], 422);
             }
         } else {

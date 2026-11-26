@@ -26,7 +26,8 @@ class Supplier extends BaseModel
 
     protected static string $cache = 'suppliers:';
     protected static array $cacheColumns = [
-        'id', 'name_en', 'name_ar', 'row_no', 'email'
+        // currency / credit_days feed the dropdown's data-currency / data-credit-days (payment & bill forms lock the currency to it)
+        'id', 'name_en', 'name_ar', 'row_no', 'email', 'currency', 'credit_days'
     ];
 
     public static function suppliers($id = null)
@@ -48,5 +49,18 @@ class Supplier extends BaseModel
                 ? $this->name_ar
                 : $this->name_en
         );
+    }
+
+    /**
+     * The currency is locked once the supplier has any finance document (draft included) or ledger entry:
+     * those are all in the supplier's currency, and payments must match it.
+     */
+    public function hasFinanceTransactions(): bool
+    {
+        return \App\Models\Finance\FinanceSub::where('supplier_id', $this->id)->exists()
+            || \App\Models\Finance\Finance::where('supplier_id', $this->id)->exists()
+            || \App\Models\Finance\SupplierInvoice\SupplierInvoice::where('supplier_id', $this->id)->exists()
+            || \App\Models\Finance\Payment\Payment::where('supplier_id', $this->id)->exists()
+            || \App\Models\Finance\Adjustment\DebitNote::where('supplier_id', $this->id)->exists();
     }
 }

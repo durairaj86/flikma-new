@@ -79,4 +79,17 @@ class Customer extends Model
                 : $this->name_en
         );
     }
+
+    /**
+     * The currency is locked once the customer has any finance document (draft included) or ledger entry:
+     * those are all in the customer's currency, and collections must match it.
+     */
+    public function hasFinanceTransactions(): bool
+    {
+        return \App\Models\Finance\FinanceSub::where('customer_id', $this->id)->exists()
+            || \App\Models\Finance\Finance::where('customer_id', $this->id)->exists()
+            || \App\Models\Finance\CustomerInvoice\CustomerInvoice::where('customer_id', $this->id)->exists()
+            || \App\Models\Finance\Collection\Collection::where('customer_id', $this->id)->exists()
+            || \App\Models\Finance\Adjustment\CreditNote::where('customer_id', $this->id)->exists();
+    }
 }

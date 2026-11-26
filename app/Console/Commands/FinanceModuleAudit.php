@@ -816,15 +816,14 @@ class FinanceModuleAudit extends FinanceChainTest
         if (!$emp) return;
         $loanAcc = (int) DB::table('accounts')->where('code', '1180')->value('id');
         EmployeeLoan::where('employee_id', $emp)->where('status', 'active')->update(['status' => 'closed']);
-        $before = DB::table('finance_subs')->count();
         app(EmployeeLoanController::class)->store($this->request([
             'employee_id' => $emp, 'loan_amount' => 1200, 'total_installments' => 4, 'installment_amount' => 300,
-            'start_date' => '2026-11-01', 'end_date' => '2027-02-28', 'description' => self::AUDIT . ' loan',
+            'start_date' => '2026-11-01', 'end_date' => '2027-02-28', 'paid_from_account_id' => self::BANK, 'description' => self::AUDIT . ' loan',
         ]));
         $loan = EmployeeLoan::where('employee_id', $emp)->where('description', self::AUDIT . ' loan')->latest('id')->first();
         $this->ok($A, 'Loan saved', (bool) $loan);
         if (!$loan) return;
-        $this->chk($A, 'Giving the loan posts nothing (no paid-from account on the loan form)', $before, DB::table('finance_subs')->count(), 0);
+        $this->posted($A, 'Giving the loan 1,200 (Dr 1180 / Cr bank)', EmployeeLoan::class, $loan->id, [$loanAcc => [1200, 0], self::BANK => [0, 1200]], [$loanAcc => ['partner_id' => $emp]]);
 
         // salary with the instalment withheld
         $runs = app(PayrollRunController::class);

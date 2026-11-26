@@ -5,6 +5,7 @@ namespace App\Services\Payroll;
 use App\Models\Finance\Account\Account;
 use App\Models\Finance\Finance;
 use App\Models\Finance\FinanceSub;
+use App\Models\Payroll\EmployeeLoan;
 use App\Models\Payroll\LoanInstallment;
 use App\Models\Payroll\PayrollRecord;
 use Illuminate\Support\Facades\Auth;
@@ -16,6 +17,8 @@ use Illuminate\Support\Facades\Auth;
  *   Salary paid        DR Staff Salaries          net payable + loan instalment withheld
  *                      CR Cash / Bank             net payable
  *                      CR Employee Loan Receivable  loan instalment withheld
+ *   Loan given          DR Employee Loan Receivable  loan amount
+ *                      CR Cash / Bank             loan amount
  *   Loan repaid in cash DR Cash / Bank            amount
  *                      CR Employee Loan Receivable  amount
  */
@@ -81,6 +84,27 @@ class PayrollLedger
     public function removePayroll(PayrollRecord $pr): void
     {
         $this->remove(PayrollRecord::class, $pr->id);
+    }
+
+    /** The loan paid out to the employee, on its start date. Replaces any earlier posting; nothing when no account is set (older loans). */
+    public function postLoanDisbursement(EmployeeLoan $loan): ?Finance
+    {
+        $this->removeLoanDisbursement($loan);
+        $amount = round((float) $loan->loan_amount, 2);
+        if ($amount <= 0 || !$loan->paid_from_account_id || $loan->status === 'cancelled') {
+            return null;
+        }
+        $desc = __('Loan given: Loan #:id', ['id' => $loan->id]) . ($loan->employee ? ' - ' . $loan->employee->name : '');
+
+        return $this->voucher('LV', 'LN-' . $loan->id, $loan->start_date ?? now(), $desc, EmployeeLoan::class, $loan->id, [
+            [$this->loanReceivableAccount()->id, $amount, 0, $desc],
+            [(int) $loan->paid_from_account_id, 0, $amount, $desc],
+        ], (int) $loan->employee_id);
+    }
+
+    public function removeLoanDisbursement(EmployeeLoan $loan): void
+    {
+        $this->remove(EmployeeLoan::class, $loan->id);
     }
 
     /** An employee pays part of a loan back in cash / by transfer. */

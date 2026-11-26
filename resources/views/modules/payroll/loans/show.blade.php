@@ -40,6 +40,19 @@
                             <td>{{ number_format($employeeLoan->loan_amount, 2) }}</td>
                         </tr>
                         <tr>
+                            <th class="text-muted">{{ __('Paid From') }}</th>
+                            <td>
+                                @if($employeeLoan->paidFromAccount)
+                                    {{ $employeeLoan->paidFromAccount->code }} — {{ $employeeLoan->paidFromAccount->name }}
+                                @else
+                                    <span class="text-muted">{{ __('Not posted (no account chosen)') }}</span>
+                                @endif
+                                @foreach($entries as $e)
+                                    <div class="small text-muted">{{ $e->account?->code }} {{ $e->account?->name }}: {{ (float) $e->debit > 0 ? __('Dr') . ' ' . number_format($e->debit, 2) : __('Cr') . ' ' . number_format($e->credit, 2) }}</div>
+                                @endforeach
+                            </td>
+                        </tr>
+                        <tr>
                             <th class="text-muted">{{ __('Total Installments') }}</th>
                             <td>{{ $employeeLoan->total_installments }}</td>
                         </tr>

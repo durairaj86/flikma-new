@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -185,7 +186,7 @@ class AttendanceController extends Controller
     public function store(Request $request): RedirectResponse|JsonResponse
     {
         $data = $request->validate([
-            'employee_id' => ['required', 'exists:users,id'],
+            'employee_id' => ['required', Rule::exists('users', 'id')->where('company_id', companyId())->where('is_employee', true)],
             'date' => ['required', 'date'],
             'status' => ['required', 'in:present,absent,leave,half_day,holiday'],
             'check_in' => ['nullable', 'date_format:H:i,H:i:s'],
@@ -197,6 +198,8 @@ class AttendanceController extends Controller
             'date.required' => __('Please select a date.'),
             'status.required' => __('Please select a status.'),
         ]);
+
+        $this->assertNotLocked((int) $data['employee_id'], Carbon::parse($data['date']));
 
         $attendance = Attendance::updateOrCreate(
             ['employee_id' => $data['employee_id'], 'date' => Carbon::parse($data['date'])->toDateString()],
@@ -240,6 +243,8 @@ class AttendanceController extends Controller
             'status.required' => __('Please select a status.'),
         ]);
 
+        $this->assertNotLocked((int) $attendance->employee_id, Carbon::parse($attendance->date));
+
         $attendance->update([
             'status' => $data['status'],
             'check_in' => $data['check_in'] ?? null,
@@ -249,6 +254,16 @@ class AttendanceController extends Controller
         ]);
 
         return redirect($this->previousUrlWithoutOpenParam())->with('success', __('Attendance updated.'));
+    }
+
+    /** Same rule as punches: once payroll is generated for the employee's month, that month's attendance is fixed. */
+    private function assertNotLocked(int $employeeId, Carbon $date): void
+    {
+        $locked = \App\Models\Payroll\PayrollRecord::where('employee_id', $employeeId)->where('status', '!=', 'cancelled')
+            ->where('month', (int) $date->month)->where('year', (int) $date->year)->exists();
+        if ($locked) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['date' => __('Payroll for :m has already been generated for this employee, so attendance for that month is locked.', ['m' => $date->format('M Y')])]);
+        }
     }
 
     /**
@@ -323,7 +338,7 @@ class AttendanceController extends Controller
         }
 
         $data = $request->validate([
-            'employee_id' => ['required', 'exists:users,id'],
+            'employee_id' => ['required', Rule::exists('users', 'id')->where('company_id', companyId())->where('is_employee', true)],
             'type' => ['required', 'in:in,out'],
             'timestamp' => ['nullable', 'date'],
         ]);

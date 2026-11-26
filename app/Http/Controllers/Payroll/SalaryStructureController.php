@@ -7,6 +7,7 @@ use App\Models\Payroll\SalaryStructure;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -61,7 +62,7 @@ class SalaryStructureController extends Controller
     protected function validated(Request $request, ?int $ignoreId = null): array
     {
         $data = $request->validate([
-            'employee_id' => ['required', 'exists:users,id'],
+            'employee_id' => ['required', Rule::exists('users', 'id')->where('company_id', companyId())->where('is_employee', true)],
             'basic_salary' => ['required', 'numeric', 'min:0'],
             'housing_allowance' => ['nullable', 'numeric', 'min:0'],
             'transportation_allowance' => ['nullable', 'numeric', 'min:0'],
