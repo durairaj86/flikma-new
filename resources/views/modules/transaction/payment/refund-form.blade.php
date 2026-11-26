@@ -1,8 +1,11 @@
-<div class="row g-3 align-items-center border-bottom py-3 px-4 mb-1 small" style="background:#eee;">
+{{-- header colour = which way the money goes: out = warning, in = success, settling invoices = info --}}
+@php([$flowTone, $flowLabel] = ['success', __('Money in · refund from supplier')])
+<div class="row g-3 align-items-center border-bottom border-3 border-{{ $flowTone }} py-3 px-4 mb-1 small bg-{{ $flowTone }}-subtle">
     <div class="d-flex justify-content-between align-items-center flex-wrap">
         <div class="module-info">
             <span class="fw-semibold fs-5">{{ $payment->row_no ?? __('New Refund') }}</span>
-            <span class="badge bg-warning text-dark ms-2">{{ __('Refund') }}</span>
+            <span class="badge bg-success ms-2">{{ __('Refund') }}</span>
+            <span class="small text-{{ $flowTone }}-emphasis ms-2"><i class="bi {{ $flowTone === 'warning' ? 'bi-box-arrow-up-right' : ($flowTone === 'success' ? 'bi-box-arrow-in-down-left' : 'bi-receipt') }} me-1"></i>{{ $flowLabel }}</span>
         </div>
         <div id="show-buttons"></div>
     </div>

@@ -889,8 +889,8 @@ class PaymentController extends Controller
             ->addColumn('total_received', fn($model) => number_format((float) ($model->total_amount ?? ($model->sub_total + $model->tax_total)), decimals()))
             // document type badge shown under the number: refunds and advances have their own series
             ->addColumn('doc_label', function ($model) {
-                if ($model->doc_type === 'refund') return '<span class="badge bg-warning text-dark">' . e(__('Refund')) . '</span>';
-                if (str_starts_with((string) $model->row_no, 'PAV/')) return '<span class="badge bg-info text-dark">' . e(__('Advance')) . '</span>';
+                if ($model->doc_type === 'refund') return '<span class="badge bg-success">' . e(__('Refund')) . '</span>';
+                if (str_starts_with((string) $model->row_no, 'PAV/')) return '<span class="badge bg-warning text-dark">' . e(__('Advance')) . '</span>';
                 return '';
             })
             ->addColumn('advance', function ($model) {

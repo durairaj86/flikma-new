@@ -164,4 +164,19 @@ class Payment extends Model
 
         return array_values(array_filter($lines, fn ($l) => abs($l[1]) > 0.004));
     }
+
+    /**
+     * Which way the money goes, for the colour of the form and view headers: out of the company = warning, into it = success,
+     * settling invoices = info. Returns [tone, label].
+     */
+    public function cashFlow(): array
+    {
+        if ($this->doc_type === 'refund') {
+            return ['success', __('Money in · refund from supplier')];
+        }
+        $isAdvance = str_starts_with((string) $this->row_no, 'PAV/')
+            || ($this->paymentInvoices->isEmpty() && (float) $this->advance_amount > 0.004);
+
+        return $isAdvance ? ['warning', __('Money out · advance to supplier')] : ['info', __('Settles invoices')];
+    }
 }

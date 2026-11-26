@@ -1,9 +1,12 @@
-<div class="row g-3 align-items-center <!--bg-white--> border-bottom py-3 px-4 mb-1 small" style="background:#eee;">
+{{-- header colour = which way the money goes: out = warning, in = success, settling invoices = info --}}
+@php([$flowTone, $flowLabel] = ($advanceMode ?? false) ? ['success', __('Money in · advance from customer')] : ['info', __('Settles invoices')])
+<div class="row g-3 align-items-center border-bottom border-3 border-{{ $flowTone }} py-3 px-4 mb-1 small bg-{{ $flowTone }}-subtle">
     <div class="d-flex justify-content-between align-items-center flex-wrap">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-4">
             <div class="module-info">
                 <span class="fw-semibold fs-5">{{ $collection->row_no ?? (($advanceMode ?? false) ? __('New Advance') : __('New Collection')) }}</span>
-                @if(($advanceMode ?? false) && $collection->id)<span class="badge bg-info text-dark ms-2">{{ __('Advance') }}</span>@endif
+                @if(($advanceMode ?? false) && $collection->id)<span class="badge bg-success ms-2">{{ __('Advance') }}</span>@endif
+                <span class="small text-{{ $flowTone }}-emphasis ms-2"><i class="bi {{ $flowTone === 'warning' ? 'bi-box-arrow-up-right' : ($flowTone === 'success' ? 'bi-box-arrow-in-down-left' : 'bi-receipt') }} me-1"></i>{{ $flowLabel }}</span>
             </div>
 
         </div>
