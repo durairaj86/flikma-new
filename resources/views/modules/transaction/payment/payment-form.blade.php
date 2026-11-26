@@ -1,5 +1,5 @@
 {{-- header colour = which way the money goes: out = warning, in = success, settling invoices = info --}}
-@php([$flowTone, $flowLabel] = ($advanceMode ?? false) ? ['warning', __('Money out · advance to supplier')] : ['info', __('Settles invoices')])
+@php [$flowTone, $flowLabel] = ($advanceMode ?? false) ? ['warning', __('Money out · advance to supplier')] : ['info', __('Settles invoices')]; @endphp
 <div class="row g-3 align-items-center border-bottom border-3 border-{{ $flowTone }} py-3 px-4 mb-1 small bg-{{ $flowTone }}-subtle">
     <div class="d-flex justify-content-between align-items-center flex-wrap">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-4">
