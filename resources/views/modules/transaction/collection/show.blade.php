@@ -67,16 +67,8 @@
                 <div class="col-md col-6">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body text-center py-3">
-                            <div class="small text-muted fw-bold text-uppercase mb-1">{{ __('Sub Total') }}</div>
-                            <div class="fw-bold tabular-nums">{{ number_format($collection->sub_total, 2) }}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md col-6">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body text-center py-3">
-                            <div class="small text-muted fw-bold text-uppercase mb-1">{{ __('Tax Total') }}</div>
-                            <div class="fw-bold tabular-nums">{{ number_format($collection->tax_total, 2) }}</div>
+                            <div class="small text-muted fw-bold text-uppercase mb-1">{{ __('Invoices Settled') }}</div>
+                            <div class="fw-bold tabular-nums">{{ number_format($collection->collectionInvoices->sum('amount'), 2) }}</div>
                         </div>
                     </div>
                 </div>
@@ -274,30 +266,13 @@
                     @endforelse
                     </tbody>
                     <tfoot>
-                    <tr class="stmt-strong">
-                        <td colspan="3">&nbsp;</td>
-                        <td class="text-end">{{ __('Sub Total') }}:</td>
-                        <td class="text-end">{{ number_format($collection->sub_total, 2) }}</td>
-                    </tr>
-                    <tr class="stmt-strong">
-                        <td colspan="3">&nbsp;</td>
-                        <td class="text-end">{{ __('Tax Total') }}:</td>
-                        <td class="text-end">{{ number_format($collection->tax_total, 2) }}</td>
-                    </tr>
-                    @if($collection->bank_charges)
+                    @foreach($collection->totalsBreakdown() as [$label, $amount])
                         <tr class="stmt-strong">
                             <td colspan="3">&nbsp;</td>
-                            <td class="text-end">{{ __('Bank Charges') }}:</td>
-                            <td class="text-end">{{ number_format($collection->bank_charges, 2) }}</td>
+                            <td class="text-end">{{ $label }}:</td>
+                            <td class="text-end">{{ number_format($amount, 2) }}</td>
                         </tr>
-                    @endif
-                    @if($collection->other_charges)
-                        <tr class="stmt-strong">
-                            <td colspan="3">&nbsp;</td>
-                            <td class="text-end">{{ __('Other Charges') }}:</td>
-                            <td class="text-end">{{ number_format($collection->other_charges, 2) }}</td>
-                        </tr>
-                    @endif
+                    @endforeach
                     <tr class="stmt-strong">
                         <td colspan="3">&nbsp;</td>
                         <td class="text-end">{{ __('Grand Total') }}:</td>

@@ -6133,5 +6133,9 @@
     "Posted on the start date: Employee Loan Receivable is debited, this account credited.": "يُرحّل في تاريخ البدء: يُجعل حساب قروض الموظفين مديناً وهذا الحساب دائناً.",
     "This loan was created before loans were posted. Choose the account it was paid from to post it now.": "أُنشئ هذا القرض قبل ترحيل القروض. اختر الحساب الذي دُفع منه لترحيله الآن.",
     "Dr": "مدين",
-    "Cr": "دائن"
+    "Cr": "دائن",
+    "Invoices Settled": "الفواتير المسددة",
+    "Advance Refunded": "الدفعة المقدمة المستردة",
+    "Advance Kept": "دفعة مقدمة محتفظ بها",
+    "Advance Used": "الدفعة المقدمة المستخدمة"
 }

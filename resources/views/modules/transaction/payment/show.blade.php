@@ -128,14 +128,12 @@
                                 </div>
                                 <div class="card-body">
                                     <table class="table table-borderless">
-                                        <tr>
-                                            <th width="30%">{{ __('Sub Total') }}:</th>
-                                            <td>{{ number_format($payment->sub_total, 2) }} {{ strtoupper($payment->currency) }}</td>
-                                        </tr>
-                                        <tr>
-                                            <th>{{ __('Tax Total') }}:</th>
-                                            <td>{{ number_format($payment->tax_total, 2) }} {{ strtoupper($payment->currency) }}</td>
-                                        </tr>
+                                        @foreach($payment->totalsBreakdown() as [$label, $amount])
+                                            <tr>
+                                                <th width="30%">{{ $label }}:</th>
+                                                <td>{{ number_format($amount, 2) }} {{ strtoupper($payment->currency) }}</td>
+                                            </tr>
+                                        @endforeach
                                         <tr>
                                             <th>{{ __('Grand Total') }}:</th>
                                             <td class="fw-bold">{{ number_format($payment->grand_total, 2) }} {{ strtoupper($payment->currency) }}</td>

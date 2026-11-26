@@ -187,26 +187,13 @@
     @endif
     <div class="mt-3">
     <table class="total-table ms-auto" style="min-width:320px;">
-        <tr>
-            <td><strong>{{ __('Subtotal') }}</strong></td>
-            <td class="text-end">{{ number_format($collection->sub_total, decimals()) }}</td>
-        </tr>
-        <tr>
-            <td><strong>{{ __('Tax') }}</strong></td>
-            <td class="text-end">{{ number_format($collection->tax_total, decimals()) }}</td>
-        </tr>
-        @if($collection->bank_charges > 0)
+        {{-- what the grand total is made of; no tax row: VAT was booked on the invoices, this only settles them --}}
+        @foreach($collection->totalsBreakdown() as [$label, $amount])
             <tr>
-                <td><strong>{{ __('Bank Charges') }}</strong></td>
-                <td class="text-end">{{ number_format($collection->bank_charges, decimals()) }}</td>
+                <td><strong>{{ $label }}</strong></td>
+                <td class="text-end">{{ number_format($amount, decimals()) }}</td>
             </tr>
-        @endif
-        @if($collection->other_charges > 0)
-            <tr>
-                <td><strong>{{ __('Other Charges') }}</strong></td>
-                <td class="text-end">{{ number_format($collection->other_charges, decimals()) }}</td>
-            </tr>
-        @endif
+        @endforeach
         <tr class="table-secondary">
             <td><strong>{{ __('Grand Total') }}</strong></td>
             <td class="text-end fw-bold">{{ number_format($collection->grand_total, decimals()) }} {{ strtoupper($collection->currency) }}</td>
@@ -218,7 +205,7 @@
             </tr>
             <tr class="table-secondary">
                 <td><strong>{{ __('Total Settled on Invoices') }}</strong></td>
-                <td class="text-end fw-bold">{{ number_format($collection->sub_total + $collection->tax_total + $credits->sum('amount'), decimals()) }} {{ strtoupper($collection->currency) }}</td>
+                <td class="text-end fw-bold">{{ number_format($collection->collectionInvoices->sum('amount') + $obPart + $credits->sum('amount'), decimals()) }} {{ strtoupper($collection->currency) }}</td>
             </tr>
         @endif
         @if(strtoupper($collection->currency) !== 'SAR')

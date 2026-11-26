@@ -22,8 +22,11 @@
     window.PAYMENT_SUB_ACCOUNTS = @json($subAccounts->map(fn($a) => ['id' => $a->id, 'name' => $a->name])->values());
 </script>
 
-<div class="container-fluid align-items-center px-0" id="modal-buttons" data-buttons="cancel,save"
-     data-button-save="Save Payment">
+<div class="container-fluid align-items-center px-0" id="modal-buttons" data-buttons="cancel,saveDraft,saveApprove"
+     data-button-draft="Save as Draft"
+     data-button-approve="Save and Approve"
+     data-approve-url="{{ url('transaction/payments') }}/{id}/status/2"
+     data-approve-id-key="payment_id">
 
     <form id="moduleForm" novalidate action="{{ request()->url() }}">
         @csrf

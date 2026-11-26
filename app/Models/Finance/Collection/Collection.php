@@ -130,4 +130,26 @@ class Collection extends Model
     {
         return $this->morphMany(\App\Models\Job\JobLink::class, 'linkable');
     }
+
+    /**
+     * What the grand total is made of, for the view and print pages: [label, amount] rows that add up to grand_total.
+     * No tax row: the invoices' VAT was booked on the invoices, this document only settles them (sub_total / tax_total
+     * hold an internal net/VAT split of the settled invoice amounts and must not be shown as tax charged here).
+     */
+    public function totalsBreakdown(): array
+    {
+        if ($this->doc_type === 'refund') {
+            return [[__('Advance Refunded'), (float) $this->grand_total]];
+        }
+        $lines = [
+            [__('Invoices Settled'), (float) $this->collectionInvoices->sum('amount')],
+            [__('Opening Balance'), \App\Services\Finance\OpeningSettlement::ofDocument('customer', (int) $this->id)],
+            [__('Advance Kept'), (float) $this->advance_amount],
+            [__('Advance Used'), -(float) $this->advance_used],
+        ];
+        $lines[] = [__('Bank Charges'), (float) $this->bank_charges];
+        $lines[] = [__('Other Charges'), (float) $this->other_charges];
+
+        return array_values(array_filter($lines, fn ($l) => abs($l[1]) > 0.004));
+    }
 }
