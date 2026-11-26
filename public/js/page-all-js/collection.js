@@ -309,7 +309,7 @@ COLLECTION = {
                     title: trans('New Advance'),
                     url: GLOBAL_FN.buildUrl(`${COLLECTION.baseUrl}/create?advance=1`),
                     content: null,
-                    size: 'xl',
+                    size: 'lg',     // same as the refund modal: an advance has no invoice table
                     scroll: true,
                 });
             });
