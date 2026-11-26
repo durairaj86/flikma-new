@@ -6141,5 +6141,10 @@
     "Payment Advances": "المدفوعات - دفعات مقدمة",
     "Payment Refunds": "المدفوعات - استردادات",
     "Collection Advances": "التحصيلات - دفعات مقدمة",
-    "Collection Refunds": "التحصيلات - استردادات"
+    "Collection Refunds": "التحصيلات - استردادات",
+    "Money in · refund from supplier": "أموال واردة · استرداد من المورد",
+    "Money out · refund to customer": "أموال صادرة · استرداد للعميل",
+    "Money out · advance to supplier": "أموال صادرة · دفعة مقدمة للمورد",
+    "Money in · advance from customer": "أموال واردة · دفعة مقدمة من العميل",
+    "Settles invoices": "تسوية الفواتير"
 }
