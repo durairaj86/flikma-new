@@ -26,6 +26,9 @@ use App\Enums\SupplierInvoiceEnum;
 // its routes (rightActions()); 'actions' => [...] fixes the list by hand.
 // 'custom_actions' => ['close' => 'approve']: a POST ending in "/close" (and the menu item "row_close") needs that right;
 // 'action_labels' names the box on the rights screen (e.g. Approve shown as "Close").
+// 'without_view' => true: the rights screen offers only the listed 'actions' (a right checked in code, with no page of its own).
+// 'inherits' => 'module.child': with no saved row of its own the section takes that section's row (before its module's row),
+// so a right added later starts as what the department already had there.
 return [
     'customers' => [
         'label' => 'Customers',
@@ -105,6 +108,12 @@ return [
         'children' => [
             'payments' => ['label' => 'Payments', 'prefixes' => ['transaction/payments'], 'status_enum' => PaymentEnum::class],
             'collections' => ['label' => 'Collections', 'prefixes' => ['transaction/collections'], 'status_enum' => CollectionEnum::class],
+            // the Advance / Refund buttons: checked in Payment/CollectionController (no URL of their own); approving them is the
+            // Payments / Collections Approve right
+            'payment-advances' => ['label' => 'Payment Advances', 'prefixes' => [], 'actions' => ['create'], 'without_view' => true, 'inherits' => 'transactions.payments'],
+            'payment-refunds' => ['label' => 'Payment Refunds', 'prefixes' => [], 'actions' => ['create'], 'without_view' => true, 'inherits' => 'transactions.payments'],
+            'collection-advances' => ['label' => 'Collection Advances', 'prefixes' => [], 'actions' => ['create'], 'without_view' => true, 'inherits' => 'transactions.collections'],
+            'collection-refunds' => ['label' => 'Collection Refunds', 'prefixes' => [], 'actions' => ['create'], 'without_view' => true, 'inherits' => 'transactions.collections'],
             'overview' => ['label' => 'Overview', 'prefixes' => ['transaction/overview']],
         ],
     ],

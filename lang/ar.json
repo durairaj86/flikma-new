@@ -6137,5 +6137,9 @@
     "Invoices Settled": "الفواتير المسددة",
     "Advance Refunded": "الدفعة المقدمة المستردة",
     "Advance Kept": "دفعة مقدمة محتفظ بها",
-    "Advance Used": "الدفعة المقدمة المستخدمة"
+    "Advance Used": "الدفعة المقدمة المستخدمة",
+    "Payment Advances": "المدفوعات - دفعات مقدمة",
+    "Payment Refunds": "المدفوعات - استردادات",
+    "Collection Advances": "التحصيلات - دفعات مقدمة",
+    "Collection Refunds": "التحصيلات - استردادات"
 }

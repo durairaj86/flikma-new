@@ -56,6 +56,7 @@ class PaymentController extends Controller
         $selectedInvoice = [];
 
         $advanceMode = $request->boolean('advance');
+        if ($advanceMode && ($denied = $this->deniedRight('transactions.payment-advances'))) return $denied;
 
         return view('modules.transaction.payment.payment-form', compact('payment', 'suppliers', 'parents', 'paidThroughAccounts', 'subAccounts', 'supplierInvoices', 'selectedInvoice', 'advanceMode'));
     }
@@ -160,6 +161,8 @@ class PaymentController extends Controller
         if (!$request->input('supplier_invoice_ids') && $openingAmount <= 0 && ($typedTotal ?? 0) <= 0) {
             throw \Illuminate\Validation\ValidationException::withMessages(['supplier_invoice_ids' => __('Please select at least one invoice')]);
         }
+
+        if (!$request->filled('payment_id') && $request->boolean('advance_mode') && ($denied = $this->deniedRight('transactions.payment-advances'))) return $denied;
 
         $this->assertPeriodOpen($validated['payment_date'], 'payment_date');
         $this->assertPartyCurrency(\App\Models\Supplier\Supplier::class, $validated['supplier'], $validated['currency']);
@@ -548,6 +551,7 @@ class PaymentController extends Controller
     /** Refund form: money the supplier returns out of the advance we paid them. */
     public function refundModal()
     {
+        if ($denied = $this->deniedRight('transactions.payment-refunds')) return $denied;
         $payment = new Payment();
         $suppliers = Supplier::select('id', 'name_en')->orderBy('name_en')->get();
         $parents = Account::whereIn('id', [3, 4])->orderBy('name')->get();
@@ -559,6 +563,7 @@ class PaymentController extends Controller
 
     public function storeRefund(Request $request)
     {
+        if (!$request->filled('payment_id') && ($denied = $this->deniedRight('transactions.payment-refunds'))) return $denied;
         $request->merge(['supplier' => decodeId($request->input('supplier'))]);
         $request->merge(['amount' => is_numeric($request->input('amount')) ? round((float) $request->input('amount'), 2) : $request->input('amount')]);
         $v = $request->validate([
@@ -1328,5 +1333,16 @@ class PaymentController extends Controller
             // Then delete the finance entry
             $finance->delete();
         }
+    }
+
+    /** The Advance / Refund rights (config/modules.php) have no URL of their own, so the middleware cannot check them: done here. */
+    private function deniedRight(string $right)
+    {
+        if (userCan($right, 'create')) return null;
+        $message = __('You do not have permission to do this. Contact your administrator.');
+
+        return request()->expectsJson() || request()->ajax()
+            ? response()->json(['status' => 'error', 'message' => $message], 403)
+            : abort(403, $message);
     }
 }

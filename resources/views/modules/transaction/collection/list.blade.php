@@ -33,8 +33,8 @@
                 @stack('page-title-action')
             </div>
             <div class="d-flex align-items-center gap-2 ms-auto">
-                <button class="btn btn-outline-primary rounded-pill px-4" id="newAdvance"><i class="bi bi-wallet2 me-1"></i>{{ __('Advance') }}</button>
-                <button class="btn btn-outline-primary rounded-pill px-4" id="newRefund"><i class="bi bi-arrow-return-left me-1"></i>{{ __('Refund') }}</button>
+                @if(userCan('transactions.collection-advances', 'create'))<button class="btn btn-outline-primary rounded-pill px-4" id="newAdvance"><i class="bi bi-wallet2 me-1"></i>{{ __('Advance') }}</button>@endif
+                @if(userCan('transactions.collection-refunds', 'create'))<button class="btn btn-outline-primary rounded-pill px-4" id="newRefund"><i class="bi bi-arrow-return-left me-1"></i>{{ __('Refund') }}</button>@endif
                 <button class="btn btn-primary rounded-pill px-4" id="new">{{ __('New Collection') }}</button>
             </div>
         </div>

@@ -60,6 +60,7 @@ class CollectionController extends Controller
         $creditChosen = [];
 
         $advanceMode = $request->boolean('advance');
+        if ($advanceMode && ($denied = $this->deniedRight('transactions.collection-advances'))) return $denied;
 
         return view('modules.transaction.collection.collection-form', compact('collection', 'customers', 'parents', 'subAccounts', 'customerInvoices', 'selectedInvoice', 'creditSources', 'creditChosen', 'advanceMode'));
     }
@@ -376,6 +377,8 @@ class CollectionController extends Controller
         if (!$request->input('customer_invoice_ids') && $openingAmount <= 0 && ($typedTotal ?? 0) <= 0) {
             throw \Illuminate\Validation\ValidationException::withMessages(['customer_invoice_ids' => __('Please select at least one invoice')]);
         }
+
+        if (!$request->filled('collection_id') && $request->boolean('advance_mode') && ($denied = $this->deniedRight('transactions.collection-advances'))) return $denied;
 
         $this->assertPeriodOpen($validated['collection_date'], 'collection_date');
         $this->assertPartyCurrency(\App\Models\Customer\Customer::class, $validated['customer'], $validated['currency']);
@@ -715,6 +718,7 @@ class CollectionController extends Controller
     /** Refund form: pay (part of) the customer's advance back. */
     public function refundModal()
     {
+        if ($denied = $this->deniedRight('transactions.collection-refunds')) return $denied;
         $collection = new Collection();
         $customers = Customer::select('id', 'name_en')->orderBy('name_en')->get();
         $parents = Account::whereIn('id', [3, 4])->orderBy('name')->get();
@@ -726,6 +730,7 @@ class CollectionController extends Controller
 
     public function storeRefund(Request $request)
     {
+        if (!$request->filled('collection_id') && ($denied = $this->deniedRight('transactions.collection-refunds'))) return $denied;
         $request->merge(['customer' => decodeId($request->input('customer'))]);
         $request->merge(['amount' => is_numeric($request->input('amount')) ? round((float) $request->input('amount'), 2) : $request->input('amount')]);
         $v = $request->validate([
@@ -1518,5 +1523,16 @@ class CollectionController extends Controller
             // Then delete the finance entry
             $finance->delete();
         }
+    }
+
+    /** The Advance / Refund rights (config/modules.php) have no URL of their own, so the middleware cannot check them: done here. */
+    private function deniedRight(string $right)
+    {
+        if (userCan($right, 'create')) return null;
+        $message = __('You do not have permission to do this. Contact your administrator.');
+
+        return request()->expectsJson() || request()->ajax()
+            ? response()->json(['status' => 'error', 'message' => $message], 403)
+            : abort(403, $message);
     }
 }

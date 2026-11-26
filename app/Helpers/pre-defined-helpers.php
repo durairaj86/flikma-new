@@ -523,6 +523,7 @@ function appRights(): array
                 'status_enum' => $child['status_enum'] ?? null,
                 'custom_actions' => $child['custom_actions'] ?? [],
                 'action_labels' => $child['action_labels'] ?? [],
+                'inherits' => $child['inherits'] ?? null,
                 'owner_only' => (bool) (($child['owner_only'] ?? false) || ($module['owner_only'] ?? false)),
                 'admin_only' => (bool) ($module['admin_only'] ?? false),
             ];
@@ -604,7 +605,7 @@ function rightActions(): array
     foreach (appModules() as $moduleKey => $module) {
         foreach ($module['children'] ?? [] as $childKey => $child) {
             $key = $moduleKey . '.' . $childKey;
-            if (isset($child['actions'])) $found[$key] = array_fill_keys(array_merge(['view'], $child['actions']), true);
+            if (isset($child['actions'])) $found[$key] = array_fill_keys(array_merge(empty($child['without_view']) ? ['view'] : [], $child['actions']), true);
             $found[$moduleKey] += $found[$key];
         }
     }
@@ -621,12 +622,23 @@ function rightActions(): array
  * The rows of the rights screen (Department & Rights, Employees > User Rights), from saved permission rows keyed by module.
  * null ticks everything (a new department). A sub menu without a row of its own shows its module's row. Super-User-only sections are left out.
  */
+/**
+ * The saved permission row that rules a section: its own row, else the row of the section it 'inherits' (config/modules.php),
+ * else its module's row (a sub menu like "masters.departments" without a row of its own takes "masters").
+ */
+function savedRightRow(\Illuminate\Support\Collection $saved, string $module)
+{
+    return $saved->get($module)
+        ?? (($inherits = appRights()[$module]['inherits'] ?? null) ? $saved->get($inherits) : null)
+        ?? (str_contains($module, '.') ? $saved->get(strstr($module, '.', true)) : null);
+}
+
 function rightsMatrix(?\Illuminate\Support\Collection $saved): array
 {
     $rights = [];
     foreach (appRights() as $moduleKey => $module) {
         if ($module['owner_only']) continue;
-        $permission = $saved ? ($saved->get($moduleKey) ?? ($module['parent'] ? $saved->get($module['parent']) : null)) : null;
+        $permission = $saved ? savedRightRow($saved, $moduleKey) : null;
         $row = [
             'label' => $module['label'],
             'parent' => $module['parent'],
@@ -710,8 +722,7 @@ function userCan(string $module, string $action = 'view', $user = null): bool
         // the company's own row for this department and module, else the shared default row (see DepartmentModulePermission::effectiveFor)
         $saved = \App\Models\Master\DepartmentModulePermission::effectiveFor((int) $user->department_id, $user->company_id ? (int) $user->company_id : null);
     }
-    // a sub menu ("masters.departments") without a row of its own takes its module's row ("masters")
-    $permission = $saved->get($module) ?? (str_contains($module, '.') ? $saved->get(strstr($module, '.', true)) : null);
+    $permission = savedRightRow($saved, $module);
 
     if (! $permission) {
         return false;
