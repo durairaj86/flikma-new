@@ -103,18 +103,22 @@
 <div class="tab-content">
 <div class="tab-pane fade show active" id="colDetailsTab" role="tabpanel">
 
-{{-- header colour = which way the money goes: out = warning, in = success, settling invoices = info --}}
+{{-- which way the money goes: out = warning, in = success, settling invoices = info. The drawer header (startup.js) shows
+     the number from data-no and every badge of the heading as a chip, so the direction is a coloured chip there too --}}
 @php [$flowTone, $flowLabel] = $collection->cashFlow(); @endphp
-<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3 px-3 py-2 rounded bg-{{ $flowTone }}-subtle border-start border-4 border-{{ $flowTone }}">
-    <div class="invoice-no-heading mb-0">#{{ $collection->row_no }}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div class="invoice-no-heading mb-0" data-no="#{{ $collection->row_no }}">#{{ $collection->row_no }}
         <span class="badge {{ $colInfo['class'] }} rounded-pill px-3 py-1 fw-semibold fs-6 align-middle ms-2">{{ $colInfo['label'] }}</span>
-        <div class="small fw-normal text-{{ $flowTone }}-emphasis" style="font-size:12.5px;"><i class="bi {{ $flowTone === 'warning' ? 'bi-box-arrow-up-right' : ($flowTone === 'success' ? 'bi-box-arrow-in-down-left' : 'bi-receipt') }} me-1"></i>{{ $flowLabel }}</div>
+        <span class="badge rounded-pill px-3 py-1 fw-semibold align-middle ms-2 bg-{{ $flowTone }}-subtle text-{{ $flowTone }}-emphasis border border-{{ $flowTone }}">{{ $flowLabel }}</span>
     </div>
     <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 linked-print"
             data-print-url="{{ url('transaction/collections/' . $collection->id . '/print') }}"
             onclick="if (window.COLLECTION && COLLECTION.printPreview) { COLLECTION.printPreview('{{ $collection->id }}'); }">
         <i class="bi bi-printer me-1"></i> {{ __('Print') }}
     </button>
+</div>
+<div class="mb-3 px-3 py-2 rounded small bg-{{ $flowTone }}-subtle text-{{ $flowTone }}-emphasis border-start border-4 border-{{ $flowTone }}">
+    <i class="bi {{ $flowTone === 'warning' ? 'bi-box-arrow-up-right' : ($flowTone === 'success' ? 'bi-box-arrow-in-down-left' : 'bi-receipt') }} me-1"></i>{{ $flowLabel }}
 </div>
 
 @php
