@@ -196,8 +196,9 @@ class PaymentController extends Controller
                 $payment->company_id = companyId();
                 $payment->created_by = Auth::id();
 
-                // Generate row_no
-                $prefix = 'PAY/' . date('y') . '/';
+                // Generate row_no: an advance (opened from "New Advance", nothing settled) has its own PAV series
+                $isAdvance = $request->boolean('advance_mode') && !$request->input('supplier_invoice_ids') && $openingAmount <= 0;
+                $prefix = ($isAdvance ? 'PAV/' : 'PAY/') . date('y') . '/';
                 $payment->unique_row_no = DocumentNumber::next(Payment::class, $prefix);
                 $payment->row_no = $prefix . sprintf('%04d', $payment->unique_row_no);
             }

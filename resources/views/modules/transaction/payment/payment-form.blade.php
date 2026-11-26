@@ -28,7 +28,7 @@
     <form id="moduleForm" novalidate action="{{ request()->url() }}">
         @csrf
         <input type="hidden" name="payment_id" id="payment_id" value="{{ $payment->id }}">
-        @if($advanceMode ?? false)<span id="advance-mode" class="d-none"></span>@endif
+        @if($advanceMode ?? false)<span id="advance-mode" class="d-none"></span><input type="hidden" name="advance_mode" value="1">@endif
         <div class="mb-2 mt-2 border-0 px-4 <!--error-border-off-->">
             <div class="card-body">
                 <div class="row g-2">

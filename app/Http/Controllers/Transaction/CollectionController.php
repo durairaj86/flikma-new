@@ -413,8 +413,9 @@ class CollectionController extends Controller
                 $collection->company_id = companyId();
                 $collection->created_by = Auth::id();
 
-                // Generate row_no
-                $prefix = 'COL/' . date('y') . '/';
+                // Generate row_no: an advance (opened from "New Advance", nothing settled) has its own CAV series
+                $isAdvance = $request->boolean('advance_mode') && !$request->input('customer_invoice_ids') && $openingAmount <= 0;
+                $prefix = ($isAdvance ? 'CAV/' : 'COL/') . date('y') . '/';
                 $collection->unique_row_no = DocumentNumber::next(Collection::class, $prefix);
                 $collection->row_no = $prefix . sprintf('%04d', $collection->unique_row_no);
             }

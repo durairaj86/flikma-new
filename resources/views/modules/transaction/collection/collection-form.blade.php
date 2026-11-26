@@ -23,19 +23,19 @@
     <form id="moduleForm" novalidate action="{{ request()->url() }}">
         @csrf
         <input type="hidden" name="collection_id" id="collection_id" value="{{ $collection->id }}">
-        @if($advanceMode ?? false)<span id="advance-mode" class="d-none"></span>@endif
-        <div class="mb-4 mt-3 border-0 px-4 <!--error-border-off-->">
+        @if($advanceMode ?? false)<span id="advance-mode" class="d-none"></span><input type="hidden" name="advance_mode" value="1">@endif
+        <div class="mb-2 mt-2 border-0 px-4 <!--error-border-off-->">
             <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <div class="mb-3">
+                <div class="row g-2">
+                    <div class="col-md-6 col-lg-3">
+                        <div>
                             <label for="customer" class="form-label required">{{ __('Customer') }} <span
                                     class="text-danger">*</span></label>
                             <x-common.customers :value="$collection->customer_id" :required="true"></x-common.customers>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
+                    <div class="col-md-6 col-lg-2">
+                        <div>
                             <label for="collection_date" class="form-label required">{{ __('Collection Date') }} <span
                                     class="text-danger">*</span></label>
                             <input type="text" class="form-control datepicker" id="collection_date" name="collection_date"
@@ -43,8 +43,8 @@
                                    required>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
+                    <div class="col-md-6 col-lg-3">
+                        <div>
                             <label for="payment_method" class="form-label required">{{ __('Collected Through') }} <span
                                     class="text-danger">*</span></label>
                             <x-common.account-groups :parentAccount="$parents"
@@ -77,8 +77,8 @@
                             </select>
                         </div>
                     </div>--}}
-                    <div class="col-md-4">
-                        <div class="mb-3">
+                    <div class="col-md-6 col-lg-2">
+                        <div>
                             <label for="currency" class="form-label required">{{ __('Currency') }} <span
                                     class="text-danger">*</span></label>
                             <x-common.currencies-exchange :value="$collection->currency"
@@ -86,35 +86,12 @@
                                                           width="auto"></x-common.currencies-exchange>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
+                    <div class="col-md-6 col-lg-2">
+                        <div>
                             <label for="reference_no" class="form-label">{{ __('Reference No') }}</label>
                             <input type="text" class="form-control" id="reference_no" name="reference_no"
                                    value="{{ $collection->reference_no }}"
                                    placeholder="{{ __('Check/Transaction Reference') }}">
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="bank_charges" class="form-label">{{ __('Bank Charges') }}</label>
-                            <input type="text" step="0.01" class="form-control float" id="bank_charges"
-                                   name="bank_charges"
-                                   value="{{ old('bank_charges', $collection->bank_charges) }}">
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="other_charges" class="form-label">{{ __('Other Charges') }}</label>
-                            <input type="text" step="0.01" class="form-control float" id="other_charges"
-                                   name="other_charges"
-                                   value="{{ old('other_charges', $collection->other_charges) }}">
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="notes" class="form-label">{{ __('Notes') }}</label>
-                            <textarea class="form-control" id="notes" name="notes"
-                                      rows="1">{{ $collection->notes }}</textarea>
                         </div>
                     </div>
                 </div>
@@ -130,19 +107,19 @@
                 @endif
             </div>
         </div>
-        <div class="border-0 mb-4 px-4">
+        <div class="border-0 mb-2 px-4">
             <div class="card-body p-0">
                 @unless($advanceMode ?? false)
-                <div class="row mt-4">
+                <div class="row mt-2">
                     <div class="col-12">
-                        <h4>{{ __('Customer Invoices') }}</h4>
-                        <div class="alert alert-info" id="no-invoices-message"
+                        <h6 class="fw-semibold mb-2">{{ __('Customer Invoices') }}</h6>
+                        <div class="alert alert-info small py-2 mb-0" id="no-invoices-message"
                              style="{{ count($customerInvoices) > 0 || ($opening['balance'] ?? 0) > 0 || ($opening['chosen'] ?? 0) > 0 ? 'display: none;' : '' }}">
                             {{ __('No invoices available for this customer.') }}
                         </div>
                         <div class="table-responsive" id="invoices-table-container"
                              style="{{ count($customerInvoices) > 0 || ($opening['balance'] ?? 0) > 0 || ($opening['chosen'] ?? 0) > 0 ? '' : 'display: none;' }}">
-                            <table class="table table-bordered table-striped {{ count($creditSources ?? []) ? 'has-credit' : '' }}" id="invoices-table">
+                            <table class="table table-sm table-bordered table-striped align-middle mb-0 {{ count($creditSources ?? []) ? 'has-credit' : '' }}" id="invoices-table">
                                 <thead>
                                 <tr>
                                     <th width="5%"><input type="checkbox"
@@ -231,9 +208,9 @@
                 </div>
 
                 {{-- Customer credit (e.g. from a credit note on an invoice that was already paid): type the credit for each ticked invoice in the "Credit Applied" column above --}}
-                <div class="row mt-4" id="credit-block" style="{{ count($creditSources ?? []) ? '' : 'display: none;' }}">
+                <div class="row mt-3" id="credit-block" style="{{ count($creditSources ?? []) ? '' : 'display: none;' }}">
                     <div class="col-12">
-                        <h4>{{ __('Customer Credit') }}</h4>
+                        <h6 class="fw-semibold mb-2">{{ __('Customer Credit') }}</h6>
                         <div class="alert alert-info small py-2">
                             {{ __('This customer has credit left over from invoices that were settled for more than they were worth. Type the credit to use for each ticked invoice in the Credit Applied column: its Collection Amount is reduced by that credit, and several invoices can use credit in the same collection.') }}
                         </div>
@@ -270,27 +247,48 @@
                 </div>
 
                 @endunless
-                <div class="row mt-4 align-items-start">
-                    <div class="col-md-4">
-                        <div class="mb-3">
+                <div class="row g-2 mt-2 align-items-start border-top pt-2">
+                    <div class="col-md-6 col-lg-2">
+                        <div>
                             <label class="form-label">{{ __('Chosen Invoices Total') }}</label>
-                            <h3 id="total-collection-amount">{{ number_format((float) $collection->sub_total + (float) $collection->tax_total - (float) $collection->advance_amount + (float) $collection->advance_used, 2) }}</h3>
+                            <div class="fs-4 fw-semibold" id="total-collection-amount">{{ number_format((float) $collection->sub_total + (float) $collection->tax_total - (float) $collection->advance_amount + (float) $collection->advance_used, 2) }}</div>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="total_received" class="form-label">{{ ($advanceMode ?? false) ? __('Advance Amount') : __('Total Received Amount') }}</label>
+                    <div class="col-md-6 col-lg-3">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-baseline gap-2">
+                                <label for="total_received" class="form-label">{{ ($advanceMode ?? false) ? __('Advance Amount') : __('Total Received Amount') }}</label>
+                                <span class="small text-muted text-nowrap">{{ __('Advance available') }}: <b id="advance-available" data-available="{{ (float) ($advanceAvailable ?? 0) }}">{{ number_format((float) ($advanceAvailable ?? 0), 2) }}</b></span>
+                            </div>
                             <input type="text" step="0.01" data-decimal="2" class="form-control float text-end fw-bold" id="total_received" name="total_received"
                                    value="{{ $collection->id && $collection->total_amount !== null ? number_format((float) $collection->total_amount, 2, '.', '') : '' }}"
                                    data-touched="{{ ($advanceMode ?? false) || ($collection->id && $collection->total_amount !== null && (float) $collection->advance_amount + (float) $collection->advance_used > 0) ? 1 : 0 }}" placeholder="0.00" autocomplete="off">
                             <div class="form-text">{{ __('Must match the chosen invoices. Anything more is kept as the customer\'s advance.') }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <div class="small text-muted">{{ __('Advance available') }}: <b id="advance-available" data-available="{{ (float) ($advanceAvailable ?? 0) }}">{{ number_format((float) ($advanceAvailable ?? 0), 2) }}</b></div>
                             <div id="advance-note" class="small mt-1" style="display:none;"></div>
                             <button type="button" class="btn btn-sm btn-outline-primary mt-1" id="use-advance" style="display:none;">{{ __('Use advance') }}</button>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-2">
+                        <div>
+                            <label for="bank_charges" class="form-label">{{ __('Bank Charges') }}</label>
+                            <input type="text" step="0.01" class="form-control float" id="bank_charges"
+                                   name="bank_charges"
+                                   value="{{ old('bank_charges', $collection->bank_charges) }}">
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-2">
+                        <div>
+                            <label for="other_charges" class="form-label">{{ __('Other Charges') }}</label>
+                            <input type="text" step="0.01" class="form-control float" id="other_charges"
+                                   name="other_charges"
+                                   value="{{ old('other_charges', $collection->other_charges) }}">
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-lg-3">
+                        <div>
+                            <label for="notes" class="form-label">{{ __('Notes') }}</label>
+                            <textarea class="form-control" id="notes" name="notes"
+                                      rows="1">{{ $collection->notes }}</textarea>
                         </div>
                     </div>
                 </div>
