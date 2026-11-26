@@ -103,7 +103,8 @@ PAYMENT = {
                     {data: 'DT_RowIndex', class: 'hide-tooltip fav-index'},
                     {
                         data: 'row_no', name: 'row_no', render: function (data, type, row) {
-                            return '<span class="fw-bold text-primary payment-no-link" style="cursor:pointer;">' + (row.row_no ?? '') + '</span>';
+                            return '<span class="fw-bold text-primary payment-no-link" style="cursor:pointer;">' + (row.row_no ?? '') + '</span>'
+                                + (row.doc_label ? '<div class="mt-1">' + row.doc_label + '</div>' : '');
                         }
                     },
                     {data: 'supplier_name', name: 'supplier_name'},

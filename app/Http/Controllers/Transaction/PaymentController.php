@@ -884,14 +884,19 @@ class PaymentController extends Controller
             ->editColumn('currency', fn($model) => strtoupper($model->currency))
             ->addColumn('supplier_name', fn($model) => $model->supplier->name_en ?? '-')
             ->addColumn('total_received', fn($model) => number_format((float) ($model->total_amount ?? ($model->sub_total + $model->tax_total)), decimals()))
-            ->addColumn('advance', function ($model) {
+            // document type badge shown under the number: refunds and advances have their own series
+            ->addColumn('doc_label', function ($model) {
                 if ($model->doc_type === 'refund') return '<span class="badge bg-warning text-dark">' . e(__('Refund')) . '</span>';
+                if (str_starts_with((string) $model->row_no, 'PAV/')) return '<span class="badge bg-info text-dark">' . e(__('Advance')) . '</span>';
+                return '';
+            })
+            ->addColumn('advance', function ($model) {
                 $h = '';
                 if ((float) $model->advance_amount > 0.004) $h .= '<div class="text-success small">+' . number_format((float) $model->advance_amount, decimals()) . ' ' . e(__('advance')) . '</div>';
                 if ((float) $model->advance_used > 0.004) $h .= '<div class="small" style="color:#0891b2;">−' . number_format((float) $model->advance_used, decimals()) . ' ' . e(__('advance used')) . '</div>';
                 return $h ?: '';
             })
-            ->rawColumns(['advance'])
+            ->rawColumns(['advance', 'doc_label'])
             ->editColumn('grand_total', fn($model) => number_format($model->grand_total, decimals()))
             ->editColumn('status', fn($model) => PaymentEnum::from($model->status)->label())
             ->with([
