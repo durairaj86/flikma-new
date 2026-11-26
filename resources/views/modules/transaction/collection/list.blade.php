@@ -182,7 +182,6 @@
                         <th>{{ __('Reference No') }}</th>
                         <th>{{ __('Currency') }}</th>
                         <th class="text-end">{{ __('Total Received') }}</th>
-                        <th>{{ __('Advance') }}</th>
                         <th>{{ __('Amount') }}</th>
                         <th>{{ __('Status') }}</th>
                         <th></th>

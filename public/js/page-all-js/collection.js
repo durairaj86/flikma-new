@@ -82,8 +82,11 @@ COLLECTION = {
                     /*{data: 'collection_method', name: 'collection_method'},*/
                     {data: 'reference_no', name: 'reference_no'},
                     {data: 'currency', name: 'currency'},
-                    {data: 'total_received', name: 'total_received', orderable: false, searchable: false, className: 'text-end'},
-                    {data: 'advance', name: 'advance', orderable: false, searchable: false},
+                    {
+                        // the advance kept / used by this document is shown under its total, not in a column of its own
+                        data: 'total_received', name: 'total_received', orderable: false, searchable: false, className: 'text-end',
+                        render: (data, type, row) => type === 'display' && row.advance ? data + row.advance : data
+                    },
                     {
                         // Amount = everything that settled the invoices (cash + customer credit). With credit applied, the split is shown underneath.
                         data: 'grand_total', name: 'grand_total', render: function (data, type, row) {
