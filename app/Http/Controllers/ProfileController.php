@@ -14,11 +14,10 @@ class ProfileController extends Controller
     /**
      * Display the user's profile form.
      */
-    public function edit(Request $request): View
+    public function edit(Request $request): RedirectResponse
     {
-        return view('profile.edit', [
-            'user' => $request->user(),
-        ]);
+        // the profile page lives under Settings > Account (the Breeze profile view was never part of this app)
+        return Redirect::to('/settings/account');
     }
 
     /**

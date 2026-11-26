@@ -113,6 +113,8 @@ PAYMENT = {
                     /*{data: 'payment_method', name: 'payment_method'},*/
                     {data: 'reference_no', name: 'reference_no'},
                     {data: 'currency', name: 'currency'},
+                    {data: 'total_received', name: 'total_received', orderable: false, searchable: false, className: 'text-end'},
+                    {data: 'advance', name: 'advance', orderable: false, searchable: false},
                     {data: 'grand_total', name: 'grand_total'},
                     {data: 'status', name: 'status'},
                     // Actions column
@@ -306,7 +308,8 @@ PAYMENT = {
     },
     before: {
         submit() {
-            if ($('input[name="supplier_invoice_ids[]"]:checked').length === 0) {
+            if ($('#refund-form').length) return true;   // a refund has no invoices
+            if ($('.invoice-checkbox:checked').length === 0 && parseNum($('#total_paid').val() || 0) <= 0) {
                 toastr.error(trans('Please select at least one invoice'));
                 return false;
             }
@@ -376,6 +379,24 @@ PAYMENT = {
             return options;
         },
         open() {
+            $('#newAdvance').off().on('click', function () {
+                webModal.openGlobalModal({
+                    title: trans('New Advance'),
+                    url: GLOBAL_FN.buildUrl(`${PAYMENT.baseUrl}/create?advance=1`),
+                    content: null,
+                    size: 'xl',
+                    scroll: true,
+                });
+            });
+            $('#newRefund').off().on('click', function () {
+                webModal.openGlobalModal({
+                    title: trans('New Refund'),
+                    url: GLOBAL_FN.buildUrl(`${PAYMENT.baseUrl}/refund`),
+                    content: null,
+                    size: 'lg',
+                    scroll: true,
+                });
+            });
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
                     title: trans('Create Payment'),
@@ -404,12 +425,30 @@ PAYMENT = {
             // Initialize supplier select
             $('#supplier').off('change').on('change', function () {
                 const supplierId = $(this).val();
+                if (supplierId && $('#refund-form').length) { PAYMENT.form.loadSupplierAdvance(supplierId); return; }
+                if (supplierId && $('#advance-mode').length) return;   // an advance has no invoices to load
                 if (supplierId) {
+                    PAYMENT.form.loadSupplierAdvance(supplierId);
                     PAYMENT.form.loadSupplierInvoices(supplierId);
                 } else {
                     $('#no-invoices-message').show();
                     $('#invoices-table-container').hide();
                 }
+            });
+
+            // "Use advance": pay only what the advance does not cover
+            $(document).off('click.useAdv', '#use-advance').on('click.useAdv', '#use-advance', function () {
+                let inv = 0;
+                $('.invoice-amount').each(function () { if ($(this).closest('tr').find('.invoice-checkbox').is(':checked')) inv += parseNum($(this).val() || 0); });
+                const avail = parseFloat($('#advance-available').attr('data-available')) || 0;
+                $('#total_paid').val((Math.round(Math.max(0, inv - avail) * 100) / 100).toFixed(2)).attr('data-touched', '1');
+                PAYMENT.form.calculateTotal();
+            });
+
+            // typing the amount paid by hand stops it following the invoices
+            $(document).off('input.paid', '#total_paid').on('input.paid', '#total_paid', function () {
+                $(this).attr('data-touched', '1');
+                PAYMENT.form.calculateTotal();
             });
 
             // Select/deselect all invoices
@@ -456,6 +495,29 @@ PAYMENT = {
             });*/
         },
 
+        // The supplier's opening balance (what is left of it to pay) is one more row under the invoices.
+        loadSupplierOpening(supplierId) {
+            $.get(GLOBAL_FN.buildUrl(`${PAYMENT.baseUrl}/supplier/${supplierId}/opening`), {payment: $('#payment_id').val() || ''}, function (r) {
+                $('#invoices-body .ob-row').remove();
+                const bal = Number(r.balance || 0);
+                if (bal <= 0.004) return;
+                $('#no-invoices-message').hide();
+                $('#invoices-table-container').show();
+                const cur = String(r.currency || '').toUpperCase(), b = bal.toFixed(2);
+                $('#invoices-body').append(`
+                    <tr class="ob-row">
+                        <td><input type="checkbox" class="invoice-checkbox" name="opening_check" value="1" data-id="ob" data-amount="${b}"></td>
+                        <td>${trans('Opening Balance')} <span class="badge bg-light text-dark border">${cur}</span></td>
+                        <td></td><td></td><td></td>
+                        <td class="text-end">${PAYMENT.form.formatNumber(bal)}</td>
+                        <td class="text-end"><input type="text" step="0.01" data-decimal="2" class="form-control invoice-amount float text-end" data-id="ob" name="opening_amount" value="${b}" min="0" max="${b}" data-balance="${b}" disabled></td>
+                        <td class="text-end">${PAYMENT.form.formatNumber(bal)}</td>
+                    </tr>`);
+                $('.invoice-checkbox').off('change').on('change', function () { PAYMENT.form.handleInvoiceCheckboxChange($(this)); });
+                $('.invoice-amount').off('input').on('input', function () { PAYMENT.form.handleAmountChange($(this)); });
+                PAYMENT.form.calculateTotal();
+            });
+        },
         loadSupplierInvoices(supplierId) {
             $.ajax({
                 url: GLOBAL_FN.buildUrl(`${PAYMENT.baseUrl}/supplier/${supplierId}/invoices`),
@@ -464,6 +526,7 @@ PAYMENT = {
                     if (response.length === 0) {
                         $('#no-invoices-message').text(trans('No approved invoices found for this supplier.')).show();
                         $('#invoices-table-container').hide();
+                        PAYMENT.form.loadSupplierOpening(supplierId);
                         return;
                     }
 
@@ -516,6 +579,7 @@ PAYMENT = {
 
                     // Calculate initial total
                     PAYMENT.form.calculateTotal();
+                    PAYMENT.form.loadSupplierOpening(supplierId);
                 },
                 error: function (xhr) {
                     toastr.error(xhr.responseJSON?.message || 'Error loading supplier invoices');
@@ -601,6 +665,46 @@ PAYMENT = {
             });
 
             $('#total-payment-amount').text(PAYMENT.form.formatNumber(total));
+
+            // the amount paid follows the chosen invoices until it is typed by hand; more = advance, less = taken from the advance
+            let inv = 0;
+            $('.invoice-amount').each(function () {
+                if ($(this).closest('tr').find('.invoice-checkbox').is(':checked')) inv += parseNum($(this).val() || 0);
+            });
+            const $tp = $('#total_paid');
+            if ($tp.length) {
+                if ($tp.attr('data-touched') !== '1') $tp.val(inv > 0 ? (Math.round(inv * 100) / 100).toFixed(2) : '');
+                PAYMENT.form.advanceNote(inv, $tp.val() !== '' ? parseNum($tp.val()) : inv);
+            }
+        },
+
+        advanceNote(inv, paid) {
+            const $n = $('#advance-note'); if (!$n.length) return;
+            const diff = Math.round((paid - inv) * 100) / 100, avail = parseFloat($('#advance-available').attr('data-available')) || 0;
+            $('#use-advance').toggle(avail > 0.004 && inv > 0.004 && !$('#refund-form').length);
+            // paid entirely from the advance: no cash, so no account to choose
+            const $acct = $('#globalModal select[name^="account"]').first();
+            if ($acct.length) {
+                const none = paid <= 0.004 && inv > 0.004;
+                $acct.prop('required', !none);
+                if (none) { $acct.removeClass('is-invalid'); const ts = $acct[0].tomselect; if (ts) ts.wrapper.classList.remove('is-invalid'); }
+            }
+            if (Math.abs(diff) < 0.005) { $n.hide().text(''); return; }
+            if (diff > 0) {
+                $n.removeClass('text-danger').addClass('text-success').text(trans('Excess kept as advance') + ': ' + PAYMENT.form.formatNumber(diff)).show();
+            } else if (-diff <= avail + 0.004) {
+                $n.removeClass('text-danger').addClass('text-success').text(trans('Taken from the supplier advance') + ': ' + PAYMENT.form.formatNumber(-diff)).show();
+            } else {
+                $n.removeClass('text-success').addClass('text-danger').text(trans('Total paid does not match the chosen invoices')).show();
+            }
+        },
+        loadSupplierAdvance(supplierId) {
+            $.get(GLOBAL_FN.buildUrl(`${PAYMENT.baseUrl}/supplier/${supplierId}/advance`), {payment: $('#payment_id').val() || ''}, function (r) {
+                const a = Number(r.available || 0);
+                if ($('#refund-available').length) { $('#refund-available').text(PAYMENT.form.formatNumber(a)); return; }
+                $('#advance-available').text(PAYMENT.form.formatNumber(a)).attr('data-available', a);
+                PAYMENT.form.calculateTotal();
+            });
         },
 
         formatNumber(num) {

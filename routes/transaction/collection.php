@@ -8,6 +8,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [CollectionController::class, 'index'])->name('index');
         Route::post('/data', [CollectionController::class, 'fetchAllRows'])->name('data');
 
+        Route::get('/refund', [CollectionController::class, 'refundModal']);
+        Route::post('/refund', [CollectionController::class, 'storeRefund']);
+        Route::post('/{id}/refund', [CollectionController::class, 'storeRefund']);
         Route::get('/create', [CollectionController::class, 'modal']);
         Route::post('/create', [CollectionController::class, 'store']);
         Route::get('/{id}/create', [CollectionController::class, 'edit']);
@@ -16,6 +19,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Get customer invoices
         Route::get('/customer/{customer_id}/invoices', [CollectionController::class, 'getCustomerInvoices'])->name('customer.invoices');
         Route::get('/customer/{customer_id}/credit', [CollectionController::class, 'getCustomerCredit'])->name('customer.credit');
+        Route::get('/customer/{customer_id}/advance', [CollectionController::class, 'getCustomerAdvance'])->name('customer.advance');
+        Route::get('/customer/{customer_id}/opening', [CollectionController::class, 'getCustomerOpening'])->name('customer.opening');
 
         // View collection
         Route::get('/{id}', [CollectionController::class, 'show'])->name('show');

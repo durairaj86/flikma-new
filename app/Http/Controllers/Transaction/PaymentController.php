@@ -33,7 +33,7 @@ class PaymentController extends Controller
     /**
      * Show the form for creating a new payment.
      */
-    public function modal()
+    public function modal(Request $request)
     {
         $payment = new Payment();
         $suppliers = Supplier::select('id', 'name_en')->orderBy('name_en')->get();
@@ -55,7 +55,9 @@ class PaymentController extends Controller
         $supplierInvoices = collect();
         $selectedInvoice = [];
 
-        return view('modules.transaction.payment.payment-form', compact('payment', 'suppliers', 'parents', 'paidThroughAccounts', 'subAccounts', 'supplierInvoices', 'selectedInvoice'));
+        $advanceMode = $request->boolean('advance');
+
+        return view('modules.transaction.payment.payment-form', compact('payment', 'suppliers', 'parents', 'paidThroughAccounts', 'subAccounts', 'supplierInvoices', 'selectedInvoice', 'advanceMode'));
     }
 
     /**
@@ -64,6 +66,14 @@ class PaymentController extends Controller
     public function edit($id)
     {
         $payment = Payment::with(['paymentInvoices', 'additionalTransactions'])->findOrFail($id);
+        if ($payment->doc_type === 'refund') {
+            $suppliers = Supplier::select('id', 'name_en')->orderBy('name_en')->get();
+            $parents = Account::whereIn('id', [3, 4])->orderBy('name')->get();
+            $paidThroughAccounts = Account::whereIn('parent_id', [3, 4])->where('is_grouped', 0)->orderBy('name')->get();
+            $available = \App\Services\Finance\PartyAdvance::available('supplier', (int) $payment->supplier_id, (int) $payment->id);
+
+            return view('modules.transaction.payment.refund-form', compact('payment', 'suppliers', 'parents', 'paidThroughAccounts', 'available'));
+        }
 
         $suppliers = Supplier::select('id', 'name_en')->orderBy('name_en')->get();
 
@@ -103,7 +113,12 @@ class PaymentController extends Controller
         }
 
         $selectedInvoice = $payment->paymentInvoices->pluck('amount', 'supplier_invoice_id')->toArray();
-        return view('modules.transaction.payment.payment-form', compact('payment', 'suppliers', 'parents', 'paidThroughAccounts', 'subAccounts', 'supplierInvoices', 'selectedInvoice'));
+        $advanceAvailable = \App\Services\Finance\PartyAdvance::available('supplier', (int) $payment->supplier_id, (int) $payment->id);
+        $advanceMode = $payment->paymentInvoices->isEmpty() && (float) $payment->advance_amount > 0.004 && \App\Services\Finance\OpeningSettlement::ofDocument('supplier', (int) $payment->id) <= 0.004;
+        $opening = ['balance' => \App\Services\Finance\OpeningSettlement::outstanding('supplier', (int) $payment->supplier_id, (int) $payment->id),
+            'chosen' => \App\Services\Finance\OpeningSettlement::ofDocument('supplier', (int) $payment->id),
+            'currency' => app(\App\Services\Finance\OpeningBalanceService::class)->baseCurrency()];
+        return view('modules.transaction.payment.payment-form', compact('payment', 'suppliers', 'parents', 'paidThroughAccounts', 'subAccounts', 'supplierInvoices', 'selectedInvoice', 'opening', 'advanceAvailable', 'advanceMode'));
     }
 
     /**
@@ -116,7 +131,7 @@ class PaymentController extends Controller
             'supplier' => 'required|exists:suppliers,id',
             //'job_id' => 'nullable|exists:jobs,id',
             'payment_date' => 'required|date',
-            'account' => 'required',
+            'account' => $this->paidEntirelyFromAdvance($request) ? 'nullable' : 'required',
             //'payment_method' => 'required|string',
             'reference_no' => 'nullable|string',
             'currency' => 'required|string|size:3',
@@ -124,10 +139,12 @@ class PaymentController extends Controller
             'bank_charges' => 'nullable|numeric|min:0',
             'other_charges' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string',
-            'supplier_invoice_ids' => 'required|array',
+            'supplier_invoice_ids' => 'nullable|array',
             'supplier_invoice_ids.*' => 'exists:supplier_invoices,id',
-            'invoice_amounts' => 'required|array',
+            'invoice_amounts' => 'nullable|array',
             'invoice_amounts.*' => 'numeric|min:0',
+            'opening_amount' => 'nullable|numeric|min:0',
+            'total_paid' => 'nullable|numeric|min:0',
             'additional_transaction_accounts' => 'nullable|array',
             'additional_transaction_accounts.*' => 'exists:accounts,id',
             'additional_transaction_descriptions' => 'nullable|array',
@@ -136,6 +153,13 @@ class PaymentController extends Controller
             'additional_transaction_types' => 'nullable|array',
             'additional_transaction_types.*' => 'in:debit,credit',
         ]);
+
+        $request->merge(['supplier_invoice_ids' => (array) $request->input('supplier_invoice_ids', []), 'invoice_amounts' => (array) $request->input('invoice_amounts', [])]);
+        $openingAmount = round((float) $request->input('opening_amount', 0), 2);
+        $typedTotal = $request->filled('total_paid') ? round((float) $request->input('total_paid'), 2) : null;
+        if (!$request->input('supplier_invoice_ids') && $openingAmount <= 0 && ($typedTotal ?? 0) <= 0) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['supplier_invoice_ids' => __('Please select at least one invoice')]);
+        }
 
         $this->assertPeriodOpen($validated['payment_date'], 'payment_date');
         $this->assertPartyCurrency(\App\Models\Supplier\Supplier::class, $validated['supplier'], $validated['currency']);
@@ -211,6 +235,42 @@ class PaymentController extends Controller
                 $taxTotal += $taxProportion;
             }
 
+            // Part of the supplier's opening balance settled by this payment (no VAT: it is a plain payable)
+            if ($openingAmount > 0) {
+                $left = \App\Services\Finance\OpeningSettlement::outstanding('supplier', (int) $validated['supplier'], $isUpdate ? (int) $payment->id : null);
+                if ($openingAmount > $left + 0.004) {
+                    throw \Illuminate\Validation\ValidationException::withMessages(['opening_amount' => __('The opening balance left to pay is :a.', ['a' => number_format($left, 2)])]);
+                }
+                $baseCur = app(\App\Services\Finance\OpeningBalanceService::class)->baseCurrency();
+                if (strtoupper((string) $validated['currency']) !== $baseCur) {
+                    throw \Illuminate\Validation\ValidationException::withMessages(['currency' => __('The opening balance is in :cur. Pay it in :cur.', ['cur' => $baseCur])]);
+                }
+                $subTotal += $openingAmount;
+            }
+
+            // Total paid typed on the form: more than the ticked invoices = the excess is an advance to the supplier (a debit kept on the
+            // payable); less = the difference is taken from the supplier's earlier advance. Anything else is refused.
+            $advExtra = 0.0;
+            $advUsed = 0.0;
+            $allocatedNow = round($subTotal + $taxTotal, 2);
+            if ($typedTotal !== null && abs($typedTotal - $allocatedNow) >= 0.005) {
+                $baseCur = app(\App\Services\Finance\OpeningBalanceService::class)->baseCurrency();
+                if (strtoupper((string) $validated['currency']) !== $baseCur) {
+                    throw \Illuminate\Validation\ValidationException::withMessages(['total_paid' => __('Total paid must equal the ticked invoices (advance is kept in :cur only).', ['cur' => $baseCur])]);
+                }
+                $diff = round($typedTotal - $allocatedNow, 2);
+                if ($diff > 0) {
+                    $advExtra = $diff;
+                } else {
+                    $advUsed = -$diff;
+                    $availAdv = \App\Services\Finance\PartyAdvance::available('supplier', (int) $validated['supplier'], $isUpdate ? (int) $payment->id : null);
+                    if ($advUsed > $availAdv + 0.004) {
+                        throw \Illuminate\Validation\ValidationException::withMessages(['total_paid' => __('Total paid :t is less than the chosen invoices :s, and the supplier has only :a advance to cover the difference.', ['t' => number_format($typedTotal, 2), 's' => number_format($allocatedNow, 2), 'a' => number_format($availAdv, 2)])]);
+                    }
+                }
+                $subTotal += $diff;
+            }
+
             // Additional transactions each post their own single-sided debit
             // or credit line (see createFinanceEntries below) — their other
             // side comes out of the same Bank/Cash account this payment
@@ -234,7 +294,7 @@ class PaymentController extends Controller
             $payment->supplier_id = $validated['supplier'];
             //$payment->job_id = $validated['job_id'];
             $payment->payment_date = $validated['payment_date'];
-            $payment->account = $validated['account'][0];
+            $payment->account = is_array($validated['account'] ?? null) ? ($validated['account'][0] ?? null) : ($validated['account'] ?? null);
             //$payment->payment_method = $validated['payment_method'];
             $payment->reference_no = $validated['reference_no'] ?? null;
             $payment->currency = $validated['currency'];
@@ -250,11 +310,16 @@ class PaymentController extends Controller
             $payment->base_other_charges = $otherCharges * $validated['currency_rate'];
             $payment->base_grand_total = $grandTotal * $validated['currency_rate'];
             $payment->notes = $validated['notes'] ?? null;
+            $payment->total_amount = $typedTotal ?? $allocatedNow;
+            $payment->advance_amount = $advExtra;
+            $payment->advance_used = $advUsed;
+            $payment->doc_type = 'receipt';
 
             $payment->save();
 
             // Delete existing payment invoices
             PaymentInvoice::where('payment_id', $payment->id)->delete();
+            \App\Services\Finance\OpeningSettlement::save('supplier', (int) $validated['supplier'], (int) $payment->id, $openingAmount);
 
             // Delete existing additional transactions
             PaymentAdditionalTransaction::where('payment_id', $payment->id)->delete();
@@ -326,6 +391,9 @@ class PaymentController extends Controller
                 'message' => __('Payment saved successfully'),
                 'payment_id' => $payment->id,
             ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            throw $e;
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
@@ -454,6 +522,131 @@ class PaymentController extends Controller
         return response()->json($invoices->values());
     }
 
+    /** Everything is settled from the supplier's advance: nothing is paid in cash, so no bank / cash account is needed. */
+    private function paidEntirelyFromAdvance(Request $request): bool
+    {
+        if (!$request->filled('total_paid') || round((float) $request->input('total_paid'), 2) > 0.004) {
+            return false;
+        }
+        $alloc = collect((array) $request->input('invoice_amounts', []))->sum(fn ($a) => (float) $a) + (float) $request->input('opening_amount', 0);
+        $extras = (float) $request->input('bank_charges', 0) + (float) $request->input('other_charges', 0) + collect((array) $request->input('additional_transaction_amounts', []))->sum(fn ($a) => (float) $a);
+
+        return $alloc > 0.004 && $extras <= 0.004;
+    }
+
+    /** Advance paid to the supplier that can be used on invoices or refunded back to us. */
+    public function getSupplierAdvance($supplierId)
+    {
+        $id = (int) decodeId($supplierId);
+        $pay = request()->filled('payment') ? (int) request('payment') : null;
+
+        return response()->json(['available' => $id ? \App\Services\Finance\PartyAdvance::available('supplier', $id, $pay) : 0,
+            'currency' => app(\App\Services\Finance\OpeningBalanceService::class)->baseCurrency()]);
+    }
+
+    /** Refund form: money the supplier returns out of the advance we paid them. */
+    public function refundModal()
+    {
+        $payment = new Payment();
+        $suppliers = Supplier::select('id', 'name_en')->orderBy('name_en')->get();
+        $parents = Account::whereIn('id', [3, 4])->orderBy('name')->get();
+        $paidThroughAccounts = Account::whereIn('parent_id', [3, 4])->where('is_grouped', 0)->orderBy('name')->get();
+        $available = 0.0;
+
+        return view('modules.transaction.payment.refund-form', compact('payment', 'suppliers', 'parents', 'paidThroughAccounts', 'available'));
+    }
+
+    public function storeRefund(Request $request)
+    {
+        $request->merge(['supplier' => decodeId($request->input('supplier'))]);
+        $request->merge(['amount' => is_numeric($request->input('amount')) ? round((float) $request->input('amount'), 2) : $request->input('amount')]);
+        $v = $request->validate([
+            'supplier' => 'required|exists:suppliers,id',
+            'payment_date' => 'required|date',
+            'account' => 'required',
+            'amount' => 'required|numeric|gt:0',
+            'reference_no' => 'nullable|string|max:255',
+            'notes' => 'nullable|string',
+        ]);
+        $this->assertPeriodOpen($v['payment_date'], 'payment_date');
+        $cur = app(\App\Services\Finance\OpeningBalanceService::class)->baseCurrency();
+
+        $payment = $request->filled('payment_id') ? Payment::findOrFail($request->input('payment_id')) : null;
+        if ($payment && ($payment->doc_type !== 'refund' || $payment->status != PaymentEnum::DRAFT->value)) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['amount' => __('Only a draft refund can be edited.')]);
+        }
+        $avail = \App\Services\Finance\PartyAdvance::available('supplier', (int) $v['supplier'], $payment?->id);
+        if ($v['amount'] > $avail + 0.004) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['amount' => __('The supplier holds only :a of our advance to refund.', ['a' => number_format($avail, 2)])]);
+        }
+
+        DB::beginTransaction();
+        try {
+            if (!$payment) {
+                $payment = new Payment();
+                $payment->status = PaymentEnum::DRAFT->value;
+                $payment->company_id = companyId();
+                $payment->created_by = Auth::id();
+                $prefix = 'PRF/' . date('y') . '/';
+                $payment->unique_row_no = DocumentNumber::next(Payment::class, $prefix);
+                $payment->row_no = $prefix . sprintf('%04d', $payment->unique_row_no);
+            } else {
+                $payment->updated_by = Auth::id();
+            }
+            $a = (float) $v['amount'];
+            $payment->supplier_id = $v['supplier'];
+            $payment->payment_date = $v['payment_date'];
+            $payment->account = is_array($v['account']) ? ($v['account'][0] ?: null) : $v['account'];
+            $payment->reference_no = $v['reference_no'] ?? null;
+            $payment->currency = $cur;
+            $payment->currency_rate = 1;
+            $payment->sub_total = $a; $payment->tax_total = 0; $payment->bank_charges = 0; $payment->other_charges = 0;
+            $payment->grand_total = $a;
+            $payment->base_sub_total = $a; $payment->base_tax_total = 0; $payment->base_bank_charges = 0; $payment->base_other_charges = 0;
+            $payment->base_grand_total = $a;
+            $payment->notes = $v['notes'] ?? null;
+            $payment->total_amount = $a;
+            $payment->advance_amount = 0;
+            $payment->advance_used = $a;      // a refund uses up the advance
+            $payment->doc_type = 'refund';
+            $payment->save();
+            DB::commit();
+
+            return response()->json(['status' => 'success', 'message' => __('Refund saved successfully'), 'payment_id' => $payment->id]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => 'error', 'message' => __('Error saving refund: ') . $e->getMessage()], 500);
+        }
+    }
+
+    /** What is left of the supplier's opening balance to pay (for the payment form). */
+    public function getSupplierOpening($supplierId)
+    {
+        $id = (int) decodeId($supplierId);
+        $pay = request()->filled('payment') ? (int) request('payment') : null;
+
+        return response()->json($id ? [
+            'balance' => \App\Services\Finance\OpeningSettlement::outstanding('supplier', $id, $pay),
+            'total' => \App\Services\Finance\OpeningSettlement::total('supplier', $id),
+            'currency' => app(\App\Services\Finance\OpeningBalanceService::class)->baseCurrency(),
+        ] : ['balance' => 0]);
+    }
+
+    /** An approved payment that gave an advance cannot be undone while later documents have already used that advance. */
+    private function advanceBlocksReversal(Payment $payment): ?\Illuminate\Http\JsonResponse
+    {
+        $given = (float) $payment->advance_amount;
+        if ($given <= 0.004 || (int) $payment->status !== \App\Enums\PaymentEnum::APPROVED->value) {
+            return null;
+        }
+        $left = \App\Services\Finance\PartyAdvance::available('supplier', (int) $payment->supplier_id) - $given;
+        if ($left < -0.004) {
+            return response()->json(['status' => 'error', 'message' => __('This payment gave an advance of :a that is already used or refunded. Cancel those documents first.', ['a' => number_format($given, 2)])], 422);
+        }
+
+        return null;
+    }
+
     /**
      * Update the payment status.
      */
@@ -463,6 +656,9 @@ class PaymentController extends Controller
         $previousStatus = $payment->status;
         if ($locked = $this->refuseInClosedPeriod(formDate($payment->payment_date), $previousStatus, $status, PaymentEnum::APPROVED->value)) {
             return $locked;
+        }
+        if ($status != \App\Enums\PaymentEnum::APPROVED->value && ($blocked = $this->advanceBlocksReversal($payment))) {
+            return $blocked;
         }
 
         DB::beginTransaction();
@@ -542,6 +738,9 @@ class PaymentController extends Controller
         $previousStatus = $payment->status;
         if ($locked = $this->refuseInClosedPeriod(formDate($payment->payment_date), $previousStatus, PaymentEnum::CANCELLED->value, PaymentEnum::APPROVED->value)) {
             return $locked;
+        }
+        if ($blocked = $this->advanceBlocksReversal($payment)) {
+            return $blocked;
         }
         DB::beginTransaction();
         $payment->status = PaymentEnum::CANCELLED->value;
@@ -623,6 +822,12 @@ class PaymentController extends Controller
                 'reference_no',
                 'currency',
                 'grand_total',
+                'sub_total',
+                'tax_total',
+                'total_amount',
+                'advance_amount',
+                'advance_used',
+                'doc_type',
                 'status',
                 'company_id',
                 'payments.created_at',
@@ -677,6 +882,15 @@ class PaymentController extends Controller
             ->editColumn('payment_date', fn($model) => \Carbon\Carbon::parse($model->payment_date)->format('d-m-Y'))
             ->editColumn('currency', fn($model) => strtoupper($model->currency))
             ->addColumn('supplier_name', fn($model) => $model->supplier->name_en ?? '-')
+            ->addColumn('total_received', fn($model) => number_format((float) ($model->total_amount ?? ($model->sub_total + $model->tax_total)), decimals()))
+            ->addColumn('advance', function ($model) {
+                if ($model->doc_type === 'refund') return '<span class="badge bg-warning text-dark">' . e(__('Refund')) . '</span>';
+                $h = '';
+                if ((float) $model->advance_amount > 0.004) $h .= '<div class="text-success small">+' . number_format((float) $model->advance_amount, decimals()) . ' ' . e(__('advance')) . '</div>';
+                if ((float) $model->advance_used > 0.004) $h .= '<div class="small" style="color:#0891b2;">−' . number_format((float) $model->advance_used, decimals()) . ' ' . e(__('advance used')) . '</div>';
+                return $h ?: '';
+            })
+            ->rawColumns(['advance'])
             ->editColumn('grand_total', fn($model) => number_format($model->grand_total, decimals()))
             ->editColumn('status', fn($model) => PaymentEnum::from($model->status)->label())
             ->with([
@@ -824,6 +1038,7 @@ class PaymentController extends Controller
         // Delete any associated finance entries
         $this->deleteFinanceEntries($payment->id);
 
+        \App\Services\Finance\OpeningSettlement::remove('supplier', (int) $payment->id);   // the opening balance it held is released
         $payment->delete();
 
         return response()->json([
@@ -858,6 +1073,13 @@ class PaymentController extends Controller
         // Delete any existing finance entries for this payment
         $this->deleteFinanceEntries($payment->id);
 
+        if ($payment->doc_type === 'refund') {
+            $this->createRefundEntries($payment);
+            return;
+        }
+        $advUsed = (float) $payment->advance_used;
+        $advExtra = (float) $payment->advance_amount;
+
         // Create a new finance entry
         $finance = new Finance();
         $finance->voucher_no = $payment->row_no;
@@ -865,14 +1087,14 @@ class PaymentController extends Controller
         $finance->reference_no = $payment->reference_no;
         $finance->reference_date = $payment->payment_date;
         $finance->supplier_id = $payment->supplier_id;
-        $finance->narration = $payment->notes ?? 'Payment to supplier';
+        $finance->narration = $payment->notes ?: ($advExtra > 0.004 && !PaymentInvoice::where('payment_id', $payment->id)->exists() && !\App\Services\Finance\OpeningSettlement::ofDocument('supplier', $payment->id) ? 'Advance paid to supplier' : 'Payment to supplier');
         $finance->currency = $payment->currency;
         $finance->exchange_rate = $payment->currency_rate;
-        $finance->total_debit = $payment->grand_total;
-        $finance->total_credit = $payment->grand_total;
+        $finance->total_debit = $payment->grand_total + $advUsed;
+        $finance->total_credit = $payment->grand_total + $advUsed;
         $finance->base_currency = 'SAR';
-        $finance->base_total_debit = $payment->base_grand_total;
-        $finance->base_total_credit = $payment->base_grand_total;
+        $finance->base_total_debit = $payment->base_grand_total + $advUsed;
+        $finance->base_total_credit = $payment->base_grand_total + $advUsed;
         $finance->job_id = $payment->job_id;
         $finance->job_no = $payment->job_no ?? '';
         $finance->is_approved = 1;
@@ -912,16 +1134,32 @@ class PaymentController extends Controller
             'updated_at'        => now(),
         ];
 
-        // CR Bank/Cash account (full grand_total goes out — invoices + charges)
-        $financeSubs[] = array_merge($commonData, [
-            'account_id'     => $payment->account,
-            'reference_date' => formDate($payment->payment_date),
-            'description'    => 'Payment to supplier',
-            'debit'          => 0,
-            'credit'         => $payment->grand_total,
-            'base_debit'     => 0,
-            'base_credit'    => $payment->base_grand_total,
-        ]);
+        // CR Bank/Cash account (full grand_total goes out — invoices + charges); nothing when the advance settles it all
+        if ((float) $payment->grand_total > 0.004) {
+            $financeSubs[] = array_merge($commonData, [
+                'account_id'     => $payment->account,
+                'reference_date' => formDate($payment->payment_date),
+                'description'    => 'Payment to supplier',
+                'debit'          => 0,
+                'credit'         => $payment->grand_total,
+                'base_debit'     => 0,
+                'base_credit'    => $payment->base_grand_total,
+            ]);
+        }
+        // CR Accounts Payable: the supplier's earlier advance (a debit sitting on the payable) is used up against the invoices
+        if ($advUsed > 0.004) {
+            $financeSubs[] = array_merge($commonData, [
+                'account_id' => 18, 'reference_date' => formDate($payment->payment_date), 'reference_no' => 'Advance',
+                'description' => 'Advance applied to invoices', 'debit' => 0, 'credit' => $advUsed, 'base_debit' => 0, 'base_credit' => $advUsed,
+            ]);
+        }
+        // DR Accounts Payable: the excess paid over the invoices stays as the supplier's advance
+        if ($advExtra > 0.004) {
+            $financeSubs[] = array_merge($commonData, [
+                'account_id' => 18, 'reference_date' => formDate($payment->payment_date), 'reference_no' => 'Advance',
+                'description' => 'Advance paid to supplier', 'debit' => $advExtra, 'credit' => 0, 'base_debit' => $advExtra, 'base_credit' => 0,
+            ]);
+        }
 
         // DR Accounts Payable (full invoice amounts being settled, including VAT)
         // A foreign-currency bill is cleared at the rate it was booked at; the bank pays today's rate and the difference
@@ -993,6 +1231,21 @@ class PaymentController extends Controller
             ]);
         }
 
+        // DR Accounts Payable for the part of the supplier's opening balance paid (company currency)
+        $openingPart = \App\Services\Finance\OpeningSettlement::ofDocument('supplier', $payment->id);
+        if ($openingPart > 0) {
+            $financeSubs[] = array_merge($commonData, [
+                'account_id'     => 18,
+                'reference_date' => formDate($payment->payment_date),
+                'reference_no'   => 'Opening balance',
+                'description'    => 'Payment against opening balance',
+                'debit'          => $openingPart,
+                'credit'         => 0,
+                'base_debit'     => round($openingPart * (float) $payment->currency_rate, 2),
+                'base_credit'    => 0,
+            ]);
+        }
+
         $fxDifference = round($fxDifference, 2);
         if (abs($fxDifference) >= 0.01) {
             $financeSubs[] = array_merge($commonData, [
@@ -1011,6 +1264,45 @@ class PaymentController extends Controller
 
         // Insert all finance sub entries
         FinanceSub::insert($financeSubs);
+    }
+
+    /** A refund is an advance paid to the supplier coming back: DR Bank, CR Accounts Payable (the advance debit is cleared). */
+    private function createRefundEntries(Payment $payment): void
+    {
+        $amt = round((float) $payment->grand_total, 2);
+        $finance = new Finance();
+        $finance->voucher_no = $payment->row_no;
+        $finance->voucher_type = 'PV';
+        $finance->reference_no = $payment->reference_no;
+        $finance->reference_date = $payment->payment_date;
+        $finance->supplier_id = $payment->supplier_id;
+        $finance->narration = $payment->notes ?: 'Refund from supplier';
+        $finance->currency = $payment->currency;
+        $finance->exchange_rate = 1;
+        $finance->total_debit = $amt;
+        $finance->total_credit = $amt;
+        $finance->base_currency = 'SAR';
+        $finance->base_total_debit = $amt;
+        $finance->base_total_credit = $amt;
+        $finance->is_approved = 1;
+        $finance->posted_at = now();
+        $finance->linked_id = $payment->id;
+        $finance->linked_type = Payment::class;
+        $finance->company_id = $payment->company_id;
+        $finance->user_id = Auth::id();
+        $finance->save();
+
+        $common = [
+            'finance_id' => $finance->id, 'voucher_no' => $finance->voucher_no, 'voucher_type' => 'PV', 'reference_no' => $finance->reference_no,
+            'supplier_id' => $payment->supplier_id, 'base_currency' => 'SAR', 'exchange_rate' => 1, 'currency' => $payment->currency,
+            'cost_center_id' => null, 'is_tax_line' => 0, 'is_auto_generated' => 1, 'linked_id' => $payment->id, 'linked_type' => Payment::class,
+            'user_id' => Auth::id(), 'company_id' => $payment->company_id, 'created_at' => now(), 'updated_at' => now(),
+            'reference_date' => formDate($payment->payment_date),
+        ];
+        FinanceSub::insert([
+            array_merge($common, ['account_id' => $payment->account, 'description' => 'Refund received from supplier', 'debit' => $amt, 'credit' => 0, 'base_debit' => $amt, 'base_credit' => 0]),
+            array_merge($common, ['account_id' => 18, 'description' => 'Refund of advance from supplier', 'debit' => 0, 'credit' => $amt, 'base_debit' => 0, 'base_credit' => $amt]),
+        ]);
     }
 
     /**

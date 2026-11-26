@@ -139,7 +139,8 @@
 
 <div class="section">
     <h6>{{ __('Invoices Collected') }}</h6>
-    @if($collection->collectionInvoices && $collection->collectionInvoices->count())
+    @php $obPart = \App\Services\Finance\OpeningSettlement::ofDocument('customer', (int) $collection->id); @endphp
+    @if(($collection->collectionInvoices && $collection->collectionInvoices->count()) || $obPart > 0)
         <div class="table-responsive">
             <table class="table table-bordered table-sm align-middle">
                 <thead>
@@ -169,6 +170,15 @@
                         @endif
                     </tr>
                 @endforeach
+                @if($obPart > 0)
+                    <tr>
+                        <td>{{ ($collection->collectionInvoices->count()) + 1 }}</td>
+                        <td>{{ __('Opening Balance') }}</td>
+                        <td>-</td><td>-</td><td class="text-end">-</td>
+                        <td class="text-end">{{ number_format($obPart, decimals()) }}</td>
+                        @if(($credits ?? collect())->isNotEmpty())<td class="text-end">0</td>@endif
+                    </tr>
+                @endif
                 </tbody>
             </table>
         </div>

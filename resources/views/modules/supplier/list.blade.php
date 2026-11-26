@@ -122,6 +122,7 @@
                         <th>{{ __('VAT #') }}</th>
                         <th>{{ __('Credit') }}</th>
                         <th>{{ __('Due') }}</th>
+                        <th>{{ __('Advance') }}</th>
                         <th>{{ __('Joined') }}</th>
                         <th></th>
                     </tr>

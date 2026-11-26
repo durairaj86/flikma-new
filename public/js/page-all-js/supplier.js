@@ -151,6 +151,13 @@ SUPPLIER = {
                             return '<div class="fw-bold">' + amountFormat(due) + '</div><div class="mt-1">' + badge + '</div>';
                         }
                     },
+                    {
+                        // advance paid to the supplier and not yet used on bills or refunded
+                        data: 'advance_held', orderable: false, searchable: false, render: function (data, type, row) {
+                            const v = parseFloat(row.advance_held) || 0;
+                            return v > 0.004 ? '<div class="fw-bold text-info">' + amountFormat(v) + '</div>' : '<div class="text-muted">0.00</div>';
+                        }
+                    },
                     {data: 'created_at', name: 'created_at', class: 'small text-muted'},
                     // Actions column
                     GLOBAL_FN.dataTable.optionButton()

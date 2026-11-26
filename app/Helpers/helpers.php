@@ -107,7 +107,8 @@ function decodeId($hash)
         $decoded = Hashids::decode($hash);
 
         if (empty($decoded)) {
-            throw new \InvalidArgumentException("Invalid hash: cannot be decoded.");
+            // a made-up / stale id in a URL is "not found", not a server error
+            throw new \Symfony\Component\HttpKernel\Exception\NotFoundHttpException("Invalid hash: cannot be decoded.");
         }
 
         return $decoded[0]; // return original numeric ID
@@ -184,13 +185,16 @@ function amountInWords($number)
 
     $digits = ['', 'hundred', 'thousand', 'lakh', 'crore'];
 
+    $group = 0;
     while ($i < $digits_1) {
         $divider = ($i == 2) ? 10 : 100;
         $number = floor($no % $divider);
         $no = floor($no / $divider);
         $i += ($divider == 10) ? 1 : 2;
 
-        $counter = count($str);
+        // the scale word comes from the group's place, not from how many words came before: a zero group (the hundreds of 10,050)
+        // used to shift every later word down one place ("Ten Hundred Fifty")
+        $counter = $group++;
 
         if ($number) {
             $str[] = ($number < 21)
@@ -222,7 +226,7 @@ function convert($amount, $currency = 'ريال سعودي')
 
 function appVersion(): string
 {
-    return "1.0.650";
+    return "1.0.660";
 }
 
 function toArabicNumber($number)

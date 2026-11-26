@@ -20,7 +20,13 @@ class DashboardLayoutController extends Controller
         'quotation' => ['size' => 'small', 'module' => 'sales', 'group' => 'quotation', 'title' => 'Quotation', 'icon' => 'bi-file-earmark-text'],
         'quotation-medium' => ['size' => 'medium', 'module' => 'sales', 'group' => 'quotation', 'title' => 'Quotation', 'icon' => 'bi-file-earmark-text', 'default' => false],
         'enquiry-small' => ['size' => 'small', 'module' => 'sales', 'group' => 'enquiry', 'title' => 'Enquiry', 'icon' => 'bi-envelope-paper', 'default' => false],
-        'follow-ups-small' => ['size' => 'small', 'module' => 'sales', 'group' => 'follow-ups', 'title' => 'My Follow-ups', 'icon' => 'bi-alarm'],
+        'follow-ups-small' => ['size' => 'small', 'module' => 'crm', 'group' => 'follow-ups', 'title' => 'My Follow-ups', 'icon' => 'bi-alarm'],
+        // CRM (Sales › CRM Dashboard numbers; a salesman sees his own)
+        'crm-glance' => ['size' => 'medium', 'module' => 'crm', 'group' => 'crm-glance', 'title' => 'CRM at a glance', 'icon' => 'bi-speedometer2'],
+        'crm-pipeline' => ['size' => 'medium', 'module' => 'crm', 'group' => 'crm-pipeline', 'title' => 'Pipeline by status', 'icon' => 'bi-kanban', 'default' => false],
+        'crm-stale' => ['size' => 'medium', 'module' => 'crm', 'group' => 'crm-stale', 'title' => 'No contact', 'icon' => 'bi-person-exclamation'],
+        'crm-activity' => ['size' => 'small', 'module' => 'crm', 'group' => 'crm-activity', 'title' => 'CRM activity', 'icon' => 'bi-journal-check', 'default' => false],
+        'crm-winrate' => ['size' => 'small', 'module' => 'crm', 'group' => 'crm-winrate', 'title' => 'Win rate', 'icon' => 'bi-trophy', 'default' => false],
         'revenue-summary' => ['size' => 'medium', 'module' => 'sales', 'group' => 'revenue-summary', 'title' => 'Revenue Summary', 'icon' => 'bi-graph-up-arrow'],
         'revenue-expenses' => ['size' => 'medium', 'module' => 'sales', 'group' => 'revenue-expenses', 'title' => 'Revenue vs Expenses', 'icon' => 'bi-bar-chart'],
         'revenue-trend' => ['size' => 'medium', 'module' => 'sales', 'group' => 'revenue-trend', 'title' => 'Revenue Trend', 'icon' => 'bi-activity'],
@@ -57,6 +63,7 @@ class DashboardLayoutController extends Controller
 
     public const MODULES = [
         'sales' => ['title' => 'Sales', 'icon' => 'bi-graph-up'],
+        'crm' => ['title' => 'CRM', 'icon' => 'bi-people-fill'],
         'invoices' => ['title' => 'Invoices', 'icon' => 'bi-receipt'],
         'customers' => ['title' => 'Customers', 'icon' => 'bi-people'],
         'finance' => ['title' => 'Finance', 'icon' => 'bi-wallet2'],

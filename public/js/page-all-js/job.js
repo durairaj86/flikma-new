@@ -417,24 +417,7 @@ JOB = {
         iframe.src = '/' + JOB.baseUrl + '/' + printId + '/print';
     },
     downloadPDF(printId) {
-        fetch('/' + JOB.baseUrl + '/' + printId + '/print')
-            .then(res => res.text())
-            .then(html => {
-                const container = document.createElement('div');
-                //container.style.display = 'none';
-                container.id = 'html-pdf';
-                container.className = 'px-4';
-                container.innerHTML = html;
-                console.log(container);
-                //document.body.appendChild(container);
-                const opt = {
-                    margin: 0.2,
-                    filename: `job-${printId}.pdf`,
-                };
-                html2pdf().set(opt).from(container).save().finally(() => {
-                    //document.body.removeChild(container);
-                });
-            });
+        printDocPDF('/' + JOB.baseUrl + '/' + printId + '/print', 'job', printId);
     },
     list: {
         load(activeTab) {

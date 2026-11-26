@@ -139,7 +139,8 @@
 
 <div class="section">
     <h6>{{ __('Invoices Paid') }}</h6>
-    @if($payment->paymentInvoices && $payment->paymentInvoices->count())
+    @php $obPart = \App\Services\Finance\OpeningSettlement::ofDocument('supplier', (int) $payment->id); @endphp
+    @if(($payment->paymentInvoices && $payment->paymentInvoices->count()) || $obPart > 0)
         <div class="table-responsive">
             <table class="table table-bordered table-sm align-middle">
                 <thead>
@@ -163,6 +164,14 @@
                         <td class="text-end">{{ number_format($pi->amount, decimals()) }}</td>
                     </tr>
                 @endforeach
+                @if($obPart > 0)
+                    <tr>
+                        <td>{{ ($payment->paymentInvoices->count()) + 1 }}</td>
+                        <td>{{ __('Opening Balance') }}</td>
+                        <td>-</td><td>-</td><td class="text-end">-</td>
+                        <td class="text-end">{{ number_format($obPart, decimals()) }}</td>
+                    </tr>
+                @endif
                 </tbody>
             </table>
         </div>

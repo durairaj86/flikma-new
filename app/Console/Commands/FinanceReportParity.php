@@ -43,7 +43,7 @@ class FinanceReportParity extends Command
             $c->startDate = $s;
             $c->endDate = $e;
 
-            return $c->render()->getData()['summary'];
+            return $c->render()->getData()['summary'] ?? [];   // some report pages no longer have summary cards
         };
         $cases = [
             'Trial Balance' => $table('TrialBalanceTable', 'getTrialBalanceData'),
@@ -111,6 +111,10 @@ class FinanceReportParity extends Command
                     $old = $norm(json_decode(json_encode($fn($s, $e, $q)), true));
                     config(['finance.reports.use_ledger' => true]);
                     $new = $norm(json_decode(json_encode($fn($s, $e, $q)), true));
+                    // the ledger reports may add figures the old queries never had (e.g. the P&L gross profit split): compare what both return
+                    if (is_array($old) && is_array($new) && !array_is_list($old)) {
+                        $new = array_intersect_key($new, $old);
+                    }
                     $total++;
                     if ($old != $new) {
                         $diffs++;

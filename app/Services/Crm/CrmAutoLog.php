@@ -67,23 +67,29 @@ class CrmAutoLog
 
         Job::created(fn(Job $j) => self::safe(fn() => self::logOnParty($j, 'job_running', "job:{$j->id}:running", __('Job :no', ['no' => $j->row_no]))));
         Job::updated(function (Job $j) {
-            if ($j->wasChanged('status') && (int) $j->status === JobEnum::COMPLETED->value) {
+            if ($j->wasChanged('status') && self::statusValue($j->status) === JobEnum::COMPLETED->value) {
                 self::safe(fn() => self::logOnParty($j, 'job_done', "job:{$j->id}:done", __('Job :no completed', ['no' => $j->row_no])));
             }
         });
 
         CustomerInvoice::saved(function (CustomerInvoice $i) {
-            if ((int) $i->status === CustomerInvoiceEnum::APPROVED->value && ($i->wasRecentlyCreated || $i->wasChanged('status'))) {
+            if (self::statusValue($i->status) === CustomerInvoiceEnum::APPROVED->value && ($i->wasRecentlyCreated || $i->wasChanged('status'))) {
                 self::safe(fn() => self::logOnParty($i, 'invoice_issued', "invoice:{$i->id}:issued",
                     __('Invoice :no', ['no' => $i->row_no]) . ' · ' . amountFormat($i->grand_total) . ' ' . $i->currency));
             }
         });
         Collection::saved(function (Collection $c) {
-            if ((int) $c->status === CollectionEnum::APPROVED->value && ($c->wasRecentlyCreated || $c->wasChanged('status'))) {
+            if (self::statusValue($c->status) === CollectionEnum::APPROVED->value && ($c->wasRecentlyCreated || $c->wasChanged('status'))) {
                 self::safe(fn() => self::logOnParty($c, 'payment_received', "collection:{$c->id}:received",
                     __('Collection :no', ['no' => $c->row_no]) . ' · ' . amountFormat($c->grand_total ?: $c->amount)));
             }
         });
+    }
+
+    /** A status may be set as an enum case or as its integer value: compare the value. */
+    private static function statusValue($status): int
+    {
+        return $status instanceof \BackedEnum ? (int) $status->value : (int) $status;
     }
 
     /** Log the action on a job's / invoice's / collection's customer (or the job's prospect when there is no customer yet). */

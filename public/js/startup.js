@@ -3350,6 +3350,40 @@ function reportFitToWidth(el, pageWidth) {
     return box;
 }
 
+/**
+ * PDF of a document print page (modules/common/print-doc layout: quotation, supplier invoice, job). The page is fetched, its styles
+ * and its .paper are copied, and the file is named <prefix>-<number from the page title>.pdf. A4 portrait.
+ */
+function printDocPDF(url, prefix, fallbackNo) {
+    return fetch(url)
+        .then(res => res.text())
+        .then(html => {
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            const container = document.createElement('div');
+            container.id = 'html-pdf';
+            container.style.background = '#ffffff';
+            doc.querySelectorAll('head style').forEach(st => container.appendChild(st.cloneNode(true)));
+            const paper = doc.querySelector('.paper').cloneNode(true);
+            // html2canvas draws Arabic word by word and drops the spaces between words: join each Arabic phrase with
+            // non-breaking spaces so it is drawn as one run (the browser's own print / view is not changed)
+            paper.querySelectorAll('.ar').forEach(el => {
+                const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+                let node;
+                while ((node = walker.nextNode())) node.nodeValue = node.nodeValue.replace(/ /g, '\u00A0');
+            });
+            container.appendChild(paper);
+            const margin = 0.3;
+            const pageWidth = Math.floor((8.27 - 2 * margin) * 96);
+            const no = ((doc.title.split('—')[1] || '').trim() || String(fallbackNo)).replace(/[^A-Za-z0-9_-]+/g, '-');
+            return html2pdf().set({
+                margin: margin,
+                filename: prefix + '-' + no + '.pdf',
+                html2canvas: {scale: 2, useCORS: true, backgroundColor: '#ffffff'},
+                jsPDF: {unit: 'in', format: 'a4', orientation: 'portrait'},
+            }).from(reportFitToWidth(container, pageWidth)).save();
+        });
+}
+
 // Print: the same for window.print(). A print block wider than the page is zoomed out to the page width while printing.
 // Page width = A4 minus the 12 mm margins of includes/report-print-css (data-orientation on the block, landscape by default).
 window.addEventListener('beforeprint', function () {

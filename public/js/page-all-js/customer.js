@@ -163,7 +163,7 @@ CUSTOMER = {
                         {
                             // Unused amount = advance + customer credit: what the customer is owed back / can use on other invoices
                             data: 'credit_amount', render: function (data, type, row) {
-                                const v = (parseFloat(row.advance_amount) || 0) + (parseFloat(row.credit_amount) || 0);
+                                const v = (parseFloat(row.advance_amount) || 0) + (parseFloat(row.credit_amount) || 0) + (parseFloat(row.advance_held) || 0);
                                 return v > 0.004
                                     ? '<a href="#" class="fw-bold text-info text-decoration-none cust-unused-link" data-id="' + row.id + '" title="' + trans('Show the detail') + '">' + amountFormat(v) + '</a>'
                                     : '<div class="text-muted">0.00</div>';

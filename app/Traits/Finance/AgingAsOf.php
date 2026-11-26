@@ -58,13 +58,23 @@ trait AgingAsOf
         $col = $kind === 'customer' ? 'customer_id' : 'supplier_id';
         $sign = $kind === 'customer' ? 'base_debit - base_credit' : 'base_credit - base_debit';
 
+        // collected / paid against the opening balance (approved documents dated on or before $asOf)
+        $dt = $kind === 'customer' ? ['collections', 'collection_date', CollectionEnum::APPROVED->value] : ['payments', 'payment_date', PaymentEnum::APPROVED->value];
+        $settled = DB::table('opening_settlements as o')->join("{$dt[0]} as d", 'd.id', '=', 'o.document_id')
+            ->where('o.kind', $kind)->where('o.company_id', companyId())->whereNull('d.deleted_at')->where('d.status', $dt[2])
+            ->whereDate("d.{$dt[1]}", '<=', $asOf)->when($partyId, fn ($q) => $q->where('o.party_id', $partyId))
+            ->groupBy('o.party_id')->selectRaw('o.party_id as party, SUM(o.amount) as amount')->pluck('amount', 'party');
+
         return DB::table('finance_subs as s')->join('finance as f', 'f.id', '=', 's.finance_id')
             ->where('s.voucher_type', 'OB')->where('f.is_approved', 1)->where('s.company_id', companyId())
             ->where('s.account_id', $kind === 'customer' ? 5 : 18)->whereNotNull("s.$col")
             ->whereDate('s.reference_date', '<=', $asOf)
             ->when($partyId, fn ($q) => $q->where("s.$col", $partyId))
             ->groupBy("s.$col")->selectRaw("s.$col as party, SUM($sign) as amount, MIN(s.reference_date) as date")
-            ->get()->filter(fn ($r) => abs((float) $r->amount) >= 0.005)
+            ->get()->map(function ($r) use ($settled) {
+                $r->amount = (float) $r->amount - (float) ($settled[$r->party] ?? 0);
+                return $r;
+            })->filter(fn ($r) => abs((float) $r->amount) >= 0.005)
             ->mapWithKeys(fn ($r) => [(int) $r->party => ['amount' => round((float) $r->amount, 2), 'date' => (string) $r->date]])->all();
     }
 }

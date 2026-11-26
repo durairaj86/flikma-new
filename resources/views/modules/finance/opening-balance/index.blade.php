@@ -75,6 +75,8 @@
                             <th>{{ __('Party') }}</th>
                             <th class="text-end">{{ __('Debit') }}</th>
                             <th class="text-end">{{ __('Credit') }}</th>
+                            <th class="text-end">{{ __('Matched') }}</th>
+                            <th class="text-end">{{ __('Balance') }}</th>
                             <th class="text-end pe-4">{{ __('Actions') }}</th>
                         </tr>
                     </thead>
@@ -105,6 +107,19 @@
                                 </td>
                                 <td class="text-end">{{ number_format((float)$ob->debit, 2) }}</td>
                                 <td class="text-end">{{ number_format((float)$ob->credit, 2) }}</td>
+                                @php($m = $matched[$ob->id] ?? null)
+                                @if($m)
+                                    <td class="text-end">
+                                        {{ number_format($m['settled'], 2) }}
+                                        <div class="small text-muted">{{ $m['kind'] === 'customer' ? __('collected') : __('paid') }}</div>
+                                        @if($m['draft'] > 0)
+                                            <div class="small text-warning-emphasis"><i class="bi bi-hourglass-split"></i> {{ number_format($m['draft'], 2) }} {{ __('in draft') }}</div>
+                                        @endif
+                                    </td>
+                                    <td class="text-end fw-semibold">{{ number_format(max(0, $m['total'] - $m['settled']), 2) }}</td>
+                                @else
+                                    <td class="text-end text-muted">—</td><td class="text-end text-muted">—</td>
+                                @endif
                                 <td class="text-end pe-4">
                                     <div class="d-flex gap-1 justify-content-end">
                                         <a href="{{ route('finance.opening-balance.edit', $ob->id) }}"
@@ -123,7 +138,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center py-5 text-muted">
+                                <td colspan="8" class="text-center py-5 text-muted">
                                     <i class="bi bi-inbox fs-2 d-block mb-2"></i>
                                     {{ __('No opening balance entries found.') }}
                                     <div class="mt-2">

@@ -833,7 +833,7 @@ class CustomerInvoiceController extends Controller
                     $customerInvoice->invoice_date = $postingDate;
                 }
 
-                $customerInvoice->status = CustomerInvoiceEnum::APPROVED;
+                $customerInvoice->status = CustomerInvoiceEnum::APPROVED->value;
 
                 $prefix = 'IN/' . date('y') . '/';
                 $customerInvoice->unique_row_no = DocumentNumber::next(CustomerInvoice::class, $prefix);

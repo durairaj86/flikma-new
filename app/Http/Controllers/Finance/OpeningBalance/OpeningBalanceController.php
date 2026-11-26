@@ -11,6 +11,7 @@ use App\Models\Finance\JournalVoucher\JournalVoucher;
 use App\Models\Finance\JournalVoucher\JournalVoucherItem;
 use App\Models\Supplier\Supplier;
 use App\Services\Finance\OpeningBalanceService;
+use App\Services\Finance\OpeningSettlement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -49,12 +50,28 @@ class OpeningBalanceController extends Controller
 
         $openingBalances = $query->paginate(25)->withQueryString();
 
+        // Per customer / supplier: what collections / payments have already settled (approved) or are holding (draft)
+        $matched = [];
+        foreach ($openingBalances as $ob) {
+            $kind = $ob->customer_id ? 'customer' : ($ob->supplier_id ? 'supplier' : null);
+            if (!$kind) {
+                continue;
+            }
+            $party = (int) ($ob->customer_id ?: $ob->supplier_id);
+            $matched[$ob->id] = [
+                'kind' => $kind,
+                'settled' => OpeningSettlement::amount($kind, $party, 'approved'),
+                'draft' => OpeningSettlement::amount($kind, $party, 'draft'),
+                'total' => OpeningSettlement::total($kind, $party),
+            ];
+        }
+
         $accounts  = Account::where('is_last', 1)->orderBy('name')->get(['id', 'code', 'name']);
         $customers = Customer::orderBy('name_en')->get(['id', 'name_en']);
         $suppliers = Supplier::orderBy('name_en')->get(['id', 'name_en']);
 
         return view('modules.finance.opening-balance.index',
-            compact('openingBalances', 'accounts', 'customers', 'suppliers'));
+            compact('openingBalances', 'accounts', 'customers', 'suppliers', 'matched'));
     }
 
     // ──────────────────────────────────────────────────────────────
@@ -251,6 +268,14 @@ class OpeningBalanceController extends Controller
         }
         $this->assertPeriodOpen($sub->finance?->posted_at ?? $sub->reference_date, 'debit');
 
+        // Money already collected / paid (or held on a draft) against this opening balance: it cannot go below that.
+        if ($used = $this->settledAgainst($sub)) {
+            $new = $sub->customer_id ? $debit - $credit : $credit - $debit;
+            if ($new + 0.004 < $used) {
+                return back()->withErrors(['balances' => __('This opening balance already has :a collected / paid against it (including drafts). It cannot be lowered below that.', ['a' => number_format($used, 2)])])->withInput();
+            }
+        }
+
         // Party rows keep their customer / supplier and the receivable / payable account. Only a plain account row may change account.
         $accountId = $sub->customer_id ? $svc->arId() : ($sub->supplier_id ? $svc->apId() : $sub->account_id);
         if (!$sub->customer_id && !$sub->supplier_id && $request->filled('account_id') && (int) $request->account_id !== (int) $sub->account_id) {
@@ -297,6 +322,9 @@ class OpeningBalanceController extends Controller
             return response()->json(['status' => 'error', 'message' => __('This is the automatic balancing line. Delete the other lines and it goes away by itself.')], 422);
         }
         $this->assertPeriodOpen($sub->finance?->posted_at ?? $sub->reference_date, 'date');
+        if ($used = $this->settledAgainst($sub)) {
+            return response()->json(['status' => 'error', 'message' => __('This opening balance already has :a collected / paid against it (including drafts). Cancel or delete those collections / payments first.', ['a' => number_format($used, 2)])], 422);
+        }
 
         DB::beginTransaction();
         try {
@@ -312,6 +340,18 @@ class OpeningBalanceController extends Controller
             DB::rollBack();
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
+    }
+
+    /** Collected / paid against this party's opening balance (approved documents plus drafts). */
+    private function settledAgainst(FinanceSub $sub): float
+    {
+        $kind = $sub->customer_id ? 'customer' : ($sub->supplier_id ? 'supplier' : null);
+        if (!$kind) {
+            return 0.0;
+        }
+        $party = (int) ($sub->customer_id ?: $sub->supplier_id);
+
+        return OpeningSettlement::amount($kind, $party, 'approved') + OpeningSettlement::amount($kind, $party, 'draft');
     }
 
     // Legacy view method (kept for backward compat)

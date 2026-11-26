@@ -6,6 +6,7 @@
     $accountName = $collection->account ? \Illuminate\Support\Facades\DB::table('accounts')->where('id', $collection->account)->value('name') : null;
     $method = $collection->payment_method ?: $collection->collection_method;
     $received = (float) $collection->grand_total;
+    $obPart = \App\Services\Finance\OpeningSettlement::ofDocument('customer', (int) $collection->id);
     // customer credit used to settle these invoices instead of cash (shown only when there is any)
     $creditApplied = \Illuminate\Support\Facades\Schema::hasTable('customer_credit_applications')
         ? \Illuminate\Support\Facades\DB::table('customer_credit_applications as ca')
@@ -160,8 +161,16 @@
                     <td class="n">{{ number_format($ci->amount, 2) }}</td>
                 </tr>
             @empty
-                <tr><td colspan="5" class="muted" style="text-align: center;">{{ __('No invoices') }}</td></tr>
+                @if(!$obPart)<tr><td colspan="5" class="muted" style="text-align: center;">{{ __('No invoices') }}</td></tr>@endif
             @endforelse
+            @if($obPart > 0)
+                <tr>
+                    <td>{{ $collection->collectionInvoices->filter(fn ($ci) => (float) $ci->amount > 0)->count() + 1 }}</td>
+                    <td><b>{{ __('Opening Balance') }}</b></td>
+                    <td>-</td><td class="n">-</td>
+                    <td class="n">{{ number_format($obPart, 2) }}</td>
+                </tr>
+            @endif
             <tr class="total">
                 <td colspan="4" class="n">{{ __('Total received') }} ({{ $cur }})</td>
                 <td class="n"><b>{{ number_format($received, 2) }}</b></td>

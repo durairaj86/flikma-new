@@ -781,11 +781,78 @@ class QuotationController extends Controller
         return view('modules.quotation.view-overview-drawer', compact('quotation', 'enquiryNo', 'jobNo', 'timeline', 'revisions'));
     }
 
+    /** The quotation as a printable page (FastFatoora quotation layout); the list prints it in a hidden frame, PDF and email use it too. */
     public function print($id)
     {
-        $quotation = Quotation::with(['containers', 'packages', 'customer', 'prospect'])->find($id);
-        $quotation->party = $quotation->customer_id ? $quotation->customer : $quotation->prospect;
-        return view('modules.quotation.view-overview', compact('quotation'));
+        $quotation = Quotation::with(['charges', 'customer', 'prospect'])->findOrFail($id);
+
+        return view('modules.quotation.print', $this->printData($quotation));
+    }
+
+    /** Everything the quotation print shows: company, party, the charge lines with VAT, totals, notes, terms, bank. */
+    public function printData(Quotation $quotation): array
+    {
+        $company = authUserCompany();
+        $base = $company->base_currency ?: 'SAR';
+        $lines = $quotation->charges->sortBy(fn($c) => [(int) $c->line_no, (int) $c->sort_order, $c->id])->values()->map(function ($c) {
+            $qty = (float) $c->qty ?: 1;
+            // amounts in the company currency (local_amount), as the quotation drawer and the pipeline count them
+            $beforeVat = round((float) $c->local_amount, 2);
+            $pct = vatPercent($c->tax_group_code);
+
+            return [
+                'description' => $c->charge_description,
+                'remarks' => $c->remarks,
+                'unit' => $c->unit,
+                'qty' => $qty,
+                'unit_price' => round($beforeVat / $qty, 2),
+                'before_vat' => $beforeVat,
+                'vat_pct' => $pct,
+                'vat' => round($beforeVat * $pct / 100, 2),
+            ];
+        });
+
+        $party = $quotation->customer_id ? $quotation->customer : $quotation->prospect;
+        $today = \Carbon\Carbon::today();
+        $validUntil = $quotation->valid_until ? \Carbon\Carbon::createFromFormat('d-m-Y', $quotation->valid_until) : null;
+        $issued = $quotation->posted_at ? \Carbon\Carbon::parse($quotation->getRawOriginal('posted_at') ?? $quotation->posted_at) : $quotation->created_at;
+        $status = (int) $quotation->status;
+        $watermark = match (true) {
+            $status === QuotationEnum::EXPIRED->value, $status === QuotationEnum::PENDING->value && $validUntil && $validUntil->lt($today) => __('EXPIRED'),
+            $status === QuotationEnum::CANCELLED->value => __('CANCELLED'),
+            $status === QuotationEnum::REVISED->value => __('REVISED'),
+            default => null,
+        };
+
+        // terms: the quotation's own, else the company's terms for its activity; one bullet per line
+        $termsText = $quotation->terms ?: \App\Models\Master\QuotationTerm::forActivity($quotation->activity_id);
+        $terms = collect(preg_split('/\R+/u', trim(html_entity_decode(strip_tags(preg_replace('#<(br|/p|/li|/div)\s*/?>#i', "\n", (string) $termsText))))))
+            ->map(fn($t) => trim(ltrim(trim($t), '•-*·')))->filter()->values()->all();
+
+        return [
+            'quotation' => $quotation,
+            'company' => $company,
+            'currency' => $base,
+            'party' => $party,
+            'partyName' => $quotation->customer_id ? ($party->name_en ?? '') : ($party->name ?? ''),
+            'partyCompany' => $quotation->customer_id ? ($party->name_ar ?? null) : ($party->company_name ?? null),
+            'partyAddress' => $quotation->customer_id
+                ? collect([$party->address1_en ?? null, $party->city_en ?? null])->filter()->implode(', ')
+                : collect([$party->address ?? null, $party->city ?? null])->filter()->implode(', '),
+            'partyPhone' => $party->phone ?? null,
+            'partyVat' => $quotation->customer_id ? ($party->vat_number ?? null) : null,
+            'lines' => $lines,
+            'subTotal' => round($lines->sum('before_vat'), 2),
+            'vatTotal' => round($lines->sum('vat'), 2),
+            'grandTotal' => round($lines->sum('before_vat') + $lines->sum('vat'), 2),
+            'issued' => $issued,
+            'validUntil' => $validUntil,
+            'watermark' => $watermark,
+            'notes' => trim(strip_tags((string) $quotation->notes)),
+            'terms' => $terms,
+            'bank' => \App\Models\Master\Bank::orderBy('sort')->first(),
+            'accentColor' => '#4338ca',
+        ];
     }
 
     /**

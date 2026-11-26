@@ -867,9 +867,93 @@ class JobController extends Controller
 
     public function print($id)
     {
-        $job = $this->allPrint($id);
+        return view('modules.job.job-print', $this->printData($this->allPrint($id)));
+    }
 
-        return view('modules.job.job-print', compact('job'));
+    /**
+     * Everything the job print shows (the quotation print's layout): customer, job details, and titled sections of label / value
+     * pairs (routing, cargo, customs) with their Arabic labels. Empty values are left out; a section with nothing in it is not printed.
+     */
+    public function printData(Job $job): array
+    {
+        $customer = $job->customer;
+        $clearance = $job->clearance;
+        $date = fn($v) => showDate($v);
+        $num = fn($v, $dec, $unit) => (float) $v ? number_format((float) $v, $dec) . ' ' . $unit : null;
+        // customs details live on the job and on its clearance record: the clearance record wins where it has a value
+        $cl = fn($field) => $clearance->{$field} ?? $job->{$field} ?? null;
+        $mode = shipmentMode()[$job->shipment_mode] ?? ucfirst((string) $job->shipment_mode);
+        $statusLabel = JobEnum::tryFrom((int) $job->status)?->label();
+
+        $sections = [
+            [['Shipment Routing', 'مسار الشحنة'], [
+                ['Shipper', 'الشاحن', $job->shipper],
+                ['Consignee', 'المرسل إليه', $job->consignee],
+                ['Place of Receipt', 'مكان الاستلام', $job->place_of_receipt],
+                ['POL', 'ميناء التحميل', $job->pol],
+                ['POD', 'ميناء التفريغ', $job->pod],
+                ['Place of Delivery', 'مكان التسليم', $job->place_of_delivery],
+                ['Final Destination', 'الوجهة النهائية', $job->final_destination],
+                ['Transshipment Port', 'ميناء المسافنة', $job->transshipment_port],
+                ['ETD', 'موعد المغادرة', $date($job->etd)],
+                ['ETA', 'موعد الوصول', $date($job->eta)],
+                ['ATD', 'المغادرة الفعلية', $date($job->atd)],
+                ['ATA', 'الوصول الفعلي', $date($job->ata)],
+                ['Delivery', 'التسليم', $date($job->delivery_date)],
+                ['Incoterm', 'شروط التسليم', $job->incoterm ?: $job->incoterms],
+                ['Carrier', 'الناقل', $job->carrier],
+                ['Voyage / Flight No', 'رقم الرحلة', $job->voyage_flight_no],
+            ]],
+            [['Cargo Details', 'تفاصيل البضاعة'], [
+                ['Commodity', 'السلعة', $job->commodity],
+                ['Cargo Type', 'نوع الشحنة', $job->cargo_type],
+                ['No. of Pieces', 'عدد القطع', $job->no_of_pieces],
+                ['Weight', 'الوزن', $num($job->weight, 2, 'kg')],
+                ['Volume', 'الحجم', $num($job->volume, 3, 'CBM')],
+                ['House B/L No', 'رقم بوليصة الشحن', $job->hbl_number],
+                ['AWB No', 'رقم بوليصة الشحن الجوي', $job->awb_number],
+                ['Shipping Reference', 'مرجع الشحن', $job->shipping_ref],
+                ['Client Reference', 'مرجع العميل', $job->client_ref],
+                ['Services', 'الخدمات', $job->services ? services($job->services) : null],
+            ]],
+            [['Customs & Clearance', 'الجمارك والتخليص'], [
+                ['HS Code', 'رمز النظام المنسق', $cl('hs_code')],
+                ['Declaration No', 'رقم البيان', $cl('declaration_no')],
+                ['Customs Broker', 'المخلص الجمركي', $cl('customs_broker')],
+                ['Port Clearance', 'ميناء التخليص', $cl('port_clearance')],
+                ['Bayan No', 'رقم البيان الجمركي', $cl('bayan_no')],
+                ['Bayan Date', 'تاريخ البيان الجمركي', $date($cl('bayan_date'))],
+                ['D.O No', 'رقم إذن التسليم', $cl('do_no')],
+                ['D.O Date', 'تاريخ إذن التسليم', $date($cl('do_date'))],
+                ['Clearance Status', 'حالة التخليص', $clearance->clearance_status ?? null],
+                ['Clearance Date', 'تاريخ التخليص', $date($clearance->clearance_date ?? null)],
+                ['Duty Amount', 'قيمة الرسوم', (float) $cl('duty_amount') ? number_format((float) $cl('duty_amount'), 2) : null],
+            ]],
+        ];
+        $sections = collect($sections)
+            ->map(fn($s) => [$s[0], array_values(array_filter($s[1], fn($p) => filled($p[2])))])
+            ->filter(fn($s) => $s[1])->values()->all();
+
+        return [
+            'job' => $job,
+            'company' => authUserCompany(),
+            'partyName' => $customer->name_en ?? '',
+            'partyCompany' => $customer->name_ar ?? null,
+            'partyAddress' => collect([$customer->address1_en ?? null, $customer->city_en ?? null])->filter()->implode(', '),
+            'partyPhone' => $customer->phone ?? null,
+            'partyVat' => $customer->vat_number ?? null,
+            'jobDetails' => [
+                ['Job Date', 'تاريخ المهمة', $date($job->posted_at)],
+                ['Salesperson', 'مندوب المبيعات', \App\Models\User::withoutGlobalScopes()->find($job->salesperson_id ?: $job->created_by)?->name],
+                ['Department', 'القسم', $job->activity->name ?? null],
+                ['Shipment Mode', 'نوع الشحن', $mode],
+                ['Status', 'الحالة', $statusLabel],
+            ],
+            'statusLabel' => $statusLabel,
+            'sections' => $sections,
+            'watermark' => (int) $job->status === JobEnum::CANCELLED->value ? __('CANCELLED') : null,
+            'accentColor' => '#4338ca',
+        ];
     }
 
     public function allPrint($id)

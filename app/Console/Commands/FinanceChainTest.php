@@ -138,8 +138,11 @@ class FinanceChainTest extends Command
 
     protected function status(object $controller, $id, $status, string $method = 'updateStatus'): array
     {
-        $this->request();
-        $result = $controller->$method($id, $status);
+        $request = $this->request();
+        // some actions now take the Request first (enquiry / quotation updateStatus)
+        $first = (new \ReflectionMethod($controller, $method))->getParameters()[0] ?? null;
+        $takesRequest = $first && $first->getType() && !$first->getType()->isBuiltin() && is_a($first->getType()->getName(), Request::class, true);
+        $result = $takesRequest ? $controller->$method($request, $id, $status) : $controller->$method($id, $status);
 
         return is_object($result) && method_exists($result, 'getData') ? (array) $result->getData(true) : [];
     }

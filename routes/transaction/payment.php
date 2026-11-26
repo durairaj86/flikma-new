@@ -8,6 +8,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [PaymentController::class, 'index'])->name('index');
         Route::post('/data', [PaymentController::class, 'fetchAllRows'])->name('data');
 
+        Route::get('/refund', [PaymentController::class, 'refundModal']);
+        Route::post('/refund', [PaymentController::class, 'storeRefund']);
+        Route::post('/{id}/refund', [PaymentController::class, 'storeRefund']);
         Route::get('/create', [PaymentController::class, 'modal']);
         Route::post('/create', [PaymentController::class, 'store']);
         Route::get('/{id}/create', [PaymentController::class, 'edit']);
@@ -15,6 +18,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Get supplier invoices
         Route::get('/supplier/{supplier_id}/invoices', [PaymentController::class, 'getSupplierInvoices'])->name('supplier.invoices');
+        Route::get('/supplier/{supplier_id}/advance', [PaymentController::class, 'getSupplierAdvance'])->name('supplier.advance');
+        Route::get('/supplier/{supplier_id}/opening', [PaymentController::class, 'getSupplierOpening'])->name('supplier.opening');
 
         // View payment
         Route::get('/{id}', [PaymentController::class, 'show'])->name('show');

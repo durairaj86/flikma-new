@@ -69,24 +69,7 @@ SUPPLIER_INVOICE = {
         iframe.src = '/' + SUPPLIER_INVOICE.baseUrl + '/' + printId + '/print';
     },
     downloadPDF(printId) {
-        fetch('/invoice/supplier/' + printId + '/print')
-            .then(res => res.text())
-            .then(html => {
-                const container = document.createElement('div');
-                //container.style.display = 'none';
-                container.id = 'html-pdf';
-                container.className = 'px-4';
-                container.innerHTML = html;
-                console.log(container);
-                //document.body.appendChild(container);
-                const opt = {
-                    margin: 0.2,
-                    filename: `supplierInvoice-${printId}.pdf`,
-                };
-                html2pdf().set(opt).from(container).save().finally(() => {
-                    //document.body.removeChild(container);
-                });
-            });
+        printDocPDF('/invoice/supplier/' + printId + '/print', 'supplier-invoice', printId);
     },
     list: {
         load(activeTab) {

@@ -2,7 +2,8 @@
     <div class="d-flex justify-content-between align-items-center flex-wrap">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-4">
             <div class="module-info">
-                <span class="fw-semibold fs-5">{{ $payment->row_no ?? __('New Payment') }}</span>
+                <span class="fw-semibold fs-5">{{ $payment->row_no ?? (($advanceMode ?? false) ? __('New Advance') : __('New Payment')) }}</span>
+                @if(($advanceMode ?? false) && $payment->id)<span class="badge bg-info text-dark ms-2">{{ __('Advance') }}</span>@endif
             </div>
 
         </div>
@@ -27,6 +28,7 @@
     <form id="moduleForm" novalidate action="{{ request()->url() }}">
         @csrf
         <input type="hidden" name="payment_id" id="payment_id" value="{{ $payment->id }}">
+        @if($advanceMode ?? false)<span id="advance-mode" class="d-none"></span>@endif
         <div class="mb-4 mt-3 border-0 px-4 <!--error-border-off-->">
             <div class="card-body">
                 <div class="row g-3">
@@ -95,15 +97,16 @@
         </div>
         <div class="border-0 mb-4 px-4">
             <div class="card-body p-0">
+                @unless($advanceMode ?? false)
                 <div class="row mt-4">
                     <div class="col-12">
                         <h4>{{ __('Supplier Invoices') }}</h4>
                         <div class="alert alert-info" id="no-invoices-message"
-                             style="{{ count($supplierInvoices) > 0 ? 'display: none;' : '' }}">
+                             style="{{ count($supplierInvoices) > 0 || ($opening['balance'] ?? 0) > 0 || ($opening['chosen'] ?? 0) > 0 ? 'display: none;' : '' }}">
                             {{ __('No invoices available for this supplier.') }}
                         </div>
                         <div class="table-responsive" id="invoices-table-container"
-                             style="{{ count($supplierInvoices) > 0 ? '' : 'display: none;' }}">
+                             style="{{ count($supplierInvoices) > 0 || ($opening['balance'] ?? 0) > 0 || ($opening['chosen'] ?? 0) > 0 ? '' : 'display: none;' }}">
                             <table class="table table-bordered table-striped" id="invoices-table">
                                 <thead>
                                 <tr>
@@ -170,6 +173,21 @@
                                         </td>
                                     </tr>
                                 @endforeach
+                                @php($obChosen = (float) ($opening['chosen'] ?? 0))
+                                @php($obBalance = (float) ($opening['balance'] ?? 0))
+                                @if($obBalance > 0.004 || $obChosen > 0)
+                                    <tr class="ob-row">
+                                        <td><input type="checkbox" class="invoice-checkbox" name="opening_check" value="1" data-id="ob" data-amount="{{ $obBalance }}" @checked($obChosen > 0)></td>
+                                        <td>{{ __('Opening Balance') }} <span class="badge bg-light text-dark border">{{ $opening['currency'] ?? '' }}</span></td>
+                                        <td></td><td></td><td></td>
+                                        <td class="text-end">{{ number_format($obBalance, 2) }}</td>
+                                        <td class="text-end">
+                                            <input type="text" step="0.01" data-decimal="2" class="form-control invoice-amount float text-end @if($obChosen > 0) bg-white @endif" data-id="ob" name="opening_amount"
+                                                   value="{{ number_format($obChosen > 0 ? $obChosen : $obBalance, 2, '.', '') }}" min="0" max="{{ number_format($obBalance, 2, '.', '') }}" data-balance="{{ number_format($obBalance, 2, '.', '') }}" {{ $obChosen > 0 ? '' : 'disabled' }}>
+                                        </td>
+                                        <td class="text-end">{{ number_format($obBalance - $obChosen, 2) }}</td>
+                                    </tr>
+                                @endif
                                 </tbody>
                             </table>
                         </div>
@@ -237,11 +255,28 @@
                     </div>
                 </div>
 
-                <div class="row mt-4">
-                    <div class="col-md-6">
+                @endunless
+                <div class="row mt-4 align-items-start">
+                    <div class="col-md-4">
                         <div class="mb-3">
                             <label class="form-label">{{ __('Total Payment Amount') }}</label>
                             <h3 id="total-payment-amount">{{ number_format($payment->grand_total, 2) }}</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="total_paid" class="form-label">{{ ($advanceMode ?? false) ? __('Advance Amount') : __('Total Paid Amount') }}</label>
+                            <input type="text" step="0.01" data-decimal="2" class="form-control float text-end fw-bold" id="total_paid" name="total_paid"
+                                   value="{{ $payment->id && $payment->total_amount !== null ? number_format((float) $payment->total_amount, 2, '.', '') : '' }}"
+                                   data-touched="{{ ($advanceMode ?? false) || ($payment->id && $payment->total_amount !== null && (float) $payment->advance_amount + (float) $payment->advance_used > 0) ? 1 : 0 }}" placeholder="0.00" autocomplete="off">
+                            <div class="form-text">{{ __('Must match the chosen invoices. Anything more is kept as the supplier\'s advance.') }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <div class="small text-muted">{{ __('Advance available') }}: <b id="advance-available" data-available="{{ (float) ($advanceAvailable ?? 0) }}">{{ number_format((float) ($advanceAvailable ?? 0), 2) }}</b></div>
+                            <div id="advance-note" class="small mt-1" style="display:none;"></div>
+                            <button type="button" class="btn btn-sm btn-outline-primary mt-1" id="use-advance" style="display:none;">{{ __('Use advance') }}</button>
                         </div>
                     </div>
                     {{--<div class="col-md-6 text-end">

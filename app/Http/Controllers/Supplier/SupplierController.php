@@ -50,12 +50,19 @@ class SupplierController extends Controller
         )
             ->selectSub(function ($query) use ($dueInvoiceQuery) {
                 $dueInvoiceQuery($query);
-                $query->selectRaw('COALESCE(SUM(grand_total - paid_amount), 0)');
+                // unpaid approved bills + what is still owed on the opening balance
+                $query->selectRaw('COALESCE(SUM(grand_total - paid_amount), 0) + ' . \App\Services\Finance\OpeningSettlement::outstandingSql('supplier', 'suppliers'));
             }, 'due_amount')
             ->selectSub(function ($query) use ($dueInvoiceQuery) {
                 $dueInvoiceQuery($query);
                 $query->where('due_at', '<', now())->selectRaw('COUNT(*)');
             }, 'overdue_count')
+            // advance paid to the supplier (excess over the ticked bills), less what was used on bills or refunded back
+            ->selectSub(function ($query) {
+                $query->from('payments as p')->whereColumn('p.supplier_id', 'suppliers.id')->whereNull('p.deleted_at')
+                    ->where('p.company_id', companyId())->where('p.status', \App\Enums\PaymentEnum::APPROVED->value)
+                    ->selectRaw('GREATEST(COALESCE(SUM(p.advance_amount - p.advance_used), 0), 0)');
+            }, 'advance_held')
             ->orderBy('name_en');
 
         if (strtolower((string) $request->tab) === 'overdue') {
@@ -100,6 +107,7 @@ class SupplierController extends Controller
             // so they can't appear in the search WHERE clause.
             ->filterColumn('due_amount', fn() => null)
             ->filterColumn('overdue_count', fn() => null)
+            ->filterColumn('advance_held', fn() => null)
             ->setRowAttr([
                 'data-id' => fn($model) => $model->id,
                 'data-name' => fn($model) => htmlspecialchars($model->name_en, ENT_QUOTES, 'UTF-8'),

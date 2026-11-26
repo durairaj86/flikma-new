@@ -59,7 +59,9 @@ class CollectionController extends Controller
         $creditSources = collect();
         $creditChosen = [];
 
-        return view('modules.transaction.collection.collection-form', compact('collection', 'customers', 'parents', 'subAccounts', 'customerInvoices', 'selectedInvoice', 'creditSources', 'creditChosen'));
+        $advanceMode = $request->boolean('advance');
+
+        return view('modules.transaction.collection.collection-form', compact('collection', 'customers', 'parents', 'subAccounts', 'customerInvoices', 'selectedInvoice', 'creditSources', 'creditChosen', 'advanceMode'));
     }
 
     /**
@@ -270,6 +272,13 @@ class CollectionController extends Controller
     {
         $collection = Collection::with('collectionInvoices')->findOrFail($id);
         $customers = Customer::select('id', 'name_en')->orderBy('name_en')->get();
+        if ($collection->doc_type === 'refund') {
+            $parents = Account::whereIn('id', [3, 4])->orderBy('name')->get();
+            $subAccounts = Account::whereIn('parent_id', [3, 4])->where('is_grouped', 0)->orderBy('name')->get();
+            $available = \App\Services\Finance\PartyAdvance::available('customer', (int) $collection->customer_id, (int) $collection->id);
+
+            return view('modules.transaction.collection.refund-form', compact('collection', 'customers', 'parents', 'subAccounts', 'available'));
+        }
 
         $parents = Account::whereIn('id', [3, 4])->orderBy('name')->get();//2=>Bank & Cash sub accounts
 
@@ -314,7 +323,13 @@ class CollectionController extends Controller
             }
         }
         $creditSources = $creditSources->values();
-        return view('modules.transaction.collection.collection-form', compact('collection', 'customers', 'parents', 'subAccounts', 'customerInvoices', 'selectedInvoice', 'creditSources', 'creditChosen'));
+        $opening = ['balance' => \App\Services\Finance\OpeningSettlement::outstanding('customer', (int) $collection->customer_id, (int) $collection->id),
+            'chosen' => \App\Services\Finance\OpeningSettlement::ofDocument('customer', (int) $collection->id),
+            'currency' => app(\App\Services\Finance\OpeningBalanceService::class)->baseCurrency()];
+        $advanceAvailable = \App\Services\Finance\PartyAdvance::available('customer', (int) $collection->customer_id, (int) $collection->id);
+        // a saved advance (no invoices, no opening balance, an excess kept) opens in advance mode
+        $advanceMode = $collection->collectionInvoices->isEmpty() && (float) $collection->advance_amount > 0.004 && $opening['chosen'] <= 0.004;
+        return view('modules.transaction.collection.collection-form', compact('collection', 'customers', 'parents', 'subAccounts', 'customerInvoices', 'selectedInvoice', 'creditSources', 'creditChosen', 'opening', 'advanceAvailable', 'advanceMode'));
     }
 
     /**
@@ -332,7 +347,11 @@ class CollectionController extends Controller
         // Nothing is paid in cash when the invoices are settled entirely with customer credit: then there is no account to choose.
         $cashTotal = collect((array) $request->input('invoice_amounts', []))->sum(fn ($a) => (float) $a)
             + (float) $request->input('bank_charges', 0) + (float) $request->input('other_charges', 0);
-        $creditOnly = $cashTotal <= 0.004 && collect((array) $request->input('credit_to', []))->sum(fn ($a) => (float) $a) > 0;
+        $typedTotal = $request->filled('total_received') ? round((float) $request->input('total_received'), 2) : null;
+        $allocated = collect((array) $request->input('invoice_amounts', []))->sum(fn ($a) => (float) $a) + (float) $request->input('opening_amount', 0);
+        // nothing is paid in cash when the credit or the customer's advance settles everything
+        $creditOnly = (($typedTotal ?? $allocated) + (float) $request->input('bank_charges', 0) + (float) $request->input('other_charges', 0)) <= 0.004
+            && (collect((array) $request->input('credit_to', []))->sum(fn ($a) => (float) $a) > 0 || $allocated > 0.004);
         $validated = $request->validate([
             'customer' => 'required|exists:customers,id',
             //'job_id' => 'nullable|exists:jobs,id',
@@ -345,11 +364,18 @@ class CollectionController extends Controller
             'bank_charges' => 'nullable|numeric|min:0',
             'other_charges' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string',
-            'customer_invoice_ids' => 'required|array',
+            'customer_invoice_ids' => 'nullable|array',
             'customer_invoice_ids.*' => 'exists:customer_invoices,id',
-            'invoice_amounts' => 'required|array',
+            'invoice_amounts' => 'nullable|array',
             'invoice_amounts.*' => 'numeric|min:0',
+            'opening_amount' => 'nullable|numeric|min:0',
+            'total_received' => 'nullable|numeric|min:0',
         ]);
+        $request->merge(['customer_invoice_ids' => (array) $request->input('customer_invoice_ids', []), 'invoice_amounts' => (array) $request->input('invoice_amounts', [])]);
+        $openingAmount = round((float) $request->input('opening_amount', 0), 2);
+        if (!$request->input('customer_invoice_ids') && $openingAmount <= 0 && ($typedTotal ?? 0) <= 0) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['customer_invoice_ids' => __('Please select at least one invoice')]);
+        }
 
         $this->assertPeriodOpen($validated['collection_date'], 'collection_date');
         $this->assertPartyCurrency(\App\Models\Customer\Customer::class, $validated['customer'], $validated['currency']);
@@ -427,6 +453,43 @@ class CollectionController extends Controller
                 $taxTotal += $taxProportion;
             }
 
+            // Part of the customer's opening balance settled by this collection (no VAT: it is a plain receivable)
+            if ($openingAmount > 0) {
+                $svcOb = \App\Services\Finance\OpeningSettlement::class;
+                $left = $svcOb::outstanding('customer', (int) $validated['customer'], $isUpdate ? (int) $collection->id : null);
+                if ($openingAmount > $left + 0.004) {
+                    throw \Illuminate\Validation\ValidationException::withMessages(['opening_amount' => __('The opening balance left to collect is :a.', ['a' => number_format($left, 2)])]);
+                }
+                $baseCur = app(\App\Services\Finance\OpeningBalanceService::class)->baseCurrency();
+                if (strtoupper((string) $validated['currency']) !== $baseCur) {
+                    throw \Illuminate\Validation\ValidationException::withMessages(['currency' => __('The opening balance is in :cur. Collect it in :cur.', ['cur' => $baseCur])]);
+                }
+                $subTotal += $openingAmount;
+            }
+
+            // Total received typed on the form: more than the ticked invoices = the excess is an advance (kept as credit on the
+            // customer's receivable); less = the difference is taken from the customer's earlier advance. Anything else is refused.
+            $advExtra = 0.0;
+            $advUsed = 0.0;
+            $allocatedNow = round($subTotal + $taxTotal, 2);
+            if ($typedTotal !== null && abs($typedTotal - $allocatedNow) >= 0.005) {
+                $baseCur = app(\App\Services\Finance\OpeningBalanceService::class)->baseCurrency();
+                if (strtoupper((string) $validated['currency']) !== $baseCur) {
+                    throw \Illuminate\Validation\ValidationException::withMessages(['total_received' => __('Total received must equal the ticked invoices (advance is kept in :cur only).', ['cur' => $baseCur])]);
+                }
+                $diff = round($typedTotal - $allocatedNow, 2);
+                if ($diff > 0) {
+                    $advExtra = $diff;
+                } else {
+                    $advUsed = -$diff;
+                    $availAdv = \App\Services\Finance\PartyAdvance::available('customer', (int) $validated['customer'], $isUpdate ? (int) $collection->id : null);
+                    if ($advUsed > $availAdv + 0.004) {
+                        throw \Illuminate\Validation\ValidationException::withMessages(['total_received' => __('Total received :t is less than the chosen invoices :s, and the customer has only :a advance to cover the difference.', ['t' => number_format($typedTotal, 2), 's' => number_format($allocatedNow, 2), 'a' => number_format($availAdv, 2)])]);
+                    }
+                }
+                $subTotal += $diff;
+            }
+
             $grandTotal = $subTotal + $taxTotal + $bankCharges + $otherCharges;
 
             // Update collection fields
@@ -449,11 +512,16 @@ class CollectionController extends Controller
             $collection->base_other_charges = $otherCharges * $validated['currency_rate'];
             $collection->base_grand_total = $grandTotal * $validated['currency_rate'];
             $collection->notes = $validated['notes'] ?? null;
+            $collection->total_amount = $typedTotal ?? $allocatedNow;
+            $collection->advance_amount = $advExtra;
+            $collection->advance_used = $advUsed;
+            $collection->doc_type = 'receipt';
 
             $collection->save();
 
             // Delete existing collection invoices
             CollectionInvoice::where('collection_id', $collection->id)->delete();
+            \App\Services\Finance\OpeningSettlement::save('customer', (int) $validated['customer'], (int) $collection->id, $openingAmount);
 
             // Create collection invoices
             $collectionInvoices = [];
@@ -633,11 +701,124 @@ class CollectionController extends Controller
         return response()->json($invoices->values());
     }
 
+    /** Advance the customer holds that can be used on invoices or refunded (for the collection and refund forms). */
+    public function getCustomerAdvance($customerId)
+    {
+        $id = (int) decodeId($customerId);
+        $coll = request()->filled('collection') ? (int) request('collection') : null;
+
+        return response()->json(['available' => $id ? \App\Services\Finance\PartyAdvance::available('customer', $id, $coll) : 0,
+            'currency' => app(\App\Services\Finance\OpeningBalanceService::class)->baseCurrency()]);
+    }
+
+    /** Refund form: pay (part of) the customer's advance back. */
+    public function refundModal()
+    {
+        $collection = new Collection();
+        $customers = Customer::select('id', 'name_en')->orderBy('name_en')->get();
+        $parents = Account::whereIn('id', [3, 4])->orderBy('name')->get();
+        $subAccounts = Account::whereIn('parent_id', [3, 4])->where('is_grouped', 0)->orderBy('name')->get();
+        $available = 0.0;
+
+        return view('modules.transaction.collection.refund-form', compact('collection', 'customers', 'parents', 'subAccounts', 'available'));
+    }
+
+    public function storeRefund(Request $request)
+    {
+        $request->merge(['customer' => decodeId($request->input('customer'))]);
+        $request->merge(['amount' => is_numeric($request->input('amount')) ? round((float) $request->input('amount'), 2) : $request->input('amount')]);
+        $v = $request->validate([
+            'customer' => 'required|exists:customers,id',
+            'collection_date' => 'required|date',
+            'account' => 'required',
+            'amount' => 'required|numeric|gt:0',
+            'reference_no' => 'nullable|string|max:255',
+            'notes' => 'nullable|string',
+        ]);
+        $this->assertPeriodOpen($v['collection_date'], 'collection_date');
+        $cur = app(\App\Services\Finance\OpeningBalanceService::class)->baseCurrency();
+
+        $collection = $request->filled('collection_id') ? Collection::findOrFail($request->input('collection_id')) : null;
+        if ($collection && ($collection->doc_type !== 'refund' || $collection->status != CollectionEnum::DRAFT->value)) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['amount' => __('Only a draft refund can be edited.')]);
+        }
+        $avail = \App\Services\Finance\PartyAdvance::available('customer', (int) $v['customer'], $collection?->id);
+        if ($v['amount'] > $avail + 0.004) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['amount' => __('The customer has only :a advance to refund.', ['a' => number_format($avail, 2)])]);
+        }
+
+        DB::beginTransaction();
+        try {
+            if (!$collection) {
+                $collection = new Collection();
+                $collection->status = CollectionEnum::DRAFT->value;
+                $collection->company_id = companyId();
+                $collection->created_by = Auth::id();
+                $prefix = 'CRF/' . date('y') . '/';
+                $collection->unique_row_no = DocumentNumber::next(Collection::class, $prefix);
+                $collection->row_no = $prefix . sprintf('%04d', $collection->unique_row_no);
+            } else {
+                $collection->updated_by = Auth::id();
+            }
+            $a = (float) $v['amount'];
+            $collection->customer_id = $v['customer'];
+            $collection->collection_date = $v['collection_date'];
+            $collection->account = is_array($v['account']) ? ($v['account'][0] ?: null) : $v['account'];
+            $collection->reference_no = $v['reference_no'] ?? null;
+            $collection->currency = $cur;
+            $collection->currency_rate = 1;
+            $collection->sub_total = $a; $collection->tax_total = 0; $collection->bank_charges = 0; $collection->other_charges = 0;
+            $collection->grand_total = $a;
+            $collection->base_sub_total = $a; $collection->base_tax_total = 0; $collection->base_bank_charges = 0; $collection->base_other_charges = 0;
+            $collection->base_grand_total = $a;
+            $collection->notes = $v['notes'] ?? null;
+            $collection->total_amount = $a;
+            $collection->advance_amount = 0;
+            $collection->advance_used = $a;      // a refund uses up the advance
+            $collection->doc_type = 'refund';
+            $collection->save();
+            DB::commit();
+
+            return response()->json(['status' => 'success', 'message' => __('Refund saved successfully'), 'collection_id' => $collection->id]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => 'error', 'message' => __('Error saving refund: ') . $e->getMessage()], 500);
+        }
+    }
+
+    /** What is left of the customer's opening balance to collect (for the collection form). */
+    public function getCustomerOpening($customerId)
+    {
+        $id = (int) decodeId($customerId);
+        $coll = request()->filled('collection') ? (int) request('collection') : null;
+
+        return response()->json($id ? [
+            'balance' => \App\Services\Finance\OpeningSettlement::outstanding('customer', $id, $coll),
+            'total' => \App\Services\Finance\OpeningSettlement::total('customer', $id),
+            'currency' => app(\App\Services\Finance\OpeningBalanceService::class)->baseCurrency(),
+        ] : ['balance' => 0]);
+    }
+
     /** Customer credit available to apply (for the collection form's customer change). */
     public function getCustomerCredit($customerId)
     {
         $id = (int) decodeId($customerId);
         return response()->json($id ? $this->creditSources($id, request()->filled('collection') ? (int) request('collection') : null) : []);
+    }
+
+    /** An approved collection that gave an advance cannot be undone while later documents have already used that advance. */
+    private function advanceBlocksReversal(Collection $collection): ?\Illuminate\Http\JsonResponse
+    {
+        $given = (float) $collection->advance_amount;
+        if ($given <= 0.004 || (int) $collection->status !== \App\Enums\CollectionEnum::APPROVED->value) {
+            return null;
+        }
+        $left = \App\Services\Finance\PartyAdvance::available('customer', (int) $collection->customer_id) - $given;
+        if ($left < -0.004) {
+            return response()->json(['status' => 'error', 'message' => __('This collection gave an advance of :a that is already used or refunded. Cancel those documents first.', ['a' => number_format($given, 2)])], 422);
+        }
+
+        return null;
     }
 
     /**
@@ -649,6 +830,9 @@ class CollectionController extends Controller
         $previousStatus = $collection->status;
         if ($locked = $this->refuseInClosedPeriod(formDate($collection->collection_date), $previousStatus, $status, CollectionEnum::APPROVED->value)) {
             return $locked;
+        }
+        if ($status != \App\Enums\CollectionEnum::APPROVED->value && ($blocked = $this->advanceBlocksReversal($collection))) {
+            return $blocked;
         }
 
         DB::beginTransaction();
@@ -732,6 +916,9 @@ class CollectionController extends Controller
         if ($locked = $this->refuseInClosedPeriod(formDate($collection->collection_date), $previousStatus, CollectionEnum::CANCELLED->value, CollectionEnum::APPROVED->value)) {
             return $locked;
         }
+        if ($blocked = $this->advanceBlocksReversal($collection)) {
+            return $blocked;
+        }
         DB::beginTransaction();
         $collection->status = CollectionEnum::CANCELLED->value;
         $collection->disapproval_reason = $validated['reason'];
@@ -813,6 +1000,12 @@ class CollectionController extends Controller
                 'reference_no',
                 'currency',
                 'grand_total',
+                'sub_total',
+                'tax_total',
+                'total_amount',
+                'advance_amount',
+                'advance_used',
+                'doc_type',
                 'status',
                 'company_id',
                 'collections.created_at',
@@ -871,6 +1064,15 @@ class CollectionController extends Controller
             ->editColumn('currency', fn($model) => strtoupper($model->currency))
             ->addColumn('customer_name', fn($model) => $model->customer->name_en ?? '-')
             ->filterColumn('credit_applied', fn () => null)
+            ->addColumn('total_received', fn($model) => number_format((float) ($model->total_amount ?? ($model->sub_total + $model->tax_total)), decimals()))
+            ->addColumn('advance', function ($model) {
+                if ($model->doc_type === 'refund') return '<span class="badge bg-warning text-dark">' . e(__('Refund')) . '</span>';
+                $h = '';
+                if ((float) $model->advance_amount > 0.004) $h .= '<div class="text-success small">+' . number_format((float) $model->advance_amount, decimals()) . ' ' . e(__('advance')) . '</div>';
+                if ((float) $model->advance_used > 0.004) $h .= '<div class="small" style="color:#0891b2;">−' . number_format((float) $model->advance_used, decimals()) . ' ' . e(__('advance used')) . '</div>';
+                return $h ?: '';
+            })
+            ->rawColumns(['advance'])
             ->editColumn('grand_total', fn($model) => number_format($model->grand_total, decimals()))
             ->editColumn('status', fn($model) => CollectionEnum::from($model->status)->label())
             ->with([
@@ -1014,6 +1216,7 @@ class CollectionController extends Controller
 
         // credit chosen on a draft collection is released with it
         DB::table('customer_credit_applications')->where('collection_id', $collection->id)->where('status', 0)->delete();
+        \App\Services\Finance\OpeningSettlement::remove('customer', (int) $collection->id);   // the opening balance it held is released
         $collection->delete();
 
         return response()->json([
@@ -1041,9 +1244,15 @@ class CollectionController extends Controller
         $this->deleteFinanceEntries($collection->id);
 
         // Settled with customer credit only: no cash moved, so there is nothing to post (the credit already sits on the customer's receivable)
-        if ((float) $collection->grand_total <= 0.004) {
+        if ((float) $collection->grand_total <= 0.004 && (float) $collection->advance_used <= 0.004) {
             return;
         }
+        if ($collection->doc_type === 'refund') {
+            $this->createRefundEntries($collection);
+            return;
+        }
+        $advUsed = (float) $collection->advance_used;
+        $advExtra = (float) $collection->advance_amount;
 
         // The amount credited to AR = sub_total + tax_total (full invoice amount)
         // The amount debited to Bank = grand_total - bank_charges - other_charges
@@ -1065,14 +1274,14 @@ class CollectionController extends Controller
         $finance->reference_no = $collection->reference_no;
         $finance->reference_date = $collection->collection_date;
         $finance->customer_id = $collection->customer_id;
-        $finance->narration = $collection->notes ?? 'Collection from customer';
+        $finance->narration = $collection->notes ?: ($advExtra > 0.004 && !CollectionInvoice::where('collection_id', $collection->id)->exists() && !\App\Services\Finance\OpeningSettlement::ofDocument('customer', $collection->id) ? 'Advance received from customer' : 'Collection from customer');
         $finance->currency = $collection->currency;
         $finance->exchange_rate = $collection->currency_rate;
-        $finance->total_debit = $invoiceTotal;
-        $finance->total_credit = $invoiceTotal;
+        $finance->total_debit = $invoiceTotal + $advUsed;
+        $finance->total_credit = $invoiceTotal + $advUsed;
         $finance->base_currency = 'SAR';
-        $finance->base_total_debit = $baseInvoiceTotal;
-        $finance->base_total_credit = $baseInvoiceTotal;
+        $finance->base_total_debit = $baseInvoiceTotal + $advUsed;
+        $finance->base_total_credit = $baseInvoiceTotal + $advUsed;
         $finance->job_id = $collection->job_id;
         $finance->job_no = $collection->job_no ?? '';
         $finance->is_approved = 1;
@@ -1113,16 +1322,45 @@ class CollectionController extends Controller
             'updated_at'       => now(),
         ];
 
-        // DR Bank/Cash account (amount actually received = invoice total minus charges)
-        $financeSubs[] = array_merge($commonData, [
-            'account_id'       => $collection->account,
-            'reference_date'   => formDate($collection->collection_date),
-            'description'      => 'Collection received from customer',
-            'debit'            => $bankReceived,
-            'credit'           => 0,
-            'base_debit'       => $baseBankReceived,
-            'base_credit'      => 0,
-        ]);
+        // DR Bank/Cash account (amount actually received = invoice total minus charges); nothing when advance settles it all
+        if ($bankReceived > 0.004 && $collection->account) {
+            $financeSubs[] = array_merge($commonData, [
+                'account_id'       => $collection->account,
+                'reference_date'   => formDate($collection->collection_date),
+                'description'      => 'Collection received from customer',
+                'debit'            => $bankReceived,
+                'credit'           => 0,
+                'base_debit'       => $baseBankReceived,
+                'base_credit'      => 0,
+            ]);
+        }
+
+        // DR Accounts Receivable: the customer's earlier advance (a credit sitting on the receivable) is used up against the invoices
+        if ($advUsed > 0.004) {
+            $financeSubs[] = array_merge($commonData, [
+                'account_id'     => 5,
+                'reference_date' => formDate($collection->collection_date),
+                'reference_no'   => 'Advance',
+                'description'    => 'Advance applied to invoices',
+                'debit'          => $advUsed,
+                'credit'         => 0,
+                'base_debit'     => $advUsed,
+                'base_credit'    => 0,
+            ]);
+        }
+        // CR Accounts Receivable: the excess received over the invoices stays as the customer's advance
+        if ($advExtra > 0.004) {
+            $financeSubs[] = array_merge($commonData, [
+                'account_id'     => 5,
+                'reference_date' => formDate($collection->collection_date),
+                'reference_no'   => 'Advance',
+                'description'    => 'Advance received from customer',
+                'debit'          => 0,
+                'credit'         => $advExtra,
+                'base_debit'     => 0,
+                'base_credit'    => $advExtra,
+            ]);
+        }
 
         // DR Bank Charges Expense (if any)
         if ($bankCharges > 0) {
@@ -1182,6 +1420,21 @@ class CollectionController extends Controller
             ]);
         }
 
+        // CR Accounts Receivable for the part of the customer's opening balance collected (in the company currency, no exchange rate)
+        $openingPart = \App\Services\Finance\OpeningSettlement::ofDocument('customer', $collection->id);
+        if ($openingPart > 0) {
+            $financeSubs[] = array_merge($commonData, [
+                'account_id'     => 5,
+                'reference_date' => formDate($collection->collection_date),
+                'reference_no'   => 'Opening balance',
+                'description'    => 'Collection against opening balance',
+                'debit'          => 0,
+                'credit'         => $openingPart,
+                'base_debit'     => 0,
+                'base_credit'    => round($openingPart * (float) $collection->currency_rate, 2),
+            ]);
+        }
+
         $fxDifference = round($fxDifference, 2);
         if (abs($fxDifference) >= 0.01) {
             $financeSubs[] = array_merge($commonData, [
@@ -1201,6 +1454,45 @@ class CollectionController extends Controller
 
         // Insert all finance sub entries
         FinanceSub::insert($financeSubs);
+    }
+
+    /** A refund pays an advance back to the customer: DR Accounts Receivable (the advance credit is cleared), CR Bank. */
+    private function createRefundEntries(Collection $collection): void
+    {
+        $amt = round((float) $collection->grand_total, 2);
+        $finance = new Finance();
+        $finance->voucher_no = $collection->row_no;
+        $finance->voucher_type = 'CV';
+        $finance->reference_no = $collection->reference_no;
+        $finance->reference_date = $collection->collection_date;
+        $finance->customer_id = $collection->customer_id;
+        $finance->narration = $collection->notes ?: 'Refund to customer';
+        $finance->currency = $collection->currency;
+        $finance->exchange_rate = 1;
+        $finance->total_debit = $amt;
+        $finance->total_credit = $amt;
+        $finance->base_currency = 'SAR';
+        $finance->base_total_debit = $amt;
+        $finance->base_total_credit = $amt;
+        $finance->is_approved = 1;
+        $finance->posted_at = now();
+        $finance->linked_id = $collection->id;
+        $finance->linked_type = Collection::class;
+        $finance->company_id = $collection->company_id;
+        $finance->user_id = Auth::id();
+        $finance->save();
+
+        $common = [
+            'finance_id' => $finance->id, 'voucher_no' => $finance->voucher_no, 'voucher_type' => 'CV', 'reference_no' => $finance->reference_no,
+            'customer_id' => $collection->customer_id, 'base_currency' => 'SAR', 'exchange_rate' => 1, 'currency' => $collection->currency,
+            'cost_center_id' => null, 'is_tax_line' => 0, 'is_auto_generated' => 1, 'linked_id' => $collection->id, 'linked_type' => Collection::class,
+            'user_id' => Auth::id(), 'company_id' => $collection->company_id, 'created_at' => now(), 'updated_at' => now(),
+            'reference_date' => formDate($collection->collection_date),
+        ];
+        FinanceSub::insert([
+            array_merge($common, ['account_id' => 5, 'description' => 'Refund of advance to customer', 'debit' => $amt, 'credit' => 0, 'base_debit' => $amt, 'base_credit' => 0]),
+            array_merge($common, ['account_id' => $collection->account, 'description' => 'Refund paid to customer', 'debit' => 0, 'credit' => $amt, 'base_debit' => 0, 'base_credit' => $amt]),
+        ]);
     }
 
     /**

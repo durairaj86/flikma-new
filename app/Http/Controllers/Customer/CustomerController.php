@@ -61,7 +61,8 @@ class CustomerController extends Controller
         )->with('salesperson:id,name')
             ->selectSub(function ($query) use ($dueInvoiceQuery) {
                 $dueInvoiceQuery($query);
-                $query->selectRaw('COALESCE(SUM(grand_total - paid_amount), 0)');
+                // unpaid approved invoices + what is still owed on the opening balance
+                $query->selectRaw('COALESCE(SUM(grand_total - paid_amount), 0) + ' . \App\Services\Finance\OpeningSettlement::outstandingSql('customer', 'customers'));
             }, 'due_amount')
             ->selectSub(function ($query) use ($dueInvoiceQuery) {
                 $dueInvoiceQuery($query);
@@ -83,6 +84,12 @@ class CustomerController extends Controller
                     ->whereNull('ci.deleted_at')->where('ci.company_id', companyId())
                     ->selectRaw('COALESCE(SUM(GREATEST(ci.paid_amount - ci.grand_total, 0) - LEAST(GREATEST(ci.paid_amount - ci.grand_total, 0), COALESCE((SELECT SUM(cn.grand_total) FROM credit_notes cn WHERE cn.invoice_id = ci.id AND cn.status = 2 AND cn.deleted_at IS NULL), 0))), 0)');
             }, 'advance_amount')
+            // advance kept from collections that received more than the ticked invoices (less what was used or refunded)
+            ->selectSub(function ($query) {
+                $query->from('collections as c')->whereColumn('c.customer_id', 'customers.id')->whereNull('c.deleted_at')
+                    ->where('c.company_id', companyId())->where('c.status', \App\Enums\CollectionEnum::APPROVED->value)
+                    ->selectRaw('GREATEST(COALESCE(SUM(c.advance_amount - c.advance_used), 0), 0)');
+            }, 'advance_held')
             ->orderBy('name_en');
 
         if (strtolower((string) $request->tab) === 'overdue') {
@@ -132,6 +139,7 @@ class CustomerController extends Controller
             ->filterColumn('overdue_count', fn() => null)
             ->filterColumn('credit_amount', fn() => null)
             ->filterColumn('advance_amount', fn() => null)
+            ->filterColumn('advance_held', fn() => null)
             ->setRowAttr([
                 'data-id' => fn($model) => $model->id,
                 'data-name' => fn($model) => htmlspecialchars($model->name_en, ENT_QUOTES, 'UTF-8'),
@@ -589,6 +597,14 @@ class CustomerController extends Controller
                 'overdue_days' => $due && $due->lt($today) ? $due->diffInDays($today) : 0,
             ];
         })->values();
+        // the opening balance still owed is part of the Due figure too (it has no due date, so it is never "overdue")
+        $ob = \App\Services\Finance\OpeningSettlement::outstanding('customer', (int) $customer->id);
+        if ($ob > 0.004) {
+            $invoices->push(['id' => null, 'row_no' => __('Opening Balance'), 'job_no' => null, 'invoice_date' => null, 'due_at' => null,
+                'currency' => app(\App\Services\Finance\OpeningBalanceService::class)->baseCurrency(),
+                'total' => round(\App\Services\Finance\OpeningSettlement::total('customer', (int) $customer->id), 2),
+                'paid' => round(\App\Services\Finance\OpeningSettlement::amount('customer', (int) $customer->id), 2), 'balance' => $ob, 'overdue_days' => 0]);
+        }
         return response()->json([
             'customer' => $customer->name_en, 'code' => $customer->row_no,
             'total_due' => round($invoices->sum('balance'), 2), 'overdue' => $invoices->where('overdue_days', '>', 0)->count(),
@@ -626,9 +642,20 @@ class CustomerController extends Controller
             ->where('ca.customer_id', $customer->id)->where('ca.status', 1)->orderByDesc('ca.id')
             ->get(['ca.amount', 'c.id as collection_id', 'c.row_no as collection_no', 'f.row_no as from_no', 't.row_no as to_no'])
             ->map(fn ($u) => ['collection_id' => $u->collection_id, 'collection_no' => $u->collection_no, 'from' => $u->from_no, 'to' => $u->to_no, 'amount' => round((float) $u->amount, 2)]);
+        // advances received on collections (excess over the invoices), and what has been used from them or refunded
+        $advDocs = DB::table('collections')->where('customer_id', $customer->id)->where('company_id', companyId())->whereNull('deleted_at')
+            ->where('status', \App\Enums\CollectionEnum::APPROVED->value)->where(fn ($q) => $q->where('advance_amount', '>', 0)->orWhere('advance_used', '>', 0))
+            ->orderBy('id')->get(['id', 'row_no', 'collection_date', 'currency', 'advance_amount', 'advance_used', 'doc_type']);
+        foreach ($advDocs->where('advance_amount', '>', 0) as $d) {
+            $rows->push(['id' => null, 'row_no' => $d->row_no, 'invoice_date' => $d->collection_date, 'currency' => $d->currency, 'total' => 0.0,
+                'settled' => round((float) $d->advance_amount, 2), 'unused' => round((float) $d->advance_amount, 2), 'credit' => 0.0, 'advance' => round((float) $d->advance_amount, 2), 'credit_notes' => collect()]);
+        }
+        $used = $used->values()->concat($advDocs->where('advance_used', '>', 0)->map(fn ($d) => [
+            'collection_id' => $d->id, 'collection_no' => $d->row_no, 'from' => __('Advance'), 'to' => $d->doc_type === 'refund' ? __('Refund') : __('Invoices'), 'amount' => round((float) $d->advance_used, 2),
+        ]));
         return response()->json([
             'customer' => $customer->name_en, 'code' => $customer->row_no,
-            'total' => round($rows->sum('unused'), 2), 'credit' => round($rows->sum('credit'), 2), 'advance' => round($rows->sum('advance'), 2),
+            'total' => round($rows->sum('unused') - $advDocs->sum('advance_used'), 2), 'credit' => round($rows->sum('credit'), 2), 'advance' => round($rows->sum('advance') - $advDocs->sum('advance_used'), 2),
             'invoices' => $rows, 'used' => $used->values(), 'used_total' => round($used->sum('amount'), 2),
         ]);
     }

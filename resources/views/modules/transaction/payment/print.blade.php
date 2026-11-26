@@ -6,6 +6,7 @@
     $accountName = $payment->account ? \Illuminate\Support\Facades\DB::table('accounts')->where('id', $payment->account)->value('name') : null;
     $method = $payment->payment_method;
     $paid = (float) $payment->grand_total;
+    $obPart = \App\Services\Finance\OpeningSettlement::ofDocument('supplier', (int) $payment->id);
     // bank / other charges and any extra postings made with this payment (shown as a note, they are not invoice lines)
     $extras = collect();
     if ((float) $payment->bank_charges > 0) $extras->push([__('Bank charges'), (float) $payment->bank_charges]);
@@ -160,8 +161,16 @@
                     <td class="n">{{ number_format($pi->amount, 2) }}</td>
                 </tr>
             @empty
-                <tr><td colspan="5" class="muted" style="text-align: center;">{{ __('No invoices') }}</td></tr>
+                @if(!$obPart)<tr><td colspan="5" class="muted" style="text-align: center;">{{ __('No invoices') }}</td></tr>@endif
             @endforelse
+            @if($obPart > 0)
+                <tr>
+                    <td>{{ $payment->paymentInvoices->filter(fn ($pi) => (float) $pi->amount > 0)->count() + 1 }}</td>
+                    <td><b>{{ __('Opening Balance') }}</b></td>
+                    <td>-</td><td class="n">-</td>
+                    <td class="n">{{ number_format($obPart, 2) }}</td>
+                </tr>
+            @endif
             <tr class="total">
                 <td colspan="4" class="n">{{ __('Total paid') }} ({{ $cur }})</td>
                 <td class="n"><b>{{ number_format($paid, 2) }}</b></td>

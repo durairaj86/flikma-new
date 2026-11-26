@@ -847,37 +847,82 @@ class SupplierInvoiceController extends Controller
 
     public function print($id)
     {
+        return view('modules.finance.supplier-invoice.print', $this->printData($this->allPrint($id)));
+    }
 
-        $descriptions = Description::descriptions()->pluck('description', 'id')->toArray();
+    /** Everything the supplier invoice print shows (the quotation print's layout): supplier, invoice details, lines with VAT, totals. */
+    public function printData(SupplierInvoice $supplierInvoice): array
+    {
+        $company = authUserCompany();
+        $base = $company->base_currency ?: 'SAR';
+        $subs = $supplierInvoice->supplierInvoiceSubs;
+        $descriptions = Description::descriptions()->whereIn('id', $subs->pluck('description_id')->filter()->unique())->pluck('description', 'id');
+        // the line's unit is kept as unit_id; the old "unit" text is mostly empty
+        $units = DB::table('units')->whereIn('id', $subs->pluck('unit_id')->filter()->unique())->pluck('unit_name', 'id');
 
-        $supplierInvoice = $this->allPrint($id);
-        /*$printData = [
-            'invoice' => $invoiceData,
-        ];*/
+        // amounts in the invoice currency, as entered from the supplier's bill
+        $lines = $subs->values()->map(function ($s) use ($descriptions, $units) {
+            $qty = (float) $s->quantity ?: 1;
+            $beforeVat = round((float) ($s->total ?? $qty * (float) $s->unit_price), 2);
 
-        //$html = view('print.' . $template, $printData)->render();
-        /*$html = view('print.table_1', $printData)->with(['file' => 'modern_grid_invoice'])->render();
+            return [
+                'description' => $descriptions[$s->description_id] ?? $s->description,
+                'remarks' => $s->comment,
+                'unit' => $s->unit ?: (isset($units[$s->unit_id]) ? __($units[$s->unit_id]) : null),
+                'qty' => $qty,
+                'unit_price' => round((float) $s->unit_price, 2),
+                'before_vat' => $beforeVat,
+                'vat_pct' => (float) $s->tax_percent,
+                'vat' => round((float) $s->tax_amount, 2),
+            ];
+        });
 
-        $customerName = preg_replace('/[^a-zA-Z0-9]/', '', $invoiceData->customer->name);
-        $date = date('Y-m-d');
-        $fileName = "Invoice_{$customerName}_{$invoiceData->row_no}_{$date}.pdf";
+        $supplier = $supplierInvoice->supplier;
+        $status = (int) $supplierInvoice->status;
+        $currency = $supplierInvoice->currency ?: $base;
+        $grand = (float) $supplierInvoice->grand_total;
+        $paid = (float) $supplierInvoice->paid_amount;
+        $money = fn($v) => number_format((float) $v, 2);
 
-        return createPDF($html, $fileName, !$invoiceData->approved_json);*/
-        /*$pdf = PDF::loadView(
-            'modules.finance.proforma-invoice.view-overview',
-            compact('proforma', 'descriptions'),
-            [],
-            ['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true, 'tempDir' => storage_path('app/tmp')]
-        );*/
-        /*$pdf = PDF::loadView('modules.finance.proforma-invoice.view-overview', compact('proforma', 'descriptions'))
-            ->setPaper('A4', 'portrait');*/
-        //return $pdf->download("SupplierInvoice-{$supplier->row_no}.pdf");
-        //$fileName = "SupplierInvoice-{$supplier->row_no}.pdf";
+        // under the grand total: the base-currency value of a foreign invoice, then what was paid and what is still owed
+        $afterGrand = [];
+        if (strtoupper($currency) !== strtoupper($base)) {
+            $afterGrand[] = ["Total in $base", "الإجمالي بـ $base", $money($supplierInvoice->base_grand_total ?: $grand * (float) $supplierInvoice->currency_rate)];
+        }
+        if ($paid > 0) {
+            $afterGrand[] = ['Amount Paid', 'المبلغ المدفوع', $money($paid)];
+            $afterGrand[] = ['Balance Due', 'المبلغ المتبقي', $money($grand - $paid)];
+        }
 
-        // 👇 This sends PDF inline (not download)
-        //return $pdf->stream($fileName);
+        $terms = collect(preg_split('/\R+/u', trim(html_entity_decode(strip_tags(preg_replace('#<(br|/p|/li|/div)\s*/?>#i', "\n", (string) $supplierInvoice->terms))))))
+            ->map(fn($t) => trim(ltrim(trim($t), '•-*·')))->filter()->values()->all();
 
-        return view('modules.finance.supplier-invoice.view-overview', compact('supplierInvoice', 'descriptions'));
+        return [
+            'supplierInvoice' => $supplierInvoice,
+            'company' => $company,
+            'currency' => $currency,
+            'partyName' => $supplier->name_en ?? '',
+            'partyCompany' => $supplier->name_ar ?? null,
+            'partyAddress' => collect([$supplier->address1_en ?? null, $supplier->address ?? null, $supplier->city_en ?? null, $supplier->city ?? null])->filter()->unique()->implode(', '),
+            'partyPhone' => $supplier->phone ?? null,
+            'partyVat' => $supplier->vat_number ?? null,
+            'lines' => $lines,
+            'subTotal' => (float) $supplierInvoice->sub_total,
+            'vatTotal' => (float) $supplierInvoice->tax_total,
+            'grandTotal' => $grand,
+            'afterGrand' => $afterGrand,
+            'amountInWords' => amountInWords(round($grand, 2)) . ' ' . $currency,
+            'statusLabel' => SupplierInvoiceEnum::tryFrom($status)?->label(),
+            'watermark' => match ($status) {
+                SupplierInvoiceEnum::DRAFT->value => __('DRAFT'),
+                SupplierInvoiceEnum::REJECTED->value => __('REJECTED'),
+                SupplierInvoiceEnum::CANCELLED->value => __('CANCELLED'),
+                default => null,
+            },
+            'notes' => trim(strip_tags((string) $supplierInvoice->notes)),
+            'terms' => $terms,
+            'accentColor' => '#4338ca',
+        ];
     }
 
     public function allPrint($id)

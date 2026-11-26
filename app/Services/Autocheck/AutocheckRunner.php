@@ -159,6 +159,11 @@ class AutocheckRunner
         $request = Request::create('/autocheck-internal', 'POST');
         $request->setLaravelSession(app('session.store'));
         app()->instance('request', $request);
+        // some actions now take the Request as their first argument (enquiry / quotation updateStatus): pass it
+        $first = (new \ReflectionMethod($controller, $method))->getParameters()[0] ?? null;
+        if ($first && $first->getType() && !$first->getType()->isBuiltin() && is_a($first->getType()->getName(), Request::class, true)) {
+            array_unshift($args, $request);
+        }
         $result = $controller->$method(...$args);
         $data = method_exists($result, 'getData') ? $result->getData(true) : [];
         return is_array($data) ? $data : [];
@@ -325,6 +330,7 @@ class AutocheckRunner
         $this->call(app(ProspectController::class), 'quickStore', [
             'quick_prospect_name' => $name, 'quick_prospect_email' => 'autocheck.prospect@example.com',
             'quick_prospect_phone' => '+966500008888', 'quick_prospect_address' => 'Riyadh',
+            'salesperson_id' => encodeId(auth()->id()),   // a lead must have a salesperson (CRM)
         ]);
         $p = Prospect::where('name', $name)->latest('id')->first();
         $this->check($checks, 'Prospect saved', (bool) $p, $p?->row_no . ' — ' . $name);
@@ -521,8 +527,13 @@ class AutocheckRunner
 
     private function stepTaxSummary(array &$ctx, array &$checks): string
     {
-        $out = (float) DB::table('finance_subs')->where('account_id', self::VAT_OUT)->selectRaw('COALESCE(SUM(base_credit - base_debit),0) n')->value('n');
-        $in = (float) DB::table('finance_subs')->where('account_id', self::VAT_IN)->selectRaw('COALESCE(SUM(base_debit - base_credit),0) n')->value('n');
+        // the report shows this company's approved entries of the current month (its default period)
+        $vat = fn (int $acct, string $sign) => (float) DB::table('finance_subs as s')->join('finance as f', 'f.id', '=', 's.finance_id')
+            ->where('s.company_id', companyId())->where('f.is_approved', 1)->where('s.account_id', $acct)
+            ->whereBetween(DB::raw('DATE(COALESCE(s.reference_date, f.posted_at))'), [now()->startOfMonth()->toDateString(), now()->endOfMonth()->toDateString()])
+            ->selectRaw("COALESCE(SUM($sign),0) n")->value('n');
+        $out = $vat(self::VAT_OUT, 's.base_credit - s.base_debit');
+        $in = $vat(self::VAT_IN, 's.base_debit - s.base_credit');
         $text = $this->reportText(\App\Livewire\Report\Finance\TaxSummary::class);
         $this->check($checks, 'Output VAT on the report matches the ledger', str_contains($text, number_format($out, 2)), number_format($out, 2));
         $this->check($checks, 'Input VAT on the report matches the ledger', str_contains($text, number_format($in, 2)), number_format($in, 2));
@@ -915,7 +926,7 @@ class AutocheckRunner
         $cust = Customer::where('name_en', "AUTOCHECK Orphan Customer $tag")->latest('id')->first();
         $this->call(app(SupplierController::class), 'store', ['name_en' => "AUTOCHECK Orphan Supplier $tag", 'name_ar' => 'مورد', 'currency' => 'SAR', 'business_type' => 'unregistered', 'country' => 'SA', 'phone' => '+966500005678']);
         $sup = Supplier::where('name_en', "AUTOCHECK Orphan Supplier $tag")->latest('id')->first();
-        $this->call(app(ProspectController::class), 'quickStore', ['quick_prospect_name' => "AUTOCHECK Orphan Prospect $tag", 'quick_prospect_email' => 'orphanp@example.com', 'quick_prospect_phone' => '+966500009876']);
+        $this->call(app(ProspectController::class), 'quickStore', ['quick_prospect_name' => "AUTOCHECK Orphan Prospect $tag", 'quick_prospect_email' => 'orphanp@example.com', 'quick_prospect_phone' => '+966500009876', 'salesperson_id' => encodeId(auth()->id())]);
         $pro = Prospect::where('name', "AUTOCHECK Orphan Prospect $tag")->latest('id')->first();
 
         // Pending enquiry + pending quotation for the orphan customer.

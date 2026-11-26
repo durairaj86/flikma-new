@@ -654,7 +654,7 @@ class CreditNoteController extends Controller
                     $postingDate = date('Y-m-d');
                 }
 
-                $creditNote->status = CreditNoteEnum::APPROVED;
+                $creditNote->status = CreditNoteEnum::APPROVED->value;
 
                 $prefix = 'CR-' . date('y') . '-';
                 $creditNote->unique_row_no = DocumentNumber::next(CreditNote::class, $prefix);

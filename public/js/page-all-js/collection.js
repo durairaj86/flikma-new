@@ -81,6 +81,8 @@ COLLECTION = {
                     /*{data: 'collection_method', name: 'collection_method'},*/
                     {data: 'reference_no', name: 'reference_no'},
                     {data: 'currency', name: 'currency'},
+                    {data: 'total_received', name: 'total_received', orderable: false, searchable: false, className: 'text-end'},
+                    {data: 'advance', name: 'advance', orderable: false, searchable: false},
                     {
                         // Amount = everything that settled the invoices (cash + customer credit). With credit applied, the split is shown underneath.
                         data: 'grand_total', name: 'grand_total', render: function (data, type, row) {
@@ -285,7 +287,8 @@ COLLECTION = {
     },
     before: {
         submit() {
-            if ($('input[name="customer_invoice_ids[]"]:checked').length === 0) {
+            if ($('#refund-form').length) return true;   // a refund has no invoices
+            if ($('.invoice-checkbox:checked').length === 0 && COLLECTION.form.num($('#total_received').val()) <= 0) {
                 toastr.error(trans('Please select at least one invoice'));
                 return false;
             }
@@ -298,6 +301,24 @@ COLLECTION = {
             COLLECTION.form.open();
         },
         open() {
+            $('#newAdvance').off().on('click', function () {
+                webModal.openGlobalModal({
+                    title: trans('New Advance'),
+                    url: GLOBAL_FN.buildUrl(`${COLLECTION.baseUrl}/create?advance=1`),
+                    content: null,
+                    size: 'xl',
+                    scroll: true,
+                });
+            });
+            $('#newRefund').off().on('click', function () {
+                webModal.openGlobalModal({
+                    title: trans('New Refund'),
+                    url: GLOBAL_FN.buildUrl(`${COLLECTION.baseUrl}/refund`),
+                    content: null,
+                    size: 'lg',
+                    scroll: true,
+                });
+            });
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
                     title: trans('Create Collection'),
@@ -314,7 +335,10 @@ COLLECTION = {
             // Initialize customer select
             $('#customer').off('change').on('change', function () {
                 const customerId = $(this).val();
+                if (customerId && $('#refund-form').length) { COLLECTION.form.loadCustomerAdvance(customerId); return; }
+                if (customerId && $('#advance-mode').length) return;   // an advance has no invoices to load
                 if (customerId) {
+                    COLLECTION.form.loadCustomerAdvance(customerId);
                     COLLECTION.form.loadCustomerInvoices(customerId);
                     COLLECTION.form.loadCustomerCredit(customerId);
                 } else {
@@ -322,6 +346,19 @@ COLLECTION = {
                     $('#no-invoices-message').show();
                     $('#invoices-table-container').hide();
                 }
+            });
+
+            // "Use advance": receive only what the advance does not cover
+            $(document).off('click.useAdv', '#use-advance').on('click.useAdv', '#use-advance', function () {
+                const inv = COLLECTION.form.num($('#total-collection-amount').text()), avail = parseFloat($('#advance-available').data('available')) || 0;
+                $('#total_received').val(COLLECTION.form.money(Math.max(0, inv - avail)).toFixed(2)).data('touched', true).attr('data-touched', '1');
+                COLLECTION.form.calculateTotal();
+            });
+
+            // typing the amount received by hand stops it following the invoices
+            $(document).off('input.recv', '#total_received').on('input.recv', '#total_received', function () {
+                $(this).data('touched', true).attr('data-touched', '1');
+                COLLECTION.form.calculateTotal();
             });
 
             // Select/deselect all invoices
@@ -431,6 +468,7 @@ COLLECTION = {
             let left = COLLECTION.form.creditPool();
             $('.invoice-checkbox').each(function () {
                 const $row = $(this).closest('tr'), $c = $row.find('.credit-to');
+                if ($row.hasClass('ob-row')) return;   // customer credit is for invoices, not the opening balance
                 if (!this.checked) { $c.val(''); return; }
                 const take = Math.min(left, COLLECTION.form.rowBalance($row));
                 left = COLLECTION.form.money(left - take);
@@ -443,7 +481,7 @@ COLLECTION = {
         // Paying only with customer credit (no cash): there is no account to collect through. (The reference number is never required.)
         toggleCashFields(cash) {
             const charges = (parseFloat(String($('#bank_charges').val()).replace(/,/g, '')) || 0) + (parseFloat(String($('#other_charges').val()).replace(/,/g, '')) || 0);
-            const creditOnly = (cash + charges) <= 0.004 && COLLECTION.form.creditTotal() > 0 && $('.invoice-checkbox:checked').length > 0;
+            const creditOnly = (cash + charges) <= 0.004 && $('.invoice-checkbox:checked').length > 0;
             const $acct = $('select[name="account[]"], select[name="account"]').first();
             const $labels = $acct.closest('.mb-3').find('label .text-danger');
             [$acct].forEach(function ($f) {
@@ -470,6 +508,30 @@ COLLECTION = {
                 COLLECTION.form.refreshCreditTotal();
             });
         },
+        // The customer's opening balance (what is left of it to collect) is one more row under the invoices.
+        loadCustomerOpening(customerId) {
+            $.get(GLOBAL_FN.buildUrl(`${COLLECTION.baseUrl}/customer/${customerId}/opening`), {collection: $('#collection_id').val() || ''}, function (r) {
+                $('#invoices-body .ob-row').remove();
+                const bal = Number(r.balance || 0);
+                if (bal <= 0.004) return;
+                $('#no-invoices-message').hide();
+                $('#invoices-table-container').show();
+                const cur = String(r.currency || '').toUpperCase(), b = bal.toFixed(2);
+                $('#invoices-body').append(`
+                    <tr class="ob-row">
+                        <td><input type="checkbox" class="invoice-checkbox" name="opening_check" value="1" data-id="ob" data-amount="${b}" data-currency="${cur}" data-paid="0"></td>
+                        <td>${trans('Opening Balance')} <span class="badge bg-light text-dark border">${cur}</span></td>
+                        <td></td><td></td><td></td>
+                        <td class="text-end">${COLLECTION.form.formatNumber(bal)}</td>
+                        <td class="text-end"><input type="text" step="0.01" data-decimal="2" class="form-control invoice-amount float text-end" data-id="ob" name="opening_amount" value="${b}" min="0" max="${b}" data-balance="${b}" disabled></td>
+                        <td class="credit-col"></td>
+                        <td class="text-end">${COLLECTION.form.formatNumber(bal)}</td>
+                    </tr>`);
+                $('.invoice-checkbox').off('change').on('change', function () { COLLECTION.form.handleInvoiceCheckboxChange($(this)); });
+                $('.invoice-amount').off('input').on('input', function () { COLLECTION.form.handleAmountChange($(this)); });
+                COLLECTION.form.calculateTotal();
+            });
+        },
         loadCustomerInvoices(customerId) {
             $.ajax({
                 url: GLOBAL_FN.buildUrl(`${COLLECTION.baseUrl}/customer/${customerId}/invoices`),
@@ -478,6 +540,7 @@ COLLECTION = {
                     if (response.length === 0) {
                         $('#no-invoices-message').text(trans('No approved invoices found for this customer.')).show();
                         $('#invoices-table-container').hide();
+                        COLLECTION.form.loadCustomerOpening(customerId);
                         return;
                     }
 
@@ -533,6 +596,7 @@ COLLECTION = {
 
                     // Calculate initial total
                     COLLECTION.form.calculateTotal();
+                    COLLECTION.form.loadCustomerOpening(customerId);
                 },
                 error: function (xhr) {
                     toastr.error(xhr.responseJSON?.message || 'Error loading customer invoices');
@@ -636,12 +700,19 @@ COLLECTION = {
                 }
             });
             $('#total-collection-amount').text(COLLECTION.form.formatNumber(total));
-            COLLECTION.form.toggleCashFields(total);
+            // the amount received follows the chosen invoices until it is typed by hand
+            const $tr = $('#total_received');
+            if ($tr.length && !$tr.data('touched') && $tr.attr('data-touched') !== '1') {
+                $tr.val(total > 0 ? COLLECTION.form.money(total).toFixed(2) : '');
+            }
+            const received = $tr.length && $tr.val() !== '' ? COLLECTION.form.num($tr.val()) : total;
+            COLLECTION.form.advanceNote(total, received);
+            COLLECTION.form.toggleCashFields(received);
         },
         // Paying only with customer credit (no cash): there is no account to collect through. (The reference number is never required.)
         toggleCashFields(cash) {
             const charges = (parseFloat(String($('#bank_charges').val()).replace(/,/g, '')) || 0) + (parseFloat(String($('#other_charges').val()).replace(/,/g, '')) || 0);
-            const creditOnly = (cash + charges) <= 0.004 && COLLECTION.form.creditTotal() > 0 && $('.invoice-checkbox:checked').length > 0;
+            const creditOnly = (cash + charges) <= 0.004 && $('.invoice-checkbox:checked').length > 0;
             const $acct = $('select[name="account[]"], select[name="account"]').first();
             const $labels = $acct.closest('.mb-3').find('label .text-danger');
             [$acct].forEach(function ($f) {
@@ -654,6 +725,29 @@ COLLECTION = {
             });
             $labels.toggle(!creditOnly);
             $('#credit-only-note').toggle(creditOnly);
+        },
+
+        // Received more than the chosen invoices: the excess becomes the customer's advance. Less: the difference comes from the advance.
+        advanceNote(total, received) {
+            const $n = $('#advance-note'); if (!$n.length) return;
+            const diff = COLLECTION.form.money(received - total), avail = parseFloat($('#advance-available').data('available')) || 0;
+            $('#use-advance').toggle(avail > 0.004 && total > 0.004 && !$('#refund-form').length);
+            if (Math.abs(diff) < 0.005) { $n.hide().text(''); return; }
+            if (diff > 0) {
+                $n.removeClass('text-danger').addClass('text-success').text(trans('Excess kept as advance') + ': ' + COLLECTION.form.formatNumber(diff)).show();
+            } else if (-diff <= avail + 0.004) {
+                $n.removeClass('text-danger').addClass('text-success').text(trans('Taken from the customer advance') + ': ' + COLLECTION.form.formatNumber(-diff)).show();
+            } else {
+                $n.removeClass('text-success').addClass('text-danger').text(trans('Total received does not match the chosen invoices')).show();
+            }
+        },
+        loadCustomerAdvance(customerId) {
+            $.get(GLOBAL_FN.buildUrl(`${COLLECTION.baseUrl}/customer/${customerId}/advance`), {collection: $('#collection_id').val() || ''}, function (r) {
+                const a = Number(r.available || 0);
+                if ($('#refund-available').length) { $('#refund-available').text(COLLECTION.form.formatNumber(a)).data('available', a); return; }
+                $('#advance-available').text(COLLECTION.form.formatNumber(a)).data('available', a).attr('data-available', a);
+                COLLECTION.form.calculateTotal();
+            });
         },
 
         formatNumber(num) {

@@ -78,20 +78,9 @@ QUOTATION = {
         };
         iframe.src = '/' + QUOTATION.baseUrl + '/' + printId + '/print';
     },
+    // the print page (FastFatoora layout) as an A4 PDF: scaled to the page width (it is 780px wide), named after the quotation number
     downloadPDF(printId) {
-        fetch('/' + QUOTATION.baseUrl + '/' + printId + '/print')
-            .then(res => res.text())
-            .then(html => {
-                const container = document.createElement('div');
-                container.id = 'html-pdf';
-                container.className = 'px-4';
-                container.innerHTML = html;
-                const opt = {
-                    margin: 0.2,
-                    filename: `quotation-${printId}.pdf`,
-                };
-                html2pdf().set(opt).from(container).save();
-            });
+        printDocPDF('/' + QUOTATION.baseUrl + '/' + printId + '/print', 'quotation', printId);
     },
 
     // ─── Column Settings ───────────────────────────────────────────────────────

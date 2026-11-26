@@ -37,4 +37,9 @@
     @case('punching') @include('dashboard.widgets.punching-tall') @break
     @case('cost-summary') @include('dashboard.widgets.cost-summary-medium') @break
     @case('follow-ups-small') @include('dashboard.widgets.follow-ups-small') @break
+    @case('crm-glance') @include('dashboard.widgets.crm-glance-medium') @break
+    @case('crm-pipeline') @include('dashboard.widgets.crm-pipeline-medium') @break
+    @case('crm-stale') @include('dashboard.widgets.crm-stale-medium') @break
+    @case('crm-activity') @include('dashboard.widgets.crm-activity-small') @break
+    @case('crm-winrate') @include('dashboard.widgets.crm-winrate-small') @break
 @endswitch

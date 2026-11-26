@@ -26,6 +26,24 @@ class CrmDashboard
         $this->activities = collect($tracker->activities)->flatten(1);
     }
 
+    /**
+     * The dashboard for today and the signed-in user's salespeople, built once per request: the CRM widgets on the main
+     * dashboard all read it (the Customer Tracker behind it is the expensive part).
+     */
+    public static function forWidgets(): self
+    {
+        static $shared = [];
+        $key = (int) companyId() . ':' . (int) auth()->id();
+
+        return $shared[$key] ??= new self(\App\Models\Crm\CrmActivity::localNowNaive()->startOfDay(), SalesScope::ownSalespersonIds());
+    }
+
+    /** The Customer Tracker lines behind the dashboard (open = not lost / inactive). */
+    public function lines(bool $openOnly = true): Collection
+    {
+        return $openOnly ? $this->lines->reject(fn($l) => in_array($l['status'], ['Lost', 'Inactive'], true))->values() : $this->lines;
+    }
+
     /** Period key => [label, from, to] (the workbook's columns; weeks start on the CrmSettings day). */
     public function periods(): array
     {
