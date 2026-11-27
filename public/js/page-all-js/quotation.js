@@ -919,7 +919,7 @@ QUOTATION = {
                 let activityId = $(this).val();
                 if (!activityId) return;
 
-                $.get(GLOBAL_FN.buildUrl('masters/quotation-term/for-activity/' + activityId), function (res) {
+                $.get(GLOBAL_FN.buildUrl('sales/quotation-term/for-activity/' + activityId), function (res) {
                     let terms = res && res.terms ? res.terms : null;
                     if (!terms) return;
 

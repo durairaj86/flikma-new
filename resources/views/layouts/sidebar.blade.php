@@ -206,6 +206,11 @@
                                 <p>{{ __('Rate Sheets') }}</p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="/sales/quotation-terms" class="nav-link {{ $submenu == 'quotation-terms' ? 'active' : '' }}">
+                                <p>{{ __('Quotation Terms') }}</p>
+                            </a>
+                        </li>
                     </ul>
                 </li>
 
@@ -258,8 +263,8 @@
                     </ul>
                 </li>
 
-                <!-- Fleet: truck trips with the vehicles and drivers they use (vehicles / drivers are also on the Masters page) -->
-                <li class="nav-item {{ ($menu == 'operation' && $submenu == 'trips') || ($menu == 'masters' && in_array($submenu, ['vehicles', 'drivers'])) ? 'menu-open' : '' }}">
+                <!-- Fleet: truck trips with the vehicles and drivers they use -->
+                <li class="nav-item {{ ($menu == 'operation' && $submenu == 'trips') || $menu == 'fleet' ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link">
                         <i class="nav-icon bi bi-truck"></i>
                         <p>
@@ -274,12 +279,12 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="/masters/vehicles" class="nav-link {{ $submenu == 'vehicles' ? 'active' : '' }}">
+                            <a href="/fleet/vehicles" class="nav-link {{ $menu == 'fleet' && $submenu == 'vehicles' ? 'active' : '' }}">
                                 <p>{{ __('Vehicles') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="/masters/drivers" class="nav-link {{ $submenu == 'drivers' ? 'active' : '' }}">
+                            <a href="/fleet/drivers" class="nav-link {{ $menu == 'fleet' && $submenu == 'drivers' ? 'active' : '' }}">
                                 <p>{{ __('Drivers') }}</p>
                             </a>
                         </li>
@@ -524,10 +529,10 @@
 
                 <!-- Masters: opens the first master page this user may view (muted by user-rights.js when there is none) -->
                 @php
-                    $mastersHome = collect(['/masters/users', '/masters/departments', '/masters/quotation-terms', '/masters/lost-reasons', '/masters/crm-actions', '/masters/hs-tariffs', '/masters/period-closing',
+                    $mastersHome = collect(['/masters/users', '/masters/departments', '/masters/lost-reasons', '/masters/crm-actions', '/masters/hs-tariffs', '/masters/period-closing',
                         '/masters/transport/directories/seaports', '/masters/transport/directories/airports', '/masters/services', '/masters/package/codes',
                         '/masters/container/types', '/masters/incoterms', '/masters/currencies', '/masters/banks', '/masters/descriptions', '/masters/salesperson',
-                        '/masters/units', '/masters/drivers', '/masters/vehicles', '/masters/finance/opening-balance'])
+                        '/masters/units', '/masters/finance/opening-balance'])
                         ->first(fn ($path) => userCanOpen($path));   // null: no master page this user may open
                 @endphp
                 {{-- Masters: everyone who may open at least one master page (Super-User-only pages show locked inside) --}}
@@ -583,11 +588,11 @@
 <style>
     /* a small label that groups items inside a menu (Operations › Shipment documents); themed with the sidebar's label color */
     .sidebar-menu .nav-treeview .sidebar-subheader {
-        /* same left / right margins as the links (26px / 10px) so the divider starts at the vertical menu line, not left of it */
-        margin: .25rem 10px 0 26px; padding: .55rem 14px .2rem 18px; font-size: .68rem; font-weight: 600; letter-spacing: .04em;
+        /* the divider starts a few px after the vertical menu line (which sits at 25-27px), not on it; the label text still lines up with the links (44px) */
+        margin: .25rem 10px 0 36px; padding: .55rem 14px .2rem 8px; font-size: .68rem; font-weight: 600; letter-spacing: .04em;
         text-transform: uppercase; color: var(--sb-label); border-top: 1px solid var(--sb-divider);
     }
-    html[dir="rtl"] .sidebar-menu .nav-treeview .sidebar-subheader { margin: .25rem 26px 0 10px; padding: .55rem 18px .2rem 14px; letter-spacing: 0; text-transform: none; }
+    html[dir="rtl"] .sidebar-menu .nav-treeview .sidebar-subheader { margin: .25rem 36px 0 10px; padding: .55rem 8px .2rem 14px; letter-spacing: 0; text-transform: none; }
     /* the menu search filters items only: hide the label while searching, and in the collapsed (icon) sidebar */
     .sidebar-menu:has(.menu-search-hidden) .sidebar-subheader,
     .sidebar-collapse .sidebar-subheader { display: none; }

@@ -1,7 +1,7 @@
 VEHICLE = {
     title: trans('Vehicle'),
-    baseUrl: 'masters/vehicle',
-    actionUrl: 'masters/vehicle',
+    baseUrl: 'fleet/vehicle',
+    actionUrl: 'fleet/vehicle',
     load() {
         VEHICLE.form.load();
         datepicker();
@@ -49,7 +49,7 @@ VEHICLE = {
                 pageLength: 25,
                 dom: 'rt<"row mt-2"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7 d-flex justify-content-end"p>>',
                 ajax: {
-                    url: GLOBAL_FN.buildUrl('masters/vehicle/data'),
+                    url: GLOBAL_FN.buildUrl('fleet/vehicle/data'),
                     type: 'POST',
                     data: function (d) {
                         d.tab = $('#listTabs').find('li button.active').attr('id');

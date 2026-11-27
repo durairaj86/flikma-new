@@ -9,7 +9,7 @@
     $mEmpty = [
         'masters/services' => ['bi-diagram-3', 'The departments you run, such as FCL Import, FCL Export, LCL Import, Air Export or Land Import.', 'Used on enquiries, quotations and jobs to say which department handles the shipment, and to group your reports.'],
         'masters/package/codes' => ['bi-box-seam', 'Packing types such as Carton, Pallet or Drum.', 'Used in the cargo details of quotations, jobs and bills of lading.'],
-        'masters/quotation-terms' => ['bi-file-text', 'Ready-made terms and conditions you can reuse.', 'Used at the bottom of quotations so you do not retype your terms each time.'],
+        'sales/quotation-terms' => ['bi-file-text', 'Ready-made terms and conditions you can reuse.', 'Used at the bottom of quotations so you do not retype your terms each time.'],
         'masters/hs-tariffs' => ['bi-upc-scan', 'Harmonized System (HS) codes with their duty rate and unit.', 'Used in customs clearance work: pick the commodity code to get the duty percentage and unit on quotations and jobs.'],
         'masters/period-closing' => ['bi-lock', 'Closing dates that lock the books.', 'Once a period is closed, no invoice, payment or journal dated on or before that date can be added or changed.'],
         'masters/container/types' => ['bi-box', 'Container sizes and types such as 20GP, 40GP or 40HC.', 'Used on enquiries, quotations, jobs and bills of lading.'],

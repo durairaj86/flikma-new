@@ -183,7 +183,7 @@
             'closing_date' => 'Nothing dated on or before this day can be added or changed after closing.',
             'notes' => 'Why the period was closed, for your records.',
         ],
-        'masters/quotation-terms' => [
+        'sales/quotation-terms' => [
             'title' => 'Short name to recognise these terms in the list.',
             'terms' => 'The wording printed at the bottom of the quotation.',
             'activity_id' => 'Use these terms automatically for quotations of this logistic department.',

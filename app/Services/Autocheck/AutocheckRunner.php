@@ -86,7 +86,7 @@ class AutocheckRunner
         'job_insights' => ['Job list: health, progress and AI insight counts', '/operation/jobs'],
         'demurrage' => ['Demurrage: free days, detention and cost', '/operation/demurrage'],
         'documents' => ['Documents center: upload, expiry tabs, download, delete', '/operation/documents'],
-        'fleet' => ['Masters: driver, vehicle, then a trip from start to finish', '/masters/vehicles'],
+        'fleet' => ['Fleet: driver, vehicle, then a trip from start to finish', '/fleet/vehicles'],
         'employee' => ['Payroll: employee, shift, salary structure and a punch', '/payroll/attendance'],
         'payroll_run' => ['Payroll: generate, pay and post the salary to the ledger', '/payroll/runs'],
         'employee_loan' => ['Payroll: employee loan', '/employee-loans'],
@@ -96,7 +96,7 @@ class AutocheckRunner
         'email_verification' => ['Email verification: one-time code, wrong tries, welcome email queued once', '/verify-email'],
         'finance_workflow_page' => ['Finance workflow page renders with live counts', '/finance-entries/workflow'],
         'input_rules' => ['Input rules: integer / decimal boxes and maxlength map are in place and current', '/customers'],
-        'guard_fleet' => ['Delete check: vehicle with a trip is protected', '/masters/vehicles'],
+        'guard_fleet' => ['Delete check: vehicle with a trip is protected', '/fleet/vehicles'],
         'guard_expense' => ['Delete check: approved expense is protected', '/finance/expense'],
         'guard_collection' => ['Delete check: approved collection is protected', '/collection'],
         'guard_payment' => ['Delete check: approved payment is protected', '/transaction/payments'],
@@ -708,14 +708,14 @@ class AutocheckRunner
         $this->callNoRequest($tc, 'updateStatus', [$trip->id, 3]);
         $this->check($checks, 'Completing a trip stamps the end time', filled($trip->fresh()->completed_at), $trip->fresh()->completed_at);
         $this->check($checks, 'Trip listed under the job link', \App\Models\Fleet\Trip::where('job_id', $ctx['job_id'])->exists(), 'linked');
-        return '/masters/vehicles';
+        return '/fleet/vehicles';
     }
 
     private function stepGuardFleet(array &$ctx, array &$checks): string
     {
         $this->guard($checks, 'Vehicle with a trip', app(\App\Http\Controllers\Fleet\VehicleController::class), 'delete', 'vehicles', $ctx['vehicle_id'] ?? null);
         $this->guard($checks, 'Driver with a trip', app(\App\Http\Controllers\Fleet\DriverController::class), 'delete', 'drivers', $ctx['driver_id'] ?? null);
-        return '/masters/vehicles';
+        return '/fleet/vehicles';
     }
 
     private function stepEmployee(array &$ctx, array &$checks): string

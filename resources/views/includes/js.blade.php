@@ -86,6 +86,8 @@
         'Client',
         'Close Period',
         'Closed',
+        'Copy this link',
+        'Link copied',
         'Credit Note Details',
         'Customer Invoice Details',
         'Failed to close this period.',

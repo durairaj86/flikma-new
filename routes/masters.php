@@ -26,15 +26,8 @@ Route::get('/masters/package/code/{id}/create', [\App\Http\Controllers\Master\Pa
 Route::post('/masters/package/code/{id}/create', [\App\Http\Controllers\Master\PackageCodeController::class, 'store']);
 Route::get('masters/package/codes/{id}/actions', [\App\Http\Controllers\Master\PackageCodeController::class, 'actions']);
 
-Route::view('/masters/quotation-terms', 'modules.master.quotation-term.list')->name('quotation-terms');
-Route::post('/masters/quotation-term/data', [\App\Http\Controllers\Master\QuotationTermController::class, 'fetchAllRows'])->name('quotation-term.data');
-Route::get('/masters/quotation-term/create', [\App\Http\Controllers\Master\QuotationTermController::class, 'modal']);
-Route::post('/masters/quotation-term/create', [\App\Http\Controllers\Master\QuotationTermController::class, 'store']);
-Route::get('/masters/quotation-term/{id}/create', [\App\Http\Controllers\Master\QuotationTermController::class, 'edit']);
-Route::post('/masters/quotation-term/{id}/create', [\App\Http\Controllers\Master\QuotationTermController::class, 'store']);
-Route::get('/masters/quotation-term/{id}/actions', [\App\Http\Controllers\Master\QuotationTermController::class, 'actions']);
-Route::delete('/masters/quotation-term/{id}', [\App\Http\Controllers\Master\QuotationTermController::class, 'destroy']);
-Route::get('/masters/quotation-term/for-activity/{activityId}', [\App\Http\Controllers\Master\QuotationTermController::class, 'forActivity']);
+// Quotation terms moved to the Sales menu (routes/sales.php): the old Masters address sends there
+Route::redirect('/masters/quotation-terms', '/sales/quotation-terms', 301);
 
 Route::view('/masters/hs-tariffs', 'modules.master.hs-tariff.list')->name('hs-tariffs');
 Route::post('/masters/hs-tariff/data', [\App\Http\Controllers\Master\HsTariffController::class, 'fetchAllRows'])->name('hs-tariff.data');
@@ -164,23 +157,6 @@ Route::get('masters/unit/{id}/actions', [\App\Http\Controllers\Master\Unit\UnitC
 Route::post('/masters/unit/{id}/status/{status}', [\App\Http\Controllers\Master\Unit\UnitController::class, 'updateStatus']);
 
 // Fleet masters
-Route::view('/masters/drivers', 'modules.fleet-driver.list')->name('drivers');
-Route::post('/masters/driver/data', [\App\Http\Controllers\Fleet\DriverController::class, 'fetchAllRows'])->name('drivers.data');
-Route::get('/masters/driver/create', [\App\Http\Controllers\Fleet\DriverController::class, 'modal']);
-Route::post('/masters/driver/create', [\App\Http\Controllers\Fleet\DriverController::class, 'store']);
-Route::get('/masters/driver/{id}/create', [\App\Http\Controllers\Fleet\DriverController::class, 'edit'])->whereNumber('id');
-Route::post('/masters/driver/{id}/create', [\App\Http\Controllers\Fleet\DriverController::class, 'store'])->whereNumber('id');
-Route::get('/masters/driver/{id}/actions', [\App\Http\Controllers\Fleet\DriverController::class, 'actions'])->whereNumber('id');
-Route::post('/masters/driver/{id}/status/{status}', [\App\Http\Controllers\Fleet\DriverController::class, 'updateStatus'])->whereNumber('id');
-Route::get('/masters/driver/{id}/overview', [\App\Http\Controllers\Fleet\DriverController::class, 'overview'])->whereNumber('id');
-Route::delete('/masters/driver/{id}', [\App\Http\Controllers\Fleet\DriverController::class, 'delete'])->whereNumber('id');
-Route::view('/masters/vehicles', 'modules.fleet-vehicle.list')->name('vehicles');
-Route::post('/masters/vehicle/data', [\App\Http\Controllers\Fleet\VehicleController::class, 'fetchAllRows'])->name('vehicles.data');
-Route::get('/masters/vehicle/create', [\App\Http\Controllers\Fleet\VehicleController::class, 'modal']);
-Route::post('/masters/vehicle/create', [\App\Http\Controllers\Fleet\VehicleController::class, 'store']);
-Route::get('/masters/vehicle/{id}/create', [\App\Http\Controllers\Fleet\VehicleController::class, 'edit'])->whereNumber('id');
-Route::post('/masters/vehicle/{id}/create', [\App\Http\Controllers\Fleet\VehicleController::class, 'store'])->whereNumber('id');
-Route::get('/masters/vehicle/{id}/actions', [\App\Http\Controllers\Fleet\VehicleController::class, 'actions'])->whereNumber('id');
-Route::post('/masters/vehicle/{id}/status/{status}', [\App\Http\Controllers\Fleet\VehicleController::class, 'updateStatus'])->whereNumber('id');
-Route::get('/masters/vehicle/{id}/overview', [\App\Http\Controllers\Fleet\VehicleController::class, 'overview'])->whereNumber('id');
-Route::delete('/masters/vehicle/{id}', [\App\Http\Controllers\Fleet\VehicleController::class, 'delete'])->whereNumber('id');
+// Vehicles and drivers moved to the Fleet menu (routes/fleet.php): the old Masters addresses send there
+Route::redirect('/masters/vehicles', '/fleet/vehicles', 301);
+Route::redirect('/masters/drivers', '/fleet/drivers', 301);

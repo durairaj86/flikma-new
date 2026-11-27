@@ -1,7 +1,7 @@
 QUOTATION_TERM = {
     title: trans('Quotation Term'),
-    baseUrl: 'masters/quotation-term',
-    actionUrl: 'masters/quotation-term',
+    baseUrl: 'sales/quotation-term',
+    actionUrl: 'sales/quotation-term',
     load() {
         QUOTATION_TERM.form.open();
     },
@@ -19,7 +19,7 @@ QUOTATION_TERM = {
                 dom: 'rt<"row mt-2"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7 d-flex justify-content-end"p>>',
                 order: [[1, 'desc']],
                 ajax: {
-                    url: '/masters/quotation-term/data',
+                    url: '/sales/quotation-term/data',
                     type: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -73,7 +73,7 @@ QUOTATION_TERM = {
                                 btnClass: 'btn-red',
                                 action: function () {
                                     $.ajax({
-                                        url: GLOBAL_FN.buildUrl('masters/quotation-term/' + row.attr('data-id')),
+                                        url: GLOBAL_FN.buildUrl('sales/quotation-term/' + row.attr('data-id')),
                                         type: 'DELETE',
                                         dataType: 'json',
                                         headers: {
@@ -99,7 +99,7 @@ QUOTATION_TERM = {
             $('#new').off().on('click', function () {
                 webModal.openGlobalModal({
                     title: trans('New Quotation Term'),
-                    url: GLOBAL_FN.buildUrl('masters/quotation-term/create'),
+                    url: GLOBAL_FN.buildUrl('sales/quotation-term/create'),
                     content: null,
                     size: 'md',
                     callBack: null

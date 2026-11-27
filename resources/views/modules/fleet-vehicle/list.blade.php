@@ -4,7 +4,6 @@
 @section('hide-topbar', true)
 <x-app-layout>
     <main class="gmail-content bg-white d-flex">
-        @include('includes.master-navigation')
         <section class="flex-grow-1 px-3 d-flex flex-column" style="min-width:0">
         <style>
             .mod-title { display: none; }

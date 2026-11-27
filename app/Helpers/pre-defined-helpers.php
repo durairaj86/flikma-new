@@ -513,6 +513,7 @@ function appRights(): array
     $rights = [];
     foreach (appModules() as $moduleKey => $module) {
         $rights[$moduleKey] = ['label' => $module['label'], 'prefixes' => $module['prefixes'] ?? [], 'parent' => null, 'exact' => false, 'status_enum' => null,
+            'inherits' => $module['inherits'] ?? null,
             'owner_only' => (bool) ($module['owner_only'] ?? false), 'admin_only' => (bool) ($module['admin_only'] ?? false)];
         foreach ($module['children'] ?? [] as $childKey => $child) {
             $rights[$moduleKey . '.' . $childKey] = [
@@ -547,8 +548,8 @@ function resolveModuleFromPath(string $path): ?string
         return null;
     }
     // the quotation form loads the terms of the chosen activity: a read-only lookup for whoever writes quotations,
-    // although the Quotation Terms master itself is for Admins
-    if (str_starts_with($path, 'masters/quotation-term/for-activity/')) {
+    // whatever their right on the Quotation Terms list itself
+    if (str_starts_with($path, 'sales/quotation-term/for-activity/')) {
         return null;
     }
     // the Reports page lists only the reports the user may open, so anyone with one report right can reach it
@@ -623,13 +624,16 @@ function rightActions(): array
  * null ticks everything (a new department). A sub menu without a row of its own shows its module's row. Super-User-only sections are left out.
  */
 /**
- * The saved permission row that rules a section: its own row, else the row of the section it 'inherits' (config/modules.php),
- * else its module's row (a sub menu like "masters.departments" without a row of its own takes "masters").
+ * The saved permission row that rules a section: its own row, else the row of the section it 'inherits' (config/modules.php; that
+ * section's module row when it has none), else its module's row (a sub menu like "masters.departments" without a row of its own
+ * takes "masters").
  */
 function savedRightRow(\Illuminate\Support\Collection $saved, string $module)
 {
+    $inherits = appRights()[$module]['inherits'] ?? null;
+
     return $saved->get($module)
-        ?? (($inherits = appRights()[$module]['inherits'] ?? null) ? $saved->get($inherits) : null)
+        ?? ($inherits ? ($saved->get($inherits) ?? (str_contains($inherits, '.') ? $saved->get(strstr($inherits, '.', true)) : null)) : null)
         ?? (str_contains($module, '.') ? $saved->get(strstr($module, '.', true)) : null);
 }
 

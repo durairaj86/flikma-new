@@ -79,4 +79,14 @@ Route::namespace('sales')->prefix('sales')->group(function () {
     Route::get('/rate-sheet/{id}/overview', [\App\Http\Controllers\Sales\RateSheetController::class, 'overview']);
     Route::delete('/rate-sheet/{id}', [\App\Http\Controllers\Sales\RateSheetController::class, 'delete'])->whereNumber('id');
 
+    // Quotation terms (were under Masters until 2026-11-27)
+    Route::view('/quotation-terms', 'modules.master.quotation-term.list')->name('quotation-terms');
+    Route::post('/quotation-term/data', [\App\Http\Controllers\Master\QuotationTermController::class, 'fetchAllRows'])->name('quotation-term.data');
+    Route::get('/quotation-term/create', [\App\Http\Controllers\Master\QuotationTermController::class, 'modal']);
+    Route::post('/quotation-term/create', [\App\Http\Controllers\Master\QuotationTermController::class, 'store']);
+    Route::get('/quotation-term/{id}/create', [\App\Http\Controllers\Master\QuotationTermController::class, 'edit']);
+    Route::post('/quotation-term/{id}/create', [\App\Http\Controllers\Master\QuotationTermController::class, 'store']);
+    Route::get('/quotation-term/{id}/actions', [\App\Http\Controllers\Master\QuotationTermController::class, 'actions']);
+    Route::delete('/quotation-term/{id}', [\App\Http\Controllers\Master\QuotationTermController::class, 'destroy']);
+    Route::get('/quotation-term/for-activity/{activityId}', [\App\Http\Controllers\Master\QuotationTermController::class, 'forActivity']);
 });

@@ -3454,6 +3454,29 @@ $(document).on('mouseover', 'table.dataTable tbody td', function (e) {
 
 
 /* List search boxes: wait until the user stops typing before sending the ajax request. */
+// Copy text to the clipboard. navigator.clipboard exists only on https / localhost, so on plain http (and when the browser refuses) it falls back to a
+// hidden textarea + execCommand('copy'). Returns true / false (or a promise of it) so the caller shows "copied" only when it really was.
+window.copyText = function (text) {
+    const legacy = function () {
+        const area = document.createElement('textarea');
+        area.value = text;
+        area.setAttribute('readonly', '');
+        area.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+        document.body.appendChild(area);
+        area.focus();
+        area.select();
+        area.setSelectionRange(0, text.length);
+        let ok = false;
+        try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+        document.body.removeChild(area);
+        return ok;
+    };
+    if (window.isSecureContext && navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text).then(() => true, () => legacy());
+    }
+    return Promise.resolve(legacy());
+};
+
 window.debounceSearch = function (fn, ms) {
     var timer = null;
     ms = ms || 600;

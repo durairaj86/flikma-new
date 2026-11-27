@@ -63,6 +63,8 @@ return [
             'enquiries' => ['label' => 'Enquiries', 'prefixes' => ['sales/enquiries', 'sales/enquiry'], 'status_enum' => EnquiryEnum::class],
             'quotations' => ['label' => 'Quotations', 'prefixes' => ['sales/quotations', 'sales/quotation']],
             'rate-sheets' => ['label' => 'Rate Sheets', 'prefixes' => ['sales/rate-sheets', 'sales/rate-sheet']],
+            // under Masters until 2026-11-27: a department keeps what it had saved there until its rights are saved again
+            'quotation-terms' => ['label' => 'Quotation Terms', 'prefixes' => ['sales/quotation-terms', 'sales/quotation-term'], 'inherits' => 'masters.quotation-terms'],
             'reports' => ['label' => 'Sales Reports', 'prefixes' => [
                 'reports/sale-report', 'reports/shipment-volume', 'reports/sales-by-salesperson', 'reports/sales-commission',
                 'reports/sales-funnel', 'reports/win-loss', 'reports/crm-activity-summary', 'reports/pipeline-value', 'reports/salesperson-performance',
@@ -78,7 +80,6 @@ return [
             'bookings' => ['label' => 'Bookings', 'prefixes' => ['operation/bookings', 'operation/booking'], 'status_enum' => BookingEnum::class],
             'arrival-notices' => ['label' => 'Arrival Notices', 'prefixes' => ['operation/arrival-notices', 'operation/arrival-notice']],
             'delivery-orders' => ['label' => 'Delivery Orders', 'prefixes' => ['operation/delivery-orders', 'operation/delivery-order']],
-            'trips' => ['label' => 'Trips', 'prefixes' => ['operation/trips', 'operation/trip']],
             'tracking' => ['label' => 'Tracking', 'prefixes' => ['operation/tracking']],
             'demurrage' => ['label' => 'Demurrage', 'prefixes' => ['operation/demurrage']],
             'documents' => ['label' => 'Documents', 'prefixes' => ['operation/documents', 'operation/document']],
@@ -104,6 +105,18 @@ return [
             'assets' => ['label' => 'Assets', 'prefixes' => ['finance/asset']],
             'reconciliation' => ['label' => 'Bank Reconciliation', 'prefixes' => ['finance/reconciliation']],
             'accounts' => ['label' => 'Chart of Accounts', 'prefixes' => ['finance/accounts', 'finance/account']],
+        ],
+    ],
+    // the sidebar's Fleet menu. Trips were under Operations and vehicles / drivers under Masters until 2026-11-27: 'inherits'
+    // keeps what a department had saved there until its rights are saved again
+    'fleet' => [
+        'label' => 'Fleet',
+        'prefixes' => ['fleet'],
+        'inherits' => 'operations',
+        'children' => [
+            'trips' => ['label' => 'Trips', 'prefixes' => ['operation/trips', 'operation/trip'], 'inherits' => 'operations.trips'],
+            'vehicles' => ['label' => 'Vehicles', 'prefixes' => ['fleet/vehicles', 'fleet/vehicle'], 'inherits' => 'masters.vehicles'],
+            'drivers' => ['label' => 'Drivers', 'prefixes' => ['fleet/drivers', 'fleet/driver'], 'inherits' => 'masters.drivers'],
         ],
     ],
     'transactions' => [
@@ -168,7 +181,6 @@ return [
             // owner_only: the Super User alone, never given through department rights (not on the rights screen)
             'users' => ['label' => 'Employees', 'prefixes' => ['masters/users', 'masters/user'], 'owner_only' => true],
             'departments' => ['label' => 'Departments', 'prefixes' => ['masters/departments', 'masters/department'], 'owner_only' => true],
-            'quotation-terms' => ['label' => 'Quotation Terms', 'prefixes' => ['masters/quotation-terms', 'masters/quotation-term']],
             'lost-reasons' => ['label' => 'Lost Reasons', 'prefixes' => ['masters/lost-reasons', 'masters/lost-reason']],
             'crm-actions' => ['label' => 'CRM Actions', 'prefixes' => ['masters/crm-actions', 'masters/crm-action']],
             'hs-tariffs' => ['label' => 'HS Tariff', 'prefixes' => ['masters/hs-tariffs', 'masters/hs-tariff']],
@@ -188,8 +200,6 @@ return [
             'descriptions' => ['label' => 'Descriptions', 'prefixes' => ['masters/descriptions', 'masters/description']],
             'salesperson' => ['label' => 'Salesperson', 'prefixes' => ['masters/salesperson']],
             'units' => ['label' => 'Units', 'prefixes' => ['masters/units', 'masters/unit']],
-            'drivers' => ['label' => 'Drivers', 'prefixes' => ['masters/drivers', 'masters/driver']],
-            'vehicles' => ['label' => 'Vehicles', 'prefixes' => ['masters/vehicles', 'masters/vehicle']],
             'opening-balance' => ['label' => 'Opening Balance', 'prefixes' => ['masters/finance/opening-balance'], 'owner_only' => true],
         ],
     ],

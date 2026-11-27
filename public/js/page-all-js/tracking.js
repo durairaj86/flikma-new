@@ -13,8 +13,18 @@ TRACKING = {
         });
         $('.trk-share').off().on('click', function () {
             $.post(GLOBAL_FN.buildUrl('operation/tracking/' + $(this).data('id') + '/share'), {_token: $('meta[name="csrf-token"]').attr('content')}, function (r) {
-                if (navigator.clipboard) navigator.clipboard.writeText(r.url);
-                toastr.success('Link copied: ' + r.url);
+                window.copyText(r.url).then(function (copied) {
+                    if (copied) {
+                        toastr.success(trans('Link copied') + ': ' + r.url);
+                    } else {
+                        // the browser would not allow copying: show the link selected so it can be copied with Ctrl+C
+                        $.alert({
+                            title: trans('Copy this link'),
+                            content: '<input type="text" class="form-control" readonly value="' + $('<div>').text(r.url).html() + '" onfocus="this.select()" autofocus>',
+                            onContentReady: function () { this.$content.find('input').trigger('focus').select(); },
+                        });
+                    }
+                });
             });
         });
     },

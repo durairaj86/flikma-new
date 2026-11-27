@@ -173,6 +173,7 @@ Route::middleware(['auth', 'verified', 'module.permission'])->group(function () 
     include 'transaction/overview.php';
     include 'settings.php';
     include 'masters.php';
+    include 'fleet.php';
     include 'reports.php';
     include 'payroll.php';
 

@@ -1,7 +1,7 @@
 DRIVER = {
     title: trans('Driver'),
-    baseUrl: 'masters/driver',
-    actionUrl: 'masters/driver',
+    baseUrl: 'fleet/driver',
+    actionUrl: 'fleet/driver',
     load() {
         DRIVER.form.load();
         datepicker();
@@ -49,7 +49,7 @@ DRIVER = {
                 pageLength: 25,
                 dom: 'rt<"row mt-2"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7 d-flex justify-content-end"p>>',
                 ajax: {
-                    url: GLOBAL_FN.buildUrl('masters/driver/data'),
+                    url: GLOBAL_FN.buildUrl('fleet/driver/data'),
                     type: 'POST',
                     data: function (d) {
                         d.tab = $('#listTabs').find('li button.active').attr('id');
