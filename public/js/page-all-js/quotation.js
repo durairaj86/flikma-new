@@ -1152,6 +1152,8 @@ QUOTATION = {
                 if (clearValues) {
                     $newRow.find('input:not([readonly])').val('');
                     $newRow.find('select').prop('selectedIndex', 0);
+                    // a switched-off unit the copied line kept is not offered on a new line
+                    $newRow.find('select option[data-off]').remove();
                     $newRow.find('.chg-qty').val(1);
                     $newRow.find('.chg-ex-rate').val(1);
                 }

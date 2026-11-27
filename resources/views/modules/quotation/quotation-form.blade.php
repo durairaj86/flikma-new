@@ -578,7 +578,7 @@
                                         <select name="chg_unit[]" class="form-select form-select-sm chg-unit">
                                             <option value="">{{ __('— Select —') }}</option>
                                             @foreach(\App\Models\Master\Unit::units([], [$charge->unit ?? '']) as $unit)
-                                                <option value="{{ $unit->unit_name }}"
+                                                <option value="{{ $unit->unit_name }}" @if($unit->off) data-off="1" @endif
                                                     @selected(($charge->unit ?? '') === $unit->unit_name)>
                                                     {{ $unit->unit_name }}{{ $unit->unit_symbol ? ' ('.$unit->unit_symbol.')' : '' }}
                                                 </option>

@@ -125,6 +125,9 @@ class CustomerInvoiceController extends Controller
             return $line;
         })->values();
 
+        // the units the lines already use stay in the list even when switched off since (marked, not offered on a new line)
+        $data['units'] = \App\Models\Master\Unit::units($invoice->customerInvoiceSubs->pluck('unit_id')->all());
+
         return view('modules.finance.customer-invoice._gp-form', $data + ['inModal' => true, 'invoice' => $invoice, 'editLines' => $editLines]);
     }
 

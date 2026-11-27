@@ -40,7 +40,17 @@ UNIT = {
                     {data: 'unit_name'},
                     {data: 'unit_symbol'},
                     {data: 'created_at'},
-                    {data: 'status'},
+                    {
+                        // On / Off: an Off unit is not offered in the unit dropdowns of new documents (a document that already uses it keeps it)
+                        data: 'status', render: function (data, type, row) {
+                            if (type !== 'display') return data;
+                            return '<div class="form-check form-switch m-0 d-inline-flex align-items-center gap-2 unit-switch-wrap">'
+                                + '<input class="form-check-input unit-switch" type="checkbox" role="switch" data-id="' + row.id + '"'
+                                + (row.is_on ? ' checked' : '') + (row.can_switch ? '' : ' disabled')
+                                + ' aria-label="' + trans('Show in unit dropdowns') + '" title="' + trans('Show in unit dropdowns') + '">'
+                                + '<span class="small ' + (row.is_on ? 'text-success' : 'text-secondary') + '">' + data + '</span></div>';
+                        }
+                    },
                     GLOBAL_FN.dataTable.optionButton()
                 ],
                 language: {
@@ -58,6 +68,26 @@ UNIT = {
             }));
             webDataTable.loader(table);
             webDataTable.search(table);
+            // the switch works on its own: it does not open the row menu
+            $('#dataTable').off('click.unitSwitch').on('click.unitSwitch', '.unit-switch-wrap', function (e) { e.stopPropagation(); })
+                .off('change.unitSwitch').on('change.unitSwitch', '.unit-switch', function () {
+                    const box = this, on = box.checked ? 1 : 0;
+                    box.disabled = true;
+                    $.ajax({
+                        url: GLOBAL_FN.buildUrl('masters/unit/' + $(box).data('id') + '/status/' + on),
+                        method: 'POST',
+                        headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+                        success: function (res) {
+                            toastr.success(res.message || trans('Saved'));
+                            table.ajax.reload(null, false);
+                        },
+                        error: function (xhr) {
+                            box.checked = !on;
+                            box.disabled = false;
+                            toastr.error((xhr.responseJSON && xhr.responseJSON.message) || trans('Something went wrong.'));
+                        }
+                    });
+                });
             //webDataTable.actions.menu();
         },
         extraActions(row) {

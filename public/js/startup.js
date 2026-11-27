@@ -2436,6 +2436,9 @@ function initTomSelectForm(form = null, destroy = false, individualId = null) {
             el.tomselect.destroy();
         }
 
+        // a switched-off unit (data-off) is listed only for the line that already uses it: a new or copied line does not offer it
+        $(el).find('option[data-off]').filter(function () { return !this.selected; }).remove();
+
         const $el = $(el);
         const placeholder = $el.data('placeholder') ?? $el.attr('placeholder') ?? '';
         const isMultiple = $el.prop('multiple');

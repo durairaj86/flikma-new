@@ -63,6 +63,7 @@
         'Add Service',
         'Add Supplier',
         'Add Unit',
+        'Show in unit dropdowns',
         'Add to charges',
         'Advance',
         'Airway Bill',

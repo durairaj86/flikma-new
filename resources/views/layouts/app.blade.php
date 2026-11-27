@@ -231,8 +231,9 @@
     <div class="main-content">
         @if($headerEnabled)
             {{-- Masters pages print the header inside their right-hand content (includes/master-page-title),
-                 so it starts beside the Master Data menu instead of spanning above it. --}}
-            @unless(request()->is('masters', 'masters/*'))
+                 so it starts beside the Master Data menu instead of spanning above it; so does a page that moved out of
+                 Masters but still uses that title (@section('own-header'), e.g. Sales > Quotation Terms). --}}
+            @unless(request()->is('masters', 'masters/*') || View::hasSection('own-header'))
                 @include('includes.header')
             @endunless
         @else

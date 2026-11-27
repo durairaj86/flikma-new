@@ -264,7 +264,7 @@
                 </td>
                 <td>
                     <select class="tom-select unit" data-live-search="true" data-dropdown-parent="body" data-dropdown-width="200" data-placeholder="{{ __('Select Unit') }}"><option value="">{{ __('Select Unit') }}</option>
-                        @foreach($units as $u)<option value="{{ $u->id }}">{{ $u->unit_symbol ?: $u->unit_name }}</option>@endforeach
+                        @foreach($units as $u)<option value="{{ $u->id }}" @if($u->off ?? false) data-off="1" @endif>{{ $u->unit_symbol ?: $u->unit_name }}</option>@endforeach
                     </select>
                 </td>
                 <td class="cost"><div class="calc position-relative"><input class="form-control decimal c-qty" data-decimals="4" value="1"> x <input class="form-control decimal price c-price" data-decimals="4" placeholder="0.00"></div></td>
@@ -299,6 +299,9 @@
 
                 function addRow(v = {}) {
                     const tr = $('#cinRowTpl').content.firstElementChild.cloneNode(true);
+                    // a switched-off unit is offered only on the line that already uses it; that line's unit is pre-selected so it survives
+                    // the dropdowns being set up again (initTomSelectForm drops the switched-off units no line has selected)
+                    $$('.unit option[data-off]', tr).forEach(o => { if (String(o.value) === String(v.unit_id || '')) o.setAttribute('selected', 'selected'); else o.remove(); });
                     body.appendChild(tr);
                     initTs(tr);
                     if (v.description_id) setSel($('.desc', tr), v.description_id);

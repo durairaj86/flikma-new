@@ -1,5 +1,8 @@
 @section('js','quotation_term')
 @section('page-title', __('Quotation Terms'))
+{{-- draws its own header (includes/master-page-title), as on the Masters pages it came from --}}
+@section('own-header', true)
+@section('hide-topbar', true)
 <x-app-layout>
     <main class="gmail-content bg-white d-flex" id="content-wrapper">
         <section class="flex-grow-1 px-4 d-flex flex-column">

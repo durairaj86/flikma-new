@@ -2,7 +2,8 @@
     <option value="">{{ __('Select Unit') }}</option>
     @foreach(\App\Models\Master\Unit::units([$value ?? null]) as $desc)
         {{-- code first (CM), full name as the small line under it (Centimeter) --}}
-        <option value="{{ $desc->id }}" data-subtext="{{ $desc->unit_name }}" @selected($desc->id == ($value ?? null))>
+        {{-- data-off: switched off, listed only because this line already uses it (not offered on a new line) --}}
+        <option value="{{ $desc->id }}" data-subtext="{{ $desc->unit_name }}" @if($desc->off) data-off="1" @endif @selected($desc->id == ($value ?? null))>
             {{ $desc->unit_symbol ?: $desc->unit_name }}
         </option>
     @endforeach

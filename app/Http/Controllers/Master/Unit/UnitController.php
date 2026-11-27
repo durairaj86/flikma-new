@@ -19,6 +19,7 @@ class UnitController extends Controller
     public function fetchAllRows()
     {
         $rows = Unit::select('id', 'unit_name', 'unit_symbol', 'status', 'company_id', 'created_at');
+        $canSwitch = userCan('masters.units', 'edit');
         return DataTables::eloquent($rows)
             ->addIndexColumn()
             ->setRowAttr([
@@ -34,6 +35,9 @@ class UnitController extends Controller
             ->editColumn('status', function ($row) {
                 return $this->isOn($row) ? __('Active') : __('In-Active');
             })
+            // the list's On / Off switch: on = offered in the unit dropdowns of new documents; switching needs Edit on Units
+            ->addColumn('is_on', fn ($row) => $this->isOn($row))
+            ->addColumn('can_switch', fn () => $canSwitch)
             ->toJson();
     }
 
