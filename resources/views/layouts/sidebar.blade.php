@@ -263,42 +263,6 @@
                     </ul>
                 </li>
 
-                <!-- Fleet: truck trips with the vehicles and drivers they use -->
-                <li class="nav-item {{ ($menu == 'operation' && $submenu == 'trips') || $menu == 'fleet' ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link">
-                        <i class="nav-icon bi bi-truck"></i>
-                        <p>
-                            {{ __('Fleet') }}
-                            <i class="nav-arrow bi bi-chevron-right"></i>
-                        </p>
-                    </a>
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a href="/operation/trips" class="nav-link {{ $submenu == 'trips' ? 'active' : '' }}">
-                                <p>{{ __('Trips') }}</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/fleet/vehicles" class="nav-link {{ $menu == 'fleet' && $submenu == 'vehicles' ? 'active' : '' }}">
-                                <p>{{ __('Vehicles') }}</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/fleet/drivers" class="nav-link {{ $menu == 'fleet' && $submenu == 'drivers' ? 'active' : '' }}">
-                                <p>{{ __('Drivers') }}</p>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-
-                <!-- Documents: every document attached anywhere (jobs, customers, employees, vehicles ...) with expiry tracking -->
-                <li class="nav-item">
-                    <a href="/operation/documents" class="nav-link {{ $menu == 'operation' && in_array($submenu, ['documents', 'document']) ? 'active' : '' }}">
-                        <i class="nav-icon bi bi-folder2-open"></i>
-                        <p>{{ __('Documents') }}</p>
-                    </a>
-                </li>
-
                 <!-- Invoices -->
                 <li class="nav-item {{ in_array($menu,['invoice','adjustment']) ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link">
@@ -515,6 +479,42 @@
                             </a>
                         </li>
                     </ul>
+                </li>
+
+                <!-- Fleet: truck trips with the vehicles and drivers they use -->
+                <li class="nav-item {{ ($menu == 'operation' && $submenu == 'trips') || $menu == 'fleet' ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon bi bi-truck"></i>
+                        <p>
+                            {{ __('Fleet') }}
+                            <i class="nav-arrow bi bi-chevron-right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/operation/trips" class="nav-link {{ $submenu == 'trips' ? 'active' : '' }}">
+                                <p>{{ __('Trips') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/fleet/vehicles" class="nav-link {{ $menu == 'fleet' && $submenu == 'vehicles' ? 'active' : '' }}">
+                                <p>{{ __('Vehicles') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/fleet/drivers" class="nav-link {{ $menu == 'fleet' && $submenu == 'drivers' ? 'active' : '' }}">
+                                <p>{{ __('Drivers') }}</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Documents: every document attached anywhere (jobs, customers, employees, vehicles ...) with expiry tracking -->
+                <li class="nav-item">
+                    <a href="/operation/documents" class="nav-link {{ $menu == 'operation' && in_array($submenu, ['documents', 'document']) ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-folder2-open"></i>
+                        <p>{{ __('Documents') }}</p>
+                    </a>
                 </li>
 
                 <!-- Reports: one page lists every report (customer / supplier reports keep their own menu highlight) -->
