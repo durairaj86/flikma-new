@@ -60,15 +60,26 @@ DESCRIPTION = {
                         }
                     },
                     {
+                        // On / Off switch, as the unit list
                         data: 'is_active', render: function (data, type, row) {
-                            return Number(row.is_active) === 1
-                                ? '<span class="badge bg-success-subtle text-success-emphasis">' + trans('Active') + '</span>'
-                                : '<span class="badge bg-secondary-subtle text-secondary-emphasis">' + trans('In-Active') + '</span>';
+                            if (type !== 'display') return data;
+                            const on = Number(row.is_active) === 1, label = on ? trans('Active') : trans('In-Active');
+                            return '<div class="form-check form-switch m-0 d-inline-flex align-items-center gap-2 desc-switch-wrap">'
+                                + '<input class="form-check-input desc-switch" type="checkbox" role="switch" data-id="' + row.id + '"'
+                                + (on ? ' checked' : '') + (row.can_switch ? '' : ' disabled') + ' aria-label="' + label + '">'
+                                + '<span class="small ' + (on ? 'text-success' : 'text-secondary') + '">' + label + '</span></div>';
                         }
                     },
                     {data: 'created_at', name: 'created_at'},
-                    // Actions column
-                    GLOBAL_FN.dataTable.optionButton()
+                    {
+                        // Edit and Delete for the company's own descriptions (a shared one can only be switched on / off)
+                        data: null, orderable: false, searchable: false, className: 'text-center text-nowrap',
+                        render: function (data, type, row) {
+                            if (!row.company_id) return '';
+                            return '<a href="javascript:void(0)" class="btn btn-outline-secondary btn-sm rounded-circle desc-edit" data-id="' + row.id + '" title="' + trans('Edit') + '" aria-label="' + trans('Edit') + '"><i class="bi bi-pencil"></i></a>'
+                                + (row.can_delete ? ' <a href="javascript:void(0)" class="btn btn-outline-danger btn-sm rounded-circle desc-delete" data-id="' + row.id + '" title="' + trans('Delete') + '" aria-label="' + trans('Delete') + '"><i class="bi bi-trash"></i></a>' : '');
+                        }
+                    }
 
                 ],
                 language: {
@@ -78,7 +89,6 @@ DESCRIPTION = {
                 deferLoading: 0, // don't load immediately
                 initComplete: function () {
                     DESCRIPTION.form.open();
-                    webDataTable.actions.menu();
                 }
             });
 
@@ -87,22 +97,44 @@ DESCRIPTION = {
             }));
             webDataTable.loader(table);
             webDataTable.search(table);
-            //webDataTable.actions.menu();
+            DESCRIPTION.list.bind(table);
         },
-        extraActions(row) {
-            DESCRIPTION.list.actions.statusChange(row);
-        },
-        actions: {
-            // Active / In-Active instead of Delete: a description may be on documents already
-            statusChange(row) {
-                $('#row_active,#row_inactive').off().on('click', function () {
-                    changeCustomerStatus(GLOBAL_FN.buildUrl('masters/description/' + row.attr('data-id') + '/status/' + $(this).attr('data-value')), {
+        bind(table) {
+            $('#dataTable').off('.desc')
+                .on('click.desc', '.desc-switch-wrap', function (e) { e.stopPropagation(); })
+                .on('click.desc', '.desc-edit', function () {
+                    webModal.openGlobalModal({
+                        title: trans('Edit') + ' ' + trans('Description'),
+                        url: GLOBAL_FN.buildUrl('masters/description/' + $(this).data('id') + '/create'),
+                        content: null,
+                        size: 'md',
+                        callBack: null
+                    });
+                })
+                .on('click.desc', '.desc-delete', function () {
+                    const $tr = $(this).closest('tr');
+                    deleteRecord(GLOBAL_FN.buildUrl('masters/description/' + $(this).data('id')), function () {
+                        table.ajax.reload(null, false);
+                    }, {name: $.trim($tr.find('td').eq(1).text())});
+                })
+                .on('change.desc', '.desc-switch', function () {
+                    const box = this, on = box.checked ? 1 : 0;
+                    box.disabled = true;
+                    $.ajax({
+                        url: GLOBAL_FN.buildUrl('masters/description/' + $(box).data('id') + '/status/' + on),
                         method: 'POST',
-                        data: new FormData(),
-                        callBack: 'datatable'
-                    }, $(this).attr('data-value'));
+                        headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+                        success: function (res) {
+                            toastr.success(res.message || trans('Saved'));
+                            table.ajax.reload(null, false);
+                        },
+                        error: function (xhr) {
+                            box.checked = !on;
+                            box.disabled = false;
+                            toastr.error((xhr.responseJSON && xhr.responseJSON.message) || trans('Something went wrong.'));
+                        }
+                    });
                 });
-            }
         }
     },
     form: {

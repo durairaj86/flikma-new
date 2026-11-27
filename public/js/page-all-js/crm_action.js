@@ -49,8 +49,24 @@ CRM_ACTION = {
                     {data: 'description', class: 'small text-muted'},
                     {data: 'sort_order'},
                     {data: 'used'},
-                    {data: 'is_active'},
-                    GLOBAL_FN.dataTable.optionButton(true, true)
+                    {
+                        // On / Off switch, as the unit list
+                        data: 'is_active', render: function (data, type, row) {
+                            if (type !== 'display') return data;
+                            return '<div class="form-check form-switch m-0 d-inline-flex align-items-center gap-2 crm-action-switch-wrap">'
+                                + '<input class="form-check-input crm-action-switch" type="checkbox" role="switch" data-id="' + row.id + '"'
+                                + (row.is_on ? ' checked' : '') + (row.can_switch ? '' : ' disabled') + ' aria-label="' + data + '">'
+                                + '<span class="small ' + (row.is_on ? 'text-success' : 'text-secondary') + '">' + data + '</span></div>';
+                        }
+                    },
+                    {
+                        // Edit; Delete only for an action the company added itself (a standard one is switched off instead)
+                        data: null, orderable: false, searchable: false, className: 'text-center text-nowrap',
+                        render: function (data, type, row) {
+                            return '<a href="javascript:void(0)" class="btn btn-outline-secondary btn-sm rounded-circle crm-action-edit" data-id="' + row.id + '" title="' + trans('Edit') + '" aria-label="' + trans('Edit') + '"><i class="bi bi-pencil"></i></a>'
+                                + (row.can_delete ? ' <a href="javascript:void(0)" class="btn btn-outline-danger btn-sm rounded-circle crm-action-delete" data-id="' + row.id + '" title="' + trans('Delete') + '" aria-label="' + trans('Delete') + '"><i class="bi bi-trash"></i></a>' : '');
+                        }
+                    }
                 ],
                 language: {
                     search: ""
@@ -59,7 +75,6 @@ CRM_ACTION = {
 
                 initComplete: function () {
                     CRM_ACTION.form.open();
-                    webDataTable.actions.menu();
                 }
             });
             $('#customSearch').on('keyup input', window.debounceSearch(function () {
@@ -67,28 +82,41 @@ CRM_ACTION = {
             }));
             webDataTable.loader(table);
             webDataTable.search(table);
-        },
-        extraActions(row) {
-            CRM_ACTION.list.actions.statusChange(row);
-            CRM_ACTION.list.actions.delete(row);
-        },
-        actions: {
-            delete(row) {
-                $('#row_delete').off().on('click', function () {
-                    deleteRecord(GLOBAL_FN.buildUrl('masters/crm-action/' + row.attr('data-id')), function () {
-                        $('#dataTable').DataTable().ajax.reload(null, false);
-                    }, {name: row.find('td').eq(1).text()});
+            $('#dataTable').off('.crmAction')
+                .on('click.crmAction', '.crm-action-switch-wrap', function (e) { e.stopPropagation(); })
+                .on('click.crmAction', '.crm-action-edit', function () {
+                    webModal.openGlobalModal({
+                        title: trans('Edit') + ' ' + trans('Action'),
+                        url: GLOBAL_FN.buildUrl('masters/crm-action/' + $(this).data('id') + '/create'),
+                        content: null,
+                        size: 'md',
+                        callBack: null
+                    });
                 })
-            },
-            statusChange(row) {
-                $('#row_active,#row_inactive').off().on('click', function () {
-                    changeCustomerStatus(GLOBAL_FN.buildUrl('masters/crm-action/' + row.attr('data-id') + '/status/' + $(this).attr('data-value')), {
+                .on('click.crmAction', '.crm-action-delete', function () {
+                    const id = $(this).data('id');
+                    deleteRecord(GLOBAL_FN.buildUrl('masters/crm-action/' + id), function () {
+                        table.ajax.reload(null, false);
+                    }, {name: $(this).closest('tr').find('td').eq(1).text()});
+                })
+                .on('change.crmAction', '.crm-action-switch', function () {
+                    const box = this, on = box.checked ? 1 : 0;
+                    box.disabled = true;
+                    $.ajax({
+                        url: GLOBAL_FN.buildUrl('masters/crm-action/' + $(box).data('id') + '/status/' + on),
                         method: 'POST',
-                        data: new FormData(),
-                        callBack: 'datatable'
-                    }, $(this).attr('data-value'));
-                })
-            },
+                        headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+                        success: function (res) {
+                            toastr.success(res.message || trans('Saved'));
+                            table.ajax.reload(null, false);
+                        },
+                        error: function (xhr) {
+                            box.checked = !on;
+                            box.disabled = false;
+                            toastr.error((xhr.responseJSON && xhr.responseJSON.message) || trans('Something went wrong.'));
+                        }
+                    });
+                });
         },
     },
     form: {

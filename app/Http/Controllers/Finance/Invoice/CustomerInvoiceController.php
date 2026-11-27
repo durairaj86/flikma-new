@@ -648,6 +648,10 @@ class CustomerInvoiceController extends Controller
     public function destroy($id)
     {
         $customer = CustomerInvoice::findOrFail($id);
+        // deleting an approved invoice takes its entry out of the books: not in a closed period (same rule as taking it back to draft)
+        if ($locked = $this->refuseInClosedPeriod($customer->getRawOriginal('invoice_date'), CustomerInvoiceEnum::DRAFT->value, (int) $customer->getRawOriginal('status'), CustomerInvoiceEnum::APPROVED->value)) {
+            return $locked;
+        }
         $this->deleteCustomerFinanceByRef($customer->invoice_number, 'SI');
         app(\App\Services\Finance\SupplierInvoiceLinks::class)->release((int) $id);
         $customer->delete();

@@ -21,6 +21,10 @@ class HsTariffController extends Controller
                 'class' => 'row-item',
                 'id' => fn($model) => 'hs-tariff-' . $model->id,
             ])
+            ->addColumn('status', fn($row) => $row->is_active ? __('Active') : __('Inactive'))
+            ->addColumn('is_on', fn($row) => (bool) $row->is_active)
+            ->addColumn('can_switch', fn($row) => $row->company_id && userCan('masters.hs-tariffs', 'edit'))
+            ->addColumn('can_delete', fn($row) => $row->company_id && userCan('masters.hs-tariffs', 'delete'))
             ->editColumn('duty_rate', function ($row) {
                 return number_format($row->duty_rate, 2) . '%';
             })
@@ -102,6 +106,16 @@ class HsTariffController extends Controller
         ]]);
 
         return response()->json($contextMenu->values());
+    }
+
+    public function updateStatus($id, $status)
+    {
+        abort_unless(in_array((string) $status, ['0', '1'], true), 404);
+        $hsTariff = HsTariff::whereNotNull('company_id')->findOrFail($id);
+        $hsTariff->is_active = (string) $status === '1';
+        $hsTariff->save();
+
+        return response()->json(['status' => 'success', 'message' => __('HS Tariff status updated successfully!')]);
     }
 
     public function destroy($id)

@@ -50,8 +50,11 @@ class SalespersonController extends Controller
                 return showDate($row->created_at);
             })
             ->editColumn('status', function ($row) {
-                return $row->status == 1 ? 'Active' : 'Inactive';
+                return $row->status == 1 ? __('Active') : __('Inactive');
             })
+            ->addColumn('is_on', fn ($row) => (int) $row->status === 1)
+            ->addColumn('can_switch', fn () => userCan('masters.salesperson', 'edit'))
+            ->addColumn('can_delete', fn () => userCan('masters.salesperson', 'delete'))
             ->toJson();
     }
 
@@ -221,7 +224,10 @@ class SalespersonController extends Controller
         $guard = app(\App\Services\DeletionGuard::class);
         $why = $guard->blockers('salesperson', (int) $id);
         if ($why) {
-            return $guard->refusal(__('salesperson'), $why);
+            $data = $guard->refusal(__('salesperson'), $why)->getData(true);
+            $data['hint'] = __('Transactions already exist under this salesperson, so it cannot be deleted. Make it In-Active instead.');
+
+            return response()->json($data, 422);
         }
 
         $model->delete();

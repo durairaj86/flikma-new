@@ -22,7 +22,10 @@
         <i class="bi bi-envelope me-1"></i>{{ __('Send by email') }}
     </button>
     @if(userCan($docModule, 'create'))
-        <a class="btn btn-outline-success btn-sm rounded-pill" href="{{ $docUrl }}&new=1">
+        {{-- opens the new collection / payment form in the modal right here (the statement script); the link is the fallback --}}
+        <a class="btn btn-outline-success btn-sm rounded-pill" href="{{ $docUrl }}&new=1" id="stmtRecordOpen"
+           data-url="{{ url($isCustomer ? 'transaction/collections/create' : 'transaction/payments/create') }}?{{ $kind }}={{ encodeId($partyId) }}"
+           data-title="{{ $isCustomer ? __('Create Collection') : __('Create Payment') }}">
             <i class="bi bi-plus-circle me-1"></i>{{ $isCustomer ? __('Record Collection') : __('Record Payment') }}
         </a>
     @endif

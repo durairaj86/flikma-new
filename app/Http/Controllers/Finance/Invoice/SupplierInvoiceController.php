@@ -465,6 +465,10 @@ class SupplierInvoiceController extends Controller
     public function destroy($id)
     {
         $supplier = SupplierInvoice::findOrFail($id);
+        // deleting an approved bill takes its entry out of the books: not in a closed period
+        if ($locked = $this->refuseInClosedPeriod($supplier->getRawOriginal('invoice_date'), SupplierInvoiceEnum::DRAFT->value, (int) $supplier->getRawOriginal('status'), SupplierInvoiceEnum::APPROVED->value)) {
+            return $locked;
+        }
         if ($linked = app(\App\Services\Finance\SupplierInvoiceLinks::class)->refusal($supplier->id)) {
             return $linked;
         }

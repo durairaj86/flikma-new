@@ -51,7 +51,15 @@ UNIT = {
                                 + '<span class="small ' + (row.is_on ? 'text-success' : 'text-secondary') + '">' + data + '</span></div>';
                         }
                     },
-                    GLOBAL_FN.dataTable.optionButton()
+                    {
+                        // the On / Off switch already covers Active / In-Active, so the row only needs Edit (own units; a shared unit is not editable)
+                        data: null, orderable: false, searchable: false, className: 'text-center',
+                        render: function (data, type, row) {
+                            return row.company_id
+                                ? '<a href="javascript:void(0)" class="btn btn-outline-secondary btn-sm rounded-circle unit-edit" data-id="' + row.id + '" title="' + trans('Edit') + '" aria-label="' + trans('Edit') + '"><i class="bi bi-pencil"></i></a>'
+                                : '';
+                        }
+                    }
                 ],
                 language: {
                     search: "" // removes "Search:" label
@@ -60,7 +68,6 @@ UNIT = {
 
                 initComplete: function () {
                     UNIT.form.open();
-                    webDataTable.actions.menu();
                 }
             });
             $('#customSearch').on('keyup input', window.debounceSearch(function () {
@@ -69,6 +76,16 @@ UNIT = {
             webDataTable.loader(table);
             webDataTable.search(table);
             // the switch works on its own: it does not open the row menu
+            $('#dataTable').off('click.unitEdit').on('click.unitEdit', '.unit-edit', function () {
+                webModal.openGlobalModal({
+                    title: trans('Edit') + ' ' + ($('#dataTable').data('title') || trans('Unit')),
+                    url: GLOBAL_FN.buildUrl('masters/unit/' + $(this).data('id') + '/create'),
+                    content: null,
+                    size: 'compact',
+                    callBack: null,
+                    minHeight: 'min-height:0;'
+                });
+            });
             $('#dataTable').off('click.unitSwitch').on('click.unitSwitch', '.unit-switch-wrap', function (e) { e.stopPropagation(); })
                 .off('change.unitSwitch').on('change.unitSwitch', '.unit-switch', function () {
                     const box = this, on = box.checked ? 1 : 0;

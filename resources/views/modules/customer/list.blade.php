@@ -160,8 +160,7 @@
                             <th>{{ __('Customer') }}</th>
                             <th>{{ __('Contact Person') }}</th>
                             <th>{{ __('Contact Info') }}</th>
-                            <th>{{ __('Location') }}</th>
-                            <th>{{ __('Currency') }}</th>
+                            <th>{{ __('Currency') }} / {{ __('Location') }}</th>
                             <th>{{ __('VAT #') }}</th>
                             <th>{{ __('Credit Limit') }}</th>
                             <th>{{ __('Due') }}</th>

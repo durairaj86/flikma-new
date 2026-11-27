@@ -20,7 +20,7 @@
             <div class="border bdr-r-10 pt-0 pb-3">
                 <!-- Table with scroll -->
                 <div class="flex-grow-1 overflow-auto" style="min-height:320px;">
-                    <table class="table align-middle dataTable" id="dataTable" data-model-size="mid">
+                    <table class="table align-middle dataTable" id="dataTable" data-title="{{ __('HS Tariff') }}" data-model-size="mid">
                         <thead class="table-light sticky-top bg-white">
                         <tr>
                             <th>#</th>
@@ -28,6 +28,7 @@
                             <th>{{ __('Description') }}</th>
                             <th>{{ __('Duty Rate') }}</th>
                             <th>{{ __('Unit') }}</th>
+                            <th>{{ __('Status') }}</th>
                             <th></th>
                         </tr>
                         </thead>

@@ -593,6 +593,9 @@ class ExpenseController extends Controller
     {
         try {
             $expense = Expense::findOrFail($id);
+            if ($locked = $this->refuseInClosedPeriod($expense->getRawOriginal('posted_at'), ExpenseEnum::PENDING->value, (int) $expense->getRawOriginal('status'), ExpenseEnum::APPROVED->value)) {
+                return $locked;
+            }
             $guard = app(\App\Services\DeletionGuard::class);
             $why = $guard->blockers('expense', (int) $id);
             if ($why) {

@@ -2224,3 +2224,7 @@ a.no-access[data-denied-href], .dropdown-item.no-access {
 li:has(> a.no-access[data-denied-href]), li:has(> .dropdown-item.no-access) {
     cursor: not-allowed;
 }
+
+/* Every popup opens at the top with the same gap, as the global modal does: a Bootstrap "centered" dialog (statement email,
+   videos, guides, confirmations ...) is kept at the top instead of the middle of the screen. */
+.modal-dialog.modal-dialog-centered { align-items: flex-start; }

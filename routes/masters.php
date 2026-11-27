@@ -36,6 +36,7 @@ Route::post('/masters/hs-tariff/create', [\App\Http\Controllers\Master\HsTariffC
 Route::get('/masters/hs-tariff/{id}/create', [\App\Http\Controllers\Master\HsTariffController::class, 'edit']);
 Route::post('/masters/hs-tariff/{id}/create', [\App\Http\Controllers\Master\HsTariffController::class, 'store']);
 Route::get('/masters/hs-tariff/{id}/actions', [\App\Http\Controllers\Master\HsTariffController::class, 'actions']);
+Route::post('/masters/hs-tariff/{id}/status/{status}', [\App\Http\Controllers\Master\HsTariffController::class, 'updateStatus'])->whereNumber('id')->whereIn('status', ['0', '1']);
 Route::delete('/masters/hs-tariff/{id}', [\App\Http\Controllers\Master\HsTariffController::class, 'destroy']);
 
 Route::view('/masters/period-closing', 'modules.master.period-closing.list')->name('period-closing');
@@ -135,6 +136,7 @@ Route::post('/masters/description/create', [\App\Http\Controllers\Master\Descrip
 Route::get('/masters/description/{id}/create', [\App\Http\Controllers\Master\DescriptionController::class, 'edit']);
 Route::post('/masters/description/{id}/create', [\App\Http\Controllers\Master\DescriptionController::class, 'store']);
 Route::get('masters/description/{id}/actions', [\App\Http\Controllers\Master\DescriptionController::class, 'actions']);
+Route::delete('masters/description/{id}', [\App\Http\Controllers\Master\DescriptionController::class, 'delete'])->whereNumber('id');
 Route::post('masters/description/{id}/status/{status}', [\App\Http\Controllers\Master\DescriptionController::class, 'updateStatus'])->whereNumber('id');
 
 Route::view('/masters/salesperson', 'modules.master.salesperson.list')->name('salespersons');

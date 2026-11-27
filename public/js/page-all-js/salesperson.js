@@ -43,8 +43,23 @@ SALESPERSON = {
                     {data: 'target', class: 'text-end', orderable: false, searchable: false},
                     {data: 'user_id'},
                     {data: 'created_at'},
-                    {data: 'status'},
-                    GLOBAL_FN.dataTable.optionButton()
+                    {
+                        // On / Off switch, as the unit list
+                        data: 'status', render: function (data, type, row) {
+                            if (type !== 'display') return data;
+                            return '<div class="form-check form-switch m-0 d-inline-flex align-items-center gap-2 sp-switch-wrap">'
+                                + '<input class="form-check-input sp-switch" type="checkbox" role="switch" data-id="' + row.id + '"'
+                                + (row.is_on ? ' checked' : '') + (row.can_switch ? '' : ' disabled') + ' aria-label="' + data + '">'
+                                + '<span class="small ' + (row.is_on ? 'text-success' : 'text-secondary') + '">' + data + '</span></div>';
+                        }
+                    },
+                    {
+                        data: null, orderable: false, searchable: false, className: 'text-center text-nowrap',
+                        render: function (data, type, row) {
+                            return '<a href="javascript:void(0)" class="btn btn-outline-secondary btn-sm rounded-circle sp-edit" data-id="' + row.id + '" title="' + trans('Edit') + '" aria-label="' + trans('Edit') + '"><i class="bi bi-pencil"></i></a>'
+                                + (row.can_delete ? ' <a href="javascript:void(0)" class="btn btn-outline-danger btn-sm rounded-circle sp-delete" data-id="' + row.id + '" title="' + trans('Delete') + '" aria-label="' + trans('Delete') + '"><i class="bi bi-trash"></i></a>' : '');
+                        }
+                    }
                 ],
                 language: {
                     search: "" // removes "Search:" label
@@ -53,7 +68,6 @@ SALESPERSON = {
 
                 initComplete: function () {
                     SALESPERSON.form.open();
-                    webDataTable.actions.menu();
                 }
             });
             $('#customSearch').on('keyup input', window.debounceSearch(function () {
@@ -61,26 +75,46 @@ SALESPERSON = {
             }));
             webDataTable.loader(table);
             webDataTable.search(table);
-            //webDataTable.actions.menu();
+            SALESPERSON.list.bind(table);
         },
-        extraActions(row) {
-            SALESPERSON.list.actions.statusChange(row);
-            $('#row_delete').off().on('click', function () {
-                deleteRecord(GLOBAL_FN.buildUrl('masters/salesperson/' + row.attr('data-id')), function () { SALESPERSON.list.dataTable(); }, {name: $.trim(row.find('td').not(':first').first().text())});
-            });
-        },
-        actions: {
-            statusChange(row) {
-                $('#row_active,#row_inactive').off().on('click', function () {
-                    let fd = new FormData();
-                    changeCustomerStatus(GLOBAL_FN.buildUrl('masters/salesperson/' + row.attr('data-id') + '/status/' + $(this).attr('data-value')), {
-                        method: 'POST',
-                        data: fd,
-                        callBack: 'datatable'
-                    }, $(this).attr('data-value'));
+        bind(table) {
+            $('#dataTable').off('.sp')
+                .on('click.sp', '.sp-switch-wrap', function (e) { e.stopPropagation(); })
+                .on('click.sp', '.sp-edit', function () {
+                    webModal.openGlobalModal({
+                        title: trans('Edit') + ' ' + trans('Salesperson'),
+                        url: GLOBAL_FN.buildUrl('masters/salesperson/' + $(this).data('id') + '/create'),
+                        content: null,
+                        size: 'smd',
+                        callBack: null,
+                        minHeight: 'min-height:0;'
+                    });
                 })
-            },
-        },
+                .on('click.sp', '.sp-delete', function () {
+                    const $tr = $(this).closest('tr');
+                    deleteRecord(GLOBAL_FN.buildUrl('masters/salesperson/' + $(this).data('id')), function () {
+                        table.ajax.reload(null, false);
+                    }, {name: $.trim($tr.find('td').eq(1).text())});
+                })
+                .on('change.sp', '.sp-switch', function () {
+                    const box = this, on = box.checked ? 1 : 0;
+                    box.disabled = true;
+                    $.ajax({
+                        url: GLOBAL_FN.buildUrl('masters/salesperson/' + $(box).data('id') + '/status/' + on),
+                        method: 'POST',
+                        headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+                        success: function (res) {
+                            toastr.success(res.message || trans('Saved'));
+                            table.ajax.reload(null, false);
+                        },
+                        error: function (xhr) {
+                            box.checked = !on;
+                            box.disabled = false;
+                            toastr.error((xhr.responseJSON && xhr.responseJSON.message) || trans('Something went wrong.'));
+                        }
+                    });
+                });
+        }
     },
     form: {
         open() {

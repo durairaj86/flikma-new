@@ -105,7 +105,7 @@ CUSTOMER = {
                     },
                     columnDefs: [
                         {targets: [0], searchable: false},
-                        {targets: [8, 9], searchable: false, orderable: false},
+                        {targets: [7, 8], searchable: false, orderable: false},
                         {targets: [0], orderable: false},
                         /*{targets: [1], class: 'hide', visible: false},*/
                     ],
@@ -127,13 +127,10 @@ CUSTOMER = {
                             }
                         },
                         {
+                            // location and currency share one column
                             data: 'country', render: function (data, type, row) {
-                                return '<span class="badge bg-light text-dark border fw-normal"><i class="bi bi-geo-alt me-1"></i>' + (row.city_en ? (row.city_en + ', ') : '') + row.country + '</span>';
-                            }
-                        },
-                        {
-                            data: 'currency', render: function (data, type, row) {
-                                return '<span class="fw-medium">' + row.currency + '</span>';
+                                return '<div class="d-flex flex-column align-items-start gap-1"><span class="small fw-semibold">' + (row.currency ?? '') + '</span>'
+                                    + '<span class="badge bg-light text-dark border fw-normal"><i class="bi bi-geo-alt me-1"></i>' + (row.city_en ? (row.city_en + ', ') : '') + row.country + '</span></div>';
                             }
                         },
                         {

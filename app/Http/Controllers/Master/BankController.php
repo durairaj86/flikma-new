@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Master;
 
 use App\Http\Controllers\Controller;
+use App\Models\Finance\Account\Account;
 use App\Models\Master\Bank;
+use Illuminate\Support\Facades\DB;
 use App\Support\ShortCuts;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
@@ -78,7 +80,11 @@ class BankController extends Controller
         $bank->currency = $request->input('currency');
         $bank->sort = $request->input('sort_code');
         $bank->bank_address = $request->input('bank_address');
-        $bank->save();
+        DB::transaction(function () use ($bank) {
+            $isNew = !$bank->exists;
+            $bank->save();
+            $isNew ? $this->createAccount($bank) : $this->syncAccount($bank);
+        });
 
         return response()->json([
             'status' => 'success',
@@ -131,6 +137,58 @@ class BankController extends Controller
         return view('modules.master.bank.view-overview', compact('bank'));
     }
 
+    /** The chart-of-accounts side of a bank: its own posting account under 1120 Bank Accounts, so Paid From / Received In can use it. */
+    private function createAccount(Bank $bank): void
+    {
+        $parent = Account::query()->where('code', '1120')->first();
+        if (!$parent) {
+            return;
+        }
+        $taken = Account::withoutGlobalScopes()->whereNotNull('code')->pluck('code')->map(fn($c) => (string) $c)->flip();
+        $code = null;
+        // 1122 - 1129 first (1130 is Accounts Receivable), then 11201, 11202 ...
+        foreach (array_merge(range(1122, 1129), range(11201, 11299)) as $try) {
+            if (!isset($taken[(string) $try])) {
+                $code = (string) $try;
+                break;
+            }
+        }
+        if (!$code) {
+            return;
+        }
+        $account = new Account();
+        $this->setBaseColumns($account);
+        $account->name = $this->accountName($bank);
+        $account->code = $code;
+        $account->type = $parent->type;
+        $account->parent_id = $parent->id;
+        $account->is_grouped = 0;
+        $account->is_last = 1;
+        $account->is_level = $parent->is_level + 1;
+        $account->is_active = 1;
+        $account->account_number = $bank->account_number;
+        $account->currency = $bank->currency;
+        $account->save();
+        $bank->account_id = $account->id;
+        $bank->save();
+    }
+
+    /** Renaming the bank renames its account (the code and the entries stay). */
+    private function syncAccount(Bank $bank): void
+    {
+        $account = $bank->account_id ? Account::query()->where('company_id', companyId())->find($bank->account_id) : null;
+        if ($account) {
+            $account->name = $this->accountName($bank);
+            $account->account_number = $bank->account_number;
+            $account->save();
+        }
+    }
+
+    private function accountName(Bank $bank): string
+    {
+        return trim($bank->bank_name . ' - ' . substr((string) $bank->account_number, -4));
+    }
+
     /** Delete — refused (HTTP 422 + the reasons) while anything still uses this record. */
     public function delete($id)
     {
@@ -141,8 +199,30 @@ class BankController extends Controller
             return $guard->refusal(__('bank'), $why);
         }
 
-        $model->delete();
+        // its account holds entries (or is used on a document): the bank stays
+        $account = $model->account_id ? Account::query()->where('company_id', companyId())->find($model->account_id) : null;
+        DB::beginTransaction();
+        {
+            if ($account) {
+                // the bank's own link to the account does not count as a use of it
+                DB::table('banks')->where('id', $model->id)->update(['account_id' => null]);
+                $used = $guard->blockers('account', (int) $account->id);
+                if ($used) {
+                    DB::rollBack();
 
-        return response()->json(['status' => 'success', 'message' => __('Bank deleted successfully')]);
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => __('Transactions already exist under this bank, so it cannot be deleted.'),
+                        'reasons' => $used,
+                        'hint' => __('Transactions already exist under this bank, so it cannot be deleted.'),   // shown under the list in the alert
+                    ], 422);
+                }
+            }
+            $model->delete();
+            $account?->delete();
+            DB::commit();
+
+            return response()->json(['status' => 'success', 'message' => __('Bank deleted successfully')]);
+        }
     }
 }

@@ -135,6 +135,8 @@ class CustomerController extends Controller
             ->addIndexColumn()
             // due_amount / overdue_count are computed subselect aliases, not real columns,
             // so they can't appear in the search WHERE clause.
+            // the Location / Currency column: a search matches the city, the country or the currency
+            ->filterColumn('country', fn($q, $k) => $q->where(fn($w) => $w->where('country', 'like', "%{$k}%")->orWhere('city_en', 'like', "%{$k}%")->orWhere('currency', 'like', "%{$k}%")))
             ->filterColumn('due_amount', fn() => null)
             ->filterColumn('overdue_count', fn() => null)
             ->filterColumn('credit_amount', fn() => null)

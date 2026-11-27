@@ -63,18 +63,21 @@ class PeriodClosingController extends Controller
         }
 
         $rules = [
-            'year' => [
-                'required',
-                'integer',
-                'min:2000',
-                'max:2100',
-                Rule::unique('period_closings', 'year')->where('company_id', $companyId)->ignore($id),
-            ],
             'closing_date' => ['required', 'date'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ];
 
         $validated = $request->validate($rules);
+
+        // the year is the closing date's year: one closing per year, no separate box to keep in step
+        $closingDate = formDate($validated['closing_date']);
+        $year = (int) \Illuminate\Support\Carbon::parse($closingDate)->year;
+        if ($year < 2000 || $year > 2100) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['closing_date' => __('The closing date must be between the years 2000 and 2100.')]);
+        }
+        if (PeriodClosing::where('company_id', $companyId)->where('year', $year)->when($id, fn($q) => $q->where('id', '!=', $id))->exists()) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['closing_date' => __('A period for :year already exists.', ['year' => $year])]);
+        }
 
         if ($id) {
             $periodClosing = PeriodClosing::findOrFail($id);
@@ -83,8 +86,8 @@ class PeriodClosingController extends Controller
             $this->setBaseColumns($periodClosing);
         }
 
-        $periodClosing->year = $validated['year'];
-        $periodClosing->closing_date = formDate($validated['closing_date']);
+        $periodClosing->year = $year;
+        $periodClosing->closing_date = $closingDate;
         $periodClosing->notes = $validated['notes'] ?? null;
         $isNew = !$periodClosing->exists;
         $changes = $isNew ? null : $this->changedFields($periodClosing);
@@ -94,9 +97,22 @@ class PeriodClosingController extends Controller
             $this->logHistory($periodClosing, $isNew ? 'created' : 'updated', $changes);
         }
 
+        // "Close this period now" in the modal: the same as the Close Period menu item, so it needs the same (Close) right
+        $closed = false;
+        if ($request->boolean('close_period') && userCan('masters.period-closing', 'approve')) {
+            $periodClosing->is_closed = true;
+            $periodClosing->closed_by = Auth::id();
+            $periodClosing->closed_at = now();
+            $periodClosing->save();
+            $this->logHistory($periodClosing, 'closed');
+            $closed = true;
+        }
+
         return response()->json([
             'status' => 'success',
-            'message' => __('Period saved successfully'),
+            'message' => $closed
+                ? __('Period :year closed. All transactions on or before :date are now locked.', ['year' => $periodClosing->year, 'date' => $periodClosing->closing_date->format('d-m-Y')])
+                : __('Period saved successfully'),
             'module_id' => $periodClosing->id,
         ]);
     }

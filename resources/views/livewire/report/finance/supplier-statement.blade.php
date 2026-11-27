@@ -1,3 +1,4 @@
+@section('extra-js', 'payment')
 @section('js', 'supplier_statement')
 @section('page-title', __('Supplier Statement'))
 @section('page-subtitle', __('Manage and track supplier account transaction history'))

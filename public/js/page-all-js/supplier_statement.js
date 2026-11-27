@@ -3,6 +3,7 @@ SUPPLIER_STATEMENT = {
     baseUrl: 'reports/supplier-statement',
     actionUrl: 'reports/supplier-statement',
     load() {
+        SUPPLIER_STATEMENT.recordHere();
         CURRENCY.currencyRate();
         SUPPLIER_STATEMENT.initDatepickers();
     },
@@ -43,5 +44,27 @@ SUPPLIER_STATEMENT = {
                 },
             });
         }
+    },
+    // Record Collection / Payment opens its form in the modal here, on the statement, and the statement reloads once it is saved
+    recordHere() {
+        $(document).off('click.stmtRecord').on('click.stmtRecord', '#stmtRecordOpen', function (e) {
+            e.preventDefault();
+            window.afterModalSave = () => setTimeout(() => window.location.reload(), 600);
+            webModal.openGlobalModal({
+                title: $(this).data('title'),
+                url: $(this).data('url'),
+                content: null,
+                size: 'xl',
+                scroll: true,
+                minHeight: 'min-height:70vh;',
+            });
+        });
+    },
+    // the modal form is the payment form: its hooks run from here
+    form: {
+        openCallback() { PAYMENT.form.openCallback(); },
+    },
+    before: {
+        submit() { return PAYMENT.before.submit(); },
     },
 }

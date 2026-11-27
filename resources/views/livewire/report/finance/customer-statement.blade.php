@@ -1,3 +1,4 @@
+@section('extra-js', 'collection')
 @section('js', 'customer_statement')
 @section('page-title', __('Customer Statement'))
 @section('page-subtitle', __('Manage and track account transaction history'))

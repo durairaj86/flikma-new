@@ -9,7 +9,7 @@
 </div>
 <div class="modal-body p-0">
     <div class="container px-4 py-3 align-items-center" id="modal-buttons" data-buttons="cancel,save"
-         data-button-save="{{ __('Save Salesperson') }}">
+         data-button-save="{{ __('Save Unit') }}">
         <div class="row">
             <form id="moduleForm" novalidate action="{{ request()->url() }}">
                 @csrf

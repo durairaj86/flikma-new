@@ -27,6 +27,8 @@ class DescriptionController extends Controller
             ])
             // on / off as this company sees it: a shared row it has switched off for itself counts as off
             ->editColumn('is_active', fn ($row) => $this->isOn($row) ? 1 : 0)
+            ->addColumn('can_switch', fn () => userCan('masters.descriptions', 'edit'))
+            ->addColumn('can_delete', fn ($row) => $row->company_id && userCan('masters.descriptions', 'delete'))
             ->editColumn('created_at', function ($row) {
                 return showDate($row->created_at);
             })
@@ -139,8 +141,7 @@ class DescriptionController extends Controller
     }
 
     /**
-     * Edit, and Active / In-Active. There is no Delete: a description may be on invoices, quotations and credit notes already, so it is
-     * switched off (no longer offered in new dropdowns) instead. A shared description (company_id empty) belongs to every company, so
+     * The list has an On / Off switch, Edit and Delete (delete() refuses while a document uses the description; switch it off instead). A shared description (company_id empty) belongs to every company, so
      * switching it off only records that for this company; the row itself, and every other company, are not touched.
      */
     public function actions($id)
@@ -180,6 +181,24 @@ class DescriptionController extends Controller
         ]);
 
         return response()->json($contextMenu->values());
+    }
+
+    /** Delete: only a description of this company that no document uses yet; otherwise the alert lists where it is used. */
+    public function delete($id): \Illuminate\Http\JsonResponse
+    {
+        $description = Description::whereNotNull('company_id')->findOrFail($id);
+        $guard = app(\App\Services\DeletionGuard::class);
+        $why = $guard->blockers('description', (int) $id);
+        if ($why) {
+            $response = $guard->refusal(__('description'), $why);
+            $data = $response->getData(true);
+            $data['hint'] = __('Transactions already use this description, so it cannot be deleted. Make it In-Active instead.');
+
+            return response()->json($data, 422);
+        }
+        $description->delete();
+
+        return response()->json(['status' => 'success', 'message' => __('Description deleted successfully')]);
     }
 
     public function updateStatus($id, $status): \Illuminate\Http\JsonResponse
