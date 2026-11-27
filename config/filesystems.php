@@ -33,7 +33,9 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // off: with it on Laravel answers /storage/{path} itself (the private folder, signed links only), which hides the uploads when
+            // the public/storage link is missing (shared hosting); routes/web.php streams storage/app/public there instead
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],

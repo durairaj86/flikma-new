@@ -8,9 +8,22 @@ use Codesmiths\LaravelOcrSpace\OcrSpaceOptions;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 Route::domain('flikma.com')->group(base_path('routes/website.php'));
 Route::domain('flikma-new.test')->group(base_path('routes/website.php'));
+
+// Uploaded files (logos, photos, documents). Normally the web server serves public/storage (the storage:link symlink) itself and never gets here;
+// on shared hosting where the link is missing or broken the request falls through to Laravel and the file is streamed from storage/app/public.
+Route::get('storage/{path}', function (string $path) {
+    $root = realpath(Storage::disk('public')->path(''));
+    $file = $root ? realpath($root . DIRECTORY_SEPARATOR . $path) : false;
+    $inside = $file && str_starts_with($file, $root . DIRECTORY_SEPARATOR);
+    // never outside the uploads folder, no hidden files, no scripts
+    abort_unless($inside && is_file($file) && !preg_match('#(^|/)\.#', $path) && !preg_match('/\.(php\d?|phtml|phar|htaccess)$/i', $file), 404);
+
+    return response()->file($file, ['Cache-Control' => 'public, max-age=3600']);
+})->where('path', '.*')->name('storage.fallback');
 
 Route::get('/dashboard/widget/{key}', [\App\Http\Controllers\DashboardController::class, 'widget'])->middleware(['auth', 'verified'])->name('dashboard.widget');
 Route::post('/dashboard/layout', [\App\Http\Controllers\DashboardLayoutController::class, 'save'])->middleware(['auth', 'verified'])->name('dashboard.layout.save');
