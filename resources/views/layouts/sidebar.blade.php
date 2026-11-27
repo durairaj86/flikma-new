@@ -583,10 +583,11 @@
 <style>
     /* a small label that groups items inside a menu (Operations › Shipment documents); themed with the sidebar's label color */
     .sidebar-menu .nav-treeview .sidebar-subheader {
-        padding: .55rem 1rem .2rem 2.1rem; font-size: .68rem; font-weight: 600; letter-spacing: .04em;
-        text-transform: uppercase; color: var(--sb-label); border-top: 1px solid var(--sb-divider); margin-top: .25rem;
+        /* same left / right margins as the links (26px / 10px) so the divider starts at the vertical menu line, not left of it */
+        margin: .25rem 10px 0 26px; padding: .55rem 14px .2rem 18px; font-size: .68rem; font-weight: 600; letter-spacing: .04em;
+        text-transform: uppercase; color: var(--sb-label); border-top: 1px solid var(--sb-divider);
     }
-    html[dir="rtl"] .sidebar-menu .nav-treeview .sidebar-subheader { padding: .55rem 2.1rem .2rem 1rem; letter-spacing: 0; text-transform: none; }
+    html[dir="rtl"] .sidebar-menu .nav-treeview .sidebar-subheader { margin: .25rem 26px 0 10px; padding: .55rem 18px .2rem 14px; letter-spacing: 0; text-transform: none; }
     /* the menu search filters items only: hide the label while searching, and in the collapsed (icon) sidebar */
     .sidebar-menu:has(.menu-search-hidden) .sidebar-subheader,
     .sidebar-collapse .sidebar-subheader { display: none; }
