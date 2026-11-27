@@ -54,6 +54,7 @@
             ['/reports/description-wise', 'Description Wise Report', 'Sales, cost and profit per charge description, from customer and supplier invoice lines.', 'bi-tags'],
         ]],
         ['title' => 'Operations', 'icon' => 'bi-truck', 'color' => '#0f766e', 'bg' => '#ccfbf1', 'reports' => [
+            ['/operation/job-overview', 'Job Overview', 'Jobs at a glance: counts, status, trends and the links to quotations and invoices', 'bi-speedometer2'],
             ['/reports/waybill-report', 'Waybill Report', 'Waybills issued, with delivery and status detail', 'bi-file-earmark-ruled'],
         ]],
     ];

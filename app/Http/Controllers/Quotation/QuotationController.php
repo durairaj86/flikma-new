@@ -784,7 +784,7 @@ class QuotationController extends Controller
     /** The quotation as a printable page (FastFatoora quotation layout); the list prints it in a hidden frame, PDF and email use it too. */
     public function print($id)
     {
-        $quotation = Quotation::with(['charges', 'customer', 'prospect'])->findOrFail($id);
+        $quotation = Quotation::with(['charges', 'customer', 'prospect', 'containers', 'packages'])->findOrFail($id);
 
         return view('modules.quotation.print', $this->printData($quotation));
     }
@@ -794,15 +794,29 @@ class QuotationController extends Controller
     {
         $company = authUserCompany();
         $base = $company->base_currency ?: 'SAR';
-        $lines = $quotation->charges->sortBy(fn($c) => [(int) $c->line_no, (int) $c->sort_order, $c->id])->values()->map(function ($c) {
+
+        // the quotation is printed in the currency it was quoted in: when every charge line is in one currency (USD ...) the lines show
+        // that currency's own amounts; a quotation mixing currencies is printed in the company currency (local_amount) with the quoted amount under each line
+        $charges = $quotation->charges;
+        $lineCurrencies = $charges->pluck('currency')->filter()->map(fn($c) => strtoupper($c))->unique()->values();
+        $currency = $lineCurrencies->count() === 1 ? $lineCurrencies->first() : $base;
+        $inQuotedCurrency = $lineCurrencies->count() === 1 && $currency !== $base;
+
+        $lines = $charges->sortBy(fn($c) => [(int) $c->line_no, (int) $c->sort_order, $c->id])->values()->map(function ($c) use ($inQuotedCurrency, $currency, $base) {
             $qty = (float) $c->qty ?: 1;
-            // amounts in the company currency (local_amount), as the quotation drawer and the pipeline count them
-            $beforeVat = round((float) $c->local_amount, 2);
+            $quoted = strtoupper((string) $c->currency) ?: $base;
+            $mixed = !$inQuotedCurrency && $quoted !== $base;
+            $beforeVat = round((float) ($inQuotedCurrency ? ($c->fcy_amount ?? $c->local_amount) : $c->local_amount), 2);
             $pct = vatPercent($c->tax_group_code);
+            $remarks = $c->remarks;
+            if ($mixed) {
+                $note = $quoted . ' ' . number_format((float) $c->fcy_amount, 2) . ' @ ' . rtrim(rtrim(number_format((float) $c->ex_rate, 6, '.', ''), '0'), '.');
+                $remarks = trim($remarks . ' ' . '(' . $note . ')');
+            }
 
             return [
                 'description' => $c->charge_description,
-                'remarks' => $c->remarks,
+                'remarks' => $remarks,
                 'unit' => $c->unit,
                 'qty' => $qty,
                 'unit_price' => round($beforeVat / $qty, 2),
@@ -832,7 +846,7 @@ class QuotationController extends Controller
         return [
             'quotation' => $quotation,
             'company' => $company,
-            'currency' => $base,
+            'currency' => $currency,
             'party' => $party,
             'partyName' => $quotation->customer_id ? ($party->name_en ?? '') : ($party->name ?? ''),
             'partyCompany' => $quotation->customer_id ? ($party->name_ar ?? null) : ($party->company_name ?? null),

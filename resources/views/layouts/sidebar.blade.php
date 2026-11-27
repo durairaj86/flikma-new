@@ -209,8 +209,8 @@
                     </ul>
                 </li>
 
-                <!-- Operations -->
-                <li class="nav-item {{ $menu == 'operation' ? 'menu-open' : '' }}">
+                <!-- Operations: the daily shipment work; the import / export papers are grouped under "Shipment documents" -->
+                <li class="nav-item {{ $menu == 'operation' && !in_array($submenu, ['trips', 'documents', 'document', 'job-overview']) ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link">
                         <i class="nav-icon bi bi-gear"></i>
                         <p>
@@ -224,6 +224,22 @@
                                 <p>{{ __('Jobs') }}</p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="/operation/tracking" class="nav-link {{ $submenu == 'tracking' ? 'active' : '' }}">
+                                <p>{{ __('Shipment Tracking') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/operation/customs" class="nav-link {{ $submenu == 'customs' ? 'active' : '' }}">
+                                <p>{{ __('Customs Clearance') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/operation/demurrage" class="nav-link {{ $submenu == 'demurrage' ? 'active' : '' }}">
+                                <p>{{ __('Demurrage') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-header sidebar-subheader">{{ __('Shipment documents') }}</li>
                         <li class="nav-item">
                             <a href="/operation/bookings" class="nav-link {{ $submenu == 'bookings' ? 'active' : '' }}">
                                 <p>{{ __('Bookings') }}</p>
@@ -239,37 +255,43 @@
                                 <p>{{ __('Delivery Orders') }}</p>
                             </a>
                         </li>
+                    </ul>
+                </li>
+
+                <!-- Fleet: truck trips with the vehicles and drivers they use (vehicles / drivers are also on the Masters page) -->
+                <li class="nav-item {{ ($menu == 'operation' && $submenu == 'trips') || ($menu == 'masters' && in_array($submenu, ['vehicles', 'drivers'])) ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon bi bi-truck"></i>
+                        <p>
+                            {{ __('Fleet') }}
+                            <i class="nav-arrow bi bi-chevron-right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="/operation/trips" class="nav-link {{ $submenu == 'trips' ? 'active' : '' }}">
                                 <p>{{ __('Trips') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="/operation/tracking" class="nav-link {{ $submenu == 'tracking' ? 'active' : '' }}">
-                                <p>{{ __('Shipment Tracking') }}</p>
+                            <a href="/masters/vehicles" class="nav-link {{ $submenu == 'vehicles' ? 'active' : '' }}">
+                                <p>{{ __('Vehicles') }}</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="/operation/demurrage" class="nav-link {{ $submenu == 'demurrage' ? 'active' : '' }}">
-                                <p>{{ __('Demurrage') }}</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/operation/documents" class="nav-link {{ $submenu == 'documents' ? 'active' : '' }}">
-                                <p>{{ __('Documents') }}</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/operation/customs" class="nav-link {{ $submenu == 'customs' ? 'active' : '' }}">
-                                <p>{{ __('Customs Clearance') }}</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/operation/job-overview" class="nav-link {{ $submenu == 'job-overview' ? 'active' : '' }}">
-                                <p>{{ __('Job Overview') }}</p>
+                            <a href="/masters/drivers" class="nav-link {{ $submenu == 'drivers' ? 'active' : '' }}">
+                                <p>{{ __('Drivers') }}</p>
                             </a>
                         </li>
                     </ul>
+                </li>
+
+                <!-- Documents: every document attached anywhere (jobs, customers, employees, vehicles ...) with expiry tracking -->
+                <li class="nav-item">
+                    <a href="/operation/documents" class="nav-link {{ $menu == 'operation' && in_array($submenu, ['documents', 'document']) ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-folder2-open"></i>
+                        <p>{{ __('Documents') }}</p>
+                    </a>
                 </li>
 
                 <!-- Invoices -->
@@ -493,7 +515,7 @@
                 <!-- Reports: one page lists every report (customer / supplier reports keep their own menu highlight) -->
                 <li class="nav-item">
                     <a href="/reports"
-                       class="nav-link {{ $menu == 'reports' && !in_array($submenu, array_merge($customerReportSlugs, $supplierReportSlugs)) ? 'active' : '' }}">
+                       class="nav-link {{ ($menu == 'reports' && !in_array($submenu, array_merge($customerReportSlugs, $supplierReportSlugs))) || ($menu == 'operation' && $submenu == 'job-overview') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-bar-chart-line"></i>
                         <p>{{ __('Reports') }}</p>
                     </a>
@@ -559,6 +581,16 @@
 </aside>
 
 <style>
+    /* a small label that groups items inside a menu (Operations › Shipment documents); themed with the sidebar's label color */
+    .sidebar-menu .nav-treeview .sidebar-subheader {
+        padding: .55rem 1rem .2rem 2.1rem; font-size: .68rem; font-weight: 600; letter-spacing: .04em;
+        text-transform: uppercase; color: var(--sb-label); border-top: 1px solid var(--sb-divider); margin-top: .25rem;
+    }
+    html[dir="rtl"] .sidebar-menu .nav-treeview .sidebar-subheader { padding: .55rem 2.1rem .2rem 1rem; letter-spacing: 0; text-transform: none; }
+    /* the menu search filters items only: hide the label while searching, and in the collapsed (icon) sidebar */
+    .sidebar-menu:has(.menu-search-hidden) .sidebar-subheader,
+    .sidebar-collapse .sidebar-subheader { display: none; }
+
     /* ---- Sidebar theme system --------------------------------------------
        Every theme pairs a background with text/icon colors guaranteed to stay
        readable (light-on-dark or dark-on-light, never mixed), so switching

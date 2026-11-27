@@ -17,11 +17,13 @@
 ])
 
 @section('body')
+    @include('modules.quotation.print-cargo')
+
     @include('modules.common.print-doc.lines', ['lines' => $lines, 'emptyText' => 'No charges on this quotation yet.'])
 
     @include('modules.common.print-doc.totals', [
         'notesText' => $notes !== '' ? $notes : 'No specific notes for this quotation.',
-        'subTotal' => $subTotal, 'vatTotal' => $vatTotal, 'grandTotal' => $grandTotal,
+        'subTotal' => $subTotal, 'vatTotal' => $vatTotal, 'grandTotal' => $grandTotal, 'currency' => $currency,
     ])
 
     {{-- bank | terms --}}

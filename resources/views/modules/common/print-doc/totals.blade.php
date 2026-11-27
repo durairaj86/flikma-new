@@ -1,4 +1,4 @@
-{{-- Notes next to the totals of a document print: $notesText, $subTotal, $vatTotal, $grandTotal, and optional $afterGrand
+{{-- Notes next to the totals of a document print: $notesText, optional $currency (shown after GRAND TOTAL), $subTotal, $vatTotal, $grandTotal, and optional $afterGrand
      rows [[en, ar, value], ...] printed under the grand total (amount paid, balance, base-currency total). --}}
 @php $money = fn($v) => number_format((float) $v, 2); @endphp
 <table style="margin-top: 20px; page-break-inside: avoid;">
@@ -16,7 +16,7 @@
             <table class="grand">
                 <tr>
                     <td style="text-align: right; padding-right: 14px;">
-                        <div style="font-weight: bold; font-size: 9.5pt; color: #111827; letter-spacing: .4px;">GRAND TOTAL</div>
+                        <div style="font-weight: bold; font-size: 9.5pt; color: #111827; letter-spacing: .4px;">GRAND TOTAL {{ !empty($currency) ? '(' . $currency . ')' : '' }}</div>
                         <div class="ar" style="font-weight: bold; font-size: 9pt; color: #111827; text-align: right;">المجموع الكلي</div>
                     </td>
                     <td width="26%" style="text-align: right; vertical-align: middle;"><span style="font-size: 15pt; font-weight: bold; color: var(--accent);">{{ $money($grandTotal) }}</span></td>
