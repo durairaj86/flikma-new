@@ -21,7 +21,9 @@ class TrackLastSeen
         if ($user && !session('impersonating') && $request->hasSession()) {
             $last = (int) session('last_seen_stamp', 0);
             if (time() - $last >= 300) {
-                DB::table('users')->where('id', $user->getAuthIdentifier())->update(['last_seen_at' => now()]);
+                DB::table('users')->where('id', $user->getAuthIdentifier())
+                    ->when($user->company_id, fn ($q) => $q->where('company_id', $user->company_id), fn ($q) => $q->whereNull('company_id'))
+                    ->update(['last_seen_at' => now()]);
                 session(['last_seen_stamp' => time()]);
             }
         }

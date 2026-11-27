@@ -7,6 +7,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('finance/journal-vouchers')->name('finance.journal_vouchers.')->group(function () {
         Route::get('/', [JournalVoucherController::class, 'index'])->name('index');
         Route::post('/data', [JournalVoucherController::class, 'fetchAllRows'])->name('data');
+        // Approve selected (Draft tab): each through updateStatus, needs the Approve right (path ends in /approve)
+        Route::post('/bulk/approve', [JournalVoucherController::class, 'bulkApprove']);
 
         Route::get('/create', [JournalVoucherController::class, 'modal'])->name('create');
         Route::post('/store', [JournalVoucherController::class, 'store'])->name('store');

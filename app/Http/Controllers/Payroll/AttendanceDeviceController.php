@@ -50,7 +50,8 @@ class AttendanceDeviceController extends Controller
         }
         // Names of the users who added / edited punches by hand (shown in the Remarks column of the details).
         $userIds = $dayPunches->flatten(1)->flatMap(fn ($p) => [$p->raw['by'] ?? null, $p->raw['edited_by'] ?? null])->filter()->unique();
-        $users = \App\Models\User::withoutGlobalScopes()->whereIn('id', $userIds)->pluck('name', 'id');
+        $users = $userIds->isEmpty() ? collect() : \App\Models\User::withoutGlobalScopes()
+            ->where(fn ($q) => $q->where('company_id', companyId())->orWhereNull('company_id'))->whereIn('id', $userIds)->pluck('name', 'id');
 
         $fromInput = formDate($request->query('from')) ? \Illuminate\Support\Carbon::parse(formDate($request->query('from')))->format('d-m-Y') : now()->startOfMonth()->format('d-m-Y');
         $toInput = formDate($request->query('to')) ? \Illuminate\Support\Carbon::parse(formDate($request->query('to')))->format('d-m-Y') : now()->format('d-m-Y');

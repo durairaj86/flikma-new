@@ -23,6 +23,8 @@ use Yajra\DataTables\Facades\DataTables;
 
 class CreditNoteController extends Controller
 {
+    use \App\Http\Controllers\Concerns\BulkApproves;
+
     public function modal(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
     {
         $creditNote = new CreditNote();
@@ -969,5 +971,11 @@ class CreditNoteController extends Controller
         });
 
         return response()->json(['status' => 'success', 'message' => __('Credit note deleted successfully')]);
+    }
+
+    /** Approve selected on the Draft tab (Concerns\BulkApproves). */
+    protected function bulkApproveTarget(): array
+    {
+        return ['model' => CreditNote::class, 'draft' => [CreditNoteEnum::DRAFT->value], 'approved' => CreditNoteEnum::APPROVED->value, 'number' => 'row_no'];
     }
 }

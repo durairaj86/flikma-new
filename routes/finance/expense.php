@@ -6,6 +6,8 @@ use App\Http\Controllers\Finance\Expense\ExpenseController;
 Route::namespace('finance')->prefix('finance/expense')->group(function () {
     Route::view('/', 'modules.finance.expense.list')->name('expenses.index');
     Route::post('/data', [ExpenseController::class, 'fetchAllRows'])->name('expenses.data');
+    // Approve selected (Draft tab): each through updateStatus, needs the Approve right (path ends in /approve)
+    Route::post('/bulk/approve', [ExpenseController::class, 'bulkApprove']);
     Route::get('/create', [ExpenseController::class, 'modal']);
     Route::post('/create', [ExpenseController::class, 'store']);
     Route::get('/{id}/create', [ExpenseController::class, 'edit']);

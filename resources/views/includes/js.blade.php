@@ -27,6 +27,8 @@
 @endif--}}
 @php
     $i18nKeys = [
+        'Transfer Voucher', 'New Transfer', 'Edit Transfer', 'Error updating status',
+        'Select all', 'Select', 'Approve selected', 'Clear', ':n selected', 'Approve :n documents? Each one is checked and posted like a single Approve.', 'Approve', 'Not approved', 'Server error',
         'Opening Balance', 'New Refund', 'New Advance', 'Excess kept as advance', 'Taken from the customer advance', 'Taken from the supplier advance', 'Total received does not match the chosen invoices', 'Total paid does not match the chosen invoices',
         'Auto', 'Also logged by the system', 'New Action', ':n days ago', 'Jobs', 'Log', 'No contact yet', 'RFQs', 'Suggested', 'Suggested from the score', 'Touches', 'today',
         'User Rights', 'in draft payment', 'Draft payments are taken off in the Payment form', 'Part paid', 'Paid', 'Unpaid',

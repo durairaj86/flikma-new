@@ -139,6 +139,9 @@
                                     <small class="h6">{{ $company->base_currency ?? 'SAR' }}</small> {{ number_format($closingBalance, 2) }}
                                 </h3>
                             </div>
+                            @include('livewire.report.finance._statement-actions', ['kind' => 'customer', 'partyId' => $selectedCustomer->id,
+                                'partyName' => $selectedCustomer->name, 'partyEmail' => $selectedCustomer->email, 'printArea' => 'statement-print',
+                                'balance' => $closingBalance, 'periodFrom' => $startDate, 'periodTo' => $endDate])
                         </div>
                     </div>
                 </div>

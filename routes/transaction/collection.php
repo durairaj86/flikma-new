@@ -7,6 +7,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('transaction/collections')->name('transaction.collections.')->group(function () {
         Route::get('/', [CollectionController::class, 'index'])->name('index');
         Route::post('/data', [CollectionController::class, 'fetchAllRows'])->name('data');
+        // Approve selected (Draft tab): each through updateStatus, needs the Approve right (path ends in /approve)
+        Route::post('/bulk/approve', [CollectionController::class, 'bulkApprove']);
 
         Route::get('/refund', [CollectionController::class, 'refundModal']);
         Route::post('/refund', [CollectionController::class, 'storeRefund']);

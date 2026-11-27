@@ -171,7 +171,7 @@
                 <div id="filtered-data"></div>
             </div>
             <div class="">
-                <table class="table align-middle dataTable" id="dataTable" data-empty-noun="{{ __('payments') }}" data-model-size="md">
+                <table class="table align-middle dataTable" id="dataTable" @if(userCan('transactions.payments', 'approve')) data-bulk-approve="transaction/payments/bulk/approve" @endif data-empty-noun="{{ __('payments') }}" data-model-size="md">
                     <thead class="table-light bg-white">
                     <tr>
                         <th>#</th>

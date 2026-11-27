@@ -9,9 +9,13 @@ use App\Models\Supplier\Supplier;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use App\Traits\CompanyScopeTrait;
 
 class JournalVoucherItem extends Model
 {
+    // every line carries its voucher's company (none without one), so lines are read and written within the company
+    use CompanyScopeTrait;
+
     protected $fillable = [
         'journal_voucher_id', 'account_id', 'entity_type', 'entity_id', 'tax_id',
         'description', 'debit_amount', 'credit_amount', 'base_debit_amount',

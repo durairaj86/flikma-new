@@ -18,6 +18,8 @@ Route::prefix('settings')->group(function () {
     Route::view('/tax', 'modules.settings.tax')->name('settings.tax');
     Route::get('/crm', [\App\Http\Controllers\Master\Settings\CrmSettingsController::class, 'edit'])->name('settings.crm');
     Route::post('/crm', [\App\Http\Controllers\Master\Settings\CrmSettingsController::class, 'store'])->name('settings.crm.store');
+    Route::get('/finance', [\App\Http\Controllers\Master\Settings\FinanceSettingsController::class, 'edit'])->name('settings.finance');
+    Route::post('/finance', [\App\Http\Controllers\Master\Settings\FinanceSettingsController::class, 'store'])->name('settings.finance.store');
 
 
     Route::post('/company', [CompanyController::class, 'store'])->name('settings.company.store');

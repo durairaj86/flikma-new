@@ -113,10 +113,11 @@
                         ['Payroll', 'PV', 'Salary paid', 'Staff Salaries 5200', 'Bank / cash; Employee Loan Receivable 1180 for loan deductions', 'payroll'],
                         ['Employee Loan given', 'LV (LN-)', 'Loan saved (on its start date)', 'Employee Loan Receivable 1180', 'The Paid From bank / cash account', 'employee loan'],
                         ['Employee Loan repaid in cash', 'LV (LR-)', 'Repayment recorded', 'The Received In bank / cash account', 'Employee Loan Receivable 1180', 'loan repayment'],
-                        ['Journal Voucher', 'JV', 'Never (gap)', '-', '-', 'Approving a journal voucher only changes its status. It does NOT create a finance entry today.'],
+                        ['Journal Voucher', 'JV', 'Approved', 'The debit lines as entered (a line with a tax account: the tax part on that account)', 'The credit lines as entered', 'journal_voucher (back to Draft / Disapproved takes it out)'],
+                        ['Transfer Voucher', 'TV', 'Approved', 'The To bank / cash account; Bank Charges (or the charge account chosen) for the charge', 'The From bank / cash account (amount + charge)', 'transfer_voucher (Finances › Transfer Voucher)'],
                         ['Proforma Invoice / drafts', '-', 'Never', 'Not an accounting event', 'Not an accounting event', 'Shown through job_links only'],
                     ] as [$doc, $v, $when, $dr, $cr, $src])
-                        <tr class="{{ $v === 'JV' ? 'table-danger' : '' }}">
+                        <tr>
                             <td><b>{{ __($doc) }}</b></td><td>{{ $v }}</td><td>{{ __($when) }}</td><td class="dr">{{ __($dr) }}</td><td class="cr">{{ __($cr) }}</td><td class="text-muted">{{ __($src) }}</td>
                         </tr>
                     @endforeach

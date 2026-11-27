@@ -334,8 +334,19 @@ class CustomerController extends Controller
         $customer->business_type = $validated['business_type'];
         $customer->cr_number = $validated['cr_number'] ?? null;
         $customer->vat_number = $validated['vat_number'] ?? null;
-        $customer->credit_limit = $validated['credit_limit'] ?? null;
-        $customer->credit_days = $validated['credit_days'] ?? null;
+        // with credit control on (Settings › Finance), a change of the credit limit / days by someone who may not approve credit
+        // does not go onto the customer: it becomes a request on Finances › Credit Approval
+        $newLimit = $validated['credit_limit'] ?? null;
+        $newDays = $validated['credit_days'] ?? null;
+        $creditRequest = null;
+        $creditChanged = round((float) $customer->credit_limit, 2) !== round((float) $newLimit, 2) || (int) $customer->credit_days !== (int) $newDays;
+        if ($creditChanged && \App\Services\Finance\FinanceSettings::get('credit_check') !== 'off' && !userCan('finances.credit-approvals', 'approve')) {
+            $creditRequest = [$newLimit, $newDays];
+            $newLimit = $customer->credit_limit;
+            $newDays = $customer->credit_days;
+        }
+        $customer->credit_limit = $newLimit;
+        $customer->credit_days = $newDays;
         $customer->address1_en = $validated['address1_en'] ?? null;
         $customer->address1_ar = $validated['address1_ar'] ?? null;
         $customer->city_en = $validated['city_en'] ?? null;
@@ -356,10 +367,13 @@ class CustomerController extends Controller
         $customer->save();
 
         $this->saveDocuments($customer, $request);
+        if ($creditRequest) {
+            \App\Http\Controllers\Finance\Credit\CreditApprovalController::raise($customer, $creditRequest[0], $creditRequest[1], __('Changed on the customer form'));
+        }
 
         return response()->json([
             'status' => 'success',
-            'message' => __('Customer created successfully'),
+            'message' => __('Customer created successfully') . ($creditRequest ? ' ' . __('The credit limit / days change was sent for approval (Finances › Credit Approval).') : ''),
             'customer_id' => $customer->id,
         ]);
     }

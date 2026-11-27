@@ -340,6 +340,18 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a href="/finance/transfer-vouchers"
+                               class="nav-link {{ $submenu == 'transfer-vouchers' ? 'active' : '' }}">
+                                <p>{{ __('Transfer Voucher') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/finance/credit-approvals"
+                               class="nav-link {{ $submenu == 'credit-approvals' ? 'active' : '' }}">
+                                <p>{{ __('Credit Approval') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a href="/finance/asset"
                                class="nav-link {{ $submenu == 'asset' ? 'active' : '' }}">
                                 <p>{{ __('Assets') }}</p>

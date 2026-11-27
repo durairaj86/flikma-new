@@ -7,7 +7,32 @@ COLLECTION = {
         COLLECTION.form.load();
         datepicker();
         COLLECTION.filter.load();
+        COLLECTION.fromLink();
         FILTER.filteredColumn();
+    },
+    // opened from a statement: ?customer=<id> lists that customer's collections (all dates); with &new=1 the form opens for that customer
+    fromLink() {
+        const q = new URLSearchParams(window.location.search), party = q.get('customer');
+        if (!party) return;
+        const box = document.getElementById('customers');
+        if (box) {
+            box.tomselect ? box.tomselect.setValue([party], true) : $(box).find('option[value="' + party + '"]').prop('selected', true);
+        }
+        // from the earliest date the picker allows (its minDate), so the whole history shows
+        $('#filter-from-date').each(function () {
+            const fp = this._flatpickr;
+            fp ? fp.setDate(fp.config.minDate || new Date(2000, 0, 1), false) : $(this).val('01-01-2000');
+        });
+        if (q.get('new') === '1') {
+            webModal.openGlobalModal({
+                title: trans('Create Collection'),
+                url: GLOBAL_FN.buildUrl(`${COLLECTION.baseUrl}/create?customer=${encodeURIComponent(party)}`),
+                content: null,
+                size: 'xl',
+                scroll: true,
+                minHeight: 'min-height:70vh;',
+            });
+        }
     },
     filter: {
         load() {
@@ -409,6 +434,11 @@ COLLECTION = {
                 COLLECTION.form.useAllCredit();
             });
             COLLECTION.form.refreshCreditTotal();
+
+            // a new collection opened with the customer already chosen (Record collection on the statement): load its invoices
+            if (!$('#collection_id').val() && $('#customer').val() && !$('#advance-mode').length && !$('#refund-form').length) {
+                $('#customer').trigger('change');
+            }
 
             // Form submission
             /*$('#moduleForm').off('submit').on('submit', function (e) {

@@ -21,6 +21,8 @@ use Yajra\DataTables\Facades\DataTables;
 
 class CollectionController extends Controller
 {
+    use \App\Http\Controllers\Concerns\BulkApproves;
+
     /**
      * Display a listing of the collections.
      */
@@ -50,6 +52,10 @@ class CollectionController extends Controller
         }
 
         $collection = new Collection();
+        // "Record collection" from the customer statement: the form opens with that customer chosen (an id of another company is ignored)
+        if ($request->filled('customer') && Customer::whereKey($id = decodeId((string) $request->query('customer')))->exists()) {
+            $collection->customer_id = $id;
+        }
         $customers = Customer::select('id', 'name_en')->orderBy('name_en')->get();
         $parents = Account::whereIn('id', [3, 4])->orderBy('name')->get();//2=>Bank & Cash sub accounts
 
@@ -107,13 +113,56 @@ class CollectionController extends Controller
     }
 
     /**
+     * Before a collection is saved: only a draft can be changed (an approved one is moved back to draft first, which takes
+     * its entries off), every ticked invoice is an approved invoice of this customer, and no amount is more than the
+     * invoice still owes after its settlements and the other draft collections holding part of it.
+     */
+    private function assertInvoiceAmounts(Request $request, int $customerId): void
+    {
+        $collectionId = $request->filled('collection_id') ? (int) $request->input('collection_id') : null;
+        if ($collectionId && (int) Collection::findOrFail($collectionId)->status !== CollectionEnum::DRAFT->value) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['collection_id' => __('Only a draft collection can be edited. Move it to draft first.')]);
+        }
+        foreach ((array) $request->input('customer_invoice_ids', []) as $invoiceId) {
+            $invoice = CustomerInvoice::find($invoiceId);
+            if (!$invoice || (int) $invoice->customer_id !== $customerId || (int) $invoice->status !== \App\Enums\CustomerInvoiceEnum::APPROVED->value) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['customer_invoice_ids' => __('Pick approved invoices of this customer only.')]);
+            }
+            $amount = (float) ($request->input('invoice_amounts')[$invoiceId] ?? 0);
+            $left = $this->invoiceOutstanding($invoice, $collectionId);
+            if ($amount > $left + 0.004) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['invoice_amounts.' . $invoiceId => __(':no: :amount is more than the :left still open on this invoice.', ['no' => $invoice->row_no, 'amount' => number_format($amount, 2), 'left' => number_format(max(0, $left), 2)])]);
+            }
+        }
+    }
+
+    /** On approval: the message when a line (with the credit chosen for it) is more than its invoice still owes, else null. */
+    private function overSettled(Collection $collection): ?string
+    {
+        foreach (CollectionInvoice::where('collection_id', $collection->id)->get() as $line) {
+            $invoice = CustomerInvoice::find($line->customer_invoice_id);
+            if (!$invoice) {
+                continue;
+            }
+            $credit = (float) DB::table('customer_credit_applications')->where('collection_id', $collection->id)
+                ->where('to_invoice_id', $invoice->id)->where('status', 0)->sum('amount');
+            $left = round((float) $invoice->grand_total - (float) $invoice->paid_amount, 2);
+            if ((float) $line->amount + $credit > $left + 0.004) {
+                return __(':no: :amount is more than the :left still open on this invoice.', ['no' => $invoice->row_no, 'amount' => number_format((float) $line->amount + $credit, 2), 'left' => number_format(max(0, $left), 2)]);
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Credit a customer holds that can be applied to other invoices: on an approved invoice that was settled for more
      * than it was worth (typically a fully paid invoice that was then credited), the excess, less what other draft
      * collections have already picked. Returns [['invoice_id', 'row_no', 'available'], ...].
      */
     private function creditSources(int $customerId, ?int $exceptCollectionId = null): \Illuminate\Support\Collection
     {
-        $picked = DB::table('customer_credit_applications')->where('status', 0)
+        $picked = DB::table('customer_credit_applications')->where('company_id', companyId())->where('status', 0)
             ->when($exceptCollectionId, fn ($q) => $q->where('collection_id', '!=', $exceptCollectionId))
             ->selectRaw('from_invoice_id, SUM(amount) as amount')->groupBy('from_invoice_id')->pluck('amount', 'from_invoice_id');
         return CustomerInvoice::where('customer_id', $customerId)->where('status', 3)
@@ -290,6 +339,7 @@ class CollectionController extends Controller
 
         // Get customer invoices for the selected customer
         $customerInvoices = CustomerInvoice::where('customer_id', $collection->customer_id)
+            ->where(fn ($q) => $q->where('status', \App\Enums\CustomerInvoiceEnum::APPROVED->value)->orWhereIn('id', $selectedInvoiceIds))
             ->orderBy('invoice_date', 'desc')
             ->get();
 
@@ -382,6 +432,7 @@ class CollectionController extends Controller
 
         $this->assertPeriodOpen($validated['collection_date'], 'collection_date');
         $this->assertPartyCurrency(\App\Models\Customer\Customer::class, $validated['customer'], $validated['currency']);
+        $this->assertInvoiceAmounts($request, (int) $validated['customer']);
 
         DB::beginTransaction();
         try {
@@ -439,11 +490,6 @@ class CollectionController extends Controller
                 $invoice = CustomerInvoice::find($invoiceId);
                 $amount = $request->input('invoice_amounts')[$invoiceId];
                 $this->assertSameCurrency($validated['currency'], $invoice);
-
-                // Validate that amount doesn't exceed the invoice grand_total
-                if ($amount > $invoice->grand_total) {
-                    return redirect()->back()->withErrors(['error' => 'Collection amount cannot exceed the invoice total amount'])->withInput();
-                }
 
                 // Calculate tax proportion
                 $invoiceTotal = $invoice->grand_total;
@@ -839,6 +885,10 @@ class CollectionController extends Controller
         }
         if ($status != \App\Enums\CollectionEnum::APPROVED->value && ($blocked = $this->advanceBlocksReversal($collection))) {
             return $blocked;
+        }
+        // another collection may have settled the same invoices since this draft was saved
+        if ($status == CollectionEnum::APPROVED->value && $previousStatus != CollectionEnum::APPROVED->value && ($over = $this->overSettled($collection))) {
+            return response()->json(['status' => 'error', 'message' => $over], 422);
         }
 
         DB::beginTransaction();
@@ -1534,5 +1584,11 @@ class CollectionController extends Controller
         return request()->expectsJson() || request()->ajax()
             ? response()->json(['status' => 'error', 'message' => $message], 403)
             : abort(403, $message);
+    }
+
+    /** Approve selected on the Draft tab (Concerns\BulkApproves). */
+    protected function bulkApproveTarget(): array
+    {
+        return ['model' => Collection::class, 'draft' => [CollectionEnum::DRAFT->value], 'approved' => CollectionEnum::APPROVED->value, 'number' => 'row_no'];
     }
 }

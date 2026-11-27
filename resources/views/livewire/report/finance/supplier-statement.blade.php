@@ -123,6 +123,9 @@
                                     <small class="h6">{{ __('SAR') }}</small> {{ number_format($closingBalance, 2) }}
                                 </h3>
                             </div>
+                            @include('livewire.report.finance._statement-actions', ['kind' => 'supplier', 'partyId' => $supplier->id,
+                                'partyName' => $supplier->name_en, 'partyEmail' => $supplier->email, 'printArea' => 'supplier-statement-print',
+                                'balance' => $closingBalance, 'periodFrom' => $startDate, 'periodTo' => $endDate])
                         </div>
                     </div>
                 </div>

@@ -49,7 +49,7 @@
     <div class="top">
         <div>
             <div class="company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
-            <h1>{{ __('Journal Voucher') }} {{ $v->row_no }}</h1>
+            <h1>{{ $docTitle ?? __('Journal Voucher') }} {{ $v->row_no }}</h1>
             <div class="sub">{{ $typeLabel }} · {{ \Carbon\Carbon::parse($v->voucher_date)->translatedFormat('d M Y') }}</div>
         </div>
         <span class="badge {{ (int) $v->status === 2 ? 'b-approved' : ((int) $v->status === 3 ? 'b-disapproved' : 'b-draft') }}">{{ $statusLabel }}</span>
@@ -115,7 +115,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ __('Journal Voucher') }} {{ $journalVoucher->row_no }}</title>
+    <title>{{ $docTitle ?? __('Journal Voucher') }} {{ $journalVoucher->row_no }}</title>
 
     <style>
         body { margin: 0; padding: 24px; background: #fff; }
@@ -151,7 +151,7 @@
     <div class="top">
         <div>
             <div class="company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
-            <h1>{{ __('Journal Voucher') }} {{ $v->row_no }}</h1>
+            <h1>{{ $docTitle ?? __('Journal Voucher') }} {{ $v->row_no }}</h1>
             <div class="sub">{{ $typeLabel }} · {{ \Carbon\Carbon::parse($v->voucher_date)->translatedFormat('d M Y') }}</div>
         </div>
         <span class="badge {{ (int) $v->status === 2 ? 'b-approved' : ((int) $v->status === 3 ? 'b-disapproved' : 'b-draft') }}">{{ $statusLabel }}</span>

@@ -7,7 +7,32 @@ PAYMENT = {
         PAYMENT.form.load();
         datepicker();
         PAYMENT.filter.load();
+        PAYMENT.fromLink();
         FILTER.filteredColumn();
+    },
+    // opened from a statement: ?supplier=<id> lists that supplier's payments (all dates); with &new=1 the form opens for that supplier
+    fromLink() {
+        const q = new URLSearchParams(window.location.search), party = q.get('supplier');
+        if (!party) return;
+        const box = document.getElementById('suppliers');
+        if (box) {
+            box.tomselect ? box.tomselect.setValue([party], true) : $(box).find('option[value="' + party + '"]').prop('selected', true);
+        }
+        // from the earliest date the picker allows (its minDate), so the whole history shows
+        $('#filter-from-date').each(function () {
+            const fp = this._flatpickr;
+            fp ? fp.setDate(fp.config.minDate || new Date(2000, 0, 1), false) : $(this).val('01-01-2000');
+        });
+        if (q.get('new') === '1') {
+            webModal.openGlobalModal({
+                title: trans('Create Payment'),
+                url: GLOBAL_FN.buildUrl(`${PAYMENT.baseUrl}/create?supplier=${encodeURIComponent(party)}`),
+                content: null,
+                size: 'xl',
+                scroll: true,
+                minHeight: 'min-height:70vh;',
+            });
+        }
     },
     filter: {
         load() {
@@ -497,6 +522,11 @@ PAYMENT = {
             $(document).off('input', '.additional-transaction-amount').on('input', '.additional-transaction-amount', function() {
                 PAYMENT.form.calculateTotal();
             });
+
+            // a new payment opened with the supplier already chosen (Record payment on the statement): load its invoices
+            if (!$('#payment_id').val() && $('#supplier').val() && !$('#advance-mode').length && !$('#refund-form').length) {
+                $('#supplier').trigger('change');
+            }
 
             // Form submission
             /*$('#moduleForm').off('submit').on('submit', function (e) {

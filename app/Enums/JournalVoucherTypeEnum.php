@@ -10,6 +10,8 @@ enum JournalVoucherTypeEnum: int
     case BANK_RECONCILIATION = 4;
     case OPENING_BALANCES = 5;
     case MISCELLANEOUS = 6;
+    // money moved between two cash / bank accounts (Finances > Transfer Voucher); not offered on the Journal Voucher form
+    case TRANSFER = 7;
 
     /**
      * Get the label for the enum value.
@@ -25,6 +27,7 @@ enum JournalVoucherTypeEnum: int
             self::BANK_RECONCILIATION => 'Bank Reconciliation',
             self::OPENING_BALANCES => 'Opening Balances',
             self::MISCELLANEOUS => 'Miscellaneous / Others',
+            self::TRANSFER => 'Transfer Voucher',
         });
     }
 
@@ -43,6 +46,7 @@ enum JournalVoucherTypeEnum: int
             'bank_reconciliation' => self::BANK_RECONCILIATION->value,
             'opening_balances' => self::OPENING_BALANCES->value,
             'miscellaneous' => self::MISCELLANEOUS->value,
+            'transfer' => self::TRANSFER->value,
             default => self::MISCELLANEOUS->value,
         };
     }

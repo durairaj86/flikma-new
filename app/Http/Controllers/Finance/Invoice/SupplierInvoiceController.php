@@ -23,6 +23,8 @@ use Yajra\DataTables\Facades\DataTables;
 
 class SupplierInvoiceController extends Controller
 {
+    use \App\Http\Controllers\Concerns\BulkApproves;
+
     use SupplierFinanceOperation;
 
     public function modal(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
@@ -949,5 +951,11 @@ class SupplierInvoiceController extends Controller
         });
 
         return response()->json(['status' => 'success', 'message' => __('Invoice deleted successfully')]);
+    }
+
+    /** Approve selected on the Draft tab (Concerns\BulkApproves). */
+    protected function bulkApproveTarget(): array
+    {
+        return ['model' => SupplierInvoice::class, 'draft' => [SupplierInvoiceEnum::DRAFT->value], 'approved' => SupplierInvoiceEnum::APPROVED->value, 'number' => 'row_no'];
     }
 }

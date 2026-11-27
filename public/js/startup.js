@@ -233,6 +233,12 @@ let GLOBAL_FN = {
             loadJs('list.dataTable', activeTab);
         });*/
     },
+    // reload the list after a status change / delete, staying on the same page (the status counts come with the data)
+    refreshDataTable() {
+        if ($.fn.DataTable && $.fn.DataTable.isDataTable("#dataTable")) {
+            $('#dataTable').DataTable().ajax.reload(null, false);
+        }
+    },
     destroyDataTable() {
         if ($.fn.DataTable.isDataTable("#dataTable")) {
             $('#dataTable').DataTable().destroy();
@@ -546,6 +552,8 @@ function changeCustomerStatus(url, settings, newStatus, clickElement = null) {
                         success: function (response) {
                             if (response.status === 'success') {
                                 toastr.success(response.message);
+                                // done, with something to know (credit limit / overdue invoices when Settings › Finance says Warn)
+                                if (response.warning) toastr.warning(response.warning, '', {timeOut: 12000});
                                 if (settings.callBack) {
                                     if (settings.callBack === 'datatable') {
                                         //window[MODULE].list.dataTable();
@@ -557,7 +565,7 @@ function changeCustomerStatus(url, settings, newStatus, clickElement = null) {
                             }
                         },
                         error: function (xhr) {
-                            let errors = xhr.responseJSON.errors;
+                            let errors = (xhr.responseJSON || {}).errors;
                             if (errors) {
                                 $.each(errors, function (key, value) {
                                     toastr.error(value[0]);
@@ -569,7 +577,8 @@ function changeCustomerStatus(url, settings, newStatus, clickElement = null) {
                                     }
                                 });
                             } else {
-                                toastr.error(trans("Something went wrong!"));
+                                // a refusal with its reason (closed period, settled invoice ...) shows that reason
+                                toastr.error((xhr.responseJSON && xhr.responseJSON.message) || trans("Something went wrong!"));
                                 // Revert on AJAX error
                                 if (inputType === 'checkbox') {
                                     input.prop('checked', oldValue);
@@ -3838,3 +3847,117 @@ $(document).on('click.ciEmptyGeneric', '.ci-empty-new', function () { $('#new').
         timer = setTimeout(apply, 250);
     }).observe(document.documentElement, {childList: true, subtree: true});
 })();
+
+/**
+ * Approve selected (lists with data-bulk-approve="<url>" on #dataTable, rendered only for users with the Approve right):
+ * on the Draft / Pending tab every row gets a tick box in its first cell and the header a select-all box; a bar at the
+ * bottom approves the ticked documents in one request. The server approves each one through its normal Approve and
+ * answers which were approved and why the others were not.
+ */
+window.BULK_APPROVE = {
+    picked: new Set(),
+
+    active($table) {
+        const tab = $('#listTabs').find('button.active, .status-btn.active').first().attr('id');
+        return !!$table.attr('data-bulk-approve') && (tab === 'draft' || tab === 'pending');
+    },
+
+    draw(table) {
+        const $table = $(table);
+        BULK_APPROVE.picked.clear();
+        $table.find('.bulk-pick, .bulk-pick-all').remove();
+        if (!BULK_APPROVE.active($table)) { BULK_APPROVE.bar(); return; }
+
+        const rows = $table.find('tbody tr[data-id]');
+        if (rows.length) {
+            $table.find('thead th').first().prepend('<input type="checkbox" class="form-check-input bulk-pick-all me-2" aria-label="' + trans('Select all') + '">');
+        }
+        rows.each(function () {
+            $(this).children('td').first().prepend('<input type="checkbox" class="form-check-input bulk-pick me-2" data-id="' + $(this).attr('data-id') + '" aria-label="' + trans('Select') + '">');
+        });
+        BULK_APPROVE.bar();
+    },
+
+    bar() {
+        let $bar = $('#bulkApproveBar');
+        const n = BULK_APPROVE.picked.size;
+        if (!n) { $bar.remove(); return; }
+        if (!$bar.length) {
+            $bar = $('<div id="bulkApproveBar" class="shadow rounded-pill bg-dark text-white d-flex align-items-center gap-3 px-4 py-2" role="region" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:1050;">'
+                + '<span class="bulk-count small"></span>'
+                + '<button type="button" class="btn btn-success btn-sm rounded-pill px-3 bulk-approve-go"><i class="bi bi-check2-all me-1"></i>' + trans('Approve selected') + '</button>'
+                + '<button type="button" class="btn btn-link btn-sm text-white-50 text-decoration-none bulk-approve-clear">' + trans('Clear') + '</button></div>');
+            $('body').append($bar);
+        }
+        $bar.find('.bulk-count').text(trans(':n selected').replace(':n', n));
+    },
+
+    afterDialog(fn) {
+        const m = document.getElementById('appConfirmModal');
+        if (m && (m.classList.contains('show') || m.classList.contains('fade') && m.style.display === 'block')) {
+            $(m).one('hidden.bs.modal', () => setTimeout(fn, 0));
+        } else {
+            fn();
+        }
+    },
+
+    run() {
+        const $table = $('#dataTable');
+        const ids = Array.from(BULK_APPROVE.picked);
+        if (!ids.length) return;
+        appConfirm({
+            title: trans('Approve selected'),
+            message: trans('Approve :n documents? Each one is checked and posted like a single Approve.').replace(':n', ids.length),
+            button: trans('Approve'),
+            btnClass: 'btn-success',
+            icon: 'bi-check2-all',
+            tone: 'success',
+            onConfirm: function () {
+                const $go = $('#bulkApproveBar .bulk-approve-go').prop('disabled', true);
+                $.ajax({
+                    url: GLOBAL_FN.buildUrl($table.attr('data-bulk-approve')), type: 'POST', dataType: 'json', data: {ids: ids},
+                    complete: function (xhr) {
+                        $go.prop('disabled', false);
+                        const r = xhr.responseJSON || {};
+                        if (r.approved && r.approved.length) toastr.success(r.message);
+                        if (r.failed && r.failed.length) {
+                            // the result reuses the confirm dialog, which may still be closing: Bootstrap ignores a show then
+                            BULK_APPROVE.afterDialog(() => appConfirm({
+                                title: trans('Not approved'),
+                                message: r.message || '',
+                                list: r.failed.map(f => f.number + ': ' + f.message),
+                                tone: 'warning',
+                                icon: 'bi-exclamation-triangle',
+                                infoOnly: true
+                            }));
+                        } else if (!r.approved) {
+                            toastr.error(r.message || trans('Server error'));
+                        }
+                        GLOBAL_FN.refreshDataTable();
+                    }
+                });
+            }
+        });
+    }
+};
+
+$(document)
+    .on('draw.dt', '#dataTable', function () { BULK_APPROVE.draw(this); })
+    .on('click', '.bulk-pick, .bulk-pick-all', function (e) { e.stopPropagation(); })
+    .on('change', '.bulk-pick', function () {
+        const id = String($(this).data('id'));
+        this.checked ? BULK_APPROVE.picked.add(id) : BULK_APPROVE.picked.delete(id);
+        const all = $('#dataTable .bulk-pick');
+        $('#dataTable .bulk-pick-all').prop('checked', all.length > 0 && all.filter(':checked').length === all.length);
+        BULK_APPROVE.bar();
+    })
+    .on('change', '.bulk-pick-all', function () {
+        $('#dataTable .bulk-pick').prop('checked', this.checked).trigger('change');
+    })
+    .on('click', '.bulk-approve-go', function () { BULK_APPROVE.run(); })
+    .on('click', '.bulk-approve-clear', function () {
+        $('#dataTable .bulk-pick, #dataTable .bulk-pick-all').prop('checked', false);
+        BULK_APPROVE.picked.clear();
+        BULK_APPROVE.bar();
+    })
+    .on('turbo:before-cache', function () { $('#bulkApproveBar').remove(); });

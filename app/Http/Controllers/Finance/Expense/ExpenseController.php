@@ -24,6 +24,8 @@ use Yajra\DataTables\Facades\DataTables;
 
 class ExpenseController extends Controller
 {
+    use \App\Http\Controllers\Concerns\BulkApproves;
+
     public function fetchAllRows(Request $request)
     {
         $filter = $request->filterData ?? [];
@@ -863,5 +865,11 @@ class ExpenseController extends Controller
             Log::error('Error deleting finance entries for expense: ' . $e->getMessage());
             throw $e;
         }
+    }
+
+    /** Approve selected on the Draft tab (Concerns\BulkApproves). */
+    protected function bulkApproveTarget(): array
+    {
+        return ['model' => Expense::class, 'draft' => [ExpenseEnum::PENDING->value], 'approved' => ExpenseEnum::APPROVED->value, 'number' => 'row_no'];
     }
 }

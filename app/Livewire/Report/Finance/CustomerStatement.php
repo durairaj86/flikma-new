@@ -11,6 +11,8 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class CustomerStatement extends Component
 {
+    use \App\Livewire\Concerns\SendsStatementMail;
+
     private const AR_ACCOUNT_ID = 5; // 1130 Accounts Receivable
 
     public string $startDate = '';
@@ -126,10 +128,26 @@ class CustomerStatement extends Component
 
     public function exportExcel()
     {
+        if (!$excel = $this->statementExcel()) {
+            return;
+        }
+
+        return Excel::download(...$excel);
+    }
+
+    protected function statementParty(): ?array
+    {
+        $customer = $this->buildStatement()['selectedCustomer'];
+
+        return $customer ? ['name' => $customer->name, 'type' => 'customer_statement'] : null;
+    }
+
+    protected function statementExcel(): ?array
+    {
         $data = $this->buildStatement();
 
         if (!$data['selectedCustomer']) {
-            return;
+            return null;
         }
 
         $summary = [
@@ -147,7 +165,7 @@ class CustomerStatement extends Component
         $filename = 'CustomerStatement-' . $data['selectedCustomer']->code
             . '-' . $this->startDate . '_' . $this->endDate . '.xlsx';
 
-        return Excel::download(new CustomerStatementReportExport($data['transactions'], $summary), $filename);
+        return [new CustomerStatementReportExport($data['transactions'], $summary), $filename];
     }
 
     protected function buildStatement(): array

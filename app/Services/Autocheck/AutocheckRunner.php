@@ -54,6 +54,7 @@ class AutocheckRunner
         'supplier_invoice' => ['Create supplier invoice', '/invoice/supplier'],
         'approve_supplier_invoice' => ['Approve supplier invoice (posts to ledger)', '/invoice/supplier'],
         'invoice' => ['Create customer invoice', '/invoice/customer'],
+        'credit_control' => ['Credit control: Block refuses over the limit (also in bulk), Warn approves with a warning, request → approve updates the customer', '/finance/credit-approvals'],
         'approve_invoice' => ['Approve invoice (posts to ledger)', '/invoice/customer'],
         'customer_aging' => ['Check customer aging (open invoice)', '/reports/customer-aging'],
         'supplier_aging' => ['Check supplier aging (open bill)', '/reports/supplier-aging'],
@@ -91,6 +92,7 @@ class AutocheckRunner
         'employee_loan' => ['Payroll: employee loan', '/employee-loans'],
         'opening_balance' => ['Opening balance: post, edit (auto balancing line) and delete', '/masters/finance/opening-balance'],
         'bank_reconciliation' => ['Bank reconciliation: tick, post a bank charge, difference 0, finish and undo', '/finance/reconciliation'],
+        'transfer_voucher' => ['Transfer voucher: refuse bad accounts, save with a bank charge, approve posts TV, draft takes it out, delete', '/finance/transfer-vouchers'],
         'email_verification' => ['Email verification: one-time code, wrong tries, welcome email queued once', '/verify-email'],
         'finance_workflow_page' => ['Finance workflow page renders with live counts', '/finance-entries/workflow'],
         'input_rules' => ['Input rules: integer / decimal boxes and maxlength map are in place and current', '/customers'],
@@ -1290,6 +1292,105 @@ class AutocheckRunner
         DB::table('finance_subs')->where('finance_id', $financeId)->delete();
         DB::table('finance')->where('id', $financeId)->delete();
         return '/finance/reconciliation';
+    }
+
+    private function stepTransferVoucher(array &$ctx, array &$checks): string
+    {
+        $c = app(\App\Http\Controllers\Finance\JournalVoucher\TransferVoucherController::class);
+        $cash = (int) \App\Models\Finance\Account\Account::where('code', '1111')->value('id');
+        $charges = (int) \App\Models\Finance\Account\Account::where('code', '5260')->value('id');
+        $base = ['voucher_date' => now()->toDateString(), 'currency' => 'SAR', 'currency_rate' => 1, 'from_account_id' => $cash, 'to_account_id' => self::BANK, 'amount' => 200];
+        $refused = function (array $payload) use ($c) {
+            try { $r = $this->call($c, 'store', $payload); return ($r['status'] ?? '') === 'error'; } catch (ValidationException $e) { return true; }
+        };
+        $this->check($checks, 'Same account on both sides is refused', $refused(array_merge($base, ['to_account_id' => $cash])), 'refused');
+        $this->check($checks, 'A non-bank account (Bank Charges) as To is refused', $refused(array_merge($base, ['to_account_id' => $charges])), 'refused');
+        $this->check($checks, 'A bank charge without its account is refused', $refused(array_merge($base, ['charge_amount' => 3])), 'refused');
+
+        $saved = $this->call($c, 'store', array_merge($base, ['charge_amount' => 3, 'charge_account_id' => $charges, 'reference_no' => 'AUTOCHECK TV']));
+        $tv = \App\Models\Finance\JournalVoucher\JournalVoucher::with('journalVoucherItems')->find($saved['journal_voucher_id'] ?? 0);
+        $this->check($checks, 'Saved as draft TV/yy/#### of type Transfer, totals 203.00', $tv && str_starts_with($tv->row_no, 'TV/') && (int) $tv->voucher_type === \App\Enums\JournalVoucherTypeEnum::TRANSFER->value
+            && (int) $tv->status === 1 && abs($tv->debit_total - 203) < 0.01 && abs($tv->credit_total - 203) < 0.01, $tv->row_no ?? '-');
+        $this->check($checks, 'Lines: Dr bank 200, Dr charges 3, Cr cash 203', $tv && $tv->journalVoucherItems->count() === 3
+            && $tv->journalVoucherItems->contains(fn ($i) => (int) $i->account_id === self::BANK && abs($i->debit_amount - 200) < 0.01)
+            && $tv->journalVoucherItems->contains(fn ($i) => (int) $i->account_id === $charges && abs($i->debit_amount - 3) < 0.01)
+            && $tv->journalVoucherItems->contains(fn ($i) => (int) $i->account_id === $cash && abs($i->credit_amount - 203) < 0.01), '3 lines');
+        $hidden = false;
+        try { app(\App\Http\Controllers\Finance\JournalVoucher\JournalVoucherController::class)->edit($tv->id); } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) { $hidden = true; }
+        $this->check($checks, 'The Journal Voucher screen cannot open it (own screen and rights)', $hidden, 'not found there');
+
+        $this->callNoRequest($c, 'updateStatus', [$tv->id, 2]);
+        $f = DB::table('finance')->where('linked_id', $tv->id)->where('linked_type', \App\Models\Finance\JournalVoucher\JournalVoucher::class)->first();
+        $subs = $f ? DB::table('finance_subs')->where('finance_id', $f->id)->get() : collect();
+        $this->check($checks, 'Approve posts one balanced TV entry (203.00) with source transfer_voucher', $f && $f->voucher_type === 'TV' && $f->source_type === 'transfer_voucher'
+            && abs($subs->sum('base_debit') - 203) < 0.01 && abs($subs->sum('base_credit') - 203) < 0.01 && $subs->every(fn ($x) => (int) $x->company_id === companyId()), $f->voucher_no ?? '-');
+
+        $deleteRefused = ($this->callNoRequest($c, 'destroy', [$tv->id])['status'] ?? '') === 'error';
+        $this->check($checks, 'An approved transfer cannot be deleted', $deleteRefused, 'refused');
+
+        $this->callNoRequest($c, 'updateStatus', [$tv->id, 1]);
+        $this->check($checks, 'Back to draft: the entry is out of the books and no approver is named', !DB::table('finance')->where('linked_id', $tv->id)->where('linked_type', \App\Models\Finance\JournalVoucher\JournalVoucher::class)->exists()
+            && $tv->fresh()->approved_by === null, 'removed');
+
+        $this->callNoRequest($c, 'destroy', [$tv->id]);
+        $this->check($checks, 'A draft transfer can be deleted', \App\Models\Finance\JournalVoucher\JournalVoucher::find($tv->id) === null, 'deleted');
+        DB::table('journal_voucher_items')->where('journal_voucher_id', $tv->id)->delete();
+        DB::table('journal_vouchers')->where('id', $tv->id)->delete();
+
+        return '/finance/transfer-vouchers';
+    }
+
+    private function stepCreditControl(array &$ctx, array &$checks): string
+    {
+        $settings = \App\Services\Finance\FinanceSettings::class;
+        $before = $settings::all();
+        $customer = \App\Models\Customer\Customer::find($ctx['customer_id']);
+        $oldLimit = $customer->credit_limit;
+        $oldDays = $customer->credit_days;
+        $ci = app(CustomerInvoiceController::class);
+        // each try runs in a savepoint and is undone: the invoice stays a draft for the Approve step after this one
+        $try = function (callable $fn) {
+            DB::statement('SAVEPOINT credit_try');
+            try { return $fn(); } finally { DB::statement('ROLLBACK TO SAVEPOINT credit_try'); }
+        };
+        try {
+            $customer->credit_limit = 1;
+            $customer->save();
+
+            $settings::save(['credit_check' => 'block']);
+            $r = $try(fn () => $ci->updateStatus($ctx['invoice_id'], CustomerInvoiceEnum::APPROVED->value));
+            $this->check($checks, 'Block: over the limit is refused (422) with the reason', $r->getStatusCode() === 422 && str_contains($r->getData(true)['message'] ?? '', 'Credit limit'), $r->getStatusCode());
+            $bulk = $try(function () use ($ci, $ctx) {
+                $req = Request::create('/x', 'POST', ['ids' => [$ctx['invoice_id']]]);
+                $req->setLaravelSession(app('session.store'));
+                app()->instance('request', $req);
+                return $ci->bulkApprove($req)->getData(true);
+            });
+            $this->check($checks, 'Block: Approve selected skips it with the same reason', empty($bulk['approved']) && str_contains($bulk['failed'][0]['message'] ?? '', 'Credit limit'), count($bulk['failed'] ?? []) . ' not approved');
+
+            $settings::save(['credit_check' => 'warn']);
+            $r = $try(fn () => $ci->updateStatus($ctx['invoice_id'], CustomerInvoiceEnum::APPROVED->value));
+            $this->check($checks, 'Warn: approved, with the credit warning in the reply', $r->getStatusCode() === 200 && str_contains((string) ($r->getData(true)['warning'] ?? ''), 'Credit limit'), 'warning');
+
+            $settings::save(['credit_check' => 'off']);
+            $r = $try(fn () => $ci->updateStatus($ctx['invoice_id'], CustomerInvoiceEnum::APPROVED->value));
+            $this->check($checks, 'Off: approved without a warning', $r->getStatusCode() === 200 && empty($r->getData(true)['warning']), 'no check');
+
+            $cc = app(\App\Http\Controllers\Finance\Credit\CreditApprovalController::class);
+            $id = $cc->store(Request::create('/x', 'POST', ['customer' => encodeId($customer->id), 'requested_limit' => 123456, 'requested_days' => 40, 'reason' => 'AUTOCHECK']))->getData(true)['id'];
+            $cc->approve(Request::create('/x', 'POST'), $id);
+            $customer->refresh();
+            $this->check($checks, 'Request approved: the customer gets the requested limit and days', (float) $customer->credit_limit === 123456.0 && (int) $customer->credit_days === 40, $customer->credit_limit . ' / ' . $customer->credit_days);
+            $this->check($checks, 'A decided request cannot be approved again', $cc->approve(Request::create('/x', 'POST'), $id)->getStatusCode() === 422, 'refused');
+            DB::table('credit_limit_requests')->where('id', $id)->delete();
+        } finally {
+            $settings::save($before);
+            $customer->credit_limit = $oldLimit;
+            $customer->credit_days = $oldDays;
+            $customer->save();
+        }
+
+        return '/finance/credit-approvals';
     }
 
     private function stepEmailVerification(array &$ctx, array &$checks): string

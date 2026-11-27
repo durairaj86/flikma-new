@@ -12,9 +12,14 @@ use Illuminate\Support\Facades\DB;
  */
 class AllocationSync
 {
+    /** only this company's rows (a report page); null = every company (the hourly command) */
+    private ?int $companyId = null;
+
     /** @return array<string,int> rows added per source */
-    public function run(): array
+    public function run(?int $companyId = null): array
     {
+        $this->companyId = $companyId;
+
         return [
             'collections' => $this->collections(),
             'payments' => $this->payments(),
@@ -37,11 +42,11 @@ class AllocationSync
             FROM collection_invoices ci
             JOIN finance_subs s   ON s.linked_type = 'App\\\\Models\\\\Finance\\\\Collection\\\\CollectionInvoice' AND s.linked_id = ci.id
                                   AND s.is_reconcilable = 1 AND s.credit > 0
-            JOIN finance f        ON f.id = s.finance_id AND f.is_approved = 1
-            JOIN finance_subs inv ON inv.source_type = 'customer_invoice' AND inv.source_id = ci.customer_invoice_id
+            JOIN finance f        ON f.id = s.finance_id AND f.company_id = s.company_id AND f.is_approved = 1
+            JOIN finance_subs inv ON inv.company_id = s.company_id AND inv.source_type = 'customer_invoice' AND inv.source_id = ci.customer_invoice_id
                                   AND inv.is_reconcilable = 1 AND inv.debit > 0
             LEFT JOIN collections c ON c.id = ci.collection_id
-            WHERE ci.amount > 0
+            WHERE ci.amount > 0 {$this->company('s')}
         ");
     }
 
@@ -58,11 +63,11 @@ class AllocationSync
             FROM payment_invoices pi
             JOIN finance_subs s   ON s.linked_type = 'App\\\\Models\\\\Finance\\\\Payment\\\\PaymentInvoice' AND s.linked_id = pi.id
                                   AND s.is_reconcilable = 1 AND s.debit > 0
-            JOIN finance f        ON f.id = s.finance_id AND f.is_approved = 1
-            JOIN finance_subs inv ON inv.source_type = 'supplier_invoice' AND inv.source_id = pi.supplier_invoice_id
+            JOIN finance f        ON f.id = s.finance_id AND f.company_id = s.company_id AND f.is_approved = 1
+            JOIN finance_subs inv ON inv.company_id = s.company_id AND inv.source_type = 'supplier_invoice' AND inv.source_id = pi.supplier_invoice_id
                                   AND inv.is_reconcilable = 1 AND inv.credit > 0
             LEFT JOIN payments p ON p.id = pi.payment_id
-            WHERE pi.amount > 0
+            WHERE pi.amount > 0 {$this->company('s')}
         ");
     }
 
@@ -86,10 +91,10 @@ class AllocationSync
                    ROUND($base - $amount * (inv.base_$inv / NULLIF(inv.$inv, 0)), 2) AS fx_gain_loss
             FROM $table n
             JOIN finance_subs s   ON s.source_type = '$docType' AND s.source_id = n.id AND s.is_reconcilable = 1 AND s.$own > 0
-            JOIN finance f        ON f.id = s.finance_id AND f.is_approved = 1
-            JOIN finance_subs inv ON inv.source_type = '$invoiceType' AND inv.source_id = n.invoice_id
+            JOIN finance f        ON f.id = s.finance_id AND f.company_id = s.company_id AND f.is_approved = 1
+            JOIN finance_subs inv ON inv.company_id = s.company_id AND inv.source_type = '$invoiceType' AND inv.source_id = n.invoice_id
                                   AND inv.is_reconcilable = 1 AND inv.$inv > 0
-            WHERE n.invoice_id IS NOT NULL AND n.deleted_at IS NULL
+            WHERE n.invoice_id IS NOT NULL AND n.deleted_at IS NULL {$this->company('s')}
         ");
     }
 
@@ -105,11 +110,12 @@ class AllocationSync
         $apps = DB::table('customer_credit_applications as ca')
             ->leftJoin('collections as c', 'c.id', '=', 'ca.collection_id')
             ->where('ca.status', 1)->whereNotNull('ca.to_invoice_id')
-            ->whereNotExists(fn ($q) => $q->select(DB::raw(1))->from('finance_allocations as a')
+            ->when($this->companyId, fn ($q) => $q->where('ca.company_id', $this->companyId))
+            ->whereNotExists(fn ($q) => $q->select(DB::raw(1))->from('finance_allocations as a')->whereColumn('a.company_id', 'ca.company_id')
                 ->where('a.settling_doc_type', 'credit_application')->where('a.status', 'active')->whereColumn('a.settling_doc_id', 'ca.id'))
             ->get(['ca.*', 'c.approved_at', 'c.collection_date']);
         foreach ($apps as $ca) {
-            $line = fn ($invoiceId) => DB::table('finance_subs')->where('source_type', 'customer_invoice')->where('source_id', $invoiceId)
+            $line = fn ($invoiceId) => DB::table('finance_subs')->where('company_id', $ca->company_id)->where('source_type', 'customer_invoice')->where('source_id', $invoiceId)
                 ->where('is_reconcilable', 1)->where('debit', '>', 0)->first();
             $to = $line($ca->to_invoice_id);
             $from = $line($ca->from_invoice_id);
@@ -143,8 +149,15 @@ class AllocationSync
             FROM ($select) x
             WHERE NOT EXISTS (
                 SELECT 1 FROM finance_allocations a
-                WHERE a.settled_line_id = x.settled_line_id AND a.settling_line_id = x.settling_line_id AND a.allocation_type = x.allocation_type
+                WHERE a.company_id = x.company_id AND a.settled_line_id = x.settled_line_id AND a.settling_line_id = x.settling_line_id
+                  AND a.allocation_type = x.allocation_type
             )
         ");
+    }
+
+    /** "AND <alias>.company_id = n" when one company is synced (an int, so safe to put in the SQL) */
+    private function company(string $alias): string
+    {
+        return $this->companyId ? "AND $alias.company_id = " . (int) $this->companyId : '';
     }
 }

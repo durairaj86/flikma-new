@@ -25,6 +25,8 @@ use Yajra\DataTables\Facades\DataTables;
  */
 class DebitNoteController extends Controller
 {
+    use \App\Http\Controllers\Concerns\BulkApproves;
+
     private function formData(DebitNote $debitNote): array
     {
         return [
@@ -528,5 +530,11 @@ class DebitNoteController extends Controller
         });
 
         return response()->json(['status' => 'success', 'message' => __('Debit note deleted successfully')]);
+    }
+
+    /** Approve selected on the Draft tab (Concerns\BulkApproves). */
+    protected function bulkApproveTarget(): array
+    {
+        return ['model' => DebitNote::class, 'draft' => [DebitNoteEnum::DRAFT->value], 'approved' => DebitNoteEnum::APPROVED->value, 'number' => 'row_no'];
     }
 }

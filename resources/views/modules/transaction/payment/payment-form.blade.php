@@ -254,7 +254,7 @@
                     <div class="col-md-6 col-lg-2">
                         <div>
                             <label class="form-label">{{ __('Total Payment Amount') }}</label>
-                            <div class="fs-4 fw-semibold" id="total-payment-amount">{{ number_format($payment->grand_total, 2) }}</div>
+                            <div class="fs-4 fw-semibold" id="total-payment-amount">{{ number_format((float) $payment->grand_total, 2) }}</div>
                         </div>
                     </div>
                     <div class="col-md-6 col-lg-3">

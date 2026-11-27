@@ -103,7 +103,7 @@ class DashboardLayoutController extends Controller
     /** Widgets on the user's dashboard, in order. No saved layout yet = every widget. */
     public static function orderFor(?int $userId): array
     {
-        $saved = $userId ? DB::table('user_dashboard_layouts')->where('user_id', $userId)->value('layout') : null;
+        $saved = $userId ? DB::table('user_dashboard_layouts')->where('company_id', companyId())->where('user_id', $userId)->value('layout') : null;
         if ($saved === null) {
             // Alternative sizes are available in the panel but not on the default dashboard.
             return array_keys(array_filter(self::WIDGETS, fn ($w) => ($w['default'] ?? true) !== false));
@@ -131,7 +131,7 @@ class DashboardLayoutController extends Controller
 
     public function reset(): JsonResponse
     {
-        DB::table('user_dashboard_layouts')->where('user_id', auth()->id())->delete();
+        DB::table('user_dashboard_layouts')->where('company_id', companyId())->where('user_id', auth()->id())->delete();
 
         return response()->json(['status' => 'success']);
     }

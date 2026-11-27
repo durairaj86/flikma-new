@@ -97,6 +97,10 @@ return [
             'debit-notes' => ['label' => 'Debit Notes', 'prefixes' => ['adjustment/debit-note'], 'status_enum' => DebitNoteEnum::class],
             'expenses' => ['label' => 'Expenses', 'prefixes' => ['finance/expense'], 'status_enum' => ExpenseEnum::class],
             'journal-vouchers' => ['label' => 'Journal Vouchers', 'prefixes' => ['finance/journal-vouchers'], 'status_enum' => JournalVoucherStatusEnum::class],
+            'transfer-vouchers' => ['label' => 'Transfer Vouchers', 'prefixes' => ['finance/transfer-vouchers'], 'status_enum' => JournalVoucherStatusEnum::class],
+            'credit-approvals' => ['label' => 'Credit Approval', 'prefixes' => ['finance/credit-approvals'], 'actions' => ['view', 'create', 'approve']],
+            // approving a customer invoice that the credit check (Settings › Finance: Block) refuses; given only explicitly, see CreditCheck::mayOverride
+            'credit-override' => ['label' => 'Credit Limit Override', 'prefixes' => [], 'actions' => ['approve'], 'without_view' => true],
             'assets' => ['label' => 'Assets', 'prefixes' => ['finance/asset']],
             'reconciliation' => ['label' => 'Bank Reconciliation', 'prefixes' => ['finance/reconciliation']],
             'accounts' => ['label' => 'Chart of Accounts', 'prefixes' => ['finance/accounts', 'finance/account']],
@@ -200,6 +204,7 @@ return [
             'invoice' => ['label' => 'Invoice Settings', 'prefixes' => ['settings/invoice'], 'actions' => ['edit']],
             'tax' => ['label' => 'Tax', 'prefixes' => ['settings/tax']],
             'crm' => ['label' => 'CRM Settings', 'prefixes' => ['settings/crm'], 'actions' => ['edit']],
+            'finance' => ['label' => 'Finance Settings', 'prefixes' => ['settings/finance'], 'actions' => ['edit']],
             'zatca' => ['label' => 'ZATCA', 'prefixes' => ['settings/zatca']],
         ],
     ],

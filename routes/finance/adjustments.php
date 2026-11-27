@@ -8,6 +8,8 @@ Route::namespace('finance')->prefix('adjustment')->group(function () {
     Route::prefix('credit-note')->group(function () {
         Route::view('/', 'modules.finance.credit-note.list')->name('adjustments.credit-notes');
         Route::post('/data', [CreditNoteController::class, 'fetchAllRows'])->name('adjustments.credit-notes.data');
+        // Approve selected (Draft tab): each through updateStatus, needs the Approve right (path ends in /approve)
+        Route::post('/bulk/approve', [CreditNoteController::class, 'bulkApprove']);
         Route::get('/create', [CreditNoteController::class, 'modal']);
         Route::post('/create', [CreditNoteController::class, 'store']);
         Route::get('/{id}/create', [CreditNoteController::class, 'edit']);
@@ -23,6 +25,8 @@ Route::namespace('finance')->prefix('adjustment')->group(function () {
     Route::prefix('debit-note')->group(function () {
         Route::view('/', 'modules.finance.debit-note.list')->name('adjustments.debit-notes');
         Route::post('/data', [DebitNoteController::class, 'fetchAllRows'])->name('adjustments.debit-notes.data');
+        // Approve selected (Draft tab): each through updateStatus, needs the Approve right (path ends in /approve)
+        Route::post('/bulk/approve', [DebitNoteController::class, 'bulkApprove']);
         Route::get('/create', [DebitNoteController::class, 'modal']);
         Route::post('/create', [DebitNoteController::class, 'store']);
         Route::get('/{id}/create', [DebitNoteController::class, 'edit']);

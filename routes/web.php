@@ -151,6 +151,8 @@ Route::middleware(['auth', 'verified', 'module.permission'])->group(function () 
     include 'finance/expense.php';
     include 'finance/asset.php';
     include 'finance/journal_voucher.php';
+    include 'finance/transfer_voucher.php';
+    include 'finance/credit_approval.php';
     include 'finance/opening_balance.php';
     include 'finance/reconciliation.php';
     include 'transaction/payment.php';

@@ -74,7 +74,8 @@ class Job extends Model
 
     public function clearance()
     {
-        return $this->hasOne(JobClearance::class);
+        // job_clearances is not company scoped: keep to this company (one legacy row has no company, so shared NULL too)
+        return $this->hasOne(JobClearance::class)->where(fn ($q) => $q->where('job_clearances.company_id', companyId())->orWhereNull('job_clearances.company_id'));
     }
 
 

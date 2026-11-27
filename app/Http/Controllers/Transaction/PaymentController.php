@@ -22,6 +22,8 @@ use Yajra\DataTables\Facades\DataTables;
 
 class PaymentController extends Controller
 {
+    use \App\Http\Controllers\Concerns\BulkApproves;
+
     /**
      * Display a listing of the payments.
      */
@@ -36,6 +38,10 @@ class PaymentController extends Controller
     public function modal(Request $request)
     {
         $payment = new Payment();
+        // "Record payment" from the supplier statement: the form opens with that supplier chosen (an id of another company is ignored)
+        if ($request->filled('supplier') && Supplier::whereKey($id = decodeId((string) $request->query('supplier')))->exists()) {
+            $payment->supplier_id = $id;
+        }
         $suppliers = Supplier::select('id', 'name_en')->orderBy('name_en')->get();
         //$jobs = Job::select('id', 'row_no')->orderBy('row_no', 'desc')->get();
         //$parentAccounts = Account::whereIn('name', ['Bank Accounts', 'Cash in Hand'])->pluck('id')->toArray();
@@ -93,19 +99,15 @@ class PaymentController extends Controller
 
         // Get supplier invoices for the selected supplier
         $supplierInvoices = SupplierInvoice::where('supplier_id', $payment->supplier_id)
+            ->where(fn ($q) => $q->where('status', \App\Enums\SupplierInvoiceEnum::APPROVED->value)->orWhereIn('id', $selectedInvoiceIds))
             ->orderBy('invoice_date', 'desc')
             ->get();
 
-        // For each invoice, calculate the total amount already paid
+        // What each invoice still owes (payments, debit notes and other draft payments taken off), not counting this payment itself
         foreach ($supplierInvoices as $key => $invoice) {
-            // Sum all payment amounts for this invoice, excluding the current payment
-            $totalPaid = PaymentInvoice::where('supplier_invoice_id', $invoice->id)
-                ->where('payment_id', '!=', $payment->id)
-                ->sum('amount');
-
-            // Add the paid amount and remaining balance to the invoice object
-            $invoice->paid_amount = $totalPaid;
-            $invoice->balance_amount = $invoice->grand_total - $totalPaid;
+            $outstanding = $this->invoiceOutstanding($invoice, (int) $payment->id);
+            $invoice->paid_amount = (float) $invoice->grand_total - $outstanding;
+            $invoice->balance_amount = $outstanding;
 
             // Remove invoices with zero balance unless they are already selected in this payment
             if ($invoice->balance_amount <= 0 && !in_array($invoice->id, $selectedInvoiceIds)) {
@@ -166,6 +168,7 @@ class PaymentController extends Controller
 
         $this->assertPeriodOpen($validated['payment_date'], 'payment_date');
         $this->assertPartyCurrency(\App\Models\Supplier\Supplier::class, $validated['supplier'], $validated['currency']);
+        $this->assertInvoiceAmounts($request, (int) $validated['supplier']);
 
         DB::beginTransaction();
         try {
@@ -221,11 +224,6 @@ class PaymentController extends Controller
             foreach ($request->input('supplier_invoice_ids') as $index => $invoiceId) {
                 $invoice = SupplierInvoice::find($invoiceId);
                 $amount = $request->input('invoice_amounts')[$invoiceId];
-
-                // Validate that amount doesn't exceed the invoice grand_total
-                if ($amount > $invoice->grand_total) {
-                    return redirect()->back()->withErrors(['error' => 'Payment amount cannot exceed the invoice total amount'])->withInput();
-                }
 
                 // Calculate tax proportion
                 $invoiceTotal = $invoice->grand_total;
@@ -507,23 +505,74 @@ class PaymentController extends Controller
                 ->orderBy('invoice_date', 'desc')
                 ->get();
 
-            // For each invoice, calculate the total amount already paid
+            // What each invoice still owes: payments and debit notes settled, draft payments taken off
             foreach ($invoices as $key => $invoice) {
-                // Sum all payment amounts for this invoice
-                $totalPaid = PaymentInvoice::where('supplier_invoice_id', $invoice->id)->sum('amount');
+                $outstanding = $this->invoiceOutstanding($invoice, request()->filled('payment') ? (int) request('payment') : null);
+                $invoice->paid_amount = (float) $invoice->grand_total - $outstanding;
+                $invoice->balance_amount = $outstanding;
 
-                // Add the paid amount and remaining balance to the invoice object
-                $invoice->paid_amount = $totalPaid;
-                $invoice->balance_amount = $invoice->grand_total - $totalPaid;
-
-                // Remove invoices with zero balance
-                if ($invoice->balance_amount <= 0) {
+                // Remove invoices with nothing left
+                if ($outstanding <= 0.004) {
                     $invoices->forget($key);
                 }
             }
         }
 
         return response()->json($invoices->values());
+    }
+
+    /** What a supplier invoice still owes: grand total less what settled it (payments, debit notes) and the other draft payments holding part of it. */
+    private function invoiceOutstanding(SupplierInvoice $invoice, ?int $exceptPaymentId = null): float
+    {
+        $drafts = (float) DB::table('payment_invoices as pi')
+            ->join('payments as p', 'p.id', '=', 'pi.payment_id')
+            ->where('pi.supplier_invoice_id', $invoice->id)->whereNull('p.deleted_at')
+            ->where('p.status', PaymentEnum::DRAFT->value)
+            ->when($exceptPaymentId, fn ($q) => $q->where('p.id', '!=', $exceptPaymentId))
+            ->sum('pi.amount');
+
+        return round((float) $invoice->grand_total - (float) ($invoice->paid_amount ?? 0) - $drafts, 2);
+    }
+
+    /**
+     * Before a payment is saved: only a draft can be changed (an approved one is moved back to draft first, which takes
+     * its entries off), every ticked invoice is an approved invoice of this supplier, and no amount is more than the
+     * invoice still owes after its settlements and the other draft payments holding part of it.
+     */
+    private function assertInvoiceAmounts(Request $request, int $supplierId): void
+    {
+        $paymentId = $request->filled('payment_id') ? (int) $request->input('payment_id') : null;
+        if ($paymentId && (int) Payment::findOrFail($paymentId)->status !== PaymentEnum::DRAFT->value) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['payment_id' => __('Only a draft payment can be edited. Move it to draft first.')]);
+        }
+        foreach ((array) $request->input('supplier_invoice_ids', []) as $invoiceId) {
+            $invoice = SupplierInvoice::find($invoiceId);
+            if (!$invoice || (int) $invoice->supplier_id !== $supplierId || (int) $invoice->status !== \App\Enums\SupplierInvoiceEnum::APPROVED->value) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['supplier_invoice_ids' => __('Pick approved invoices of this supplier only.')]);
+            }
+            $amount = (float) ($request->input('invoice_amounts')[$invoiceId] ?? 0);
+            $left = $this->invoiceOutstanding($invoice, $paymentId);
+            if ($amount > $left + 0.004) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['invoice_amounts.' . $invoiceId => __(':no: :amount is more than the :left still open on this invoice.', ['no' => $invoice->row_no, 'amount' => number_format($amount, 2), 'left' => number_format(max(0, $left), 2)])]);
+            }
+        }
+    }
+
+    /** On approval: the message when a line is more than its invoice still owes, else null. */
+    private function overSettled(Payment $payment): ?string
+    {
+        foreach (PaymentInvoice::where('payment_id', $payment->id)->get() as $line) {
+            $invoice = SupplierInvoice::find($line->supplier_invoice_id);
+            if (!$invoice) {
+                continue;
+            }
+            $left = round((float) $invoice->grand_total - (float) $invoice->paid_amount, 2);
+            if ((float) $line->amount > $left + 0.004) {
+                return __(':no: :amount is more than the :left still open on this invoice.', ['no' => $invoice->row_no, 'amount' => number_format((float) $line->amount, 2), 'left' => number_format(max(0, $left), 2)]);
+            }
+        }
+
+        return null;
     }
 
     /** Everything is settled from the supplier's advance: nothing is paid in cash, so no bank / cash account is needed. */
@@ -665,6 +714,10 @@ class PaymentController extends Controller
         }
         if ($status != \App\Enums\PaymentEnum::APPROVED->value && ($blocked = $this->advanceBlocksReversal($payment))) {
             return $blocked;
+        }
+        // another payment may have settled the same invoices since this draft was saved
+        if ($status == PaymentEnum::APPROVED->value && $previousStatus != PaymentEnum::APPROVED->value && ($over = $this->overSettled($payment))) {
+            return response()->json(['status' => 'error', 'message' => $over], 422);
         }
 
         DB::beginTransaction();
@@ -1344,5 +1397,11 @@ class PaymentController extends Controller
         return request()->expectsJson() || request()->ajax()
             ? response()->json(['status' => 'error', 'message' => $message], 403)
             : abort(403, $message);
+    }
+
+    /** Approve selected on the Draft tab (Concerns\BulkApproves). */
+    protected function bulkApproveTarget(): array
+    {
+        return ['model' => Payment::class, 'draft' => [PaymentEnum::DRAFT->value], 'approved' => PaymentEnum::APPROVED->value, 'number' => 'row_no'];
     }
 }

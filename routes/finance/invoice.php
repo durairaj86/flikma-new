@@ -25,6 +25,8 @@ Route::namespace('finance')->prefix('invoice')->group(function () {
         Route::view('/', 'modules.finance.supplier-invoice.list')->name('invoices.supplier');
         Route::get('/list/{job_id}', [SupplierInvoiceController::class, 'listBasedOnJob'])->name('invoices.supplier-with-job');
         Route::post('/data/{job_id}', [SupplierInvoiceController::class, 'fetchAllRows'])->name('invoices.supplier.data');
+        // Approve selected (Draft tab): each through updateStatus, needs the Approve right (path ends in /approve)
+        Route::post('/bulk/approve', [SupplierInvoiceController::class, 'bulkApprove']);
         Route::get('/create', [SupplierInvoiceController::class, 'modal']);
         Route::post('/create', [SupplierInvoiceController::class, 'store']);
         Route::get('/{id}/create', [SupplierInvoiceController::class, 'edit']);
@@ -44,6 +46,8 @@ Route::namespace('finance')->prefix('invoice')->group(function () {
         Route::get('/list/{job_id}', [CustomerInvoiceController::class, 'listBasedOnJob'])->name('invoices.customer-with-job');
         Route::get('/job/{job}/costs', [CustomerInvoiceController::class, 'jobCosts'])->whereNumber('job')->name('invoices.customer.job-costs');
         Route::post('/data/{job_id}', [CustomerInvoiceController::class, 'fetchAllRows'])->name('invoices.customer.data');
+        // Approve selected (Draft tab): each through updateStatus, needs the Approve right (path ends in /approve)
+        Route::post('/bulk/approve', [CustomerInvoiceController::class, 'bulkApprove']);
         Route::get('/new', [CustomerInvoiceController::class, 'newPage'])->name('invoices.customer.new');
         Route::get('/gp-form', [CustomerInvoiceController::class, 'gpForm'])->name('invoices.customer.gp-form');
         Route::get('/create', [CustomerInvoiceController::class, 'modal']);

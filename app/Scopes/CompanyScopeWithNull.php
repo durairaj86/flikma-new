@@ -10,29 +10,21 @@ class CompanyScopeWithNull implements Scope
 {
     public function apply(Builder $builder, Model $model)
     {
-        $query = $builder->getQuery();
-
-        // Skip if query already has raw "IN" filters
-        $hasInRaw = collect($query->wheres)->contains(function ($where) {
-            return isset($where['type']) && $where['type'] === 'InRaw';
-        });
-
-        if (! $hasInRaw) {
-            $companyId = companyId(); // Your helper to get current user's company_id
-
-            if ($companyId) {
-                // a company that was given its own copy of this table at onboarding sees only its own rows
-                if (\App\Support\CompanyDefaults::hidesShared($model->getTable(), (int) $companyId)) {
-                    $builder->where($model->getTable() . '.company_id', $companyId);
-
-                    return;
-                }
-                // ✅ Include records where company_id matches OR is NULL
-                $builder->where(function ($q) use ($model, $companyId) {
-                    $q->where($model->getTable() . '.company_id', $companyId)
-                        ->orWhereNull($model->getTable() . '.company_id');
-                });
-            }
+        // eager loads (with(): a raw IN list of keys) get the same filter; they used to skip it
+        $companyId = companyId(); // the current user's company
+        if (!$companyId) {
+            return;
         }
+        // a company that was given its own copy of this table at onboarding sees only its own rows
+        if (\App\Support\CompanyDefaults::hidesShared($model->getTable(), (int) $companyId)) {
+            $builder->where($model->getTable() . '.company_id', $companyId);
+
+            return;
+        }
+        // records of this company OR shared ones (company_id NULL)
+        $builder->where(function ($q) use ($model, $companyId) {
+            $q->where($model->getTable() . '.company_id', $companyId)
+                ->orWhereNull($model->getTable() . '.company_id');
+        });
     }
 }

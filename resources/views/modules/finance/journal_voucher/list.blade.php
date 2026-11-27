@@ -58,7 +58,7 @@
 
         <div class="shadow bdr-r-10 py-3 flex-grow-1">
             <div class="">
-                <table class="table align-middle dataTable" id="dataTable" data-empty-noun="{{ __('journal vouchers') }}" data-module-url="finance/journal-vouchers" data-title="{{ __('Journal Voucher') }}" data-model-size="xxl" data-min-height="min-height:75vh;">
+                <table class="table align-middle dataTable" id="dataTable" @if(userCan('finances.journal-vouchers', 'approve')) data-bulk-approve="finance/journal-vouchers/bulk/approve" @endif data-empty-noun="{{ __('journal vouchers') }}" data-module-url="finance/journal-vouchers" data-title="{{ __('Journal Voucher') }}" data-model-size="xxl" data-min-height="min-height:75vh;">
                     <thead class="table-light bg-white">
                     <tr>
                         <th>#</th>

@@ -20,6 +20,42 @@ use Yajra\DataTables\Facades\DataTables;
 
 class JournalVoucherController extends Controller
 {
+    use \App\Http\Controllers\Concerns\BulkApproves;
+
+    /** voucher_type of the ledger entry an approved voucher posts, and the words its narration starts with */
+    protected const LEDGER_CODE = 'JV';
+    protected const LEDGER_NAME = 'Journal Voucher';
+    /** source_type of the ledger entry (finance / finance_subs), so reports can tell journal and transfer vouchers apart */
+    protected const SOURCE_TYPE = 'journal_voucher';
+    /** the page script's object (public/js/page-all-js), named in the list's menu actions */
+    protected const JS_OBJECT = 'JOURNAL_VOUCHER';
+
+    /**
+     * The vouchers this screen works on. Transfer vouchers share the table but have their own screen and rights
+     * (TransferVoucherController), so every lookup here leaves them out; an id of a transfer is "not found" here.
+     */
+    protected function vouchers()
+    {
+        return JournalVoucher::query()->where('voucher_type', '!=', JournalVoucherTypeEnum::TRANSFER->value);
+    }
+
+    /** Replies of the status / delete actions, worded for this screen's document. */
+    protected function message(string $key): string
+    {
+        return match ($key) {
+            'status' => __('Journal voucher status updated successfully'),
+            'disapproved' => __('Journal voucher disapproved successfully'),
+            'only_draft' => __('Only draft journal vouchers can be deleted'),
+            'deleted' => __('Journal voucher deleted successfully'),
+        };
+    }
+
+    /** Types offered on the Journal Voucher form (everything except Transfer). */
+    protected function journalTypes(): array
+    {
+        return array_values(array_filter(JournalVoucherTypeEnum::cases(), fn ($t) => $t !== JournalVoucherTypeEnum::TRANSFER));
+    }
+
     /**
      * Display a listing of the journal vouchers.
      */
@@ -36,7 +72,7 @@ class JournalVoucherController extends Controller
         $journalVoucher = new JournalVoucher();
         $jobs = Job::select('id', 'row_no', 'customer_id')->with('customer:id,name_en')->orderBy('row_no', 'desc')->get();
         $accounts = $this->postableAccounts();
-        $voucherTypes = JournalVoucherTypeEnum::cases();
+        $voucherTypes = $this->journalTypes();
 
         // Get customers, suppliers for entity selection
         $customers = \App\Models\Customer\Customer::select('id', 'name_en')->orderBy('name_en')->get();
@@ -57,7 +93,7 @@ class JournalVoucherController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'voucher_type' => 'required|integer|min:1|max:6',
+            'voucher_type' => ['required', 'integer', \Illuminate\Validation\Rule::in(array_map(fn ($t) => $t->value, $this->journalTypes()))],
             'job_id' => 'nullable|exists:jobs,id',
             'voucher_date' => 'required|date',
             'reference_no' => 'nullable|string',
@@ -126,7 +162,7 @@ class JournalVoucherController extends Controller
         try {
             // Create or update journal voucher
             if ($request->filled('journal_voucher_id')) {
-                $journalVoucher = JournalVoucher::findOrFail($request->input('journal_voucher_id'));
+                $journalVoucher = $this->vouchers()->findOrFail($request->input('journal_voucher_id'));
                 // An approved voucher is already in the books: changing its lines here would leave the books on the old
                 // numbers. It has to go back to Draft first (which takes its entries out), then be edited and approved again.
                 if ((int) $journalVoucher->status === JournalVoucherStatusEnum::APPROVED->value) {
@@ -239,7 +275,7 @@ class JournalVoucherController extends Controller
      */
     public function show($id)
     {
-        $journalVoucher = JournalVoucher::with(['job', 'journalVoucherItems.account', 'createdBy', 'approvedBy'])
+        $journalVoucher = $this->vouchers()->with(['job', 'journalVoucherItems.account', 'createdBy', 'approvedBy'])
             ->findOrFail($id);
 
         return view('modules.finance.journal_voucher.show', compact('journalVoucher'));
@@ -248,10 +284,10 @@ class JournalVoucherController extends Controller
     /** The details drawer on the list (same content as the View page). */
     public function overviewDrawer($id)
     {
-        $journalVoucher = JournalVoucher::with(['job', 'journalVoucherItems.account', 'createdBy', 'approvedBy'])
+        $journalVoucher = $this->vouchers()->with(['job', 'journalVoucherItems.account', 'createdBy', 'approvedBy'])
             ->findOrFail($id);
 
-        return view('modules.finance.journal_voucher.view-overview-drawer', compact('journalVoucher'));
+        return view('modules.finance.journal_voucher.view-overview-drawer', ['journalVoucher' => $journalVoucher, 'jsObject' => static::JS_OBJECT]);
     }
 
     /**
@@ -259,10 +295,10 @@ class JournalVoucherController extends Controller
      */
     public function edit($id)
     {
-        $journalVoucher = JournalVoucher::with('journalVoucherItems.account')->findOrFail($id);
+        $journalVoucher = $this->vouchers()->with('journalVoucherItems.account')->findOrFail($id);
         $jobs = Job::select('id', 'row_no', 'customer_id')->with('customer:id,name_en')->orderBy('row_no', 'desc')->get();
         $accounts = $this->postableAccounts($journalVoucher->journalVoucherItems->pluck('account_id')->merge($journalVoucher->journalVoucherItems->pluck('tax_id'))->filter()->all());
-        $voucherTypes = JournalVoucherTypeEnum::cases();
+        $voucherTypes = $this->journalTypes();
 
         // Get customers, suppliers for entity selection
         $customers = \App\Models\Customer\Customer::select('id', 'name_en')->orderBy('name_en')->get();
@@ -279,7 +315,7 @@ class JournalVoucherController extends Controller
      */
     public function updateStatus($id, $status)
     {
-        $journalVoucher = JournalVoucher::findOrFail($id);
+        $journalVoucher = $this->vouchers()->findOrFail($id);
         $previous = (int) ($journalVoucher->status instanceof \BackedEnum ? $journalVoucher->status->value : $journalVoucher->status);
 
         DB::beginTransaction();
@@ -303,6 +339,9 @@ class JournalVoucherController extends Controller
                 $journalVoucher->status = $status == JournalVoucherStatusEnum::DISAPPROVED->value
                     ? JournalVoucherStatusEnum::DISAPPROVED->value
                     : JournalVoucherStatusEnum::DRAFT->value;
+                // no longer approved: the drawer / print must not name an approver
+                $journalVoucher->approved_by = null;
+                $journalVoucher->approved_at = null;
                 $journalVoucher->save();
                 // leaving Approved takes the entries out of the books again
                 if ($previous === JournalVoucherStatusEnum::APPROVED->value) {
@@ -317,7 +356,7 @@ class JournalVoucherController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => __('Journal voucher status updated successfully'),
+            'message' => $this->message('status'),
             'data' => [
                 'id' => $journalVoucher->id,
                 'status' => $journalVoucher->status,
@@ -330,7 +369,7 @@ class JournalVoucherController extends Controller
      * with the customer / supplier / job it names. A line that carries a tax account and tax amount is split: the tax
      * part goes to the tax account (marked as a tax line, so VAT reports see it), the rest to the line's own account.
      */
-    private function postToLedger(JournalVoucher $jv): void
+    protected function postToLedger(JournalVoucher $jv): void
     {
         $this->removeFromLedger($jv->id);
         $jv->loadMissing('journalVoucherItems');
@@ -338,11 +377,11 @@ class JournalVoucherController extends Controller
 
         $finance = new Finance();
         $finance->voucher_no = $jv->row_no;
-        $finance->voucher_type = 'JV';
+        $finance->voucher_type = static::LEDGER_CODE;
         $finance->reference_no = $jv->reference_no ?: $jv->row_no;
         $date = $jv->getRawOriginal('voucher_date');   // the models show dates as d-m-Y
         $finance->reference_date = $date;
-        $finance->narration = 'Journal Voucher: ' . $jv->row_no . ($jv->notes ? ' - ' . $jv->notes : '');
+        $finance->narration = static::LEDGER_NAME . ': ' . $jv->row_no . ($jv->notes ? ' - ' . $jv->notes : '');
         $finance->currency = $jv->currency ?: 'SAR';
         $finance->exchange_rate = $rate;
         $finance->total_debit = $jv->debit_total;
@@ -359,14 +398,17 @@ class JournalVoucherController extends Controller
         $finance->linked_type = JournalVoucher::class;
         $finance->company_id = $jv->company_id;
         $finance->user_id = Auth::id();
+        $finance->source_type = static::SOURCE_TYPE;
+        $finance->source_id = $jv->id;
         $finance->save();
 
         $common = [
-            'finance_id' => $finance->id, 'voucher_no' => $finance->voucher_no, 'voucher_type' => 'JV',
+            'finance_id' => $finance->id, 'voucher_no' => $finance->voucher_no, 'voucher_type' => static::LEDGER_CODE,
             'reference_no' => $finance->reference_no, 'reference_date' => $date,
             'currency' => $finance->currency, 'exchange_rate' => $rate, 'base_currency' => $baseCurrency,
             'job_id' => $jv->job_id, 'job_no' => $jv->job_no ?? '', 'company_id' => $jv->company_id, 'user_id' => Auth::id(),
             'is_tax_line' => 0, 'is_auto_generated' => 1, 'linked_id' => $jv->id, 'linked_type' => JournalVoucher::class,
+            'source_type' => static::SOURCE_TYPE, 'source_id' => $jv->id, 'entry_date' => $date,
             'created_at' => now(), 'updated_at' => now(),
         ];
 
@@ -383,7 +425,7 @@ class JournalVoucherController extends Controller
                 'account_id' => $account, 'description' => $desc, 'debit' => $d, 'credit' => $c,
                 'base_debit' => round($d * $rate, 2), 'base_credit' => round($c * $rate, 2), 'is_tax_line' => $isTax,
             ]);
-            $desc = $item->description ?: 'Journal Voucher ' . $jv->row_no;
+            $desc = $item->description ?: static::LEDGER_NAME . ' ' . $jv->row_no;
 
             if ($tax > 0 && $item->tax_id) {
                 $subs[] = $line($debit ? $debit - $tax : 0, $credit ? $credit - $tax : 0, (int) $item->account_id, $desc, 0);
@@ -405,7 +447,7 @@ class JournalVoucherController extends Controller
         FinanceSub::insert($subs);
     }
 
-    private function removeFromLedger($journalVoucherId): void
+    protected function removeFromLedger($journalVoucherId): void
     {
         foreach (Finance::where('linked_id', $journalVoucherId)->where('linked_type', JournalVoucher::class)->get() as $finance) {
             FinanceSub::where('finance_id', $finance->id)->delete();
@@ -422,7 +464,7 @@ class JournalVoucherController extends Controller
             'reason' => 'required|string',
         ]);
 
-        $journalVoucher = JournalVoucher::findOrFail($id);
+        $journalVoucher = $this->vouchers()->findOrFail($id);
         $previous = (int) ($journalVoucher->status instanceof \BackedEnum ? $journalVoucher->status->value : $journalVoucher->status);
         // disapproving an approved voucher takes its entry out of the books (like moving it to draft), never in a closed period
         if ($previous === JournalVoucherStatusEnum::APPROVED->value) {
@@ -431,6 +473,8 @@ class JournalVoucherController extends Controller
         DB::transaction(function () use ($journalVoucher, $validated, $previous) {
             $journalVoucher->status = JournalVoucherStatusEnum::DISAPPROVED->value;
             $journalVoucher->disapproval_reason = $validated['reason'];
+            $journalVoucher->approved_by = null;
+            $journalVoucher->approved_at = null;
             $journalVoucher->save();
             if ($previous === JournalVoucherStatusEnum::APPROVED->value) {
                 $this->removeFromLedger($journalVoucher->id);
@@ -439,7 +483,7 @@ class JournalVoucherController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => __('Journal voucher disapproved successfully'),
+            'message' => $this->message('disapproved'),
             'data' => [
                 'id' => $journalVoucher->id,
                 'status' => $journalVoucher->status,
@@ -452,11 +496,11 @@ class JournalVoucherController extends Controller
      */
     public function print($id)
     {
-        $journalVoucher = JournalVoucher::with(['job', 'journalVoucherItems.account', 'createdBy', 'approvedBy'])
+        $journalVoucher = $this->vouchers()->with(['job', 'journalVoucherItems.account', 'createdBy', 'approvedBy'])
             ->findOrFail($id);
 
         // ?fragment=1: just the voucher with self-contained styles, for the PDF (no <html> / <body>)
-        return view('modules.finance.journal_voucher.print', ['journalVoucher' => $journalVoucher, 'fragment' => request()->boolean('fragment')]);
+        return view('modules.finance.journal_voucher.print', ['journalVoucher' => $journalVoucher, 'fragment' => request()->boolean('fragment'), 'docTitle' => __(static::LEDGER_NAME)]);
     }
 
     /**
@@ -465,10 +509,10 @@ class JournalVoucherController extends Controller
      */
     public function download($id)
     {
-        $journalVoucher = JournalVoucher::with(['job', 'journalVoucherItems.account', 'createdBy', 'approvedBy'])
+        $journalVoucher = $this->vouchers()->with(['job', 'journalVoucherItems.account', 'createdBy', 'approvedBy'])
             ->findOrFail($id);
 
-        return view('modules.finance.journal_voucher.print', ['journalVoucher' => $journalVoucher, 'autoPrint' => true]);
+        return view('modules.finance.journal_voucher.print', ['journalVoucher' => $journalVoucher, 'autoPrint' => true, 'docTitle' => __(static::LEDGER_NAME)]);
     }
 
     /**
@@ -476,7 +520,7 @@ class JournalVoucherController extends Controller
      */
     public function fetchAllRows(Request $request)
     {
-        $query = JournalVoucher::with(['job:id,row_no'])
+        $query = $this->vouchers()->with(['job:id,row_no'])
             ->select([
                 'journal_vouchers.id',
                 'row_no',
@@ -500,7 +544,7 @@ class JournalVoucherController extends Controller
             ->orderBy('journal_vouchers.id', 'desc');
 
         // Get counts per status
-        $statusCounts = JournalVoucher::select('status', DB::raw('COUNT(*) as total'))
+        $statusCounts = $this->vouchers()->select('status', DB::raw('COUNT(*) as total'))
             ->groupBy('status')
             ->pluck('total', 'status')
             ->toArray();
@@ -537,7 +581,7 @@ class JournalVoucherController extends Controller
      */
     public function actions($id)
     {
-        $journalVoucher = JournalVoucher::select('id', 'row_no', 'status')->findOrFail($id);
+        $journalVoucher = $this->vouchers()->select('id', 'row_no', 'status')->findOrFail($id);
         $contextMenu = collect([]);
 
         // Status actions
@@ -600,7 +644,7 @@ class JournalVoucherController extends Controller
             'data-id' => $journalVoucher->id,
             'type' => 'item',
             'icon' => 'print',
-            'onclick' => 'JOURNAL_VOUCHER.printPreview(' . $journalVoucher->id . ')',
+            'onclick' => static::JS_OBJECT . '.printPreview(' . $journalVoucher->id . ')',
         ]);
 
         $contextMenu->push([
@@ -610,7 +654,7 @@ class JournalVoucherController extends Controller
             'data-id' => $journalVoucher->id,
             'type' => 'item',
             'icon' => 'download',
-            'onclick' => 'JOURNAL_VOUCHER.downloadPDF(' . $journalVoucher->id . ')',
+            'onclick' => static::JS_OBJECT . '.downloadPDF(' . $journalVoucher->id . ')',
             'separator' => 'after',
         ]);
 
@@ -650,12 +694,12 @@ class JournalVoucherController extends Controller
      */
     public function destroy($id)
     {
-        $journalVoucher = JournalVoucher::findOrFail($id);
+        $journalVoucher = $this->vouchers()->findOrFail($id);
 
         if ($journalVoucher->status !== JournalVoucherStatusEnum::DRAFT->value) {
             return response()->json([
                 'status' => 'error',
-                'message' => __('Only draft journal vouchers can be deleted'),
+                'message' => $this->message('only_draft'),
             ], 400);
         }
 
@@ -663,12 +707,12 @@ class JournalVoucherController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => __('Journal voucher deleted successfully'),
+            'message' => $this->message('deleted'),
         ]);
     }
 
     /** A refused save: the form shows the message. */
-    private function unbalanced(string $message)
+    protected function unbalanced(string $message)
     {
         return response()->json(['status' => 'error', 'message' => $message], 422);
     }
@@ -677,7 +721,7 @@ class JournalVoucherController extends Controller
      * Accounts a journal line can post to: active leaf accounts (no child accounts, so group headings are left out),
      * by code. $keep holds accounts already used on the voucher being edited, so an old line still shows its account.
      */
-    private function postableAccounts(array $keep = [])
+    protected function postableAccounts(array $keep = [])
     {
         return Account::select('id', 'name', 'code')
             ->where(function ($q) use ($keep) {
@@ -689,5 +733,11 @@ class JournalVoucherController extends Controller
             })
             ->orderBy('code')
             ->get();
+    }
+
+    /** Approve selected: the drafts of this screen (TransferVoucherController inherits this with its own vouchers()). */
+    protected function bulkApproveTarget(): array
+    {
+        return ['model' => JournalVoucher::class, 'query' => $this->vouchers(), 'draft' => [JournalVoucherStatusEnum::DRAFT->value], 'approved' => JournalVoucherStatusEnum::APPROVED->value, 'number' => 'row_no'];
     }
 }

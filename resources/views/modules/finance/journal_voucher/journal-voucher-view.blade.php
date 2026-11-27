@@ -1,7 +1,7 @@
 <div class="offcanvas offcanvas-end customer-drawer" tabindex="-1" id="moduleDrawer" style="width: 60%;">
     <div class="offcanvas-header border-bottom bg-light px-4 py-3 d-flex justify-content-between align-items-center">
         <div>
-            <h5 id="moduleDrawerLabel" class="mb-0 fw-bold">{{ __('Journal Voucher Details') }}</h5>
+            <h5 id="moduleDrawerLabel" class="mb-0 fw-bold">{{ $drawerTitle ?? __('Journal Voucher Details') }}</h5>
             <small class="text-muted" id="drawerSubtitle"></small>
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="{{ __('Close') }}"></button>

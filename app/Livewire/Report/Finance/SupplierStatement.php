@@ -11,6 +11,8 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class SupplierStatement extends Component
 {
+    use \App\Livewire\Concerns\SendsStatementMail;
+
     public $startDate;
     public $endDate;
     public $search = '';
@@ -85,10 +87,26 @@ class SupplierStatement extends Component
 
     public function exportExcel()
     {
+        if (!$excel = $this->statementExcel()) {
+            return;
+        }
+
+        return Excel::download(...$excel);
+    }
+
+    protected function statementParty(): ?array
+    {
+        $supplier = $this->getStatementData()['supplier'];
+
+        return $supplier ? ['name' => $supplier->name_en, 'type' => 'supplier_statement'] : null;
+    }
+
+    protected function statementExcel(): ?array
+    {
         $data = $this->getStatementData();
 
         if (!$data['supplier']) {
-            return;
+            return null;
         }
 
         $baseCurrency = optional(authUserCompany())->base_currency ?: 'SAR';
@@ -135,7 +153,7 @@ class SupplierStatement extends Component
         $filename = 'SupplierStatement-' . $data['supplier']->row_no
             . '-' . $this->startDate . '_' . $this->endDate . '.xlsx';
 
-        return Excel::download(new ReportTableExport($rows, $totalsRow, $columns, $meta), $filename);
+        return [new ReportTableExport($rows, $totalsRow, $columns, $meta), $filename];
     }
 
     public function voucherTypeLabel(?string $type): string

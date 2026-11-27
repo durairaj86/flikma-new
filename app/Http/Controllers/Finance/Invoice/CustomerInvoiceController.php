@@ -27,6 +27,8 @@ use Yajra\DataTables\Facades\DataTables;
 
 class CustomerInvoiceController extends Controller
 {
+    use \App\Http\Controllers\Concerns\BulkApproves;
+
 
     public function modal(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
     {
@@ -370,6 +372,7 @@ class CustomerInvoiceController extends Controller
             ->addColumn('draft_collected', function ($model) use ($decimals) {
                 $draft = (float) \Illuminate\Support\Facades\DB::table('collection_invoices as ci')
                     ->join('collections as c', 'c.id', '=', 'ci.collection_id')
+                    ->where('ci.company_id', companyId())->where('c.company_id', companyId())
                     ->where('ci.customer_invoice_id', $model->id)->whereNull('c.deleted_at')
                     ->where('c.status', \App\Enums\CollectionEnum::DRAFT->value)->sum('ci.amount');
                 return $draft > 0 ? number_format($draft, $decimals) : null;
@@ -814,6 +817,20 @@ class CustomerInvoiceController extends Controller
             return response()->json(['status' => 'error', 'message' => __('This invoice is settled by :docs. Move those back to draft first.', ['docs' => implode(', ', $docs)])], 422);
         }
 
+        // credit control (Settings › Finance): over the credit limit or invoices overdue -> a warning, or with Block a refusal
+        // unless the user has the Credit override right
+        $creditWarning = null;
+        $creditCheck = app(\App\Services\Finance\CreditCheck::class);
+        if ((int) $status === CustomerInvoiceEnum::APPROVED->value && (int) $previousStatus !== CustomerInvoiceEnum::APPROVED->value
+            && ($credit = $creditCheck->forInvoice($customerInvoice))) {
+            if ($credit['mode'] === 'block' && !$creditCheck->mayOverride()) {
+                $refusal = $credit['message'] . ' ' . __('Request a higher limit on Finances › Credit Approval, or ask a user with the Credit override right.');
+
+                return response()->json(['status' => 'error', 'message' => $refusal, 'errors' => ['credit' => [$refusal]]], 422);
+            }
+            $creditWarning = $credit['message'];
+        }
+
         DB::beginTransaction();
         try {
             if ($status == CustomerInvoiceEnum::APPROVED->value) {
@@ -885,6 +902,7 @@ class CustomerInvoiceController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => $message,
+                'warning' => $creditWarning,
                 'data' => [
                     'id' => $customerInvoice->id,
                     'status' => $customerInvoice->status,
@@ -1617,5 +1635,11 @@ class CustomerInvoiceController extends Controller
         });
 
         return response()->json(['status' => 'success', 'message' => __('Invoice deleted successfully')]);
+    }
+
+    /** Approve selected on the Draft tab (Concerns\BulkApproves). */
+    protected function bulkApproveTarget(): array
+    {
+        return ['model' => CustomerInvoice::class, 'draft' => [CustomerInvoiceEnum::DRAFT->value], 'approved' => CustomerInvoiceEnum::APPROVED->value, 'number' => 'row_no'];
     }
 }

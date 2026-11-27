@@ -50,6 +50,14 @@
                 </a>
             </li>
 
+            <!-- Finance Settings -->
+            <li class="nav-item" data-url="/settings/finance">
+                <a href="{{ url('/settings/finance') }}"
+                   class="nav-link d-flex align-items-center py-2 {{ request()->is('settings/finance*') ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-wallet2 text-secondary me-2"></i> {{ __('Finance Settings') }}
+                </a>
+            </li>
+
             {{--<li class="nav-item" data-url="/settings/tax">
                 <a href="{{ url('/settings/tax') }}"
                    class="nav-link d-flex align-items-center py-2 {{ request()->is('settings/tax*') ? 'active' : 'text-dark' }}">

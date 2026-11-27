@@ -70,7 +70,7 @@ class EmailQueueService
         $email->refresh();
 
         try {
-            Mail::to($email->to)->when($email->cc, fn($m) => $m->cc(array_map('trim', explode(',', $email->cc))))
+            Mail::to(array_map('trim', explode(',', $email->to)))->when($email->cc, fn($m) => $m->cc(array_map('trim', explode(',', $email->cc))))
                 ->sendNow(new DynamicMail($email->subject, $email->view, $email->data_json ?? [], $email->attachments_json ?? [], $email->from_address, $email->from_name));
         } catch (\Throwable $e) {
             $final = !$retry || $email->attempts >= self::MAX_ATTEMPTS;

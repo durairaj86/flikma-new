@@ -7,6 +7,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('transaction/payments')->name('transaction.payments.')->group(function () {
         Route::get('/', [PaymentController::class, 'index'])->name('index');
         Route::post('/data', [PaymentController::class, 'fetchAllRows'])->name('data');
+        // Approve selected (Draft tab): each through updateStatus, needs the Approve right (path ends in /approve)
+        Route::post('/bulk/approve', [PaymentController::class, 'bulkApprove']);
 
         Route::get('/refund', [PaymentController::class, 'refundModal']);
         Route::post('/refund', [PaymentController::class, 'storeRefund']);

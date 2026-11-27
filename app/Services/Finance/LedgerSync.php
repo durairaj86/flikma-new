@@ -14,18 +14,20 @@ class LedgerSync
 {
     public static function ensureFresh(): void
     {
-        if (!Cache::add('finance-ledger-sync-fresh', 1, 60)) {
+        // one company at a time: a report page only fills its own company's rows (the hourly commands do all companies)
+        $companyId = (int) companyId() ?: null;
+        if (!Cache::add('finance-ledger-sync-fresh:' . ($companyId ?? 'all'), 1, 60)) {
             return;
         }
         // The foundation migration is a local-only step (migration files are not always deployed): run it when the file is
         // there, and never fail a report page because it is not. Without the allocations table there is nothing to sync.
         $file = database_path('migrations/2026_10_22_000001_finance_ledger_foundation.php');
         if (is_file($file)) {
-            (require $file)->up();
+            (require $file)->backfill($companyId);
         }
         if (!Schema::hasTable('finance_allocations')) {
             return;
         }
-        app(AllocationSync::class)->run();
+        app(AllocationSync::class)->run($companyId);
     }
 }
