@@ -8,14 +8,17 @@ namespace App\Livewire\Report\Concerns;
  * The report is split into: Current (not yet due), N interval buckets of
  * $agingInterval days each, and an "Over X Days" bucket for the remainder.
  * e.g. interval 30 / 4 columns => Current, 1-30, 31-60, 61-90, 91-120, Over 120.
+ * $agingBasis picks what the age counts from: the due date (overdue days) or the invoice date (days since invoicing).
  */
 trait BuildsAgingBuckets
 {
     public int $agingInterval = 30;
     public int $agingColumns = 4;
+    public string $agingBasis = 'due';
 
-    public const AGING_INTERVALS = [30, 45, 60, 90];
+    public const AGING_INTERVALS = [15, 30, 45, 60, 90];
     public const AGING_COLUMN_CHOICES = [1, 2, 3, 4];
+    public const AGING_BASES = ['due', 'invoice'];
 
     public function updatedAgingInterval($value): void
     {
@@ -33,6 +36,31 @@ trait BuildsAgingBuckets
         } else {
             $this->agingColumns = (int)$value;
         }
+    }
+
+    public function updatedAgingBasis($value): void
+    {
+        $this->agingBasis = in_array($value, self::AGING_BASES, true) ? $value : 'due';
+    }
+
+    public static function agingBasisLabels(): array
+    {
+        return ['due' => __('Due date'), 'invoice' => __('Invoice date')];
+    }
+
+    public function agingBasisLabel(): string
+    {
+        return self::agingBasisLabels()[$this->agingBasis] ?? self::agingBasisLabels()['due'];
+    }
+
+    /** Days the document has aged on $asOf: from its due date or its invoice date, per $agingBasis. */
+    public function agingAge($doc, \Carbon\Carbon $asOf): int
+    {
+        $from = $this->agingBasis === 'invoice'
+            ? $doc->invoice_date
+            : ($doc->due_at ?? $doc->due_date ?? $doc->invoice_date);
+
+        return (int) \Carbon\Carbon::parse($from)->diffInDays($asOf, false);
     }
 
     /**

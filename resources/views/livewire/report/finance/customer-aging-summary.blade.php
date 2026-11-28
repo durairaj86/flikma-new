@@ -42,7 +42,7 @@
         <div class="card border-0 shadow-sm mb-4 d-print-none">
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
-                    <div class="col-lg-4 col-xl-3" id="caa-customer-wrap" wire:ignore>
+                    <div class="col-lg-4 col-xl-2" id="caa-customer-wrap" wire:ignore>
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Customer') }}</label>
                         <x-common.customers wire:model.live="customerId" id="caa-customer" name="caa-customer"
                                             :value="$customerId ? [(int) $customerId] : null" :new="false"
@@ -71,6 +71,14 @@
                         <select class="form-select bg-light border-0 py-2 no-ts" wire:model.live="agingColumns">
                             @foreach(\App\Livewire\Report\Finance\CustomerAgingAll::AGING_COLUMN_CHOICES as $n)
                                 <option value="{{ $n }}">{{ $n }} {{ __(Str::plural('Column', $n)) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-4">
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Based on') }}</label>
+                        <select class="form-select bg-light border-0 py-2 no-ts" wire:model.live="agingBasis">
+                            @foreach(\App\Livewire\Report\Finance\CustomerAgingAll::agingBasisLabels() as $basis => $label)
+                                <option value="{{ $basis }}">{{ $label }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -105,7 +113,7 @@
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap gap-2 d-print-none">
                 <h6 class="mb-0 fw-bold flex-grow-1"><i class="bi bi-table me-2 text-customer"></i>{{ __('Customer Aging Summary') }}</h6>
                 <div class="d-flex align-items-center gap-2 ms-auto flex-shrink-0">
-                    <span class="badge bg-light text-dark border px-3 py-2">{{ $agingInterval }}-{{ __('day buckets') }}</span>
+                    <span class="badge bg-light text-dark border px-3 py-2">{{ $agingInterval }}-{{ __('day buckets') }} · {{ __('Based on') }}: {{ $this->agingBasisLabel() }}</span>
                     <span class="badge bg-customer-subtle text-customer border border-customer-subtle px-3 py-2">
                         {{ count($customers) }} {{ __(Str::plural('customer', count($customers))) }}
                     </span>
@@ -176,7 +184,7 @@
                     <td class="text-end">
                         <div class="stmt-title">{{ __('CUSTOMER AGING SUMMARY') }}</div>
                         <div class="stmt-sub">{{ __('As of') }}: {{ \Carbon\Carbon::parse($asOfDate)->translatedFormat('d M Y') }}</div>
-                        <div class="stmt-sub">{{ __('Aging') }}: {{ $agingInterval }}-{{ __('day buckets') }} &times; {{ $agingColumns }}</div>
+                        <div class="stmt-sub">{{ __('Aging') }}: {{ $agingInterval }}-{{ __('day buckets') }} &times; {{ $agingColumns }} · {{ __('Based on') }}: {{ $this->agingBasisLabel() }}</div>
                         <div class="stmt-sub">{{ __('Generated') }}: {{ now()->translatedFormat('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency') }}: SAR</div>
                     </td>
                 </tr>

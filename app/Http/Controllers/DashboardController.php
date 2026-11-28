@@ -70,6 +70,7 @@ class DashboardController extends Controller
             'etaEtdList' => $this->getShipmentList(['eta' => 'ETA', 'etd' => 'ETD'], Carbon::today(), Carbon::today()->addDays(6)->endOfDay(), 'asc'),
             'ataAtdList' => $this->getShipmentList(['ata' => 'ATA', 'atd' => 'ATD'], Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek(), 'desc'),
             'shipmentExtra' => $this->getShipmentExtra(),
+            'shipmentSchedule' => $this->getShipmentSchedule(),
             'etaToday' => $this->getEtaToday(),
             'etdTomorrow' => $this->getEtdTomorrow(),
             'ataThisWeek' => $this->getAtaThisWeek(),
@@ -231,6 +232,39 @@ class DashboardController extends Controller
             'late' => $arrived->count() - $onTime,
             'departedWeek' => Job::whereBetween('atd', $week)->count(),
         ];
+    }
+
+    /** Jobs arriving (ETA) and leaving (ETD) today, tomorrow, this week and next week, from one query. */
+    private function getShipmentSchedule(): array
+    {
+        $today = Carbon::today();
+        $periods = [
+            'today' => [$today->copy(), $today->copy()->endOfDay()],
+            'tomorrow' => [$today->copy()->addDay(), $today->copy()->addDay()->endOfDay()],
+            'this_week' => [$today->copy()->startOfWeek(), $today->copy()->endOfWeek()],
+            'next_week' => [$today->copy()->addWeek()->startOfWeek(), $today->copy()->addWeek()->endOfWeek()],
+        ];
+        $from = min($today->copy(), $periods['this_week'][0]);
+        $to = $periods['next_week'][1];
+        $out = ['eta' => array_fill_keys(array_keys($periods), 0), 'etd' => array_fill_keys(array_keys($periods), 0)];
+
+        Job::where(fn ($q) => $q->whereBetween('eta', [$from, $to])->orWhereBetween('etd', [$from, $to]))
+            ->get(['eta', 'etd'])
+            ->each(function ($job) use ($periods, &$out) {
+                foreach (['eta', 'etd'] as $col) {
+                    if (!$job->{$col}) {
+                        continue;
+                    }
+                    $date = Carbon::parse($job->{$col});
+                    foreach ($periods as $key => [$start, $end]) {
+                        if ($date->between($start, $end)) {
+                            $out[$col][$key]++;
+                        }
+                    }
+                }
+            });
+
+        return $out;
     }
 
     private function getEtaToday()

@@ -3,6 +3,7 @@
 namespace App\Livewire\Report\Finance;
 
 use App\Exports\ReportTableExport;
+use App\Livewire\Report\Concerns\BuildsAgingBuckets;
 use App\Models\Supplier\Supplier;
 use App\Models\Finance\SupplierInvoice\SupplierInvoice;
 use Carbon\Carbon;
@@ -13,6 +14,8 @@ use Maatwebsite\Excel\Facades\Excel;
 class SupplierAging extends Component
 {
     use \App\Traits\Finance\AgingAsOf;
+
+    use BuildsAgingBuckets;
 
     public string $asOfDate = '';
     public string|int $supplierId = '';
@@ -62,18 +65,12 @@ class SupplierAging extends Component
 
     private function getAgingData(): array
     {
+        $bucketDefs = $this->agingBucketDefs();
+
         $empty = [
             'supplier' => null,
             'invoices' => [],
-            'summary'  => [
-                'current'       => 0,
-                'days_1_30'     => 0,
-                'days_31_60'    => 0,
-                'days_61_90'    => 0,
-                'days_91_120'   => 0,
-                'days_over_120' => 0,
-                'grand_total'   => 0,
-            ],
+            'summary'  => array_merge($this->emptyAgingBuckets(), ['grand_total' => 0.0]),
         ];
 
         if (empty($this->supplierId)) {
@@ -101,15 +98,7 @@ class SupplierAging extends Component
 
         $asOfDate = Carbon::parse($this->asOfDate);
         $agingRows = [];
-        $summary = [
-            'current'       => 0,
-            'days_1_30'     => 0,
-            'days_31_60'    => 0,
-            'days_61_90'    => 0,
-            'days_91_120'   => 0,
-            'days_over_120' => 0,
-            'grand_total'   => 0,
-        ];
+        $summary = array_merge($this->emptyAgingBuckets(), ['grand_total' => 0.0]);
 
         $settled = $this->settledAsOf('supplier', Carbon::parse($this->asOfDate));
 
@@ -125,55 +114,35 @@ class SupplierAging extends Component
             // settled for more than it was worth: a negative that lowers what is owed, not yet due
             $daysOverdue = $balance < 0 ? 0 : (int)$dueDate->diffInDays($asOfDate, false);
 
-            $buckets = array_fill_keys(['current', 'days_1_30', 'days_31_60', 'days_61_90', 'days_91_120', 'days_over_120'], 0.0);
-
-            if ($daysOverdue <= 0) {
-                $buckets['current'] = $balance;
-                $summary['current'] += $balance;
-            } elseif ($daysOverdue <= 30) {
-                $buckets['days_1_30'] = $balance;
-                $summary['days_1_30'] += $balance;
-            } elseif ($daysOverdue <= 60) {
-                $buckets['days_31_60'] = $balance;
-                $summary['days_31_60'] += $balance;
-            } elseif ($daysOverdue <= 90) {
-                $buckets['days_61_90'] = $balance;
-                $summary['days_61_90'] += $balance;
-            } elseif ($daysOverdue <= 120) {
-                $buckets['days_91_120'] = $balance;
-                $summary['days_91_120'] += $balance;
-            } else {
-                $buckets['days_over_120'] = $balance;
-                $summary['days_over_120'] += $balance;
-            }
-
+            $buckets = $this->emptyAgingBuckets();
+            $bucketKey = $this->agingBucketKey($balance < 0 ? 0 : $this->agingAge($inv, $asOfDate));
+            $buckets[$bucketKey] = $balance;
+            $summary[$bucketKey] += $balance;
             $summary['grand_total'] += $balance;
 
-            $agingRows[] = array_merge([
+            $agingRows[] = [
                 'invoice_no'   => $inv->row_no,
                 'invoice_date' => Carbon::parse($inv->invoice_date)->translatedFormat('d M Y'),
                 'due_date'     => $dueDate->translatedFormat('d M Y'),
                 'days_overdue' => $daysOverdue,
                 'total'        => $balance,
-            ], $buckets);
+                'buckets'      => $buckets,
+            ];
         }
 
         // the supplier's opening balance is owed too (aged from its date), so aging = statement
         foreach ($this->openingBalancesAsOf('supplier', $asOfDate, $supplier->id) as $ob) {
             $obDate = Carbon::parse($ob['date']);
             $daysOverdue = (int) $obDate->diffInDays($asOfDate, false);
-            $key = match (true) {
-                $daysOverdue <= 0 => 'current', $daysOverdue <= 30 => 'days_1_30', $daysOverdue <= 60 => 'days_31_60',
-                $daysOverdue <= 90 => 'days_61_90', $daysOverdue <= 120 => 'days_91_120', default => 'days_over_120',
-            };
-            $buckets = array_fill_keys(['current', 'days_1_30', 'days_31_60', 'days_61_90', 'days_91_120', 'days_over_120'], 0.0);
-            $buckets[$key] = $ob['amount'];
-            $summary[$key] += $ob['amount'];
+            $bucketKey = $this->agingBucketKey($daysOverdue);
+            $buckets = $this->emptyAgingBuckets();
+            $buckets[$bucketKey] = $ob['amount'];
+            $summary[$bucketKey] += $ob['amount'];
             $summary['grand_total'] += $ob['amount'];
-            array_unshift($agingRows, array_merge([
+            array_unshift($agingRows, [
                 'invoice_no' => __('Opening balance'), 'invoice_date' => $obDate->translatedFormat('d M Y'), 'due_date' => $obDate->translatedFormat('d M Y'),
-                'days_overdue' => $daysOverdue, 'total' => $ob['amount'],
-            ], $buckets));
+                'days_overdue' => $daysOverdue, 'total' => $ob['amount'], 'buckets' => $buckets,
+            ]);
         }
 
         return [
@@ -191,34 +160,37 @@ class SupplierAging extends Component
             return;
         }
 
-        $bucketLabels = [
-            'current' => __('Current'), 'days_1_30' => __(':from-:to Days', ['from' => 1, 'to' => 30]), 'days_31_60' => __(':from-:to Days', ['from' => 31, 'to' => 60]),
-            'days_61_90' => __(':from-:to Days', ['from' => 61, 'to' => 90]), 'days_91_120' => __(':from-:to Days', ['from' => 91, 'to' => 120]), 'days_over_120' => __('Over :n Days', ['n' => 120]),
-        ];
+        $bucketDefs = $this->agingBucketDefs();
 
-        $columns = array_merge(['Invoice #', 'Invoice Date', 'Due Date', 'Days Overdue'], array_values($bucketLabels), ['Total']);
+        $columns = array_merge(
+            ['Invoice #', 'Invoice Date', 'Due Date', 'Days Overdue'],
+            array_column($bucketDefs, 'label'),
+            ['Total']
+        );
 
         $rows = [];
         foreach ($data['invoices'] as $inv) {
             $row = [$inv['invoice_no'], $inv['invoice_date'], $inv['due_date'], $inv['days_overdue']];
-            foreach (array_keys($bucketLabels) as $key) {
-                $row[] = (float) $inv[$key] ?: '';
+            foreach ($bucketDefs as $def) {
+                $row[] = (float)$inv['buckets'][$def['key']] ?: '';
             }
-            $row[] = (float) $inv['total'];
+            $row[] = (float)$inv['total'];
             $rows[] = $row;
         }
 
         $totalsRow = ['', '', '', 'TOTAL'];
-        foreach (array_keys($bucketLabels) as $key) {
-            $totalsRow[] = (float) $data['summary'][$key];
+        foreach ($bucketDefs as $def) {
+            $totalsRow[] = (float)$data['summary'][$def['key']];
         }
-        $totalsRow[] = (float) $data['summary']['grand_total'];
+        $totalsRow[] = (float)$data['summary']['grand_total'];
 
         $meta = [
             'title' => 'SUPPLIER AGING REPORT',
             'lines' => [
                 'Supplier: ' . $data['supplier']->name_en . ' (' . $data['supplier']->row_no . ')',
-                'As of: ' . Carbon::parse($this->asOfDate)->format('d M Y'),
+                'As of: ' . Carbon::parse($this->asOfDate)->format('d M Y')
+                    . '  |  Interval: ' . $this->agingInterval . ' days x ' . $this->agingColumns . ' columns'
+                    . '  |  Based on: ' . ($this->agingBasis === 'invoice' ? 'invoice date' : 'due date'),
                 'Generated on: ' . now()->format('d-m-Y H:i'),
             ],
             'numeric_from' => 5,
@@ -234,7 +206,9 @@ class SupplierAging extends Component
         $data = $this->getAgingData();
 
         return view('livewire.report.finance.supplier-aging', array_merge([
-            'suppliers' => $this->suppliers,
+            'company'    => authUserCompany(),
+            'suppliers'  => $this->suppliers,
+            'bucketDefs' => $this->agingBucketDefs(),
         ], $data));
     }
 }

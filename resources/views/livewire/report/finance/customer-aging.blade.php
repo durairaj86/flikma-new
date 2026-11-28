@@ -74,6 +74,14 @@
                             @endforeach
                         </select>
                     </div>
+                    <div class="col-lg-3 col-md-4 col-xxl-2">
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Based on') }}</label>
+                        <select class="form-select bg-light border-0 py-2 no-ts" wire:model.live="agingBasis">
+                            @foreach(\App\Livewire\Report\Finance\CustomerAging::agingBasisLabels() as $basis => $label)
+                                <option value="{{ $basis }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                     <div class="col-lg-3 col-xxl-2">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Search Invoice') }}</label>
                         <div class="input-group">
@@ -174,7 +182,7 @@
                         <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
                             <h6 class="mb-0 fw-bold flex-grow-1"><i class="bi bi-table me-2 text-customer"></i>{{ __('Aging Detail') }}</h6>
                             <div class="d-flex align-items-center gap-2 ms-auto flex-shrink-0">
-                                <span class="badge bg-light text-dark border px-3 py-2">{{ $agingInterval }}-{{ __('day buckets') }}</span>
+                                <span class="badge bg-light text-dark border px-3 py-2">{{ $agingInterval }}-{{ __('day buckets') }} · {{ __('Based on') }}: {{ $this->agingBasisLabel() }}</span>
                                 <span class="badge bg-customer-subtle text-customer border border-customer-subtle px-3 py-2">
                                     {{ count($invoices) }} {{ __('invoice(s) outstanding') }}
                                 </span>
@@ -260,7 +268,7 @@
                         <td class="text-end">
                             <div class="stmt-title">{{ __('CUSTOMER AGING REPORT') }}</div>
                             <div class="stmt-sub">{{ __('As of') }}: {{ \Carbon\Carbon::parse($asOfDate)->translatedFormat('d M Y') }}</div>
-                            <div class="stmt-sub">{{ __('Aging') }}: {{ $agingInterval }}-{{ __('day buckets') }} &times; {{ $agingColumns }}</div>
+                            <div class="stmt-sub">{{ __('Aging') }}: {{ $agingInterval }}-{{ __('day buckets') }} &times; {{ $agingColumns }} · {{ __('Based on') }}: {{ $this->agingBasisLabel() }}</div>
                             <div class="stmt-sub">{{ __('Generated') }}: {{ now()->translatedFormat('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency') }}: SAR</div>
                         </td>
                     </tr>

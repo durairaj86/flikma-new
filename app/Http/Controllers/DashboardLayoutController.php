@@ -50,6 +50,7 @@ class DashboardLayoutController extends Controller
         'job-status' => ['size' => 'medium', 'module' => 'operations', 'group' => 'job', 'title' => 'Jobs', 'icon' => 'bi-briefcase'],
         'eta-etd-small' => ['size' => 'small', 'module' => 'operations', 'group' => 'eta-etd', 'title' => 'ETA / ETD', 'icon' => 'bi-ship', 'default' => false],
         'eta-etd' => ['size' => 'large', 'module' => 'operations', 'group' => 'eta-etd', 'title' => 'ETA / ETD', 'icon' => 'bi-ship'],
+        'shipment-schedule' => ['size' => 'medium', 'module' => 'operations', 'group' => 'shipment-schedule', 'title' => 'Arrivals & Departures', 'icon' => 'bi-calendar-week'],
         'ata-atd-small' => ['size' => 'small', 'module' => 'operations', 'group' => 'ata-atd', 'title' => 'ATA / ATD', 'icon' => 'bi-truck', 'default' => false],
         'ata-atd' => ['size' => 'large', 'module' => 'operations', 'group' => 'ata-atd', 'title' => 'ATA / ATD', 'icon' => 'bi-truck'],
         'payroll-small' => ['size' => 'small', 'module' => 'hr', 'group' => 'payroll', 'title' => 'Payroll', 'icon' => 'bi-cash-coin', 'default' => false],

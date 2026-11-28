@@ -132,7 +132,8 @@ CUSTOMER_INVOICE = {
                     {data: 'grand_total', class: 'text-end', render: (data, type, row) => templates.amount(row)},
                     {data: 'balance', class: 'text-end', render: (data, type, row) => templates.balance(row)},
                     {data: 'due_at', class: 'text-end', render: (data, type, row) => templates.due(row)},
-                    GLOBAL_FN.dataTable.optionButton()
+                    // no actions on a deleted invoice
+                    (col => ({...col, render: (data, type, row) => row.is_deleted ? '' : col.render(data, type, row)}))(GLOBAL_FN.dataTable.optionButton())
                 ],
                 language: {
                     search: ""
@@ -277,8 +278,9 @@ CUSTOMER_INVOICE = {
             },
             // One idea per column, each with a bold main line and a small grey line.
             // a draft has no real number yet: it just says "Draft" (no number, no second Draft badge)
-            invoiceNumber: (row) => `<div class="cell-primary fw-bold text-primary customer-invoice-no-link" style="cursor:pointer;">${Number(row.status) === 1 ? trans('Draft') : (row.row_no ?? '')}</div>
-                <div class="d-flex align-items-center gap-2 mt-1">${Number(row.status) === 1 ? '' : (CUSTOMER_INVOICE.list.templates.statusBadge[row.status] ?? '')}<span class="cell-secondary">${row.invoice_date ?? ''}</span></div>${(row.credit_notes || []).map(cn => `<div class="cell-secondary"><a href="#" class="ci-cn-link text-danger text-decoration-none" data-id="${cn.id}" data-no="${cn.no}" title="${trans('Credit Note')}"><i class="bi bi-receipt-cutoff me-1"></i>${cn.draft ? trans('Draft') : cn.no} · -${cn.amount}</a></div>`).join('')}`,
+            // a deleted invoice (Include deleted filter) is plain text with a Deleted badge: it has no drawer
+            invoiceNumber: (row) => `<div class="cell-primary fw-bold ${row.is_deleted ? 'text-muted text-decoration-line-through' : 'text-primary customer-invoice-no-link'}" style="${row.is_deleted ? '' : 'cursor:pointer;'}">${Number(row.status) === 1 ? trans('Draft') : (row.row_no ?? '')}</div>
+                <div class="d-flex align-items-center gap-2 mt-1">${row.is_deleted ? '<span class="badge bg-danger text-white">' + trans('Deleted') + '</span>' : ''}${Number(row.status) === 1 ? '' : (CUSTOMER_INVOICE.list.templates.statusBadge[row.status] ?? '')}${row.zatca ? '<span class="badge bg-success-subtle text-success-emphasis" title="' + trans('Submitted to ZATCA') + '"><i class="bi bi-shield-check"></i> ZATCA</span>' : ''}<span class="cell-secondary">${row.invoice_date ?? ''}</span></div>${(row.credit_notes || []).map(cn => `<div class="cell-secondary"><a href="#" class="ci-cn-link text-danger text-decoration-none" data-id="${cn.id}" data-no="${cn.no}" title="${trans('Credit Note')}"><i class="bi bi-receipt-cutoff me-1"></i>${cn.draft ? trans('Draft') : cn.no} · -${cn.amount}</a></div>`).join('')}`,
 
             job: (row) => row.job_no
                 ? `<div class="cell-primary">${row.job_no}</div><div class="cell-secondary">${row.job_activity && row.job_activity !== '-' ? row.job_activity : ''}</div>`

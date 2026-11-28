@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Finance\Invoice;
 
+use App\Enums\TaxSubmit;
 use App\Services\DocumentNumber;
 use App\Enums\CustomerInvoiceEnum;
 use App\Enums\JobEnum;
@@ -176,8 +177,19 @@ class CustomerInvoiceController extends Controller
             })
             ->when(($filter['filter-overdue'] ?? 'all') === 'non_due', function ($q) {
                 $q->where('due_at', '>=', now())->whereColumn('paid_amount', '<', 'grand_total');
-            });
+            })
+            // ZATCA: submitted = reported (B2C) or cleared (B2B); not submitted = approved but never accepted by ZATCA
+            ->when(($filter['filter-zatca'] ?? 'all') === 'submitted', function ($q) {
+                $q->whereIn('tax_submit_status', self::ZATCA_SUBMITTED);
+            })
+            ->when(($filter['filter-zatca'] ?? 'all') === 'not_submitted', function ($q) {
+                $q->where('customer_invoices.status', CustomerInvoiceEnum::APPROVED->value)
+                    ->where(fn ($z) => $z->whereNull('tax_submit_status')->orWhereNotIn('tax_submit_status', self::ZATCA_SUBMITTED));
+            })
+            ->when(($filter['filter-deleted'] ?? '') === '1', fn ($q) => $q->withTrashed());
     }
+
+    private const ZATCA_SUBMITTED = [TaxSubmit::TAX_SUBMITTED_STATUS, TaxSubmit::B2B_SUBMITTED_STATUS, TaxSubmit::B2C_SUBMITTED_STATUS];
 
     /**
      * Applies the active list tab (All / Draft / Approved / Overdue Invoice /
@@ -226,6 +238,7 @@ class CustomerInvoiceController extends Controller
             'customer_invoices.status as status',
             'customer_invoices.created_at as created_at',
             'customer_invoices.company_id as company_id',
+            'customer_invoices.deleted_at as deleted_at',
         )
             ->with(['customer:id,name_en,name_ar,row_no'])
             ->with(['job:id,shipment_mode,pol,pod,activity_id,carrier,shipment_mode'])// eager load customer
@@ -319,7 +332,8 @@ class CustomerInvoiceController extends Controller
         // the same filters as the list.
         $draft = CustomerInvoiceEnum::DRAFT->value;
         $approved = CustomerInvoiceEnum::APPROVED->value;
-        $salesSummary = $baseCountQuery()->select([
+        // deleted invoices (Include deleted filter) are listed but never added to the money totals
+        $salesSummary = $baseCountQuery()->whereNull('customer_invoices.deleted_at')->select([
             DB::raw("SUM(CASE WHEN status = {$draft} THEN base_grand_total ELSE 0 END) as total_draft_grand"),
             DB::raw("SUM(CASE WHEN status = {$draft} THEN base_sub_total ELSE 0 END) as total_draft_sub"),
             DB::raw("SUM(CASE WHEN status = {$draft} THEN base_tax_total ELSE 0 END) as total_draft_tax"),
@@ -334,10 +348,13 @@ class CustomerInvoiceController extends Controller
             ->addIndexColumn()
             ->setRowAttr([
                 'data-id' => fn($model) => $model->id,
-                'data-name' => fn($model) => 'Customer Invoice ' . htmlspecialchars((int) $model->status === 1 ? 'DRAFT' : $model->invoice_no, ENT_QUOTES, 'UTF-8'),
-                'class' => 'row-item',
+                'data-name' => fn($model) => 'Customer Invoice ' . htmlspecialchars((int) $model->status === 1 ? 'DRAFT' : ($model->invoice_no ?? ''), ENT_QUOTES, 'UTF-8'),
+                // a deleted invoice (Include deleted filter) is shown greyed out, with no drawer or actions
+                'class' => fn($model) => $model->deleted_at ? 'row-deleted' : 'row-item',
                 'id' => fn($model) => 'customer-invoice-' . strtolower($model->invoice_no ?? $model->id),
             ])
+            ->addColumn('is_deleted', fn($model) => (bool) $model->deleted_at)
+            ->addColumn('zatca', fn($model) => in_array((int) $model->tax_submit_status, self::ZATCA_SUBMITTED, true))
             ->editColumn('invoice_date', fn($model) => \Carbon\Carbon::parse($model->invoice_date)->format('d-m-Y'))
             ->editColumn('currency', fn($model) => strtoupper($model->currency))
             ->addColumn('customer_name', fn($model) => $model->customer?->name_en ? truncateName($model->customer?->name_en, 15) : '-')

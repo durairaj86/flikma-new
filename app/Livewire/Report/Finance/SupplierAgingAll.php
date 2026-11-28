@@ -55,9 +55,7 @@ class SupplierAgingAll extends Component
             }
 
             // a negative balance (bill settled for more than it was worth) lowers what is owed, not yet due
-            $dueDate = Carbon::parse($invoice->due_at ?? $invoice->invoice_date);
-            $daysOverdue = $balance < 0 ? 0 : (int)$dueDate->diffInDays($asOfDate, false);
-            $bucketKey = $this->agingBucketKey($daysOverdue);
+            $bucketKey = $this->agingBucketKey($balance < 0 ? 0 : $this->agingAge($invoice, $asOfDate));
 
             $suppId = $invoice->supplier_id;
             if (!isset($bySupplier[$suppId])) {
@@ -129,7 +127,8 @@ class SupplierAgingAll extends Component
             'title' => 'SUPPLIER AGING SUMMARY',
             'lines' => [
                 'As of: ' . Carbon::parse($this->asOfDate)->format('d M Y')
-                    . '  |  Interval: ' . $this->agingInterval . ' days x ' . $this->agingColumns . ' columns',
+                    . '  |  Interval: ' . $this->agingInterval . ' days x ' . $this->agingColumns . ' columns'
+                    . '  |  Based on: ' . ($this->agingBasis === 'invoice' ? 'invoice date' : 'due date'),
                 'Generated on: ' . now()->format('d-m-Y H:i'),
             ],
             'numeric_from' => 3,

@@ -106,6 +106,23 @@
                                 </select>
                         </div>
 
+                        <div class="col-md-6 col-xl-4 form-filter">
+                            <label class="form-label fw-medium filter-label-row">{{ __('ZATCA Status') }}</label>
+                            <select class="tom-select avoid-filter" name="filter-zatca" id="filter-zatca">
+                                    <option value="all" selected>{{ __('All') }}</option>
+                                    <option value="submitted">{{ __('Submitted to ZATCA') }}</option>
+                                    <option value="not_submitted">{{ __('Approved, not submitted') }}</option>
+                                </select>
+                        </div>
+
+                        <div class="col-md-6 col-xl-4 form-filter">
+                            <label class="form-label fw-medium filter-label-row">{{ __('Deleted Invoices') }}</label>
+                            <select class="tom-select avoid-filter" name="filter-deleted" id="filter-deleted">
+                                    <option value="" selected>{{ __('Hide deleted') }}</option>
+                                    <option value="1">{{ __('Include deleted') }}</option>
+                                </select>
+                        </div>
+
                     </div>
 
                     <div class="text-center mt-4 pt-2 border-top filter-panel-actions">

@@ -6295,5 +6295,16 @@
     "Locks every transaction on or before the closing date as soon as you save. You can reopen it later.": "يقفل كل المعاملات في تاريخ الإقفال أو قبله فور الحفظ. يمكنك إعادة فتحها لاحقاً.",
     "Transactions already exist under this bank, so it cannot be deleted.": "توجد معاملات على هذا البنك بالفعل، لذلك لا يمكن حذفه.",
     "Transactions already use this description, so it cannot be deleted. Make it In-Active instead.": "توجد معاملات تستخدم هذا الوصف، لذلك لا يمكن حذفه. اجعله غير نشط بدلاً من ذلك.",
-    "Transactions already exist under this salesperson, so it cannot be deleted. Make it In-Active instead.": "توجد معاملات على هذا المندوب بالفعل، لذلك لا يمكن حذفه. اجعله غير نشط بدلاً من ذلك."
+    "Transactions already exist under this salesperson, so it cannot be deleted. Make it In-Active instead.": "توجد معاملات على هذا المندوب بالفعل، لذلك لا يمكن حذفه. اجعله غير نشط بدلاً من ذلك.",
+    "Tomorrow": "غداً",
+    "Submitted to ZATCA": "مُرسلة إلى زاتكا",
+    "Hide deleted": "إخفاء المحذوفة",
+    "Arriving": "الوصول",
+    "Approved, not submitted": "معتمدة، غير مُرسلة",
+    "Next week": "الأسبوع القادم",
+    "Deleted Invoices": "الفواتير المحذوفة",
+    "Include deleted": "تضمين المحذوفة",
+    "Leaving": "المغادرة",
+    "Based on": "على أساس",
+    "Arrivals & Departures": "الوصول والمغادرة"
 }

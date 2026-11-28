@@ -16,33 +16,41 @@
             </div>
             <div class="btn-group shadow-sm ms-auto position-relative">
                                 <button class="btn btn-white border border-end-0" onclick="window.print()">
-                                    <i class="bi bi-printer me-2"></i>{{ __('Print') }}
+                                <i class="bi bi-printer me-2"></i>{{ __('Print') }}
                                 </button>
                                 <div class="btn-group position-relative" x-data="{ open: false, pos: '', toggle() { this.open = !this.open; if (this.open) { const r = this.$refs.btn.getBoundingClientRect(); this.pos = 'position:fixed;left:auto;bottom:auto;right:' + (window.innerWidth - r.right) + 'px;top:' + (r.bottom + 4) + 'px;'; } } }" @click.outside="open = false" @keydown.escape.window="open = false" @scroll.window="open = false" @resize.window="open = false">
-                                    <button type="button" class="btn btn-white border dropdown-toggle" x-ref="btn" @click="toggle()" :aria-expanded="open">
-                                        <i class="bi bi-download me-2"></i>{{ __('Export') }}
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow" :class="{ show: open }" x-cloak :style="pos" @click="open = false">
-                                        <li><a class="dropdown-item py-2" href="#" onclick="reportExportPdf(event, 'sa-print')"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
-                                        <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
-                                    </ul>
+                                <button type="button" class="btn btn-white border dropdown-toggle" x-ref="btn" @click="toggle()" :aria-expanded="open">
+                                <i class="bi bi-download me-2"></i>{{ __('Export') }}
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end border-0 shadow" :class="{ show: open }" x-cloak :style="pos" @click="open = false">
+                                <li><a class="dropdown-item py-2" href="#" onclick="caExportPdf(event)"><i class="bi bi-file-pdf text-danger me-2"></i>{{ __('PDF Document') }}</a></li>
+                                <li><a class="dropdown-item py-2" href="#" wire:click.prevent="exportExcel"><i class="bi bi-file-excel text-success me-2"></i>{{ __('Excel Sheet') }}</a></li>
+                                </ul>
                                 </div>
-                            </div>
+                                </div>
         </div>
+
+        @php
+            $bucketColor = function (int $i) use ($bucketDefs) {
+                if ($i === 0) return '#16a34a'; // current
+                $ramp = ['#b45309', '#f97316', '#dc2626', '#991b1b', '#7f1d1d'];
+                return $ramp[min($i - 1, count($ramp) - 1)];
+            };
+        @endphp
 
         {{-- Header --}}
                 {{-- Filter Bar --}}
         <div class="card border-0 shadow-sm mb-4 d-print-none">
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
-                    <div class="col-lg-4 col-xl-3" id="sa-supplier-wrap" wire:ignore>
+                    <div class="col-lg-3 col-xxl-2" id="sa-supplier-wrap" wire:ignore>
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Supplier') }}</label>
                         <x-common.suppliers wire:model.live="supplierId" id="sa-supplier" name="sa-supplier"
                                             :value="$supplierId ? [(int) $supplierId] : null"
                                             :suppliers="\App\Models\Supplier\Supplier::orderBy('name_en')->get()"
                                             placeholder="{{ __('Select a supplier...') }}"></x-common.suppliers>
                     </div>
-                    <div class="col-lg-3 col-xl-3">
+                    <div class="col-lg-2 col-md-4 col-xxl-2">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('As of Date') }}</label>
                         <div wire:ignore>
                             <input type="text" id="sa-as-of-date"
@@ -50,7 +58,31 @@
                                    placeholder="dd-mm-yyyy" value="{{ $asOfDate }}" />
                         </div>
                     </div>
-                    <div class="col-lg-5 col-xl-3">
+                    <div class="col-lg-2 col-md-4 col-xxl-2">
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Interval (Days)') }}</label>
+                        <select class="form-select bg-light border-0 py-2 no-ts" wire:model.live="agingInterval">
+                            @foreach(\App\Livewire\Report\Finance\SupplierAging::AGING_INTERVALS as $days)
+                                <option value="{{ $days }}">{{ $days }} {{ __('Days') }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-4 col-xxl-2">
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Columns') }}</label>
+                        <select class="form-select bg-light border-0 py-2 no-ts" wire:model.live="agingColumns">
+                            @foreach(\App\Livewire\Report\Finance\SupplierAging::AGING_COLUMN_CHOICES as $n)
+                                <option value="{{ $n }}">{{ $n }} {{ __(Str::plural('Column', $n)) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-lg-3 col-md-4 col-xxl-2">
+                        <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Based on') }}</label>
+                        <select class="form-select bg-light border-0 py-2 no-ts" wire:model.live="agingBasis">
+                            @foreach(\App\Livewire\Report\Finance\SupplierAging::agingBasisLabels() as $basis => $label)
+                                <option value="{{ $basis }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-lg-3 col-xxl-2">
                         <label class="form-label small fw-bold text-uppercase text-muted ls-1">{{ __('Search Invoice') }}</label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-0 text-muted"><i class="bi bi-search"></i></span>
@@ -58,58 +90,24 @@
                                    placeholder="{{ __('Invoice no...') }}" wire:model.live.debounce.300ms="search" />
                         </div>
                     </div>
-
-                    <div class="col-lg-12 col-xl-3">
-                        <div class="d-flex flex-wrap gap-2 justify-content-end">
-                        </div>
-                    </div></div>
+                </div>
             </div>
         </div>
 
-        @if($supplier)
+@if($supplier)
             {{-- Summary Cards --}}
             <div class="row g-3 mb-4 d-print-none">
-                <div class="col-md-2 col-6">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body text-center py-3">
-                            <div class="small text-muted fw-bold text-uppercase mb-1">{{ __('Current') }}</div>
-                            <div class="fw-bold tabular-nums text-success">{{ number_format($summary['current'], 2) }}</div>
+                @foreach($bucketDefs as $i => $def)
+                    <div class="col-md col-6" wire:key="sum-card-{{ $def['key'] }}">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body text-center py-3">
+                                <div class="small text-muted fw-bold text-uppercase mb-1">{{ $def['label'] }}</div>
+                                <div class="fw-bold tabular-nums" style="color: {{ $bucketColor($i) }};">{{ number_format($summary[$def['key']], 2) }}</div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-2 col-6">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body text-center py-3">
-                            <div class="small text-muted fw-bold text-uppercase mb-1">{{ __('1–30 Days') }}</div>
-                            <div class="fw-bold tabular-nums text-warning-emphasis">{{ number_format($summary['days_1_30'], 2) }}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-2 col-6">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body text-center py-3">
-                            <div class="small text-muted fw-bold text-uppercase mb-1">{{ __('31–60 Days') }}</div>
-                            <div class="fw-bold tabular-nums text-orange">{{ number_format($summary['days_31_60'], 2) }}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-2 col-6">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body text-center py-3">
-                            <div class="small text-muted fw-bold text-uppercase mb-1">{{ __('61–90 Days') }}</div>
-                            <div class="fw-bold tabular-nums text-danger">{{ number_format($summary['days_61_90'], 2) }}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-2 col-6">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body text-center py-3">
-                            <div class="small text-muted fw-bold text-uppercase mb-1">{{ __('91–120 Days') }}</div>
-                            <div class="fw-bold tabular-nums text-danger">{{ number_format($summary['days_91_120'], 2) }}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-2 col-6">
+                @endforeach
+                <div class="col-md col-6">
                     <div class="card border-0 shadow-sm h-100 border-start border-3 border-supplier">
                         <div class="card-body text-center py-3">
                             <div class="small text-muted fw-bold text-uppercase mb-1">{{ __('Total Due') }}</div>
@@ -163,27 +161,14 @@
                                             $gt = $summary['grand_total'];
                                             $pct = fn($v) => $gt > 0 ? round(($v / $gt) * 100, 1) : 0;
                                         @endphp
-                                        @if($summary['current'] > 0)
-                                            <div class="progress-bar bg-success" style="width: {{ $pct($summary['current']) }}%"></div>
-                                        @endif
-                                        @if($summary['days_1_30'] > 0)
-                                            <div class="progress-bar bg-warning" style="width: {{ $pct($summary['days_1_30']) }}%"></div>
-                                        @endif
-                                        @if($summary['days_31_60'] > 0)
-                                            <div class="progress-bar" style="width: {{ $pct($summary['days_31_60']) }}%; background:#f97316;"></div>
-                                        @endif
-                                        @if($summary['days_61_90'] > 0)
-                                            <div class="progress-bar bg-danger" style="width: {{ $pct($summary['days_61_90']) }}%"></div>
-                                        @endif
-                                        @if($summary['days_91_120'] > 0)
-                                            <div class="progress-bar bg-danger" style="width: {{ $pct($summary['days_91_120']) }}%; opacity:0.7;"></div>
-                                        @endif
-                                        @if($summary['days_over_120'] > 0)
-                                            <div class="progress-bar" style="width: {{ $pct($summary['days_over_120']) }}%; background:#7f1d1d;"></div>
-                                        @endif
+                                        @foreach($bucketDefs as $i => $def)
+                                            @if($summary[$def['key']] > 0)
+                                                <div class="progress-bar" style="width: {{ $pct($summary[$def['key']]) }}%; background: {{ $bucketColor($i) }};" wire:key="bar-{{ $def['key'] }}"></div>
+                                            @endif
+                                        @endforeach
                                     </div>
                                     <div class="d-flex justify-content-between mt-2 x-small text-muted">
-                                        <span>{{ __('Current') }}</span><span>{{ __('Over 120d') }}</span>
+                                        <span>{{ $bucketDefs[0]['label'] }}</span><span>{{ end($bucketDefs)['label'] }}</span>
                                     </div>
                                 </div>
                             @endif
@@ -194,11 +179,14 @@
                 {{-- Aging Table --}}
                 <div class="col-xl-9">
                     <div class="card border-0 shadow-sm overflow-hidden">
-                        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
                             <h6 class="mb-0 fw-bold flex-grow-1"><i class="bi bi-table me-2 text-supplier"></i>{{ __('Aging Detail') }}</h6>
-                            <span class="badge bg-supplier-subtle text-supplier border border-supplier-subtle px-3 py-2 ms-auto flex-shrink-0">
-                                {{ count($invoices) }} {{ __('invoice(s) outstanding') }}
-                            </span>
+                            <div class="d-flex align-items-center gap-2 ms-auto flex-shrink-0">
+                                <span class="badge bg-light text-dark border px-3 py-2">{{ $agingInterval }}-{{ __('day buckets') }} · {{ __('Based on') }}: {{ $this->agingBasisLabel() }}</span>
+                                <span class="badge bg-supplier-subtle text-supplier border border-supplier-subtle px-3 py-2">
+                                    {{ count($invoices) }} {{ __('invoice(s) outstanding') }}
+                                </span>
+                            </div>
                         </div>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0">
@@ -207,12 +195,9 @@
                                     <th class="ps-4 border-0">{{ __('Invoice #') }}</th>
                                     <th class="border-0">{{ __('Date') }}</th>
                                     <th class="border-0">{{ __('Due Date') }}</th>
-                                    <th class="text-end border-0">{{ __('Current') }}</th>
-                                    <th class="text-end border-0">1–30</th>
-                                    <th class="text-end border-0">31–60</th>
-                                    <th class="text-end border-0">61–90</th>
-                                    <th class="text-end border-0">91–120</th>
-                                    <th class="text-end border-0">>120</th>
+                                    @foreach($bucketDefs as $def)
+                                        <th class="text-end border-0" wire:key="th-{{ $def['key'] }}">{{ $def['short'] }}</th>
+                                    @endforeach
                                     <th class="text-end pe-4 border-0">{{ __('Total') }}</th>
                                 </tr>
                                 </thead>
@@ -231,31 +216,18 @@
                                                 <br><span class="x-small text-danger">{{ $inv['days_overdue'] }}{{ __('d overdue') }}</span>
                                             @endif
                                         </td>
-                                        <td class="text-end tabular-nums text-success">
-                                            {{ $inv['current'] > 0 ? number_format($inv['current'], 2) : '—' }}
-                                        </td>
-                                        <td class="text-end tabular-nums text-warning-emphasis">
-                                            {{ $inv['days_1_30'] > 0 ? number_format($inv['days_1_30'], 2) : '—' }}
-                                        </td>
-                                        <td class="text-end tabular-nums text-orange">
-                                            {{ $inv['days_31_60'] > 0 ? number_format($inv['days_31_60'], 2) : '—' }}
-                                        </td>
-                                        <td class="text-end tabular-nums text-danger">
-                                            {{ $inv['days_61_90'] > 0 ? number_format($inv['days_61_90'], 2) : '—' }}
-                                        </td>
-                                        <td class="text-end tabular-nums text-danger">
-                                            {{ $inv['days_91_120'] > 0 ? number_format($inv['days_91_120'], 2) : '—' }}
-                                        </td>
-                                        <td class="text-end tabular-nums" style="color:#7f1d1d;">
-                                            {{ $inv['days_over_120'] > 0 ? number_format($inv['days_over_120'], 2) : '—' }}
-                                        </td>
+                                        @foreach($bucketDefs as $i => $def)
+                                            <td class="text-end tabular-nums" style="color: {{ $bucketColor($i) }};" wire:key="cell-{{ $loop->parent->index }}-{{ $def['key'] }}">
+                                                {{ $inv['buckets'][$def['key']] > 0 ? number_format($inv['buckets'][$def['key']], 2) : '—' }}
+                                            </td>
+                                        @endforeach
                                         <td class="text-end pe-4 fw-bold tabular-nums text-supplier">
                                             {{ number_format($inv['total'], 2) }}
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="10" class="text-center py-5 text-muted small">
+                                        <td colspan="{{ 4 + count($bucketDefs) }}" class="text-center py-5 text-muted small">
                                             <i class="bi bi-inbox h3 d-block mb-2"></i>
                                             {{ __('No outstanding invoices found.') }}
                                         </td>
@@ -265,12 +237,9 @@
                                 <tfoot class="bg-light border-top">
                                 <tr class="fw-bold">
                                     <td colspan="3" class="ps-4 py-3">{{ __('Total') }}</td>
-                                    <td class="text-end tabular-nums text-success">{{ number_format($summary['current'], 2) }}</td>
-                                    <td class="text-end tabular-nums text-warning-emphasis">{{ number_format($summary['days_1_30'], 2) }}</td>
-                                    <td class="text-end tabular-nums text-orange">{{ number_format($summary['days_31_60'], 2) }}</td>
-                                    <td class="text-end tabular-nums text-danger">{{ number_format($summary['days_61_90'], 2) }}</td>
-                                    <td class="text-end tabular-nums text-danger">{{ number_format($summary['days_91_120'], 2) }}</td>
-                                    <td class="text-end tabular-nums" style="color:#7f1d1d;">{{ number_format($summary['days_over_120'], 2) }}</td>
+                                    @foreach($bucketDefs as $i => $def)
+                                        <td class="text-end tabular-nums" style="color: {{ $bucketColor($i) }};" wire:key="tf-{{ $def['key'] }}">{{ number_format($summary[$def['key']], 2) }}</td>
+                                    @endforeach
                                     <td class="text-end pe-4 text-supplier fs-6 tabular-nums">{{ number_format($summary['grand_total'], 2) }}</td>
                                 </tr>
                                 </tfoot>
@@ -281,17 +250,25 @@
             </div>
 
             {{-- Bank-statement style layout: used for Print and PDF export only --}}
-            <div id="sa-print" class="stmt-print d-none d-print-block"
+            <div id="aging-print" class="stmt-print d-none d-print-block"
                  data-pdf-filename="SupplierAging-{{ $supplier->row_no }}-{{ $asOfDate }}.pdf">
 
                 <table class="stmt-meta">
                     <tr>
                         <td>
-                            <div class="stmt-company">{{ optional(authUserCompany())->name ?? config('app.name') }}</div>
+                            <div class="stmt-company">{{ $company->name ?? config('app.name') }}</div>
+                            <div class="stmt-sub">
+                                @if(!empty($company->phone)) {{ __('Phone') }}: {{ $company->phone }} @endif
+                                @if(!empty($company->email)) &nbsp;|&nbsp; {{ $company->email }} @endif
+                            </div>
+                            @if(!empty($company->vat_number))
+                                <div class="stmt-sub">{{ __('VAT No') }}: {{ $company->vat_number }}</div>
+                            @endif
                         </td>
                         <td class="text-end">
                             <div class="stmt-title">{{ __('SUPPLIER AGING REPORT') }}</div>
                             <div class="stmt-sub">{{ __('As of') }}: {{ \Carbon\Carbon::parse($asOfDate)->translatedFormat('d M Y') }}</div>
+                            <div class="stmt-sub">{{ __('Aging') }}: {{ $agingInterval }}-{{ __('day buckets') }} &times; {{ $agingColumns }} · {{ __('Based on') }}: {{ $this->agingBasisLabel() }}</div>
                             <div class="stmt-sub">{{ __('Generated') }}: {{ now()->translatedFormat('d M Y H:i') }} &nbsp;|&nbsp; {{ __('Currency') }}: SAR</div>
                         </td>
                     </tr>
@@ -321,12 +298,10 @@
                         <th>{{ __('Invoice #') }}</th>
                         <th>{{ __('Date') }}</th>
                         <th>{{ __('Due Date') }}</th>
-                        <th class="text-end">{{ __('Current') }}</th>
-                        <th class="text-end">1-30</th>
-                        <th class="text-end">31-60</th>
-                        <th class="text-end">61-90</th>
-                        <th class="text-end">91-120</th>
-                        <th class="text-end">&gt;120</th>
+                        <th class="text-end">{{ __('Days') }}</th>
+                        @foreach($bucketDefs as $def)
+                            <th class="text-end">{{ $def['label'] }}</th>
+                        @endforeach
                         <th class="text-end">{{ __('Total') }}</th>
                     </tr>
                     </thead>
@@ -336,33 +311,33 @@
                             <td>{{ $inv['invoice_no'] }}</td>
                             <td>{{ $inv['invoice_date'] }}</td>
                             <td>{{ $inv['due_date'] }}</td>
-                            <td class="text-end">{{ $inv['current'] > 0 ? number_format($inv['current'], 2) : '' }}</td>
-                            <td class="text-end">{{ $inv['days_1_30'] > 0 ? number_format($inv['days_1_30'], 2) : '' }}</td>
-                            <td class="text-end">{{ $inv['days_31_60'] > 0 ? number_format($inv['days_31_60'], 2) : '' }}</td>
-                            <td class="text-end">{{ $inv['days_61_90'] > 0 ? number_format($inv['days_61_90'], 2) : '' }}</td>
-                            <td class="text-end">{{ $inv['days_91_120'] > 0 ? number_format($inv['days_91_120'], 2) : '' }}</td>
-                            <td class="text-end">{{ $inv['days_over_120'] > 0 ? number_format($inv['days_over_120'], 2) : '' }}</td>
+                            <td class="text-end">{{ $inv['days_overdue'] > 0 ? $inv['days_overdue'] : '' }}</td>
+                            @foreach($bucketDefs as $def)
+                                <td class="text-end">{{ $inv['buckets'][$def['key']] > 0 ? number_format($inv['buckets'][$def['key']], 2) : '' }}</td>
+                            @endforeach
                             <td class="text-end stmt-strong">{{ number_format($inv['total'], 2) }}</td>
                         </tr>
                     @empty
-                        <tr><td colspan="10" class="text-center">{{ __('No outstanding invoices found.') }}</td></tr>
+                        <tr>
+                            <td colspan="{{ 5 + count($bucketDefs) }}" class="text-center">{{ __('No outstanding invoices found.') }}</td>
+                        </tr>
                     @endforelse
                     </tbody>
                     <tfoot>
                     <tr class="stmt-strong">
-                        <td colspan="3">{{ __('Total') }}</td>
-                        <td class="text-end">{{ number_format($summary['current'], 2) }}</td>
-                        <td class="text-end">{{ number_format($summary['days_1_30'], 2) }}</td>
-                        <td class="text-end">{{ number_format($summary['days_31_60'], 2) }}</td>
-                        <td class="text-end">{{ number_format($summary['days_61_90'], 2) }}</td>
-                        <td class="text-end">{{ number_format($summary['days_91_120'], 2) }}</td>
-                        <td class="text-end">{{ number_format($summary['days_over_120'], 2) }}</td>
+                        <td colspan="4">{{ __('Total') }}</td>
+                        @foreach($bucketDefs as $def)
+                            <td class="text-end">{{ number_format($summary[$def['key']], 2) }}</td>
+                        @endforeach
                         <td class="text-end">{{ number_format($summary['grand_total'], 2) }}</td>
                     </tr>
                     </tfoot>
                 </table>
-            </div>
 
+                <div class="stmt-footnote">
+                    {{ __('This is a system generated report. Aging buckets:') }} {{ $agingInterval }} {{ __('days') }} &times; {{ $agingColumns }} {{ __('columns.') }}
+                </div>
+            </div>
         @else
             <div class="card border-0 shadow-sm text-center py-5">
                 <div class="card-body">
@@ -380,11 +355,10 @@
     @script
     <script>
         (function () {
-            // Supplier picker: shared tom-select component, wire:ignore'd so Livewire commits can't wipe it.
-            var supEl = document.getElementById('sa-supplier');
-            if (supEl && !supEl.tomselect) { initTomSelectForm($('#sa-supplier-wrap')); }
-            var el = document.getElementById('sa-as-of-date');
-            if (el && !el._flatpickr) {
+            function initFlatpickr() {
+                var el = document.getElementById('sa-as-of-date');
+                if (!el || el._flatpickr) return;
+
                 flatpickr(el, {
                     dateFormat:    'Y-m-d',
                     altInput:      true,
@@ -399,6 +373,28 @@
                     },
                 });
             }
+
+            initFlatpickr();
+
+            window.caExportPdf = function (e) {
+                e.preventDefault();
+                var area = document.getElementById('aging-print');
+                if (!area) {
+                    alert("{{ __('Please select a supplier first.') }}");
+                    return;
+                }
+                var clone = area.cloneNode(true);
+                clone.classList.remove('d-none');
+                clone.style.padding = '10px';
+                var opt = {
+                    margin: 0.4,
+                    filename: area.dataset.pdfFilename || 'SupplierAging.pdf',
+                    html2canvas: { scale: 2, useCORS: true },
+                    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+                    pagebreak: { mode: ['avoid-all', 'css'] }
+                };
+                html2pdf().set(opt).from(clone).save();
+            };
         })();
     </script>
     @endscript
@@ -415,7 +411,6 @@
         .border-supplier { border-color: var(--supplier-primary) !important; }
         .bg-supplier-subtle { background-color: #fef3c7 !important; }
         .border-supplier-subtle { border-color: #fde68a !important; }
-        .text-orange { color: #f97316 !important; }
         .avatar-ui {
             width: 56px; height: 56px; background: #fef3c7; color: var(--supplier-primary);
             display: flex; align-items: center; justify-content: center;
@@ -430,9 +425,19 @@
             border-color: var(--supplier-primary);
         }
         @media print {
-            body { background: white !important; }
             .d-print-none { display: none !important; }
-            .card { box-shadow: none !important; border: 1px solid #eee !important; }
+            .aging-wrapper { padding: 0 !important; background: white !important; }
+            .container-fluid { padding: 0 !important; }
         }
     </style>
+
+    @script
+    <script>
+        // Supplier picker: shared tom-select component, wire:ignore'd so Livewire commits can't wipe it.
+        (function () {
+            var el = document.getElementById('sa-supplier');
+            if (el && !el.tomselect) { initTomSelectForm($('#sa-supplier-wrap')); }
+        })();
+    </script>
+    @endscript
 </div>

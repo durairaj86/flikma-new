@@ -113,7 +113,7 @@ class CustomerAging extends Component
             $daysOverdue = $balance < 0 ? 0 : (int)$dueDate->diffInDays($asOfDate, false);
 
             $buckets = $this->emptyAgingBuckets();
-            $bucketKey = $this->agingBucketKey($daysOverdue);
+            $bucketKey = $this->agingBucketKey($balance < 0 ? 0 : $this->agingAge($inv, $asOfDate));
             $buckets[$bucketKey] = $balance;
             $summary[$bucketKey] += $balance;
             $summary['grand_total'] += $balance;
@@ -187,7 +187,8 @@ class CustomerAging extends Component
             'lines' => [
                 'Customer: ' . $data['customer']->name_en . ' (' . $data['customer']->row_no . ')',
                 'As of: ' . Carbon::parse($this->asOfDate)->format('d M Y')
-                    . '  |  Interval: ' . $this->agingInterval . ' days x ' . $this->agingColumns . ' columns',
+                    . '  |  Interval: ' . $this->agingInterval . ' days x ' . $this->agingColumns . ' columns'
+                    . '  |  Based on: ' . ($this->agingBasis === 'invoice' ? 'invoice date' : 'due date'),
                 'Generated on: ' . now()->format('d-m-Y H:i'),
             ],
             'numeric_from' => 5,

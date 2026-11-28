@@ -20,6 +20,7 @@
     @case('eta-etd') @include('dashboard.widgets.eta-etd-medium') @break
     @case('ata-atd') @include('dashboard.widgets.ata-atd-medium') @break
     @case('eta-etd-small') @include('dashboard.widgets.eta-etd-small') @break
+    @case('shipment-schedule') @include('dashboard.widgets.shipment-schedule-medium') @break
     @case('ata-atd-small') @include('dashboard.widgets.ata-atd-small') @break
     @case('recent-transactions') @include('dashboard.widgets.recent-transactions-tall') @break
     @case('job-status') @include('dashboard.widgets.job-status-medium') @break
