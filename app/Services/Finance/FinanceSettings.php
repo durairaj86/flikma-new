@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Choices a company makes in Settings › Finance: what happens when a customer invoice goes over the customer's credit limit,
- * and what an emailed customer / supplier statement carries.
+ * what an emailed customer / supplier statement carries, and whether customer invoices are made from the job's cost sheet.
  */
 class FinanceSettings
 {
@@ -22,9 +22,15 @@ class FinanceSettings
         'excel' => 'Excel',
     ];
 
+    public const COST_SHEET = [
+        'off' => 'Off - invoices are created as usual',
+        'on' => 'On - customer invoices are created from the job\'s cost sheet only',
+    ];
+
     public const DEFAULTS = [
         'credit_check' => 'off',
         'statement_attachment' => 'pdf',
+        'cost_sheet' => 'off',
     ];
 
     public static function get(string $key): string

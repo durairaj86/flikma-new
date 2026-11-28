@@ -83,9 +83,43 @@
             .cin-sum-r .c b.cin-gp-pos { color: #008000; }
             .cin-sum-r .c b.cin-gp-neg { color: #e00000; }
             .cin-note { font-weight: 600; font-size: .78rem; color: #475569; }
+            /* cost sheet: a line not billed to the customer keeps its cost; its sale side is greyed out */
+            .cin-grid tr.cin-nobill td.sale { opacity: .4; }
+            .cin-grid tr.cin-nobill td.sale input { text-decoration: line-through; }
         </style>
 
-        @if(!empty($inModal))
+        @php
+            // cost sheet mode (the job's cost sheet, Settings › Finance › Cost sheet): a "Bill to customer" tick per line, no invoice dates;
+            // its lines are read-only once invoiced, and on an invoice made from a cost sheet
+            $cs = $costSheet ?? null;
+            $fromSheet = !$cs && !empty($invoice) && \App\Models\Job\CostSheet::forInvoice((int) $invoice->id);
+            $linesLocked = ($cs && empty($canEdit)) || $fromSheet;
+        @endphp
+        @if(!empty($inModal) && $cs)
+            <div class="g-3 align-items-center border-bottom py-3 px-4 small cin-modal-head">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div class="module-info d-flex align-items-center gap-2">
+                        <span class="fw-semibold fs-5">{{ __('Cost Sheet') }}</span>
+                        @if($cs->locked())
+                            <span class="badge bg-success-subtle text-success-emphasis"><i class="bi bi-lock-fill me-1"></i>{{ __('Invoiced') }} · {{ $cs->invoice?->row_no }}</span>
+                        @else
+                            <span class="badge bg-secondary-subtle text-secondary-emphasis">{{ __('Open') }}</span>
+                        @endif
+                    </div>
+                    <div id="cin-head-buttons">
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-outline-secondary" id="btn-cancel"><i class="bi bi-x-circle me-1"></i> {{ empty($canEdit) ? __('Close') : __('Cancel') }}</button>
+                            @if(!empty($canEdit))
+                                <button type="button" class="btn btn-primary" id="cinSave"><i class="bi bi-save me-1"></i> {{ __('Save Cost Sheet') }}</button>
+                                @if(!empty($canInvoice))
+                                    <button type="button" class="btn btn-success" id="csInvoice"><i class="bi bi-receipt me-1"></i> {{ __('Create Final Invoice') }}</button>
+                                @endif
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @elseif(!empty($inModal))
             {{-- the standard modal header: Draft on the left, Cancel / Save on the right --}}
             <div class="g-3 align-items-center border-bottom py-3 px-4 small cin-modal-head">
                 <div class="d-flex justify-content-between align-items-center flex-wrap">
@@ -113,6 +147,15 @@
         @endif
         @if(!empty($inModal))<div id="moduleForm" class="px-4 pt-3 pb-4">@endif
         <div id="cinAlert" class="alert alert-danger d-none py-2"></div>
+        @if($cs && $cs->locked())
+            <div class="alert alert-info py-2 small"><i class="bi bi-lock me-1"></i>{{ __('Invoiced in :no, so this cost sheet is locked. To change it, delete the draft invoice, or raise a credit note for the full invoice.', ['no' => $cs->invoice?->row_no]) }}</div>
+        @endif
+        @if($cs && !empty($otherInvoices) && count($otherInvoices))
+            <div class="alert alert-warning py-2 small"><i class="bi bi-exclamation-triangle me-1"></i>{{ __('This job already has invoice(s) not made from the cost sheet: :nos. Take care not to bill the same charges twice.', ['nos' => collect($otherInvoices)->implode(', ')]) }}</div>
+        @endif
+        @if($fromSheet)
+            <div class="alert alert-info py-2 small"><i class="bi bi-lock me-1"></i>{{ __('The lines come from the job\'s cost sheet and cannot be changed here. You can change the dates and the terms. To change a line, delete this draft and correct the cost sheet.') }}</div>
+        @endif
 
         @php
             $quickDescriptions = $descriptions->map(function ($d) {
@@ -133,6 +176,7 @@
                     <input type="text" id="cinCustomerName" class="form-control" readonly>
                     <input type="hidden" name="customer" id="cinCustomer">
                 </div>
+                @if(!$cs)
                 <div class="col-md-2">
                     <label class="form-label">{{ __('Invoice Date') }} <sup class="text-danger">*</sup></label>
                     <input type="text" name="invoice_date" id="cinDate" class="form-control datepicker" value="{{ $invoice->invoice_date ?? now()->format('d-m-Y') }}" autocomplete="off" required>
@@ -141,23 +185,26 @@
                     <label class="form-label">{{ __('Due Date') }} <sup class="text-danger">*</sup></label>
                     <input type="text" name="due_date" id="cinDue" class="form-control datepicker" value="{{ $invoice->due_at ?? now()->addDays(30)->format('d-m-Y') }}" autocomplete="off" required>
                 </div>
+                @endif
                 <div class="col-md-2">
                     <label class="form-label">{{ __('Currency') }} / {{ __('Ex. Rate') }}</label>
                     <div class="input-group cin-cur">
                         <select name="currency" id="cinCurrency" class="tom-select" data-live-search="true" data-max-width="110">
                             @foreach($currencies as $code => $name)
-                                <option value="{{ $code }}" @selected($code == ($invoice->currency ?? 'SAR'))>{{ $code }}</option>
+                                <option value="{{ $code }}" @selected($code == ($cs->currency ?? $invoice->currency ?? 'SAR'))>{{ $code }}</option>
                             @endforeach
                         </select>
-                        <input type="text" name="currency_rate" id="cinRate" class="form-control text-end" value="{{ isset($invoice) ? (float) $invoice->currency_rate : 1 }}">
+                        <input type="text" name="currency_rate" id="cinRate" class="form-control text-end" value="{{ $cs ? (float) $cs->currency_rate : (isset($invoice) ? (float) $invoice->currency_rate : 1) }}" @if($linesLocked) readonly @endif>
                     </div>
                 </div>
+                @if(!$cs)
                 <div class="col-md-2">
                     {{-- optional: the invoice's number in another system (the client's, or the old software's) --}}
                     <label class="form-label" for="cinOtherNo">{{ __('Other Invoice No.') }}</label>
                     <input type="text" name="other_invoice_no" id="cinOtherNo" class="form-control" maxlength="50" autocomplete="off" value="{{ $invoice->other_invoice_no ?? '' }}">
                 </div>
-                <div class="col-md-3">
+                @endif
+                <div class="col-md-3 @if($linesLocked) d-none @endif">
                     {{-- quick add (POS style): search a description, Enter adds its line to the grid at once --}}
                     <div class="cin-quick" data-kb-own-enter>
                         <div class="d-flex justify-content-between align-items-end">
@@ -190,6 +237,7 @@
                     <thead>
                     <tr>
                         <th style="width:44px">#</th>
+                        @if($cs)<th style="width:60px" title="{{ __('Bill to customer') }}">{{ __('Bill') }}</th>@endif
                         <th style="min-width:250px;width:250px">{{ __('Description') }} <sup class="text-danger">*</sup></th>
                         <th style="min-width:130px;width:130px">{{ __('Unit') }} <sup class="text-danger">*</sup></th>
                         <th class="cost" style="min-width:166px;width:166px">{{ __('Cost') }}</th>
@@ -208,7 +256,8 @@
             {{-- summary: the left half holds the Add Line button; the right half is ONE card, the cost side on its left and the sale side on its right, row for row (ids are filled by calc()) --}}
             <div class="row g-3 mt-1">
                 <div class="col-md-6">
-                    <button type="button" class="btn btn-outline-primary btn-sm" id="cinAddRow"><i class="bi bi-plus-circle me-1"></i>{{ __('Add Line') }}</button>
+                    <button type="button" class="btn btn-outline-primary btn-sm @if($linesLocked) d-none @endif" id="cinAddRow"><i class="bi bi-plus-circle me-1"></i>{{ __('Add Line') }}</button>
+                    @if($cs)<div class="small text-muted mt-2"><i class="bi bi-info-circle me-1"></i>{{ __('Untick "Bill" for a cost the customer does not pay: it stays on the cost sheet and lowers the margin, but is not invoiced.') }}</div>@endif
                 </div>
                 <div class="col-md-6">
                     <div class="cin-note d-flex justify-content-between gap-3 mb-2">
@@ -246,7 +295,7 @@
             <div class="row mt-3">
                 <div class="col-12">
                     <label class="form-label fw-semibold">{{ __('Terms & Conditions') }}</label>
-                    <textarea name="terms" class="form-control" rows="3" style="min-height: calc(3 * 1.5em + .75rem + 2px);" maxlength="1000" placeholder="{{ __('Any additional notes...') }}">{{ $invoice->terms ?? '' }}</textarea>
+                    <textarea name="terms" class="form-control" rows="3" style="min-height: calc(3 * 1.5em + .75rem + 2px);" maxlength="1000" placeholder="{{ __('Any additional notes...') }}" @if($cs && $linesLocked) readonly @endif>{{ $cs->terms ?? $invoice->terms ?? '' }}</textarea>
                 </div>
             </div>
         </form>
@@ -254,6 +303,7 @@
         <template id="cinRowTpl">
             <tr class="cin-row">
                 <td class="num-cell"><div class="d-flex flex-column justify-content-between align-items-center h-100 gap-2"><span class="line-no"></span><button type="button" class="ico rm" title="{{ __('Remove') }}"><i class="bi bi-trash"></i></button></div></td>
+                @if($cs)<td class="text-center" style="padding-top:10px"><input type="checkbox" class="form-check-input bill" checked title="{{ __('Bill to customer') }}" aria-label="{{ __('Bill to customer') }}"></td>@endif
                 <td>
                     <input type="hidden" class="src-type"><input type="hidden" class="src-id"><input type="hidden" class="src-sub">
                     <select class="tom-select desc" data-live-search="true" data-dropdown-parent="body" data-dropdown-width="320" data-placeholder="{{ __('Select') }}"><option value="">{{ __('Select') }}</option>
@@ -291,6 +341,9 @@
                 const taxes = @json($taxes);
                 const baseCur = (typeof baseCurrency !== 'undefined' && baseCurrency) ? baseCurrency : 'SAR';
                 let quoteData = null;
+                const COST_SHEET = @json((bool) $cs);
+                const LINES_LOCKED = @json((bool) $linesLocked);
+                const billed = tr => !COST_SHEET || $('.bill', tr)?.checked;
 
                 const rate = () => num($('#cinRate').value) || 1;
                 // selects are tom-select boxes: keep the underlying <select> and the box in step
@@ -323,6 +376,7 @@
                     $('.src-type', tr).value = v.source_type || '';
                     $('.src-id', tr).value = v.source_id || '';
                     $('.src-sub', tr).value = v.source_sub_id || '';
+                    if (COST_SHEET && v.bill === false) $('.bill', tr).checked = false;
                     calc();
                     return tr;
                 }
@@ -333,7 +387,10 @@
                     $$('.cin-row', body).forEach((tr, i) => {
                         $('.line-no', tr).textContent = i + 1;
                         $$('.rate-txt', tr).forEach(e => e.textContent = r);
-                        const sAmt = r4(num($('.s-qty', tr).value) * num($('.s-price', tr).value) * r);
+                        // cost sheet: a line not billed to the customer adds its cost only
+                        const bill = billed(tr);
+                        tr.classList.toggle('cin-nobill', !bill);
+                        const sAmt = bill ? r4(num($('.s-qty', tr).value) * num($('.s-price', tr).value) * r) : 0;
                         const cAmt = r4(num($('.c-qty', tr).value) * num($('.c-price', tr).value) * r);
                         const sp = num($('.s-tax option:checked', tr)?.dataset.p), cp = num($('.c-tax option:checked', tr)?.dataset.p);
                         const sTax = r4(sAmt * sp / 100), cTax = r4(cAmt * cp / 100);
@@ -367,7 +424,7 @@
                 body.addEventListener('click', e => {
                     const tr = e.target.closest('.cin-row');
                     if (!tr) return;
-                    if (e.target.closest('.rm')) { if ($$('.cin-row', body).length > 1) { tr.remove(); calc(); } }
+                    if (e.target.closest('.rm') && !LINES_LOCKED) { if ($$('.cin-row', body).length > 1) { tr.remove(); calc(); } }
                 });
                 // Enter in a price/qty box moves to the next field; Enter on the last price adds a line
                 body.addEventListener('keydown', e => {
@@ -422,7 +479,7 @@
                             if (open(j.quotations)) parts.push(`<span class="text-primary">{{ __('Quotation') }}: ${open(j.quotations)}</span>`);
                             if (open(j.bills)) parts.push(`<span class="text-dark">{{ __('Supplier Invoice') }}: ${open(j.bills)}</span>`);
                             $('#cinPending').innerHTML = parts.length ? parts.join(' <span class="text-muted mx-1">|</span> ') + ' <span class="text-warning-emphasis">{{ __('pending') }}</span>' : '';
-                            if (j.quotations.length || j.bills.length) $('#cinQuoteWrap').classList.remove('d-none');
+                            if ((j.quotations.length || j.bills.length) && !LINES_LOCKED) $('#cinQuoteWrap').classList.remove('d-none');
                         });
                 };
                 $('#cinJob').addEventListener('change', onJob);
@@ -463,12 +520,14 @@
                     // Description, Unit, Sale quantity and Sale price are required on every line (0 does not count for the quantity or the price)
                     $$('.cin-row', body).forEach(tr => {
                         $('.desc', tr).required = true; $('.unit', tr).required = true;
+                        // on the cost sheet the sale side is needed only on a line billed to the customer
+                        const bill = billed(tr);
                         const p = $('.s-price', tr);
-                        p.required = true;
-                        p.setCustomValidity(p.value.trim() !== '' && !(num(p.value) > 0) ? '{{ __('Enter a price above 0.') }}' : '');
+                        p.required = bill;
+                        p.setCustomValidity(bill && p.value.trim() !== '' && !(num(p.value) > 0) ? '{{ __('Enter a price above 0.') }}' : '');
                         const q = $('.s-qty', tr);
-                        q.required = true;
-                        q.setCustomValidity(q.value.trim() !== '' && !(num(q.value) > 0) ? '{{ __('Enter a quantity above 0.') }}' : '');
+                        q.required = bill;
+                        q.setCustomValidity(bill && q.value.trim() !== '' && !(num(q.value) > 0) ? '{{ __('Enter a quantity above 0.') }}' : '');
                     });
                     if (window.jQuery(f).valid()) return true;
                     const form = window.jQuery(f);
@@ -483,7 +542,86 @@
                     return false;
                 }
 
-                $('#cinSave').addEventListener('click', function () {
+                // ---- cost sheet: save the sheet (every line, billed or not), and create the final invoice from it ----
+                // a new sheet is saved through /create (Create right), a saved one through its job (Edit right)
+                const sheetUrl = '{{ $cs ? url('invoice/cost-sheets/job/' . $cs->job_id) : '' }}';
+                let saveUrl = @json($cs ? ($cs->exists ? url('invoice/cost-sheets/job/' . $cs->job_id) : url('invoice/cost-sheets/create')) : '');
+                const post = (url, fd) => fetch(url, {method: 'POST', body: fd, headers: {'Accept': 'application/json', 'X-CSRF-TOKEN': $('meta[name=csrf-token]').content}})
+                    .then(async res => ({ok: res.ok, status: res.status, j: await res.json().catch(() => ({}))}));
+                const errorOf = ({status, j}, fallback) => (status === 422 && j.errors) ? Object.values(j.errors).flat().join(' ') : (j.message || fallback);
+                function saveSheet() {
+                    $('#cinAlert').classList.add('d-none');
+                    const f = $('#cinForm');
+                    // the untouched starter line is not a line
+                    const rows = $$('.cin-row', body).filter(tr => $('.desc', tr).value || num($('.s-price', tr).value) || num($('.c-price', tr).value));
+                    if (!rows.length) { fail('{{ __('Add at least one line.') }}'); return Promise.resolve(false); }
+                    if (!validateForm(f, rows)) return Promise.resolve(false);
+                    const fd = new FormData();
+                    fd.append('job_id', @json($cs?->job_id));
+                    fd.append('currency', $('#cinCurrency').value);
+                    fd.append('currency_rate', $('#cinRate').value);
+                    fd.append('terms', f.querySelector('[name=terms]').value);
+                    rows.forEach((tr, i) => {
+                        const v = {
+                            description_id: $('.desc', tr).value, unit_id: $('.unit', tr).value, comment: $('.comment', tr).value, bill: billed(tr) ? 1 : 0,
+                            s_qty: num($('.s-qty', tr).value), s_price: r4(num($('.s-price', tr).value)), tax: $('.s-tax', tr).value,
+                            c_qty: num($('.c-qty', tr).value), c_price: r4(num($('.c-price', tr).value)), c_tax: $('.c-tax', tr).value,
+                            source_type: $('.src-type', tr).value, source_id: $('.src-id', tr).value, source_sub_id: $('.src-sub', tr).value,
+                            source_label: $('.src-label', tr).textContent,
+                        };
+                        Object.entries(v).forEach(([k, x]) => fd.append(`lines[${i}][${k}]`, x ?? ''));
+                    });
+                    return post(saveUrl, fd).then(r => {
+                        if (r.ok && r.j.status === 'success') { saveUrl = sheetUrl; return true; }   // saved once: from now on it is an existing sheet
+                        fail(errorOf(r, '{{ __('Could not save the cost sheet.') }}'));
+                        return false;
+                    }).catch(() => { fail('{{ __('Could not save the cost sheet.') }}'); return false; });
+                }
+                const afterSheet = () => {
+                    // the job drawer (Financials) and the lists show the new figures
+                    try { window.jQuery('#dataTable').DataTable().ajax.reload(null, false); } catch (e) { /* no list on this page */ }
+                    if (typeof window.costSheetSaved === 'function') window.costSheetSaved();   // Invoices › Cost Sheet list
+                    const drawer = document.getElementById('moduleDrawer');
+                    if (drawer?.classList.contains('show') && window.JOB?.list?.openDrawer) JOB.list.openDrawer(@json($cs?->job_id), document.getElementById('drawerSubtitle')?.textContent);
+                };
+                if (COST_SHEET) {
+                    $('#csInvoice')?.addEventListener('click', function () {
+                        const btn = this;
+                        btn.disabled = true;
+                        saveSheet().then(saved => {
+                            if (!saved) { btn.disabled = false; return; }
+                            // say plainly which lines will not reach the customer before the invoice is made
+                            const left = $$('.cin-row', body).filter(tr => !billed(tr) && $('.desc', tr).value)
+                                .map(tr => '• ' + ($('.desc option:checked', tr)?.textContent || '').trim() + ': ' + fmt(r2(num($('.c-qty', tr).value) * num($('.c-price', tr).value))));
+                            const msg = (left.length ? '{{ __('These lines will NOT go to the customer:') }}\n' + left.join('\n') + '\n\n' : '')
+                                + '{{ __('Create the final invoice? The cost sheet is locked after this.') }}';
+                            if (!confirm(msg)) { btn.disabled = false; return; }
+                            post(sheetUrl + '/invoice', new FormData()).then(r => {
+                                if (r.ok && r.j.status === 'success') {
+                                    bootstrap.Modal.getInstance(document.getElementById('globalModal'))?.hide();
+                                    if (window.toastr) toastr.success(r.j.message);
+                                    afterSheet();
+                                    return;
+                                }
+                                btn.disabled = false;
+                                fail(errorOf(r, '{{ __('Could not create the invoice.') }}'));
+                            }).catch(() => { btn.disabled = false; fail('{{ __('Could not create the invoice.') }}'); });
+                        });
+                    });
+                }
+
+                $('#cinSave')?.addEventListener('click', function () {
+                    if (COST_SHEET) {
+                        this.disabled = true;
+                        saveSheet().then(ok => {
+                            this.disabled = false;
+                            if (!ok) return;
+                            bootstrap.Modal.getInstance(document.getElementById('globalModal'))?.hide();
+                            if (window.toastr) toastr.success('{{ __('Cost sheet saved') }}');
+                            afterSheet();
+                        });
+                        return;
+                    }
                     $('#cinAlert').classList.add('d-none');
                     const f = $('#cinForm');
                     // only lines with a selling price go on the invoice; cost-only lines stay out (they never bill the customer)
@@ -622,6 +760,16 @@
                 } else addRow();
                 // call the handler directly: a synthetic change event makes the app's validator flag the empty Job box red on load
                 if ($('#cinJob').value) onJob.call($('#cinJob'));
+                // a cost sheet belongs to its job; a locked one (or an invoice made from a cost sheet) cannot change its lines
+                const lockGrid = () => {
+                    if (COST_SHEET) $('#cinJob').tomselect?.lock();
+                    if (!LINES_LOCKED) return;
+                    $$('input', body).forEach(i => { if (i.type === 'checkbox') i.disabled = true; else { i.readOnly = true; i.tabIndex = -1; } });
+                    $$('select', body).forEach(x => x.tomselect?.lock());
+                    $$('.rm', body).forEach(b => b.classList.add('d-none'));
+                    $('#cinCurrency').tomselect?.lock();
+                };
+                lockGrid(); setTimeout(lockGrid, 0); setTimeout(lockGrid, 700);
 
             });
         </script>

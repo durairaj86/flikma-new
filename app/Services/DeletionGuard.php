@@ -51,6 +51,7 @@ class DeletionGuard
     private const OWNED = [
         'enquiry_subs', 'quotation_containers', 'quotation_packages', 'quotation_charges', 'quotation_subs',
         'job_containers', 'job_packages', 'customer_invoice_subs', 'supplier_invoice_subs',
+        'cost_sheets',   // planning only: deleting its draft invoice opens the cost sheet again (CostSheet::release)
     ];
 
     /** @return string[] reasons the record cannot be deleted (empty = free to delete) */

@@ -54,6 +54,8 @@ class FinanceExtendedTest extends FinanceChainTest
 
         DB::beginTransaction();
         try {
+            // invoices are made the usual way here: a company using the cost sheet is tested with it off (rolled back below)
+            \App\Services\Finance\FinanceSettings::save(['cost_sheet' => 'off']);
             // documents to print / export, the same chain as finance:chain-test
             $this->step('Set-up (chain documents)', fn () => $this->customerChain());
             $this->step('Set-up (chain documents)', fn () => $this->supplierChain());

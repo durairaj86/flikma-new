@@ -61,6 +61,15 @@
                         </select>
                         <div class="form-text">{{ __('What is attached when a customer or supplier statement is sent by email.') }}</div>
                     </div>
+                    <div class="col-lg-5">
+                        <label class="form-label fw-medium" for="fs_cost_sheet">{{ __('Cost sheet') }}</label>
+                        <select name="cost_sheet" id="fs_cost_sheet" class="tom-select" required data-saved="{{ $settings['cost_sheet'] }}">
+                            @foreach(\App\Services\Finance\FinanceSettings::COST_SHEET as $k => $label)
+                                <option value="{{ $k }}" @selected($settings['cost_sheet'] === $k)>{{ __($label) }}</option>
+                            @endforeach
+                        </select>
+                        <div class="form-text">{{ __('On: each job has a cost sheet with the expected sale and cost per charge, and the customer invoice is created from it. The cost sheet is locked once invoiced; a full credit note opens it again.') }}</div>
+                    </div>
                     <div class="col-12">
                         <button type="submit" class="btn btn-primary rounded-pill px-4" id="financeSettingsSave">{{ __('Save Settings') }}</button>
                     </div>
@@ -81,11 +90,15 @@
             $('#financeSettingsForm').on('submit', function (e) {
                 e.preventDefault();
                 const $f = $(this);
+                // switching the cost sheet off: say what happens before saving
+                const cs = $('#fs_cost_sheet');
+                if (cs.data('saved') === 'on' && cs.val() === 'off'
+                    && !confirm(trans('Cost sheets will be hidden. Existing ones are kept and nothing in your accounts changes. Invoices made from a cost sheet keep their lines locked.'))) return;
                 $f.find('.is-invalid').removeClass('is-invalid');
                 $f.find('.invalid-feedback').remove();
                 $('#financeSettingsSave').prop('disabled', true);
                 $.post(GLOBAL_FN.buildUrl('settings/finance'), $f.serialize())
-                    .done(res => toastr.success(res.message))
+                    .done(res => { toastr.success(res.message); cs.data('saved', cs.val()); })
                     .fail(function (xhr) {
                         const errors = (xhr.responseJSON || {}).errors || {};
                         Object.entries(errors).forEach(([name, msgs]) => {

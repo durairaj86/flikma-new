@@ -407,6 +407,37 @@
 <!-- Documents Tab -->
 <div class="tab-pane fade" id="jobFinanceTab" role="tabpanel">
     @php($sm = $fin['summary'])
+    @if(\App\Models\Job\CostSheet::enabled() && userCan('finances.cost-sheets', 'view'))
+        {{-- the cost sheet's expected sale / cost / margin (before every supplier bill is in); the actual figures follow below --}}
+        @php($sheet = \App\Models\Job\CostSheet::where('job_id', $job->id)->first())
+        @php([$eSale, $eCost] = [(float) ($sheet->sale_total ?? 0), (float) ($sheet->cost_total ?? 0)])
+        @php($eMargin = $eSale - $eCost)
+        <div class="border rounded-3 p-3 mb-3">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                <h6 class="fw-bold mb-0"><i class="bi bi-calculator me-1"></i>{{ __('Cost Sheet') }}
+                    @if($sheet?->locked())
+                        <span class="badge bg-success-subtle text-success-emphasis ms-1"><i class="bi bi-lock-fill me-1"></i>{{ __('Invoiced') }} · {{ $sheet->invoice?->row_no }}</span>
+                    @elseif($sheet)
+                        <span class="badge bg-secondary-subtle text-secondary-emphasis ms-1">{{ __('Open') }}</span>
+                    @else
+                        <span class="badge bg-light text-muted border ms-1">{{ __('Not started') }}</span>
+                    @endif
+                </h6>
+                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3"
+                        onclick="webModal.openGlobalModal({title: trans('Cost Sheet') + ' - {{ $job->row_no }}', url: GLOBAL_FN.buildUrl('invoice/cost-sheets/job/{{ $job->id }}'), content: null, size: '3xl', scroll: true, heightPct: 90})">
+                    <i class="bi bi-pencil-square me-1"></i>{{ $sheet ? __('Open Cost Sheet') : __('Start Cost Sheet') }}
+                </button>
+            </div>
+            <div class="row g-2">
+                @foreach([['Expected Sale', $eSale, 'primary'], ['Expected Cost', $eCost, 'secondary'], ['Expected Margin', $eMargin, $eMargin >= 0 ? 'success' : 'danger']] as [$l, $v, $c])
+                    <div class="col-4"><div class="rounded-3 bg-{{ $c }}-subtle px-3 py-2 h-100">
+                        <div class="small text-uppercase text-{{ $c }}-emphasis fw-semibold" style="font-size:.68rem">{{ __($l) }}</div>
+                        <div class="fw-bold">{{ number_format($v, 2) }}@if($l === 'Expected Margin' && $eSale > 0) <small class="fw-semibold">({{ number_format($eMargin / $eSale * 100, 1) }}%)</small>@endif</div></div></div>
+                @endforeach
+            </div>
+            <div class="text-muted small mt-2">{{ __('Expected figures from the cost sheet, excl. VAT. Actual cost comes from supplier invoices and expenses below.') }}</div>
+        </div>
+    @endif
     <div class="row g-2 mb-3">
         @foreach([['Invoiced', $sm['invoiced'], 'primary'], ['Credit Notes', $sm['credits'], 'secondary'], ['Collected', $sm['collected'], 'success'], ['Outstanding', $sm['outstanding'], $sm['outstanding'] > 0 ? 'warning' : 'success'],
                   ['Cost', $sm['cost'], 'secondary'], ['Paid Out', $sm['paid_out'], 'info'], ['Still to Pay', $sm['payable'], $sm['payable'] > 0 ? 'warning' : 'success'], ['Profit', $sm['profit'], $sm['profit'] >= 0 ? 'success' : 'danger']] as [$l, $v, $c])

@@ -166,6 +166,7 @@ Route::middleware(['auth', 'verified', 'module.permission'])->group(function () 
     include 'finance/journal_voucher.php';
     include 'finance/transfer_voucher.php';
     include 'finance/credit_approval.php';
+    include 'finance/cost_sheet.php';
     include 'finance/opening_balance.php';
     include 'finance/reconciliation.php';
     include 'transaction/payment.php';

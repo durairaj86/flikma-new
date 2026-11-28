@@ -166,7 +166,7 @@ CUSTOMER_INVOICE = {
                     '<p>' + trans('Try a different period or customer, or create a new invoice.') + '</p>' +
                     window.emptyTabHints() +
                     '<div class="d-flex justify-content-center gap-2 flex-wrap">' +
-                    '<button type="button" class="btn btn-outline-secondary rounded-pill px-3 ci-empty-filter"><i class="bi bi-funnel me-1"></i>' + trans('Change filters') + '</button>' +
+                    (jobScoped ? '' : '<button type="button" class="btn btn-outline-secondary rounded-pill px-3 ci-empty-filter"><i class="bi bi-funnel me-1"></i>' + trans('Change filters') + '</button>') +
                     '<button type="button" class="btn btn-primary rounded-pill px-3 ci-empty-new"><i class="bi bi-plus-lg me-1"></i>' + trans('Create Invoice') + '</button>' +
                     '</div></div>');
             });

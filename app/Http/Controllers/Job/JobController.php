@@ -667,6 +667,13 @@ class JobController extends Controller
                 'separator' => 'after',
                 'icon' => 'move_to',
                 'items' => [
+                    ...(\App\Models\Job\CostSheet::enabled() && userCan('finances.cost-sheets', 'view') ? [[
+                        'label' => __('Cost Sheet'),
+                        'code' => '01CSVW',
+                        'id' => 'cost_sheet',
+                        'data-id' => $job->id,
+                        'icon' => 'view',
+                    ]] : []),
                     [
                         'label' => __('Customer Invoice'),
                         'code' => '01CSBK',

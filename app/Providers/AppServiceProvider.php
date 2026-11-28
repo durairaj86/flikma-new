@@ -78,6 +78,19 @@ class AppServiceProvider extends ServiceProvider
             }
         }
 
+        // A cost sheet locked by its invoice opens again once that invoice is deleted (draft), cancelled or credited in full.
+        \App\Models\Finance\CustomerInvoice\CustomerInvoice::deleted(fn ($m) => \App\Models\Job\CostSheet::release((int) $m->id));
+        \App\Models\Finance\CustomerInvoice\CustomerInvoice::updated(function ($m) {
+            if ($m->wasChanged('status')) {
+                \App\Models\Job\CostSheet::release((int) $m->id);
+            }
+        });
+        \App\Models\Finance\Adjustment\CreditNote::saved(function ($m) {
+            if ($m->invoice_id && $m->wasChanged('status')) {
+                \App\Models\Job\CostSheet::release((int) $m->invoice_id);
+            }
+        });
+
         // Once a person's email is verified (by code or by the old link), they get the welcome email, one time.
         \Illuminate\Support\Facades\Event::listen(\Illuminate\Auth\Events\Verified::class, function ($event) {
             try {

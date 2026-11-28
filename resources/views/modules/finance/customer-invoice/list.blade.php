@@ -61,6 +61,8 @@
                     @csrf
                     <div class="row g-4">
 
+                        {{-- Opened from a job: every invoice of that job is listed, so there is no date range --}}
+                        @if(empty($job_id))
                         <div class="col-md-6 col-xl-4 form-filter">
                             <label class="form-label fw-medium filter-label-row">{{ __('Invoice Date') }}</label>
                             <div class="filter-date-range">
@@ -71,11 +73,19 @@
                                        value="{{ \Carbon\Carbon::today()->format('d-m-Y') }}">
                             </div>
                         </div>
+                        @endif
 
                         <div class="col-md-6 col-xl-4 form-filter">
                             <label class="form-label fw-medium filter-label-row">{{ __('Customer') }}</label>
                             <x-common.customers multiple="true" :value="request()->query('customer') ? [(int) request()->query('customer')] : null"></x-common.customers>
                         </div>
+
+                        @if(empty($job_id))
+                        <div class="col-md-6 col-xl-4 form-filter">
+                            <label class="form-label fw-medium filter-label-row">{{ __('Job') }}</label>
+                            <x-common.jobs name="filter-job" id="filter-job" :placeholder="__('All Jobs')" />
+                        </div>
+                        @endif
 
                         <div class="col-md-6 col-xl-4 form-filter">
                             <label class="form-label fw-medium filter-label-row">{{ __('Status') }}</label>
@@ -136,14 +146,6 @@
 
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 py-3">
             <div class="align-items-center flex-shrink-0">
-                @if(isset($job_no))
-                    {{-- Opened from a job: the job is named once here, so the table has no Job column. --}}
-                    <div class="d-flex align-items-center gap-2 mb-2 ci-jobchip">
-                        <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis border border-primary-subtle px-3 py-2"><i class="bi bi-briefcase me-1"></i>{{ __('Job') }} {{ $job_no }}</span>
-                        <a href="{{ url('/invoice/customer') }}" class="small text-decoration-none"><i class="bi bi-x-circle me-1"></i>{{ __('Show all invoices') }}</a>
-                    </div>
-                @endif
-
                 <div class="gap-4">
                     <ul class="nav align-items-center" id="listTabs" role="tablist"
                         aria-label="Navigation 13">
@@ -209,10 +211,12 @@
                     <input type="text" id="customSearch" class="form-control rounded-pill ps-5"
                            placeholder="{{ __('Search...') }}" aria-label="{{ __('Search...') }}">
                 </div>
+                @if(empty($job_id))
                 <button class="btn btn-icon-search rounded-circle" id="toggle-summary" type="button"
                         title="{{ __('Hide Summary') }}" aria-label="{{ __('Hide Summary') }}"><i class="bi bi-eye-slash"></i></button>
                 <button class="btn btn-icon-search rounded-circle" id="filter-box" type="button"
                         title="{{ __('Filter') }}" aria-label="{{ __('Filter') }}"><i class="bi bi-funnel"></i></button>
+                @endif
             </div>
         </div>
 
@@ -267,8 +271,16 @@
             <div class="d-flex justify-content-between px-3 flex-shrink-0">
                 {{--<div id="searchLabels" class="mb-3 d-flex flex-wrap gap-2"></div>--}}
 
-                <!-- Example static label -->
-                <div id="filtered-data"></div>
+                <div class="d-flex flex-wrap align-items-start">
+                    <div id="filtered-data"></div>
+                    @if(isset($job_no))
+                        {{-- Opened from a job: the job is named once here, after the filter labels, so the table has no Job column. --}}
+                        <div class="d-flex align-items-center gap-2 mb-2 ci-jobchip">
+                            <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis border border-primary-subtle px-3 py-2"><i class="bi bi-briefcase me-1"></i>{{ __('Job') }} {{ $job_no }}</span>
+                            <a href="{{ url('/invoice/customer') }}" class="small text-decoration-none"><i class="bi bi-x-circle me-1"></i>{{ __('Show all job invoices') }}</a>
+                        </div>
+                    @endif
+                </div>
             </div>
 
             <div class="">

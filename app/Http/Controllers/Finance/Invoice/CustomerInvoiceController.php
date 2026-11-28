@@ -33,13 +33,16 @@ class CustomerInvoiceController extends Controller
 
     public function modal(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
     {
+        if (\App\Models\Job\CostSheet::enabled()) {
+            return view('modules.job.cost-sheet-required');
+        }
         $customer = new CustomerInvoice();
         $customer->customerInvoiceSubs = [new CustomerInvoiceSub()];
         $job_customer_id = $job_id = null;
-        if ($request->get('jobId') == 'list') {
+        if ($request->input('jobId') == 'list') {
             $jobs = Job::select('id', 'row_no', 'customer_id')->with('customer:id,name_en')->whereIn('status', [JobEnum::COMPLETED, JobEnum::PENDING])->get();
         } else {
-            $jobs = Job::select('id', 'row_no', 'customer_id')->with('customer:id,name_en')->findOrFail(decodeId($request->get('jobId')));
+            $jobs = Job::select('id', 'row_no', 'customer_id')->with('customer:id,name_en')->findOrFail(decodeId($request->input('jobId')));
             $job_customer_id = $jobs->customer_id;
             $job_id = $jobs->id;
             $jobs = [$jobs];
@@ -54,7 +57,7 @@ class CustomerInvoiceController extends Controller
 
     /** Full-page invoice builder: a Sale | Cost | GP grid per line (cost feeds the margin only, it is not posted). */
     /** Everything the Invoice with Cost (GP) form needs, for the full page and for the modal on the list. */
-    private function gpFormData(Request $request): array
+    public function gpFormData(Request $request): array
     {
         $jobs = Job::select('id', 'row_no', 'customer_id')->with('customer:id,name_en,currency')
             ->whereIn('status', [JobEnum::COMPLETED, JobEnum::PENDING])->orderByDesc('id')->get();
@@ -68,19 +71,27 @@ class CustomerInvoiceController extends Controller
             'group' => $v['group'] ?? 'Other', 'description' => $v['subtext'],
         ])->groupBy('group');
         $currencies = currencies();
-        $selectedJob = $request->filled('jobId') ? decodeId($request->get('jobId')) : null;
+        $selectedJob = $request->filled('jobId') ? decodeId($request->input('jobId')) : null;
 
         return compact('jobs', 'descriptions', 'units', 'taxes', 'currencies', 'selectedJob');
     }
 
     public function newPage(Request $request)
     {
+        abort_if(\App\Models\Job\CostSheet::enabled(), 403, __('Cost sheet is on: create the customer invoice from the job\'s cost sheet.'));
         return view('modules.finance.customer-invoice.customer-invoice-new', $this->gpFormData($request));
     }
 
     /** The same form as a modal (opened from the invoice list). */
     public function gpForm(Request $request)
     {
+        if (\App\Models\Job\CostSheet::enabled()) {
+            // opened from a job's invoice list: that job's cost sheet is where its invoice is made
+            $jobId = $request->filled('jobId') ? decodeId($request->input('jobId')) : null;
+            return $jobId && userCan('finances.cost-sheets', 'view')
+                ? app(\App\Http\Controllers\Job\CostSheetController::class)->form($request, $jobId)
+                : view('modules.job.cost-sheet-required');
+        }
         return view('modules.finance.customer-invoice._gp-form', $this->gpFormData($request) + ['inModal' => true]);
     }
 
@@ -150,7 +161,10 @@ class CustomerInvoiceController extends Controller
         $statusFilter = array_filter((array) ($filter['filter-status'] ?? []), fn($v) => $v !== 'all' && $v !== '');
         $paymentStatusFilter = array_filter((array) ($filter['filter-payment-status'] ?? []), fn($v) => $v !== 'all' && $v !== '');
 
+        $jobFilter = (int) ($filter['filter-job'] ?? 0);
+
         return $query
+            ->when($jobFilter > 0, fn ($q) => $q->where('customer_invoices.job_id', $jobFilter))
             ->when(!empty($statusFilter), function ($q) use ($statusFilter) {
                 $q->whereIn('customer_invoices.status', $statusFilter);
             })
@@ -255,7 +269,8 @@ class CustomerInvoiceController extends Controller
             ->when($job_id != 'list', function ($query) use ($job_id) {
                 $query->where('job_id', $job_id);
             })
-            ->when(isset($filter['filter-from-date'], $filter['filter-to-date']),
+            // opened from a job: every invoice of that job, whatever its date
+            ->when($job_id == 'list' && isset($filter['filter-from-date'], $filter['filter-to-date']),
                 function ($query) use ($filter) {
 
                     $from = Carbon::parse($filter['filter-from-date'])->startOfDay();
@@ -295,7 +310,7 @@ class CustomerInvoiceController extends Controller
                 ->when($job_id != 'list', function ($query) use ($job_id) {
                     $query->where('job_id', $job_id);
                 })
-                ->when(isset($filter['filter-from-date'], $filter['filter-to-date']),
+                ->when($job_id == 'list' && isset($filter['filter-from-date'], $filter['filter-to-date']),
                     function ($query) use ($filter) {
                         $from = Carbon::parse($filter['filter-from-date'])->startOfDay();
                         $to = Carbon::parse($filter['filter-to-date'])->addDay()->startOfDay();
@@ -412,6 +427,17 @@ class CustomerInvoiceController extends Controller
 
     public function store(Request $request)
     {
+        // Settings › Finance › Cost sheet on: a new invoice is made from the job's cost sheet only (CostSheetController::invoice sets
+        // the attribute), and an invoice made from a cost sheet always keeps the sheet's lines: only its dates and terms change here
+        if ($request->filled('data-id')) {
+            $sheet = \App\Models\Job\CostSheet::forInvoice((int) $request->input('data-id'));
+            $existing = $sheet ? CustomerInvoice::find($request->input('data-id')) : null;
+            if ($sheet && $existing) {
+                $request->merge(['job_id' => $existing->job_id, 'customer' => encodeId($existing->customer_id)] + $sheet->invoiceLines());
+            }
+        } elseif (\App\Models\Job\CostSheet::enabled() && !$request->attributes->get('cost_sheet_id')) {
+            return response()->json(['status' => 'error', 'message' => __('Cost sheet is on: create the customer invoice from the job\'s cost sheet.')], 422);
+        }
         // Remove commas from all unit prices
         if ($request->has('unit_price')) {
             $request->merge([
@@ -1553,7 +1579,7 @@ class CustomerInvoiceController extends Controller
      */
     public function jobCosts(Request $request, $jobId)
     {
-        $exclude = (int) $request->get('invoice');
+        $exclude = (int) $request->query('invoice');
         $bills = \App\Models\Finance\SupplierInvoice\SupplierInvoice::where('job_id', $jobId)
             ->where('status', \App\Enums\SupplierInvoiceEnum::APPROVED->value)
             ->with(['supplier:id,name_en', 'supplierInvoiceSubs'])
@@ -1566,6 +1592,7 @@ class CustomerInvoiceController extends Controller
         // which customer invoices already used these (cancelled ones do not count)
         $used = fn (string $type, $ids) => DB::table('customer_invoice_subs as s')
             ->join('customer_invoices as i', 'i.id', '=', 's.customer_invoice_id')
+            ->where('s.company_id', companyId())->where('i.company_id', companyId())
             ->where('s.source_type', $type)->whereIn('s.source_id', $ids)
             ->whereNull('s.deleted_at')->whereNull('i.deleted_at')
             ->where('i.status', '!=', CustomerInvoiceEnum::CANCELLED->value)

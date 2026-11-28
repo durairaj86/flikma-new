@@ -94,6 +94,8 @@ return [
             'proforma' => ['label' => 'Proforma Invoices', 'prefixes' => ['invoice/proforma'], 'status_enum' => ProformaInvoiceEnum::class],
             'supplier-invoices' => ['label' => 'Supplier Invoices', 'prefixes' => ['invoice/supplier'], 'status_enum' => SupplierInvoiceEnum::class],
             'customer-invoices' => ['label' => 'Customer Invoices', 'prefixes' => ['invoice/customer'], 'status_enum' => CustomerInvoiceEnum::class],
+            // only used when Settings › Finance › Cost sheet is on
+            'cost-sheets' => ['label' => 'Cost Sheets', 'prefixes' => ['invoice/cost-sheets'], 'actions' => ['view', 'create', 'edit', 'delete']],
             'credit-notes' => ['label' => 'Credit Notes', 'prefixes' => ['adjustment/credit-note'], 'status_enum' => CreditNoteEnum::class],
             'debit-notes' => ['label' => 'Debit Notes', 'prefixes' => ['adjustment/debit-note'], 'status_enum' => DebitNoteEnum::class],
             'expenses' => ['label' => 'Expenses', 'prefixes' => ['finance/expense'], 'status_enum' => ExpenseEnum::class],

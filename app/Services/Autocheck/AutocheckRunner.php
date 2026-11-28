@@ -54,6 +54,7 @@ class AutocheckRunner
         'supplier_invoice' => ['Create supplier invoice', '/invoice/supplier'],
         'approve_supplier_invoice' => ['Approve supplier invoice (posts to ledger)', '/invoice/supplier'],
         'invoice' => ['Create customer invoice', '/invoice/customer'],
+        'cost_sheet' => ['Cost sheet: invoice only from the sheet, unticked lines left out, sheet locked after, opened again when the draft is deleted', '/operation/jobs'],
         'credit_control' => ['Credit control: Block refuses over the limit (also in bulk), Warn approves with a warning, request → approve updates the customer', '/finance/credit-approvals'],
         'approve_invoice' => ['Approve invoice (posts to ledger)', '/invoice/customer'],
         'customer_aging' => ['Check customer aging (open invoice)', '/reports/customer-aging'],
@@ -125,6 +126,12 @@ class AutocheckRunner
     {
         $method = 'step' . str_replace(' ', '', ucwords(str_replace('_', ' ', $step)));
         $checks = [];
+        // the flow creates invoices the usual way: a company that uses the cost sheet runs it with the cost sheet off (the cost sheet step turns it on itself)
+        $settings = \App\Services\Finance\FinanceSettings::class;
+        $costSheet = $settings::get('cost_sheet');
+        if ($costSheet !== 'off') {
+            $settings::save(['cost_sheet' => 'off']);
+        }
         try {
             $url = $this->$method($ctx, $checks);
             $ok = collect($checks)->every(fn ($c) => $c['ok']);
@@ -133,6 +140,10 @@ class AutocheckRunner
             return $this->fail($step, 'Validation: ' . collect($e->errors())->flatten()->implode(' | '), $checks);
         } catch (\Throwable $e) {
             return $this->fail($step, get_class($e) . ': ' . $e->getMessage() . ' (' . basename($e->getFile()) . ':' . $e->getLine() . ')', $checks);
+        } finally {
+            if ($costSheet !== 'off') {
+                $settings::save(['cost_sheet' => $costSheet]);
+            }
         }
     }
 
@@ -1338,6 +1349,56 @@ class AutocheckRunner
         DB::table('journal_vouchers')->where('id', $tv->id)->delete();
 
         return '/finance/transfer-vouchers';
+    }
+
+    private function stepCostSheet(array &$ctx, array &$checks): string
+    {
+        $settings = \App\Services\Finance\FinanceSettings::class;
+        $jobId = (int) $ctx['job_id'];
+        $cs = app(\App\Http\Controllers\Job\CostSheetController::class);
+        $ci = app(CustomerInvoiceController::class);
+        $desc = (int) DB::table('descriptions')->where(fn ($q) => $q->where('company_id', companyId())->orWhereNull('company_id'))->value('id');
+        $unit = (int) DB::table('units')->where(fn ($q) => $q->where('company_id', companyId())->orWhereNull('company_id'))->value('id');
+        // everything here is undone: the job keeps no cost sheet and no extra invoice for the steps after this one
+        DB::statement('SAVEPOINT cost_sheet_try');
+        try {
+            $settings::save(['cost_sheet' => 'on']);
+            $plain = $this->call($ci, 'store', ['job_id' => $jobId, 'customer' => encodeId($ctx['customer_id']), 'invoice_date' => now()->format('d-m-Y'), 'due_date' => now()->format('d-m-Y'), 'currency' => 'SAR', 'currency_rate' => 1]);
+            $this->check($checks, 'Cost sheet on: a customer invoice made the usual way is refused', ($plain['status'] ?? '') === 'error', $plain['message'] ?? '');
+
+            $line = fn (bool $bill, float $sale, float $cost) => ['description_id' => $desc, 'unit_id' => $unit, 'bill' => $bill ? 1 : 0, 's_qty' => 1, 's_price' => $sale, 'tax' => 'STANDARD', 'c_qty' => 1, 'c_price' => $cost, 'c_tax' => 'STANDARD'];
+            $saved = $this->call($cs, 'save', ['currency' => 'SAR', 'currency_rate' => 1, 'lines' => [$line(true, 1000, 700), $line(false, 0, 200)]], [$jobId]);
+            $sheet = \App\Models\Job\CostSheet::where('job_id', $jobId)->first();
+            $this->check($checks, 'Saved: sale counts the billed line only, cost counts both', $sheet && (float) $sheet->sale_total === 1000.0 && (float) $sheet->cost_total === 900.0,
+                $sheet ? $sheet->sale_total . ' / ' . $sheet->cost_total : ($saved['message'] ?? 'not saved'));
+
+            $res = $this->callNoRequest($cs, 'invoice', [$jobId]);
+            $sheet?->refresh();
+            $inv = CustomerInvoice::find($res['invoice_id'] ?? 0);
+            $subs = $inv ? DB::table('customer_invoice_subs')->where('customer_invoice_id', $inv->id)->get() : collect();
+            $this->check($checks, 'Create final invoice: a draft with the billed line only (1,000 + VAT)', $inv && $subs->count() === 1 && (float) $inv->sub_total === 1000.0, ($inv->row_no ?? 'none') . ' · ' . $subs->count() . ' line(s)');
+            $this->check($checks, 'The cost sheet is locked to that invoice', $sheet && $sheet->locked() && (int) $sheet->customer_invoice_id === (int) ($inv->id ?? 0), 'status ' . ($sheet->status ?? '-'));
+            $again = $this->callNoRequest($cs, 'invoice', [$jobId]);
+            $edit = $this->call($cs, 'save', ['currency' => 'SAR', 'currency_rate' => 1, 'lines' => [$line(true, 5, 1)]], [$jobId]);
+            $this->check($checks, 'Locked: no second invoice and no change to the sheet', ($again['status'] ?? '') === 'error' && ($edit['status'] ?? '') === 'error', 'refused');
+
+            if ($inv) {
+                $this->call($ci, 'store', ['data-id' => $inv->id, 'job_id' => $jobId, 'customer' => encodeId($ctx['customer_id']), 'invoice_date' => now()->format('d-m-Y'),
+                    'due_date' => now()->addDays(45)->format('d-m-Y'), 'currency' => 'SAR', 'currency_rate' => 1,
+                    'description_id' => [(string) $desc], 'unit_id' => [$unit], 'quantity' => [3], 'unit_price' => ['9999'], 'tax' => ['STANDARD'], 'account' => [32]]);
+                $inv->refresh();
+                $this->check($checks, 'Editing the draft keeps the sheet\'s lines (a changed price is ignored), the due date changes',
+                    (float) $inv->sub_total === 1000.0 && \Carbon\Carbon::parse($inv->due_at)->isSameDay(now()->addDays(45)), number_format((float) $inv->sub_total, 2));
+                $this->callNoRequest($ci, 'delete', [$inv->id]);
+                $sheet->refresh();
+                $this->check($checks, 'Draft invoice deleted: the cost sheet is open again', !$sheet->locked() && !$sheet->customer_invoice_id, 'status ' . $sheet->status);
+            }
+        } finally {
+            DB::statement('ROLLBACK TO SAVEPOINT cost_sheet_try');
+            $settings::save(['cost_sheet' => 'off']);   // the rollback undid the row, not the remembered setting
+        }
+
+        return '/operation/jobs';
     }
 
     private function stepCreditControl(array &$ctx, array &$checks): string

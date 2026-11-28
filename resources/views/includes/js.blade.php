@@ -28,7 +28,8 @@
 @php
     $i18nKeys = [
         'Sunday', 'Monday', 'Saturday', 'to', 'score is below :n', 'score :s reaches :n',
-        'Transfer Voucher', 'New Transfer', 'Edit Transfer', 'Error updating status', 'Deleted', 'Submitted to ZATCA',
+        'Transfer Voucher', 'New Transfer', 'Edit Transfer', 'Error updating status', 'Deleted', 'Submitted to ZATCA', 'Cost Sheet',
+        'Cost sheets will be hidden. Existing ones are kept and nothing in your accounts changes. Invoices made from a cost sheet keep their lines locked.',
         'Select all', 'Select', 'Approve selected', 'Clear', ':n selected', 'Approve :n documents? Each one is checked and posted like a single Approve.', 'Approve', 'Not approved', 'Server error',
         'Opening Balance', 'New Refund', 'New Advance', 'Excess kept as advance', 'Taken from the customer advance', 'Taken from the supplier advance', 'Total received does not match the chosen invoices', 'Total paid does not match the chosen invoices',
         'Auto', 'Also logged by the system', 'New Action', ':n days ago', 'Jobs', 'Log', 'No contact yet', 'RFQs', 'Suggested', 'Suggested from the score', 'Touches', 'today',

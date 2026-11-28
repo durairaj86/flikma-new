@@ -84,6 +84,8 @@ class FinanceModuleAudit extends FinanceChainTest
             // inside this transaction (the rollback below brings them back unchanged)
             DB::table('period_closings')->where('company_id', 1)->delete();
             Cache::forget('period-closing-lock:1');
+            // invoices are made the usual way here: a company using the cost sheet is tested with it off (rolled back below)
+            \App\Services\Finance\FinanceSettings::save(['cost_sheet' => 'off']);
 
             $this->step('Setup (customer, job, supplier chain)', function () {
                 $this->customerChain();

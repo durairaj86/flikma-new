@@ -285,6 +285,15 @@
                                 <p>{{ __('Supplier Invoice') }}</p>
                             </a>
                         </li>
+                        @if(\App\Models\Job\CostSheet::enabled())
+                            {{-- Settings › Finance › Cost sheet on: the customer invoice is made from the job's cost sheet --}}
+                            <li class="nav-item">
+                                <a href="/invoice/cost-sheets"
+                                   class="nav-link {{ $submenu == 'cost-sheets' ? 'active' : '' }}">
+                                    <p>{{ __('Cost Sheet') }}</p>
+                                </a>
+                            </li>
+                        @endif
                         <li class="nav-item">
                             <a href="/invoice/customer"
                                class="nav-link {{ $submenu == 'customer' ? 'active' : '' }}">

@@ -449,6 +449,14 @@ JOB = {
             $('#trashedJobsCount').text(trashed);
         },
 
+        /** The job's cost sheet (Settings › Finance › Cost sheet on), in the same modal as the invoice form. */
+        openCostSheet(jobId, jobNo) {
+            webModal.openGlobalModal({
+                title: trans('Cost Sheet') + (jobNo ? ' - ' + jobNo : ''),
+                url: GLOBAL_FN.buildUrl('invoice/cost-sheets/job/' + jobId),
+                content: null, size: '3xl', scroll: true, heightPct: 90,
+            });
+        },
         openDrawer(jobId, jobNo) {
             // Update drawer subtitle
             $('#drawerSubtitle').text(jobNo || '');
@@ -950,6 +958,9 @@ JOB = {
                 })
                 $('#customer_invoice,#supplier_invoice,#proforma_invoice').off().on('click', function () {
                     location.href = $(this).attr('data-value');
+                })
+                $('#cost_sheet').off().on('click', function () {
+                    JOB.list.openCostSheet(row.attr('data-id'), row.attr('data-name'));
                 })
             },
             view(row) {

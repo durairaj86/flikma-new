@@ -78,6 +78,8 @@ class FinanceChainTest extends Command
 
         DB::beginTransaction();
         try {
+            // invoices are made the usual way here: a company using the cost sheet is tested with it off (rolled back below)
+            \App\Services\Finance\FinanceSettings::save(['cost_sheet' => 'off']);
             $before = [
                 'accounts' => $this->accountTotals(),
                 'vat' => VatReturn::compute(self::FROM, self::TO),
