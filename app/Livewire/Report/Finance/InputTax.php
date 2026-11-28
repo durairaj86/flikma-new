@@ -110,7 +110,7 @@ class InputTax extends Component
             ->whereBetween('reference_date', [$this->startDate, $this->endDate])
             ->whereHas('finance', fn($q) => $q->where('is_approved', 1));
 
-        $totalInputTax = (clone $query)->sum('debit') - (clone $query)->sum('credit');
+        $totalInputTax = (clone $query)->sum('base_debit') - (clone $query)->sum('base_credit');
         $count = (clone $query)->where('debit', '>', 0)->count();
 
         return view('livewire.report.finance.input-tax', [

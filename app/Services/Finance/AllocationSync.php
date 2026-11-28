@@ -82,6 +82,7 @@ class AllocationSync
         $amount = "s.$own";
         $base = "s.base_$own";
 
+        // a note only settles its own party's invoice on the same control account (an older note could name another customer's invoice)
         return $this->insert("
             SELECT s.company_id, '$partner' AS partner_type, s.partner_id,
                    inv.id AS settled_line_id, '$invoiceType' AS settled_doc_type, n.invoice_id AS settled_doc_id,
@@ -94,6 +95,7 @@ class AllocationSync
             JOIN finance f        ON f.id = s.finance_id AND f.company_id = s.company_id AND f.is_approved = 1
             JOIN finance_subs inv ON inv.company_id = s.company_id AND inv.source_type = '$invoiceType' AND inv.source_id = n.invoice_id
                                   AND inv.is_reconcilable = 1 AND inv.$inv > 0
+                                  AND inv.partner_id = s.partner_id AND inv.account_id = s.account_id
             WHERE n.invoice_id IS NOT NULL AND n.deleted_at IS NULL {$this->company('s')}
         ");
     }

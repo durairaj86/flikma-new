@@ -69,14 +69,14 @@ class OutputTaxTable extends Component
             });
         }
 
-        $transactions = $query->orderBy('reference_date')->get();
+        $transactions = $query->orderBy('reference_date')->orderBy('id')->get();   // same order as the ledger report
 
         $outputTaxData = [];
         $totalOutputTax = 0;
 
         foreach ($transactions as $transaction) {
-            // Output VAT = credit amount (CR Output VAT Payable on customer invoice)
-            $amount = $transaction->credit - $transaction->debit;
+            // Output VAT = credit amount (CR Output VAT Payable on customer invoice), in company currency: a USD invoice's VAT is reported in SAR
+            $amount = $transaction->base_credit - $transaction->base_debit;
 
             if ($amount == 0) {
                 continue;

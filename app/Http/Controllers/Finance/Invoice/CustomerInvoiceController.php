@@ -242,6 +242,15 @@ class CustomerInvoiceController extends Controller
         )
             ->with(['customer:id,name_en,name_ar,row_no'])
             ->with(['job:id,shipment_mode,pol,pod,activity_id,carrier,shipment_mode'])// eager load customer
+            // credit notes raised against each invoice (cancelled ones left out) and the amount already on draft collections:
+            // loaded once for the page instead of two queries per row
+            ->with(['creditNotes' => fn ($q) => $q->where('status', '!=', \App\Enums\CreditNoteEnum::CANCELLED->value)->orderBy('id')
+                ->select('id', 'invoice_id', 'row_no', 'grand_total', 'status')])
+            ->addSelect(['draft_collected_sum' => DB::table('collection_invoices as ci')
+                ->join('collections as c', 'c.id', '=', 'ci.collection_id')
+                ->whereColumn('ci.customer_invoice_id', 'customer_invoices.id')
+                ->where('ci.company_id', companyId())->where('c.company_id', companyId())->whereNull('c.deleted_at')
+                ->where('c.status', \App\Enums\CollectionEnum::DRAFT->value)->selectRaw('SUM(ci.amount)')])
             ->tap(fn($query) => $this->applyTabFilter($query, $request->tab))
             ->when($job_id != 'list', function ($query) use ($job_id) {
                 $query->where('job_id', $job_id);
@@ -384,19 +393,11 @@ class CustomerInvoiceController extends Controller
                     'class' => $class
                 ];
             })
-            // amount already entered on draft collections (not approved yet): the Collection form takes it off what is still owed
-            // credit notes raised against this invoice (cancelled ones left out): shown under the invoice number
-            ->addColumn('credit_notes', fn ($model) => \App\Models\Finance\Adjustment\CreditNote::where('invoice_id', $model->id)
-                ->where('status', '!=', \App\Enums\CreditNoteEnum::CANCELLED->value)->orderBy('id')->get(['id', 'row_no', 'grand_total', 'status'])
+            // credit notes raised against this invoice: shown under the invoice number
+            ->addColumn('credit_notes', fn ($model) => $model->creditNotes
                 ->map(fn ($cn) => ['id' => $cn->id, 'no' => $cn->row_no, 'amount' => number_format((float) $cn->grand_total, $decimals), 'draft' => (int) ($cn->status instanceof \BackedEnum ? $cn->status->value : $cn->status) === 1])->values()->all())
-            ->addColumn('draft_collected', function ($model) use ($decimals) {
-                $draft = (float) \Illuminate\Support\Facades\DB::table('collection_invoices as ci')
-                    ->join('collections as c', 'c.id', '=', 'ci.collection_id')
-                    ->where('ci.company_id', companyId())->where('c.company_id', companyId())
-                    ->where('ci.customer_invoice_id', $model->id)->whereNull('c.deleted_at')
-                    ->where('c.status', \App\Enums\CollectionEnum::DRAFT->value)->sum('ci.amount');
-                return $draft > 0 ? number_format($draft, $decimals) : null;
-            })
+            // amount already entered on draft collections (not approved yet): the Collection form takes it off what is still owed
+            ->addColumn('draft_collected', fn ($model) => (float) $model->draft_collected_sum > 0 ? number_format((float) $model->draft_collected_sum, $decimals) : null)
             ->addColumn('balance', function ($model) use ($decimals) {
                 $balance = $model->grand_total - ($model->paid_amount ?? 0);
                 return number_format($balance, $decimals);

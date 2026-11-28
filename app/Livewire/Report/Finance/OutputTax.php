@@ -110,7 +110,7 @@ class OutputTax extends Component
             ->whereBetween('reference_date', [$this->startDate, $this->endDate])
             ->whereHas('finance', fn($q) => $q->where('is_approved', 1));
 
-        $totalOutputTax = (clone $query)->sum('credit') - (clone $query)->sum('debit');
+        $totalOutputTax = (clone $query)->sum('base_credit') - (clone $query)->sum('base_debit');
         $count = (clone $query)->where('credit', '>', 0)->count();
 
         return view('livewire.report.finance.output-tax', [

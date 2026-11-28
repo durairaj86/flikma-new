@@ -23,6 +23,7 @@
             'Finance' => [
                 ['id' => 'finance',    'icon' => 'bi-receipt',       'title' => 'Invoicing &amp; Collections', 'body' => 'Proforma invoices for advances, customer invoices, supplier invoices, credit notes, payments and collections — all posting to the ledger.'],
                 ['id' => 'reports',    'icon' => 'bi-graph-up-arrow', 'title' => 'Reports &amp; Tax', 'body' => 'Trial balance, P&L, aging, input and output tax. Because every module writes to one ledger, these reports are current rather than reconstructed.'],
+                ['id' => 'proforma',   'icon' => 'bi-receipt-cutoff', 'title' => 'Proforma Invoice', 'body' => 'Quote the customer against a job before the real invoice exists. A proforma is not a ZATCA document, and it is the Provisional Sales figure in the Provisional Report.'],
             ],
             'AI &amp; Automation' => [
                 ['id' => 'ai',         'icon' => 'bi-stars',         'title' => 'AI Document Scanning', 'body' => 'Upload a supplier invoice and let AI extract the header, line items, VAT number and totals. Review before it posts. Never posts to the ledger automatically.'],
@@ -461,8 +462,91 @@
                             <li><span><strong>General ledger</strong> &mdash; drill from any line down to the invoice or journal that created it.</span></li>
                             <li><span><strong>Input tax, output tax and tax summary</strong> &mdash; your input tax comes straight from scanned supplier bills, so the return assembles itself.</span></li>
                             <li><span><strong>Customer and supplier aging</strong> plus statements, to run your collections.</span></li>
-                            <li><span><strong>Job reports</strong> &mdash; balance, income and provisional margin by job, customer or lane.</span></li>
+                            <li><span><strong>Job reports</strong> &mdash; balance, income and the <a href="#provisional-report" style="color:var(--emerald-dim);font-weight:600;">Provisional Report</a>, which compares planned and actual margin by job or department.</span></li>
                             <li><span><strong>Sales and waybill reports</strong> for operational review.</span></li>
+                        </ol>
+
+                        {{-- PROVISIONAL REPORT --}}
+                        <div id="provisional-report" class="mt-4 pt-3" style="border-top:1.5px solid var(--line);">
+                            <h3 class="mb-1" style="font-size:1.15rem;font-weight:800;">How the Provisional Report works</h3>
+                            <div class="mb-3" style="font-size:.78rem;color:var(--ink-ghost);">Reports &rsaquo; Job reports &rsaquo; Provisional Report</div>
+                            <p class="mb-3" style="color:var(--ink-muted);line-height:1.75;">
+                                You quote a customer, you estimate the costs, and then the real invoices arrive. The Provisional
+                                Report puts the plan next to the result for every job, so you can see whether the job earned what
+                                you expected.
+                            </p>
+
+                            <div class="rounded-4 overflow-hidden mb-4" style="background:#0a0f1e;border:1.5px solid var(--line);">
+                                <video class="w-100 d-block" controls preload="none" poster="{{ asset('videos/provisional-report-module-poster.png') }}" aria-label="Provisional Report video walkthrough">
+                                    <source src="{{ asset('videos/provisional-report-module.mp4') }}" type="video/mp4">
+                                    Your browser cannot play this video.
+                                </video>
+                            </div>
+
+                            <h4 class="mb-2" style="font-size:.98rem;font-weight:700;">Where the four figures come from</h4>
+                            <ol class="step-list mb-3">
+                                <li><span><strong>Provisional Sales</strong> &mdash; your <a href="#proforma" style="color:var(--emerald-dim);font-weight:600;">proforma invoices</a> for the job.</span></li>
+                                <li><span><strong>Provisional Cost</strong> &mdash; the expenses you recorded as the estimate of what the job will cost.</span></li>
+                                <li><span><strong>Actual Sales</strong> &mdash; customer invoices, less any credit notes.</span></li>
+                                <li><span><strong>Actual Cost</strong> &mdash; supplier invoices (and debit notes).</span></li>
+                            </ol>
+                            <p class="mb-3" style="color:var(--ink-muted);line-height:1.75;">
+                                Everything is tied to the job number and shown in your company currency, so a document in another
+                                currency never distorts the totals. By default the actual figures are read from the posted books
+                                with VAT excluded, because VAT is neither income nor cost. An expense stays an estimate until the
+                                supplier invoice arrives, so a job&rsquo;s cost is never counted twice.
+                            </p>
+
+                            <h4 class="mb-2" style="font-size:.98rem;font-weight:700;">The calculation</h4>
+                            <ol class="step-list mb-3">
+                                <li><span><strong>Sales</strong> is the actual sales if there are any, otherwise the provisional sales.</span></li>
+                                <li><span><strong>Cost</strong> is the actual cost if there is any, otherwise the provisional cost. A job that is still open therefore shows its expected profit, and updates as real invoices post.</span></li>
+                                <li><span><strong>Profit / Loss</strong> is sales minus cost.</span></li>
+                                <li><span><strong>Margin</strong> is profit divided by sales, times 100. The badge is green at 20% or more, yellow from 10% to 20%, grey above 0% up to 10%, and red at 0% or below.</span></li>
+                                <li><span><strong>Cost vs Budget</strong> compares actual cost with your provisional cost. A red bar with &#9650; means the job is over its estimate; green with &#9660; means it is under.</span></li>
+                            </ol>
+                            <div class="doc-tip mb-3">
+                                <strong>Example:</strong> a job quoted at 10,000 with an estimated cost of 7,000. The supplier then bills 7,800.
+                                Profit is 10,000 &minus; 7,800 = 2,200, the margin is 22.0%, and cost shows &#9650; 11.4% over the estimate.
+                            </div>
+
+                            <h4 class="mb-2" style="font-size:.98rem;font-weight:700;">Using the page</h4>
+                            <ol class="step-list mb-3">
+                                <li><span><strong>View By</strong> &mdash; <em>Job Based</em> shows one row per job; <em>Department Based</em> groups jobs by the department chosen on the job (FCL Import, Air Export, and so on).</span></li>
+                                <li><span><strong>Filters</strong> &mdash; from and to date (default: 1 January to today, matched on the job&rsquo;s posting date), shipment mode, type, and a job number search. Press <em>Generate</em> to refresh and the circular arrow to reset.</span></li>
+                                <li><span><strong>Summary cards</strong> total everything you filtered: provisional and actual cost and sales, profit or loss, and margin.</span></li>
+                                <li><span><strong>Job details</strong> &mdash; open a job&rsquo;s arrow to list every proforma, invoice, credit note, expense and supplier invoice behind its numbers.</span></li>
+                                <li><span><strong>Print or export</strong> to PDF or Excel. The Excel file follows the current view and date range.</span></li>
+                            </ol>
+                            <div class="doc-tip">
+                                <strong>Tip:</strong> look at negative margins and red cost bars first. If actual columns are empty, the job is still running on estimates.
+                            </div>
+                        </div>
+                    </section>
+
+                    {{-- PROFORMA INVOICE --}}
+                    <section id="proforma" class="mb-5 pt-2">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="feat-icon-box" style="background:rgba(58,107,255,.09);color:var(--blue);"><i class="bi bi-receipt-cutoff"></i></div>
+                            <div>
+                                <h2 class="mb-0" style="font-size:1.4rem;font-weight:800;">Proforma Invoice</h2>
+                                <div style="font-size:.78rem;color:var(--ink-ghost);">Finance</div>
+                            </div>
+                        </div>
+                        <p class="mb-3" style="color:var(--ink-muted);line-height:1.75;">
+                            A proforma invoice is the quote you bill against a job before the final invoice exists. It is not a
+                            ZATCA document, so use it for the deposit or the expected charges, and issue the customer invoice later.
+                        </p>
+                        <div class="rounded-4 overflow-hidden mb-4" style="background:#0a0f1e;border:1.5px solid var(--line);">
+                            <video class="w-100 d-block" controls preload="none" poster="{{ asset('videos/proforma-invoice-module-poster.png') }}" aria-label="Proforma Invoice video walkthrough">
+                                <source src="{{ asset('videos/proforma-invoice-module.mp4') }}" type="video/mp4">
+                                Your browser cannot play this video.
+                            </video>
+                        </div>
+                        <ol class="step-list mb-3">
+                            <li><span><strong>Create it from a job</strong> so the charges and the customer carry across.</span></li>
+                            <li><span><strong>Review and send</strong> it to the customer, then use the proforma list to find, open and inspect it.</span></li>
+                            <li><span><strong>See the result</strong> in the <a href="#provisional-report" style="color:var(--emerald-dim);font-weight:600;">Provisional Report</a>, where proforma totals become the job&rsquo;s Provisional Sales.</span></li>
                         </ol>
                     </section>
 

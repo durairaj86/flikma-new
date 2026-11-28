@@ -37,6 +37,8 @@
     .ms-empty { min-height: 0 !important; }
     .ms-empty .overflow-auto, .ms-empty > div { min-height: 0 !important; }
     .ms-empty table.dataTable > thead { display: none; }
+    /* the empty cell's square white background would cover the card's rounded corners */
+    .ms-empty table.dataTable td.dataTables_empty { background: transparent !important; }
     .ms-empty-state { text-align: center; padding: 36px 16px 30px; white-space: normal; }
     .ms-empty-state .ms-empty-icon { width: 56px; height: 56px; border-radius: 50%; background: #eef2ff; color: #4f46e5; display: inline-flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 12px; }
     .ms-empty-state h6 { font-weight: 700; margin-bottom: 6px; }

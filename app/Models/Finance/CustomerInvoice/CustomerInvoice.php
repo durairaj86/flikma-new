@@ -49,6 +49,11 @@ class CustomerInvoice extends Model
         return $this->hasMany(JobPackage::class, 'job_id', 'job_id');
     }
 
+    public function creditNotes(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(\App\Models\Finance\Adjustment\CreditNote::class, 'invoice_id');
+    }
+
     public function zatcaHistory()
     {
         return $this->morphOne(ZatcaHistory::class, 'invoice');

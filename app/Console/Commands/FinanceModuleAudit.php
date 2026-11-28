@@ -80,6 +80,11 @@ class FinanceModuleAudit extends FinanceChainTest
         DB::beginTransaction();
         DB::beginTransaction();
         try {
+            // the audit posts in October / November and runs its own 2026 closing: set the company's real closings aside
+            // inside this transaction (the rollback below brings them back unchanged)
+            DB::table('period_closings')->where('company_id', 1)->delete();
+            Cache::forget('period-closing-lock:1');
+
             $this->step('Setup (customer, job, supplier chain)', function () {
                 $this->customerChain();
                 $this->supplierChain();

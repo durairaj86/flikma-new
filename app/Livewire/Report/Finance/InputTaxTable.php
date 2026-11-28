@@ -69,14 +69,14 @@ class InputTaxTable extends Component
             });
         }
 
-        $transactions = $query->orderBy('reference_date')->get();
+        $transactions = $query->orderBy('reference_date')->orderBy('id')->get();   // same order as the ledger report
 
         $inputTaxData = [];
         $totalInputTax = 0;
 
         foreach ($transactions as $transaction) {
-            // Input VAT = debit amount (DR Input VAT on purchase invoice)
-            $amount = $transaction->debit - $transaction->credit;
+            // Input VAT = debit amount (DR Input VAT on purchase invoice), in company currency
+            $amount = $transaction->base_debit - $transaction->base_credit;
 
             if ($amount == 0) {
                 continue;
